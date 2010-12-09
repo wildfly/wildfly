@@ -22,9 +22,9 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.MountHandle;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceRegistry;
@@ -54,53 +54,53 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
     }
 
     @Override
-    public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
-        Deployment deployment = OSGiDeploymentAttachment.getAttachment(context);
+        Deployment deployment = OSGiDeploymentAttachment.getAttachment(phaseContext);
 
-        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, context.getName());
-        VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(context);
+        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, phaseContext.getName());
+        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         // Check for attached BundleInfo
-        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(context);
+        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(phaseContext);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
-            OSGiDeploymentAttachment.attachDeployment(context, deployment);
+            OSGiDeploymentAttachment.attachDeployment(phaseContext, deployment);
         }
 
         // Check for attached OSGiMetaData
-        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaDataAttachment(context);
+        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaDataAttachment(phaseContext);
         if (deployment == null && metadata != null) {
             String symbolicName = metadata.getBundleSymbolicName();
             Version version = metadata.getBundleVersion();
             deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
             deployment.addAttachment(OSGiMetaData.class, metadata);
-            OSGiDeploymentAttachment.attachDeployment(context, deployment);
+            OSGiDeploymentAttachment.attachDeployment(phaseContext, deployment);
         }
 
         // Check for attached XModule
-        XModule resModule = XModuleAttachment.getXModuleAttachment(context);
+        XModule resModule = XModuleAttachment.getXModuleAttachment(phaseContext);
         if (deployment == null && resModule != null) {
             String symbolicName = resModule.getName();
             Version version = resModule.getVersion();
             deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
             deployment.addAttachment(XModule.class, resModule);
-            OSGiDeploymentAttachment.attachDeployment(context, deployment);
+            OSGiDeploymentAttachment.attachDeployment(phaseContext, deployment);
         }
 
         // Create the {@link OSGiDeploymentService}
         if (deployment != null) {
 
             // Prevent garbage collection of the MountHandle which will close the file
-            MountHandle mount = context.getAttachment(MountHandle.ATTACHMENT_KEY);
+            MountHandle mount = phaseContext.getAttachment(MountHandle.ATTACHMENT_KEY);
             deployment.addAttachment(MountHandle.class, mount);
 
             // Mark the bundle to start automatically
             deployment.setAutoStart(true);
 
-            OSGiDeploymentService.addService(context);
+            OSGiDeploymentService.addService(phaseContext);
         }
     }
 }

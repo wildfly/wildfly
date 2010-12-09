@@ -24,7 +24,8 @@ package org.jboss.as.arquillian.service;
 
 import java.util.List;
 
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -44,9 +45,9 @@ import org.junit.runner.RunWith;
 public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
+        final Index index = phaseContext.getAttachment(Attachments.ANNOTATION_INDEX);
         if (index == null)
             return; // Skip if there is no annotation index
 
@@ -55,8 +56,9 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
         if (targets == null || targets.isEmpty())
             return; // Skip if there are no @RunWith annotations
 
-        ArquillianConfig arqConfig = new ArquillianConfig(context);
-        context.putAttachment(ArquillianConfig.KEY, arqConfig);
+        final DeploymentUnitContext deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        ArquillianConfig arqConfig = new ArquillianConfig(deploymentUnitContext);
+        deploymentUnitContext.putAttachment(ArquillianConfig.KEY, arqConfig);
 
         for (AnnotationTarget target : targets) {
             if (target instanceof ClassInfo) {
@@ -65,5 +67,9 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
                 arqConfig.addTestClass(testClassName);
             }
         }
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
+        context.removeAttachment(ArquillianConfig.KEY);
     }
 }

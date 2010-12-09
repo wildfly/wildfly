@@ -30,8 +30,8 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.jsp.TldMetaDataParser;
@@ -53,21 +53,21 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String LIB = "lib";
     private static final String IMPLICIT_TLD = "implicit.tld";
 
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(context)) {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(phaseContext)) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
-        TldsMetaData tldsMetaData = context.getAttachment(TldsMetaData.ATTACHMENT_KEY);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        TldsMetaData tldsMetaData = phaseContext.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         if (tldsMetaData == null) {
             tldsMetaData = new TldsMetaData();
-            context.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
+            phaseContext.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
         }
         Map<String, TldMetaData> tlds = new HashMap<String, TldMetaData>();
         tldsMetaData.setTlds(tlds);
         // TLDs are located in WEB-INF or any subdir (except the top level "classes" and "lib")
         // and in JARs from WEB-INF/lib, in META-INF or any subdir
-        DeploymentStructure structure = context.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
+        DeploymentStructure structure = phaseContext.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
         assert structure != null;
         assert structure.getEntries() != null;
         for (DeploymentStructure.ClassPathEntry resourceRoot : structure.getEntries()) {

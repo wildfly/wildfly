@@ -35,10 +35,11 @@ import javax.servlet.annotation.WebListener;
 import javax.servlet.annotation.WebServlet;
 
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -77,24 +78,24 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
     /**
      * Process web annotations.
      */
-    public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(context)) {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(phaseContext)) {
             return; // Skip non web deployments
         }
-        final WarAnnotationIndex index = context.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
+        final WarAnnotationIndex index = phaseContext.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
         if (index == null) {
             return; // Skip if there is no annotation index
         }
-        WarMetaData warMetaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
         Map<String, WebMetaData> annotationsMetaData = warMetaData.getAnnotationsMetaData();
         if (annotationsMetaData == null) {
             annotationsMetaData = new HashMap<String, WebMetaData>();
             warMetaData.setAnnotationsMetaData(annotationsMetaData);
         }
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + context.getName());
+            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + phaseContext.getName());
         }
         final ClassLoader classLoader = module.getClassLoader();
 

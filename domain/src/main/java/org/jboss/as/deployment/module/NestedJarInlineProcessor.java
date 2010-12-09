@@ -22,13 +22,13 @@
 
 package org.jboss.as.deployment.module;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -36,6 +36,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileVisitor;
 import org.jboss.vfs.VisitorAttributes;
@@ -51,14 +52,14 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
     /**
      * Mounts all nested jars inline with the mount of the deployment jar.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnitContext().getAttachment(Attachments.DEPLOYMENT_ROOT);
         final List<VirtualFile> list = new ArrayList<VirtualFile>(1);
         try {
-            deploymentRoot.visit(new VirtualFileVisitor() {
+            deploymentRoot.getRoot().visit(new VirtualFileVisitor() {
                 public void visit(VirtualFile virtualFile) {
                     if (virtualFile.getName().endsWith(".jar")) {
                         list.add(virtualFile);
@@ -69,7 +70,7 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
                 }
             });
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Could not mount nested jars in deployment: " + deploymentRoot.getName(), e);
+            throw new DeploymentUnitProcessingException("Could not mount nested jars in deployment: " + phaseContext.getDeploymentUnitContext().getName(), e);
         }
 
         if (list.size() == 0)
@@ -84,8 +85,14 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
             log.warnf("Could not mount %s in deployment %s, skipping", file.getPathNameRelativeTo(deploymentRoot), deploymentRoot.getName());
         }
 
-        context.putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
-        context.getServiceBuilder().addListener(new CloseListener(mounts.getClosables()));
+        phaseContext.getDeploymentUnitContext().putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
+        final NestedMounts nestedMounts = context.removeAttachment(NestedMounts.ATTACHMENT_KEY);
+        if (nestedMounts != null) {
+            VFSUtils.safeClose(nestedMounts.getClosables());
+        }
     }
 
     static class CloseListener extends AbstractServiceListener<Void> {

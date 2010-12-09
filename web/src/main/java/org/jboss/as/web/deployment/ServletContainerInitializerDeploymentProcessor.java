@@ -35,13 +35,14 @@ import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
 
-import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
+import org.jboss.as.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -65,25 +66,25 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
     /**
      * Process SCIs.
      */
-    public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(context)) {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(phaseContext)) {
             return; // Skip non web deployments
         }
-        final WarAnnotationIndex index = context.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
+        final WarAnnotationIndex index = phaseContext.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
         if (index == null) {
             return; // Skip if there is no annotation index
         }
-        WarMetaData warMetaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + context.getName());
+            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + phaseContext.getName());
         }
         final ClassLoader classLoader = module.getClassLoader();
-        ScisMetaData scisMetaData = context.getAttachment(ScisMetaData.ATTACHMENT_KEY);
+        ScisMetaData scisMetaData = phaseContext.getAttachment(ScisMetaData.ATTACHMENT_KEY);
         if (scisMetaData == null) {
             scisMetaData = new ScisMetaData();
-            context.putAttachment(ScisMetaData.ATTACHMENT_KEY, scisMetaData);
+            phaseContext.putAttachment(ScisMetaData.ATTACHMENT_KEY, scisMetaData);
         }
         Set<ServletContainerInitializer> scis = scisMetaData.getScis();
         if (scis == null) {
@@ -97,7 +98,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         // FIXME: for now, look in all dependencies for SCIs
-        for (ModuleConfig.Dependency dependency : ModuleDependencies.getAttachedDependencies(context).getDependencies()) {
+        for (ModuleDependency dependency : ModuleDependencies.getAttachedDependencies(phaseContext).getDependencies()) {
             ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 serviceLoader = Module.loadServiceFromCurrent(dependency.getIdentifier(), ServletContainerInitializer.class);

@@ -32,10 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
@@ -59,13 +60,13 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
     /**
      * Merge everything into WarMetaData.
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(context)) {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(phaseContext)) {
             return; // Skip non web deployments
         }
-        WarMetaData warMetaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
-        DeploymentStructure structure = context.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
+        DeploymentStructure structure = phaseContext.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
         assert structure != null;
         assert structure.getEntries() != null;
 

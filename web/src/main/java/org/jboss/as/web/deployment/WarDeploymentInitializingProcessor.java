@@ -22,11 +22,12 @@
 
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.markDeployment;
+
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -38,10 +39,10 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
 
     static final String WAR_EXTENSION = ".war";
 
-    public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(context);
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if(virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
-            markDeployment(context);
+            markDeployment(phaseContext);
         }
     }
 }

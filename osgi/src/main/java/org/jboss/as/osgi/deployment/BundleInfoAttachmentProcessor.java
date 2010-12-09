@@ -25,9 +25,8 @@ package org.jboss.as.osgi.deployment;
 import java.io.IOException;
 import java.util.jar.Manifest;
 
-import org.jboss.as.deployment.attachment.ManifestAttachment;
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceRegistry;
@@ -52,23 +51,22 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
-        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(context);
+        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(phaseContext);
         if (info != null)
             return;
 
         // Get the manifest from the deployment's virtual file
-        VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(context);
-        Manifest manifest = ManifestAttachment.getManifestAttachment(context);
+        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        Manifest manifest = phaseContext.getAttachment(Attachments.MANIFEST);
         if (manifest == null) {
             // Check if this virtual file contains a valid OSGi manifest
             // If so attach the BundleInfo and the Deployment abstraction
             try {
                 manifest = VFSUtils.getManifest(virtualFile);
-                if (manifest != null)
-                    ManifestAttachment.attachManifest(context, manifest);
+                if (manifest != null) phaseContext.putAttachment(Attachments.MANIFEST, manifest);
             } catch (IOException ex) {
                 throw new DeploymentUnitProcessingException("Cannot read manifest from: " + virtualFile);
             }
@@ -78,9 +76,9 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
         if (BundleInfo.isValidateBundleManifest(manifest)) {
             // Construct and attach the {@link BundleInfo}
             try {
-                String location = InstallBundleInitiatorService.getLocation(serviceRegistry, context.getName());
+                String location = InstallBundleInitiatorService.getLocation(serviceRegistry, phaseContext.getName());
                 info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
-                BundleInfoAttachment.attachBundleInfo(context, info);
+                BundleInfoAttachment.attachBundleInfo(phaseContext, info);
             } catch (BundleException ex) {
                 throw new DeploymentUnitProcessingException("Cannot create bundle deployment from: " + virtualFile);
             }

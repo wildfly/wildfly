@@ -22,15 +22,13 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceDependencyConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptorParser;
-import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
+import org.jboss.as.service.descriptor.JBossServiceConfig;
+import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
+import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.model.ParseResult;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Before;
 import org.junit.Test;

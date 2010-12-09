@@ -44,12 +44,12 @@ import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -76,9 +76,9 @@ public class ArquillianService implements Service<ArquillianService> {
     private final Map<String, CountDownLatch> waitingTests = new HashMap<String, CountDownLatch>();
     private JMXTestRunner jmxTestRunner;
 
-    public static void addService(final BatchBuilder batchBuilder) {
+    public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(ArquillianService.SERVICE_NAME, service);
+        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
         serviceBuilder.install();

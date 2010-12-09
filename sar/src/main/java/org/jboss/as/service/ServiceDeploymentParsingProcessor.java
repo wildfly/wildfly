@@ -22,11 +22,12 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptorParser;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
@@ -60,11 +61,11 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
      * Process a deployment for jboss-service.xml files. Will parse the xml file and attach an configuration discovered
      * durring processing.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if(deploymentRoot == null || !deploymentRoot.exists())
             return;
@@ -87,7 +88,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
             xmlMapper.parseDocument(result, reader);
             final JBossServiceXmlDescriptor xmlDescriptor = result.getResult();
             if(xmlDescriptor != null)
-                context.putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                phaseContext.putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
                 throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
         } catch(Exception e) {

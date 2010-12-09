@@ -39,13 +39,13 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
 
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
 import org.jboss.as.deployment.managedbean.config.ResourceConfiguration;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.jandex.AnnotationTarget;
@@ -74,15 +74,15 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
      * Check the deployment annotation index for all classes with the @ManagedBean annotation.  For each class with the
      * annotation, collect all the required information to create a managed bean instance, and attach it to the context.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if (context.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY) != null) {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if (phaseContext.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY) != null) {
             return; // Skip if the configurations already exist
         }
 
-        final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
+        final Index index = phaseContext.getAttachment(Attachments.ANNOTATION_INDEX);
         if (index == null)
             return; // Skip if there is no annotation index
 
@@ -90,14 +90,14 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         if (targets == null)
             return; // Skip if there are no ManagedBean instances
 
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null)
             return; // Skip if there are no Module
 
         final ClassLoader classLoader = module.getClassLoader();
 
         final ManagedBeanConfigurations managedBeanConfigurations = new ManagedBeanConfigurations();
-        context.putAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY, managedBeanConfigurations);
+        phaseContext.putAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY, managedBeanConfigurations);
 
         for (AnnotationTarget target : targets) {
             if (!(target instanceof ClassInfo)) {

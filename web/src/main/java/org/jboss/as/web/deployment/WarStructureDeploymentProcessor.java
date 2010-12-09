@@ -29,12 +29,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.module.TempFileProviderService;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -72,22 +74,22 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
     }
 
     /** {@inheritDoc} */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(context)) {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(phaseContext)) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if(deploymentRoot == null) {
             return;
         }
-        final MountHandle mountHandle = context.getAttachment(MountHandle.ATTACHMENT_KEY);
+        final MountHandle mountHandle = phaseContext.getAttachment(MountHandle.ATTACHMENT_KEY);
         try {
             final ClassPathEntry[] entries = createResourceRoots(deploymentRoot, mountHandle);
             final DeploymentStructure structure = new DeploymentStructure(entries);
-            context.putAttachment(DeploymentStructure.ATTACHMENT_KEY, structure);
+            phaseContext.putAttachment(DeploymentStructure.ATTACHMENT_KEY, structure);
 
-            final BatchBuilder builder = context.getBatchBuilder();
-            final ServiceName sName = ServiceName.JBOSS.append("deployment", context.getName(), "structure");
+            final BatchBuilder builder = phaseContext.getBatchBuilder();
+            final ServiceName sName = ServiceName.JBOSS.append("deployment", phaseContext.getName(), "structure");
             builder.addService(sName, new DeploymentStructureService(structure))
                 .install();
             builder.addDependency(sName);
@@ -98,11 +100,11 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // Add the war metadata
         final WarMetaData warMetaData = new WarMetaData();
         warMetaData.setSharedWebMetaData(sharedWebMetaData);
-        context.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
+        phaseContext.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
         // Add the shared TLDs metadata
         final TldsMetaData tldsMetaData = new TldsMetaData();
         tldsMetaData.setSharedTlds(sharedTldsMetaData);
-        context.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
+        phaseContext.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
     }
 
     /**

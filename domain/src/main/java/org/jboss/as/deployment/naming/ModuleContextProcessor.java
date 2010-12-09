@@ -24,9 +24,9 @@ package org.jboss.as.deployment.naming;
 
 import javax.naming.Context;
 
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -40,19 +40,19 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
     /**
      * Add a ContextService for this module.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final ServiceTarget serviceTarget = context.getBatchBuilder();
-        final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(context.getName());
-        final JndiName moduleContextJndiName = ContextNames.GLOBAL_CONTEXT_NAME.append(context.getName());
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
+        final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(phaseContext.getName());
+        final JndiName moduleContextJndiName = ContextNames.GLOBAL_CONTEXT_NAME.append(phaseContext.getName());
         final ContextService contextService = new ContextService(moduleContextJndiName);
         serviceTarget.addService(moduleContextServiceName, contextService)
             .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, Context.class, contextService.getParentContextInjector())
             .install();
 
-        context.putAttachment(ModuleContextConfig.ATTACHMENT_KEY, new ModuleContextConfig(moduleContextServiceName, moduleContextJndiName));
+        phaseContext.putAttachment(ModuleContextConfig.ATTACHMENT_KEY, new ModuleContextConfig(moduleContextServiceName, moduleContextJndiName));
         // TODO: These names will need to change when application scoping becomes available.
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.deployment;
 
+import java.util.List;
+
 /**
  * An entity which can contain attachments.
  *
@@ -31,9 +33,9 @@ public interface Attachable {
     /**
      * Get an attachment value.  If no attachment exists for this key, {@code null} is returned.
      *
-     * @param key
-     * @param <T>
-     * @return
+     * @param key the attachment key
+     * @param <T> the value type
+     * @return the value, or {@code null} if there is none
      */
     <T> T getAttachment(AttachmentKey<T> key);
 
@@ -48,5 +50,21 @@ public interface Attachable {
      */
     <T> T putAttachment(AttachmentKey<T> key, T value);
 
+    /**
+     * Remove an attachment, returning its previous value.
+     *
+     * @param key the attachment key
+     * @param <T> the value type
+     * @return the old value, or {@code null} if there was none
+     */
     <T> T removeAttachment(AttachmentKey<T> key);
+
+    /**
+     * Add a value to a list-typed attachment key.  If the key is not mapped, add such a mapping.
+     *
+     * @param key the attachment key
+     * @param value the value to add
+     * @param <T> the list value type
+     */
+    <T> void addToAttachmentList(AttachmentKey<AttachmentList<T>> key, T value);
 }

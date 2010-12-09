@@ -32,11 +32,12 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.web.WebSubsystemElement;
 import org.jboss.as.web.deployment.mock.MemoryRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -61,8 +62,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     /** {@inheritDoc} */
-    public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final WarMetaData metaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final WarMetaData metaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if(metaData == null) {
             return;
         }
@@ -74,12 +75,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             if(hostName == null) {
                 throw new IllegalStateException("null host name");
             }
-            processDeployment(hostName, metaData, context);
+            processDeployment(hostName, metaData, phaseContext);
         }
     }
 
     protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
+        final VirtualFile deploymentRoot = context.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null) {
             throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + deploymentRoot);

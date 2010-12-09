@@ -30,13 +30,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
@@ -48,7 +43,6 @@ import org.jboss.as.server.standalone.management.StandaloneServerManagementServi
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
@@ -102,13 +96,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         // Activate deployment module loader
         batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService())
-            .install();
-
-        // todo move elsewhere...
-        final DeploymentChain deploymentChain = new DeploymentChainImpl();
-        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
-            .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
 
         new JarDeploymentActivator().activate(deploymentChain);

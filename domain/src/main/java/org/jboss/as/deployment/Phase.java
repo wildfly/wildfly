@@ -26,6 +26,7 @@ package org.jboss.as.deployment;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum Phase {
+
     STRUCTURE,
     VALIDATE,
     PARSE,
@@ -38,6 +39,7 @@ public enum Phase {
     private Phase() {}
 
     // STRUCTURE
+    public static final int STRUCTURE_MOUNT                             = 0x000;
     public static final int STRUCTURE_NESTED_JAR                        = 0x100;
     public static final int STRUCTURE_NESTED_JAR_RA                     = 0x200;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x300;

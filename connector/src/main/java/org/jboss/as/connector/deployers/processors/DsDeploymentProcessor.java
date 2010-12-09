@@ -32,9 +32,9 @@ import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.datasources.DataSourceDeploymentService;
 import org.jboss.as.connector.subsystems.datasources.JDBCRARDeployService;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
@@ -66,25 +66,25 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
     /**
      * Deploy datasources
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      *
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
 
-        Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
 
         String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 
-        DataSources datasources = getDataSourcesAttachment(context);
+        DataSources datasources = getDataSourcesAttachment(phaseContext);
         if (datasources == null || deploymentName == null || !deploymentName.startsWith("jdbc"))
             return;
 
         log.tracef("Processing datasource deployement: %s", datasources);
 
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
 
 
         String uniqueJdbcLocalId = null;
@@ -108,7 +108,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         if(shouldDeploy) {
-            final ServiceTarget serviceTarget = context.getBatchBuilder();
+            final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
 
             final DataSourceDeploymentService dataSourceDeploymentService = new DataSourceDeploymentService(deploymentName, uniqueJdbcLocalId, uniqueJdbcXAId, datasources, module);
             ServiceBuilder<?> serviceBuilder = serviceTarget.addService(DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName), dataSourceDeploymentService)

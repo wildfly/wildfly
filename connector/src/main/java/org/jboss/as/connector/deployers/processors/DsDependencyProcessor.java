@@ -25,11 +25,13 @@ package org.jboss.as.connector.deployers.processors;
 import java.util.List;
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.ModuleDependencies;
+import org.jboss.as.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
@@ -50,16 +52,16 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
 
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 
-        final DataSources datasources = getDataSourcesAttachment(context);
+        final DataSources datasources = getDataSourcesAttachment(phaseContext.getDeploymentUnitContext());
         if (datasources == null || deploymentName == null || !deploymentName.startsWith("jdbc"))
             return;
 
-        log.tracef("Processing datasource deployement: %s", datasources);
+        log.tracef("Processing datasource deployment: %s", datasources);
 
          try {
             if (deploymentName.indexOf("local") != -1) {
@@ -68,15 +70,15 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                 if (dss != null && dss.size() > 0) {
                     for (DataSource ds : dss) {
                         try {
-                            log.tracef("Processing datasource deployement: %s", ds);
+                            log.tracef("Processing datasource deployment: %s", ds);
 
                             if (ds.getModule() != null && !ds.getModule().trim().equals("")) {
                                 ModuleIdentifier jdbcIdentifier = ModuleIdentifier.fromString(ds.getModule());
-                                Module jdbcModule = Module.getDefaultModuleLoader().loadModule(jdbcIdentifier);
+                                // TODO: Use application server module loader
+                                Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(jdbcIdentifier, true,
-                                        false, false));
+                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(jdbcIdentifier, false, false));
                             } else {
                                 log.warnf("No module defined for %s", ds.getJndiName());
                             }
@@ -91,15 +93,15 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                 if (xadss != null && xadss.size() > 0) {
                     for (XaDataSource xads : xadss) {
                         try {
-                            log.tracef("Processing xa-datasource deployement: %s", xads);
+                            log.tracef("Processing xa-datasource deployment: %s", xads);
 
                             if (xads.getModule() != null && !xads.getModule().trim().equals("")) {
                                 ModuleIdentifier jdbcIdentifier = ModuleIdentifier.fromString(xads.getModule());
-                                Module jdbcModule = Module.getDefaultModuleLoader().loadModule(jdbcIdentifier);
+                                // TODO: Use application server module loader
+                                Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(jdbcIdentifier, true,
-                                        false, false));
+                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(jdbcIdentifier, false, false));
                             } else {
                                 log.warnf("No module defined for %s", xads.getJndiName());
                             }
@@ -112,5 +114,8 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
     }
 }

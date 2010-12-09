@@ -20,25 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.attachment;
+package org.jboss.as.server.deployment;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Utility to help attach and retrieve a VirtualFile from a deployment context.
- *
- * @author John E. Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class VirtualFileAttachment {
-    public static final AttachmentKey<VirtualFile> KEY = AttachmentKey.create(VirtualFile.class);
+public final class Services {
+    private Services() {}
 
-    public static void attachVirtualFile(final DeploymentUnitContext context, final VirtualFile virtualFile) {
-        context.putAttachment(KEY, virtualFile);
-    }
-
-    public static VirtualFile getVirtualFileAttachment(final DeploymentUnitContext context) {
-        return context.getAttachment(KEY);
-    }
+    public static final ServiceName DEPLOYMENT_BASE = ServiceName.JBOSS.append("deployment");
 }

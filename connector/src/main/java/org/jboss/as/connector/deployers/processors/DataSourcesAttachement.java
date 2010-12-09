@@ -32,7 +32,7 @@ import org.jboss.jca.common.api.metadata.ds.DataSources;
  * @author John Bailey
  */
 public class DataSourcesAttachement {
-    private static final AttachmentKey<DataSources> ATTACHMENT_KEY = new AttachmentKey<DataSources>(DataSources.class);
+    private static final AttachmentKey<DataSources> ATTACHMENT_KEY = AttachmentKey.create(DataSources.class);
 
     static DataSources getDataSourcesAttachment(final DeploymentUnitContext context) {
         return context.getAttachment(ATTACHMENT_KEY);

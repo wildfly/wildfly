@@ -37,7 +37,7 @@ import java.util.Set;
 public class ModuleDependencies {
     public static final AttachmentKey<ModuleDependencies> KEY = AttachmentKey.create(ModuleDependencies.class);
 
-    private final Set<ModuleConfig.Dependency> dependencies = new HashSet<ModuleConfig.Dependency>();
+    private final Set<ModuleDependency> dependencies = new HashSet<ModuleDependency>();
 
     /**
      * Add a dependency to a DeploymentUnitContext.  Adding the attachment if needed.
@@ -45,7 +45,7 @@ public class ModuleDependencies {
      * @param context    The DeploymentUnitContext
      * @param dependency The dependency to add
      */
-    public static void addDependency(final DeploymentUnitContext context, final ModuleConfig.Dependency dependency) {
+    public static void addDependency(final DeploymentUnitContext context, final ModuleDependency dependency) {
         ModuleDependencies dependencies = context.getAttachment(KEY);
         if(dependencies == null) {
             dependencies = new ModuleDependencies();
@@ -63,7 +63,7 @@ public class ModuleDependencies {
      *
      * @return The dependencies
      */
-    public ModuleConfig.Dependency[] getDependencies() {
-        return new ArrayList<ModuleConfig.Dependency>(dependencies).toArray(new ModuleConfig.Dependency[dependencies.size()]);
+    public ModuleDependency[] getDependencies() {
+        return new ArrayList<ModuleDependency>(dependencies).toArray(new ModuleDependency[dependencies.size()]);
     }
 }

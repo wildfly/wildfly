@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceName;
  * @author John E. Bailey
  */
 public class ModuleContextConfig {
-    public static final AttachmentKey<ModuleContextConfig> ATTACHMENT_KEY = new AttachmentKey<ModuleContextConfig>(ModuleContextConfig.class);
+    public static final AttachmentKey<ModuleContextConfig> ATTACHMENT_KEY = AttachmentKey.create(ModuleContextConfig.class);
 
     private final ServiceName contextServiceName;
     private final JndiName contextName;

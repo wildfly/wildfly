@@ -24,13 +24,13 @@ package org.jboss.as.service;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceDependencyConfig;
-import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
+import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
+import org.jboss.as.service.descriptor.JBossServiceConfig;
+import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
+import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.jmx.MBeanRegistrationService;
@@ -77,25 +77,25 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     /**
      * Process a deployment for JbossService confguration.  Will install a {@Code JBossService} for each configured service.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final JBossServiceXmlDescriptor serviceXmlDescriptor = context.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final JBossServiceXmlDescriptor serviceXmlDescriptor = phaseContext.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
         if(serviceXmlDescriptor == null) {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if(module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
 
         final ClassLoader classLoader = module.getClassLoader();
         final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
 
         final JBossServiceXmlDescriptor.ControllerMode controllerMode = serviceXmlDescriptor.getControllerMode();
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        final BatchBuilder batchBuilder = phaseContext.getBatchBuilder();
         for(final JBossServiceConfig serviceConfig : serviceConfigs) {
             addService(batchBuilder, serviceConfig, classLoaderValue);
         }

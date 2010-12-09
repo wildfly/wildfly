@@ -24,11 +24,10 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.jar.Manifest;
 
-import org.jboss.as.deployment.attachment.ManifestAttachment;
-import org.jboss.as.deployment.attachment.OSGiManifestAttachment;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.osgi.spi.util.BundleInfo;
 
 /**
@@ -40,17 +39,17 @@ import org.jboss.osgi.spi.util.BundleInfo;
 public class OSGiManifestAttachmentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGiManifestAttachment
-        Manifest manifest = OSGiManifestAttachment.getManifestAttachment(context);
+        Manifest manifest = phaseContext.getAttachment(Attachments.OSGI_MANIFEST);
         if (manifest != null)
             return;
 
         // Check whether this is an OSGi manifest
-        manifest = ManifestAttachment.getManifestAttachment(context);
+        manifest = phaseContext.getAttachment(Attachments.MANIFEST);
         if (BundleInfo.isValidateBundleManifest(manifest)) {
-            OSGiManifestAttachment.attachManifest(context, manifest);
+            phaseContext.putAttachment(Attachments.OSGI_MANIFEST, manifest);
         }
     }
 }

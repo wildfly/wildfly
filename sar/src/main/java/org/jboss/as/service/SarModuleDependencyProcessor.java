@@ -22,12 +22,13 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.module.ModuleDependency;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.deployment.module.ModuleDependencies;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -44,16 +45,16 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
      * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
      * to the deployment.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final JBossServiceXmlDescriptor serviceXmlDescriptor = context.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final JBossServiceXmlDescriptor serviceXmlDescriptor = phaseContext.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
         if(serviceXmlDescriptor == null) {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_LOGGING_ID, true, false, false));
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_MODULES_ID, true, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JBOSS_LOGGING_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JBOSS_MODULES_ID, false, false));
     }
 }

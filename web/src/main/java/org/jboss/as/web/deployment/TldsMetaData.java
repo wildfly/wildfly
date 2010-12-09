@@ -32,7 +32,7 @@ import org.jboss.metadata.web.spec.TldMetaData;
  */
 public class TldsMetaData {
 
-    public static final AttachmentKey<TldsMetaData> ATTACHMENT_KEY = new AttachmentKey<TldsMetaData>(TldsMetaData.class);
+    public static final AttachmentKey<TldsMetaData> ATTACHMENT_KEY = AttachmentKey.create(TldsMetaData.class);
 
     /**
      * Shared TLDs.

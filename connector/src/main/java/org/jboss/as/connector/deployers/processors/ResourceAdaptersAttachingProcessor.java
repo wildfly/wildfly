@@ -23,7 +23,8 @@
 package org.jboss.as.connector.deployers.processors;
 
 import static org.jboss.as.connector.deployers.processors.ResourceAdapterAttachment.attachResourceAdapters;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
@@ -42,7 +43,7 @@ public class ResourceAdaptersAttachingProcessor implements DeploymentUnitProcess
     }
 
     /** {@inheritDoc} */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        attachResourceAdapters(context, resourceAdapters);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        attachResourceAdapters(phaseContext, resourceAdapters);
     }
 }

@@ -22,12 +22,12 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
-import org.jboss.as.deployment.module.ModuleDependencies;
-import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.ModuleIdentifier;
@@ -51,12 +51,12 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
      * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
      * to the deployment.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      *
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final Index index = phaseContext.getAttachment(Attachments.ANNOTATION_INDEX);
         if (index == null) {
             return; // Skip if there is no annotation index
         }
@@ -64,8 +64,11 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
         if (index.getAnnotationTargets(MANAGED_BEAN_ANNOTATION_NAME) == null) {
             return; // Skip if there are no ManagedBean instances
         }
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAEE_API_ID, true, false, false));
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_LOGGING_ID, true, false, false));
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVASSIST_ID, true, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JAVAEE_API_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JBOSS_LOGGING_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JAVASSIST_ID, false, false));
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
     }
 }

@@ -22,15 +22,15 @@
 
 package org.jboss.as.deployment.processor;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.module.ModuleDependencies;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.module.ModuleDependency;
+import org.jboss.as.deployment.module.ResourceRoot;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * Deployment processor that adds required dependencies for executing service activators.
@@ -40,20 +40,23 @@ import org.jboss.vfs.VirtualFile;
 public class ServiceActivatorDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final String SERVICE_ACTIVATOR_PATH = "META-INF/services/" + ServiceActivator.class.getName();
-    private static final ModuleConfig.Dependency MSC_DEP = new ModuleConfig.Dependency(ModuleIdentifier.create("org.jboss.msc"), true, false, false);
+    private static final ModuleDependency MSC_DEP = new ModuleDependency(ModuleIdentifier.create("org.jboss.msc"), false, false);
 
     /**
      * Add the dependencies if the deployment contains a service activator loader entry.
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ResourceRoot deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if(deploymentRoot == null)
             return;
-        if(deploymentRoot.getChild(SERVICE_ACTIVATOR_PATH).exists()) {
-            context.putAttachment(ServiceActivatorMarker.ATTACHMENT_KEY, new ServiceActivatorMarker());
-            ModuleDependencies.addDependency(context, MSC_DEP);
+        if(deploymentRoot.getRoot().getChild(SERVICE_ACTIVATOR_PATH).exists()) {
+            phaseContext.putAttachment(ServiceActivatorMarker.ATTACHMENT_KEY, new ServiceActivatorMarker());
+            phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, MSC_DEP);
         }
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
     }
 }

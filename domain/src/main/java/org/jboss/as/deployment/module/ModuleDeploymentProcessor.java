@@ -25,7 +25,7 @@ package org.jboss.as.deployment.module;
 import java.io.IOException;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.DependencySpec;
@@ -44,35 +44,35 @@ import org.jboss.msc.service.ServiceController;
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
-    public static final AttachmentKey<Module> MODULE_ATTACHMENT_KEY = new AttachmentKey<Module>(Module.class);
+    public static final AttachmentKey<Module> MODULE_ATTACHMENT_KEY = AttachmentKey.create(Module.class);
 
 
     /**
      * Create a  module from the attached module config and attache the built module..
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(context.getAttachment(MODULE_ATTACHMENT_KEY) != null)
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(phaseContext.getAttachment(MODULE_ATTACHMENT_KEY) != null)
             return; // Skip it if someone else attached a module
 
-        final ModuleConfig moduleConfig = context.getAttachment(ModuleConfig.ATTACHMENT_KEY);
+        final ModuleConfig moduleConfig = phaseContext.getAttachment(ModuleConfig.ATTACHMENT_KEY);
         if(moduleConfig == null)
             return; // Skip it if no module is attached
 
         final ModuleIdentifier moduleIdentifier = moduleConfig.getIdentifier();
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
-        for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
+        for(ResourceRoot resource : moduleConfig.getResources()) {
             try {
                 specBuilder.addResourceRoot(new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRootName(), resource.getRoot(), resource.getMountHandle()));
             } catch(IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e);
             }
         }
-        final DeploymentModuleLoader deploymentModuleLoader = context.getAttachment(DeploymentModuleLoaderProcessor.ATTACHMENT_KEY);
-        final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
-        for(ModuleConfig.Dependency dependency : dependencies) {
+        final DeploymentModuleLoader deploymentModuleLoader = phaseContext.getAttachment(DeploymentModuleLoaderProcessor.ATTACHMENT_KEY);
+        final ModuleDependency[] dependencies = moduleConfig.getDependencies();
+        for(ModuleDependency dependency : dependencies) {
             DependencySpec depSpec = DependencySpec.createModuleDependencySpec(dependency.getIdentifier(), dependency.isExport(), dependency.isOptional());
             specBuilder.addDependency(depSpec);
         }
@@ -83,8 +83,8 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
         try {
             final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
-            context.putAttachment(MODULE_ATTACHMENT_KEY, module);
-            context.getServiceBuilder().addListener(new ModuleRemoveListener(deploymentModuleLoader, module));
+            phaseContext.putAttachment(MODULE_ATTACHMENT_KEY, module);
+            phaseContext.getServiceBuilder().addListener(new ModuleRemoveListener(deploymentModuleLoader, module));
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e);
         }

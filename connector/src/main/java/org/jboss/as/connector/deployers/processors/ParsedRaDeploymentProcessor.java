@@ -29,11 +29,11 @@ import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.annotations.Annotations;
@@ -65,20 +65,20 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     /**
      * Process a deployment for a Connector. Will install a {@Code
      * JBossService} for this ResourceAdapter.
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if(connectorXmlDescriptor == null) {
             return;  // Skip non ra deployments
         }
-        final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = context
+        final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = phaseContext
                 .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
 
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
 
         final ClassLoader classLoader = module.getClassLoader();
 
@@ -89,7 +89,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             // Annotation merging
             Annotations annotator = new Annotations();
             AnnotationRepository repository = new JandexAnnotationRepositoryImpl(
-                    context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY), classLoader);
+                    phaseContext.getAttachment(Attachments.ANNOTATION_INDEX), classLoader);
             cmd = annotator.merge(cmd, repository, classLoader);
 
             // Validate metadata
@@ -100,7 +100,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
             final ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module);
 
-            final ServiceTarget serviceTarget = context.getBatchBuilder();
+            final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
 
             // Create the service
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()), raDeployementService)

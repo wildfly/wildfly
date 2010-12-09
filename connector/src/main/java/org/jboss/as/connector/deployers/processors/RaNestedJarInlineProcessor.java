@@ -23,9 +23,11 @@
 package org.jboss.as.connector.deployers.processors;
 
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
+
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.NestedJarInlineProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -40,8 +42,8 @@ public class RaNestedJarInlineProcessor extends NestedJarInlineProcessor {
      *
      * {@inheritDoc}
      * */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 
@@ -50,6 +52,6 @@ public class RaNestedJarInlineProcessor extends NestedJarInlineProcessor {
             return;
         }
 
-        super.processDeployment(context);
+        super.deploy(phaseContext);
     }
 }

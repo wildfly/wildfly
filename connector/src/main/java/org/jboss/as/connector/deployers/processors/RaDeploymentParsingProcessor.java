@@ -29,7 +29,8 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.ra.Connector;
@@ -55,12 +56,12 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
     /**
      * Process a deployment for standard ra deployment files. Will parse the xml
      * file and attach an configuration discovered durring processing.
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
     @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
@@ -86,7 +87,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             URL url = root.toURI().toURL();
             String deploymentName = deploymentRoot.getName().substring(0, deploymentRoot.getName().indexOf(".rar"));
             ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
-            context.putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+            phaseContext.putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
 
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e);

@@ -36,7 +36,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public class WarMetaData {
 
-    public static final AttachmentKey<WarMetaData> ATTACHMENT_KEY = new AttachmentKey<WarMetaData>(WarMetaData.class);
+    public static final AttachmentKey<WarMetaData> ATTACHMENT_KEY = AttachmentKey.create(WarMetaData.class);
 
     /**
      * jboss-web.xml metadata.

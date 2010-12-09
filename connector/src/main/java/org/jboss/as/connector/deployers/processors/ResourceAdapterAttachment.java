@@ -32,7 +32,7 @@ import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
  * @author John Bailey
  */
 public class ResourceAdapterAttachment {
-    private static final AttachmentKey<ResourceAdapters> ATTACHMENT_KEY = new AttachmentKey<ResourceAdapters>(ResourceAdapters.class);
+    private static final AttachmentKey<ResourceAdapters> ATTACHMENT_KEY = AttachmentKey.create(ResourceAdapters.class);
 
     static ResourceAdapters getResourceAdaptersAttachment(final DeploymentUnitContext context) {
         return context.getAttachment(ATTACHMENT_KEY);

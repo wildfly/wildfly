@@ -25,9 +25,6 @@ package org.jboss.as.deployment;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;

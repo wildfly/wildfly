@@ -24,8 +24,8 @@ package org.jboss.as.osgi.deployment;
 
 import java.io.IOException;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.osgi.deployment.deployer.Deployment;
@@ -47,16 +47,16 @@ public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor
     // private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
-        Deployment deployment = OSGiDeploymentAttachment.getAttachment(context);
+        Deployment deployment = OSGiDeploymentAttachment.getAttachment(phaseContext);
         if (deployment != null)
             return;
 
         // Get the OSGi XService properties
         String resName = "META-INF/jbosgi-xservice.properties";
-        VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(context);
+        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
         VirtualFile xserviceFile = virtualFile.getChild(resName);
         if (xserviceFile.exists()) {
             try {
@@ -66,8 +66,8 @@ public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor
                 Version version = metadata.getBundleVersion();
                 deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
                 deployment.addAttachment(OSGiMetaData.class, metadata);
-                OSGiMetaDataAttachment.attachOSGiMetaData(context, metadata);
-                OSGiDeploymentAttachment.attachDeployment(context, deployment);
+                OSGiMetaDataAttachment.attachOSGiMetaData(phaseContext, metadata);
+                OSGiDeploymentAttachment.attachDeployment(phaseContext, deployment);
             } catch (IOException ex) {
                 throw new DeploymentUnitProcessingException("Cannot parse: " + xserviceFile);
             }

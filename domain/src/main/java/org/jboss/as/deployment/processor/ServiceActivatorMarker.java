@@ -30,5 +30,5 @@ import org.jboss.as.deployment.AttachmentKey;
  * @author John Bailey
  */
 public class ServiceActivatorMarker {
-    static final AttachmentKey<ServiceActivatorMarker> ATTACHMENT_KEY = new AttachmentKey<ServiceActivatorMarker>(ServiceActivatorMarker.class);
+    static final AttachmentKey<ServiceActivatorMarker> ATTACHMENT_KEY = AttachmentKey.create(ServiceActivatorMarker.class);
 }

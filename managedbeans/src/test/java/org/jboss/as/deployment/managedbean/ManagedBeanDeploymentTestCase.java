@@ -30,17 +30,12 @@ import javax.naming.Context;
 import javax.naming.LinkRef;
 
 import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanContainer;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanService;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanDeploymentProcessor;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
-import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextNames;

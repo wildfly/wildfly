@@ -38,7 +38,7 @@ public class SimpleAttachable implements Attachable {
         if (key == null) {
             return null;
         }
-        return key.getValueClass().cast(attachments.get(key));
+        return key.cast(attachments.get(key));
     }
 
     /** {@inheritDoc} */
@@ -46,7 +46,7 @@ public class SimpleAttachable implements Attachable {
         if (key == null) {
             throw new IllegalArgumentException("key is null");
         }
-        return key.getValueClass().cast(attachments.put(key, key.getValueClass().cast(value)));
+        return key.cast(attachments.put(key, key.cast(value)));
     }
 
     /** {@inheritDoc} */
@@ -54,6 +54,21 @@ public class SimpleAttachable implements Attachable {
         if (key == null) {
             return null;
         }
-        return key.getValueClass().cast(attachments.get(key));
+        return key.cast(attachments.remove(key));
+    }
+
+    /** {@inheritDoc} */
+    public <T> void addToAttachmentList(final AttachmentKey<AttachmentList<T>> key, final T value) {
+        if (key != null) {
+            final Map<AttachmentKey<?>, Object> attachments = this.attachments;
+            final AttachmentList<T> list = key.cast(attachments.get(key));
+            if (list == null) {
+                final AttachmentList<T> newList = new AttachmentList<T>(((ListAttachmentKey<T>) key).getValueClass());
+                attachments.put(key, newList);
+                newList.add(value);
+            } else {
+                list.add(value);
+            }
+        }
     }
 }

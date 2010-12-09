@@ -22,38 +22,33 @@
 
 package org.jboss.as.deployment.unit;
 
-import org.jboss.as.deployment.Attachable;
+import org.jboss.as.deployment.SimpleAttachable;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * The deployment unit processor context.  Maintains state pertaining to the current cycle
- * of deployment/undeployment.  This context object will be discarded when processing is
- * complete; data which must persist for the life of the deployment should be attached to
- * the {@link DeploymentUnitContext}.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DeploymentUnitProcessorContext extends Attachable {
+public final class DeploymentPhaseContextImpl extends SimpleAttachable implements DeploymentPhaseContext {
+    private final ServiceTarget serviceTarget;
+    private final ServiceRegistry serviceRegistry;
+    private final DeploymentUnitContext deploymentUnitContext;
 
-    /**
-     * Get the service target into which this phase should install services.
-     *
-     * @return the service target
-     */
-    ServiceTarget getServiceTarget();
+    public DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnitContext deploymentUnitContext) {
+        this.serviceTarget = serviceTarget;
+        this.serviceRegistry = serviceRegistry;
+        this.deploymentUnitContext = deploymentUnitContext;
+    }
 
-    /**
-     * Get the service registry for the container, which may be used to look up services.
-     *
-     * @return the service registry
-     */
-    ServiceRegistry getServiceRegistry();
+    public ServiceTarget getServiceTarget() {
+        return serviceTarget;
+    }
 
-    /**
-     * Get the persistent deployment unit context for this deployment unit.
-     *
-     * @return the deployment unit context
-     */
-    DeploymentUnitContext getDeploymentUnitContext();
+    public ServiceRegistry getServiceRegistry() {
+        return serviceRegistry;
+    }
+
+    public DeploymentUnitContext getDeploymentUnitContext() {
+        return deploymentUnitContext;
+    }
 }

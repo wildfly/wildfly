@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author John E. Bailey
  */
 public class NamespaceBindings {
-    public static final AttachmentKey<NamespaceBindings> ATTACHMENT_KEY = new AttachmentKey<NamespaceBindings>(NamespaceBindings.class);
+    public static final AttachmentKey<NamespaceBindings> ATTACHMENT_KEY = AttachmentKey.create(NamespaceBindings.class);
     private final ConcurrentMap<JndiName, Object> bindings = new ConcurrentHashMap<JndiName, Object>();
 
     /**

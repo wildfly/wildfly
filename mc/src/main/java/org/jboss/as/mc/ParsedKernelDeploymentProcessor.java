@@ -27,9 +27,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.modules.Module;
@@ -54,23 +54,23 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
      * Process a deployment for KernelDeployment confguration.
      * Will install a {@code MC bean} for each configured bean.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final KernelDeploymentXmlDescriptor kdXmlDescriptor = context.getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final KernelDeploymentXmlDescriptor kdXmlDescriptor = phaseContext.getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
         if(kdXmlDescriptor == null)
             return;
 
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if(module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
 
         final ClassLoader classLoader = module.getClassLoader();
         final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
 
         final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();
-        final ServiceTarget serviceTarget = context.getBatchBuilder();
+        final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
         for(final BeanMetaDataConfig beanConfig : beanConfigs) {
             addBean(serviceTarget, beanConfig, classLoaderValue);
         }

@@ -22,42 +22,49 @@
 
 package org.jboss.as.deployment.module;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.modules.ModuleIdentifier;
-
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.PathFilter;
 
 /**
- * A config object capturing the required information to construct a module.
- *
  * @author John E. Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ModuleConfig implements Serializable {
+public final class ModuleDependency implements Serializable {
 
-    public static final AttachmentKey<ModuleConfig> ATTACHMENT_KEY = AttachmentKey.create(ModuleConfig.class);
-
-    private static final long serialVersionUID = 210753378958448029L;
+    private static final long serialVersionUID = 2749276798703740853L;
 
     private final ModuleIdentifier identifier;
-    private final ModuleDependency[] dependencies;
-    private final ResourceRoot[] resources;
+    private final boolean export;
+    private final boolean optional;
+    private final List<PathFilter> importFilters = new ArrayList<PathFilter>();
+    private final List<PathFilter> exportFilters = new ArrayList<PathFilter>();
 
-    public ModuleConfig(final ModuleIdentifier identifier, final ModuleDependency[] dependencies, final ResourceRoot[] resources) {
+    public ModuleDependency(final ModuleIdentifier identifier, final boolean optional, final boolean export) {
         this.identifier = identifier;
-        this.dependencies = dependencies;
-        this.resources = resources;
+        this.optional = optional;
+        this.export = export;
     }
 
     public ModuleIdentifier getIdentifier() {
         return identifier;
     }
 
-    public ModuleDependency[] getDependencies() {
-        return dependencies;
+    public boolean isOptional() {
+        return optional;
     }
 
-    public ResourceRoot[] getResources() {
-        return resources;
+    public boolean isExport() {
+        return export;
+    }
+
+    public List<PathFilter> getImportFilters() {
+        return importFilters;
+    }
+
+    public List<PathFilter> getExportFilters() {
+        return exportFilters;
     }
 }

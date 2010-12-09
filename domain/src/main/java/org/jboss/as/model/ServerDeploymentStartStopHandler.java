@@ -29,11 +29,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.jar.Manifest;
 
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.DeploymentFailureListener;
 import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.ServerDeploymentRepository;
-import org.jboss.as.deployment.attachment.ManifestAttachment;
-import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
@@ -180,14 +179,13 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             // Create the deployment unit context
             final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
 
-            attachVirtualFile(deploymentUnitContext, deploymentRoot);
+            deploymentUnitContext.putAttachment(Attachments.DEPLOYMENT_ROOT, deploymentRoot);
             deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, handle);
 
             // Get the optional Manifest for this deployment
             try {
                 Manifest manifest = VFSUtils.getManifest(deploymentRoot);
-                if (manifest != null)
-                    ManifestAttachment.attachManifest(deploymentUnitContext, manifest);
+                if (manifest != null) deploymentUnitContext.putAttachment(Attachments.MANIFEST, manifest);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to get manifest for deployment " + deploymentRoot, e);
             }
@@ -200,7 +198,7 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             if(deploymentChain == null)
                 throw new RuntimeException("Failed determine the deployment chain for deployment root: " + deploymentRoot);
             try {
-                deploymentChain.processDeployment(deploymentUnitContext);
+                deploymentChain.deploy(deploymentUnitContext);
                 // FIXME install the service after the chain is complete
                 serviceBuilder.install();
                 deploymentSubBatch.install();

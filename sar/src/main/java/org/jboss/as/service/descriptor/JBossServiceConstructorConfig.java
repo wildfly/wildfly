@@ -20,40 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.attachment;
+package org.jboss.as.service.descriptor;
 
-import java.util.jar.Manifest;
-
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import java.io.Serializable;
 
 /**
- * Utility to help attach and retrieve an OSGi Manifest from a deployment context.
+ * Configuration object for a JBoss service constructor.
  *
- * @author Thomas.Diesler@jboss.com
- * @since 02-Dec-2010
+ * @author John E. Bailey
  */
-public class OSGiManifestAttachment {
-    public static final AttachmentKey<OSGiManifest> KEY = AttachmentKey.create(OSGiManifest.class);
+public class JBossServiceConstructorConfig  implements Serializable {
+    private static final long serialVersionUID = -4307592928958905408L;
 
-    public static void attachManifest(final DeploymentUnitContext context, final Manifest manifest) {
-        context.putAttachment(KEY, new OSGiManifest(manifest));
+    public static final Argument[] EMPTY_ARGS = {};
+    private Argument[] arguments = EMPTY_ARGS;
+
+    public Argument[] getArguments() {
+        return arguments;
     }
 
-    public static Manifest getManifestAttachment(final DeploymentUnitContext context) {
-        OSGiManifest value = context.getAttachment(KEY);
-        return value != null ? value.getManifest() : null;
+    public void setArguments(Argument[] arguments) {
+        this.arguments = arguments;
     }
 
-    static class OSGiManifest {
-        private Manifest manifest;
+    public static class Argument implements Serializable {
+        private static final long serialVersionUID = 7644229980407045584L;
 
-        OSGiManifest(Manifest manifest) {
-            this.manifest = manifest;
+        private final String value;
+        private final String type;
+
+        public Argument(final String type, final String value) {
+            this.value = value;
+            this.type = type;
         }
 
-        Manifest getManifest() {
-            return manifest;
+        public String getType() {
+            return type;
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 }

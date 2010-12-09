@@ -22,7 +22,8 @@
 
 package org.jboss.as.deployment.processor;
 
-import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -36,28 +37,25 @@ import org.jboss.vfs.util.SuffixMatchFilter;
 import java.io.InputStream;
 import java.util.List;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-
 /**
  * Deployment unit processor responsible for creating and attaching an annotation index for a deployment unit.
  *
  * @author John E. Bailey
  */
 public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
-    public static final AttachmentKey<Index> ATTACHMENT_KEY = new AttachmentKey<Index>(Index.class);
 
     /**
      * Process this deployment for annotations.  This will use an annotation indexer to create an index of all annotations
      * found in this deployment and attach it to the deployment unit context.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(context.getAttachment(ATTACHMENT_KEY) != null)
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(phaseContext.getAttachment(Attachments.ANNOTATION_INDEX) != null)
             return;
 
-        final VirtualFile virtualFile = getVirtualFileAttachment(context);
+        final VirtualFile virtualFile = phaseContext.getDeploymentUnitContext().getAttachment(Attachments.DEPLOYMENT_ROOT);
         final Indexer indexer = new Indexer();
         try {
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -71,9 +69,12 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                 }
             }
             final Index index = indexer.complete();
-            context.putAttachment(ATTACHMENT_KEY, index);
+            phaseContext.putAttachment(Attachments.ANNOTATION_INDEX, index);
         } catch(Throwable t) {
             throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
         }
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
     }
 }

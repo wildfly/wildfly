@@ -30,9 +30,10 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptorParser;
 import org.jboss.as.model.ParseResult;
@@ -59,11 +60,11 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      * Process a deployment for jboss-beans.xml files.
      * Will parse the xml file and attach an configuration discovered durring processing.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if(deploymentRoot == null || deploymentRoot.exists() == false)
             return;
@@ -86,7 +87,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             xmlMapper.parseDocument(result, reader);
             final KernelDeploymentXmlDescriptor xmlDescriptor = result.getResult();
             if(xmlDescriptor != null)
-                context.putAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                phaseContext.putAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
                 throw new DeploymentUnitProcessingException("Failed to parse MC beans xml [" + beansXmlFile + "]");
         } catch(Exception e) {

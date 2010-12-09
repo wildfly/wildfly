@@ -24,7 +24,8 @@ package org.jboss.as.deployment.module;
 
 import java.util.jar.Manifest;
 
-import org.jboss.as.deployment.attachment.ManifestAttachment;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -40,11 +41,11 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
     /**
      * Process the deployment root for module dependency information.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final Manifest manifest = ManifestAttachment.getManifestAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final Manifest manifest = phaseContext.getAttachment(Attachments.MANIFEST);
         if(manifest == null)
             return;
 
@@ -61,9 +62,12 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "optional");
-            ModuleConfig.Dependency dependency = new ModuleConfig.Dependency(dependencyId, true, optional, export);
-            ModuleDependencies.addDependency(context, dependency);
+            ModuleDependency dependency = new ModuleDependency(dependencyId, optional, export);
+            phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
         }
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
     }
 
     private boolean parseOptionalExportParams(final String[] parts, final String expected) {

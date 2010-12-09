@@ -29,7 +29,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
  * @author John Bailey
  */
 public class WarDeploymentMarker {
-    private static final AttachmentKey<WarDeploymentMarker> ATTACHMENT_KEY = new AttachmentKey<WarDeploymentMarker>(WarDeploymentMarker.class);
+    private static final AttachmentKey<WarDeploymentMarker> ATTACHMENT_KEY = AttachmentKey.create(WarDeploymentMarker.class);
 
     private static final WarDeploymentMarker INSTANCE = new WarDeploymentMarker();
 

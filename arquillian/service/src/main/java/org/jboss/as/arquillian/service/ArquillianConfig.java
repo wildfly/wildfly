@@ -34,7 +34,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
  */
 class ArquillianConfig {
 
-    static final AttachmentKey<ArquillianConfig> KEY = new AttachmentKey<ArquillianConfig>(ArquillianConfig.class);
+    static final AttachmentKey<ArquillianConfig> KEY = AttachmentKey.create(ArquillianConfig.class);
 
     private DeploymentUnitContext context;
     private List<String> testClasses = new ArrayList<String>();

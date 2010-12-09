@@ -33,7 +33,7 @@ import org.jboss.as.deployment.AttachmentKey;
  */
 public class ScisMetaData {
 
-    public static final AttachmentKey<ScisMetaData> ATTACHMENT_KEY = new AttachmentKey<ScisMetaData>(ScisMetaData.class);
+    public static final AttachmentKey<ScisMetaData> ATTACHMENT_KEY = AttachmentKey.create(ScisMetaData.class);
 
     /**
      * SCIs.

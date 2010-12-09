@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
@@ -42,17 +42,17 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
     /**
      * If the deployment has a module attached it will ask the module to load the ServiceActivator services.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(context.getAttachment(ServiceActivatorMarker.ATTACHMENT_KEY) == null)
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if(phaseContext.getAttachment(ServiceActivatorMarker.ATTACHMENT_KEY) == null)
             return; // Skip it if it has not been marked
 
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null)
             return; // Skip deployments with no module
 
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(context.getBatchBuilder(), null /* TODO: add a service registry to DeploymentUnitContext */);
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(phaseContext.getBatchBuilder(), null /* TODO: add a service registry to DeploymentUnitContext */);
         for(ServiceActivator serviceActivator : module.loadService(ServiceActivator.class)) {
             try {
                 serviceActivator.activate(serviceActivatorContext);

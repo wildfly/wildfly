@@ -24,7 +24,6 @@ package org.jboss.as.deployment.chain;
 
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
-import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;

@@ -34,7 +34,7 @@ import java.io.Closeable;
  * @author Jason T. Greene
  */
 public class MountHandle implements Closeable {
-    public static final AttachmentKey<MountHandle> ATTACHMENT_KEY = new AttachmentKey<MountHandle>(MountHandle.class);
+    public static final AttachmentKey<MountHandle> ATTACHMENT_KEY = AttachmentKey.create(MountHandle.class);
 
     private final Closeable handle;
 

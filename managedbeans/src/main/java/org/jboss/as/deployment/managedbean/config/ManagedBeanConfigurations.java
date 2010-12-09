@@ -36,7 +36,7 @@ import java.util.Map;
  * @author John E. Bailey
  */
 public class ManagedBeanConfigurations implements Serializable{
-    public static final AttachmentKey<ManagedBeanConfigurations> ATTACHMENT_KEY = new AttachmentKey<ManagedBeanConfigurations>(ManagedBeanConfigurations.class);
+    public static final AttachmentKey<ManagedBeanConfigurations> ATTACHMENT_KEY = AttachmentKey.create(ManagedBeanConfigurations.class);
     private static final long serialVersionUID = 821466962862896774L;
 
     /* Map of managed bean configurations mapped by type */

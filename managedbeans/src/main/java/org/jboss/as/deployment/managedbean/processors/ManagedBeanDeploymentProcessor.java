@@ -51,6 +51,7 @@ import org.jboss.as.deployment.naming.JndiName;
 import org.jboss.as.deployment.naming.ModuleContextConfig;
 import org.jboss.as.deployment.naming.NamingLookupValue;
 import org.jboss.as.deployment.naming.ResourceBinder;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -71,26 +72,26 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
     /**
      * Process the deployment and add a managed bean service for each managed bean configuration in the deployment.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final ManagedBeanConfigurations managedBeanConfigurations = context.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ManagedBeanConfigurations managedBeanConfigurations = phaseContext.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY);
         if(managedBeanConfigurations == null) {
             return; // Skip deployments with no managed beans.
         }
-        final ModuleContextConfig moduleContext = context.getAttachment(ModuleContextConfig.ATTACHMENT_KEY);
+        final ModuleContextConfig moduleContext = phaseContext.getAttachment(ModuleContextConfig.ATTACHMENT_KEY);
         if(moduleContext == null) {
             throw new DeploymentUnitProcessingException("Unable to deploy managed beans without a module naming context");
         }
 
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        final BatchBuilder batchBuilder = phaseContext.getBatchBuilder();
 
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         final ClassLoader classLoader = module.getClassLoader();
 
         for(ManagedBeanConfiguration managedBeanConfiguration : managedBeanConfigurations.getConfigurations().values()) {
-            processManagedBean(context, classLoader, moduleContext, managedBeanConfiguration, batchBuilder);
+            processManagedBean(phaseContext, classLoader, moduleContext, managedBeanConfiguration, batchBuilder);
         }
     }
 

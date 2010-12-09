@@ -20,27 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.attachment;
+package org.jboss.as.server.deployment;
 
-import java.util.jar.Manifest;
-
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import java.util.EnumMap;
+import java.util.List;
+import org.jboss.as.deployment.Phase;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 
 /**
- * Utility to help attach and retrieve a Manifest from a deployment context.
+ * The deployer chains service value object.
  *
- * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ManifestAttachment {
-    public static final AttachmentKey<Manifest> KEY = AttachmentKey.create(Manifest.class);
+final class DeployerChains {
+    private final EnumMap<Phase, List<DeploymentUnitProcessor>> phases;
 
-    public static void attachManifest(final DeploymentUnitContext context, final Manifest manifest) {
-        context.putAttachment(KEY, manifest);
+    DeployerChains(final EnumMap<Phase, List<DeploymentUnitProcessor>> phases) {
+        this.phases = phases;
     }
 
-    public static Manifest getManifestAttachment(final DeploymentUnitContext context) {
-        return context.getAttachment(KEY);
+    List<DeploymentUnitProcessor> getChain(Phase phase) {
+        return phases.get(phase);
     }
 }

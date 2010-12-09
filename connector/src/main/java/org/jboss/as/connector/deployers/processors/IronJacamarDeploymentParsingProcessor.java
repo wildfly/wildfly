@@ -27,9 +27,12 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
 import java.io.InputStream;
 
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
+import org.jboss.as.deployment.Attachments;
+import org.jboss.as.deployment.module.ResourceRoot;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.vfs.VFSUtils;
@@ -55,12 +58,13 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
     /**
      * Process a deployment for iron-jacamar.xml files. Will parse the xml file
      * and attach metadata discovered durring processing.
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
     @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final ResourceRoot resourceRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = resourceRoot.getRoot();
 
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
@@ -81,7 +85,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
             result = (new IronJacamarParser()).parse(xmlStream);
             if (result != null) {
                 IronJacamarXmlDescriptor xmlDescriptor = new IronJacamarXmlDescriptor(result);
-                context.putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                phaseContext.putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             } else
                 throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
         } catch (Exception e) {
@@ -89,5 +93,8 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         } finally {
             VFSUtils.safeClose(xmlStream);
         }
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
     }
 }

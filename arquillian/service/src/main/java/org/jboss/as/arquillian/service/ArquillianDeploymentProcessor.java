@@ -22,15 +22,16 @@
 
 package org.jboss.as.arquillian.service;
 
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -48,25 +49,28 @@ public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
     private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("arquillian", "deployment", "tracker");
 
     @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        ArquillianConfig arqConfig = context.getAttachment(ArquillianConfig.KEY);
+        ArquillianConfig arqConfig = phaseContext.getAttachment(ArquillianConfig.KEY);
         if (arqConfig == null)
             return;
 
-        BatchBuilder batchBuilder = context.getBatchBuilder();
+        ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         DeploymentTrackerService tracker = new DeploymentTrackerService(arqConfig);
-        ServiceBuilder<Object> serviceBuilder = batchBuilder.addService(SERVICE_NAME_BASE.append(context.getName()), tracker);
+        ServiceBuilder<Object> serviceBuilder = serviceTarget.addService(SERVICE_NAME_BASE.append(phaseContext.getDeploymentUnitContext().getName()), tracker);
         serviceBuilder.addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, tracker.injectedArquillianService);
 
         // If this is an OSGi deployment, add a dependency on the associated service
-        Deployment osgiDeployment = OSGiDeploymentAttachment.getAttachment(context);
+        Deployment osgiDeployment = OSGiDeploymentAttachment.getAttachment(phaseContext.getDeploymentUnitContext());
         if (osgiDeployment != null) {
-            ServiceName serviceName = OSGiDeploymentService.getServiceName(context.getName());
+            ServiceName serviceName = OSGiDeploymentService.getServiceName(phaseContext.getDeploymentUnitContext().getName());
             serviceBuilder.addDependency(serviceName);
             osgiDeployment.setAutoStart(false);
         }
         serviceBuilder.install();
+    }
+
+    public void undeploy(final DeploymentUnitContext context) {
     }
 
     private class DeploymentTrackerService implements Service<Object>{

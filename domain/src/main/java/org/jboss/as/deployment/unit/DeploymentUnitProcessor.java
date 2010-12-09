@@ -22,8 +22,6 @@
 
 package org.jboss.as.deployment.unit;
 
-import org.jboss.msc.service.ServiceName;
-
 /**
  * A deployment processor.  Instances of this interface represent a step in the deployer chain.  They may perform
  * a variety of tasks, including (but not limited to):
@@ -37,11 +35,26 @@ import org.jboss.msc.service.ServiceName;
  *
  */
 public interface DeploymentUnitProcessor {
+
     /**
-     * Process the deployment unit.
+     * Perform a single step in processing the deployment phase.  The resulting state after executing this method
+     * should be that either the method completes normally and all changes are made, or an exception is thrown
+     * and all changes made in this method are reverted such that the original pre-invocation state is restored.
+     * <p>
+     * Data stored on the phase context only exists until the end of the phase.  The deployment unit context
+     * which is persistent is available via {@code context.getDeploymentUnitContext()}.
      *
-     * @param context the deployment unit context
+     * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException if an error occurs during processing
      */
-    void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException;
+    void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException;
+
+    /**
+     * Undo the deployment processing.  Any exceptions thrown are logged and ignored.  Implementations of this
+     * method cannot assume that the deployment process has (or has not) proceeded beyond the current processor, nor can they
+     * assume that the {@code undeploy()} method will be called from the same thread as the {@code deploy()} method.
+     *
+     * @param context the deployment unit context
+     */
+    void undeploy(DeploymentUnitContext context);
 }
