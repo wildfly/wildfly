@@ -23,7 +23,7 @@
 package org.jboss.as.arquillian.service;
 
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
@@ -71,7 +71,7 @@ public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
         serviceBuilder.install();
     }
 
-    public void undeploy(final DeploymentUnitContext context) {
+    public void undeploy(final DeploymentUnit context) {
         final ServiceName serviceName = SERVICE_NAME_BASE.append(context.getName());
         final ServiceController<?> controller = context.getServiceRegistry().getService(serviceName);
         if(controller != null) {

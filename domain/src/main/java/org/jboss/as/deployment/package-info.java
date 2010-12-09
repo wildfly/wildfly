@@ -46,7 +46,7 @@
  *   deployment unit into actual deployment items.  No service batch is active during this phase.<ol>
  *     <li><b>Deployment Processing.</b>  In this phase, the chain of {@link DeploymentUnitProcessor}s which is associated
  *     with the deployment unit type are executed over the deployment unit to parse any descriptors, add them to the
- *     {@link DeploymentUnitContext}, transform them, and/or convert them into {@link DeploymentItem}s.  These {@code DeploymentItem}s
+ *     {@link org.jboss.as.deployment.unit.DeploymentUnit}, transform them, and/or convert them into {@link DeploymentItem}s.  These {@code DeploymentItem}s
  *     represent the deployed state of the deployment unit.</li>
  *   </ol></li>
  *   <li><b>Phase 3: Installation.</b>  In this phase the deployment items are actually executed and added to a service
@@ -58,5 +58,4 @@
  */
 package org.jboss.as.deployment;
 
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

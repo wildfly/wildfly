@@ -23,7 +23,7 @@
 package org.jboss.as.connector.deployers.processors;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 
 /**
@@ -34,11 +34,11 @@ import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 public class ResourceAdapterAttachment {
     private static final AttachmentKey<ResourceAdapters> ATTACHMENT_KEY = AttachmentKey.create(ResourceAdapters.class);
 
-    static ResourceAdapters getResourceAdaptersAttachment(final DeploymentUnitContext context) {
+    static ResourceAdapters getResourceAdaptersAttachment(final DeploymentUnit context) {
         return context.getAttachment(ATTACHMENT_KEY);
     }
 
-    static void attachResourceAdapters(final DeploymentUnitContext context, final ResourceAdapters resourceAdapters) {
+    static void attachResourceAdapters(final DeploymentUnit context, final ResourceAdapters resourceAdapters) {
         context.putAttachment(ATTACHMENT_KEY, resourceAdapters);
     }
 }

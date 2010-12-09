@@ -32,7 +32,7 @@ import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.datasources.DataSourceDeploymentService;
 import org.jboss.as.connector.subsystems.datasources.JDBCRARDeployService;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
@@ -133,7 +133,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(DeploymentUnitContext context) {
+    public void undeploy(DeploymentUnit context) {
         final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if(connectorXmlDescriptor == null) {
             return;

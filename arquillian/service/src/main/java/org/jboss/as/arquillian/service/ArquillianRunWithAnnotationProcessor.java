@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.jandex.AnnotationTarget;
@@ -56,7 +56,7 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
         if (targets == null || targets.isEmpty())
             return; // Skip if there are no @RunWith annotations
 
-        final DeploymentUnitContext deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
         ArquillianConfig arqConfig = new ArquillianConfig(deploymentUnitContext);
         deploymentUnitContext.putAttachment(ArquillianConfig.KEY, arqConfig);
 
@@ -69,7 +69,7 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
         }
     }
 
-    public void undeploy(final DeploymentUnitContext context) {
+    public void undeploy(final DeploymentUnit context) {
         context.removeAttachment(ArquillianConfig.KEY);
     }
 }

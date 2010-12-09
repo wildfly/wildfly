@@ -34,7 +34,7 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
@@ -79,7 +79,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit context) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = context.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null) {

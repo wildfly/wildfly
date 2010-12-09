@@ -25,7 +25,7 @@ package org.jboss.as.osgi.deployment;
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceRegistry;
@@ -56,7 +56,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnitContext deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
 
         // Check if we already have an OSGi deployment
         Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnitContext);
@@ -108,7 +108,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    public void undeploy(DeploymentUnitContext context) {
+    public void undeploy(DeploymentUnit context) {
         OSGiDeploymentService.removeService(context);
     }
 }

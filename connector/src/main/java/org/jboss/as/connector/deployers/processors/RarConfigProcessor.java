@@ -3,7 +3,7 @@ package org.jboss.as.connector.deployers.processors;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.ModuleDependency;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
@@ -42,6 +42,6 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
         phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(COMMON_CORE_ID, false, false));
     }
 
-    public void undeploy(final DeploymentUnitContext context) {
+    public void undeploy(final DeploymentUnit context) {
     }
 }

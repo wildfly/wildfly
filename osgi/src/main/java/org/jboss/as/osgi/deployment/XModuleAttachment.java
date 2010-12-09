@@ -23,7 +23,7 @@
 package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.osgi.resolver.XModule;
 
 /**
@@ -34,11 +34,11 @@ import org.jboss.osgi.resolver.XModule;
 public class XModuleAttachment {
     public static final AttachmentKey<XModule> KEY = AttachmentKey.create(XModule.class);
 
-    public static void attachXModule(final DeploymentUnitContext context, final XModule metadata) {
+    public static void attachXModule(final DeploymentUnit context, final XModule metadata) {
         context.putAttachment(KEY, metadata);
     }
 
-    public static XModule getXModuleAttachment(final DeploymentUnitContext context) {
+    public static XModule getXModuleAttachment(final DeploymentUnit context) {
         return context.getAttachment(KEY);
     }
 }

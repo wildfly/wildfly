@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.naming;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -44,7 +44,7 @@ public class NamespaceBindings {
      * @param context The deployment context
      * @return The existing namespace bindings, or a new instance if they don't already exist.
      */
-    public static NamespaceBindings getNamespaceBindings(final DeploymentUnitContext context) {
+    public static NamespaceBindings getNamespaceBindings(final DeploymentUnit context) {
         NamespaceBindings namespaceBindings = context.getAttachment(ATTACHMENT_KEY);
         if(namespaceBindings == null) {
             namespaceBindings = new NamespaceBindings();

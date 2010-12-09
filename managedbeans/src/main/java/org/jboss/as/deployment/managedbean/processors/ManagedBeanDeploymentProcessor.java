@@ -52,11 +52,10 @@ import org.jboss.as.deployment.naming.ModuleContextConfig;
 import org.jboss.as.deployment.naming.NamingLookupValue;
 import org.jboss.as.deployment.naming.ResourceBinder;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -96,10 +95,10 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(DeploymentUnitContext context) {
+    public void undeploy(DeploymentUnit context) {
     }
 
-    private void processManagedBean(final DeploymentUnitContext deploymentContext, final ClassLoader classLoader, final ModuleContextConfig moduleContext, final ManagedBeanConfiguration managedBeanConfiguration, final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+    private void processManagedBean(final DeploymentUnit deploymentContext, final ClassLoader classLoader, final ModuleContextConfig moduleContext, final ManagedBeanConfiguration managedBeanConfiguration, final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
         final Class<?> beanClass = managedBeanConfiguration.getType();
         final String managedBeanName = managedBeanConfiguration.getName();
 
@@ -149,7 +148,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         return new ManagedBeanService<T>(new ManagedBeanContainer<T>(beanClass, classLoader, managedBeanConfiguration.getPostConstructMethods(), managedBeanConfiguration.getPreDestroyMethods(), resourceInjections, interceptors));
     }
 
-    private <T> ResourceInjection<T> processResource(final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final Class<T> valueType, final ResourceConfiguration resourceConfiguration, final ServiceTarget serviceTarget, final ServiceBuilder<?> serviceBuilder, final ServiceName beanContextServiceName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
+    private <T> ResourceInjection<T> processResource(final DeploymentUnit deploymentContext, final ModuleContextConfig moduleContext, final Class<T> valueType, final ResourceConfiguration resourceConfiguration, final ServiceTarget serviceTarget, final ServiceBuilder<?> serviceBuilder, final ServiceName beanContextServiceName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
         final JndiName localContextName = managedBeanContextJndiName.append(resourceConfiguration.getLocalContextName());
         final String targetContextName = resourceConfiguration.getTargetContextName();
 
@@ -198,7 +197,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private <T> ManagedBeanInterceptor<T> processInterceptor(final Class<T> interceptorType, final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final InterceptorConfiguration interceptorConfiguration, final ServiceTarget serviceTarget, final ServiceBuilder<?> serviceBuilder, final ServiceName managedBeanContextName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
+    private <T> ManagedBeanInterceptor<T> processInterceptor(final Class<T> interceptorType, final DeploymentUnit deploymentContext, final ModuleContextConfig moduleContext, final InterceptorConfiguration interceptorConfiguration, final ServiceTarget serviceTarget, final ServiceBuilder<?> serviceBuilder, final ServiceName managedBeanContextName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
         final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
 
         for (ResourceConfiguration resourceConfiguration : interceptorConfiguration.getResourceConfigurations()) {

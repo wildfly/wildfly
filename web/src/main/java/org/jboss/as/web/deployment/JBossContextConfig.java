@@ -23,7 +23,6 @@ package org.jboss.as.web.deployment;
 
 // $Id: JBossContextConfig.java 104399 2010-05-03 20:50:38Z remy.maucherat@jboss.com $
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,8 +55,7 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.jboss.annotation.javaee.Icon;
-import org.jboss.as.deployment.module.TempFileProviderService;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
@@ -103,7 +101,6 @@ import org.jboss.metadata.web.spec.VariableMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
-import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -112,7 +109,7 @@ import org.jboss.vfs.VirtualFile;
 public class JBossContextConfig extends ContextConfig {
     private static Logger log = Logger.getLogger(JBossContextConfig.class);
 
-    private DeploymentUnitContext deploymentUnitContext = null;
+    private DeploymentUnit deploymentUnitContext = null;
     private Set<String> overlays = new HashSet<String>();
 
     /**
@@ -120,7 +117,7 @@ public class JBossContextConfig extends ContextConfig {
      * Creates a new instance of {@code JBossContextConfig}.
      * </p>
      */
-    public JBossContextConfig(DeploymentUnitContext deploymentUnitContext) {
+    public JBossContextConfig(DeploymentUnit deploymentUnitContext) {
         super();
         this.deploymentUnitContext = deploymentUnitContext;
     }

@@ -23,7 +23,7 @@
 package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.osgi.deployment.deployer.Deployment;
 
 /**
@@ -34,11 +34,11 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 public class OSGiDeploymentAttachment {
     public static final AttachmentKey<Deployment> KEY = AttachmentKey.create(Deployment.class);
 
-    public static void attachDeployment(final DeploymentUnitContext context, final Deployment dep) {
+    public static void attachDeployment(final DeploymentUnit context, final Deployment dep) {
         context.putAttachment(KEY, dep);
     }
 
-    public static Deployment getAttachment(final DeploymentUnitContext context) {
+    public static Deployment getAttachment(final DeploymentUnit context) {
         return context.getAttachment(KEY);
     }
 }

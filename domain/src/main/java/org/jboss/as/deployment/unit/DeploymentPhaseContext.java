@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceTarget;
  * The deployment unit processor context.  Maintains state pertaining to the current cycle
  * of deployment/undeployment.  This context object will be discarded when processing is
  * complete; data which must persist for the life of the deployment should be attached to
- * the {@link DeploymentUnitContext}.
+ * the {@link DeploymentUnit}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -55,5 +55,5 @@ public interface DeploymentPhaseContext extends Attachable {
      *
      * @return the deployment unit context
      */
-    DeploymentUnitContext getDeploymentUnitContext();
+    DeploymentUnit getDeploymentUnitContext();
 }

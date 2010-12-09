@@ -32,9 +32,9 @@ import org.jboss.msc.service.ServiceTarget;
 public final class DeploymentPhaseContextImpl extends SimpleAttachable implements DeploymentPhaseContext {
     private final ServiceTarget serviceTarget;
     private final ServiceRegistry serviceRegistry;
-    private final DeploymentUnitContext deploymentUnitContext;
+    private final DeploymentUnit deploymentUnitContext;
 
-    public DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnitContext deploymentUnitContext) {
+    public DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnit deploymentUnitContext) {
         this.serviceTarget = serviceTarget;
         this.serviceRegistry = serviceRegistry;
         this.deploymentUnitContext = deploymentUnitContext;
@@ -48,7 +48,7 @@ public final class DeploymentPhaseContextImpl extends SimpleAttachable implement
         return serviceRegistry;
     }
 
-    public DeploymentUnitContext getDeploymentUnitContext() {
+    public DeploymentUnit getDeploymentUnitContext() {
         return deploymentUnitContext;
     }
 }

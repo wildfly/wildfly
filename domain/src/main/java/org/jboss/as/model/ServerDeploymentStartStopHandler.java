@@ -34,8 +34,8 @@ import org.jboss.as.deployment.DeploymentFailureListener;
 import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.module.MountHandle;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
+import org.jboss.as.deployment.unit.DeploymentUnit;
+import org.jboss.as.deployment.unit.DeploymentUnitImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -177,7 +177,7 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             deploymentSubBatch.addListener(new DeploymentFailureListener(deploymentServiceName));
 
             // Create the deployment unit context
-            final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
+            final DeploymentUnit deploymentUnitContext = new DeploymentUnitImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
 
             deploymentUnitContext.putAttachment(Attachments.DEPLOYMENT_ROOT, deploymentRoot);
             deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, handle);

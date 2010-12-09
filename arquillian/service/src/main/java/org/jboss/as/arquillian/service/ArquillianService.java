@@ -38,7 +38,7 @@ import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.service.BundleContextService;
@@ -183,7 +183,7 @@ public class ArquillianService implements Service<ArquillianService> {
             ArquillianConfig arqConfig = getConfig(className);
             if (arqConfig != null) {
                 if (arqConfig.getTestClasses().contains(className)) {
-                    DeploymentUnitContext context = arqConfig.getDeploymentUnitContext();
+                    DeploymentUnit context = arqConfig.getDeploymentUnitContext();
                     Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
                     if (module != null) {
                         result = module.getClassLoader().loadClass(className);

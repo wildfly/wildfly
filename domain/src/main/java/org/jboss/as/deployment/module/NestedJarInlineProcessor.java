@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
@@ -88,7 +88,7 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
         phaseContext.getDeploymentUnitContext().putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
     }
 
-    public void undeploy(final DeploymentUnitContext context) {
+    public void undeploy(final DeploymentUnit context) {
         final NestedMounts nestedMounts = context.removeAttachment(NestedMounts.ATTACHMENT_KEY);
         if (nestedMounts != null) {
             VFSUtils.safeClose(nestedMounts.getClosables());

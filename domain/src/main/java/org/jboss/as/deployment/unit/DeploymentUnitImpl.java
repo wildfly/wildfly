@@ -30,19 +30,27 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John E. Bailey
  */
-public class DeploymentUnitContextImpl extends SimpleAttachable implements DeploymentUnitContext {
+public class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
+    private final DeploymentUnit parent;
     private final String name;
     private final ServiceRegistry serviceRegistry;
 
     /**
      * Construct a new instance.
      *
+     * @param parent the parent (enclosing) deployment unit, if any
      * @param name the deployment unit name
      * @param serviceRegistry the service registry
      */
-    public DeploymentUnitContextImpl(final String name, final ServiceRegistry serviceRegistry) {
+    public DeploymentUnitImpl(final DeploymentUnit parent, final String name, final ServiceRegistry serviceRegistry) {
+        this.parent = parent;
         this.name = name;
         this.serviceRegistry = serviceRegistry;
+    }
+
+    /** {@inheritDoc} */
+    public DeploymentUnit getParent() {
+        return parent;
     }
 
     /** {@inheritDoc} */
@@ -53,5 +61,14 @@ public class DeploymentUnitContextImpl extends SimpleAttachable implements Deplo
     /** {@inheritDoc} */
     public ServiceRegistry getServiceRegistry() {
         return serviceRegistry;
+    }
+
+    /** {@inheritDoc} */
+    public String toString() {
+        if (parent != null) {
+            return String.format("subdeployment \"%s\" of %s", name, parent);
+        } else {
+            return String.format("deployment \"%s\"", name);
+        }
     }
 }

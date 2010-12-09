@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,7 +45,7 @@ public class ModuleDependencies {
      * @param context    The DeploymentUnitContext
      * @param dependency The dependency to add
      */
-    public static void addDependency(final DeploymentUnitContext context, final ModuleDependency dependency) {
+    public static void addDependency(final DeploymentUnit context, final ModuleDependency dependency) {
         ModuleDependencies dependencies = context.getAttachment(KEY);
         if(dependencies == null) {
             dependencies = new ModuleDependencies();
@@ -54,7 +54,7 @@ public class ModuleDependencies {
         dependencies.dependencies.add(dependency);
     }
 
-    public static ModuleDependencies getAttachedDependencies(DeploymentUnitContext context) {
+    public static ModuleDependencies getAttachedDependencies(DeploymentUnit context) {
         return context.getAttachment(KEY);
     }
 

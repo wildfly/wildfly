@@ -27,7 +27,7 @@ import java.util.jar.Manifest;
 
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.vfs.VFSUtils;
@@ -52,7 +52,7 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Do nothing if the manifest is already available
-        final DeploymentUnitContext deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
         Manifest manifest = deploymentUnitContext.getAttachment(Attachments.MANIFEST);
         if (manifest != null)
             return;
@@ -66,7 +66,7 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(final DeploymentUnitContext context) {
+    public void undeploy(final DeploymentUnit context) {
         context.removeAttachment(Attachments.MANIFEST);
     }
 }

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 
 /**
  * [TODO]
@@ -36,14 +36,14 @@ class ArquillianConfig {
 
     static final AttachmentKey<ArquillianConfig> KEY = AttachmentKey.create(ArquillianConfig.class);
 
-    private DeploymentUnitContext context;
+    private DeploymentUnit context;
     private List<String> testClasses = new ArrayList<String>();
 
-    ArquillianConfig(DeploymentUnitContext context){
+    ArquillianConfig(DeploymentUnit context){
         this.context = context;
     }
 
-    DeploymentUnitContext getDeploymentUnitContext() {
+    DeploymentUnit getDeploymentUnitContext() {
         return context;
     }
 

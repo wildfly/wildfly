@@ -23,7 +23,7 @@
 package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.osgi.spi.util.BundleInfo;
 
 /**
@@ -34,15 +34,15 @@ import org.jboss.osgi.spi.util.BundleInfo;
 public class BundleInfoAttachment {
     public static final AttachmentKey<BundleInfo> KEY = AttachmentKey.create(BundleInfo.class);
 
-    public static void attachBundleInfo(final DeploymentUnitContext context, final BundleInfo info) {
+    public static void attachBundleInfo(final DeploymentUnit context, final BundleInfo info) {
         context.putAttachment(KEY, info);
     }
 
-    public static BundleInfo getBundleInfoAttachment(final DeploymentUnitContext context) {
+    public static BundleInfo getBundleInfoAttachment(final DeploymentUnit context) {
         return context.getAttachment(KEY);
     }
 
-    public static void detachBundleInfo(final DeploymentUnitContext context) {
+    public static void detachBundleInfo(final DeploymentUnit context) {
         context.removeAttachment(KEY);
     }
 }

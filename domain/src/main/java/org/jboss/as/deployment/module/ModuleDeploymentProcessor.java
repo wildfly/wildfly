@@ -26,7 +26,7 @@ import java.io.IOException;
 
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.DependencySpec;
@@ -91,7 +91,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(DeploymentUnitContext context) {
+    public void undeploy(DeploymentUnit context) {
     }
 
     static class ModuleRemoveListener extends AbstractServiceListener<Void> {

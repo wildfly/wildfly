@@ -28,7 +28,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.FrameworkService;
@@ -36,7 +36,6 @@ import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -78,11 +77,11 @@ public class OSGiDeploymentService implements Service<Deployment> {
     }
 
     public static void addService(DeploymentPhaseContext context) {
-        final DeploymentUnitContext deploymentUnitContext = context.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = context.getDeploymentUnitContext();
         addService(context.getServiceTarget(), OSGiDeploymentAttachment.getAttachment(deploymentUnitContext), deploymentUnitContext.getName());
     }
 
-    public static void removeService(DeploymentUnitContext context) {
+    public static void removeService(DeploymentUnit context) {
         final ServiceName serviceName = getServiceName(context.getName());
         final ServiceController<?> serviceController = context.getServiceRegistry().getService(serviceName);
         if(serviceController != null) {

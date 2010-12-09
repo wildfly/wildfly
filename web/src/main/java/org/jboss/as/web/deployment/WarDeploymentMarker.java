@@ -23,7 +23,7 @@
 package org.jboss.as.web.deployment;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 
 /**
  * @author John Bailey
@@ -33,12 +33,12 @@ public class WarDeploymentMarker {
 
     private static final WarDeploymentMarker INSTANCE = new WarDeploymentMarker();
 
-    static void markDeployment(final DeploymentUnitContext context) {
+    static void markDeployment(final DeploymentUnit context) {
         context.putAttachment(ATTACHMENT_KEY, INSTANCE);
     }
 
 
-    static boolean isWarDeployment(final DeploymentUnitContext context) {
+    static boolean isWarDeployment(final DeploymentUnit context) {
         return context.getAttachment(ATTACHMENT_KEY) != null;
     }
 }

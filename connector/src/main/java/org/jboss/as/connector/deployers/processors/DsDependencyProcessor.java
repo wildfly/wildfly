@@ -26,9 +26,8 @@ import java.util.List;
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.module.ModuleDependency;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
@@ -116,6 +115,6 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(final DeploymentUnitContext context) {
+    public void undeploy(final DeploymentUnit context) {
     }
 }

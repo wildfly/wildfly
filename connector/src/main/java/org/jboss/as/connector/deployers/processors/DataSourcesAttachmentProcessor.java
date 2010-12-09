@@ -25,7 +25,7 @@ package org.jboss.as.connector.deployers.processors;
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.attachDataSources;
 
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.detachDataSources;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
@@ -55,7 +55,7 @@ public class DataSourcesAttachmentProcessor implements DeploymentUnitProcessor {
         attachDataSources(phaseContext.getDeploymentUnitContext(), dataSources);
     }
 
-    public void undeploy(DeploymentUnitContext context) {
+    public void undeploy(DeploymentUnit context) {
         detachDataSources(context);
     }
 }

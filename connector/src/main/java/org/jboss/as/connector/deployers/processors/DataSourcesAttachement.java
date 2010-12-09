@@ -23,7 +23,7 @@
 package org.jboss.as.connector.deployers.processors;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 
 /**
@@ -34,15 +34,15 @@ import org.jboss.jca.common.api.metadata.ds.DataSources;
 public class DataSourcesAttachement {
     private static final AttachmentKey<DataSources> ATTACHMENT_KEY = AttachmentKey.create(DataSources.class);
 
-    static DataSources getDataSourcesAttachment(final DeploymentUnitContext context) {
+    static DataSources getDataSourcesAttachment(final DeploymentUnit context) {
         return context.getAttachment(ATTACHMENT_KEY);
     }
 
-    static void attachDataSources(final DeploymentUnitContext context, final DataSources dataSources) {
+    static void attachDataSources(final DeploymentUnit context, final DataSources dataSources) {
         context.putAttachment(ATTACHMENT_KEY, dataSources);
     }
 
-    static void detachDataSources(final DeploymentUnitContext context) {
+    static void detachDataSources(final DeploymentUnit context) {
         context.removeAttachment(ATTACHMENT_KEY);
     }
 }

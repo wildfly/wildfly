@@ -26,10 +26,17 @@ import org.jboss.as.deployment.Attachable;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * The deployment unit context.  This object retains data which is persistent for the life of the
+ * The deployment unit.  This object retains data which is persistent for the life of the
  * deployment.
  */
-public interface DeploymentUnitContext extends Attachable {
+public interface DeploymentUnit extends Attachable {
+
+    /**
+     * Get the deployment unit of the parent (enclosing) deployment.
+     *
+     * @return the parent deployment unit, or {@code null} if this is a top-level deployment
+     */
+    DeploymentUnit getParent();
 
     /**
      * Get the simple name of the deployment unit.

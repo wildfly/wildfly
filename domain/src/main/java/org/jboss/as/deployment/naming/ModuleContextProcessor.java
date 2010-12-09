@@ -24,7 +24,7 @@ package org.jboss.as.deployment.naming;
 
 import javax.naming.Context;
 
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
@@ -47,7 +47,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        final DeploymentUnitContext deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
         final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(deploymentUnitContext.getName());
         final JndiName moduleContextJndiName = ContextNames.GLOBAL_CONTEXT_NAME.append(deploymentUnitContext.getName());
         final ContextService contextService = new ContextService(moduleContextJndiName);
@@ -59,7 +59,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         // TODO: These names will need to change when application scoping becomes available.
     }
 
-    public void undeploy(DeploymentUnitContext context) {
+    public void undeploy(DeploymentUnit context) {
         final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(context.getName());
         final ServiceController<?> serviceController = context.getServiceRegistry().getService(moduleContextServiceName);
         if(serviceController != null) {

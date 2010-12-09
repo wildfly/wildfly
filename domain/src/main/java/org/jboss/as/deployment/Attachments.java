@@ -27,7 +27,6 @@ import org.jboss.as.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -57,7 +56,7 @@ public final class Attachments {
     /**
      * The list of subdeployments detected.
      */
-    public static final AttachmentKey<AttachmentList<VirtualFile>> SUBDEPLOYMENT_ROOTS = AttachmentKey.createList(VirtualFile.class);
+    public static final AttachmentKey<AttachmentList<ResourceRoot>> SUBDEPLOYMENT_ROOTS = AttachmentKey.createList(ResourceRoot.class);
 
     //
     // VALIDATE

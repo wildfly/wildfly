@@ -27,16 +27,30 @@ package org.jboss.as.deployment;
  */
 public enum Phase {
 
-    STRUCTURE,
-    VALIDATE,
-    PARSE,
-    DEPENDENCIES,
-    MODULARIZE,
-    POST_MODULE,
-    INSTALL,
-    CLEANUP,
+    STRUCTURE(null),
+    VALIDATE(null),
+    PARSE(null),
+    DEPENDENCIES(null),
+    MODULARIZE(null),
+    POST_MODULE(null),
+    INSTALL(null),
+    CLEANUP(null),
     ;
-    private Phase() {}
+    private final AttachmentKey<?> phaseKey;
+
+    private Phase(final AttachmentKey<?> key) {
+        phaseKey = key;
+    }
+
+    /**
+     * Get the attachment key of the {@code DeploymentUnit} attachment that represents the result value
+     * of this phase.
+     *
+     * @return the key
+     */
+    public AttachmentKey<?> getPhaseKey() {
+        return phaseKey;
+    }
 
     // STRUCTURE
     public static final int STRUCTURE_MOUNT                             = 0x000;
