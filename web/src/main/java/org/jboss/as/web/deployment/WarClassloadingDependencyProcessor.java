@@ -21,8 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.deployment.module.ModuleDependencies;
-import org.jboss.as.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleDependencies;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;

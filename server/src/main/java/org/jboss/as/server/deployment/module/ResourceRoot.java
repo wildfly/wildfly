@@ -1,0 +1,75 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.server.deployment.module;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import org.jboss.modules.PathFilter;
+import org.jboss.vfs.VirtualFile;
+
+/**
+ * @author John E. Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ */
+public final class ResourceRoot implements Serializable {
+
+    private static final long serialVersionUID = 3458831155403388498L;
+
+    private final String rootName;
+    private final VirtualFile root;
+    private final MountHandle mountHandle;
+    private final boolean export;
+    private final List<PathFilter> exportFilters = new ArrayList<PathFilter>();
+
+    public ResourceRoot(final VirtualFile root, final MountHandle mountHandle, final boolean export) {
+        this(root.getName(), root, mountHandle, export);
+    }
+
+    public ResourceRoot(final String rootName, final VirtualFile root, final MountHandle mountHandle, final boolean export) {
+        this.rootName = rootName;
+        this.root = root;
+        this.mountHandle = mountHandle;
+        this.export = export;
+    }
+
+    public String getRootName() {
+        return rootName;
+    }
+
+    public VirtualFile getRoot() {
+        return root;
+    }
+
+    public MountHandle getMountHandle() {
+        return mountHandle;
+    }
+
+    public boolean isExport() {
+        return export;
+    }
+
+    public List<PathFilter> getExportFilters() {
+        return exportFilters;
+    }
+}

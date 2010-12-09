@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.MountHandle;
-import org.jboss.as.deployment.module.TempFileProviderService;
+import org.jboss.as.server.deployment.module.MountHandle;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;

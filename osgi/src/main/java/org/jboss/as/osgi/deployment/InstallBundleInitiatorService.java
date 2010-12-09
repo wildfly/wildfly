@@ -22,8 +22,8 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.deployment.DeploymentService;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentService;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.BatchBuilder;
@@ -66,7 +66,7 @@ public class InstallBundleInitiatorService extends AbstractService<Deployment> {
     }
 
     /**
-     * Get the {@link org.jboss.as.deployment.unit.DeploymentUnit} name for the given deployment
+     * Get the {@link org.jboss.as.server.deployment.DeploymentUnit} name for the given deployment
      */
     public static String getContextName(Deployment dep) {
         String name = dep.getLocation();

@@ -28,13 +28,12 @@ import java.util.Map;
 import javax.management.MBeanServer;
 import javax.management.StandardMBean;
 
-import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
-import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
+import org.jboss.as.server.deployment.module.ClassifyingModuleLoaderInjector;
+import org.jboss.as.server.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.ServerDeployerServicePlugin;
-import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
-import org.jboss.as.util.SystemPropertyActions;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -103,7 +102,8 @@ public class BundleManagerService implements Service<BundleManager> {
         log.debugf("Starting OSGi BundleManager");
         try {
             // [JBVFS-164] Add a URLStreamHandlerFactory service
-            String handlerModules = SystemPropertyActions.getProperty("jboss.protocol.handler.modules");
+            // TODO - use an actually secure system prop get action
+            String handlerModules = System.getProperty("jboss.protocol.handler.modules");
             if (handlerModules == null)
                 System.setProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
 

@@ -2,7 +2,7 @@ package org.jboss.as.connector.deployers.processors;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

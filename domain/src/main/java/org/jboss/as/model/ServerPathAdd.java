@@ -22,8 +22,8 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.services.path.AbsolutePathService;
-import org.jboss.as.services.path.RelativePathService;
+import org.jboss.as.server.services.path.AbsolutePathService;
+import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.msc.service.ServiceTarget;
 
 /**

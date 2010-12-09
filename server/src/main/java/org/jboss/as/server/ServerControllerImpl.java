@@ -31,8 +31,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;

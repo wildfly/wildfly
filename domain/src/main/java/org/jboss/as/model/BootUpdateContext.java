@@ -22,11 +22,11 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * Update context specific to server boot updates.  Provides the ability to add a {@link org.jboss.as.deployment.unit.DeploymentUnitProcessor}.
+ * Update context specific to server boot updates.  Provides the ability to add a {@link org.jboss.as.server.deployment.DeploymentUnitProcessor}.
  *
  * @author John Bailey
  */

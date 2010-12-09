@@ -23,13 +23,13 @@
 package org.jboss.as.web.deployment;
 
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-import static org.jboss.as.deployment.module.ModuleDependencies.getAttachedDependencies;
+import static org.jboss.as.server.deployment.module.ModuleDependencies.getAttachedDependencies;
 
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.module.ResourceRoot;
-import org.jboss.as.deployment.module.ModuleDependencies;
-import org.jboss.as.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleConfig;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.ModuleDependencies;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;

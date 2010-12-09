@@ -28,7 +28,7 @@ import java.io.InputStream;
 
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

@@ -26,7 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.services.path.AbstractPathService;
+import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;

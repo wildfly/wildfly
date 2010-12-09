@@ -39,7 +39,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.ServerDeploymentRepository;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.ServerModelDeploymentAdd;

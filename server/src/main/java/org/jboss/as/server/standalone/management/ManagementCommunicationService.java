@@ -44,7 +44,7 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import org.jboss.as.services.net.NetworkInterfaceBinding;
+import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

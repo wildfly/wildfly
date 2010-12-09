@@ -22,9 +22,6 @@
 
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitImpl;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.LifecycleContext;

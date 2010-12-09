@@ -26,7 +26,7 @@ import org.jboss.as.model.AbstractSocketBindingUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.msc.service.ServiceController;
 
 

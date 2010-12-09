@@ -24,7 +24,7 @@ package org.jboss.as.server;
 
 import java.io.File;
 
-import org.jboss.as.services.path.AbsolutePathService;
+import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.msc.service.BatchBuilder;
 
 /**

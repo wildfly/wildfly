@@ -22,7 +22,7 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.services.path.AbstractPathService;
+import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.msc.service.ServiceController;
 
 /**

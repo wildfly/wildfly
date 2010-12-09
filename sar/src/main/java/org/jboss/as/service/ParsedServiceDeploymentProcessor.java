@@ -29,7 +29,7 @@ import org.jboss.as.service.descriptor.JBossServiceConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

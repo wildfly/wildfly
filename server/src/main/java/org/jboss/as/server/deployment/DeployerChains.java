@@ -24,8 +24,6 @@ package org.jboss.as.server.deployment;
 
 import java.util.EnumMap;
 import java.util.List;
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 
 /**
  * The deployer chains service value object.

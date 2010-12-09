@@ -22,7 +22,7 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.server.deployment.DeploymentService;
 import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.logging.Logger;

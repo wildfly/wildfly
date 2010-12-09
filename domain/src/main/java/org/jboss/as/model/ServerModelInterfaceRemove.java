@@ -24,7 +24,7 @@ package org.jboss.as.model;
 
 import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.services.net.NetworkInterfaceService;
+import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.msc.service.ServiceController;
 
 /**

@@ -23,9 +23,9 @@
 package org.jboss.as.service;
 
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.deployment.module.ModuleDependencies;
+import org.jboss.as.server.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;

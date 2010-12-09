@@ -22,7 +22,7 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
-import static org.jboss.as.deployment.naming.NamespaceBindings.getNamespaceBindings;
+import static org.jboss.as.naming.deployment.NamespaceBindings.getNamespaceBindings;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -44,13 +44,13 @@ import org.jboss.as.deployment.managedbean.container.ManagedBeanObjectFactory;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanService;
 import org.jboss.as.deployment.managedbean.container.MethodResourceInjection;
 import org.jboss.as.deployment.managedbean.container.ResourceInjection;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.naming.ContextService;
-import org.jboss.as.deployment.naming.DuplicateBindingException;
-import org.jboss.as.deployment.naming.JndiName;
-import org.jboss.as.deployment.naming.ModuleContextConfig;
-import org.jboss.as.deployment.naming.NamingLookupValue;
-import org.jboss.as.deployment.naming.ResourceBinder;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.naming.deployment.ContextService;
+import org.jboss.as.naming.deployment.DuplicateBindingException;
+import org.jboss.as.naming.deployment.JndiName;
+import org.jboss.as.naming.deployment.ModuleContextConfig;
+import org.jboss.as.naming.deployment.NamingLookupValue;
+import org.jboss.as.naming.deployment.ResourceBinder;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;

@@ -26,12 +26,10 @@ import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.jboss.as.deployment.scanner.DeploymentScanner;
-import org.jboss.as.deployment.scanner.DeploymentScannerFactory;
+import org.jboss.as.server.deployment.scanner.DeploymentScanner;
+import org.jboss.as.server.deployment.scanner.DeploymentScannerFactory;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;

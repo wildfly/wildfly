@@ -30,7 +30,7 @@ import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;

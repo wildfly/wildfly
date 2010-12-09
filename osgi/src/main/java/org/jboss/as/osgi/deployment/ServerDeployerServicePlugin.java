@@ -26,7 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.server.deployment.DeploymentService;
 import org.jboss.as.standalone.client.api.deployment.DeploymentAction;
 import org.jboss.as.standalone.client.api.deployment.DeploymentPlan;
 import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;

@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;

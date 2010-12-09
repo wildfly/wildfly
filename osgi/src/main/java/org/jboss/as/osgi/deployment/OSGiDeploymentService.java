@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.jboss.as.deployment.DeploymentService;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentService;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.FrameworkService;

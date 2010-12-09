@@ -29,10 +29,9 @@ import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.chain.JarDeploymentActivator;
-import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateFailedException;

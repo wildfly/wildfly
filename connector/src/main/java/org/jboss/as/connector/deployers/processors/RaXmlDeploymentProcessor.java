@@ -33,7 +33,7 @@ import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentSe
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;

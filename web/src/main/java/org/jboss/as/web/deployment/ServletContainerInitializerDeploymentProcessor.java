@@ -35,9 +35,9 @@ import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
 
-import org.jboss.as.deployment.module.ModuleDependencies;
-import org.jboss.as.deployment.module.ModuleDependency;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependencies;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;

@@ -57,7 +57,12 @@
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
-        
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
             <artifactId>jboss-annotations-api_1.1_spec</artifactId>

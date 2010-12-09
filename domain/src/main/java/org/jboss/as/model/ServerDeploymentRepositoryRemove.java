@@ -22,7 +22,7 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.scanner.DeploymentScannerService;
+import org.jboss.as.server.deployment.scanner.DeploymentScannerService;
 import org.jboss.msc.service.ServiceController;
 
 /**

@@ -22,8 +22,8 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.msc.service.ServiceRegistry;
 

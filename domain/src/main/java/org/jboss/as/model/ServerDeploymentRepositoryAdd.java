@@ -24,7 +24,7 @@ package org.jboss.as.model;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.deployment.scanner.DeploymentScannerService;
+import org.jboss.as.server.deployment.scanner.DeploymentScannerService;
 import org.jboss.msc.service.ServiceTarget;
 
 /**

@@ -34,7 +34,6 @@ import org.jboss.as.osgi.service.Configuration;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
-import org.jboss.as.util.SystemPropertyActions;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 
@@ -68,7 +67,8 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         log.infof("Activating OSGi Subsystem");
 
         // TODO: Hack, which registers the framework module with the {@link ModularURLStreamHandlerFactory}
-        String value = SystemPropertyActions.getProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
+        // TODO - use an actually secure sys prop security action method
+        String value = System.getProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
         if (!value.equals("org.jboss.osgi.framework"))
             value = value + "|org.jboss.osgi.framework";
         System.setProperty("jboss.protocol.handler.modules", value);

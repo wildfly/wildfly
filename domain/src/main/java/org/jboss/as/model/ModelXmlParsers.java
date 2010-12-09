@@ -49,8 +49,8 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
+import org.jboss.as.server.Extension;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.model.socket.AbstractInterfaceCriteriaElement;
 import org.jboss.as.model.socket.CompoundCriteriaElement;
 import org.jboss.as.model.socket.InterfaceAdd;

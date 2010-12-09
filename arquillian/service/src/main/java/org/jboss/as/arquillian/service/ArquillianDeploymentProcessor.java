@@ -22,10 +22,10 @@
 
 package org.jboss.as.arquillian.service;
 
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.msc.service.Service;

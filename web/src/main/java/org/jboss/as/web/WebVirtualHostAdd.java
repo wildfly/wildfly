@@ -28,8 +28,8 @@ import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.services.path.AbstractPathService;
-import org.jboss.as.services.path.RelativePathService;
+import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 

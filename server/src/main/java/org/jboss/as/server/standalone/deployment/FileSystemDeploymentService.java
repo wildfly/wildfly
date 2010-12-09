@@ -40,7 +40,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.as.deployment.scanner.DeploymentScanner;
+import org.jboss.as.server.deployment.scanner.DeploymentScanner;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.standalone.client.api.deployment.DeploymentAction;

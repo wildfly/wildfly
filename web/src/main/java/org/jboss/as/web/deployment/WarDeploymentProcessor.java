@@ -33,7 +33,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

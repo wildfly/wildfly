@@ -44,7 +44,7 @@ import org.jboss.as.deployment.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
 import org.jboss.as.deployment.managedbean.config.ResourceConfiguration;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;

@@ -24,10 +24,10 @@ package org.jboss.as.osgi.deployment;
 
 import java.io.IOException;
 
-import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.metadata.OSGiMetaData;

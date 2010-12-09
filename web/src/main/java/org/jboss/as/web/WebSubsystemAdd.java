@@ -28,7 +28,7 @@ import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.services.path.AbstractPathService;
+import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;

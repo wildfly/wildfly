@@ -24,7 +24,7 @@ package org.jboss.as.host.controller;
 
 import java.net.InetSocketAddress;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.services.net.NetworkInterfaceBinding;
+import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;

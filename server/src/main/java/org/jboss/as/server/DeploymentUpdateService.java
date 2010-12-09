@@ -24,8 +24,8 @@ package org.jboss.as.server;
 
 import java.util.List;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.msc.service.BatchBuilder;

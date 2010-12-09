@@ -29,9 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.transaction.TransactionManager;
-
-import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;

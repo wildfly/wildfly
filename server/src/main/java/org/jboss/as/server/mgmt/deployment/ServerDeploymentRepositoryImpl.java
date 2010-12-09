@@ -34,8 +34,8 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
-import org.jboss.as.deployment.module.TempFileProviderService;
+import org.jboss.as.server.deployment.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.logging.Logger;

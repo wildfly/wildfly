@@ -24,14 +24,14 @@ package org.jboss.as.server.standalone.management;
 
 import java.util.concurrent.Executors;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.ServerDeploymentRepository;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ShutdownHandler;
-import org.jboss.as.services.net.NetworkInterfaceBinding;
-import org.jboss.as.services.net.NetworkInterfaceService;
+import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;

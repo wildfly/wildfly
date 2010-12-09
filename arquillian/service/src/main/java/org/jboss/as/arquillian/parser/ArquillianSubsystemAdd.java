@@ -25,7 +25,7 @@ package org.jboss.as.arquillian.parser;
 import org.jboss.as.arquillian.service.ArquillianDeploymentProcessor;
 import org.jboss.as.arquillian.service.ArquillianRunWithAnnotationProcessor;
 import org.jboss.as.arquillian.service.ArquillianService;
-import org.jboss.as.deployment.Phase;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;

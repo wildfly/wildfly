@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.managedbean.processors;
 
 import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.unit.DeploymentUnit;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

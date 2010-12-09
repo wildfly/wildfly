@@ -23,10 +23,10 @@
 package org.jboss.as.service;
 
 import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
-import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
-import org.jboss.as.deployment.module.ModuleDependencyProcessor;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
+import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.BatchBuilder;

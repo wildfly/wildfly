@@ -24,8 +24,8 @@ package org.jboss.as.arquillian.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnit;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
  * [TODO]

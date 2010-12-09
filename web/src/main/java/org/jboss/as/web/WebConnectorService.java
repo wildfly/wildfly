@@ -25,7 +25,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
-import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
