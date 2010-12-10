@@ -44,11 +44,11 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * General messaging subsystem update.
@@ -149,21 +149,21 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
         hqservice.setConfiguration(hqConfig);
 
-        final BatchBuilder batchBuilder = updateContext.getServiceTarget();
-        final ServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice)
+        final ServiceTarget target = updateContext.getServiceTarget();
+        final ServiceBuilder<HornetQServer> serviceBuilder = target.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice)
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqservice.getMBeanServer());
 
         // FIXME move the JMSService into the jms subsystem
-        JMSService.addService(batchBuilder);
+        JMSService.addService(target);
 
         // Create path services
-        createRelativePathService("bindings", bindingsDirectory, batchBuilder);
+        createRelativePathService("bindings", bindingsDirectory, target);
         addPathDependency("bindings", hqservice, serviceBuilder);
-        createRelativePathService("journal", journalDirectory, batchBuilder);
+        createRelativePathService("journal", journalDirectory, target);
         addPathDependency("journal", hqservice, serviceBuilder);
-        createRelativePathService("largemessages", largeMessagesDirectory, batchBuilder);
+        createRelativePathService("largemessages", largeMessagesDirectory, target);
         addPathDependency("largemessages", hqservice, serviceBuilder);
-        createRelativePathService("paging", pagingDirectory, batchBuilder);
+        createRelativePathService("paging", pagingDirectory, target);
         addPathDependency("paging", hqservice, serviceBuilder);
 
         final Map<String, TransportConfiguration> connectors = hqConfig.getConnectorConfigurations();
@@ -320,7 +320,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         serviceBuilder.addDependency(PATH_BASE.append(name), String.class, hqService.getPathInjector(name));
     }
 
-    static void createRelativePathService(String name, DirectoryElement dir, BatchBuilder builder) {
+    static void createRelativePathService(String name, DirectoryElement dir, ServiceTarget builder) {
         if(dir != null) {
             createRelativePathService(name, dir.getRelativeTo(), dir.getPath(), builder);
         } else {
@@ -328,7 +328,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         }
     }
 
-    static void createRelativePathService(String name, String relativeTo, String relativePath, BatchBuilder builder) {
+    static void createRelativePathService(String name, String relativeTo, String relativePath, ServiceTarget builder) {
         RelativePathService.addService(PATH_BASE.append(name),
                 // default to hornetq/name
                 relativePath != null ? relativePath : "hornetq/" + name,

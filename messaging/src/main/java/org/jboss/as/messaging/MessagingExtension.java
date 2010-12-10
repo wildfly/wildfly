@@ -22,8 +22,8 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
+import org.jboss.as.server.Extension;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.messaging.jms.JMSExtension;
 import org.jboss.msc.service.ServiceActivatorContext;
 

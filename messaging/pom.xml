@@ -59,6 +59,10 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.hornetq</groupId>
@@ -77,11 +81,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

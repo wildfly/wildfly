@@ -18,7 +18,7 @@ import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
-import org.jboss.as.ExtensionContext;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
