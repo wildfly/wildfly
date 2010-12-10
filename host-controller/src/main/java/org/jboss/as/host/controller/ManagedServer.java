@@ -92,7 +92,7 @@ public final class ManagedServer {
     private static final MarshallingConfiguration CONFIG;
     static {
         try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
+            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Module.getModuleFromCurrentLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
         } catch (ModuleLoadException e) {
             throw new RuntimeException(e);
         }
