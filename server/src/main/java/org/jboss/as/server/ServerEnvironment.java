@@ -22,6 +22,7 @@
 package org.jboss.as.server;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
@@ -32,8 +33,9 @@ import java.util.Properties;
  *
  * @author Brian Stansberry
  */
-public class ServerEnvironment {
+public class ServerEnvironment implements Serializable {
 
+    private static final long serialVersionUID = -349976376447122910L;
 
     /////////////////////////////////////////////////////////////////////////
     //                   Configuration Value Identifiers                   //

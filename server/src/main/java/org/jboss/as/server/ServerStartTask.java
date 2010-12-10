@@ -107,24 +107,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
         }
 
-        final BootUpdateContext context = new BootUpdateContext() {
-            public ServiceTarget getServiceTarget() {
-                return batchBuilder;
-            }
-
-            public ServiceContainer getServiceContainer() {
-                throw new UnsupportedOperationException();
-            }
-
-            public void addDeploymentProcessor(final Phase phase, int priority, DeploymentUnitProcessor processor) {
-                deploymentChain.addProcessor(processor, priority);
-            }
-
-            public ServiceRegistry getServiceRegistry() {
-                return getServiceContainer();
-            }
-        };
-
         DeploymentUpdateService.addService(batchBuilder, updates, serverStartupListener);
 
         StandaloneServerManagementServices.addServices(serverModel, container, batchBuilder);
