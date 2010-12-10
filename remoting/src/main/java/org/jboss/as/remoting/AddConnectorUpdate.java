@@ -29,10 +29,10 @@ import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.xnio.OptionMap;
@@ -60,7 +60,7 @@ public final class AddConnectorUpdate extends AbstractRemotingSubsystemUpdate<Vo
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final BatchBuilder batchBuilder = updateContext.getServiceTarget();
+        final ServiceTarget target = updateContext.getServiceTarget();
         final OptionMap.Builder builder = OptionMap.builder();
 
         // First, apply options to option map.
@@ -77,7 +77,7 @@ public final class AddConnectorUpdate extends AbstractRemotingSubsystemUpdate<Vo
         // Register the service with the container and inject dependencies.
         final ServiceName connectorName = ConnectorElement.connectorName(name);
         try {
-            batchBuilder.addService(connectorName, connectorService)
+            target.addService(connectorName, connectorService)
                 .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
                 .addDependency(RemotingSubsystemElement.JBOSS_REMOTING_ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
                 .addListener(listener)
@@ -85,8 +85,6 @@ public final class AddConnectorUpdate extends AbstractRemotingSubsystemUpdate<Vo
                 .install();
 
         // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-
-            batchBuilder.install();
         } catch (ServiceRegistryException e) {
             resultHandler.handleFailure(e, param);
         }
