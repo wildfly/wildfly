@@ -28,7 +28,6 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ChildElement;

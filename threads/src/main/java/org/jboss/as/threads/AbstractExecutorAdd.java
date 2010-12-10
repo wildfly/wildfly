@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;

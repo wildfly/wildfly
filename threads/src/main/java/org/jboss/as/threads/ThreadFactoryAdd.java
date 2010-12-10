@@ -27,9 +27,9 @@ import java.util.Map;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -61,14 +61,12 @@ public final class ThreadFactoryAdd extends AbstractThreadsSubsystemUpdate<Void>
         service.setPriority(priority);
         service.setThreadGroupName(groupName);
         final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(handler, param);
-        final BatchBuilder batchBuilder = updateContext.getServiceTarget();
+        final ServiceTarget target = updateContext.getServiceTarget();
         try {
-            batchBuilder.addService(ThreadsServices.threadFactoryName(name), service)
+            target.addService(ThreadsServices.threadFactoryName(name), service)
                 .addListener(listener)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
-            batchBuilder.install();
         } catch (ServiceRegistryException e) {
             handler.handleFailure(e, param);
         }

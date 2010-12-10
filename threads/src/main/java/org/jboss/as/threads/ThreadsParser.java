@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.ExtensionContext;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;

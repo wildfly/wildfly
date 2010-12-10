@@ -28,9 +28,9 @@ import org.jboss.as.model.ChildElement;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -45,14 +45,14 @@ public final class ScheduledThreadPoolAdd extends AbstractExecutorAdd {
 
     @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final BatchBuilder builder = updateContext.getServiceTarget();
+        final ServiceTarget target = updateContext.getServiceTarget();
         final ScaledCount maxThreadsCount = getMaxThreads();
         final int maxThreads = maxThreadsCount.getScaledCount();
         final String name = getName();
         final ServiceName serviceName = ThreadsServices.executorName(name);
         final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(maxThreads, getKeepaliveTime());
-        final ServiceBuilder<ExecutorService> serviceBuilder = builder.addService(serviceName, service);
-        addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
+        final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+        addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
         serviceBuilder.install();
     }
 
