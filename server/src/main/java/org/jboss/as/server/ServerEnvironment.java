@@ -115,6 +115,30 @@ public class ServerEnvironment implements Serializable {
      */
     public static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
 
+    /**
+     * Constant that holds the name of the system property for specifying the
+     * node name within a cluster.
+     */
+    public static final String NODE_NAME = "jboss.node.name";
+
+    /**
+     * Constant that holds the name of the system property for specifying the
+     * name of this server instance.
+     */
+    public static final String SERVER_NAME = "jboss.server.name";
+
+    /**
+     * Constant that holds the name of the system property for specifying the
+     * local part of the name of the host that this server is running on.
+     */
+    public static final String HOST_NAME = "jboss.host.name";
+
+    /**
+     * Constant that holds the name of the system property for specifying the
+     * fully-qualified name of the host that this server is running on.
+     */
+    public static final String QUALIFIED_HOST_NAME = "jboss.qualified.host.name";
+
     private final String qualifiedHostName;
     private final String hostName;
     private final String serverName;
@@ -138,8 +162,8 @@ public class ServerEnvironment implements Serializable {
         }
 
         // Calculate host and default server name
-        String hostName = props.getProperty("jboss.host.name");
-        String qualifiedHostName = props.getProperty("jboss.qualified.host.name");
+        String hostName = props.getProperty(HOST_NAME);
+        String qualifiedHostName = props.getProperty(QUALIFIED_HOST_NAME);
         if (qualifiedHostName == null) {
             // if host name is specified, don't pick a qualified host name that isn't related to it
             qualifiedHostName = hostName;
@@ -167,7 +191,6 @@ public class ServerEnvironment implements Serializable {
                 qualifiedHostName = "unknown-host.unknown-domain";
             }
             qualifiedHostName = qualifiedHostName.trim().toLowerCase();
-            SecurityActions.setSystemProperty("jboss.qualified.host.name", qualifiedHostName);
         }
         this.qualifiedHostName = qualifiedHostName;
 
@@ -175,23 +198,20 @@ public class ServerEnvironment implements Serializable {
             // Use the host part of the qualified host name
             final int idx = qualifiedHostName.indexOf('.');
             hostName = idx == -1 ? qualifiedHostName : qualifiedHostName.substring(0, idx);
-            SecurityActions.setSystemProperty("jboss.host.name", hostName);
         }
         this.hostName = hostName;
 
         // Set up the server name for management purposes
-        String serverName = props.getProperty("jboss.server.name");
+        String serverName = props.getProperty(SERVER_NAME);
         if (serverName == null) {
             serverName = hostName;
-            SecurityActions.setSystemProperty("jboss.server.name", serverName);
         }
         this.serverName = serverName;
 
         // Set up the clustering node name
-        String nodeName = props.getProperty("jboss.node.name");
+        String nodeName = props.getProperty(NODE_NAME);
         if (nodeName == null) {
             nodeName = serverName;
-            SecurityActions.setSystemProperty("jboss.node.name", nodeName);
         }
         this.nodeName = nodeName;
 
@@ -199,62 +219,69 @@ public class ServerEnvironment implements Serializable {
         homeDir = getFileFromProperty(HOME_DIR, props);
         if (homeDir == null)
            throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
-        SecurityActions.setSystemProperty(HOME_DIR, homeDir.getAbsolutePath());
 
         File tmp = getFileFromProperty(MODULES_DIR, props);
         if (tmp == null) {
             tmp = new File(homeDir, "modules");
         }
         modulesDir = tmp;
-        SecurityActions.setSystemProperty(MODULES_DIR, modulesDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_BASE_DIR, props);
         if (tmp == null) {
             tmp = new File(homeDir, "standalone");
         }
         serverBaseDir = tmp;
-        SecurityActions.setSystemProperty(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_CONFIG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "configuration");
         }
         serverConfigurationDir = tmp;
-        SecurityActions.setSystemProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "data");
         }
         serverDataDir = tmp;
-        SecurityActions.setSystemProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_DEPLOY_DIR, props);
         if (tmp == null) {
             tmp = new File(serverDataDir, "content");
         }
         serverDeployDir = tmp;
-        SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_SYSTEM_DEPLOY_DIR, props);
         if (tmp == null) {
             tmp = new File(serverDataDir, "system-content");
         }
         serverSystemDeployDir = tmp;
-        SecurityActions.setSystemProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_LOG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "log");
         }
         serverLogDir = tmp;
-        SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_TEMP_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "tmp");
         }
         serverTempDir = tmp;
+    }
+
+    void install() {
+        SecurityActions.setSystemProperty(QUALIFIED_HOST_NAME, qualifiedHostName);
+        SecurityActions.setSystemProperty(HOST_NAME, hostName);
+        SecurityActions.setSystemProperty(SERVER_NAME, serverName);
+        SecurityActions.setSystemProperty(NODE_NAME, nodeName);
+        SecurityActions.setSystemProperty(HOME_DIR, homeDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(MODULES_DIR, modulesDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
     }
 

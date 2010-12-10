@@ -83,6 +83,10 @@ final class ServerControllerService implements Service<ServerController> {
         final DelegatingServiceRegistry serviceRegistry = new DelegatingServiceRegistry(container);
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
+
+        // Install the environment before fetching and using the persister
+        serverEnvironment.install();
+
         final ServerConfigurationPersister persister = configuration.getConfigurationPersister();
         final List<AbstractServerModelUpdate<?>> updates;
         try {

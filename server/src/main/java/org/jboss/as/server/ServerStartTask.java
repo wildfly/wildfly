@@ -30,15 +30,12 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.standalone.deployment.DeploymentScannerFactoryService;
 import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
 
 /**
  * This is the task used by the Host Controller and passed to a Server instance
@@ -47,8 +44,6 @@ import org.jboss.msc.service.ServiceRegistryException;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
-
-    public static final ServiceName AS_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("as", "server");
 
     private static final long serialVersionUID = -8505496119636153918L;
 
@@ -86,21 +81,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         // Server deployment scanner factory
         DeploymentScannerFactoryService.addService(batchBuilder);
 
-        for (AbstractServerModelUpdate<?> update : updates) {
-            try {
-                serverModel.update(update);
-            } catch (UpdateFailedException e) {
-                throw new IllegalStateException("Failed to start server", e);
-            }
-        }
-
         StandaloneServerManagementServices.addServices(serverModel, container, batchBuilder);
-
-        try {
-            batchBuilder.install();
-        } catch (ServiceRegistryException e) {
-            throw new IllegalStateException("Failed to install boot services", e);
-        }
     }
 
     public void validateObject() throws InvalidObjectException {
