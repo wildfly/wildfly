@@ -24,15 +24,16 @@ package org.jboss.as.service;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.service.descriptor.JBossServiceConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.jmx.MBeanRegistrationService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.logging.Logger;
@@ -42,6 +43,7 @@ import org.jboss.msc.inject.MethodInjector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.LookupClassValue;
@@ -75,7 +77,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     private static final String START_SUFFIX = "start";
 
     /**
-     * Process a deployment for JbossService confguration.  Will install a {@Code JBossService} for each configured service.
+     * Process a deployment for JbossService configuration.  Will install a {@Code JBossService} for each configured service.
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
@@ -88,20 +90,23 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
         final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if(module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 
         final ClassLoader classLoader = module.getClassLoader();
         final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
 
         final JBossServiceXmlDescriptor.ControllerMode controllerMode = serviceXmlDescriptor.getControllerMode();
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
-        final BatchBuilder batchBuilder = phaseContext.getBatchBuilder();
+        final ServiceTarget target = phaseContext.getServiceTarget();
         for(final JBossServiceConfig serviceConfig : serviceConfigs) {
-            addService(batchBuilder, serviceConfig, classLoaderValue);
+            addService(target, serviceConfig, classLoaderValue);
         }
     }
 
-    private void addService(final BatchBuilder batchBuilder, final JBossServiceConfig serviceConfig, final Value<ClassLoader> classLoaderValue) {
+    public void undeploy(final DeploymentUnit context) {
+    }
+
+    private void addService(final ServiceTarget target, final JBossServiceConfig serviceConfig, final Value<ClassLoader> classLoaderValue) {
         final String codeName = serviceConfig.getCode();
         final Value<Class<?>> classValue = cached(new LookupClassValue(codeName, classLoaderValue));
 
@@ -126,9 +131,9 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
         final String serviceName = serviceConfig.getName();
         final ServiceName createDestroyServiceName = convert(serviceName).append(CREATE_SUFFIX);
-        final ServiceBuilder<?> createDestroyServiceBuilder = batchBuilder.addService(createDestroyServiceName, createDestroyService);
+        final ServiceBuilder<?> createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
         final ServiceName startStopServiceName = convert(serviceName).append(START_SUFFIX);
-        final ServiceBuilder<?> startStopServiceBuilder = batchBuilder.addService(startStopServiceName, startStopService);
+        final ServiceBuilder<?> startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
@@ -183,7 +188,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
         // Add service to register the bean in the mbean server
         final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService(serviceName);
-        batchBuilder.addService(MBeanRegistrationService.SERVICE_NAME.append(serviceName), mbeanRegistrationService)
+        target.addService(MBeanRegistrationService.SERVICE_NAME.append(serviceName), mbeanRegistrationService)
             .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
             .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())
             .install();

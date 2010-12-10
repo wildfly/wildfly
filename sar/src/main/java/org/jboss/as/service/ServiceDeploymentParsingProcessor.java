@@ -22,12 +22,13 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
@@ -37,8 +38,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
-
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-service.xml descriptor and attaching the corresponding JBossServiceXmlDescriptor.
@@ -65,7 +64,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         if(deploymentRoot == null || !deploymentRoot.exists())
             return;
@@ -96,5 +95,8 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
         } finally {
             VFSUtils.safeClose(xmlStream);
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 }

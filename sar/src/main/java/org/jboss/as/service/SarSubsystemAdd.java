@@ -22,7 +22,7 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.Phase;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
