@@ -69,16 +69,14 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
     private final ServiceRegistry registry;
     private final ServerModel serverModel;
     private final ServerEnvironment serverEnvironment;
-    private final EnumMap<Phase, List<DeploymentUnitProcessor>> deployers;
 
     private ServerConfigurationPersister configurationPersister;
     private ExecutorService executor;
-    
-    ServerControllerImpl(final ServerModel serverModel, final ServiceContainer container, final ServerEnvironment serverEnvironment, final EnumMap<Phase, List<DeploymentUnitProcessor>> deployers) {
+
+    ServerControllerImpl(final ServerModel serverModel, final ServiceContainer container, final ServerEnvironment serverEnvironment) {
         this.serverModel = serverModel;
         this.container = container;
         this.serverEnvironment = serverEnvironment;
-        this.deployers = deployers;
         registry = new DelegatingServiceRegistry(container);
     }
 

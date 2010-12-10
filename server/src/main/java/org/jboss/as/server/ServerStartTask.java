@@ -97,8 +97,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService())
             .install();
 
-        new JarDeploymentActivator().activate(deploymentChain);
-
         for (AbstractServerModelUpdate<?> update : updates) {
             try {
                 serverModel.update(update);

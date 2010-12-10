@@ -159,7 +159,7 @@ final class ServerControllerService implements Service<ServerController> {
             finalDeployers.put(entry.getKey(), list);
         }
 
-        final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment, finalDeployers);
+        final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment);
         this.serverController = serverController;
         bootServices = serviceTarget.getSet();
     }
