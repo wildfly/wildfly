@@ -26,7 +26,7 @@ import org.jboss.as.jmx.mbean.ManagedServiceContainerService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -42,10 +42,10 @@ public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElem
 
     @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final BatchBuilder batchBuilder = updateContext.getServiceTarget();
+        final ServiceTarget target = updateContext.getServiceTarget();
 
-        MBeanServerService.addService(batchBuilder);
-        ManagedServiceContainerService.addService(batchBuilder);
+        MBeanServerService.addService(target);
+        ManagedServiceContainerService.addService(target);
 
     }
 

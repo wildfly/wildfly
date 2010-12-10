@@ -38,13 +38,13 @@ import javax.management.StandardMBean;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.jmx.ObjectNameFactory;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -62,9 +62,9 @@ public class ManagedServiceContainerService implements Service<Void> {
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private ServiceContainer serviceContainer;
 
-    public static void addService(final BatchBuilder batchBuilder) {
+    public static void addService(final ServiceTarget target) {
         ManagedServiceContainerService service = new ManagedServiceContainerService();
-        batchBuilder.addService(SERVICE_NAME, service)
+        target.addService(SERVICE_NAME, service)
             .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer)
             .setInitialMode(Mode.ACTIVE)
             .install();
