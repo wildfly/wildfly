@@ -24,7 +24,9 @@ package org.jboss.as.naming.context;
 
 /**
  * @author John Bailey
+ * @deprecated public class with generic privileged actions
  */
+@Deprecated
 public class SecurityActions extends org.jboss.as.naming.util.SecurityActions {
     static ClassLoader getContextClassLoader() {
         return org.jboss.as.naming.util.SecurityActions.getContextClassLoaderProtected();

@@ -28,9 +28,10 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
 
 import javax.management.MBeanServer;
@@ -56,27 +57,27 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
         NamingContext.initializeNamingManager();
 
         // Create the Naming Service
-        final BatchBuilder builder = updateContext.getServiceTarget();
-        builder.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
+        final ServiceTarget target = updateContext.getServiceTarget();
+        target.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
 
         // Create java: context service
         final JavaContextService javaContextService = new JavaContextService();
-        builder.addService(JavaContextService.SERVICE_NAME, javaContextService)
+        target.addService(JavaContextService.SERVICE_NAME, javaContextService)
             .addDependency(NamingService.SERVICE_NAME)
             .install();
 
         final ContextService globalContextService = new ContextService("global");
-        builder.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
+        target.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
              .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
              .install();
 
-        addContextFactory(builder, "app");
-        addContextFactory(builder, "module");
-        addContextFactory(builder, "comp");
+        addContextFactory(target, "app");
+        addContextFactory(target, "module");
+        addContextFactory(target, "comp");
 
         final JndiView jndiView = new JndiView();
-        builder.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
-            .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
+        target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
+            .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
             .install();
     }
 
@@ -84,10 +85,10 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
         return new NamingSubsystemElement();
     }
 
-    private static void addContextFactory(final BatchBuilder builder, final String contextName) {
+    private static void addContextFactory(final ServiceTarget target, final String contextName) {
         final Reference appReference = NamespaceObjectFactory.createReference(contextName);
         final BinderService<Reference> binderService = new BinderService<Reference>(contextName, Values.immediateValue(appReference));
-        builder.addService(JavaContextService.SERVICE_NAME.append(contextName), binderService)
+        target.addService(JavaContextService.SERVICE_NAME.append(contextName), binderService)
             .addDependency(JavaContextService.SERVICE_NAME, Context.class, binderService.getContextInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();

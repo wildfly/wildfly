@@ -22,8 +22,8 @@
 
 package org.jboss.as.naming.service;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
+import org.jboss.as.server.Extension;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.msc.service.ServiceActivatorContext;
