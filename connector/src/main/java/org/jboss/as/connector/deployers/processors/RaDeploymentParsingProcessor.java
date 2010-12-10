@@ -22,17 +22,17 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.metadata.ra.RaParser;
 import org.jboss.vfs.VFSUtils;
@@ -50,18 +50,17 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
      * Construct a new instance.
      */
     public RaDeploymentParsingProcessor() {
-        super();
     }
 
     /**
      * Process a deployment for standard ra deployment files. Will parse the xml
-     * file and attach an configuration discovered durring processing.
+     * file and attach an configuration discovered during processing.
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
@@ -87,7 +86,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             URL url = root.toURI().toURL();
             String deploymentName = deploymentRoot.getName().substring(0, deploymentRoot.getName().indexOf(".rar"));
             ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
-            phaseContext.getDeploymentUnitContext().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+            phaseContext.getDeploymentUnit().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
 
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e);
@@ -96,4 +95,6 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    public void undeploy(final DeploymentUnit context) {
+    }
 }

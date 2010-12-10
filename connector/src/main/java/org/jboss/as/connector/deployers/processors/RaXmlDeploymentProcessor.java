@@ -33,10 +33,11 @@ import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentSe
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -74,12 +75,13 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnitContext().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if(connectorXmlDescriptor == null) {
             return;  // Skip non ra deployments
         }
 
-        final ResourceAdapters raxmls = getResourceAdaptersAttachment(phaseContext);
+        final ResourceAdapters raxmls = getResourceAdaptersAttachment(deploymentUnit);
         if (raxmls == null)
             return;
 
@@ -87,10 +89,10 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
 
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + deploymentUnit);
 
         try {
-            final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
+            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             for (org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter raxml : raxmls.getResourceAdapters()) {
 
@@ -130,5 +132,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 }

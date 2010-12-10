@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.ExtensionContext;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.model.ParseResult;
 import org.jboss.jca.common.metadata.ds.DsParser;
 import org.jboss.logging.Logger;

@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.ResourceAdaptersAttachingProcessor;
-import org.jboss.as.deployment.Phase;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;

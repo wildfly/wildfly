@@ -25,10 +25,10 @@ package org.jboss.as.connector.deployers.processors;
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.attachDataSources;
 
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.detachDataSources;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 
 /**
@@ -52,7 +52,7 @@ public class DataSourcesAttachmentProcessor implements DeploymentUnitProcessor {
 
     /** {@inheritDoc} */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        attachDataSources(phaseContext.getDeploymentUnitContext(), dataSources);
+        attachDataSources(phaseContext.getDeploymentUnit(), dataSources);
     }
 
     public void undeploy(DeploymentUnit context) {

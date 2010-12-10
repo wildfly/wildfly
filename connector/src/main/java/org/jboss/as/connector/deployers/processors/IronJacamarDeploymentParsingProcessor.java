@@ -22,17 +22,15 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-
 import java.io.InputStream;
 
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.vfs.VFSUtils;
@@ -51,13 +49,11 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
      * Construct a new instance.
      */
     public IronJacamarDeploymentParsingProcessor() {
-        super();
-
     }
 
     /**
      * Process a deployment for iron-jacamar.xml files. Will parse the xml file
-     * and attach metadata discovered durring processing.
+     * and attach metadata discovered during processing.
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */

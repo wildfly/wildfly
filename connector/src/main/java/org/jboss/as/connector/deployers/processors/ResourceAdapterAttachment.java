@@ -22,8 +22,8 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnit;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 
 /**

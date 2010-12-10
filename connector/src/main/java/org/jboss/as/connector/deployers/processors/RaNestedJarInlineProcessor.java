@@ -22,12 +22,10 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.module.NestedJarInlineProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -43,7 +41,7 @@ public class RaNestedJarInlineProcessor extends NestedJarInlineProcessor {
      * {@inheritDoc}
      * */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 

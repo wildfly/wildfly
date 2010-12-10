@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.DataSourcesAttachmentProcessor;
-import org.jboss.as.deployment.Phase;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
@@ -59,13 +59,6 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
-        serviceTarget.addService(JDBCRARDeployService.NAME, new JDBCRARDeployService())
-                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)
-                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR)
-                .setInitialMode(Mode.ON_DEMAND)
-                .install();
-
         serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
             .setInitialMode(Mode.ACTIVE)
             .install();
@@ -74,7 +67,7 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
     @Override
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
-        updateContext.addDeploymentProcessor(Phase.PARSE, new DataSourcesAttachmentProcessor(datasources), Phase.PARSE_DATA_SOURCES);
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES, new DataSourcesAttachmentProcessor(datasources));
     }
 
     protected DataSourcesSubsystemElement createSubsystemElement() {

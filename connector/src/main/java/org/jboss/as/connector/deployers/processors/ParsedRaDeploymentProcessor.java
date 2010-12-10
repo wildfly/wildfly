@@ -29,11 +29,12 @@ import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.annotations.Annotations;
@@ -59,7 +60,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.radeployer");
 
     public ParsedRaDeploymentProcessor() {
-        super();
     }
 
     /**
@@ -69,7 +69,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnitContext().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if(connectorXmlDescriptor == null) {
             return;  // Skip non ra deployments
         }
@@ -78,7 +78,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 
         final ClassLoader classLoader = module.getClassLoader();
 
@@ -100,7 +100,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
             final ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module);
 
-            final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
+            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             // Create the service
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()), raDeployementService)
@@ -115,5 +115,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 }

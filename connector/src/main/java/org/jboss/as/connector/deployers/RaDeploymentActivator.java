@@ -34,7 +34,7 @@ import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
 import org.jboss.as.connector.jndi.JndiStrategyService;
 import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
-import org.jboss.as.deployment.Phase;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.msc.service.ServiceTarget;
 

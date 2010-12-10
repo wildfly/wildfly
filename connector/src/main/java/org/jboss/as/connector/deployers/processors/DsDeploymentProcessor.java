@@ -30,12 +30,11 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.datasources.DataSourceDeploymentService;
-import org.jboss.as.connector.subsystems.datasources.JDBCRARDeployService;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
@@ -62,7 +61,6 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
     public DsDeploymentProcessor() {
-        super();
     }
 
     /**
@@ -73,20 +71,21 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
      *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnitContext().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
 
         Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
 
         String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 
-        DataSources datasources = getDataSourcesAttachment(phaseContext);
+        DataSources datasources = getDataSourcesAttachment(deploymentUnit);
         if (datasources == null || deploymentName == null || !deploymentName.startsWith("jdbc"))
             return;
 
         log.tracef("Processing datasource deployement: %s", datasources);
 
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + deploymentUnit);
 
 
         String uniqueJdbcLocalId = null;
@@ -118,16 +117,14 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, dataSourceDeploymentService.getRegistryInjector())
                     .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, dataSourceDeploymentService.getJndiInjector())
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dataSourceDeploymentService.getTxmInjector())
-                    .addDependency(JDBCRARDeployService.NAME)
                     .addDependency(NamingService.SERVICE_NAME)
-                    .addDependency(JDBCRARDeployService.NAME)
                     .setInitialMode(ServiceController.Mode.ACTIVE);
             if(uniqueJdbcLocalId != null) {
-                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcLocalId));
-                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(uniqueJdbcLocalId));
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcLocalId));
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(uniqueJdbcLocalId));
             } else if(uniqueJdbcXAId != null) {
-                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcXAId));
-                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(uniqueJdbcXAId));
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcXAId));
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(uniqueJdbcXAId));
             }
             serviceBuilder.install();
         }

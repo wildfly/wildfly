@@ -23,7 +23,7 @@
 package org.jboss.as.connector.subsystems.connector;
 
 import java.util.EnumSet;
-import org.jboss.as.ExtensionContext;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
