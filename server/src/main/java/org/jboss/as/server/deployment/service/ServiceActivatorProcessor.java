@@ -22,10 +22,10 @@
 
 package org.jboss.as.server.deployment.service;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
@@ -49,7 +49,7 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
         if(phaseContext.getAttachment(ServiceActivatorMarker.ATTACHMENT_KEY) == null)
             return; // Skip it if it has not been marked
 
-        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(Attachments.MODULE);
         if (module == null)
             return; // Skip deployments with no module
 

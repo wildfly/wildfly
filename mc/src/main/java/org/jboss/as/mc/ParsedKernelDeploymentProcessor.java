@@ -26,8 +26,8 @@ import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -63,7 +63,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         if(kdXmlDescriptor == null)
             return;
 
-        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(Attachments.MODULE);
         if(module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 

@@ -77,7 +77,7 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                                 Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, jdbcIdentifier, false, false));
+                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", ds.getJndiName());
                             }
@@ -100,7 +100,7 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                                 Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, jdbcIdentifier, false, false));
+                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", xads.getJndiName());
                             }

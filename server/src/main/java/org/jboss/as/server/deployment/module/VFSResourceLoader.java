@@ -23,7 +23,6 @@
 package org.jboss.as.server.deployment.module;
 
 import org.jboss.modules.ClassSpec;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.PackageSpec;
 import org.jboss.modules.PathFilter;
 import org.jboss.modules.PathFilters;
@@ -55,26 +54,20 @@ import java.util.jar.Manifest;
  */
 public class VFSResourceLoader implements ResourceLoader {
 
-    private final ModuleIdentifier moduleIdentifier;
     private final VirtualFile root;
     private final String rootName;
     private final Manifest manifest;
-    private final MountHandle mountHandle;
 
     /**
      * Construct new instance.
      *
-     * @param moduleIdentifier The module identifier
      * @param rootName The module root name
      * @param root The root virtual file
-     * @param mountHandle The mount handle
      * @throws IOException
      */
-    public VFSResourceLoader(final ModuleIdentifier moduleIdentifier, final String rootName, final VirtualFile root, final MountHandle mountHandle) throws IOException {
-        this.moduleIdentifier = moduleIdentifier;
+    public VFSResourceLoader(final String rootName, final VirtualFile root) throws IOException {
         this.root = root;
         this.rootName = rootName;
-        this.mountHandle = mountHandle;
         manifest = VFSUtils.getManifest(root);
     }
 

@@ -64,9 +64,9 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
         if (index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME) == null) {
             return; // Skip if there are no ManagedBean instances
         }
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVAEE_API_ID, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_LOGGING_ID, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVASSIST_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVAEE_API_ID, false, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_LOGGING_ID, false, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVASSIST_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

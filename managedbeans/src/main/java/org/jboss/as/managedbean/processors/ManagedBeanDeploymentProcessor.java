@@ -44,7 +44,7 @@ import org.jboss.as.managedbean.container.ManagedBeanObjectFactory;
 import org.jboss.as.managedbean.container.ManagedBeanService;
 import org.jboss.as.managedbean.container.MethodResourceInjection;
 import org.jboss.as.managedbean.container.ResourceInjection;
-import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.naming.deployment.ContextService;
 import org.jboss.as.naming.deployment.DuplicateBindingException;
 import org.jboss.as.naming.deployment.JndiName;
@@ -87,7 +87,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(Attachments.MODULE);
         final ClassLoader classLoader = module.getClassLoader();
 
         for(ManagedBeanConfiguration managedBeanConfiguration : managedBeanConfigurations.getConfigurations().values()) {

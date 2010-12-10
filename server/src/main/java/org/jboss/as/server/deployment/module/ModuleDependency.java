@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.PathFilter;
 
 /**
  * @author John E. Bailey
@@ -41,8 +40,9 @@ public final class ModuleDependency implements Serializable {
     private final ModuleIdentifier identifier;
     private final boolean export;
     private final boolean optional;
-    private final List<PathFilter> importFilters = new ArrayList<PathFilter>();
-    private final List<PathFilter> exportFilters = new ArrayList<PathFilter>();
+    private final List<FilterSpecification> importFilters = new ArrayList<FilterSpecification>();
+    private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
+    private final boolean importServices;
 
     /**
      * Construct a new instance.
@@ -51,12 +51,14 @@ public final class ModuleDependency implements Serializable {
      * @param identifier the module identifier
      * @param optional {@code true} if this is an optional dependency
      * @param export {@code true} if resources should be exported by default
+     * @param importServices
      */
-    public ModuleDependency(final ModuleLoader moduleLoader, final ModuleIdentifier identifier, final boolean optional, final boolean export) {
+    public ModuleDependency(final ModuleLoader moduleLoader, final ModuleIdentifier identifier, final boolean optional, final boolean export, final boolean importServices) {
         this.identifier = identifier;
         this.optional = optional;
         this.export = export;
         this.moduleLoader = moduleLoader;
+        this.importServices = importServices;
     }
 
     public ModuleLoader getModuleLoader() {
@@ -75,11 +77,15 @@ public final class ModuleDependency implements Serializable {
         return export;
     }
 
-    public List<PathFilter> getImportFilters() {
+    public List<FilterSpecification> getImportFilters() {
         return importFilters;
     }
 
-    public List<PathFilter> getExportFilters() {
+    public List<FilterSpecification> getExportFilters() {
         return exportFilters;
+    }
+
+    public boolean isImportServices() {
+        return importServices;
     }
 }

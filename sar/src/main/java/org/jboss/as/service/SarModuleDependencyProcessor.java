@@ -54,8 +54,8 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_LOGGING_ID, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_MODULES_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_LOGGING_ID, false, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_MODULES_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

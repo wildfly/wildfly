@@ -44,7 +44,6 @@ import org.jboss.as.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.managedbean.config.ManagedBeanConfiguration;
 import org.jboss.as.managedbean.config.ManagedBeanConfigurations;
 import org.jboss.as.managedbean.config.ResourceConfiguration;
-import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -92,7 +91,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         if (instances == null)
             return; // Skip if there are no ManagedBean instances
 
-        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final Module module = phaseContext.getAttachment(Attachments.MODULE);
         if (module == null)
             return; // Skip if there are no Module
 

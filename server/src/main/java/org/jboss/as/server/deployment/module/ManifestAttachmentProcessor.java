@@ -57,7 +57,7 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
         if (manifest != null)
             return;
 
-        final VirtualFile deploymentRoot = deploymentUnitContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = deploymentUnitContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         try {
             manifest = VFSUtils.getManifest(deploymentRoot);
             if (manifest != null) deploymentUnitContext.putAttachment(Attachments.MANIFEST, manifest);

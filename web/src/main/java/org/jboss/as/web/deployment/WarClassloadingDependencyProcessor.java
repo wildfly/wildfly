@@ -51,15 +51,15 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
             return; // Skip non web deployments
         }
         // Add module dependencies on Java EE apis
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_API, false, false));
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_JSP_API, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_API, false, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_JSP_API, false, false, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JBOSS_WEB, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JBOSS_WEB, false, false, false));
         // JFC hack...
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, SYSTEM, false, false));
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, LOG, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, SYSTEM, false, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, LOG, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {
