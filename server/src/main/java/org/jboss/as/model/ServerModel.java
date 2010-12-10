@@ -274,7 +274,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         return profile.getSubsystem(namespaceUri);
     }
 
-    void addDeployment(final ServerGroupDeploymentElement deploymentElement) {
+    public void addDeployment(final ServerGroupDeploymentElement deploymentElement) {
         synchronized (deployments) {
             if(deployments.put(deploymentElement.getUniqueName(), deploymentElement) != null) {
                 throw new IllegalArgumentException("Deployment " + deploymentElement.getUniqueName() +
@@ -284,7 +284,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         }
     }
 
-    ServerGroupDeploymentElement removeDeployment(final String deploymentName) {
+    public ServerGroupDeploymentElement removeDeployment(final String deploymentName) {
         synchronized (deployments) {
             return deployments.remove(deploymentName);
         }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.server.deployment.ServerDeploymentTestSupport;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -34,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.model.ServerDeploymentTestSupport;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;

@@ -20,10 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment;
 
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Test support for deployment tests.
@@ -34,9 +37,8 @@ import org.jboss.msc.service.ServiceContainer;
  */
 public class ServerDeploymentTestSupport {
 
-    public static void deploy(ServerGroupDeploymentElement element, BatchBuilder batchBuilder, ServiceContainer container) {
-        final ServerDeploymentStartStopHandler support = new ServerDeploymentStartStopHandler();
-        support.deploy(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash(), batchBuilder, container, NoOpUpdateResultHandler.INSTANCE, null);
+    public static void deploy(ServerGroupDeploymentElement element, ServiceTarget serviceTarget, ServiceContainer container) {
+        serviceTarget.addService(DeploymentUnitService.SERVICE_NAME_BASE.append(element.getUniqueName()), new DeploymentUnitService(element.getUniqueName(), null));
     }
 
     private static class NoOpUpdateResultHandler implements UpdateResultHandler<Void, Void> {

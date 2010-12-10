@@ -37,6 +37,7 @@ import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
+import org.jboss.as.server.deployment.ServerModelDeploymentStartStopUpdate;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

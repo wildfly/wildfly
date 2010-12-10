@@ -20,7 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment;
+
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
 * Update used when updating a deployment element to be started.
@@ -34,7 +44,6 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     private final String newDeploymentRuntimeName;
     private final byte[] newDeploymentHash;
     private final String toReplace;
-    private final ServerDeploymentStartStopHandler startStopHandler;
     private ServerGroupDeploymentElement deploymentElement;
 
     public ServerModelDeploymentReplaceUpdate(final String newDeployment, final String newDeploymentRuntimeName, final byte[] newDeploymentHash, final String toReplace) {
@@ -49,7 +58,6 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
             throw new IllegalArgumentException("toReplace is null");
         this.newDeployment = newDeployment;
         this.toReplace = toReplace;
-        startStopHandler = new ServerDeploymentStartStopHandler();
         this.newDeploymentRuntimeName = newDeploymentRuntimeName;
         this.newDeploymentHash = newDeploymentHash;
     }
@@ -62,7 +70,6 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
             throw new IllegalArgumentException("toReplace is null");
         this.newDeployment = newDeployment;
         this.toReplace = toReplace;
-        startStopHandler = new ServerDeploymentStartStopHandler();
         this.newDeploymentRuntimeName = null;
         this.newDeploymentHash = null;
     }
@@ -90,17 +97,33 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     }
 
     @Override
-    public <P> void applyUpdate(UpdateContext updateContext,
-            UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         if (deploymentElement != null) {
-            startStopHandler.redeploy(newDeployment, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(),
-                    updateContext.getServiceContainer(), resultHandler, param);
+            final ServiceController<?> controller = updateContext.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(newDeployment));
+            if(controller != null) {
+                controller.addListener(new AbstractServiceListener<Object>() {
+                    public void serviceRemoved(ServiceController<? extends Object> serviceController) {
+                        deploy(updateContext);
+                    }
+                });
+                controller.setMode(ServiceController.Mode.REMOVE);
+            } else {
+                deploy(updateContext);
+            }
         }
         else if (resultHandler != null) {
             // We shouldn't be able to get here, as the model update should have failed,
             // but just in case
             resultHandler.handleFailure(new IllegalStateException("Unknown deployment " + newDeployment), param);
         }
+    }
+
+    private void deploy(final UpdateContext updateContext) {
+        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
+        final DeploymentUnitService service = new DeploymentUnitService(newDeployment,  null);
+        serviceTarget.addService(Services.JBOSS_DEPLOYMENT_UNIT.append(newDeployment), service)
+            .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
+            .setInitialMode(ServiceController.Mode.ACTIVE);
     }
 
     @Override

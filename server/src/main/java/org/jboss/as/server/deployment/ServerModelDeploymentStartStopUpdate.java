@@ -20,7 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment;
+
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 
 /**
@@ -32,7 +43,6 @@ package org.jboss.as.model;
 public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpdate<Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 
-    private final ServerDeploymentStartStopHandler startStopHandler;
     private ServerGroupDeploymentElement deploymentElement;
     private final String deploymentUnitName;
     private final boolean isStart;
@@ -43,7 +53,6 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
             throw new IllegalArgumentException("deploymentUnitName is null");
         this.deploymentUnitName = deploymentUnitName;
         this.isStart = isStart;
-        this.startStopHandler = new  ServerDeploymentStartStopHandler();
     }
 
     public String getDeploymentUnitName() {
@@ -73,13 +82,22 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         // TODO using the deploymentElement cached in the model update method
         // has a bad smell
+        final ServiceName deploymentUnitServiceName = Services.JBOSS_DEPLOYMENT_UNIT.append(deploymentUnitName);
+        final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
+        final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
         if (deploymentElement != null) {
             if (isStart) {
-                startStopHandler.deploy(deploymentElement.getUniqueName(), deploymentElement.getRuntimeName(),
-                        deploymentElement.getSha1Hash(), updateContext.getServiceTarget(), updateContext.getServiceContainer(), resultHandler, param);
-            }
-            else {
-                startStopHandler.undeploy(getDeploymentUnitName(), updateContext.getServiceContainer(), resultHandler, param);
+                if(controller != null) {
+                    controller.setMode(ServiceController.Mode.ACTIVE);
+                } else {
+                    final ServiceTarget serviceTarget = updateContext.getServiceTarget();
+                    final DeploymentUnitService service = new DeploymentUnitService(deploymentUnitName,  null);
+                    serviceTarget.addService(deploymentUnitServiceName, service)
+                        .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
+                        .setInitialMode(ServiceController.Mode.ACTIVE);
+                }
+            } else if(controller != null) {
+                controller.setMode(ServiceController.Mode.NEVER);
             }
         }
         else if (resultHandler != null) {

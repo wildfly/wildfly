@@ -57,6 +57,7 @@ import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceParsingUtils;
 import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
+import org.jboss.as.server.deployment.ServerModelDeploymentStartStopUpdate;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;

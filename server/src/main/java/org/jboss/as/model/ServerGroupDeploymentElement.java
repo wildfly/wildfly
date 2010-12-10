@@ -121,7 +121,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
      * @param start <code>true</code> if the deployment should be started; <code>false</code>
      *         if not.
      */
-    void setStart(boolean start) {
+    public void setStart(boolean start) {
         this.start = start;
     }
 

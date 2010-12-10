@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.server.deployment.ServerModelDeploymentStartStopUpdate;
+
 
 /**
  * Update used when updating a deployment element to be started or stopped.

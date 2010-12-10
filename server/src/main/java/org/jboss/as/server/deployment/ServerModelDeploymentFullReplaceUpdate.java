@@ -20,7 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment;
+
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 
 /**
@@ -61,15 +71,31 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
     }
 
     @Override
-    public <P> void applyUpdate(UpdateContext updateContext,
-            UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         if (redeploy) {
-            ServerDeploymentStartStopHandler startStopHandler = new ServerDeploymentStartStopHandler();
-            startStopHandler.redeploy(deploymentUniqueName, deploymentRuntimeName, hash, updateContext.getServiceRegistry(), resultHandler, param);
+            final ServiceController<?> controller = updateContext.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(deploymentUniqueName));
+            if(controller != null) {
+                controller.addListener(new AbstractServiceListener<Object>() {
+                    public void serviceRemoved(ServiceController<? extends Object> serviceController) {
+                        deploy(updateContext);
+                    }
+                });
+                controller.setMode(ServiceController.Mode.REMOVE);
+            } else {
+                deploy(updateContext);
+            }
         }
         else if (resultHandler != null) {
             resultHandler.handleSuccess(null, param);
         }
+    }
+
+    private void deploy(final UpdateContext updateContext) {
+        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
+        final DeploymentUnitService service = new DeploymentUnitService(deploymentUniqueName,  null);
+        serviceTarget.addService(Services.JBOSS_DEPLOYMENT_UNIT.append(deploymentUniqueName), service)
+            .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
+            .setInitialMode(ServiceController.Mode.ACTIVE);
     }
 
     @Override

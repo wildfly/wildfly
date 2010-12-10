@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.server.deployment.ServerModelDeploymentReplaceUpdate;
+
 
 /**
  * Update used when replacng a deployment in a server group with another deployment.

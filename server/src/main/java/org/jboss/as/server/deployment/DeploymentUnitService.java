@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class DeploymentUnitService implements Service<DeploymentUnit> {
+public final class DeploymentUnitService implements Service<DeploymentUnit> {
     private static final String FIRST_PHASE_NAME = Phase.values()[0].name();
 
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();

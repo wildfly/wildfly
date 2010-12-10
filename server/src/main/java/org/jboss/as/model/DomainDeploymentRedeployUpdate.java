@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.jboss.as.server.deployment.ServerModelDeploymentReplaceUpdate;
 
 /**
  * Add a deployment to the domain and replace all occurences of an earlier
