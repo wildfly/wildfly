@@ -56,7 +56,7 @@ public final class ArquillianSubsystemUpdate extends AbstractSubsystemUpdate<Arq
     }
 
     @Override
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<Object, P> resultHandler, P param) {
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Object, P> handler, final P param) {
         // [TODO] review what to do here
     }
 }

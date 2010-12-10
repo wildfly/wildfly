@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -52,15 +53,16 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
             return; // Skip if there is no annotation index
 
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
-        final List<AnnotationTarget> targets = index.getAnnotationTargets(runWithName);
-        if (targets == null || targets.isEmpty())
+        final List<AnnotationInstance> instances = index.getAnnotations(runWithName);
+        if (instances == null || instances.isEmpty())
             return; // Skip if there are no @RunWith annotations
 
         final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
         ArquillianConfig arqConfig = new ArquillianConfig(deploymentUnitContext);
         deploymentUnitContext.putAttachment(ArquillianConfig.KEY, arqConfig);
 
-        for (AnnotationTarget target : targets) {
+        for (AnnotationInstance instance : instances) {
+            final AnnotationTarget target = instance.target();
             if (target instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) target;
                 final String testClassName = classInfo.name().toString();
