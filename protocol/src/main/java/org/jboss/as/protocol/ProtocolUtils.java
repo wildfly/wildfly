@@ -25,8 +25,6 @@ package org.jboss.as.protocol;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -34,9 +32,6 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 
 /**
  * Utility class providing methods for common management tasks.
@@ -48,33 +43,7 @@ public class ProtocolUtils {
     public static final MarshallingConfiguration MODULAR_CONFIG;
 
     static {
-
-        MarshallerFactory marshallerFactory = null;
-        final boolean isSystemClassLoader = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-
-            @Override
-            public Boolean run() {
-                return ProtocolUtils.class.getClassLoader() == ClassLoader.getSystemClassLoader() || ProtocolUtils.class.getClassLoader() == null;
-            }
-        });
-
-        if (!isSystemClassLoader) {
-            try {
-                marshallerFactory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
-            } catch (ModuleLoadException e) {
-            }
-        }
-
-        if (marshallerFactory == null) {
-            marshallerFactory = Marshalling.getMarshallerFactory("river", ProtocolUtils.class.getClassLoader());
-        }
-
-        if(marshallerFactory == null) {
-            throw new RuntimeException("Failed to construct a Marshaller factory");
-        }
-
-
-        MARSHALLER_FACTORY = marshallerFactory;
+        MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ProtocolUtils.class.getClassLoader());
         MODULAR_CONFIG = new MarshallingConfiguration();
         MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance());
     }

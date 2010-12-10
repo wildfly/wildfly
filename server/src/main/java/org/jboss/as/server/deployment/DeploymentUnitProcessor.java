@@ -50,7 +50,9 @@ public interface DeploymentUnitProcessor {
     void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException;
 
     /**
-     * Undo the deployment processing.  Any exceptions thrown are logged and ignored.  Implementations of this
+     * Undo the deployment processing.  This method should undo any action taken by {@code deploy()}; however, if
+     * the {@code deploy()} method added services, they need not be removed here (they will automatically be removed).
+     * <p>This method should avoid throwing exceptions; any exceptions thrown are logged and ignored.  Implementations of this
      * method cannot assume that the deployment process has (or has not) proceeded beyond the current processor, nor can they
      * assume that the {@code undeploy()} method will be called from the same thread as the {@code deploy()} method.
      *

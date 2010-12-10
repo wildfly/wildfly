@@ -56,7 +56,7 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
         if (targets == null || targets.isEmpty())
             return; // Skip if there are no @RunWith annotations
 
-        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
         ArquillianConfig arqConfig = new ArquillianConfig(deploymentUnitContext);
         deploymentUnitContext.putAttachment(ArquillianConfig.KEY, arqConfig);
 

@@ -52,7 +52,7 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Do nothing if the manifest is already available
-        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
         Manifest manifest = deploymentUnitContext.getAttachment(Attachments.MANIFEST);
         if (manifest != null)
             return;

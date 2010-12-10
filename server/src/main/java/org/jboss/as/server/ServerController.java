@@ -29,7 +29,6 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.model.UpdateResultHandlerResponse;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * The API entry point for a server controller, which manages the state of running server.
@@ -37,11 +36,6 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface ServerController {
-
-    /**
-     * The name at which this controller is installed.
-     */
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("as", "server", "controller");
 
     /**
      * Get the server model

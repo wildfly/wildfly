@@ -47,7 +47,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
         final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(deploymentUnitContext.getName());
         final JndiName moduleContextJndiName = ContextNames.GLOBAL_CONTEXT_NAME.append(deploymentUnitContext.getName());
         final ContextService contextService = new ContextService(moduleContextJndiName);

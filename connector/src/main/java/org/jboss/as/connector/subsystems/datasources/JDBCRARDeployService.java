@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.model.ServerDeploymentStartStopHandler;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;

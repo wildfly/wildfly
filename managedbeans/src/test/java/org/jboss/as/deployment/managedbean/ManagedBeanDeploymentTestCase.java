@@ -55,7 +55,7 @@ import org.junit.Test;
  */
 public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
     private static final DeploymentChain deploymentChain = new DeploymentChainImpl();
-    private static DeploymentModuleLoaderProcessor deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
+    private static DeploymentModuleLoaderProcessor deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl(mainModuleLoader));
 
     Context javaContext;
 
@@ -75,7 +75,7 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
     protected void setupServices(final ServiceTarget target) throws Exception {
         super.setupServices(target);
         deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
-        deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
+        deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl(mainModuleLoader));
         deploymentChain.addProcessor(deploymentModuleLoaderProcessor, Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
 
         javaContext = new MockContext();

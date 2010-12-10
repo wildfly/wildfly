@@ -60,20 +60,20 @@ import org.jboss.msc.service.TrackingServiceTarget;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ApplicationServerService implements Service<ServerController> {
+final class ServerControllerService implements Service<ServerController> {
+
+    public static final ServiceName JBOSS_AS_NAME = ServiceName.JBOSS.append("as");
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final Bootstrap.Configuration configuration;
-    private final ServerConfigurationPersister persister;
 
     // mutable state
     private ServerController serverController;
     private Set<ServiceName> bootServices;
 
-    public ApplicationServerService(final Bootstrap.Configuration configuration, final ServerConfigurationPersister persister) {
+    public ServerControllerService(final Bootstrap.Configuration configuration) {
         this.configuration = configuration;
-        this.persister = persister;
     }
 
     /** {@inheritDoc} */
@@ -83,6 +83,7 @@ final class ApplicationServerService implements Service<ServerController> {
         final DelegatingServiceRegistry serviceRegistry = new DelegatingServiceRegistry(container);
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
+        final ServerConfigurationPersister persister = configuration.getConfigurationPersister();
         final List<AbstractServerModelUpdate<?>> updates;
         try {
             updates = persister.load(serverController);

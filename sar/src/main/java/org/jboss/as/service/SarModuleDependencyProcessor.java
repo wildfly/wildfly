@@ -22,13 +22,13 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.server.deployment.module.ModuleDependencies;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -54,7 +54,10 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JBOSS_LOGGING_ID, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JBOSS_MODULES_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_LOGGING_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_MODULES_ID, false, false));
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 }

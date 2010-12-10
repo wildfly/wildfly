@@ -40,7 +40,7 @@ import org.jboss.msc.service.ServiceActivator;
 public class ServiceActivatorDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final String SERVICE_ACTIVATOR_PATH = "META-INF/services/" + ServiceActivator.class.getName();
-    private static final ModuleDependency MSC_DEP = new ModuleDependency(ModuleIdentifier.create("org.jboss.msc"), false, false);
+    private static final ModuleDependency MSC_DEP = new ModuleDependency(null, ModuleIdentifier.create("org.jboss.msc"), false, false);
 
     /**
      * Add the dependencies if the deployment contains a service activator loader entry.

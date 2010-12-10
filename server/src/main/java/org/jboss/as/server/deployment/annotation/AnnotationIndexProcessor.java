@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.vfs.VFSUtils;
@@ -55,7 +56,8 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
         if(phaseContext.getAttachment(Attachments.ANNOTATION_INDEX) != null)
             return;
 
-        final VirtualFile virtualFile = phaseContext.getDeploymentUnitContext().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile virtualFile = resourceRoot.getRoot();
         final Indexer indexer = new Indexer();
         try {
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -76,6 +78,5 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(final DeploymentUnit context) {
-        
     }
 }

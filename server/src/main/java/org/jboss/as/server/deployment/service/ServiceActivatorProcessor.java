@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment.service;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -52,7 +53,7 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
         if (module == null)
             return; // Skip deployments with no module
 
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(phaseContext.getBatchBuilder(), null /* TODO: add a service registry to DeploymentUnitContext */);
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(phaseContext.getServiceTarget(), phaseContext.getServiceRegistry());
         for(ServiceActivator serviceActivator : module.loadService(ServiceActivator.class)) {
             try {
                 serviceActivator.activate(serviceActivatorContext);
@@ -60,5 +61,8 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException(e);
             }
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 }

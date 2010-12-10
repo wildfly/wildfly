@@ -22,8 +22,8 @@
 
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnit;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
  * @author John Bailey

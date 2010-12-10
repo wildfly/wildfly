@@ -65,5 +65,5 @@ public interface DeploymentPhaseContext extends Attachable {
      *
      * @return the deployment unit context
      */
-    DeploymentUnit getDeploymentUnitContext();
+    DeploymentUnit getDeploymentUnit();
 }

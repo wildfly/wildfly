@@ -37,7 +37,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 import org.jboss.threads.AsyncFuture;
@@ -77,9 +76,9 @@ final class BootstrapImpl implements Bootstrap {
 
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
-        final Service<ServerController> serverControllerService = new ApplicationServerService(configuration, configurationPersister);
+        final Service<ServerController> serverControllerService = new ServerControllerService(configuration);
         tracker.addListener(new BootstrapListener(future, serverControllerService, configuration.getStartTime()));
-        tracker.addService(ServiceName.JBOSS.append("as"), serverControllerService).install();
+        tracker.addService(ServerControllerService.JBOSS_AS_NAME, serverControllerService).install();
         return future;
     }
 

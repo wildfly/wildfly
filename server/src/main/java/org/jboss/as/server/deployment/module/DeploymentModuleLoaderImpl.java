@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment.module;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +39,10 @@ import java.util.concurrent.ConcurrentMap;
 public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
     private final ConcurrentMap<ModuleIdentifier, ModuleSpec> moduleSpecs = new ConcurrentHashMap<ModuleIdentifier, ModuleSpec>();
 
-    public DeploymentModuleLoaderImpl() {
+    private final ModuleLoader mainModuleLoader;
+
+    public DeploymentModuleLoaderImpl(final ModuleLoader mainModuleLoader) {
+        this.mainModuleLoader = mainModuleLoader;
     }
 
     @Override
@@ -57,7 +61,7 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
         if (identifier.getName().startsWith("deployment.")) {
             return super.preloadModule(identifier);
         } else {
-            return Module.getModuleFromDefaultLoader(identifier);
+            return preloadModule(identifier, mainModuleLoader);
         }
     }
 

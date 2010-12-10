@@ -46,6 +46,7 @@ final class DeploymentUnitService implements Service<DeploymentUnit> {
 
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
     private final String name;
+    private final DeploymentUnit parent;
 
     private DeploymentUnit deploymentUnit;
 
@@ -53,29 +54,31 @@ final class DeploymentUnitService implements Service<DeploymentUnit> {
      * Construct a new instance.
      *
      * @param name the deployment unit simple name
+     * @param parent
      */
-    public DeploymentUnitService(final String name) {
+    public DeploymentUnitService(final String name, final DeploymentUnit parent) {
         this.name = name;
+        this.parent = parent;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
         // Create the first phase deployer
         final ServiceContainer container = context.getController().getServiceContainer();
 
-        deploymentUnit = new DeploymentUnitImpl(null, name, new DelegatingServiceRegistry(container));
-        final ServiceName serviceName = Services.DEPLOYMENT_BASE.append(name).append(FIRST_PHASE_NAME);
+        deploymentUnit = new DeploymentUnitImpl(parent, name, new DelegatingServiceRegistry(container));
+        final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
         final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(firstPhase);
         final ServiceBuilder<?> phaseServiceBuilder = container.addService(serviceName, phaseService);
         // depend on this service
         phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService.getDeploymentUnitInjector());
-        phaseServiceBuilder.addDependency(Services.DEPLOYER_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
+        phaseServiceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
         phaseServiceBuilder.install();
     }
 
     public synchronized void stop(final StopContext context) {
         // Delete the first phase deployer
-        final ServiceController<?> controller = context.getController().getServiceContainer().getRequiredService(Services.DEPLOYMENT_BASE.append(name).append(FIRST_PHASE_NAME));
+        final ServiceController<?> controller = context.getController().getServiceContainer().getRequiredService(Services.JBOSS_DEPLOYMENT_UNIT.append(name).append(FIRST_PHASE_NAME));
         controller.setMode(ServiceController.Mode.REMOVE);
         final MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
         controller.addListener(listener);

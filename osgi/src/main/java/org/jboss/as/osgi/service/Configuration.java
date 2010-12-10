@@ -31,8 +31,8 @@ import java.util.Map;
 import org.jboss.as.osgi.parser.OSGiSubsystemState;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
+import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -57,16 +57,16 @@ public class Configuration implements Service<Configuration> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "configuration");
 
-    /** The property that defines a comma seperated list of system module identifiers */
+    /** The property that defines a comma separated list of system module identifiers */
     static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
 
-    private InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<ServerController> serverControllerInjector = new InjectedValue<ServerController>();
     private final OSGiSubsystemState subsystemState;
 
     public static void addService(final BatchBuilder batchBuilder, final OSGiSubsystemState state) {
         Configuration config = new Configuration(state);
         ServiceBuilder<?> serviceBuilder = batchBuilder.addService(SERVICE_NAME, config);
-        serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, config.injectedEnvironment);
+        serviceBuilder.addDependency(ServiceName.JBOSS.append("as"), ServerController.class, config.serverControllerInjector);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.install();
     }
@@ -80,8 +80,8 @@ public class Configuration implements Service<Configuration> {
         }
     }
 
-    private Configuration(final OSGiSubsystemState state) {
-        this.subsystemState = state;
+    private Configuration(final OSGiSubsystemState subsystemState) {
+        this.subsystemState = subsystemState;
     }
 
     public Activation getActivationPolicy() {
@@ -93,8 +93,8 @@ public class Configuration implements Service<Configuration> {
         Map<String, Object> properties = new LinkedHashMap<String, Object>(subsystemState.getProperties());
         String storage = (String) properties.get(Constants.FRAMEWORK_STORAGE);
         if (storage == null) {
-            ServerEnvironment envirionment = injectedEnvironment.getValue();
-            File dataDir = envirionment.getServerDataDir();
+            ServerEnvironment environment = serverControllerInjector.getValue().getServerEnvironment();
+            File dataDir = environment.getServerDataDir();
             storage = dataDir.getAbsolutePath() + File.separator + "osgi-store";
             properties.put(Constants.FRAMEWORK_STORAGE, storage);
         }

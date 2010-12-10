@@ -67,7 +67,7 @@ public class BeanDeploymentTestCase extends AbstractMcDeploymentTest {
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.PARSE_ANNOTATION_INDEX);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.DEPENDENCIES_MODULE);
         deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULARIZE_CONFIG);
-        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl(mainModuleLoader)), Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
         deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULARIZE_DEPLOYMENT);
 
         deploymentChain.addProcessor(new KernelDeploymentParsingProcessor(), Phase.PARSE_MC_BEAN_DEPLOYMENT);

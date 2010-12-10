@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.ServerDeploymentRepository;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.UpdateFailedException;
@@ -98,7 +99,7 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
 
     private static final Logger log = Logger.getLogger("org.jboss.server.management");
 
-    public static final ServiceName SERVICE_NAME = ServerController.SERVICE_NAME.append("operation", "handler");
+    public static final ServiceName SERVICE_NAME = Services.JBOSS_SERVER_CONTROLLER.append("operation", "handler");
 
     private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
     private final InjectedValue<ShutdownHandler> shutdownHandlerValue = new InjectedValue<ShutdownHandler>();

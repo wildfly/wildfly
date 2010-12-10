@@ -20,19 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment;
+package org.jboss.as.server;
 
 import org.jboss.msc.service.ServiceName;
 
 /**
+ * A holder class for constants containing the names of the core services.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Services {
+    private Services() {
+    }
 
-    private Services() {}
-
-    public static final ServiceName JBOSS_DEPLOYMENT = ServiceName.JBOSS.append("deployment");
-    public static final ServiceName JBOSS_DEPLOYMENT_UNIT = JBOSS_DEPLOYMENT.append("deployment");
-    public static final ServiceName JBOSS_DEPLOYMENT_CHAINS = JBOSS_DEPLOYMENT.append("chains");
-
+    /**
+     * The service corresponding to the {@link ServerController} for this instance.
+     */
+    public static final ServiceName JBOSS_SERVER_CONTROLLER = ServiceName.JBOSS.append("server-controller");
+    /**
+     * The internal deployer chains service used by all deployments.
+     */
+    public static final ServiceName JBOSS_DEPLOYER_CHAINS = ServiceName.JBOSS.append("deployer-chains");
+    
 }

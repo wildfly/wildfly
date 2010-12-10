@@ -29,13 +29,13 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class DeploymentPhaseContextImpl extends SimpleAttachable implements DeploymentPhaseContext {
+final class DeploymentPhaseContextImpl extends SimpleAttachable implements DeploymentPhaseContext {
     private final ServiceTarget serviceTarget;
     private final ServiceRegistry serviceRegistry;
     private final DeploymentUnit deploymentUnitContext;
     private final Phase phase;
 
-    public DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnit deploymentUnitContext, final Phase phase) {
+    DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnit deploymentUnitContext, final Phase phase) {
         this.serviceTarget = serviceTarget;
         this.serviceRegistry = serviceRegistry;
         this.deploymentUnitContext = deploymentUnitContext;
@@ -54,7 +54,7 @@ public final class DeploymentPhaseContextImpl extends SimpleAttachable implement
         return serviceRegistry;
     }
 
-    public DeploymentUnit getDeploymentUnitContext() {
+    public DeploymentUnit getDeploymentUnit() {
         return deploymentUnitContext;
     }
 }

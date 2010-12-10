@@ -40,7 +40,6 @@ import org.jboss.vfs.VFSUtils;
  */
 public class DeploymentService implements Service<Void> {
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
 
     private final Closeable deploymentMount;
 
@@ -52,7 +51,7 @@ public class DeploymentService implements Service<Void> {
     }
 
     public static ServiceName getServiceName(String deploymentName) {
-        return DeploymentService.SERVICE_NAME.append(deploymentName);
+        return Services.JBOSS_DEPLOYMENT_UNIT.append(deploymentName);
     }
 
     /**

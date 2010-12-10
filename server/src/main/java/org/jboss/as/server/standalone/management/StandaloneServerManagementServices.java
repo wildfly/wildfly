@@ -24,6 +24,7 @@ package org.jboss.as.server.standalone.management;
 
 import java.util.concurrent.Executors;
 
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.ServerDeploymentRepository;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ServerModel;
@@ -58,7 +59,7 @@ public class StandaloneServerManagementServices {
             // Handlers
             final ServerControllerOperationHandler clientOperationHandler = new ServerControllerOperationHandler(container);
             batchBuilder.addService(ServerControllerOperationHandler.SERVICE_NAME, clientOperationHandler)
-                    .addDependency(ServerController.SERVICE_NAME, ServerController.class, clientOperationHandler.getServerControllerInjector())
+                    .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, clientOperationHandler.getServerControllerInjector())
                     .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(clientOperationHandler))
                     .addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, clientOperationHandler.getConfigurationPersisterValue())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, clientOperationHandler.getDeploymentRepositoryInjector())

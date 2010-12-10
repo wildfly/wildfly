@@ -58,8 +58,9 @@ import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.HostControllerClient;
-import org.jboss.as.server.HostControllerConnectionService;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.mgmt.domain.HostControllerClient;
+import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
@@ -427,7 +428,7 @@ public final class ManagedServer {
             final HostControllerClient client = new HostControllerClient();
             serviceTarget.addService(HostControllerClient.SERVICE_NAME, client)
                 .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
-                .addDependency(ServerController.SERVICE_NAME, ServerController.class, client.getServerControllerInjector())
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, client.getServerControllerInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
         }

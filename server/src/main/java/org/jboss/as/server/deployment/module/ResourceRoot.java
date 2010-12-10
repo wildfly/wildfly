@@ -22,9 +22,9 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.modules.PathFilter;
 import org.jboss.vfs.VirtualFile;
 
@@ -32,9 +32,7 @@ import org.jboss.vfs.VirtualFile;
  * @author John E. Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ResourceRoot implements Serializable {
-
-    private static final long serialVersionUID = 3458831155403388498L;
+public final class ResourceRoot extends SimpleAttachable {
 
     private final String rootName;
     private final VirtualFile root;

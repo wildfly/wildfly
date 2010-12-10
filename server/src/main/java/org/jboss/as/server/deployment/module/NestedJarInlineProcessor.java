@@ -56,7 +56,7 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
      * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnitContext().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         final List<VirtualFile> list = new ArrayList<VirtualFile>(1);
         try {
             deploymentRoot.getRoot().visit(new VirtualFileVisitor() {
@@ -70,7 +70,7 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
                 }
             });
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Could not mount nested jars in deployment: " + phaseContext.getDeploymentUnitContext().getName(), e);
+            throw new DeploymentUnitProcessingException("Could not mount nested jars in deployment: " + phaseContext.getDeploymentUnit().getName(), e);
         }
 
         if (list.size() == 0)
@@ -82,10 +82,10 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
             MountHandle handle = new MountHandle(VFS.mountZip(file, file, TempFileProviderService.provider()));
             mounts.add(file, handle);
         } catch (IOException e) {
-            log.warnf("Could not mount %s in deployment %s, skipping", file.getPathNameRelativeTo(deploymentRoot), deploymentRoot.getName());
+            log.warnf("Could not mount %s in deployment %s, skipping", file.getPathNameRelativeTo(deploymentRoot.getRoot()), phaseContext.getDeploymentUnit());
         }
 
-        phaseContext.getDeploymentUnitContext().putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
+        phaseContext.getDeploymentUnit().putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
     }
 
     public void undeploy(final DeploymentUnit context) {

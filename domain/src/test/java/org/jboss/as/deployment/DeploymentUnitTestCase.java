@@ -25,7 +25,7 @@ package org.jboss.as.deployment;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.jboss.as.server.deployment.DeploymentService;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
@@ -55,7 +55,7 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
         executeDeployment(virtualFile);
 
         // Verify the DeploymentService is correctly setup
-        final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(expectedDeploymentName));
+        final ServiceController<?> serviceController = serviceContainer.getService(Services.JBOSS_DEPLOYMENT_UNIT.append(expectedDeploymentName));
         assertNotNull(serviceController);
 
         assertEquals(ServiceController.State.UP, serviceController.getState());

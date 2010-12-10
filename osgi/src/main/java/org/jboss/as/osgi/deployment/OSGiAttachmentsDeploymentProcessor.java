@@ -56,7 +56,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnitContext();
+        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
 
         // Check if we already have an OSGi deployment
         Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnitContext);

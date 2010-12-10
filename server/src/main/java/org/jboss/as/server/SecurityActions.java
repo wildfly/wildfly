@@ -28,9 +28,11 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * Security actions to access system environment information.  No methods in
+ * this class are to be made public under any circumstances!
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class SecurityActions {
 

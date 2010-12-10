@@ -62,7 +62,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "optional");
-            ModuleDependency dependency = new ModuleDependency(dependencyId, optional, export);
+            ModuleDependency dependency = new ModuleDependency(null, dependencyId, optional, export);
             phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
         }
     }

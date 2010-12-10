@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John E. Bailey
  */
-public class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
+class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
     private final DeploymentUnit parent;
     private final String name;
     private final ServiceRegistry serviceRegistry;
@@ -42,7 +42,7 @@ public class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUn
      * @param name the deployment unit name
      * @param serviceRegistry the service registry
      */
-    public DeploymentUnitImpl(final DeploymentUnit parent, final String name, final ServiceRegistry serviceRegistry) {
+    DeploymentUnitImpl(final DeploymentUnit parent, final String name, final ServiceRegistry serviceRegistry) {
         this.parent = parent;
         this.name = name;
         this.serviceRegistry = serviceRegistry;

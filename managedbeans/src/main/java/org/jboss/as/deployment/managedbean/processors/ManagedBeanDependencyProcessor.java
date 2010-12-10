@@ -22,12 +22,12 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.ModuleIdentifier;
@@ -64,9 +64,9 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
         if (index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME) == null) {
             return; // Skip if there are no ManagedBean instances
         }
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JAVAEE_API_ID, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JBOSS_LOGGING_ID, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JAVASSIST_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVAEE_API_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_LOGGING_ID, false, false));
+        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVASSIST_ID, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

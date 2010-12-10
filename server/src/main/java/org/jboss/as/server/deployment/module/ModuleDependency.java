@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.PathFilter;
 
 /**
@@ -36,16 +37,30 @@ public final class ModuleDependency implements Serializable {
 
     private static final long serialVersionUID = 2749276798703740853L;
 
+    private final ModuleLoader moduleLoader;
     private final ModuleIdentifier identifier;
     private final boolean export;
     private final boolean optional;
     private final List<PathFilter> importFilters = new ArrayList<PathFilter>();
     private final List<PathFilter> exportFilters = new ArrayList<PathFilter>();
 
-    public ModuleDependency(final ModuleIdentifier identifier, final boolean optional, final boolean export) {
+    /**
+     * Construct a new instance.
+     *
+     * @param moduleLoader the module loader of the dependency (if {@code null}, then use the default server module loader)
+     * @param identifier the module identifier
+     * @param optional {@code true} if this is an optional dependency
+     * @param export {@code true} if resources should be exported by default
+     */
+    public ModuleDependency(final ModuleLoader moduleLoader, final ModuleIdentifier identifier, final boolean optional, final boolean export) {
         this.identifier = identifier;
         this.optional = optional;
         this.export = export;
+        this.moduleLoader = moduleLoader;
+    }
+
+    public ModuleLoader getModuleLoader() {
+        return moduleLoader;
     }
 
     public ModuleIdentifier getIdentifier() {

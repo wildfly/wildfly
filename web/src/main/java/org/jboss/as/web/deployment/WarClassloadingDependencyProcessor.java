@@ -21,13 +21,14 @@
  */
 package org.jboss.as.web.deployment;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDependencies;
 import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -45,19 +46,22 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
         // Add module dependencies on Java EE apis
-        ModuleDependencies.addDependency(phaseContext, new ModuleDependency(JAVAX_SERVLET_API, false, false));
-        ModuleDependencies.addDependency(phaseContext, new ModuleDependency(JAVAX_SERVLET_JSP_API, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_API, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_JSP_API, false, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        ModuleDependencies.addDependency(phaseContext, new ModuleDependency(JBOSS_WEB, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JBOSS_WEB, false, false));
         // JFC hack...
-        ModuleDependencies.addDependency(phaseContext, new ModuleDependency(SYSTEM, false, false));
-        ModuleDependencies.addDependency(phaseContext, new ModuleDependency(LOG, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, SYSTEM, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, LOG, false, false));
     }
 
+    public void undeploy(final DeploymentUnit context) {
+    }
 }

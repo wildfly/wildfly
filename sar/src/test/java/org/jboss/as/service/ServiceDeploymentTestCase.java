@@ -61,7 +61,7 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.PARSE_ANNOTATION_INDEX);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.DEPENDENCIES_MODULE);
         deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULARIZE_CONFIG);
-        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl(mainModuleLoader)), Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
         deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULARIZE_DEPLOYMENT);
         deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), Phase.PARSE_SERVICE_DEPLOYMENT);
         deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), Phase.INSTALL_SERVICE_DEPLOYMENT);

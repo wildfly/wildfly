@@ -1,7 +1,5 @@
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.deployment.SimpleAttachmentKey;
-
 /**
  * An immutable, type-safe object attachment key.  Such a key has no value outside of its object identity.
  *
