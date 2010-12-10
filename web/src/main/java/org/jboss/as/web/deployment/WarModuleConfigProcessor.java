@@ -24,24 +24,17 @@ package org.jboss.as.web.deployment;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ModuleConfig;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.deployment.module.ModuleDependencies;
-import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-import static org.jboss.as.server.deployment.module.ModuleDependencies.getAttachedDependencies;
-
 
 /**
  * War {@code ModuleConfig} processor.
@@ -55,7 +48,7 @@ public class WarModuleConfigProcessor implements DeploymentUnitProcessor {
 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
-    private static final ModuleDependency[] NO_DEPS = new ModuleDependency[0];
+    private static final ResourceRoot[] NO_ROOTS = new ResourceRoot[0];
 
     /**
      * Create the {@code ModuleConfig} for a .war deployment
@@ -67,16 +60,10 @@ public class WarModuleConfigProcessor implements DeploymentUnitProcessor {
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        if(phaseContext.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null) {
-            return;
-        }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentRoot.getName());
         final ResourceRoot[] resourceRoots = createResourceRoots(phaseContext.getAttachment(DeploymentStructure.ATTACHMENT_KEY));
-        final ModuleDependencies dependenciesAttachment = getAttachedDependencies(deploymentUnit);
-        final ModuleDependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
-        final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
-        phaseContext.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);
+        for (ResourceRoot root : resourceRoots) {
+            phaseContext.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
+        }
     }
 
     public void undeploy(final DeploymentUnit context) {
@@ -84,11 +71,11 @@ public class WarModuleConfigProcessor implements DeploymentUnitProcessor {
 
     private ResourceRoot[] createResourceRoots(final DeploymentStructure structure) {
         if(structure == null) {
-            return new ResourceRoot[0];
+            return NO_ROOTS;
         }
         final ClassPathEntry[] entries = structure.getEntries();
         if(entries == null || entries.length == 0) {
-            return new ResourceRoot[0];
+            return NO_ROOTS;
         }
         final int length = entries.length;
         final ResourceRoot[] roots = new ResourceRoot[length];
@@ -98,7 +85,4 @@ public class WarModuleConfigProcessor implements DeploymentUnitProcessor {
         }
         return roots;
     }
-
-
-
 }
