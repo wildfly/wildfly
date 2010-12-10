@@ -28,10 +28,10 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
 
@@ -60,7 +60,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
     @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
-        final BatchBuilder builder = updateContext.getServiceTarget();
+        final ServiceTarget builder = updateContext.getServiceTarget();
         // XATerminator has no deps, so just add it in there
         final XATerminatorService xaTerminatorService = new XATerminatorService();
         builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(ServiceController.Mode.ACTIVE)
