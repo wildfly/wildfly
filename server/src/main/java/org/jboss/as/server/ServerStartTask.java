@@ -107,8 +107,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
         }
 
-        DeploymentUpdateService.addService(batchBuilder, updates, serverStartupListener);
-
         StandaloneServerManagementServices.addServices(serverModel, container, batchBuilder);
 
         try {

@@ -22,9 +22,9 @@
 
 package org.jboss.as.server;
 
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -36,7 +36,7 @@ import org.jboss.msc.service.StopContext;
  * have it injected. For example, suppose we have a service {@code MyService}
  * that has a field {@code injectedEnvironment} into which it wants the
  * ServerEnvironment injected. And suppose {@code MyService} exposes a utility method
- * to facilitate installing it via a {@link BatchBuilder}. The {@code ServerEnvironment}
+ * to facilitate installing it via a {@link ServiceTarget}. The {@code ServerEnvironment}
  * injection could be done as follows:
  * </p>
  *
@@ -62,10 +62,10 @@ public class ServerEnvironmentService implements Service<ServerEnvironment> {
      * to the given batch under name {@link #SERVICE_NAME}.
      *
      * @param serverEnvironment the {@code ServerEnvironment}. Cannot be {@code null}
-     * @param batchBuilder the batch builder. Cannot be {@code null}
+     * @param target the batch builder. Cannot be {@code null}
      */
-    public static void addService(ServerEnvironment serverEnvironment, BatchBuilder batchBuilder) {
-        batchBuilder.addService(SERVICE_NAME, new ServerEnvironmentService(serverEnvironment))
+    public static void addService(ServerEnvironment serverEnvironment, ServiceTarget target) {
+        target.addService(SERVICE_NAME, new ServerEnvironmentService(serverEnvironment))
             .install();
     }
 

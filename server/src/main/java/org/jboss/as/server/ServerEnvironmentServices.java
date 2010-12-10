@@ -25,7 +25,7 @@ package org.jboss.as.server;
 import java.io.File;
 
 import org.jboss.as.server.services.path.AbsolutePathService;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Server environment service factory.
@@ -38,32 +38,35 @@ class ServerEnvironmentServices {
     private static final String USER_HOME = "user.home";
     private static final String JAVA_HOME = "java.home";
 
-    static void addServices(final ServerEnvironment environment, final BatchBuilder batch) {
+    private ServerEnvironmentServices() {
+    }
+
+    static void addServices(final ServerEnvironment environment, final ServiceTarget target) {
         // Add server environment
-        addEnvironmentService(environment, batch);
+        addEnvironmentService(environment, target);
         // Add environment paths
-        addPathService(ServerEnvironment.HOME_DIR, environment.getHomeDir(), batch);
-        addPathService(ServerEnvironment.SERVER_BASE_DIR, environment.getServerBaseDir(), batch);
-        addPathService(ServerEnvironment.SERVER_CONFIG_DIR, environment.getServerConfigurationDir(), batch);
-        addPathService(ServerEnvironment.SERVER_DATA_DIR, environment.getServerDataDir(), batch);
-        addPathService(ServerEnvironment.SERVER_LOG_DIR, environment.getServerLogDir(), batch);
-        addPathService(ServerEnvironment.SERVER_TEMP_DIR, environment.getServerTempDir(), batch);
+        addPathService(ServerEnvironment.HOME_DIR, environment.getHomeDir(), target);
+        addPathService(ServerEnvironment.SERVER_BASE_DIR, environment.getServerBaseDir(), target);
+        addPathService(ServerEnvironment.SERVER_CONFIG_DIR, environment.getServerConfigurationDir(), target);
+        addPathService(ServerEnvironment.SERVER_DATA_DIR, environment.getServerDataDir(), target);
+        addPathService(ServerEnvironment.SERVER_LOG_DIR, environment.getServerLogDir(), target);
+        addPathService(ServerEnvironment.SERVER_TEMP_DIR, environment.getServerTempDir(), target);
         // Add system paths
-        addPathService(USER_DIR, getProperty(USER_DIR), batch);
-        addPathService(USER_HOME, getProperty(USER_HOME), batch);
-        addPathService(JAVA_HOME, getProperty(JAVA_HOME), batch);
+        addPathService(USER_DIR, getProperty(USER_DIR), target);
+        addPathService(USER_HOME, getProperty(USER_HOME), target);
+        addPathService(JAVA_HOME, getProperty(JAVA_HOME), target);
     }
 
-    static void addEnvironmentService(final ServerEnvironment environment, final BatchBuilder batch) {
-        ServerEnvironmentService.addService(environment, batch);
+    static void addEnvironmentService(final ServerEnvironment environment, final ServiceTarget target) {
+        ServerEnvironmentService.addService(environment, target);
     }
 
-    static void addPathService(final String name, final File file, final BatchBuilder batch) {
-        addPathService(name, file.getAbsolutePath(), batch);
+    static void addPathService(final String name, final File file, final ServiceTarget target) {
+        addPathService(name, file.getAbsolutePath(), target);
     }
 
-    static void addPathService(final String name, final String path, final BatchBuilder batch) {
-        AbsolutePathService.addService(name, path, batch);
+    static void addPathService(final String name, final String path, final ServiceTarget target) {
+        AbsolutePathService.addService(name, path, target);
     }
 
     static String getProperty(final String propertyName) {
