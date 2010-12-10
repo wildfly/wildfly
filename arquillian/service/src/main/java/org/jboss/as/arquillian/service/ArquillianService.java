@@ -38,7 +38,6 @@ import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.service.BundleContextService;
@@ -70,7 +69,6 @@ public class ArquillianService implements Service<ArquillianService> {
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<ClassifyingModuleLoaderService> injectedModuleLoader = new InjectedValue<ClassifyingModuleLoaderService>();
     private ServiceContainer serviceContainer;
     private final Map<String, ArquillianConfig> deployedTests = new HashMap<String, ArquillianConfig>();
     private final Map<String, CountDownLatch> waitingTests = new HashMap<String, CountDownLatch>();
@@ -80,7 +78,6 @@ public class ArquillianService implements Service<ArquillianService> {
         ArquillianService service = new ArquillianService();
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
         serviceBuilder.install();
     }
 

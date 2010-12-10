@@ -28,8 +28,6 @@ import java.util.Map;
 import javax.management.MBeanServer;
 import javax.management.StandardMBean;
 
-import org.jboss.as.server.deployment.module.ClassifyingModuleLoaderInjector;
-import org.jboss.as.server.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.ServerDeployerServicePlugin;
 import org.jboss.as.server.services.net.SocketBinding;
@@ -43,25 +41,20 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.PathFilter;
 import org.jboss.modules.PathFilters;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.bundle.BundleManager;
 import org.jboss.osgi.framework.bundle.BundleManager.IntegrationMode;
 import org.jboss.osgi.framework.plugin.DeployerServicePlugin;
-import org.jboss.osgi.framework.plugin.ModuleManagerPlugin;
 import org.jboss.osgi.framework.plugin.SystemPackagesPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -80,17 +73,14 @@ public class BundleManagerService implements Service<BundleManager> {
 
     private InjectedValue<Configuration> injectedConfig = new InjectedValue<Configuration>();
     private InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private InjectedValue<ClassifyingModuleLoaderService> injectedModuleLoader = new InjectedValue<ClassifyingModuleLoaderService>();
     private InjectedValue<ServerDeploymentManager> injectedDeploymentManager = new InjectedValue<ServerDeploymentManager>();
     private InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
-    private Injector<ClassifyingModuleLoaderService> osgiModuleLoaderInjector;
     private BundleManager bundleManager;
 
     public static void addService(final BatchBuilder batchBuilder) {
         BundleManagerService service = new BundleManagerService();
         ServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleManagerService.SERVICE_NAME, service);
         serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
-        serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
@@ -141,14 +131,6 @@ public class BundleManagerService implements Service<BundleManager> {
             ServerDeploymentManager deploymentManager = injectedDeploymentManager.getValue();
             bundleManager.addPlugin(DeployerServicePlugin.class, new ServerDeployerServicePlugin(bundleManager, deploymentManager));
 
-            // Register the {@link ModuleLoader} with the {@link ClassifyingModuleLoaderService}
-            ModuleManagerPlugin moduleManagerPlugin = bundleManager.getPlugin(ModuleManagerPlugin.class);
-            ServiceController<?> controller = container.getRequiredService(ClassifyingModuleLoaderService.SERVICE_NAME);
-            ClassifyingModuleLoaderService moduleLoaderService = (ClassifyingModuleLoaderService) controller.getValue();
-            Value<ModuleLoader> value = new ImmediateValue<ModuleLoader>(moduleManagerPlugin.getModuleLoader());
-            osgiModuleLoaderInjector = new ClassifyingModuleLoaderInjector(Constants.JBOSGI_PREFIX, value);
-            osgiModuleLoaderInjector.inject(moduleLoaderService);
-
             // Register the {@link BundleManagerMBean}
             BundleManagerMBean bundleManagerMBean = new BundleManagerMBean() {
                 @Override
@@ -172,9 +154,6 @@ public class BundleManagerService implements Service<BundleManager> {
     public synchronized void stop(StopContext context) {
         log.debugf("Stopping OSGi BundleManager");
         try {
-            if (osgiModuleLoaderInjector != null)
-                osgiModuleLoaderInjector.uninject();
-
             bundleManager = null;
 
         } catch (Exception ex) {

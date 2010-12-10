@@ -29,11 +29,7 @@ import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
@@ -41,11 +37,8 @@ import org.jboss.as.server.standalone.deployment.DeploymentScannerFactoryService
 import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * This is the task used by the Host Controller and passed to a Server instance
@@ -92,10 +85,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         // Server deployment scanner factory
         DeploymentScannerFactoryService.addService(batchBuilder);
-
-        // Activate deployment module loader
-        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService())
-            .install();
 
         for (AbstractServerModelUpdate<?> update : updates) {
             try {
