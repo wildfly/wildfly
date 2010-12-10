@@ -30,10 +30,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
-import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
-import org.jboss.as.server.standalone.deployment.DeploymentScannerFactoryService;
-import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
+import org.jboss.as.server.mgmt.DomainServerConfigurationPersister;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 
@@ -63,25 +60,16 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.portOffset = portOffset;
         this.startServices = startServices;
         this.updates = updates;
-        this.providedEnvironment = new ServerEnvironment(System.getProperties(), false);
+        providedEnvironment = new ServerEnvironment(System.getProperties(), System.getenv(), false);
     }
 
     public void run(final List<ServiceActivator> runServices) {
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        bootstrap.start(new Bootstrap.Configuration(), startServices);
-
-        // The server controller
-
-        // Deployment repository
-        ServerDeploymentRepositoryImpl.addService(batchBuilder);
-
-        // Server deployment manager - TODO: move into startServices, only start in standalone mode
-        ServerDeploymentManagerImpl.addService(serverModel, container, batchBuilder);
-
-        // Server deployment scanner factory
-        DeploymentScannerFactoryService.addService(batchBuilder);
-
-        StandaloneServerManagementServices.addServices(serverModel, container, batchBuilder);
+        final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
+        configuration.setServerEnvironment(providedEnvironment);
+        configuration.setConfigurationPersister(new DomainServerConfigurationPersister(updates));
+        configuration.setPortOffset(portOffset);
+        bootstrap.start(configuration, startServices);
     }
 
     public void validateObject() throws InvalidObjectException {
