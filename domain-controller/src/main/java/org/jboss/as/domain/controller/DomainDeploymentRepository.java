@@ -33,7 +33,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.ServerDeploymentRepository;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.logging.Logger;
 

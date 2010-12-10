@@ -93,7 +93,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
     static {
         CONFIG = new MarshallingConfiguration();
         try {
-            final ClassLoader cl = Module.getModuleFromDefaultLoader(ModuleIdentifier.create("org.jboss.as.aggregate")).getClassLoader();
+            final ClassLoader cl = Module.getModuleFromCurrentLoader(ModuleIdentifier.create("org.jboss.as.aggregate")).getClassLoader();
             CONFIG.setClassResolver(new SimpleClassResolver(cl));
         } catch (ModuleLoadException e) {
             throw new RuntimeException(e);
