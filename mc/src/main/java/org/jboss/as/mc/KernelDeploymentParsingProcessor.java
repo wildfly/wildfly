@@ -22,19 +22,17 @@
 
 package org.jboss.as.mc;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-
 import java.io.InputStream;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptorParser;
 import org.jboss.as.model.ParseResult;
@@ -59,13 +57,13 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
 
     /**
      * Process a deployment for jboss-beans.xml files.
-     * Will parse the xml file and attach an configuration discovered durring processing.
+     * Will parse the xml file and attach an configuration discovered during processing.
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         if(deploymentRoot == null || deploymentRoot.exists() == false)
             return;
@@ -99,5 +97,5 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     }
 
     public void undeploy(DeploymentUnit context) {
-    }s
+    }
 }

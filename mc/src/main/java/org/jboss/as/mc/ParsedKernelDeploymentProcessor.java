@@ -26,10 +26,11 @@ import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.modules.Module;
@@ -51,7 +52,7 @@ import org.jboss.msc.value.Values;
 public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor {
 
     /**
-     * Process a deployment for KernelDeployment confguration.
+     * Process a deployment for KernelDeployment configuration.
      * Will install a {@code MC bean} for each configured bean.
      *
      * @param phaseContext the deployment unit context
@@ -64,16 +65,19 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
 
         final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if(module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + phaseContext.getName());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 
         final ClassLoader classLoader = module.getClassLoader();
         final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
 
         final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();
-        final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         for(final BeanMetaDataConfig beanConfig : beanConfigs) {
             addBean(serviceTarget, beanConfig, classLoaderValue);
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 
     @SuppressWarnings({"unchecked"})

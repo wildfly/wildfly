@@ -22,7 +22,7 @@
 
 package org.jboss.as.mc.descriptor;
 
-import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentKey;
 
 import java.io.Serializable;
 import java.util.HashMap;
