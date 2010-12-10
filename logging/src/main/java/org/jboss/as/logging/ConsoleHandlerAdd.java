@@ -25,9 +25,9 @@ package org.jboss.as.logging;
 import java.io.UnsupportedEncodingException;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -61,9 +61,9 @@ public class ConsoleHandlerAdd extends AbstractHandlerAdd {
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final BatchBuilder builder = updateContext.getServiceTarget();
+            final ServiceTarget target = updateContext.getServiceTarget();
             final ConsoleHandlerService service = new ConsoleHandlerService();
-            final ServiceBuilder<Handler> serviceBuilder = builder.addService(LogServices.handlerName(getName()), service);
+            final ServiceBuilder<Handler> serviceBuilder = target.addService(LogServices.handlerName(getName()), service);
             service.setLevel(Level.parse(getLevelName()));
             final Boolean autoFlush = getAutoflush();
             if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());

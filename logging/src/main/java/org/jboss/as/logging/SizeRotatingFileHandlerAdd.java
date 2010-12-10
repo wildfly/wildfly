@@ -27,9 +27,9 @@ import java.io.UnsupportedEncodingException;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.server.services.path.AbstractPathService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -75,9 +75,9 @@ public class SizeRotatingFileHandlerAdd extends FileHandlerAdd {
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final BatchBuilder batchBuilder = updateContext.getServiceTarget();
+            final ServiceTarget target = updateContext.getServiceTarget();
             final SizeRotatingFileHandlerService service = new SizeRotatingFileHandlerService();
-            final ServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
+            final ServiceBuilder<Handler> serviceBuilder = target.addService(LogServices.handlerName(getName()), service);
             final String relativeTo = getRelativeTo();
             if (relativeTo != null) {
                 serviceBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo), String.class, service.getRelativeToInjector());

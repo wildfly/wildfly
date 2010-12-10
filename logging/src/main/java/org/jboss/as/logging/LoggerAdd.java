@@ -25,8 +25,8 @@ package org.jboss.as.logging;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 import java.util.logging.Level;
 
@@ -68,8 +68,8 @@ public class LoggerAdd extends AbstractLoggerAdd {
             final String loggerName = getLoggerName();
             final LoggerService service = new LoggerService(loggerName);
             service.setLevel(Level.parse(getLevelName()));
-            final BatchBuilder batchBuilder = updateContext.getServiceTarget();
-            batchBuilder.addService(LogServices.loggerName(loggerName), service)
+            final ServiceTarget target = updateContext.getServiceTarget();
+            target.addService(LogServices.loggerName(loggerName), service)
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();

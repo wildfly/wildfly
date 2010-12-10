@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
 import java.util.logging.Handler;
@@ -78,9 +78,9 @@ public class AsyncHandlerAdd extends AbstractHandlerAdd {
      */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         try {
-            final BatchBuilder builder = updateContext.getServiceTarget();
+            final ServiceTarget target = updateContext.getServiceTarget();
             final AsyncHandlerService service = new AsyncHandlerService();
-            final ServiceBuilder<Handler> serviceBuilder = builder.addService(LogServices.handlerName(getName()), service);
+            final ServiceBuilder<Handler> serviceBuilder = target.addService(LogServices.handlerName(getName()), service);
             final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
             for (String handlerName : getSubhandlers()) {
                 final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
