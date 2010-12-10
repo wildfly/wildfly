@@ -25,7 +25,7 @@ package org.jboss.as.web.deployment.helpers;
 import java.io.Closeable;
 import java.io.IOException;
 
-import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.vfs.VirtualFile;
 

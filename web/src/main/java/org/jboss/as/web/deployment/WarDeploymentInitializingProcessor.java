@@ -22,10 +22,11 @@
 
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.markDeployment;
 
 import org.jboss.vfs.VirtualFile;
@@ -40,9 +41,12 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
     static final String WAR_EXTENSION = ".war";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         if(virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
-            markDeployment(phaseContext);
+            markDeployment(phaseContext.getDeploymentUnit());
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 }

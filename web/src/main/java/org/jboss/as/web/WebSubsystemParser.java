@@ -33,8 +33,8 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.ExtensionContext.SubsystemConfiguration;
+import org.jboss.as.server.ExtensionContext;
+import org.jboss.as.server.ExtensionContext.SubsystemConfiguration;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;

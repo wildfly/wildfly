@@ -30,10 +30,11 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
@@ -54,10 +55,10 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String IMPLICIT_TLD = "implicit.tld";
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         TldsMetaData tldsMetaData = phaseContext.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         if (tldsMetaData == null) {
             tldsMetaData = new TldsMetaData();
@@ -88,6 +89,9 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 
     private void processTlds(VirtualFile root, List<VirtualFile> files, Map<String, TldMetaData> tlds)

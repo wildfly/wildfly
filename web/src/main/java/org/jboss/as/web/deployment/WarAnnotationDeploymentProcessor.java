@@ -34,10 +34,11 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebListener;
 import javax.servlet.annotation.WebServlet;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 import org.jboss.jandex.AnnotationInstance;
@@ -80,7 +81,8 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
      * Process web annotations.
      */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
         final WarAnnotationIndex index = phaseContext.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
@@ -96,7 +98,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + phaseContext.getName());
+            throw new DeploymentUnitProcessingException("failed to resolve module for " + deploymentUnit);
         }
         final ClassLoader classLoader = module.getClassLoader();
 
@@ -110,6 +112,9 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             final Index jarIndex = index.getIndex(pathName);
             annotationsMetaData.put(pathName, processAnnotations(jarIndex, classLoader));
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 
     /**

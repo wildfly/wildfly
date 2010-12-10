@@ -35,14 +35,13 @@ import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDependencies;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -56,6 +55,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 /**
  * SCI deployment processor.
  *
@@ -68,7 +69,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
      * Process SCIs.
      */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
         final WarAnnotationIndex index = phaseContext.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
@@ -79,7 +80,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         assert warMetaData != null;
         final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + phaseContext.getName());
+            throw new DeploymentUnitProcessingException("failed to resolve module for " + phaseContext.getDeploymentUnit());
         }
         final ClassLoader classLoader = module.getClassLoader();
         ScisMetaData scisMetaData = phaseContext.getAttachment(ScisMetaData.ATTACHMENT_KEY);
@@ -99,7 +100,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         // FIXME: for now, look in all dependencies for SCIs
-        for (ModuleDependency dependency : ModuleDependencies.getAttachedDependencies(phaseContext).getDependencies()) {
+        for (ModuleDependency dependency : ModuleDependencies.getAttachedDependencies(phaseContext.getDeploymentUnit()).getDependencies()) {
             ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 serviceLoader = Module.loadServiceFromCurrent(dependency.getIdentifier(), ServletContainerInitializer.class);
@@ -165,6 +166,9 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 }
             }
         }
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 
     private ServletContainerInitializer loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error) throws DeploymentUnitProcessingException {

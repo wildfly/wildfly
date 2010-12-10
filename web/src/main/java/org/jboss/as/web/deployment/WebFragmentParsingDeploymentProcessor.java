@@ -29,9 +29,10 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
@@ -47,7 +48,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
     private static final String WEB_FRAGMENT_XML = "META-INF/web-fragment.xml";
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
         WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
@@ -87,4 +88,6 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
         }
     }
 
+    public void undeploy(final DeploymentUnit context) {
+    }
 }

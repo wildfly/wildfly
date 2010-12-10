@@ -24,7 +24,7 @@ package org.jboss.as.web.deployment;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.web.spec.TldMetaData;
 
 /**

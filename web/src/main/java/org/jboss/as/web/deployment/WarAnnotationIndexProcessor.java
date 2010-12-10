@@ -22,11 +22,12 @@
 
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 import org.jboss.vfs.VirtualFile;
@@ -45,16 +46,18 @@ public class WarAnnotationIndexProcessor implements DeploymentUnitProcessor {
 
     /** {@inheritDoc} */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
         if(phaseContext.getAttachment(ATTACHMENT_KEY) != null) {
             return;
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         // Create the web annotation index
         final WarAnnotationIndex index = WarAnnotationIndex.create(deploymentRoot);
         phaseContext.putAttachment(ATTACHMENT_KEY, index);
     }
 
+    public void undeploy(final DeploymentUnit context) {
+    }
 }

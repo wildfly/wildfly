@@ -32,11 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
@@ -50,6 +49,8 @@ import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 /**
  * Merge all metadata into a main JBossWebMetaData.
  *
@@ -61,7 +62,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
      * Merge everything into WarMetaData.
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
         WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
@@ -320,11 +321,14 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
     }
 
+    public void undeploy(final DeploymentUnit context) {
+    }
+
     /**
      * Utility class to associate the logical name with the JAR name, needed
      * during the order resolving.
      */
-    protected class WebOrdering implements Serializable {
+    protected static class WebOrdering implements Serializable {
 
         private static final long serialVersionUID = 5603203103871892211L;
 

@@ -22,19 +22,15 @@
 
 package org.jboss.as.web.deployment;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-import static org.jboss.as.server.deployment.module.ModuleDependencies.getAttachedDependencies;
-
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleConfig;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.ModuleDependencies;
 import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
 import org.jboss.modules.ModuleIdentifier;
@@ -42,6 +38,10 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
+
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+import static org.jboss.as.server.deployment.module.ModuleDependencies.getAttachedDependencies;
+
 
 /**
  * War {@code ModuleConfig} processor.
@@ -58,24 +58,28 @@ public class WarModuleConfigProcessor implements DeploymentUnitProcessor {
     private static final ModuleDependency[] NO_DEPS = new ModuleDependency[0];
 
     /**
-     * Create the {@code ModuelConfig} for a .war deployment
+     * Create the {@code ModuleConfig} for a .war deployment
      *
      * {@inheritDoc}
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
         if(phaseContext.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null) {
             return;
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentRoot.getName());
         final ResourceRoot[] resourceRoots = createResourceRoots(phaseContext.getAttachment(DeploymentStructure.ATTACHMENT_KEY));
-        final ModuleDependencies dependenciesAttachment = getAttachedDependencies(phaseContext);
+        final ModuleDependencies dependenciesAttachment = getAttachedDependencies(deploymentUnit);
         final ModuleDependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
         final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
         phaseContext.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);
+    }
+
+    public void undeploy(final DeploymentUnit context) {
     }
 
     private ResourceRoot[] createResourceRoots(final DeploymentStructure structure) {

@@ -27,11 +27,11 @@ import java.io.InputStream;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.Attachments;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.metadata.parser.jbossweb.JBossWebMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
@@ -45,10 +45,10 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
     private static final String JBOSS_WEB_XML = "WEB-INF/jboss-web.xml";
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext)) {
+        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final VirtualFile jbossWebXml = deploymentRoot.getChild(JBOSS_WEB_XML);
         WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;

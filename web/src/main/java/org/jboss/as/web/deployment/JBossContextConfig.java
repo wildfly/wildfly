@@ -55,7 +55,7 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.jboss.annotation.javaee.Icon;
-import org.jboss.as.deployment.unit.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;

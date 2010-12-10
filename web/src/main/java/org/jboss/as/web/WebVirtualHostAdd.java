@@ -30,8 +30,8 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Emanuel Muckenhuber
@@ -64,15 +64,15 @@ public class WebVirtualHostAdd extends AbstractWebSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final BatchBuilder builder = updateContext.getServiceTarget();
+        final ServiceTarget target = updateContext.getServiceTarget();
         final WebVirtualHostService service = new WebVirtualHostService(name, aliases());
-        final ServiceBuilder<?> serviceBuilder =  builder.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(name), service)
+        final ServiceBuilder<?> serviceBuilder =  target.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(name), service)
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
             .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getWebServer());
         if(accessLog != null) {
             service.setAccessLog(accessLog);
             // Create the access log service
-            accessLogService(name, accessLog.getDirectory(), builder);
+            accessLogService(name, accessLog.getDirectory(), target);
             serviceBuilder.addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(name, "access-log"), String.class, service.getAccessLogPathInjector());
         }
         if(rewrite != null) {
@@ -131,15 +131,15 @@ public class WebVirtualHostAdd extends AbstractWebSubsystemUpdate<Void> {
 
     static final String DEFAULT_RELATIVE_TO = "jboss.server.log.dir";
 
-    static void accessLogService(final String hostName, final WebHostAccessLogElement.LogDirectory directory, final BatchBuilder batchBuilder) {
+    static void accessLogService(final String hostName, final WebHostAccessLogElement.LogDirectory directory, final ServiceTarget target) {
         if(directory == null) {
             RelativePathService.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName, "access-log"),
-                    hostName, DEFAULT_RELATIVE_TO, batchBuilder);
+                    hostName, DEFAULT_RELATIVE_TO, target);
         } else {
             final String relativeTo = directory.getRelativeTo() != null ? directory.getRelativeTo() : DEFAULT_RELATIVE_TO;
             final String path = directory.getPath() != null ? directory.getPath() : hostName;
             RelativePathService.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName, "access-log"),
-                    path, relativeTo, batchBuilder);
+                    path, relativeTo, target);
         }
     }
 

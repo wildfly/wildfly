@@ -32,12 +32,12 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
-import org.jboss.as.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnit;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.web.WebSubsystemElement;
 import org.jboss.as.web.deployment.mock.MemoryRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -79,9 +79,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = context.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+    public void undeploy(final DeploymentUnit context) {
+    }
+
+    protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null) {
             throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + deploymentRoot);
         }
@@ -90,7 +93,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Create the context
         final StandardContext webContext = new StandardContext();
-        final ContextConfig config = new JBossContextConfig(context);
+        final ContextConfig config = new JBossContextConfig(phaseContext.getDeploymentUnit());
         // Set the deployment root
         try {
             webContext.setDocBase(deploymentRoot.getPhysicalFile().getAbsolutePath());
@@ -100,7 +103,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         webContext.addLifecycleListener(config);
 
         // Set the path name
-        final String deploymentName = context.getName();
+        final String deploymentName = phaseContext.getDeploymentUnit().getName();
         String pathName = null;
         if (metaData.getContextRoot() == null) {
             pathName = deploymentRoot.getName();
@@ -144,7 +147,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Add the context service
-        final ServiceTarget target = context.getBatchBuilder();
+        final ServiceTarget target = phaseContext.getServiceTarget();
         try {
             target.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
                 .addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))

@@ -26,7 +26,7 @@ import java.util.Set;
 
 import javax.servlet.ServletContainerInitializer;
 
-import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
  * @author Remy Maucherat
