@@ -35,7 +35,7 @@ import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * OSGi subsystem add element.
@@ -74,13 +74,13 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         System.setProperty("jboss.protocol.handler.modules", value);
 
         Activation policy = subsystemState.getActivationPolicy();
-        BatchBuilder batchBuilder = updateContext.getServiceTarget();
-        Configuration.addService(batchBuilder, subsystemState);
-        BundleManagerService.addService(batchBuilder);
-        FrameworkService.addService(batchBuilder);
-        BundleContextService.addService(batchBuilder, policy);
-        PackageAdminService.addService(batchBuilder);
-        StartLevelService.addService(batchBuilder);
+        ServiceTarget target = updateContext.getServiceTarget();
+        Configuration.addService(target, subsystemState);
+        BundleManagerService.addService(target);
+        FrameworkService.addService(target);
+        BundleContextService.addService(target, policy);
+        PackageAdminService.addService(target);
+        StartLevelService.addService(target);
     }
 
     protected void applyUpdateBootAction(BootUpdateContext updateContext) {

@@ -55,12 +55,13 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
-        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(phaseContext);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(deploymentUnit);
         if (info != null)
             return;
 
         // Get the manifest from the deployment's virtual file
-        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         Manifest manifest = phaseContext.getAttachment(Attachments.MANIFEST);
         if (manifest == null) {
             // Check if this virtual file contains a valid OSGi manifest
@@ -77,9 +78,9 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
         if (BundleInfo.isValidateBundleManifest(manifest)) {
             // Construct and attach the {@link BundleInfo}
             try {
-                String location = InstallBundleInitiatorService.getLocation(serviceRegistry, phaseContext.getName());
+                String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnit.getName());
                 info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
-                BundleInfoAttachment.attachBundleInfo(phaseContext, info);
+                BundleInfoAttachment.attachBundleInfo(deploymentUnit, info);
             } catch (BundleException ex) {
                 throw new DeploymentUnitProcessingException("Cannot create bundle deployment from: " + virtualFile);
             }

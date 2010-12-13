@@ -31,7 +31,6 @@ import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -39,6 +38,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -71,9 +71,9 @@ public class FrameworkService implements Service<Framework> {
     private final InjectedValue<Configuration> injectedConfig = new InjectedValue<Configuration>();
     private Framework framework;
 
-    public static void addService(final BatchBuilder batchBuilder) {
+    public static void addService(final ServiceTarget target) {
         FrameworkService service = new FrameworkService();
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(FrameworkService.SERVICE_NAME, service);
+        ServiceBuilder<?> serviceBuilder = target.addService(FrameworkService.SERVICE_NAME, service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);

@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.service;
 
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -30,6 +29,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -50,7 +50,7 @@ public class StartLevelService implements Service<StartLevel> {
     private InjectedValue<BundleContext> injectedContext = new InjectedValue<BundleContext>();
     private StartLevel startLevel;
 
-    public static void addService(final BatchBuilder batchBuilder) {
+    public static void addService(final ServiceTarget batchBuilder) {
         StartLevelService service = new StartLevelService();
         ServiceBuilder<?> serviceBuilder = batchBuilder.addService(StartLevelService.SERVICE_NAME, service);
         serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedContext);

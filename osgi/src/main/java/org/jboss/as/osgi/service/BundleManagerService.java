@@ -41,12 +41,12 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.PathFilter;
 import org.jboss.modules.PathFilters;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -77,9 +77,9 @@ public class BundleManagerService implements Service<BundleManager> {
     private InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
     private BundleManager bundleManager;
 
-    public static void addService(final BatchBuilder batchBuilder) {
+    public static void addService(final ServiceTarget target) {
         BundleManagerService service = new BundleManagerService();
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleManagerService.SERVICE_NAME, service);
+        ServiceBuilder<?> serviceBuilder = target.addService(BundleManagerService.SERVICE_NAME, service);
         serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
         serviceBuilder.addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);
@@ -103,10 +103,6 @@ public class BundleManagerService implements Service<BundleManager> {
 
             // Set the Framework's {@link IntegrationMode}
             props.put(IntegrationMode.class.getName(), IntegrationMode.CONTAINER);
-
-            // Setup the default {@link ModuleLoader}
-            ModuleLoader moduleLoader = injectedModuleLoader.getValue().getModuleLoader();
-            props.put(ModuleLoader.class.getName(), moduleLoader);
 
             // Setup the {@link ServiceContainer}
             ServiceContainer container = context.getController().getServiceContainer();

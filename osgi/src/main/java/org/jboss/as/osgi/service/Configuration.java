@@ -33,7 +33,6 @@ import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -41,6 +40,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -63,9 +63,9 @@ public class Configuration implements Service<Configuration> {
     private final InjectedValue<ServerController> serverControllerInjector = new InjectedValue<ServerController>();
     private final OSGiSubsystemState subsystemState;
 
-    public static void addService(final BatchBuilder batchBuilder, final OSGiSubsystemState state) {
+    public static void addService(final ServiceTarget target, final OSGiSubsystemState state) {
         Configuration config = new Configuration(state);
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(SERVICE_NAME, config);
+        ServiceBuilder<?> serviceBuilder = target.addService(SERVICE_NAME, config);
         serviceBuilder.addDependency(ServiceName.JBOSS.append("as"), ServerController.class, config.serverControllerInjector);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.install();

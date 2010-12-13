@@ -37,6 +37,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -65,9 +66,9 @@ public class BundleContextService implements Service<BundleContext> {
     private final InjectedValue<Framework> injectedFramework = new InjectedValue<Framework>();
     private BundleContext sysContext;
 
-    public static void addService(final BatchBuilder batchBuilder, Activation policy) {
+    public static void addService(final ServiceTarget target, Activation policy) {
         BundleContextService service = new BundleContextService();
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleContextService.SERVICE_NAME, service);
+        ServiceBuilder<?> serviceBuilder = target.addService(BundleContextService.SERVICE_NAME, service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(FrameworkService.SERVICE_NAME, Framework.class, service.injectedFramework);
         serviceBuilder.setInitialMode(policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.ACTIVE);
