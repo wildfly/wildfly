@@ -37,9 +37,9 @@ public final class Services {
      * The service corresponding to the {@link ServerController} for this instance.
      */
     public static final ServiceName JBOSS_SERVER_CONTROLLER = ServiceName.JBOSS.append("server-controller");
+
     /**
      * The internal deployer chains service used by all deployments.
      */
     public static final ServiceName JBOSS_DEPLOYER_CHAINS = ServiceName.JBOSS.append("deployer-chains");
-    
 }

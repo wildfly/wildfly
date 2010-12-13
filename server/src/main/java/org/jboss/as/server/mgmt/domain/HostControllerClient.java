@@ -51,7 +51,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.server.ServerController;
-import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.marshalling.Marshaller;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
