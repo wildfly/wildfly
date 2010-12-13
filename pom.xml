@@ -1185,12 +1185,6 @@
                 <groupId>org.jboss.osgi.framework</groupId>
                 <artifactId>jbosgi-framework-core</artifactId>
                 <version>${version.org.jboss.osgi.framework}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.modules</groupId>
-                        <artifactId>jboss-modules</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
