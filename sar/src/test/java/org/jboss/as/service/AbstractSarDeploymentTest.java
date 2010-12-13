@@ -22,7 +22,6 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.server.deployment.ServerDeploymentTestSupport;
 import static org.junit.Assert.fail;
 
 import java.io.File;

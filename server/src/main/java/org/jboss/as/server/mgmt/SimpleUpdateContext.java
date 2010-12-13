@@ -23,7 +23,7 @@
 package org.jboss.as.server.mgmt;
 
 import org.jboss.as.model.UpdateContext;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -33,16 +33,16 @@ import org.jboss.msc.service.ServiceTarget;
  */
 class SimpleUpdateContext implements UpdateContext {
 
-    private final ServiceContainer serviceContainer;
+    private final ServiceRegistry serviceRegistry;
     private final ServiceTarget serviceTarget;
 
-    SimpleUpdateContext(final ServiceContainer serviceContainer, final ServiceTarget serviceTarget) {
-        if (serviceContainer == null)
-            throw new IllegalArgumentException("serviceContainer is null");
+    SimpleUpdateContext(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget) {
+        if (serviceRegistry == null)
+            throw new IllegalArgumentException("serviceRegistry is null");
         if (serviceTarget == null)
             throw new IllegalArgumentException("serviceTarget is null");
 
-        this.serviceContainer = serviceContainer;
+        this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
     }
 
@@ -52,8 +52,7 @@ class SimpleUpdateContext implements UpdateContext {
     }
 
     @Override
-    public ServiceContainer getServiceContainer() {
-        return serviceContainer;
+    public ServiceRegistry getServiceRegistry() {
+        return serviceRegistry;
     }
-
 }

@@ -22,7 +22,6 @@
 
 package org.jboss.as.managedbean;
 
-import org.jboss.as.server.deployment.ServerDeploymentTestSupport;
 import static org.junit.Assert.fail;
 
 import java.io.File;
