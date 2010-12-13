@@ -62,7 +62,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnitContext);
 
         String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnitContext.getName());
-        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
 
 
