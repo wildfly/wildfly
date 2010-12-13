@@ -343,11 +343,9 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
         </module-def>
 
-        <module-def name="org.jboss.as.metadata">
-            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-common"/>
-            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-web"/>
-            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-merge"/>
-            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-parser"/>
+        <module-def name="org.jboss.metadata">
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-web"/>
         </module-def>
 
         <module-def name="org.jboss.common-core">

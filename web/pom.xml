@@ -77,35 +77,13 @@
     </dependency>
 
     <dependency>
-       <groupId>org.jboss.as.metadata</groupId>
+       <groupId>org.jboss.metadata</groupId>
        <artifactId>jboss-metadata-common</artifactId>
     </dependency>
 
     <dependency>
-       <groupId>org.jboss.as.metadata</groupId>
+       <groupId>org.jboss.metadata</groupId>
        <artifactId>jboss-metadata-web</artifactId>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.as.metadata</groupId>
-       <artifactId>jboss-metadata-merge</artifactId>
-       <exclusions>
-          <exclusion>
-             <groupId>org.jboss.logging</groupId>
-             <artifactId>jboss-logging-spi</artifactId>
-          </exclusion>
-       </exclusions>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.as.metadata</groupId>
-       <artifactId>jboss-metadata-parser</artifactId>
-       <exclusions>
-          <exclusion>
-             <groupId>org.jboss.logging</groupId>
-             <artifactId>jboss-logging-spi</artifactId>
-          </exclusion>
-       </exclusions>
     </dependency>
 
      <dependency>
