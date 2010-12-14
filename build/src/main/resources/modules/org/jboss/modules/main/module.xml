@@ -24,10 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.0" name="org.jboss.modules">
     <dependencies>
-        <module name="system" export="true">
+        <module name="system" export="false">
             <exports>
                 <include path="org/jboss/modules"/>
-                <exclude path="**"/> 
+                <include path="org/jboss/modules/ref"/>
             </exports>
         </module>
     </dependencies>
