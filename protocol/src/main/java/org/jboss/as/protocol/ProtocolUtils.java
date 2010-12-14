@@ -39,7 +39,7 @@ import org.jboss.modules.Module;
  *
  * @author John Bailey
  */
-public class ProtocolUtils {
+public class    ProtocolUtils {
     private static final MarshallerFactory MARSHALLER_FACTORY;
     public static final MarshallingConfiguration MODULAR_CONFIG;
 

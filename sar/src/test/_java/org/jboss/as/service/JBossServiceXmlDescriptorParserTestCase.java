@@ -22,6 +22,7 @@
 
 package org.jboss.as.service;
 
+import java.net.URL;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.service.descriptor.JBossServiceConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
@@ -50,7 +51,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author John E. Bailey
  */
-public class JBossServiceXmlDescriptorParserTestCase extends AbstractSarDeploymentTest {
+public class JBossServiceXmlDescriptorParserTestCase {
 
     private JBossServiceXmlDescriptorParser parser;
     private XMLMapper xmlMapper;
@@ -74,23 +75,23 @@ public class JBossServiceXmlDescriptorParserTestCase extends AbstractSarDeployme
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(inputStream);
             xmlMapper.parseDocument(jBossServiceXmlDescriptorParseResult, reader);
         } finally {
-            if(inputStream != null) inputStream.close();
+            if (inputStream != null) inputStream.close();
         }
         final JBossServiceXmlDescriptor xmlDescriptor = jBossServiceXmlDescriptorParseResult.getResult();
         assertNotNull(xmlDescriptor);
         final List<JBossServiceConfig> serviceConfigs = xmlDescriptor.getServiceConfigs();
         assertEquals(3, serviceConfigs.size());
 
-        for(JBossServiceConfig jBossServiceConfig : serviceConfigs) {
-            assertEquals(LegacyService.class.getName(), jBossServiceConfig.getCode());
-            if(jBossServiceConfig.getName().equals("jboss.test.service")) {
+        for (JBossServiceConfig jBossServiceConfig : serviceConfigs) {
+            assertEquals("org.jboss.as.service.LegacyService", jBossServiceConfig.getCode());
+            if (jBossServiceConfig.getName().equals("jboss.test.service")) {
                 final JBossServiceConstructorConfig constructorConfig = jBossServiceConfig.getConstructorConfig();
                 assertNotNull(constructorConfig);
                 final JBossServiceConstructorConfig.Argument[] arguments = constructorConfig.getArguments();
                 assertEquals(1, arguments.length);
                 assertEquals(String.class.getName(), arguments[0].getType());
                 assertEquals("Test Value", arguments[0].getValue());
-            } else if(jBossServiceConfig.getName().equals("jboss.test.service.second")) {
+            } else if (jBossServiceConfig.getName().equals("jboss.test.service.second")) {
                 assertNull(jBossServiceConfig.getConstructorConfig());
                 final JBossServiceDependencyConfig[] dependencyConfigs = jBossServiceConfig.getDependencyConfigs();
                 assertEquals(1, dependencyConfigs.length);
@@ -108,7 +109,7 @@ public class JBossServiceXmlDescriptorParserTestCase extends AbstractSarDeployme
                 assertEquals(1, parameters.length);
                 assertEquals("java.lang.String", parameters[0].getType());
                 assertEquals("more value", parameters[0].getValue());
-            } else if(jBossServiceConfig.getName().equals("jboss.test.service.third")) {
+            } else if (jBossServiceConfig.getName().equals("jboss.test.service.third")) {
                 assertNull(jBossServiceConfig.getConstructorConfig());
 
                 final JBossServiceAttributeConfig[] attributeConfigs = jBossServiceConfig.getAttributeConfigs();
@@ -129,5 +130,12 @@ public class JBossServiceXmlDescriptorParserTestCase extends AbstractSarDeployme
         }
     }
 
+    protected URL getResource(final Class<?> testClass, final String path) throws Exception {
+        return testClass.getResource(path);
+    }
+
+    protected File getResourceFile(final Class<?> testClass, final String path) throws Exception {
+        return new File(getResource(testClass, path).toURI());
+    }
 
 }
