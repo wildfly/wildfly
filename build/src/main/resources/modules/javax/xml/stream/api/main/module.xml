@@ -25,12 +25,11 @@
 <module xmlns="urn:jboss:module:1.0" name="javax.xml.stream.api">
 
     <dependencies>
-        <module name="system" export="true">
+        <module name="system" export="false">
             <exports>
                 <include path="javax/xml/stream"/>
-                <include path="javax/xml/stream/events"/> 
-                <include path="javax/xml/stream/util"/> 
-                <exclude path="**"/> 
+                <include path="javax/xml/stream/events"/>
+                <include path="javax/xml/stream/util"/>
             </exports>
         </module>
     </dependencies>

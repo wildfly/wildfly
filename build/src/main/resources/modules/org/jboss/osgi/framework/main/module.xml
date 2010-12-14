@@ -37,18 +37,16 @@
         <module name="org.jboss.osgi.vfs" export="true"/>
         <module name="org.jboss.vfs" export="true"/>
         <module name="org.osgi.core" export="true"/>
-        <module name="org.osgi.util" export="true">
+        <module name="org.osgi.util" export="false">
             <exports>
                 <!-- [TODO] Move this to org.osgi.util when the build supports it -->
                 <include path="org/osgi/util/tracker"/>
-                <exclude path="**"/>
             </exports>
         </module>
         <module name="javax.transaction.api" export="true"/>
-        <module name="system" export="true">
+        <module name="javax.api" export="false">
             <exports>
                 <include path="javax/management"/>
-                <exclude path="**"/>
             </exports>
         </module>
     </dependencies>
