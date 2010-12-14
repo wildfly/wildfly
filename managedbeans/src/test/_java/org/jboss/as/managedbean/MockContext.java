@@ -22,6 +22,10 @@
 
 package org.jboss.as.managedbean;
 
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -35,9 +39,6 @@ import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Mock JNDI context.

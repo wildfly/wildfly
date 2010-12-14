@@ -32,6 +32,7 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.Module;
 
 /**
  * Utility class providing methods for common management tasks.
@@ -45,7 +46,7 @@ public class ProtocolUtils {
     static {
         MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ProtocolUtils.class.getClassLoader());
         MODULAR_CONFIG = new MarshallingConfiguration();
-        MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance());
+        MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance(Module.getSystemModuleLoader()));
     }
 
     private ProtocolUtils() {

@@ -22,11 +22,13 @@
 
 package org.jboss.as.managedbean;
 
+import static org.junit.Assert.fail;
+
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartException;
-import static org.junit.Assert.fail;
 
 /**
  * Service listener used by deployment tests.

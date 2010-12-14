@@ -22,11 +22,12 @@
 
 package org.jboss.as.managedbean.container;
 
+import static org.jboss.as.managedbean.container.SecurityActions.getContextClassLoader;
+import static org.jboss.as.managedbean.container.SecurityActions.setContextClassLoader;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import static org.jboss.as.managedbean.container.SecurityActions.getContextClassLoader;
-import static org.jboss.as.managedbean.container.SecurityActions.setContextClassLoader;
 
 /**
  * Container responsible for holding onto the components necessary for creating instance of managed beans.

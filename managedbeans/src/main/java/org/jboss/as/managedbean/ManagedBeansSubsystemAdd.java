@@ -22,15 +22,14 @@
 
 package org.jboss.as.managedbean;
 
-import org.jboss.as.model.UpdateResultHandler;
-
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanDependencyProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanDeploymentProcessor;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.server.deployment.Phase;
 
 /**
  * The managed subsystem add update.

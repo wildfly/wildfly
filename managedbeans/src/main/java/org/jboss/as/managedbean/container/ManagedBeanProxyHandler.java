@@ -22,15 +22,17 @@
 
 package org.jboss.as.managedbean.container;
 
+import static org.jboss.as.managedbean.container.SecurityActions.getContextClassLoader;
+import static org.jboss.as.managedbean.container.SecurityActions.setContextClassLoader;
+
+import java.lang.reflect.Method;
+import java.util.List;
+
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 import javax.interceptor.ExcludeClassInterceptors;
-import java.lang.reflect.Method;
-import java.util.List;
-import static org.jboss.as.managedbean.container.SecurityActions.getContextClassLoader;
-import static org.jboss.as.managedbean.container.SecurityActions.setContextClassLoader;
 
 /**
  * Method handler used to proxy managed bean method invocations.  For each method called it will check to see if the method

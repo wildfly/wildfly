@@ -22,22 +22,22 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.Phase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test case to do some basic Service deployment functionality checking.

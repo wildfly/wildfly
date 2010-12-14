@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;

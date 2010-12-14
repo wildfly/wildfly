@@ -22,6 +22,8 @@
 
 package org.jboss.as.managedbean;
 
+import java.io.Serializable;
+
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -29,8 +31,6 @@ import javax.annotation.Resources;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
-
-import java.io.Serializable;
 
 /**
  * @author John E. Bailey

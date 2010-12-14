@@ -22,12 +22,12 @@
 
 package org.jboss.as.managedbean.container;
 
+import java.lang.reflect.Method;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.SetMethodInjector;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
-
-import java.lang.reflect.Method;
 
 /**
  * Resource injection capable of executing the resource injection using a Method instance.

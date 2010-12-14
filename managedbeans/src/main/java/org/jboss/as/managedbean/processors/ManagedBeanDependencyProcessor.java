@@ -22,17 +22,17 @@
 
 package org.jboss.as.managedbean.processors;
 
+import javax.annotation.ManagedBean;
+
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.ModuleIdentifier;
-
-import javax.annotation.ManagedBean;
 
 /**
  * Deployment processor which adds a module dependencies for modules needed for managed bean deployments.

@@ -24,10 +24,10 @@ package org.jboss.as.managedbean;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
+import org.jboss.as.server.Extension;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;

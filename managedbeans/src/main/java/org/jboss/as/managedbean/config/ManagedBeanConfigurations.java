@@ -22,12 +22,12 @@
 
 package org.jboss.as.managedbean.config;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
  * Configuration class used to attach multiple ManagedBeanConfiguration objects to a deployment unit.  Allows multiple

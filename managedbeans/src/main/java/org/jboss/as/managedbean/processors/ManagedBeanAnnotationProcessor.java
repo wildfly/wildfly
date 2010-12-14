@@ -39,11 +39,11 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
 
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.managedbean.config.ManagedBeanConfiguration;
 import org.jboss.as.managedbean.config.ManagedBeanConfigurations;
 import org.jboss.as.managedbean.config.ResourceConfiguration;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

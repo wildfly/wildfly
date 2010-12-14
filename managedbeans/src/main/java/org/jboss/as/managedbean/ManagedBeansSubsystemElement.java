@@ -25,6 +25,7 @@ package org.jboss.as.managedbean;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;

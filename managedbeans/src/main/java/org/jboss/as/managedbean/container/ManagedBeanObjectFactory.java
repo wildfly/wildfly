@@ -22,8 +22,7 @@
 
 package org.jboss.as.managedbean.container;
 
-import org.jboss.as.naming.context.ModularReference;
-import org.jboss.modules.Module;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -31,7 +30,9 @@ import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
-import java.util.Hashtable;
+
+import org.jboss.as.naming.context.ModularReference;
+import org.jboss.modules.Module;
 
 /**
  * Naming ObjectFactory responsible for retrieving managed bean instances from the managed bean registry when a managed

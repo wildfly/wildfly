@@ -22,12 +22,12 @@
 
 package org.jboss.as.managedbean.container;
 
+import java.lang.reflect.Field;
+
 import org.jboss.msc.inject.FieldInjector;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
-
-import java.lang.reflect.Field;
 
 /**
  * Resource injection capable of executing the resource injection using a Field instance.

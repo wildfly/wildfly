@@ -22,8 +22,9 @@
 
 package org.jboss.as.managedbean;
 
-import javax.annotation.ManagedBean;
 import java.io.Serializable;
+
+import javax.annotation.ManagedBean;
 
 /**
  * @author John E. Bailey
