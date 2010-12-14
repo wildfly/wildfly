@@ -35,6 +35,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.domain"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.server"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
     </dependencies>

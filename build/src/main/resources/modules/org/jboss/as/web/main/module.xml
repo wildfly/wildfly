@@ -37,6 +37,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.domain"/>
         <module name="org.jboss.as.managed-beans"/>
+        <module name="org.jboss.as.server"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
