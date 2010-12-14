@@ -87,6 +87,8 @@ final class ServerControllerService implements Service<ServerController> {
         // Install the environment before fetching and using the persister
         serverEnvironment.install();
 
+        final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment);
+
         final ServerConfigurationPersister persister = configuration.getConfigurationPersister();
         final List<AbstractServerModelUpdate<?>> updates;
         try {
@@ -163,7 +165,6 @@ final class ServerControllerService implements Service<ServerController> {
             finalDeployers.put(entry.getKey(), list);
         }
 
-        final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment);
         this.serverController = serverController;
         bootServices = serviceTarget.getSet();
     }
