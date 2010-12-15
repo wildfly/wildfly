@@ -78,9 +78,8 @@ final class BootstrapImpl implements Bootstrap {
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
         final Service<ServerController> serverControllerService = new ServerControllerService(configuration, extraServices);
-        tracker.addService(ServerControllerService.JBOSS_AS_NAME, serverControllerService).install();
-
         container.addListener(new BootstrapListener(future, serverControllerService, container, configuration.getStartTime()));
+        tracker.addService(ServerControllerService.JBOSS_AS_NAME, serverControllerService).install();
         return future;
     }
 
