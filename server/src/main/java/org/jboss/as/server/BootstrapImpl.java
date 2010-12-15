@@ -22,8 +22,12 @@
 
 package org.jboss.as.server;
 
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +42,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 import org.jboss.threads.AsyncFuture;
@@ -121,6 +126,7 @@ final class BootstrapImpl implements Bootstrap {
         private final Service<ServerController> serverControllerService;
         private final ServiceContainer serviceContainer;
         private final long startTime;
+        private final Set<ServiceName> missingDepsSet = Collections.synchronizedSet(new TreeSet<ServiceName>());
         private volatile boolean cancelLikely;
 
         public BootstrapListener(final StartTask future, final Service<ServerController> serverControllerService, final ServiceContainer serviceContainer, final long startTime) {
@@ -164,11 +170,13 @@ final class BootstrapImpl implements Bootstrap {
 
         public void dependencyUninstalled(final ServiceController<? extends Object> controller) {
             missingDeps.incrementAndGet();
+            missingDepsSet.add(controller.getName());
             check();
         }
 
         public void dependencyInstalled(final ServiceController<? extends Object> controller) {
             missingDeps.decrementAndGet();
+            missingDepsSet.remove(controller.getName());
             check();
         }
 
@@ -214,7 +222,17 @@ final class BootstrapImpl implements Bootstrap {
             if (failed == 0) {
                 log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
             } else {
-                log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
+                final StringBuilder b = new StringBuilder();
+                b.append(String.format("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive)));
+                final Set<ServiceName> set = missingDepsSet;
+                final Iterator<ServiceName> i = set.iterator();
+                if (i.hasNext()) {
+                    b.append("\n    Services missing dependencies:");
+                    do {
+                        b.append("\n        ").append(i.next());
+                    } while (i.hasNext());
+                }
+                log.error(b);
             }
         }
     }
