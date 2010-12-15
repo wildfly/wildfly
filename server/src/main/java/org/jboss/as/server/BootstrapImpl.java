@@ -115,6 +115,7 @@ final class BootstrapImpl implements Bootstrap {
         private final AtomicInteger failed = new AtomicInteger();
         private final AtomicInteger outstanding = new AtomicInteger();
         private final AtomicBoolean done = new AtomicBoolean();
+        private final AtomicInteger missingDeps = new AtomicInteger();
         private final EnumMap<ServiceController.Mode, AtomicInteger> map;
         private final StartTask future;
         private final Service<ServerController> serverControllerService;
@@ -161,21 +162,46 @@ final class BootstrapImpl implements Bootstrap {
             tick(controller.getServiceContainer());
         }
 
+        public void dependencyUninstalled(final ServiceController<? extends Object> controller) {
+            missingDeps.incrementAndGet();
+            check();
+        }
+
+        public void dependencyInstalled(final ServiceController<? extends Object> controller) {
+            missingDeps.decrementAndGet();
+            check();
+        }
+
         public void serviceRemoved(final ServiceController<?> controller) {
             cancelLikely = true;
             controller.removeListener(this);
             tick(controller.getServiceContainer());
         }
 
+        private void check() {
+            int outstanding = this.outstanding.get();
+            if (outstanding == missingDeps.get()) {
+                finish(serviceContainer, outstanding);
+            }
+        }
+
         private void tick(final ServiceContainer container) {
-            if (outstanding.decrementAndGet() != 0 || done.getAndSet(true)) {
+            int outstanding = this.outstanding.decrementAndGet();
+            if (outstanding != missingDeps.get()) {
+                return;
+            }
+            finish(container, outstanding);
+        }
+
+        private void finish(final ServiceContainer container, final int outstanding) {
+            if (done.getAndSet(true)) {
                 return;
             }
             container.removeListener(this);
             if (cancelLikely) {
                 return;
             }
-            final int failed = this.failed.get();
+            final int failed = this.failed.get() + outstanding;
             future.done(serverControllerService.getValue());
             final long elapsedTime = Math.max(System.currentTimeMillis() - startTime, 0L);
             final Logger log = Logger.getLogger("org.jboss.as");
@@ -188,7 +214,7 @@ final class BootstrapImpl implements Bootstrap {
             if (failed == 0) {
                 log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
             } else {
-                log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
+                log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
             }
         }
     }
