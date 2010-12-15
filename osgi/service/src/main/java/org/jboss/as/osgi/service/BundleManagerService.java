@@ -22,6 +22,7 @@
 
 package org.jboss.as.osgi.service;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,9 +30,10 @@ import javax.management.MBeanServer;
 import javax.management.StandardMBean;
 
 import org.jboss.as.jmx.MBeanServerService;
-import org.jboss.as.osgi.deployment.ServerDeployerServicePlugin;
+import org.jboss.as.osgi.parser.OSGiSubsystemState;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.services.net.SocketBinding;
-import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -54,7 +56,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.bundle.BundleManager;
 import org.jboss.osgi.framework.bundle.BundleManager.IntegrationMode;
-import org.jboss.osgi.framework.plugin.DeployerServicePlugin;
 import org.jboss.osgi.framework.plugin.SystemPackagesPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -71,17 +72,22 @@ public class BundleManagerService implements Service<BundleManager> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "bundlemanager");
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    private InjectedValue<Configuration> injectedConfig = new InjectedValue<Configuration>();
-    private InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private InjectedValue<ServerDeploymentManager> injectedDeploymentManager = new InjectedValue<ServerDeploymentManager>();
-    private InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    //private final InjectedValue<ServerDeploymentManager> injectedDeploymentManager = new InjectedValue<ServerDeploymentManager>();
+    private final InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
+    private final OSGiSubsystemState subsystemState;
     private BundleManager bundleManager;
 
-    public static void addService(final ServiceTarget target) {
-        BundleManagerService service = new BundleManagerService();
+    private BundleManagerService(OSGiSubsystemState subsystemState) {
+        this.subsystemState = subsystemState;
+    }
+
+    public static void addService(final ServiceTarget target, final OSGiSubsystemState subsystemState) {
+        BundleManagerService service = new BundleManagerService(subsystemState);
         ServiceBuilder<?> serviceBuilder = target.addService(BundleManagerService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
-        serviceBuilder.addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager);
+        serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
+        //serviceBuilder.addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.setInitialMode(Mode.ON_DEMAND);
@@ -98,23 +104,8 @@ public class BundleManagerService implements Service<BundleManager> {
                 System.setProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
 
             // Setup the OSGi {@link Framework} properties
-            Configuration config = injectedConfig.getValue();
-            Map<String, Object> props = new HashMap<String, Object>(config.getProperties());
-
-            // Set the Framework's {@link IntegrationMode}
-            props.put(IntegrationMode.class.getName(), IntegrationMode.CONTAINER);
-
-            // Setup the {@link ServiceContainer}
-            ServiceContainer container = context.getController().getServiceContainer();
-            props.put(ServiceContainer.class.getName(), container);
-
-            // Configure the OSGi HttpService port
-            // [TODO] This will go away once the HTTP subsystem from AS implements the OSGi HttpService.
-            props.put("org.osgi.service.http.port", "" + osgiHttpServerPortBinding.getValue().getSocketAddress().getPort());
-
-            // Setup the Framework's storage area. Always clean the framework storage on first init.
-            // [TODO] Differentiate beetween user data and persisted bundles. Persist bundle state in the domain model.
-            props.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+            Map<String, Object> props = new HashMap<String, Object>(subsystemState.getProperties());
+            setupFrameworkProperties(context, props);
 
             // Get {@link ModuleLoader} for the OSGi layer
             bundleManager = new BundleManager(props);
@@ -124,8 +115,8 @@ public class BundleManagerService implements Service<BundleManager> {
             bundleManager.setProperty(Module.class.getName(), frameworkModule);
 
             // Setup the {@link DeployerServicePlugin}
-            ServerDeploymentManager deploymentManager = injectedDeploymentManager.getValue();
-            bundleManager.addPlugin(DeployerServicePlugin.class, new ServerDeployerServicePlugin(bundleManager, deploymentManager));
+            //ServerDeploymentManager deploymentManager = injectedDeploymentManager.getValue();
+            //bundleManager.addPlugin(DeployerServicePlugin.class, new ServerDeployerServicePlugin(bundleManager, deploymentManager));
 
             // Register the {@link BundleManagerMBean}
             BundleManagerMBean bundleManagerMBean = new BundleManagerMBean() {
@@ -144,6 +135,31 @@ public class BundleManagerService implements Service<BundleManager> {
             injectedMBeanServer.getValue().registerMBean(mbean, BundleManagerMBean.OBJECTNAME);
         } catch (Throwable t) {
             throw new StartException("Failed to create BundleManager", t);
+        }
+    }
+
+    private void setupFrameworkProperties(StartContext context, Map<String, Object> props) {
+
+        // Set the Framework's {@link IntegrationMode}
+        props.put(IntegrationMode.class.getName(), IntegrationMode.CONTAINER);
+
+        // Setup the {@link ServiceContainer}
+        ServiceContainer container = context.getController().getServiceContainer();
+        props.put(ServiceContainer.class.getName(), container);
+
+        // Configure the OSGi HttpService port
+        // [TODO] This will go away once the HTTP subsystem from AS implements the OSGi HttpService.
+        props.put("org.osgi.service.http.port", "" + osgiHttpServerPortBinding.getValue().getSocketAddress().getPort());
+
+        // Setup the Framework's storage area. Always clean the framework storage on first init.
+        // [TODO] Differentiate beetween user data and persisted bundles. Persist bundle state in the domain model.
+        props.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+        String storage = (String) props.get(Constants.FRAMEWORK_STORAGE);
+        if (storage == null) {
+            ServerEnvironment environment = injectedServerEnvironment.getValue();
+            File dataDir = environment.getServerDataDir();
+            storage = dataDir.getAbsolutePath() + File.separator + "osgi-store";
+            props.put(Constants.FRAMEWORK_STORAGE, storage);
         }
     }
 
@@ -176,7 +192,7 @@ public class BundleManagerService implements Service<BundleManager> {
 
         FrameworkModuleLoader(BundleManager bundleManager) throws ModuleLoadException {
 
-            ModuleLoader moduleLoader = bundleManager.getDefaultModuleLoader();
+            ModuleLoader moduleLoader = Module.getSystemModuleLoader();
             Module frameworkModule = moduleLoader.loadModule(ModuleIdentifier.create("org.jboss.osgi.framework"));
 
             // Setup the extended framework module spec
@@ -190,7 +206,7 @@ public class BundleManagerService implements Service<BundleManager> {
             builder.addDependency(moduleDep);
 
             // Add the user defined module dependencies
-            String modulesProps = (String) bundleManager.getProperty(Configuration.PROP_JBOSS_OSGI_SYSTEM_MODULES);
+            String modulesProps = (String) bundleManager.getProperty(OSGiSubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES);
             if (modulesProps != null) {
                 for (String moduleProp : modulesProps.split(",")) {
                     moduleId = ModuleIdentifier.create(moduleProp.trim());

@@ -30,7 +30,6 @@ import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.BundleManagerService;
-import org.jboss.as.osgi.service.Configuration;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
@@ -75,9 +74,8 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
 
         Activation policy = subsystemState.getActivationPolicy();
         ServiceTarget target = updateContext.getServiceTarget();
-        Configuration.addService(target, subsystemState);
-        BundleManagerService.addService(target);
-        FrameworkService.addService(target);
+        BundleManagerService.addService(target, subsystemState);
+        FrameworkService.addService(target, subsystemState);
         BundleContextService.addService(target, policy);
         PackageAdminService.addService(target);
         StartLevelService.addService(target);

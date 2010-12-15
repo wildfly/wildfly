@@ -30,6 +30,7 @@
 
     <dependencies>
         <module name="org.jboss.logging" export="true"/>
+        <module name="org.jboss.modules" export="true"/>
         <module name="org.jboss.msc" export="true"/>
         <module name="org.jboss.osgi.deployment" export="true"/>
         <module name="org.jboss.osgi.spi" export="true"/>

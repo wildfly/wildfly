@@ -240,7 +240,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-osgi</artifactId>
+            <artifactId>jboss-as-osgi-service</artifactId>
         </dependency>
 
         <dependency>

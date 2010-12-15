@@ -41,7 +41,8 @@ public final class OSGiSubsystemState implements Serializable {
 
     private static final long serialVersionUID = 6268537612248019022L;
 
-    public static final OSGiSubsystemState DEFAULT_CONFIGURATION = new OSGiSubsystemState();
+    /** The property that defines a comma separated list of system module identifiers */
+    public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
 
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
     private final List<OSGiModule> modules = new ArrayList<OSGiModule>();

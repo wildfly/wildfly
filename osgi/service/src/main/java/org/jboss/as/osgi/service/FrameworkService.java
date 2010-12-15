@@ -28,6 +28,7 @@ import java.util.List;
 import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.osgi.parser.OSGiSubsystemState;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
@@ -68,15 +69,18 @@ public class FrameworkService implements Service<Framework> {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<Configuration> injectedConfig = new InjectedValue<Configuration>();
+    private final OSGiSubsystemState subsystemState;
     private Framework framework;
 
-    public static void addService(final ServiceTarget target) {
-        FrameworkService service = new FrameworkService();
+    private FrameworkService(OSGiSubsystemState subsystemState) {
+        this.subsystemState = subsystemState;
+    }
+
+    public static void addService(final ServiceTarget target, final OSGiSubsystemState subsystemState) {
+        FrameworkService service = new FrameworkService(subsystemState);
         ServiceBuilder<?> serviceBuilder = target.addService(FrameworkService.SERVICE_NAME, service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
         serviceBuilder.setInitialMode(Mode.ON_DEMAND);
         serviceBuilder.install();
     }
@@ -106,7 +110,7 @@ public class FrameworkService implements Service<Framework> {
             // Create the list of {@link Deployment}s for the configured modules
             List<Deployment> deployments = new ArrayList<Deployment>();
             BundleDeploymentPlugin depPlugin = bundleManager.getPlugin(BundleDeploymentPlugin.class);
-            for (OSGiModule module : injectedConfig.getValue().getModules()) {
+            for (OSGiModule module : subsystemState.getModules()) {
                 ModuleIdentifier identifier = module.getIdentifier();
                 Deployment dep = depPlugin.createDeployment(identifier);
                 dep.setAutoStart(module.isStart());
