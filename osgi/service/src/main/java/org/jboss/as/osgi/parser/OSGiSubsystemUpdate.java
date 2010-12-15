@@ -37,18 +37,14 @@ public final class OSGiSubsystemUpdate extends AbstractSubsystemUpdate<OSGiSubsy
 
     private static final long serialVersionUID = -4542570180370773590L;
 
-    private OSGiSubsystemState subsystemState = new OSGiSubsystemState();
+    private final SubsystemState subsystemState;
 
-    protected OSGiSubsystemUpdate() {
-        super(OSGiExtension.NAMESPACE, true);
-    }
-
-    OSGiSubsystemUpdate(OSGiSubsystemState subsystemState) {
+    OSGiSubsystemUpdate(final SubsystemState subsystemState) {
         super(OSGiExtension.NAMESPACE, true);
         this.subsystemState = subsystemState;
     }
 
-    OSGiSubsystemState getSubsystemState() {
+    SubsystemState getSubsystemState() {
         return subsystemState;
     }
 

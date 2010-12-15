@@ -24,11 +24,16 @@ package org.jboss.as.osgi.parser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.jboss.as.osgi.service.UnmodifiableDictionary;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -37,16 +42,47 @@ import org.jboss.modules.ModuleIdentifier;
  * @author Thomas.Diesler@jboss.com
  * @since 13-Oct-2010
  */
-public final class OSGiSubsystemState implements Serializable {
+public final class SubsystemState implements Serializable {
 
     private static final long serialVersionUID = 6268537612248019022L;
 
-    /** The property that defines a comma separated list of system module identifiers */
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
 
+    private final Map<String, Dictionary<String, String>> configurations = new LinkedHashMap<String, Dictionary<String, String>>();
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
     private final List<OSGiModule> modules = new ArrayList<OSGiModule>();
     private Activation activationPolicy = Activation.LAZY;
+
+    public Set<String> getConfigurations() {
+        synchronized (configurations) {
+            Collection<String> values = configurations.keySet();
+            return Collections.unmodifiableSet(new HashSet<String>(values));
+        }
+    }
+
+    public boolean hasConfiguration(String pid) {
+        synchronized (configurations) {
+            return configurations.containsKey(pid);
+        }
+    }
+
+    public Dictionary<String, String> getConfiguration(String pid) {
+        synchronized (configurations) {
+            return configurations.get(pid);
+        }
+    }
+
+    public Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> props) {
+        synchronized (configurations) {
+            return configurations.put(pid, new UnmodifiableDictionary<String, String>(props));
+        }
+    }
+
+    public Dictionary<String, String> removeConfiguration(String pid) {
+        synchronized (configurations) {
+            return configurations.remove(pid);
+        }
+    }
 
     public enum Activation {
         EAGER, LAZY
@@ -77,7 +113,7 @@ public final class OSGiSubsystemState implements Serializable {
     }
 
     boolean isEmpty() {
-        return properties.isEmpty() && modules.isEmpty();
+        return properties.isEmpty() && modules.isEmpty() && configurations.isEmpty();
     }
 
     public static class OSGiModule implements Serializable {

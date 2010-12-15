@@ -25,6 +25,7 @@ package org.jboss.as.naming.service;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
@@ -36,6 +37,7 @@ import org.jboss.msc.value.Values;
 
 import javax.management.MBeanServer;
 import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.Reference;
 
 /**
@@ -74,6 +76,9 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
         addContextFactory(target, "app");
         addContextFactory(target, "module");
         addContextFactory(target, "comp");
+
+        // Provide the {@link InitialContext} as OSGi service
+        InitialContextFactoryService.addService(target);
 
         final JndiView jndiView = new JndiView();
         target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)

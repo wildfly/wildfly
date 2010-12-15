@@ -26,6 +26,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Thomas.Diesler@jboss.com
  */
 public final class TxnServices {
 
@@ -33,7 +34,11 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_XA_TERMINATOR = JBOSS_TXN.append("XATerminator");
 
+    public static final ServiceName JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER = JBOSS_TXN.append("ArjunaTransactionManager");
+
     public static final ServiceName JBOSS_TXN_TRANSACTION_MANAGER = JBOSS_TXN.append("TransactionManager");
+
+    public static final ServiceName JBOSS_TXN_USER_TRANSACTION = JBOSS_TXN.append("UserTransaction");
 
     public static <T> T notNull(T value) {
         if (value == null) throw new IllegalStateException("Service not started");

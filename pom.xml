@@ -66,6 +66,7 @@
         <version.junit>4.8.1</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
+        <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
@@ -133,14 +134,14 @@
     </properties>
 
     <modules>
-        <module>build-config</module>
         <module>build</module>
+        <module>build-config</module>
         <module>arquillian</module>
         <module>connector</module>
         <module>demos</module>
+        <module>domain</module>
         <module>domain-client</module>
         <module>domain-controller</module>
-        <module>domain</module>
         <module>host-controller</module>
         <module>jmx</module>
         <module>logging</module>
@@ -341,6 +342,12 @@
 
             <dependency>
                 <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.configadmin</artifactId>
+                <version>${version.org.apache.felix.configadmin}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.log</artifactId>
                 <version>${version.org.apache.felix.log}</version>
             </dependency>
@@ -439,6 +446,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-naming</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-osgi-configadmin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

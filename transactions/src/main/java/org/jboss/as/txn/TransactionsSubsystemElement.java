@@ -126,7 +126,7 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
     @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
-        final ServiceController<?> tmController = serviceRegistry.getService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+        final ServiceController<?> tmController = serviceRegistry.getService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
         tmController.setMode(ServiceController.Mode.REMOVE);
         final ServiceController<?> xaController = serviceRegistry.getService(TxnServices.JBOSS_TXN_XA_TERMINATOR);
         xaController.setMode(ServiceController.Mode.REMOVE);

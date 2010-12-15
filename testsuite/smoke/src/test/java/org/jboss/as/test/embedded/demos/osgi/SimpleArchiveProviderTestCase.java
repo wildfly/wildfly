@@ -20,8 +20,8 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.api.ArchiveProvider;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.osgi.ArchiveProvider;
 import org.jboss.arquillian.osgi.OSGiContainer;
 import org.jboss.as.test.embedded.demos.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.embedded.demos.osgi.bundle.SimpleService;
@@ -31,19 +31,17 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 
 /**
  * Test the arquillian callback to a client provided archive
- *
+ * 
  * @author thomas.diesler@jboss.com
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[JBOSGI-418] Fix Arquillian OSGiContainer callback")
 public class SimpleArchiveProviderTestCase {
 
     @Inject
@@ -71,22 +69,19 @@ public class SimpleArchiveProviderTestCase {
         }
     }
 
-    public static class BundleArchiveProvider implements ArchiveProvider {
-
-        @Override
-        public JavaArchive getTestArchive(String name) {
-            final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
-            archive.addClasses(SimpleActivator.class, SimpleService.class);
-            archive.setManifest(new Asset() {
-                public InputStream openStream() {
-                    OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                    builder.addBundleSymbolicName(archive.getName());
-                    builder.addBundleManifestVersion(2);
-                    builder.addBundleActivator(SimpleActivator.class.getName());
-                    return builder.openStream();
-                }
-            });
-            return archive;
-        }
+    @ArchiveProvider
+    public static JavaArchive getTestArchive(String name) {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
+        archive.addClasses(SimpleActivator.class, SimpleService.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(SimpleActivator.class.getName());
+                return builder.openStream();
+            }
+        });
+        return archive;
     }
 }

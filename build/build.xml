@@ -186,6 +186,10 @@
 
     	<module-def name="org.apache.commons.logging"/>
     	
+        <module-def name="org.apache.felix.configadmin">
+            <maven-resource group="org.apache.felix" artifact="org.apache.felix.configadmin"/>
+        </module-def>
+
     	<module-def name="org.apache.log4j">
             <maven-resource group="log4j" artifact="log4j"/>
         </module-def>
@@ -283,6 +287,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
         </module-def>
 
+        <module-def name="org.jboss.as.osgi.configadmin">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-configadmin"/>
+        </module-def>
+    	
         <module-def name="org.jboss.as.osgi">
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
         </module-def>

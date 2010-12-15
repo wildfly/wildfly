@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Dependencies: org.osgi.core,org.jboss.modules,deployment.example-xservice-api-module
+

@@ -28,8 +28,8 @@ import java.util.List;
 import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanServerService;
-import org.jboss.as.osgi.parser.OSGiSubsystemState;
-import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
+import org.jboss.as.osgi.parser.SubsystemState;
+import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
@@ -69,14 +69,14 @@ public class FrameworkService implements Service<Framework> {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final OSGiSubsystemState subsystemState;
+    private final SubsystemState subsystemState;
     private Framework framework;
 
-    private FrameworkService(OSGiSubsystemState subsystemState) {
+    private FrameworkService(SubsystemState subsystemState) {
         this.subsystemState = subsystemState;
     }
 
-    public static void addService(final ServiceTarget target, final OSGiSubsystemState subsystemState) {
+    public static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
         FrameworkService service = new FrameworkService(subsystemState);
         ServiceBuilder<?> serviceBuilder = target.addService(FrameworkService.SERVICE_NAME, service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
@@ -106,6 +106,10 @@ public class FrameworkService implements Service<Framework> {
             BundleContext sysContext = framework.getBundleContext();
             MBeanServer mbeanServer = injectedMBeanServer.getValue();
             sysContext.registerService(MBeanServer.class.getName(), mbeanServer, null);
+
+            // Register the {@link ServiceContainer} as OSGi service
+            ServiceContainer serviceContainer = context.getController().getServiceContainer();
+            sysContext.registerService(ServiceContainer.class.getName(), serviceContainer, null);
 
             // Create the list of {@link Deployment}s for the configured modules
             List<Deployment> deployments = new ArrayList<Deployment>();

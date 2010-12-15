@@ -34,7 +34,7 @@ import java.util.Map;
 public enum Element {
     // must be first
     UNKNOWN(null),
-
+    CONFIGURATION("configuration"),
     MODULES("modules"),
     MODULE("module"),
     PROPERTIES("properties"),

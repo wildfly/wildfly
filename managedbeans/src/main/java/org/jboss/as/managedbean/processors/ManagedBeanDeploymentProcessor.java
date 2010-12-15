@@ -76,14 +76,14 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final ManagedBeanConfigurations managedBeanConfigurations = phaseContext.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY);
-        if(managedBeanConfigurations == null) {
+        if (managedBeanConfigurations == null)
             return; // Skip deployments with no managed beans.
-        }
+
         final ModuleContextConfig moduleContext = phaseContext.getAttachment(ModuleContextConfig.ATTACHMENT_KEY);
-        if(moduleContext == null) {
-            throw new DeploymentUnitProcessingException("Unable to deploy managed beans without a module naming context");
-        }
+        if (moduleContext == null)
+            return; // Skip deployments with no module context.
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 

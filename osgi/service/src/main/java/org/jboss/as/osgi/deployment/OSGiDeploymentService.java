@@ -168,12 +168,14 @@ public class OSGiDeploymentService implements Service<Deployment> {
 
         @Override
         public void serviceStarted(ServiceController<? extends Deployment> controller) {
+            log.debugf("OSGiDeploymentService started: %s", controller);
             startedDeployments.add(controller.getValue());
             processDeployment(controller);
         }
 
         @Override
         public void serviceFailed(ServiceController<? extends Deployment> controller, StartException reason) {
+            log.errorf(reason, "OSGiDeploymentService failed: %s", controller);
             processDeployment(controller);
         }
 

@@ -20,6 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -38,6 +40,17 @@ import org.jboss.shrinkwrap.api.container.ManifestContainer;
  */
 public class ModuleApplicationArchiveProcessor extends AbstractApplicationArchiveProcessor {
 
+    static List<String> defaultDependencies = new ArrayList<String>();
+    static {
+        defaultDependencies.add("org.jboss.arquillian.api");
+        defaultDependencies.add("org.jboss.arquillian.junit");
+        defaultDependencies.add("org.jboss.arquillian.spi");
+        defaultDependencies.add("org.jboss.modules");
+        defaultDependencies.add("org.jboss.msc");
+        defaultDependencies.add("org.jboss.shrinkwrap.api");
+        defaultDependencies.add("junit.junit");
+    }
+
     @Override
     public void process(Archive<?> appArchive, TestClass testClass) {
 
@@ -47,16 +60,15 @@ public class ModuleApplicationArchiveProcessor extends AbstractApplicationArchiv
         final Manifest manifest = getOrCreateManifest(appArchive);
         Attributes attributes = manifest.getMainAttributes();
         String value = attributes.getValue("Dependencies");
-        StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value + "," : "");
-        moduleDeps.append("org.jboss.arquillian.api");
-        moduleDeps.append(",org.jboss.arquillian.junit");
-        moduleDeps.append(",org.jboss.arquillian.spi");
-        moduleDeps.append(",org.jboss.shrinkwrap.api");
-        moduleDeps.append(",junit.junit");
+        StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value : "org.jboss.modules");
+        for (String dep : defaultDependencies) {
+            if (moduleDeps.indexOf(dep) < 0)
+                moduleDeps.append("," + dep);
+        }
         attributes.putValue("Dependencies", moduleDeps.toString());
 
         // Add the manifest to the archive
-        ((ManifestContainer<?>)appArchive).setManifest(new Asset() {
+        ((ManifestContainer<?>) appArchive).setManifest(new Asset() {
             public InputStream openStream() {
                 try {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -22,6 +22,8 @@
 
 package org.jboss.as.osgi.parser;
 
+import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +34,8 @@ import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
-import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
+import org.jboss.as.osgi.parser.SubsystemState.Activation;
+import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.spi.NotImplementedException;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -48,17 +50,17 @@ public final class OSGiSubsystemElement extends AbstractSubsystemElement<OSGiSub
 
     private static final long serialVersionUID = 1543336372548202423L;
 
-    private OSGiSubsystemState subsystemState = new OSGiSubsystemState();
+    private SubsystemState subsystemState;
 
     OSGiSubsystemElement() {
         super(OSGiExtension.NAMESPACE);
     }
 
-    OSGiSubsystemState getSubsystemState() {
+    SubsystemState getSubsystemState() {
         return subsystemState;
     }
 
-    void setSubsystemState(OSGiSubsystemState subsystemState) {
+    void setSubsystemState(SubsystemState subsystemState) {
         this.subsystemState = subsystemState;
     }
 
@@ -121,6 +123,24 @@ public final class OSGiSubsystemElement extends AbstractSubsystemElement<OSGiSub
                 }
                 streamWriter.writeEndElement();
             }
+
+            for (String pid : subsystemState.getConfigurations()) {
+                streamWriter.writeStartElement(Element.CONFIGURATION.getLocalName());
+                streamWriter.writeAttribute(Attribute.PID.getLocalName(), pid);
+
+                Dictionary<String, String> configuration = subsystemState.getConfiguration(pid);
+                Enumeration<String> keys = configuration.keys();
+                while (keys.hasMoreElements()) {
+                    String name = keys.nextElement();
+                    String value = configuration.get(name);
+                    streamWriter.writeStartElement(Element.PROPERTY.getLocalName());
+                    streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
+                    streamWriter.writeCharacters(value);
+                    streamWriter.writeEndElement();
+                }
+                streamWriter.writeEndElement();
+            }
+
             streamWriter.writeEndElement();
         }
     }

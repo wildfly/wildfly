@@ -36,6 +36,7 @@ public enum Attribute {
     ACTIVATION("activation"),
     IDENTIFIER("identifier"),
     NAME("name"),
+    PID("pid"),
     START("start"),
     VALUE("value"),
     ;

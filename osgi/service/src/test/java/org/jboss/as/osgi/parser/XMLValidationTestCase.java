@@ -21,7 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ import java.net.URL;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.jboss.msc.service.ServiceName;
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -52,10 +50,6 @@ public class XMLValidationTestCase extends AbstractValidationTest {
     }
 
     private void parseXml(String xmlName) throws Exception {
-
-        String name = "jboss.osgi.framework";
-        ServiceName serviceName = ServiceName.parse(name);
-        assertEquals(3, serviceName.length());
 
         SAXParserFactory factory = SAXParserFactory.newInstance();
         if (!factory.isNamespaceAware())

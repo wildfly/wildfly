@@ -27,9 +27,10 @@ import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
-import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
+import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.BundleManagerService;
+import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
@@ -47,7 +48,7 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
     private static final long serialVersionUID = -4542570180370773590L;
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    private OSGiSubsystemState subsystemState = new OSGiSubsystemState();
+    private final SubsystemState subsystemState = new SubsystemState();
 
     protected OSGiSubsystemAdd() {
         super(OSGiExtension.NAMESPACE);
@@ -58,7 +59,7 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         return new OSGiSubsystemElement();
     }
 
-    OSGiSubsystemState getSubsystemState() {
+    SubsystemState getSubsystemState() {
         return subsystemState;
     }
 
@@ -79,6 +80,8 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         BundleContextService.addService(target, policy);
         PackageAdminService.addService(target);
         StartLevelService.addService(target);
+
+        ConfigAdminServiceImpl.addService(target, subsystemState);
     }
 
     protected void applyUpdateBootAction(BootUpdateContext updateContext) {

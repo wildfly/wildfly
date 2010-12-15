@@ -24,17 +24,18 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
-                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
-                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
-                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
-                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
-                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
-                            urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
-                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
-                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
                             urn:jboss:domain:connector:1.0 jboss-connector.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
+                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
+                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
+                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
+                            urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
                             urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd
+                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
                             urn:jboss:domain:web:1.0 jboss-web.xsd">
 
     <extensions>
@@ -72,6 +73,16 @@
                 <file relative-to="jboss.server.log.dir" path="server.log"/>
                 <suffix value=".yyyy-MM-dd"/>
             </periodic-rotating-file-handler>
+
+            <logger category="com.arjuna">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.apache.tomcat.util.modeler">
+                <level name="WARN"/>
+            </logger>
+            <logger category="sun.rmi">
+                <level name="WARN"/>
+            </logger>
 
             <root-logger>
                 <level name="INFO"/>
@@ -144,6 +155,7 @@
                 org.jboss.arquillian.junit,
                 org.jboss.arquillian.protocol.osgi,
                 org.jboss.arquillian.spi,
+                org.jboss.as.osgi,
                 org.jboss.shrinkwrap.api,
                 javax.inject.api,
                 junit.junit
@@ -151,6 +163,7 @@
                 <property name="org.osgi.framework.system.packages.extra">
                 javax.transaction;version=1.1,
                 org.apache.log4j;version=1.2,
+                org.jboss.as.osgi.service;version=7.0,
                 org.jboss.logging;version=3.0,
                 org.jboss.osgi.deployment.deployer;version=1.0,
                 org.jboss.osgi.deployment.interceptor;version=1.0,
@@ -162,17 +175,22 @@
                 
                 org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.osgi,
                 org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
+                org.jboss.shrinkwrap.impl.base,
                 org.junit, org.junit.runner, javax.inject
                 </property>
-                <property name="manager.root">jboss-osgi</property>
             </properties>
             <modules>
                 <module identifier="org.osgi.compendium"/>
                 <module identifier="org.apache.aries.util"/>
+                <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
+                <module identifier="org.apache.felix.configadmin" start="true"/>
                 <module identifier="org.jboss.osgi.common" start="true"/>
                 <module identifier="org.apache.aries.jmx" start="true"/>
                 <module identifier="org.jboss.osgi.jmx" start="true"/>
             </modules>
+            <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
+                <property name="manager.root">jboss-osgi</property>
+            </configuration>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->

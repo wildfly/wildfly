@@ -39,6 +39,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
+            <xs:element name="configuration" type="configurationType" minOccurs="0"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
             <xs:element name="modules" type="modulesType" minOccurs="0"/>
         </xs:all>
@@ -51,6 +52,13 @@
             <xs:enumeration value="lazy"/>
         </xs:restriction>
     </xs:simpleType>
+    
+    <xs:complexType name="configurationType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="property" type="propertyType"/>
+        </xs:choice>
+        <xs:attribute name="pid" type="xs:string" use="required"/>
+    </xs:complexType>
     
     <xs:complexType name="modulesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">

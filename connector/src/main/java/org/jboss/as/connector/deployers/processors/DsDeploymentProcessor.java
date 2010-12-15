@@ -116,7 +116,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
                  .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceDeploymentService.getMdrInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, dataSourceDeploymentService.getRegistryInjector())
                     .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, dataSourceDeploymentService.getJndiInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dataSourceDeploymentService.getTxmInjector())
+                    .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dataSourceDeploymentService.getTxmInjector())
                     .addDependency(NamingService.SERVICE_NAME)
                     .setInitialMode(ServiceController.Mode.ACTIVE);
             if(uniqueJdbcLocalId != null) {

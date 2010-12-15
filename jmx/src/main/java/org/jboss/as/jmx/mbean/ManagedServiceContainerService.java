@@ -77,7 +77,9 @@ public class ManagedServiceContainerService implements Service<Void> {
 
             @Override
             public List<String> listServices() {
-                return getServiceList(null);
+                List<String> services = getServiceList(null);
+                logServices(services);
+                return services;
             }
 
             @Override
@@ -85,7 +87,9 @@ public class ManagedServiceContainerService implements Service<Void> {
                 if (mode == null)
                     return getServiceList(null);
                 String pattern = "mode " + Mode.valueOf(mode.trim().toUpperCase());
-                return getServiceList(pattern);
+                List<String> services = getServiceList(pattern);
+                logServices(services);
+                return services;
             }
 
             @Override
@@ -93,7 +97,9 @@ public class ManagedServiceContainerService implements Service<Void> {
                 if (state == null)
                     return getServiceList(null);
                 String pattern = "state=" + State.valueOf(state.trim().toUpperCase());
-                return getServiceList(pattern);
+                List<String> services = getServiceList(pattern);
+                logServices(services);
+                return services;
             }
 
             @Override
@@ -144,6 +150,14 @@ public class ManagedServiceContainerService implements Service<Void> {
                 }
                 Collections.sort(entries);
                 return entries;
+            }
+
+            private void logServices(List<String> list) {
+                StringBuffer message = new StringBuffer("Registered services:");
+                for (String line : list) {
+                    message.append("\n  " + line);
+                }
+                log.infof(message.toString());
             }
         };
         try {

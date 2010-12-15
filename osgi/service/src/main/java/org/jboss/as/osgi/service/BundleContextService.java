@@ -26,7 +26,7 @@ import org.jboss.as.server.deployment.DeploymentService;
 import org.jboss.as.osgi.deployment.InstallBundleInitiatorService;
 import org.jboss.as.osgi.deployment.ModuleRegistrationService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
-import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
+import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
