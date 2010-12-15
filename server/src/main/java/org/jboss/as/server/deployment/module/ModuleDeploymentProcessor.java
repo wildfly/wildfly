@@ -48,9 +48,6 @@ import org.jboss.modules.PathFilters;
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
-    // todo: make this delegate to the AS module loader
-    private final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(Module.getSystemModuleLoader());
-
     /**
      * Create a  module from the attached module config and attache the built module..
      *
@@ -58,6 +55,11 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+        final DeploymentModuleLoader deploymentModuleLoader  = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
+        if(deploymentModuleLoader == null) {
+            return;
+        }
 
         final ResourceRoot mainRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
@@ -143,6 +145,10 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(DeploymentUnit context) {
+        final DeploymentModuleLoader deploymentModuleLoader = context.getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
+        if(deploymentModuleLoader == null) {
+            return;
+        }
         final Module module = context.getAttachment(Attachments.MODULE);
         if (module != null) {
             deploymentModuleLoader.removeModuleSpec(module.getIdentifier());

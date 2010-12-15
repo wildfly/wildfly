@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment;
 
 import java.util.jar.Manifest;
+import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
@@ -95,6 +96,11 @@ public final class Attachments {
      * The module of this deployment unit.
      */
     public static final AttachmentKey<Module> MODULE = AttachmentKey.create(Module.class);
+
+    /**
+     * The module loader for the deployment
+     */
+    public static final AttachmentKey<DeploymentModuleLoader> DEPLOYMENT_MODULE_LOADER = AttachmentKey.create(DeploymentModuleLoader.class);
 
     //
     // POST_MODULE

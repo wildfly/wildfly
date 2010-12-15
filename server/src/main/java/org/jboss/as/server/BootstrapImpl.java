@@ -33,10 +33,13 @@ import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 import org.jboss.threads.AsyncFuture;
@@ -76,7 +79,7 @@ final class BootstrapImpl implements Bootstrap {
 
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
-        final Service<ServerController> serverControllerService = new ServerControllerService(configuration);
+        final Service<ServerController> serverControllerService = new ServerControllerService(configuration, extraServices);
         tracker.addListener(new BootstrapListener(future, serverControllerService, configuration.getStartTime()));
         tracker.addService(ServerControllerService.JBOSS_AS_NAME, serverControllerService).install();
         return future;

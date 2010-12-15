@@ -29,11 +29,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import org.jboss.as.naming.deployment.ModuleContextProcessor;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeployerChainsService;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
+import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
+import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
+import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
+import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.services.net.SocketBindingManager;
@@ -42,6 +56,8 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -66,12 +82,17 @@ final class ServerControllerService implements Service<ServerController> {
 
     private final Bootstrap.Configuration configuration;
 
+    private final List<ServiceActivator> extraServices;
+
+    private DeploymentModuleLoader deploymentModuleLoader;
+
     // mutable state
     private ServerController serverController;
     private Set<ServiceName> bootServices;
 
-    public ServerControllerService(final Bootstrap.Configuration configuration) {
+    public ServerControllerService(final Bootstrap.Configuration configuration, final List<ServiceActivator> extraServices) {
         this.configuration = configuration;
+        this.extraServices = extraServices;
     }
 
     /** {@inheritDoc} */
@@ -84,6 +105,20 @@ final class ServerControllerService implements Service<ServerController> {
 
         // Install the environment before fetching and using the persister
         serverEnvironment.install();
+
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
+            public ServiceTarget getServiceTarget() {
+                return serviceTarget;
+            }
+
+            public ServiceRegistry getServiceRegistry() {
+                return container;
+            }
+        };
+
+        for(ServiceActivator activator : extraServices) {
+            activator.activate(serviceActivatorContext);
+        }
 
         final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment);
 
@@ -151,6 +186,27 @@ final class ServerControllerService implements Service<ServerController> {
             update.applyUpdateBootAction(bootUpdateContext);
         }
 
+        // Activate deployment module loader
+        deploymentModuleLoader = new DeploymentModuleLoaderImpl(configuration.getModuleLoader());
+        deployers.get(Phase.MODULARIZE).add(new RegisteredProcessor(Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER, new DeploymentUnitProcessor() {
+            public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+                phaseContext.getDeploymentUnit().putAttachment(Attachments.DEPLOYMENT_MODULE_LOADER, deploymentModuleLoader);
+            }
+
+            public void undeploy(DeploymentUnit context) {
+                context.removeAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
+            }
+        }));
+
+        // Activate core processors for jar deployment
+        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_MANIFEST, new ManifestAttachmentProcessor()));
+        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor()));
+        deployers.get(Phase.MODULARIZE).add(new RegisteredProcessor(Phase.MODULARIZE_DEPLOYMENT, new ModuleDeploymentProcessor()));
+        deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
+        deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
+
         // All deployers are registered
 
         final EnumMap<Phase, List<DeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<DeploymentUnitProcessor>>(Phase.class);
@@ -162,6 +218,8 @@ final class ServerControllerService implements Service<ServerController> {
             }
             finalDeployers.put(entry.getKey(), list);
         }
+
+        DeployerChainsService.addService(serviceTarget, finalDeployers);
 
         this.serverController = serverController;
         bootServices = serviceTarget.getSet();
