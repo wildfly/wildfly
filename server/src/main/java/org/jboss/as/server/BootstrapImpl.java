@@ -78,8 +78,9 @@ final class BootstrapImpl implements Bootstrap {
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
         final Service<ServerController> serverControllerService = new ServerControllerService(configuration, extraServices);
-        tracker.addListener(new BootstrapListener(future, serverControllerService, configuration.getStartTime()));
         tracker.addService(ServerControllerService.JBOSS_AS_NAME, serverControllerService).install();
+
+        container.addListener(new BootstrapListener(future, serverControllerService, container, configuration.getStartTime()));
         return future;
     }
 
@@ -118,12 +119,14 @@ final class BootstrapImpl implements Bootstrap {
         private final EnumMap<ServiceController.Mode, AtomicInteger> map;
         private final StartTask future;
         private final Service<ServerController> serverControllerService;
+        private final ServiceContainer serviceContainer;
         private final long startTime;
         private volatile boolean cancelLikely;
 
-        public BootstrapListener(final StartTask future, final Service<ServerController> serverControllerService, final long startTime) {
+        public BootstrapListener(final StartTask future, final Service<ServerController> serverControllerService, final ServiceContainer serviceContainer, final long startTime) {
             this.future = future;
             this.serverControllerService = serverControllerService;
+            this.serviceContainer = serviceContainer;
             this.startTime = startTime;
             final EnumMap<ServiceController.Mode, AtomicInteger> map = new EnumMap<ServiceController.Mode, AtomicInteger>(ServiceController.Mode.class);
             for (ServiceController.Mode mode : ServiceController.Mode.values()) {
@@ -182,6 +185,7 @@ final class BootstrapImpl implements Bootstrap {
             final int passive = map.get(ServiceController.Mode.PASSIVE).get();
             final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
             final int never = map.get(ServiceController.Mode.NEVER).get();
+            serviceContainer.removeListener(this);
             if (failed == 0) {
                 log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
             } else {
