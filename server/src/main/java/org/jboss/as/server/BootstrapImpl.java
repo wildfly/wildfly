@@ -27,19 +27,17 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 import org.jboss.threads.AsyncFuture;
@@ -116,6 +114,7 @@ final class BootstrapImpl implements Bootstrap {
         private final AtomicInteger started = new AtomicInteger();
         private final AtomicInteger failed = new AtomicInteger();
         private final AtomicInteger outstanding = new AtomicInteger();
+        private final AtomicBoolean done = new AtomicBoolean();
         private final EnumMap<ServiceController.Mode, AtomicInteger> map;
         private final StartTask future;
         private final Service<ServerController> serverControllerService;
@@ -146,28 +145,32 @@ final class BootstrapImpl implements Bootstrap {
         public void serviceStarted(final ServiceController<?> controller) {
             started.incrementAndGet();
             controller.removeListener(this);
-            tick();
+            tick(future.container);
         }
 
         public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
             failed.incrementAndGet();
             controller.removeListener(this);
-            tick();
+            tick(controller.getServiceContainer());
         }
 
         public void dependencyFailed(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
-            tick();
+            tick(controller.getServiceContainer());
         }
 
         public void serviceRemoved(final ServiceController<?> controller) {
             cancelLikely = true;
             controller.removeListener(this);
-            tick();
+            tick(controller.getServiceContainer());
         }
 
-        private void tick() {
-            if (outstanding.decrementAndGet() != 0 || cancelLikely) {
+        private void tick(final ServiceContainer container) {
+            if (outstanding.decrementAndGet() != 0 || done.getAndSet(true)) {
+                return;
+            }
+            container.removeListener(this);
+            if (cancelLikely) {
                 return;
             }
             final int failed = this.failed.get();
