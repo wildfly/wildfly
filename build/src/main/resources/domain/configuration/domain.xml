@@ -35,7 +35,8 @@
                             urn:jboss:domain:connector:1.0 jboss-connector.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
                             urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd
-                            urn:jboss:domain:web:1.0 jboss-web.xsd">
+                            urn:jboss:domain:web:1.0 jboss-web.xsd
+                            urn:jboss:domain:security:1.0 jboss-security.xsd">
 
     <extensions>
         <extension module="org.jboss.as.connector"/>
@@ -51,6 +52,7 @@
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web"/>
+        <extension module="org.jboss.as.security"/>
     </extensions>
 
     <profiles>
@@ -213,6 +215,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:security:1.0"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>

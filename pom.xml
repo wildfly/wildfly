@@ -124,7 +124,7 @@
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.mockito>1.8.4</version.org.mockito>
-        <version.org.picketbox>4.0.0.Alpha1</version.org.picketbox>
+        <version.org.picketbox>4.0.0.Alpha2</version.org.picketbox>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
         <version.osgi>4.2.0</version.osgi>
@@ -153,6 +153,7 @@
         <module>mc</module>
         <module>messaging</module>
         <module>naming</module>
+        <module>security</module>
         <module>osgi</module>
         <module>process-controller</module>
         <module>protocol</module>
@@ -499,7 +500,13 @@
                 <artifactId>jboss-as-remoting</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-sar</artifactId>

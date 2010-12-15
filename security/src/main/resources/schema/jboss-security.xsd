@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:jboss:domain:security:1.0"
+           xmlns="urn:jboss:domain:security:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+
+   <!-- The security subsystem root element -->
+   <xs:element name="subsystem" type="security-containerType" />
+
+   <!-- The security container configuration -->
+   <xs:complexType name="security-containerType">
+      <xs:annotation>
+         <xs:documentation>
+                <![CDATA[
+                    The security subsystem, used to configure authentication and authorization
+                    
+                    The optional "authentication-manager-class-name" attribute specifies the AuthenticationManager
+                    implementation class name to use. Default value is 
+                    "org.jboss.security.plugins.auth.JaasSecurityManagerBase"
+                    
+                    The optional "deep-copy-subject-mode" attribute sets the copy mode of subjects done by the security
+                    managers to be deep copies that makes copies of the subject principals and credentials if they are
+                    cloneable. It should be set to true if subject include mutable content that can be corrupted when
+                    multiple threads have the same identity and cache flushes/logout clearing the subject in one thread
+                    results in subject references affecting other threads. Default value is "false"
+                    
+                    The optional "default-callback-handler-class-name" specifies a global class name for the
+                    CallbackHandler implementation to be used with login modules. Default value is 
+                    "org.jboss.security.auth.callback.JBossCallbackHandler"
+                ]]>
+         </xs:documentation>
+      </xs:annotation>
+      <xs:attribute name="authentication-manager-class-name" type="xs:string" use="optional"/>
+      <xs:attribute name="deep-copy-subject-mode" type="xs:boolean" use="optional"/>
+      <xs:attribute name="default-callback-handler-class-name" type="xs:string" use="optional"/>
+   </xs:complexType>
+
+</xs:schema>

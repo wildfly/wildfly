@@ -38,7 +38,9 @@
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd
                             urn:jboss:domain:transactions:1.0 jboss-txn.xsd
                             urn:jboss:domain:web:1.0 jboss-web.xsd
-                            urn:jboss:domain:web:1.0 jboss-deployment-scanner.xsd">
+                            urn:jboss:domain:web:1.0 jboss-deployment-scanner.xsd
+                            urn:jboss:domain:security:1.0 jboss-security.xsd">
+
     <extensions>
         <extension module="org.jboss.as.arquillian.service"/>
         <extension module="org.jboss.as.connector"/>
@@ -55,6 +57,7 @@
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web" />
+        <extension module="org.jboss.as.security"/>
     </extensions>
 
     <management interface="default" port="9999"/>
@@ -116,6 +119,7 @@
         <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />        
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
+        <subsystem xmlns="urn:jboss:domain:security:1.0"/>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
