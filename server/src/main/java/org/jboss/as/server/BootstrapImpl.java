@@ -76,7 +76,7 @@ final class BootstrapImpl implements Bootstrap {
         if (configurationPersister == null) {
             throw new IllegalArgumentException("configurationPersister is null");
         }
-        final ServiceContainer container = ServiceContainer.Factory.create();
+        final ServiceContainer container = ServiceContainer.Factory.create("jbossas");
         final int threads = Runtime.getRuntime().availableProcessors();
         container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
 

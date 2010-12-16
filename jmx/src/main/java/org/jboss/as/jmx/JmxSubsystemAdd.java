@@ -22,7 +22,6 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.jmx.mbean.ManagedServiceContainerService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
@@ -45,7 +44,6 @@ public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElem
         final ServiceTarget target = updateContext.getServiceTarget();
 
         MBeanServerService.addService(target);
-        ManagedServiceContainerService.addService(target);
 
     }
 

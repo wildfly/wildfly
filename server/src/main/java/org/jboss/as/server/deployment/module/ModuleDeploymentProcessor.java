@@ -102,11 +102,11 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
             for (FilterSpecification filter : importFilters) {
                 importBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
             }
-            importBuilder.addFilter(PathFilters.getMetaInfFilter(), false);
             if (dependency.isImportServices()) {
                 importBuilder.addFilter(PathFilters.getMetaInfServicesFilter(), true);
             }
             importBuilder.addFilter(PathFilters.getMetaInfSubdirectoriesFilter(), false);
+            importBuilder.addFilter(PathFilters.getMetaInfFilter(), false);
             importFilter = importBuilder.create();
             if (exportFilters.isEmpty()) {
                 exportFilter = PathFilters.acceptAll();

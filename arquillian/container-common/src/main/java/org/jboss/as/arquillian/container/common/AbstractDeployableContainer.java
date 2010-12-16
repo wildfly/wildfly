@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.jboss.arquillian.spi.Configuration;
@@ -31,7 +32,6 @@ import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.DeployableContainer;
 import org.jboss.arquillian.spi.DeploymentException;
-import org.jboss.as.jmx.mbean.ManagedServiceContainerService.ManagedServiceContainer;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.deployment.DeploymentAction;
 import org.jboss.as.standalone.client.api.deployment.DeploymentPlan;
@@ -39,9 +39,11 @@ import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentActionResult;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.modules.management.ObjectProperties;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.management.ServiceContainerMXBean;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
@@ -55,7 +57,17 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
  */
 public abstract class AbstractDeployableContainer implements DeployableContainer {
 
-    private final Logger log = Logger.getLogger(AbstractDeployableContainer.class.getName());
+    static final ObjectName OBJECT_NAME;
+
+    static {
+        try {
+            OBJECT_NAME = new ObjectName("jboss.msc", ObjectProperties.properties(ObjectProperties.property("type", "container"), ObjectProperties.property("name", "jbossas")));
+        } catch (MalformedObjectNameException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static final Logger log = Logger.getLogger(AbstractDeployableContainer.class.getName());
 
     private JBossAsContainerConfiguration containerConfig;
     private ServerDeploymentManager deploymentManager;
@@ -130,15 +142,16 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
 
     protected void waitForServiceState(ServiceName serviceName, State expectedState, long timeout) throws IOException, InterruptedException {
 
-        ObjectName objectName = ManagedServiceContainer.OBJECT_NAME;
+        ObjectName objectName = OBJECT_NAME;
         MBeanServerConnection mbeanServer = getMBeanServerConnection();
-        ManagedServiceContainer proxy = MBeanProxy.get(mbeanServer, objectName, ManagedServiceContainer.class);
+        ServiceContainerMXBean proxy = MBeanProxy.get(mbeanServer, objectName, ServiceContainerMXBean.class);
 
-        State currentState = State.valueOf(proxy.getState(serviceName.getCanonicalName()));
+        State currentState = State.valueOf(proxy.getServiceStatus(serviceName.getCanonicalName()).getStateName());
         while (timeout > 0 && currentState != expectedState) {
+            // TODO: Change this to use mbean notifications
             Thread.sleep(100);
             timeout -= 100;
-            currentState = State.valueOf(proxy.getState(serviceName.getCanonicalName()));
+            currentState = State.valueOf(proxy.getServiceStatus(serviceName.getCanonicalName()).getStateName());
         }
         if (currentState != expectedState)
             throw new IllegalStateException("Unexpected state for [" + serviceName + "] - " + currentState);
@@ -164,14 +177,14 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
 
     private void startOSGiSubsystem() throws IOException, InterruptedException {
 
-        ObjectName objectName = ManagedServiceContainer.OBJECT_NAME;
+        ObjectName objectName = OBJECT_NAME;
         waitForMBean(objectName, 5000);
 
         MBeanServerConnection mbeanServer = getMBeanServerConnection();
-        ManagedServiceContainer proxy = MBeanProxy.get(mbeanServer, objectName, ManagedServiceContainer.class);
+        ServiceContainerMXBean proxy = MBeanProxy.get(mbeanServer, objectName, ServiceContainerMXBean.class);
         ServiceName serviceName = ServiceName.JBOSS.append("osgi", "context");
-        if (State.valueOf(proxy.getState(serviceName.getCanonicalName())) != State.UP) {
-            proxy.setMode(serviceName.getCanonicalName(), Mode.ACTIVE.toString());
+        if (State.valueOf(proxy.getServiceStatus(serviceName.getCanonicalName()).getStateName()) != State.UP) {
+            proxy.setServiceMode(serviceName.getCanonicalName(), Mode.ACTIVE.toString());
             waitForServiceState(serviceName, State.UP, 5000);
         }
     }
