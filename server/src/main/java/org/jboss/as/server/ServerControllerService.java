@@ -52,6 +52,7 @@ import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.services.net.SocketBindingManager;
 import org.jboss.as.server.services.net.SocketBindingManagerService;
+import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.MultipleRemoveListener;
@@ -99,6 +100,7 @@ final class ServerControllerService implements Service<ServerController> {
     public synchronized void start(final StartContext context) throws StartException {
         final ServiceContainer container = context.getController().getServiceContainer();
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container);
+        serviceTarget.addDependency(context.getController().getName());
         final DelegatingServiceRegistry serviceRegistry = new DelegatingServiceRegistry(container);
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
@@ -227,13 +229,14 @@ final class ServerControllerService implements Service<ServerController> {
 
     /** {@inheritDoc} */
     public synchronized void stop(final StopContext context) {
+        Logger.getLogger("org.jboss.as").infof("Shutdown requested; stopping all services");
         serverController = null;
         final ServiceContainer container = context.getController().getServiceContainer();
         context.asynchronous();
         final MultipleRemoveListener<Runnable> removeListener = MultipleRemoveListener.create(new Runnable() {
             public void run() {
                 context.complete();
-                Logger.getLogger("org.jboss.as").infof("Stopped JBoss AS in %dms", Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+                Logger.getLogger("org.jboss.as").infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
             }
         });
         for (ServiceName serviceName : bootServices) {
