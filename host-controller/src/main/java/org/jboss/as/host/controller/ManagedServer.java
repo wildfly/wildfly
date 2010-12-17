@@ -98,7 +98,7 @@ public final class ManagedServer {
         }
         final MarshallingConfiguration config = new MarshallingConfiguration();
         config.setVersion(2);
-        config.setClassTable(ModularClassTable.getInstance());
+        config.setClassTable(ModularClassTable.getInstance(Module.getSystemModuleLoader()));
         CONFIG = config;
     }
 

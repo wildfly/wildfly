@@ -39,6 +39,7 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassTable;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.stdio.LoggingOutputStream;
@@ -93,7 +94,7 @@ public final class DomainServerMain {
         try {
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
             configuration.setVersion(2);
-            configuration.setClassTable(ModularClassTable.getInstance());
+            configuration.setClassTable(ModularClassTable.getInstance(Module.getSystemModuleLoader()));
             unmarshaller = factory.createUnmarshaller(configuration);
             byteInput = Marshalling.createByteInput(initialInput);
             unmarshaller.start(byteInput);

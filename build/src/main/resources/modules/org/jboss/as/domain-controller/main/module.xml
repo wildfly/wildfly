@@ -40,6 +40,8 @@
         <module name="org.jboss.stdio"/>
         <module name="org.jboss.as.domain-client"/>
         <module name="org.jboss.as.domain"/>
+        <module name="org.jboss.as.deployment-repository"/>
+        <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.protocol"/>
     </dependencies>
 </module>
