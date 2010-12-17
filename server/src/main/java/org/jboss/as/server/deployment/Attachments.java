@@ -23,7 +23,9 @@
 package org.jboss.as.server.deployment;
 
 import java.util.jar.Manifest;
+import org.jboss.as.server.deployment.module.ClassPathEntry;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
@@ -67,6 +69,14 @@ public final class Attachments {
      * The list of subdeployments detected.
      */
     public static final AttachmentKey<AttachmentList<ResourceRoot>> SUBDEPLOYMENT_ROOTS = AttachmentKey.createList(ResourceRoot.class);
+    /**
+     * The list of class path entries given in the manifest and structure configurations.
+     */
+    public static final AttachmentKey<AttachmentList<ClassPathEntry>> CLASS_PATH_ENTRIES = AttachmentKey.createList(ClassPathEntry.class);
+    /**
+     * The list of extensions given in the manifest and structure configurations.
+     */
+    public static final AttachmentKey<AttachmentList<ExtensionListEntry>> EXTENSION_LIST_ENTRIES = AttachmentKey.createList(ExtensionListEntry.class);
 
     //
     // VALIDATE
