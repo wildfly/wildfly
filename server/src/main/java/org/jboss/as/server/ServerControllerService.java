@@ -146,10 +146,6 @@ final class ServerControllerService implements Service<ServerController> {
                 return serviceTarget;
             }
 
-            public ServiceContainer getServiceContainer() {
-                throw new UnsupportedOperationException();
-            }
-
             public ServiceRegistry getServiceRegistry() {
                 return serviceRegistry;
             }
@@ -252,6 +248,7 @@ final class ServerControllerService implements Service<ServerController> {
         Logger.getLogger("org.jboss.as").infof("Shutdown requested; stopping all services");
         serverController = null;
         final ServiceContainer container = context.getController().getServiceContainer();
+        final Set<ServiceName> bootServices = this.bootServices;
         context.asynchronous();
         final MultipleRemoveListener<Runnable> removeListener = MultipleRemoveListener.create(new Runnable() {
             public void run() {
@@ -262,12 +259,12 @@ final class ServerControllerService implements Service<ServerController> {
         for (ServiceName serviceName : bootServices) {
             final ServiceController<?> controller = container.getService(serviceName);
             if (controller != null) {
-                controller.setMode(ServiceController.Mode.REMOVE);
                 controller.addListener(removeListener);
+                controller.setMode(ServiceController.Mode.REMOVE);
             }
         }
         // tick the count down
-        removeListener.serviceRemoved(null);
+        removeListener.done();
     }
 
     /** {@inheritDoc} */
