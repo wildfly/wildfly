@@ -51,6 +51,9 @@ class ListAttachmentKey<T> extends AttachmentKey<AttachmentList<T>> {
 
     @SuppressWarnings({ "unchecked" })
     public AttachmentList<T> cast(final Object value) {
+        if (value == null) {
+            return null;
+        }
         AttachmentList<?> list = (AttachmentList<?>) value;
         final Class<?> listValueClass = list.getValueClass();
         if (listValueClass != valueClass) {
