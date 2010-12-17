@@ -77,9 +77,6 @@ final class BootstrapImpl implements Bootstrap {
             throw new IllegalArgumentException("configurationPersister is null");
         }
         final ServiceContainer container = ServiceContainer.Factory.create("jbossas");
-        final int threads = Runtime.getRuntime().availableProcessors();
-        container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
-
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
         final Service<ServerController> serverControllerService = new ServerControllerService(configuration, extraServices);

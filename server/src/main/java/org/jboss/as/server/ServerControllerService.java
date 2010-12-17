@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.jboss.as.naming.deployment.ModuleContextProcessor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
@@ -107,6 +111,10 @@ final class ServerControllerService implements Service<ServerController> {
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
 
+        final int threads = (int) (Runtime.getRuntime().availableProcessors() * 1.5f);
+        final ExecutorService executor = new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>());
+        container.setExecutor(executor);
+
         // Install the environment before fetching and using the persister
         serverEnvironment.install();
 
@@ -126,9 +134,10 @@ final class ServerControllerService implements Service<ServerController> {
 
         final ServerModel serverModel = new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset());
 
-        final ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container, serverEnvironment);
-
         final ServerConfigurationPersister persister = configuration.getConfigurationPersister();
+
+        final ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container, serverEnvironment, persister, executor);
+
         final List<AbstractServerModelUpdate<?>> updates;
         try {
             updates = persister.load(serverController);
@@ -196,6 +205,7 @@ final class ServerControllerService implements Service<ServerController> {
             .setInitialMode(ServiceController.Mode.ON_DEMAND)
             .install();
 
+        serverController.applyUpdates(updates, false, true);
         for (AbstractServerModelUpdate<?> update : updates) {
             update.applyUpdateBootAction(bootUpdateContext);
         }

@@ -23,7 +23,6 @@
 package org.jboss.as.server;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,8 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
@@ -46,37 +43,30 @@ import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler
 import org.jboss.as.server.mgmt.ServerUpdateController.Status;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ServerControllerImpl implements ServerController, Service<ServerController> {
+final class ServerControllerImpl implements ServerController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
-
-    private final InjectedValue<ServerConfigurationPersister> configurationPersisterValue = new InjectedValue<ServerConfigurationPersister>();
-    private final InjectedValue<ExecutorService> executorValue = new InjectedValue<ExecutorService>();
 
     private final ServiceContainer container;
     private final ServiceRegistry registry;
     private final ServerModel serverModel;
     private final ServerEnvironment serverEnvironment;
+    private final ServerConfigurationPersister configurationPersister;
+    private final ExecutorService executor;
 
-    private ServerConfigurationPersister configurationPersister;
-    private ExecutorService executor;
-
-    ServerControllerImpl(final ServerModel serverModel, final ServiceContainer container, final ServerEnvironment serverEnvironment) {
+    ServerControllerImpl(final ServerModel serverModel, final ServiceContainer container, final ServerEnvironment serverEnvironment, final ServerConfigurationPersister configurationPersister, final ExecutorService executor) {
         this.serverModel = serverModel;
         this.container = container;
         this.serverEnvironment = serverEnvironment;
+        this.configurationPersister = configurationPersister;
+        this.executor = executor;
         registry = new DelegatingServiceRegistry(container);
     }
 
@@ -102,6 +92,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(count);
         if (modelOnly && ! serverEnvironment.isStandalone()) {
             Exception e = new IllegalStateException("Update sets that only affect the configuration and not the runtime are not valid on a domain-based server");
+            //noinspection ForLoopReplaceableByForEach
             for (int i = 0; i < count; i++) {
                 results.add(UpdateResultHandlerResponse.createFailureResponse(e));
             }
@@ -158,14 +149,6 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         container.awaitTermination(time, unit);
     }
 
-    public InjectedValue<ServerConfigurationPersister> getConfigurationPersisterValue() {
-        return configurationPersisterValue;
-    }
-
-    public InjectedValue<ExecutorService> getExecutorValue() {
-        return executorValue;
-    }
-
     final class UpdateContextImpl implements UpdateContext {
 
         private final ServiceTarget serviceTarget;
@@ -192,21 +175,6 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
     /** {@inheritDoc} */
     public ServerController getValue() throws IllegalStateException {
         return this;
-    }
-
-    /** {@inheritDoc} */
-    public void start(StartContext context) throws StartException {
-        try {
-            configurationPersister = configurationPersisterValue.getValue();
-            executor = executorValue.getValue();
-        } catch (IllegalStateException e) {
-            throw new StartException(e);
-        }
-    }
-
-    /** {@inheritDoc} */
-    public void stop(StopContext context) {
-        //
     }
 
     private class ServerUpdateCommitHandlerImpl implements ServerUpdateCommitHandler, UpdateResultHandler<Object, Integer> {
@@ -299,21 +267,6 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         public void handleTimeout(Integer param) {
             log.tracef("Update %d timed out", param);
             responses.set(param.intValue(), UpdateResultHandlerResponse.createTimeoutResponse());
-        }
-    }
-
-    private static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
-        private final int priority;
-        private final DeploymentUnitProcessor processor;
-
-        private RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
-            this.priority = priority;
-            this.processor = processor;
-        }
-
-        public int compareTo(final RegisteredProcessor o) {
-            final int rel = Integer.signum(priority - o.priority);
-            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
         }
     }
 }
