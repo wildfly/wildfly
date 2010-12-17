@@ -107,7 +107,7 @@ final class ServerControllerService implements Service<ServerController> {
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
         final ServiceContainer container = context.getController().getServiceContainer();
-        final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container);
+        final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         serviceTarget.addDependency(context.getController().getName());
         final DelegatingServiceRegistry serviceRegistry = new DelegatingServiceRegistry(container);
         final Bootstrap.Configuration configuration = this.configuration;
