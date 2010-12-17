@@ -52,7 +52,7 @@ public class WarAnnotationIndexProcessor implements DeploymentUnitProcessor {
         if(phaseContext.getAttachment(ATTACHMENT_KEY) != null) {
             return;
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         // Create the web annotation index
         final WarAnnotationIndex index = WarAnnotationIndex.create(deploymentRoot);
         phaseContext.putAttachment(ATTACHMENT_KEY, index);

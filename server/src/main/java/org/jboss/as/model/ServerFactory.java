@@ -37,7 +37,8 @@ import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
-import org.jboss.as.server.deployment.ServerModelDeploymentStartStopUpdate;
+import org.jboss.as.server.deployment.ServerModelDeploymentAdd;
+import org.jboss.as.server.deployment.ServerModelDeploymentStartUpdate;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -170,7 +171,7 @@ public final class ServerFactory {
             final ServerModelDeploymentAdd add = new ServerModelDeploymentAdd(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash());
             list.add(add);
             if (element.isStart()) {
-                list.add(new ServerModelDeploymentStartStopUpdate(element.getUniqueName(), true));
+                list.add(new ServerModelDeploymentStartUpdate(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash()));
             }
         }
 

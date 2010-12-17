@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.server.deployment.ServerModelDeploymentAdd;
+
 
 /**
  * Update used when adding deployment element to a ServerGroup.

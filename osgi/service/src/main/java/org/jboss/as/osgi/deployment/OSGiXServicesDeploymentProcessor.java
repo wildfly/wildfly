@@ -58,7 +58,7 @@ public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor
 
         // Get the OSGi XService properties
         String resName = "META-INF/jbosgi-xservice.properties";
-        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        VirtualFile virtualFile = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         VirtualFile xserviceFile = virtualFile.getChild(resName);
         if (xserviceFile.exists()) {
             try {

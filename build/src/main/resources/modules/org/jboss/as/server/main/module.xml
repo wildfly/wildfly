@@ -33,6 +33,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.jandex"/>
         <module name="org.jboss.marshalling" services="import"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>

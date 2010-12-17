@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.server.deployment.ServerModelDeploymentRemove;
+
 
 /**
  * Update used when removing a deployment element from a ServerGroup.

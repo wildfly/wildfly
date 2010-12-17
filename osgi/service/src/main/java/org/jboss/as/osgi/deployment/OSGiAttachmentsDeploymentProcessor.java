@@ -62,7 +62,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnitContext);
 
         String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnitContext.getName());
-        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        VirtualFile virtualFile = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
 
 
@@ -98,7 +98,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         if (deployment != null) {
 
             // Prevent garbage collection of the MountHandle which will close the file
-            MountHandle mount = phaseContext.getAttachment(MountHandle.ATTACHMENT_KEY);
+            MountHandle mount = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT_MOUNT_HANDLE);
             deployment.addAttachment(MountHandle.class, mount);
 
             // Mark the bundle to start automatically

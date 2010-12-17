@@ -32,7 +32,7 @@ public final class Services {
     private Services() {}
 
     public static final ServiceName JBOSS_DEPLOYMENT = ServiceName.JBOSS.append("deployment");
-    public static final ServiceName JBOSS_DEPLOYMENT_UNIT = JBOSS_DEPLOYMENT.append("deployment");
+    public static final ServiceName JBOSS_DEPLOYMENT_UNIT = JBOSS_DEPLOYMENT.append("unit");
     public static final ServiceName JBOSS_DEPLOYMENT_CHAINS = JBOSS_DEPLOYMENT.append("chains");
 
 }

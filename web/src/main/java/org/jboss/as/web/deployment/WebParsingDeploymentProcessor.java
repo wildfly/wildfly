@@ -50,7 +50,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
         if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
-        final ResourceRoot deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile webXml = deploymentRoot.getRoot().getChild(WEB_XML);
         WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;

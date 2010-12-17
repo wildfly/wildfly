@@ -61,7 +61,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final ResourceRoot mainRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot mainRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if (mainRoot == null) {
             return;

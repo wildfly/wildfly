@@ -58,7 +58,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         TldsMetaData tldsMetaData = phaseContext.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         if (tldsMetaData == null) {
             tldsMetaData = new TldsMetaData();

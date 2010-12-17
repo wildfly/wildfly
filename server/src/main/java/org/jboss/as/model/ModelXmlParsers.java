@@ -57,7 +57,8 @@ import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceParsingUtils;
 import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
-import org.jboss.as.server.deployment.ServerModelDeploymentStartStopUpdate;
+import org.jboss.as.server.deployment.ServerModelDeploymentAdd;
+import org.jboss.as.server.deployment.ServerModelDeploymentStartUpdate;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -1013,7 +1014,7 @@ public final class ModelXmlParsers {
             ParseUtils.requireNoContent(reader);
 
             list.add(new ServerModelDeploymentAdd(uniqueName, runtimeName, hash));
-            list.add(new ServerModelDeploymentStartStopUpdate(uniqueName, toStart));
+            list.add(new ServerModelDeploymentStartUpdate(uniqueName, runtimeName, hash));
         }
     }
 

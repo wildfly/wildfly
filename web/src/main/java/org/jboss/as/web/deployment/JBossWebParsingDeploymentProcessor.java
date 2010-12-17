@@ -48,7 +48,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
         if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final VirtualFile jbossWebXml = deploymentRoot.getChild(JBOSS_WEB_XML);
         WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;

@@ -22,7 +22,7 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.server.deployment.ServerModelDeploymentStartStopUpdate;
+import org.jboss.as.server.deployment.ServerModelDeploymentStopUpdate;
 
 
 /**
@@ -31,35 +31,26 @@ import org.jboss.as.server.deployment.ServerModelDeploymentStartStopUpdate;
  * @author John E. Bailey
  * @author Brian Stansberry
  */
-public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<ServerGroupElement, Void> {
+public class ServerGroupDeploymentStopUpdate extends AbstractModelUpdate<ServerGroupElement, Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final String deploymentUnitName;
-    private final boolean isStart;
 
-    public ServerGroupDeploymentStartStopUpdate(final String deploymentUnitName, boolean isStart) {
+    public ServerGroupDeploymentStopUpdate(final String deploymentUnitName) {
         if (deploymentUnitName == null)
             throw new IllegalArgumentException("deploymentUnitName is null");
         this.deploymentUnitName = deploymentUnitName;
-        this.isStart = isStart;
-    }
-
-    public String getDeploymentUnitName() {
-        return deploymentUnitName;
-    }
-
-    public boolean isStart() {
-        return isStart;
     }
 
     @Override
-    public ServerGroupDeploymentStartStopUpdate getCompensatingUpdate(ServerGroupElement original) {
-        return new ServerGroupDeploymentStartStopUpdate(deploymentUnitName, !isStart);
+    public ServerGroupDeploymentStartUpdate getCompensatingUpdate(ServerGroupElement original) {
+        final ServerGroupDeploymentElement deploymentElement = original.getDeployment(deploymentUnitName);
+        return new ServerGroupDeploymentStartUpdate(deploymentUnitName, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash());
     }
 
     @Override
-    protected ServerModelDeploymentStartStopUpdate getServerModelUpdate() {
-        return new ServerModelDeploymentStartStopUpdate(deploymentUnitName, isStart);
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return new ServerModelDeploymentStopUpdate(deploymentUnitName);
     }
 
     @Override
@@ -68,7 +59,7 @@ public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<Se
         if (deploymentElement == null) {
             throw new UpdateFailedException(String.format("Deployment %s does not exist in server group %s", deploymentElement, serverGroupElement.getName()));
         }
-        deploymentElement.setStart(isStart);
+        deploymentElement.setStart(false);
     }
 
     @Override

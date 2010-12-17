@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.LifecycleContext;
@@ -45,7 +46,10 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
     private static final String FIRST_PHASE_NAME = Phase.values()[0].name();
 
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
+    private final InjectedValue<ServerDeploymentRepository> serverDeploymentRepositoryInjector = new InjectedValue<ServerDeploymentRepository>();
     private final String name;
+    private final String runtimeName;
+    private final byte[] deploymentHash;
     private final DeploymentUnit parent;
 
     private DeploymentUnit deploymentUnit;
@@ -54,11 +58,15 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
      * Construct a new instance.
      *
      * @param name the deployment unit simple name
+     * @param runtimeName the deployoment runtime name
+     * @param deploymentHash the deployment hash
      * @param parent
      */
-    public DeploymentUnitService(final String name, final DeploymentUnit parent) {
+    public DeploymentUnitService(final String name, final String runtimeName, final byte[] deploymentHash,  final DeploymentUnit parent) {
         this.name = name;
         this.parent = parent;
+        this.runtimeName = runtimeName;
+        this.deploymentHash = deploymentHash;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
@@ -66,6 +74,13 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
         final ServiceContainer container = context.getController().getServiceContainer();
 
         deploymentUnit = new DeploymentUnitImpl(parent, name, new DelegatingServiceRegistry(container));
+        deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, runtimeName);
+        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_HASH, deploymentHash);
+
+        // Attach the deployment repo
+        deploymentUnit.putAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY, serverDeploymentRepositoryInjector.getValue());
+
+
         final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
         final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(firstPhase);
@@ -91,5 +106,9 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
 
     Injector<DeployerChains> getDeployerChainsInjector() {
         return deployerChainsInjector;
+    }
+
+    Injector<ServerDeploymentRepository> getServerDeploymentRepositoryInjector() {
+        return serverDeploymentRepositoryInjector;
     }
 }

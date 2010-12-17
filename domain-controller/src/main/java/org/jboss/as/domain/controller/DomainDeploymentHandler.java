@@ -62,7 +62,8 @@ import org.jboss.as.model.DomainServerGroupUpdate;
 import org.jboss.as.model.ServerGroupDeploymentAdd;
 import org.jboss.as.model.ServerGroupDeploymentRemove;
 import org.jboss.as.model.ServerGroupDeploymentReplaceUpdate;
-import org.jboss.as.model.ServerGroupDeploymentStartStopUpdate;
+import org.jboss.as.model.ServerGroupDeploymentStartUpdate;
+import org.jboss.as.model.ServerGroupDeploymentStopUpdate;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandlerResponse;
@@ -495,7 +496,7 @@ public class DomainDeploymentHandler {
                     }
                     case DEPLOY: {
                         logger.tracef("Deploy of deployment %s", dai.getDeploymentUnitUniqueName());
-                        ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), true);
+                        ServerGroupDeploymentStartUpdate sgdssu = new ServerGroupDeploymentStartUpdate(dai.getDeploymentUnitUniqueName(), dai.getNewContentFileName(),  dai.getNewContentHash());
                         addServerGroupUpdates(plan, au, sgdssu, model);
                         break;
                     }
@@ -564,7 +565,7 @@ public class DomainDeploymentHandler {
                     }
                     case UNDEPLOY: {
                         logger.tracef("Undeploy of deployment %s", dai.getDeploymentUnitUniqueName());
-                        ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), false);
+                        ServerGroupDeploymentStopUpdate sgdssu = new ServerGroupDeploymentStopUpdate(dai.getDeploymentUnitUniqueName());
                         addServerGroupUpdates(plan, au, sgdssu, model);
                         break;
                     }

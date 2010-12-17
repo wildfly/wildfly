@@ -28,6 +28,7 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -120,9 +121,10 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
 
     private void deploy(final UpdateContext updateContext) {
         final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-        final DeploymentUnitService service = new DeploymentUnitService(newDeployment,  null);
-        serviceTarget.addService(Services.JBOSS_DEPLOYMENT_UNIT.append(newDeployment), service)
+        final DeploymentUnitService service = new DeploymentUnitService(newDeployment, newDeploymentRuntimeName, newDeploymentHash, null);
+        serviceTarget.addService(Services.JBOSS_DEPLOYMENT.append(newDeployment), service)
             .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
+            .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE);
     }
 

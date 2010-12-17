@@ -22,11 +22,14 @@
 
 package org.jboss.as.server.deployment;
 
+import java.io.Closeable;
 import java.util.jar.Manifest;
 import org.jboss.as.server.deployment.module.ClassPathEntry;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
@@ -45,6 +48,18 @@ public final class Attachments {
      */
     public static final AttachmentKey<AttachmentList<ServiceName>> NEXT_PHASE_DEPS = AttachmentKey.createList(ServiceName.class);
 
+
+    /**
+     * The deployments runtime name
+     */
+    public static final AttachmentKey<String> RUNTIME_NAME = AttachmentKey.create(String.class);
+
+    /**
+     * The deployment hash
+     */
+    public static final AttachmentKey<byte[]> DEPLOYMENT_HASH = AttachmentKey.create(byte[].class);
+
+
     //
     // STRUCTURE
     //
@@ -53,6 +68,10 @@ public final class Attachments {
      * The primary deployment root.
      */
     public static final AttachmentKey<ResourceRoot> DEPLOYMENT_ROOT = AttachmentKey.create(ResourceRoot.class);
+    /**
+     * The primary deployment root.
+     */
+    public static final AttachmentKey<MountHandle> DEPLOYMENT_ROOT_MOUNT_HANDLE = AttachmentKey.create(MountHandle.class);
     /**
      * The additional resource roots of the deployment unit.
      */
@@ -77,6 +96,11 @@ public final class Attachments {
      * The list of extensions given in the manifest and structure configurations.
      */
     public static final AttachmentKey<AttachmentList<ExtensionListEntry>> EXTENSION_LIST_ENTRIES = AttachmentKey.createList(ExtensionListEntry.class);
+
+    /**
+     * The server deployment repository
+     */
+    public static final AttachmentKey<ServerDeploymentRepository> SERVER_DEPLOYMENT_REPOSITORY = AttachmentKey.create(ServerDeploymentRepository.class);
 
     //
     // VALIDATE

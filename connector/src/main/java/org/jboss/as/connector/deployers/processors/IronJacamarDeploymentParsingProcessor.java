@@ -59,7 +59,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ResourceRoot resourceRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = resourceRoot.getRoot();
 
         if (deploymentRoot == null || !deploymentRoot.exists())

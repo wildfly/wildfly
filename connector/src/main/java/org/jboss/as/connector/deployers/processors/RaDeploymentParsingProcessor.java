@@ -60,7 +60,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;

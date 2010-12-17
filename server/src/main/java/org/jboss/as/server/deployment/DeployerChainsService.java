@@ -41,7 +41,8 @@ public class DeployerChainsService implements Service<DeployerChains> {
 
     public static void addService(final ServiceTarget serviceTarget, final EnumMap<Phase, List<DeploymentUnitProcessor>> phases) {
         final DeployerChains deployerChains = new DeployerChains(phases);
-        serviceTarget.addService(Services.JBOSS_DEPLOYMENT_CHAINS, new DeployerChainsService(deployerChains));
+        serviceTarget.addService(Services.JBOSS_DEPLOYMENT_CHAINS, new DeployerChainsService(deployerChains))
+            .install();
     }
 
     public DeployerChainsService(DeployerChains deployerChains) {

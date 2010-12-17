@@ -40,19 +40,17 @@ import org.jboss.msc.service.ServiceTarget;
 * @author John E. Bailey
 * @author Brian Stansberry
 */
-public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpdate<Void> {
+public class ServerModelDeploymentStopUpdate extends AbstractServerModelUpdate<Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 
     private ServerGroupDeploymentElement deploymentElement;
     private final String deploymentUnitName;
-    private final boolean isStart;
 
-    public ServerModelDeploymentStartStopUpdate(final String deploymentUnitName, boolean isStart) {
+    public ServerModelDeploymentStopUpdate(final String deploymentUnitName) {
         super(false, true);
         if (deploymentUnitName == null)
             throw new IllegalArgumentException("deploymentUnitName is null");
         this.deploymentUnitName = deploymentUnitName;
-        this.isStart = isStart;
     }
 
     public String getDeploymentUnitName() {
@@ -60,12 +58,12 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
     }
 
     @Override
-    public ServerModelDeploymentStartStopUpdate getCompensatingUpdate(ServerModel original) {
+    public ServerModelDeploymentStartUpdate getCompensatingUpdate(ServerModel original) {
         ServerGroupDeploymentElement element = original.getDeployment(getDeploymentUnitName());
         if (element == null) {
             return null;
         }
-        return new ServerModelDeploymentStartStopUpdate(deploymentUnitName, !isStart);
+        return new ServerModelDeploymentStartUpdate(deploymentUnitName, element.getRuntimeName(), element.getSha1Hash());
     }
 
     @Override
@@ -74,7 +72,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         // has a bad smell
         deploymentElement = serverModel.getDeployment(getDeploymentUnitName());
         if (deploymentElement != null) {
-            deploymentElement.setStart(isStart);
+            deploymentElement.setStart(false);
         }
     }
 
@@ -86,19 +84,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
         final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
         if (deploymentElement != null) {
-            if (isStart) {
-                if(controller != null) {
-                    controller.setMode(ServiceController.Mode.ACTIVE);
-                } else {
-                    final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-                    final DeploymentUnitService service = new DeploymentUnitService(deploymentUnitName,  null);
-                    serviceTarget.addService(deploymentUnitServiceName, service)
-                        .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
-                        .setInitialMode(ServiceController.Mode.ACTIVE);
-                }
-            } else if(controller != null) {
-                controller.setMode(ServiceController.Mode.NEVER);
-            }
+            controller.setMode(ServiceController.Mode.NEVER);
         }
         else if (resultHandler != null) {
             resultHandler.handleSuccess(null, param);

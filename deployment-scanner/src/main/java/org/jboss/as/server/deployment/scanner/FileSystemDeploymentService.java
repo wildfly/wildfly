@@ -44,11 +44,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.ServerModelDeploymentAdd;
-import org.jboss.as.model.ServerModelDeploymentRemove;
+import org.jboss.as.server.deployment.ServerModelDeploymentAdd;
+import org.jboss.as.server.deployment.ServerModelDeploymentRemove;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.deployment.ServerModelDeploymentFullReplaceUpdate;
+import org.jboss.as.server.deployment.ServerModelDeploymentStartUpdate;
+import org.jboss.as.server.deployment.ServerModelDeploymentStopUpdate;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.logging.Logger;
@@ -213,6 +215,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 toRemove.removeAll(foundDeployed.keySet());
                 toRemove.removeAll(newlyAdded); // in case user removed the marker and added replacement
                 for (String missing : toRemove) {
+                    updates.add(new ServerModelDeploymentStopUpdate(missing));
                     updates.add(new ServerModelDeploymentRemove(missing));
                 }
 
@@ -313,6 +316,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         continue;
                     }
                     updates.add(new ServerModelDeploymentAdd(fileName, fileName, hash));
+                    updates.add(new ServerModelDeploymentStartUpdate(fileName, fileName, hash));
                     uploaded = true;
                 }
 

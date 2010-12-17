@@ -48,7 +48,7 @@ public class ServiceActivatorDependencyProcessor implements DeploymentUnitProces
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ResourceRoot deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         if(deploymentRoot == null)
             return;
         if(deploymentRoot.getRoot().getChild(SERVICE_ACTIVATOR_PATH).exists()) {

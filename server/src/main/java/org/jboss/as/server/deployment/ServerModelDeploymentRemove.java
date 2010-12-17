@@ -20,7 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment;
+
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.Attribute;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
  * Update to a standalone element to remove a deployment.

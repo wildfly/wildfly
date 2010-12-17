@@ -41,7 +41,7 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
     static final String WAR_EXTENSION = ".war";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        VirtualFile virtualFile = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         if(virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
             markDeployment(phaseContext.getDeploymentUnit());
         }

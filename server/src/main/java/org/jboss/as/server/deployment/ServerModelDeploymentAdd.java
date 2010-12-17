@@ -20,9 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment;
 
 import java.util.Arrays;
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
  * Update to the ServerModel element to add a new deployment.
@@ -70,8 +76,7 @@ public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<Void> {
     }
 
     @Override
-    public <P> void applyUpdate(UpdateContext updateContext,
-            UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         if (resultHandler != null) {
             resultHandler.handleSuccess(null, param);
         }

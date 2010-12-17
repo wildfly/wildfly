@@ -49,6 +49,7 @@ import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
+import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ManifestClassPathProcessor;
 import org.jboss.as.server.deployment.module.ManifestExtensionListProcessor;
@@ -229,6 +230,7 @@ final class ServerControllerService implements Service<ServerController> {
         }));
 
         // Activate core processors for jar deployment
+        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_MANIFEST, new ManifestAttachmentProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));

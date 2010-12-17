@@ -78,12 +78,12 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         if(deploymentRoot == null) {
             return;
         }
         // TODO: This needs to be ported to add additional resource roots the standard way
-        final MountHandle mountHandle = phaseContext.getAttachment(MountHandle.ATTACHMENT_KEY);
+        final MountHandle mountHandle = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT_MOUNT_HANDLE);
         try {
             final ClassPathEntry[] entries = createResourceRoots(deploymentRoot, mountHandle);
             final DeploymentStructure structure = new DeploymentStructure(entries);
