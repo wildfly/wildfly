@@ -36,11 +36,12 @@
                             urn:jboss:domain:sar:1.0 jboss-sar.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd
                             urn:jboss:domain:transactions:1.0 jboss-txn.xsd
-                            urn:jboss:domain:web:1.0 jboss-web.xsd">
-
+                            urn:jboss:domain:web:1.0 jboss-web.xsd
+                            urn:jboss:domain:web:1.0 jboss-deployment-scanner.xsd">
     <extensions>
         <extension module="org.jboss.as.arquillian.service"/>
         <extension module="org.jboss.as.connector"/>
+        <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
@@ -268,6 +269,10 @@
                <alias name="example.com" />
             </virtual-server>
         </subsystem>
+
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
+            <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
+        </subsystem>
     </profile>
 
     <interfaces>
@@ -290,7 +295,5 @@
        <socket-binding name="netty" port="5445" />
        <socket-binding name="netty-throughput" port="5455"/>
     </socket-binding-group>
-    
-    <deployment-repository scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
 
 </server>

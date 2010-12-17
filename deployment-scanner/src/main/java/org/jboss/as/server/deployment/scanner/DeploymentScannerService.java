@@ -22,8 +22,17 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import java.io.File;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.ServerController;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.msc.service.Service;
@@ -50,7 +59,10 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private DeploymentScanner scanner;
 
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
-    private final InjectedValue<DeploymentScannerFactory> scannerFactory = new InjectedValue<DeploymentScannerFactory>();
+    private final InjectedValue<ServerModel> serverModelValue = new InjectedValue<ServerModel>();
+    private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
+    private final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<DeploymentRepository>();
+    private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<ScheduledExecutorService>();
 
     public static ServiceName getServiceName(String repositoryName) {
         return DeploymentScanner.BASE_SERVICE_NAME.append(repositoryName);
@@ -67,8 +79,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param scanEnabled scan enabled
      * @return
      */
-    public static void addService(final ServiceTarget serviceTarget,
-            final String name, final String relativeTo, final String path, final int scanInterval, TimeUnit unit, final boolean scanEnabled) {
+    public static void addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path, final int scanInterval, TimeUnit unit, final boolean scanEnabled) {
         final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, scanEnabled);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
@@ -79,9 +90,14 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             AbsolutePathService.addService(pathService, path, serviceTarget);
         }
 
+        final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+
         serviceTarget.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
-            .addDependency(DeploymentScannerFactory.SERVICE_NAME, DeploymentScannerFactory.class, service.scannerFactory)
+            .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, service.serverModelValue)
+            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.serverControllerValue)
+            .addDependency(ServerDeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.deploymentRepositoryValue)
+            .addInjection(service.scheduledExecutorValue, scheduledExecutorService)
             .setInitialMode(Mode.ACTIVE)
             .install();
     }
@@ -97,8 +113,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     public synchronized void start(StartContext context) throws StartException {
         try {
             final String pathName = pathValue.getValue();
-            final DeploymentScannerFactory factory = scannerFactory.getValue();
-            final DeploymentScanner scanner = factory.create(pathName, unit.toMillis(interval));
+
+            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(new File(pathName), unit.toMillis(interval), serverModelValue.getValue(), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue());
+
             if(enabled) {
                 scanner.startScanner();
             }

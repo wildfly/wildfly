@@ -20,67 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment.scanner;
 
 import java.util.concurrent.TimeUnit;
-
-import org.jboss.as.server.deployment.scanner.DeploymentScannerService;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Update adding a new {@code DeploymentRepositoryElement} to a {@code ServerModel}.
+ * Update adding a new {@code DeploymentScanner}.
  *
- * @author Emanuel Muckenhuber
+ * @author John E. Bailey
  */
-public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Void> {
+public class DeploymentScannerAdd extends AbstractDeploymentScannerSubsystemUpdate {
 
     private static final long serialVersionUID = -1611269698053636197L;
     private static final String DEFAULT_NAME = "default";
 
+    private final String name;
     private final String path;
-    private String name;
-    private String relativeTo;
-    private int interval = 0;
-    private boolean enabled = true;
 
-    public ServerDeploymentRepositoryAdd(String path, int interval, boolean enabled) {
-        super(false, true);
+    private final String relativeTo;
+    private final int interval;
+    private final boolean enabled;
+
+    public DeploymentScannerAdd(final String name, String path, final String relativeTo, int interval, boolean enabled) {
+        this.name = name;
         this.path = path;
+        this.relativeTo = relativeTo;
         this.interval = interval;
         this.enabled = enabled;
-    }
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getRelativePath() {
-        return relativeTo;
-    }
-    public void setRelativeTo(String relativePath) {
-        this.relativeTo = relativePath;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        final String repositoryName = repositoryName();
-        if(! element.addDeploymentRepository(repositoryName)) {
-            throw new UpdateFailedException("duplicate deployment repository " + repositoryName);
-        }
-        final DeploymentRepositoryElement repository = element.getDeploymentRepository(repositoryName);
-        repository.setInterval(interval);
-        repository.setEnabled(enabled);
-        repository.setPath(path);
-        repository.setRelativeTo(relativeTo);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerDeploymentRepositoryRemove(repositoryName());
     }
 
     /** {@inheritDoc} */
@@ -89,6 +60,20 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
         final ServiceTarget target = updateContext.getServiceTarget().subTarget();
         target.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
         DeploymentScannerService.addService(target, repositoryName(), relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
+    }
+
+    public AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, ?> getCompensatingUpdate(DeploymentScannerSubsystemElement original) {
+        return new DeploymentScannerRemove(path);
+    }
+
+    protected void applyUpdate(DeploymentScannerSubsystemElement element) throws UpdateFailedException {
+        final DeploymentScannerElement scannerElement = new DeploymentScannerElement();
+        scannerElement.setEnabled(enabled);
+        scannerElement.setInterval(interval);
+        scannerElement.setName(name);
+        scannerElement.setPath(path);
+        scannerElement.setRelativeTo(relativeTo);
+        element.addScanner(scannerElement);
     }
 
     private String repositoryName() {

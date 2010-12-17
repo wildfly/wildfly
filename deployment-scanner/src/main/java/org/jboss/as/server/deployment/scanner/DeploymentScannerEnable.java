@@ -20,50 +20,54 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.server.deployment.scanner.DeploymentScanner;
-import org.jboss.as.server.deployment.scanner.DeploymentScannerService;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * Update disabling a {@code DeploymentRepositoryElement}.
+ * Update enabling a {@code DeploymentRepositoryElement}.
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerDeploymentRepositoryDisable extends AbstractServerModelUpdate<Void> {
+public class DeploymentScannerEnable extends AbstractDeploymentScannerSubsystemUpdate {
 
-    private static final long serialVersionUID = 4421499058480729575L;
+    private static final long serialVersionUID = 5959855923764647668L;
+    private final String name;
     private final String path;
 
-    public ServerDeploymentRepositoryDisable(String path) {
-        super(false, true);
+    public DeploymentScannerEnable(final String name, String path) {
+        this.name = name;
         this.path = path;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        final DeploymentRepositoryElement repository = element.getDeploymentRepository(path);
-        if(repository == null) {
-            throw new UpdateFailedException("non existent deployment repository " + path);
+    protected void applyUpdate(DeploymentScannerSubsystemElement element) throws UpdateFailedException {
+        final DeploymentScannerElement scannerElement = element.getScanner(path);
+        if (scannerElement == null) {
+            throw new IllegalStateException("No deployment scanner for path " + path);
         }
-        repository.setEnabled(false);
+        scannerElement.setEnabled(true);
     }
 
     /** {@inheritDoc} */
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerDeploymentRepositoryEnable(path);
+    public AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, ?> getCompensatingUpdate(DeploymentScannerSubsystemElement original) {
+        return new DeploymentScannerDisable(name, path);
     }
 
     /** {@inheritDoc} */
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(path));
+        final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(name));
         if(controller == null) {
             resultHandler.handleFailure(notConfigured(), param);
         } else {
             try {
                 final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
-                scanner.stopScanner();
+                scanner.startScanner();
                 resultHandler.handleSuccess(null, param);
             } catch (Throwable t) {
                 resultHandler.handleFailure(t, param);
@@ -72,7 +76,7 @@ public class ServerDeploymentRepositoryDisable extends AbstractServerModelUpdate
     }
 
     private UpdateFailedException notConfigured() {
-        return new UpdateFailedException("No deployment repository named " + path + " is configured");
+        return new UpdateFailedException("No deployment repository named " + name + " is configured");
     }
 
 }

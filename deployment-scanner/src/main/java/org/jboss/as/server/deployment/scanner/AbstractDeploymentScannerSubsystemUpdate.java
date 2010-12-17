@@ -20,29 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.deployment.scanner;
 
-import java.io.File;
-
-import org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl;
-import org.jboss.logging.Logger;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 
 /**
- * Domain implementation of {@link org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl}.
- *
- * @author Brian Stansberry
+ * @author John Bailey
  */
-public class DomainDeploymentRepository extends DeploymentRepositoryImpl {
+public abstract class AbstractDeploymentScannerSubsystemUpdate extends AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, Void> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-
-    /**
-     * Creates a new DomainDeploymentRepository.
-     */
-    public DomainDeploymentRepository(File deployDir) {
-        super(deployDir);
+    public AbstractDeploymentScannerSubsystemUpdate() {
+        super(Namespace.CURRENT.getUriString());
     }
 
+    public AbstractDeploymentScannerSubsystemUpdate(boolean requiresRestart) {
+        super(Namespace.CURRENT.getUriString(), requiresRestart);
+    }
 
+    public Class<DeploymentScannerSubsystemElement> getModelElementType() {
+        return DeploymentScannerSubsystemElement.class;
+    }
 
 }

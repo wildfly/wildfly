@@ -33,9 +33,9 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-domain-controller</artifactId>
+    <artifactId>jboss-as-deployment-repository</artifactId>
 
-    <name>JBoss Application Server: Domain Controller</name>
+    <name>JBoss Application Server: Deployment Repository</name>
 
     <build>
         <plugins>
@@ -49,37 +49,27 @@
     </build>
 
     <dependencies>
-       <dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>staxmapper</artifactId>
-       </dependency>
-       <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-deployment-repository</artifactId>
-       </dependency>
-       <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-domain-client</artifactId>
-       </dependency>
-       <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-process-controller</artifactId>
+            <artifactId>jboss-vfs</artifactId>
         </dependency>
-       <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-        </dependency>
-       <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-threads</artifactId>
-        </dependency>
+        <!-- Test Dependencies -->
         <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.stdio</groupId>
-            <artifactId>jboss-stdio</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

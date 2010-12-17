@@ -20,48 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment.scanner;
 
 import javax.xml.stream.XMLStreamException;
-
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Configuration for a location where deployment content is stored.
- *
- * @author Brian Stansberry
+ * @author John Bailey
  */
-public class DeploymentRepositoryElement extends AbstractModelElement<DeploymentRepositoryElement> {
-
-    private static final long serialVersionUID = -8564235225752540162L;
+public class DeploymentScannerElement extends AbstractModelElement<DeploymentScannerElement> {
 
     public static final String DEFAULT_STANDALONE_PATH = "standalone/deployments";
 
-    private final String name;
+    private String name;
     private String path;
     private String relativeTo;
     private int interval = 0;
     private boolean enabled = true;
 
-    /**
-     * Creates a new {@code DeploymentRepsoitoryElement}
-     *
-     * @param path the repository name
-     */
-    public DeploymentRepositoryElement(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("path is null");
-        }
-        this.name = name;
-    }
-
-    /**
-     * Get the repository name.
-     *
-     * @return the name
-     */
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPath() {
@@ -96,9 +81,10 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
         this.enabled = enabled;
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected Class<DeploymentRepositoryElement> getElementClass() {
-        return DeploymentRepositoryElement.class;
+    protected Class<DeploymentScannerElement> getElementClass() {
+        return DeploymentScannerElement.class;
     }
 
     @Override
@@ -119,5 +105,7 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
         streamWriter.writeEndElement();
     }
 
-
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        // require a restart!
+    }
 }

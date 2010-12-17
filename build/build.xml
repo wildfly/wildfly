@@ -251,6 +251,14 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
 
+        <module-def name="org.jboss.as.deployment-repository">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-repository"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.deployment-scanner">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-scanner"/>
+        </module-def>
+
         <module-def name="org.jboss.as.domain">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
         </module-def>

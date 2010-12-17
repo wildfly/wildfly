@@ -20,39 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.server.deployment.scanner.DeploymentScanner;
-import org.jboss.as.server.deployment.scanner.DeploymentScannerService;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * Update enabling a {@code DeploymentRepositoryElement}.
+ * Update disabling a {@code DeploymentRepositoryElement}.
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerDeploymentRepositoryEnable extends AbstractServerModelUpdate<Void> {
+public class DeploymentScannerDisable extends AbstractDeploymentScannerSubsystemUpdate {
 
-    private static final long serialVersionUID = 5959855923764647668L;
+    private static final long serialVersionUID = 4421499058480729575L;
     private final String name;
+    private final String path;
 
-    public ServerDeploymentRepositoryEnable(String name) {
-        super(false, true);
+    public DeploymentScannerDisable(final String name, final String path) {
         this.name = name;
+        this.path = path;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        final DeploymentRepositoryElement repository = element.getDeploymentRepository(name);
-        if(repository == null) {
-            throw new UpdateFailedException("non existent deployment repository " + name);
+    protected void applyUpdate(DeploymentScannerSubsystemElement element) throws UpdateFailedException {
+        final DeploymentScannerElement scannerElement = element.getScanner(path);
+        if (scannerElement == null) {
+            throw new IllegalStateException("No deployment scanner for path " + path);
         }
-        repository.setEnabled(true);
+        scannerElement.setEnabled(false);
     }
 
     /** {@inheritDoc} */
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerDeploymentRepositoryDisable(name);
+    public AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, ?> getCompensatingUpdate(DeploymentScannerSubsystemElement original) {
+        return new DeploymentScannerEnable(name, path);
     }
 
     /** {@inheritDoc} */
@@ -63,7 +67,7 @@ public class ServerDeploymentRepositoryEnable extends AbstractServerModelUpdate<
         } else {
             try {
                 final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
-                scanner.startScanner();
+                scanner.stopScanner();
                 resultHandler.handleSuccess(null, param);
             } catch (Throwable t) {
                 resultHandler.handleFailure(t, param);

@@ -20,29 +20,50 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.deployment.scanner;
 
-import java.io.File;
-
-import org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl;
-import org.jboss.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Domain implementation of {@link org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl}.
- *
- * @author Brian Stansberry
+ * @author John Bailey
  */
-public class DomainDeploymentRepository extends DeploymentRepositoryImpl {
+public enum Element {
+    // must be first
+    UNKNOWN(null),
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
+    DEPLOYMENT_SCANNER("deployment-scanner"),
+    ;
 
-    /**
-     * Creates a new DomainDeploymentRepository.
-     */
-    public DomainDeploymentRepository(File deployDir) {
-        super(deployDir);
+    private final String name;
+
+    Element(final String name) {
+        this.name = name;
     }
 
+    /**
+     * Get the local name of this element.
+     *
+     * @return the local name
+     */
+    public String getLocalName() {
+        return name;
+    }
 
+    private static final Map<String, Element> MAP;
 
+    static {
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
+    }
+
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
+    }
 }
+

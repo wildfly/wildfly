@@ -20,29 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.deployment.scanner;
 
-import java.io.File;
-
-import org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl;
-import org.jboss.logging.Logger;
+import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * Domain implementation of {@link org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl}.
+ * Update adding a new {@code DeploymentRepositoryElement} to a {@code ServerModel}.
  *
- * @author Brian Stansberry
+ * @author Emanuel Muckenhuber
  */
-public class DomainDeploymentRepository extends DeploymentRepositoryImpl {
+public class DeploymentScannerSubsystemAdd extends AbstractSubsystemAdd<DeploymentScannerSubsystemElement> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-
-    /**
-     * Creates a new DomainDeploymentRepository.
-     */
-    public DomainDeploymentRepository(File deployDir) {
-        super(deployDir);
+    public DeploymentScannerSubsystemAdd() {
+        super(Namespace.CURRENT.getUriString());
     }
 
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    }
 
-
+    protected DeploymentScannerSubsystemElement createSubsystemElement() {
+        return new DeploymentScannerSubsystemElement();
+    }
 }

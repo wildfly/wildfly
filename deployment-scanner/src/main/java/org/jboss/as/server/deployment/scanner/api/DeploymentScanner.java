@@ -20,26 +20,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.scanner;
+package org.jboss.as.server.deployment.scanner.api;
 
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Factory creating a deployment scanner.
+ * The deployment scanner.
  *
  * @author Emanuel Muckenhuber
  */
-public interface DeploymentScannerFactory {
+public interface DeploymentScanner {
 
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "deployment", "scanner", "factory");
+    ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "deployment", "scanner");
 
     /**
-     * Create a deployment scanner.
+     * Check whether the scanner is enabled.
      *
-     * @param path the absolute file system path
-     * @param scanInterval the scan interval in ms
-     * @return the deployment scanner
+     * @return true if enabled, false otherwise
      */
-    DeploymentScanner create(String path, long scanInterval);
+    boolean isEnabled();
+
+    /**
+     * Get the current scan interval
+     *
+     * @return the scan interval in ms
+     */
+    long getScanInterval();
+
+    /**
+     * Set the scan interval.
+     *
+     * @param scanInterval the scan interval in ms
+     */
+    void setScanInterval(long scanInterval);
+
+    /**
+     * Start the scanner, if not already started.
+     */
+    void startScanner();
+
+    /**
+     * Stop the scanner, if not already stopped.
+     */
+    void stopScanner();
 
 }

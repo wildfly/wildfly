@@ -75,7 +75,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     /** Name for this server that was actually provided via configuration */
     private String configuredServerName;
     private final Set<String> extensions = new LinkedHashSet<String>();
-    private final Map<String, DeploymentRepositoryElement> repositories = new LinkedHashMap<String, DeploymentRepositoryElement>();
     private final Map<String, ServerGroupDeploymentElement> deployments = new LinkedHashMap<String, ServerGroupDeploymentElement>();
     private final Map<String, InterfaceElement> interfaces = new LinkedHashMap<String, InterfaceElement>();
     private final Map<String, PathElement> paths = new LinkedHashMap<String, PathElement>();
@@ -141,20 +140,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     public ServerGroupDeploymentElement getDeployment(String deploymentName) {
         return deployments.get(deploymentName);
-    }
-
-    public Collection<String> getDeploymentRepositories() {
-        return new HashSet<String>(repositories.keySet());
-    }
-
-    /**
-     * Get a deployment repository.
-     *
-     * @param path the repository path
-     * @return the repository, <code>null</code> if it does not exist
-     */
-    public DeploymentRepositoryElement getDeploymentRepository(final String path) {
-        return repositories.get(path);
     }
 
     /**
@@ -245,13 +230,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
-        }
-
-        if (! repositories.isEmpty()) {
-            for (DeploymentRepositoryElement element : repositories.values()) {
-                streamWriter.writeStartElement(Element.DEPLOYMENT_REPOSITORY.getLocalName());
-                element.writeContent(streamWriter);
-            }
         }
 
         if (! deployments.isEmpty()) {
@@ -346,19 +324,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     boolean removePath(final String name) {
         return paths.remove(name) != null;
-    }
-
-    boolean addDeploymentRepository(final String path) {
-        if(repositories.containsKey(path)) {
-            return false;
-        }
-        final DeploymentRepositoryElement repository = new DeploymentRepositoryElement(path);
-        repositories.put(path, repository);
-        return true;
-    }
-
-    boolean removeDeploymentRepository(final String path) {
-        return repositories.remove(path) != null;
     }
 
     boolean addManagementElement(String interfaceName, int port) {

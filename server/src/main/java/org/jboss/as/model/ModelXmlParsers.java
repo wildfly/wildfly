@@ -217,56 +217,6 @@ public final class ModelXmlParsers {
             parseServerModelSystemProperties(reader, list);
             element = nextElement(reader);
         }
-        if (element == Element.DEPLOYMENT_REPOSITORY) {
-            // Handle attributes
-            boolean enabled = true;
-            int interval = 0;
-            String path = null;
-            String name= null;
-            String relativeTo = null;
-            final int attrCount = reader.getAttributeCount();
-            for (int i = 0; i < attrCount; i ++) {
-                final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case PATH: {
-                            path = value;
-                            break;
-                        }
-                        case NAME: {
-                            name = value;
-                            break;
-                        }
-                        case RELATIVE_TO: {
-                            relativeTo = value;
-                            break;
-                        }
-                        case SCAN_INTERVAL: {
-                            interval = Integer.parseInt(value);
-                            break;
-                        }
-                        case SCAN_ENABLED: {
-                            enabled = Boolean.parseBoolean(value);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            if(path == null) {
-                ParseUtils.missingRequired(reader, Collections.singleton("path"));
-            }
-            requireNoContent(reader);
-            final ServerDeploymentRepositoryAdd action = new ServerDeploymentRepositoryAdd(path, interval, enabled);
-            action.setName(name);
-            action.setRelativeTo(relativeTo);
-            list.add(action);
-            element = nextElement(reader);
-        }
         if (element == Element.DEPLOYMENTS) {
             parseServerDeployments(reader, list);
             element = nextElement(reader);

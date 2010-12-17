@@ -20,9 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.server.deployment.scanner.DeploymentScannerService;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -30,39 +33,42 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerDeploymentRepositoryRemove extends AbstractServerModelUpdate<Void> {
+public class DeploymentScannerRemove extends AbstractDeploymentScannerSubsystemUpdate {
 
     private static final long serialVersionUID = -8749135039011134115L;
     private final String path;
 
-    public ServerDeploymentRepositoryRemove(String path) {
-        super(false, true);
+    public DeploymentScannerRemove(String path) {
         this.path = path;
     }
 
-    /** {@inheritDoc} */
-    protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        if(! element.removeDeploymentRepository(path)) {
-            throw new UpdateFailedException(String.format("deployment repository (%s) does not exist", path));
+    /**
+     * {@inheritDoc}
+     */
+    protected void applyUpdate(DeploymentScannerSubsystemElement element) throws UpdateFailedException {
+        final DeploymentScannerElement scannerElement = element.removeScanner(path);
+        if (scannerElement == null) {
+            throw new IllegalStateException("No deployment scanner for path " + path);
         }
     }
 
-    /** {@inheritDoc} */
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        final DeploymentRepositoryElement repository = original.getDeploymentRepository(path);
-        if(repository == null) {
-            return null;
+    /**
+     * {@inheritDoc}
+     */
+    public AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, ?> getCompensatingUpdate(DeploymentScannerSubsystemElement element) {
+        final DeploymentScannerElement original = element.getScanner(path);
+        if (original == null) {
+            throw new IllegalStateException("No deployment scanner for path " + path);
         }
-        ServerDeploymentRepositoryAdd action = new ServerDeploymentRepositoryAdd(path, repository.getScanInterval(), repository.isScanEnabled());
-        action.setName(repository.getName());
-        action.setRelativeTo(repository.getRelativeTo());
-        return action;
+        return new DeploymentScannerAdd(original.getName(), path, original.getRelativeTo(), original.getScanInterval(), original.isScanEnabled());
     }
 
-    /** {@inheritDoc} */
-    public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
+    /**
+     * {@inheritDoc}
+     */
+    public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(path));
-        if(controller == null) {
+        if (controller == null) {
             resultHandler.handleSuccess(null, param);
             return;
         }

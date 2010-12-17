@@ -20,29 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.deployment.scanner;
 
-import java.io.File;
-
-import org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl;
+import org.jboss.as.server.Extension;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
- * Domain implementation of {@link org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl}.
- *
- * @author Brian Stansberry
+ * @author John Bailey
  */
-public class DomainDeploymentRepository extends DeploymentRepositoryImpl {
+public class DeploymentScannerExtension implements Extension {
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.scanner");
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-
-    /**
-     * Creates a new DomainDeploymentRepository.
-     */
-    public DomainDeploymentRepository(File deployDir) {
-        super(deployDir);
+    public void initialize(ExtensionContext context) {
+        context.registerSubsystem(Namespace.CURRENT.getUriString(), DeploymentScannerParser.getInstance());
     }
 
-
-
+    public void activate(ServiceActivatorContext context) {
+        log.info("Activating Deployment Scanner Extension");
+    }
 }

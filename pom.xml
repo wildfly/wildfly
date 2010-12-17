@@ -139,6 +139,8 @@
         <module>arquillian</module>
         <module>connector</module>
         <module>demos</module>
+		<module>deployment-repository</module>
+		<module>deployment-scanner</module>
         <module>domain</module>
         <module>domain-client</module>
         <module>domain-controller</module>
@@ -400,6 +402,18 @@
 	            <artifactId>jboss-as-demos</artifactId>
                 <version>${project.version}</version>
 	        </dependency>
+	
+	        <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-deployment-repository</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+	        <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-deployment-scanner</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>

@@ -20,27 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment;
+package org.jboss.as.server.deployment.api;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VirtualFile;
-
 /**
- * A server-level repository for deployment content.
+ * Repository for deployment content.
  *
- * @author Brian Stansberry
+ * @author John Bailey
  */
-public interface ServerDeploymentRepository {
-
-    /**
-     * Standard ServiceName under which a service controller for an instance of
-     * {@code Service<ServerDeploymentRepository> would be registered.
-     */
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment-repository");
+public interface DeploymentRepository {
 
     /**
      * Add the given content to the repository.
@@ -53,18 +43,4 @@ public interface ServerDeploymentRepository {
      * @throws IOException
      */
     byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException;
-
-    /**
-     * Requests that the content with the given unique name and hash be mounted
-     * in VFS at the given {@code mountPoint}.
-     *
-     * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
-     * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
-     * @param deploymentHash internal identification hash. Cannot be <code>null</code>
-     * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
-     * @return {@link Closeable} that can be used to close the mount
-     *
-     * @throws IOException
-     */
-    Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException;
 }

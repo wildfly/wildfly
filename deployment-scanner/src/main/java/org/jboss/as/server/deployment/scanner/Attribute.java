@@ -22,46 +22,52 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.msc.service.ServiceName;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * The deployment scanner.
- *
- * @author Emanuel Muckenhuber
+ * @author John Bailey
  */
-public interface DeploymentScanner {
+public enum Attribute {
+    // always first
+    UNKNOWN(null),
 
-    ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "deployment", "scanner");
+    NAME("name"),
+    PATH("path"),
+    RELATIVE_TO("relative-to"),
+    SCAN_ENABLED("scan-enabled"),
+    SCAN_INTERVAL("scan-interval"),
+    ;
+
+    private final String name;
+
+    Attribute(final String name) {
+        this.name = name;
+    }
 
     /**
-     * Check whether the scanner is enabled.
+     * Get the local name of this element.
      *
-     * @return true if enabled, false otherwise
+     * @return the local name
      */
-    boolean isEnabled();
+    public String getLocalName() {
+        return name;
+    }
 
-    /**
-     * Get the current scan interval
-     *
-     * @return the scan interval in ms
-     */
-    long getScanInterval();
+    private static final Map<String, Attribute> MAP;
 
-    /**
-     * Set the scan interval.
-     *
-     * @param scanInterval the scan interval in ms
-     */
-    void setScanInterval(long scanInterval);
+    static {
+        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        for (Attribute element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
+    }
 
-    /**
-     * Start the scanner, if not already started.
-     */
-    void startScanner();
-
-    /**
-     * Stop the scanner, if not already stopped.
-     */
-    void stopScanner();
-
+    public static Attribute forName(String localName) {
+        final Attribute element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
+    }
 }
+

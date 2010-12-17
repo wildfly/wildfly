@@ -40,6 +40,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
@@ -122,7 +124,9 @@ final class ServerControllerService implements Service<ServerController> {
             activator.activate(serviceActivatorContext);
         }
 
-        final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment);
+        final ServerModel serverModel = new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset());
+
+        final ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container, serverEnvironment);
 
         final ServerConfigurationPersister persister = configuration.getConfigurationPersister();
         final List<AbstractServerModelUpdate<?>> updates;
@@ -178,6 +182,18 @@ final class ServerControllerService implements Service<ServerController> {
         // Server environment services; todo: drop environment service, fold in path services
         ServerEnvironmentServices.addServices(serverEnvironment, serviceTarget);
 
+        serviceTarget.addService(ServerModel.SERVICE_NAME, new Service<ServerModel>() {
+            public void start(StartContext context) throws StartException {
+            }
+
+            public void stop(StopContext context) {
+            }
+
+            public ServerModel getValue() throws IllegalStateException, IllegalArgumentException {
+                return serverModel;
+            }
+        }).install();
+
         // Socket binding manager
         serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
             new SocketBindingManagerService(configuration.getPortOffset()))
@@ -187,6 +203,10 @@ final class ServerControllerService implements Service<ServerController> {
         for (AbstractServerModelUpdate<?> update : updates) {
             update.applyUpdateBootAction(bootUpdateContext);
         }
+
+        serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
+            new ServerDeploymentRepositoryImpl(serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir()))
+            .install();
 
         // Activate deployment module loader
         deploymentModuleLoader = new DeploymentModuleLoaderImpl(configuration.getModuleLoader());
