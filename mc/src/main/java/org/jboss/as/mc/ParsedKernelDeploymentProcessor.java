@@ -59,11 +59,11 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final KernelDeploymentXmlDescriptor kdXmlDescriptor = phaseContext.getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
+        final KernelDeploymentXmlDescriptor kdXmlDescriptor = phaseContext.getDeploymentUnit().getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
         if(kdXmlDescriptor == null)
             return;
 
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+        final Module module = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE);
         if(module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 

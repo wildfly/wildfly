@@ -53,7 +53,8 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(phaseContext.getAttachment(Attachments.ANNOTATION_INDEX) != null)
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(deploymentUnit.getAttachment(Attachments.ANNOTATION_INDEX) != null)
             return;
 
         final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -71,7 +72,7 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                 }
             }
             final Index index = indexer.complete();
-            phaseContext.putAttachment(Attachments.ANNOTATION_INDEX, index);
+            deploymentUnit.putAttachment(Attachments.ANNOTATION_INDEX, index);
         } catch(Throwable t) {
             throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
         }

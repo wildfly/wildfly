@@ -87,7 +87,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         try {
             final ClassPathEntry[] entries = createResourceRoots(deploymentRoot, mountHandle);
             final DeploymentStructure structure = new DeploymentStructure(entries);
-            phaseContext.putAttachment(DeploymentStructure.ATTACHMENT_KEY, structure);
+            deploymentUnit.putAttachment(DeploymentStructure.ATTACHMENT_KEY, structure);
 
             final ServiceTarget target = phaseContext.getServiceTarget();
             final ServiceName sName = phaseContext.getPhaseServiceName().append("war", "structure");
@@ -100,11 +100,11 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // Add the war metadata
         final WarMetaData warMetaData = new WarMetaData();
         warMetaData.setSharedWebMetaData(sharedWebMetaData);
-        phaseContext.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
+        deploymentUnit.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
         // Add the shared TLDs metadata
         final TldsMetaData tldsMetaData = new TldsMetaData();
         tldsMetaData.setSharedTlds(sharedTldsMetaData);
-        phaseContext.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
+        deploymentUnit.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
     }
 
     public void undeploy(final DeploymentUnit context) {

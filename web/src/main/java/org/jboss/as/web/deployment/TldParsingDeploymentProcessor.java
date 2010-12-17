@@ -55,20 +55,21 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String IMPLICIT_TLD = "implicit.tld";
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        TldsMetaData tldsMetaData = phaseContext.getAttachment(TldsMetaData.ATTACHMENT_KEY);
+        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         if (tldsMetaData == null) {
             tldsMetaData = new TldsMetaData();
-            phaseContext.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
+            deploymentUnit.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
         }
         Map<String, TldMetaData> tlds = new HashMap<String, TldMetaData>();
         tldsMetaData.setTlds(tlds);
         // TLDs are located in WEB-INF or any subdir (except the top level "classes" and "lib")
         // and in JARs from WEB-INF/lib, in META-INF or any subdir
-        DeploymentStructure structure = phaseContext.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
+        DeploymentStructure structure = deploymentUnit.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
         assert structure != null;
         assert structure.getEntries() != null;
         for (DeploymentStructure.ClassPathEntry resourceRoot : structure.getEntries()) {

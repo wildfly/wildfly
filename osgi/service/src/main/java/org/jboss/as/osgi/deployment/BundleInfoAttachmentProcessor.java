@@ -61,14 +61,14 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
             return;
 
         // Get the manifest from the deployment's virtual file
-        VirtualFile virtualFile = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        Manifest manifest = phaseContext.getAttachment(Attachments.MANIFEST);
+        VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        Manifest manifest = deploymentUnit.getAttachment(Attachments.MANIFEST);
         if (manifest == null) {
             // Check if this virtual file contains a valid OSGi manifest
             // If so attach the BundleInfo and the Deployment abstraction
             try {
                 manifest = VFSUtils.getManifest(virtualFile);
-                if (manifest != null) phaseContext.putAttachment(Attachments.MANIFEST, manifest);
+                if (manifest != null) phaseContext.getDeploymentUnit().putAttachment(Attachments.MANIFEST, manifest);
             } catch (IOException ex) {
                 throw new DeploymentUnitProcessingException("Cannot read manifest from: " + virtualFile);
             }

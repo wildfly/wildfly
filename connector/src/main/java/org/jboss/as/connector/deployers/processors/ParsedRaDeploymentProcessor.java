@@ -75,7 +75,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = phaseContext
                 .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
 
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 
@@ -88,7 +89,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             // Annotation merging
             Annotations annotator = new Annotations();
             AnnotationRepository repository = new JandexAnnotationRepositoryImpl(
-                    phaseContext.getAttachment(Attachments.ANNOTATION_INDEX), classLoader);
+                    deploymentUnit.getAttachment(Attachments.ANNOTATION_INDEX), classLoader);
             cmd = annotator.merge(cmd, repository, classLoader);
 
             // Validate metadata

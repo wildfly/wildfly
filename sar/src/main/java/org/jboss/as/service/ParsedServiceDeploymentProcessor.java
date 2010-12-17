@@ -82,12 +82,13 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final JBossServiceXmlDescriptor serviceXmlDescriptor = phaseContext.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final JBossServiceXmlDescriptor serviceXmlDescriptor = deploymentUnit.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
         if(serviceXmlDescriptor == null) {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if(module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 

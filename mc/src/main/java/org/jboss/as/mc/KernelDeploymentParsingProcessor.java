@@ -63,7 +63,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         if(deploymentRoot == null || deploymentRoot.exists() == false)
             return;
@@ -86,7 +86,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             xmlMapper.parseDocument(result, reader);
             final KernelDeploymentXmlDescriptor xmlDescriptor = result.getResult();
             if(xmlDescriptor != null)
-                phaseContext.putAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                phaseContext.getDeploymentUnit().putAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
                 throw new DeploymentUnitProcessingException("Failed to parse MC beans xml [" + beansXmlFile + "]");
         } catch(Exception e) {

@@ -39,7 +39,8 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final Manifest manifest = phaseContext.getAttachment(Attachments.MANIFEST);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Manifest manifest = deploymentUnit.getAttachment(Attachments.MANIFEST);
         if (manifest == null) {
             // no class path to process!
             return;
@@ -51,7 +52,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         }
         final String[] items = classPathString.split("\\s+");
         for (String item : items) {
-            phaseContext.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, new ClassPathEntry(item));
+            deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, new ClassPathEntry(item));
         }
     }
 

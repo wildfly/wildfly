@@ -7,7 +7,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 
 public class RarConfigProcessor implements DeploymentUnitProcessor {
 
@@ -31,15 +33,17 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
         if(phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
             return;  // Skip non ra deployments
         }
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVAX_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, LOGGING_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, IRON_JACAMAR_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, IRON_JACAMAR_IMPL_ID, false, true, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, SYSTEM_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, NAMING_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, VALIDATION_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, HIBERNATE_VALIDATOR_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, COMMON_CORE_ID, false, false, false));
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, LOGGING_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, IRON_JACAMAR_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, IRON_JACAMAR_IMPL_ID, false, true, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, SYSTEM_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, VALIDATION_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, COMMON_CORE_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

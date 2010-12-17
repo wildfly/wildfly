@@ -69,24 +69,25 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
      * Process SCIs.
      */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        final WarAnnotationIndex index = phaseContext.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
+        final WarAnnotationIndex index = deploymentUnit.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
         if (index == null) {
             return; // Skip if there is no annotation index
         }
-        WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for " + phaseContext.getDeploymentUnit());
+            throw new DeploymentUnitProcessingException("failed to resolve module for " + deploymentUnit);
         }
         final ClassLoader classLoader = module.getClassLoader();
-        ScisMetaData scisMetaData = phaseContext.getAttachment(ScisMetaData.ATTACHMENT_KEY);
+        ScisMetaData scisMetaData = deploymentUnit.getAttachment(ScisMetaData.ATTACHMENT_KEY);
         if (scisMetaData == null) {
             scisMetaData = new ScisMetaData();
-            phaseContext.putAttachment(ScisMetaData.ATTACHMENT_KEY, scisMetaData);
+            deploymentUnit.putAttachment(ScisMetaData.ATTACHMENT_KEY, scisMetaData);
         }
         Set<ServletContainerInitializer> scis = scisMetaData.getScis();
         if (scis == null) {
@@ -100,7 +101,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         // FIXME: for now, look in all dependencies for SCIs
-        for (ModuleDependency dependency : ModuleDependencies.getAttachedDependencies(phaseContext.getDeploymentUnit()).getDependencies()) {
+        for (ModuleDependency dependency : ModuleDependencies.getAttachedDependencies(deploymentUnit).getDependencies()) {
             ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 serviceLoader = Module.loadServiceFromCurrent(dependency.getIdentifier(), ServletContainerInitializer.class);

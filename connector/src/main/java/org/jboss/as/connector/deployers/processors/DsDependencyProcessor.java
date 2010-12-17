@@ -52,7 +52,7 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
 
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 
@@ -61,8 +61,8 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
             return;
 
         log.tracef("Processing datasource deployment: %s", datasources);
-
-         try {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        try {
             if (deploymentName.indexOf("local") != -1) {
                 // Local datasources
                 List<DataSource> dss = datasources.getDataSource();
@@ -77,7 +77,7 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                                 Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, jdbcIdentifier, false, false, false));
+                                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(Module.getSystemModuleLoader(), jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", ds.getJndiName());
                             }
@@ -100,7 +100,7 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                                 Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, jdbcIdentifier, false, false, false));
+                                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(Module.getSystemModuleLoader(), jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", xads.getJndiName());
                             }

@@ -55,7 +55,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
             .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, Context.class, contextService.getParentContextInjector())
             .install();
 
-        phaseContext.putAttachment(ModuleContextConfig.ATTACHMENT_KEY, new ModuleContextConfig(moduleContextServiceName, moduleContextJndiName));
+        phaseContext.getDeploymentUnit().putAttachment(ModuleContextConfig.ATTACHMENT_KEY, new ModuleContextConfig(moduleContextServiceName, moduleContextJndiName));
         // TODO: These names will need to change when application scoping becomes available.
     }
 

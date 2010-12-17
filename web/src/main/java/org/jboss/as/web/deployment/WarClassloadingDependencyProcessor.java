@@ -29,7 +29,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Module dependencies processor.
@@ -50,16 +52,17 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
+        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
         // Add module dependencies on Java EE apis
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_API, false, false, false));
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JAVAX_SERVLET_JSP_API, false, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, JAVAX_SERVLET_API, false, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, JAVAX_SERVLET_JSP_API, false, false, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, JBOSS_WEB, false, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
         // JFC hack...
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, SYSTEM, false, false, false));
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(null, LOG, false, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, SYSTEM, false, false, false));
+        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, LOG, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

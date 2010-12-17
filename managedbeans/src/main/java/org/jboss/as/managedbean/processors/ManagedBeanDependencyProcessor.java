@@ -32,7 +32,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Deployment processor which adds a module dependencies for modules needed for managed bean deployments.
@@ -56,7 +58,8 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
      *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final Index index = phaseContext.getAttachment(Attachments.ANNOTATION_INDEX);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Index index = deploymentUnit.getAttachment(Attachments.ANNOTATION_INDEX);
         if (index == null) {
             return; // Skip if there is no annotation index
         }
@@ -64,9 +67,10 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
         if (index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME) == null) {
             return; // Skip if there are no ManagedBean instances
         }
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVAEE_API_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JBOSS_LOGGING_ID, false, false, false));
-        phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(null, JAVASSIST_ID, false, false, false));
+        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_LOGGING_ID, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVASSIST_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

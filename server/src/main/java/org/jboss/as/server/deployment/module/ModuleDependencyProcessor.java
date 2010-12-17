@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -45,7 +46,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final Manifest manifest = phaseContext.getAttachment(Attachments.MANIFEST);
+        final Manifest manifest = phaseContext.getDeploymentUnit().getAttachment(Attachments.MANIFEST);
         if(manifest == null)
             return;
 
@@ -62,8 +63,8 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "optional");
-            ModuleDependency dependency = new ModuleDependency(null, dependencyId, optional, export, false);
-            phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
+            ModuleDependency dependency = new ModuleDependency(Module.getSystemModuleLoader(), dependencyId, optional, export, false);
+            phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
         }
     }
 

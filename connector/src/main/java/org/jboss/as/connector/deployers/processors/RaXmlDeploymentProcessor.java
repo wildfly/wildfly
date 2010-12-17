@@ -86,7 +86,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             return;
 
         log.tracef("processing Raxml");
-        Module module = phaseContext.getAttachment(Attachments.MODULE);
+        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
         if (module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + deploymentUnit);

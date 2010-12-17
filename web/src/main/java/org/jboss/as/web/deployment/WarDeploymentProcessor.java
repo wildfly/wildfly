@@ -62,7 +62,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final WarMetaData metaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if(metaData == null) {
             return;
         }
@@ -74,16 +75,16 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             if(hostName == null) {
                 throw new IllegalStateException("null host name");
             }
-            processDeployment(hostName, metaData, phaseContext);
+            processDeployment(hostName, metaData, deploymentUnit, phaseContext.getServiceTarget());
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+    protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + deploymentRoot);
         }
@@ -92,7 +93,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Create the context
         final StandardContext webContext = new StandardContext();
-        final ContextConfig config = new JBossContextConfig(phaseContext.getDeploymentUnit());
+        final ContextConfig config = new JBossContextConfig(deploymentUnit);
         // Set the deployment root
         try {
             webContext.setDocBase(deploymentRoot.getPhysicalFile().getAbsolutePath());
@@ -102,7 +103,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         webContext.addLifecycleListener(config);
 
         // Set the path name
-        final String deploymentName = phaseContext.getDeploymentUnit().getName();
+        final String deploymentName = deploymentUnit.getName();
         String pathName = null;
         if (metaData.getContextRoot() == null) {
             pathName = deploymentRoot.getName();
@@ -146,9 +147,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Add the context service
-        final ServiceTarget target = phaseContext.getServiceTarget();
         try {
-            target.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
+            serviceTarget.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
                 .addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
                 .setInitialMode(Mode.ACTIVE)
                 .install();

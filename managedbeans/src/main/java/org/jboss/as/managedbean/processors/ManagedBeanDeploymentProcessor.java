@@ -76,18 +76,18 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
-        final ManagedBeanConfigurations managedBeanConfigurations = phaseContext.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ManagedBeanConfigurations managedBeanConfigurations = deploymentUnit.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY);
         if (managedBeanConfigurations == null)
             return; // Skip deployments with no managed beans.
 
-        final ModuleContextConfig moduleContext = phaseContext.getAttachment(ModuleContextConfig.ATTACHMENT_KEY);
+        final ModuleContextConfig moduleContext = deploymentUnit.getAttachment(ModuleContextConfig.ATTACHMENT_KEY);
         if (moduleContext == null)
             return; // Skip deployments with no module context.
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ClassLoader classLoader = module.getClassLoader();
 
         for(ManagedBeanConfiguration managedBeanConfiguration : managedBeanConfigurations.getConfigurations().values()) {

@@ -60,9 +60,9 @@ public class WarModuleConfigProcessor implements DeploymentUnitProcessor {
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        final ResourceRoot[] resourceRoots = createResourceRoots(phaseContext.getAttachment(DeploymentStructure.ATTACHMENT_KEY));
+        final ResourceRoot[] resourceRoots = createResourceRoots(deploymentUnit.getAttachment(DeploymentStructure.ATTACHMENT_KEY));
         for (ResourceRoot root : resourceRoots) {
-            phaseContext.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
+            deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
         }
     }
 

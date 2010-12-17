@@ -79,11 +79,12 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if (phaseContext.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY) != null) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (deploymentUnit.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY) != null) {
             return; // Skip if the configurations already exist
         }
 
-        final Index index = phaseContext.getAttachment(Attachments.ANNOTATION_INDEX);
+        final Index index = deploymentUnit.getAttachment(Attachments.ANNOTATION_INDEX);
         if (index == null)
             return; // Skip if there is no annotation index
 
@@ -91,14 +92,14 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         if (instances == null)
             return; // Skip if there are no ManagedBean instances
 
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null)
             return; // Skip if there are no Module
 
         final ClassLoader classLoader = module.getClassLoader();
 
         final ManagedBeanConfigurations managedBeanConfigurations = new ManagedBeanConfigurations();
-        phaseContext.putAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY, managedBeanConfigurations);
+        deploymentUnit.putAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY, managedBeanConfigurations);
 
         for (AnnotationInstance instance : instances) {
             AnnotationTarget target = instance.target();
@@ -111,7 +112,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             try {
                 beanClass = classLoader.loadClass(beanClassName);
             } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Failed to load managed bean class: " + beanClassName);
+                throw new DeploymentUnitProcessingException("Failed to load managed bean class: " + beanClassName, e);
             }
 
 

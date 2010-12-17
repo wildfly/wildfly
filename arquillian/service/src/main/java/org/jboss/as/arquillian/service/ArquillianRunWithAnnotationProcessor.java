@@ -48,7 +48,7 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final Index index = phaseContext.getAttachment(Attachments.ANNOTATION_INDEX);
+        final Index index = phaseContext.getDeploymentUnit().getAttachment(Attachments.ANNOTATION_INDEX);
         if (index == null)
             return; // Skip if there is no annotation index
 

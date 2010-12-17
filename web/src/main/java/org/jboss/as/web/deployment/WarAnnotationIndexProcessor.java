@@ -46,16 +46,17 @@ public class WarAnnotationIndexProcessor implements DeploymentUnitProcessor {
 
     /** {@inheritDoc} */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        if(phaseContext.getAttachment(ATTACHMENT_KEY) != null) {
+        if(deploymentUnit.getAttachment(ATTACHMENT_KEY) != null) {
             return;
         }
-        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         // Create the web annotation index
         final WarAnnotationIndex index = WarAnnotationIndex.create(deploymentRoot);
-        phaseContext.putAttachment(ATTACHMENT_KEY, index);
+        deploymentUnit.putAttachment(ATTACHMENT_KEY, index);
     }
 
     public void undeploy(final DeploymentUnit context) {

@@ -87,7 +87,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
             xmlMapper.parseDocument(result, reader);
             final JBossServiceXmlDescriptor xmlDescriptor = result.getResult();
             if(xmlDescriptor != null)
-                phaseContext.putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                phaseContext.getDeploymentUnit().putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
                 throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
         } catch(Exception e) {

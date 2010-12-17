@@ -81,7 +81,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
             result = (new IronJacamarParser()).parse(xmlStream);
             if (result != null) {
                 IronJacamarXmlDescriptor xmlDescriptor = new IronJacamarXmlDescriptor(result);
-                phaseContext.putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                phaseContext.getDeploymentUnit().putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             } else
                 throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
         } catch (Exception e) {

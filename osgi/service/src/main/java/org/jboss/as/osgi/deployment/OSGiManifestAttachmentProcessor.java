@@ -41,16 +41,16 @@ public class OSGiManifestAttachmentProcessor implements DeploymentUnitProcessor 
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         // Check if we already have an OSGiManifestAttachment
-        Manifest manifest = phaseContext.getAttachment(Attachments.OSGI_MANIFEST);
+        Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (manifest != null)
             return;
 
         // Check whether this is an OSGi manifest
-        manifest = phaseContext.getAttachment(Attachments.MANIFEST);
+        manifest = deploymentUnit.getAttachment(Attachments.MANIFEST);
         if (BundleInfo.isValidateBundleManifest(manifest)) {
-            phaseContext.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+            deploymentUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
         }
     }
 

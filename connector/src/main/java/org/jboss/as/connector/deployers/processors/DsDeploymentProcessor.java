@@ -74,7 +74,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
 
-        Module module = phaseContext.getAttachment(Attachments.MODULE);
+        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
         String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 

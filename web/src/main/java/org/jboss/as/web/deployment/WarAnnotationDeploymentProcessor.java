@@ -85,18 +85,18 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        final WarAnnotationIndex index = phaseContext.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
+        final WarAnnotationIndex index = deploymentUnit.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
         if (index == null) {
             return; // Skip if there is no annotation index
         }
-        WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
         Map<String, WebMetaData> annotationsMetaData = warMetaData.getAnnotationsMetaData();
         if (annotationsMetaData == null) {
             annotationsMetaData = new HashMap<String, WebMetaData>();
             warMetaData.setAnnotationsMetaData(annotationsMetaData);
         }
-        final Module module = phaseContext.getAttachment(Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             throw new DeploymentUnitProcessingException("failed to resolve module for " + deploymentUnit);
         }

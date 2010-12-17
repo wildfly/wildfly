@@ -43,7 +43,8 @@ public final class ManifestExtensionListProcessor implements DeploymentUnitProce
 
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final Manifest manifest = phaseContext.getAttachment(Attachments.MANIFEST);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Manifest manifest = deploymentUnit.getAttachment(Attachments.MANIFEST);
         if (manifest == null) {
             // no class path to process!
             return;
@@ -68,7 +69,7 @@ public final class ManifestExtensionListProcessor implements DeploymentUnitProce
                 throw new DeploymentUnitProcessingException("Missing required manifest attribute: " + item + "-" + IMPLEMENTATION_URL);
             }
             try {
-                phaseContext.addToAttachmentList(Attachments.EXTENSION_LIST_ENTRIES, new ExtensionListEntry(item, extensionName, specificationVersion, implementationVersion, implementationVendorId, new URI(implementationUrl)));
+                deploymentUnit.addToAttachmentList(Attachments.EXTENSION_LIST_ENTRIES, new ExtensionListEntry(item, extensionName, specificationVersion, implementationVersion, implementationVendorId, new URI(implementationUrl)));
             } catch (URISyntaxException e) {
                 throw new DeploymentUnitProcessingException("Invalid value given for manifest attribute: " + item + "-" + IMPLEMENTATION_URL, e);
             }

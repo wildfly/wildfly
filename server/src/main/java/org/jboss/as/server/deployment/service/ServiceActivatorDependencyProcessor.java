@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 
@@ -40,7 +41,7 @@ import org.jboss.msc.service.ServiceActivator;
 public class ServiceActivatorDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final String SERVICE_ACTIVATOR_PATH = "META-INF/services/" + ServiceActivator.class.getName();
-    private static final ModuleDependency MSC_DEP = new ModuleDependency(null, ModuleIdentifier.create("org.jboss.msc"), false, false, false);
+    private static final ModuleDependency MSC_DEP = new ModuleDependency(Module.getSystemModuleLoader(), ModuleIdentifier.create("org.jboss.msc"), false, false, false);
 
     /**
      * Add the dependencies if the deployment contains a service activator loader entry.
@@ -52,8 +53,8 @@ public class ServiceActivatorDependencyProcessor implements DeploymentUnitProces
         if(deploymentRoot == null)
             return;
         if(deploymentRoot.getRoot().getChild(SERVICE_ACTIVATOR_PATH).exists()) {
-            phaseContext.putAttachment(ServiceActivatorMarker.ATTACHMENT_KEY, new ServiceActivatorMarker());
-            phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, MSC_DEP);
+            phaseContext.getDeploymentUnit().putAttachment(ServiceActivatorMarker.ATTACHMENT_KEY, new ServiceActivatorMarker());
+            phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, MSC_DEP);
         }
     }
 

@@ -52,7 +52,7 @@ public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        ArquillianConfig arqConfig = phaseContext.getAttachment(ArquillianConfig.KEY);
+        ArquillianConfig arqConfig = phaseContext.getDeploymentUnit().getAttachment(ArquillianConfig.KEY);
         if (arqConfig == null)
             return;
 

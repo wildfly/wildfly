@@ -55,8 +55,8 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
-        final DeploymentModuleLoader deploymentModuleLoader  = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentModuleLoader deploymentModuleLoader  = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
         if(deploymentModuleLoader == null) {
             return;
         }
@@ -67,10 +67,8 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        final List<ResourceRoot> additionalRoots = phaseContext.getAttachment(Attachments.RESOURCE_ROOTS);
-        final List<ModuleDependency> dependencies = phaseContext.getAttachment(Attachments.MODULE_DEPENDENCIES);
+        final List<ResourceRoot> additionalRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        final List<ModuleDependency> dependencies = deploymentUnit.getAttachment(Attachments.MODULE_DEPENDENCIES);
 
         // TODO: account for nested DUs here
         final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentUnit.getName());
@@ -79,7 +77,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Add internal resource roots
         addResourceRoot(specBuilder, mainRoot);
-        for (ResourceRoot additionalRoot : additionalRoots) {
+        if(additionalRoots != null) for (ResourceRoot additionalRoot : additionalRoots) {
             addResourceRoot(specBuilder, additionalRoot);
         }
 
@@ -130,7 +128,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
         try {
             final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
-            phaseContext.getDeploymentUnit().putAttachment(Attachments.MODULE, module);
+            deploymentUnit.putAttachment(Attachments.MODULE, module);
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e);
         }

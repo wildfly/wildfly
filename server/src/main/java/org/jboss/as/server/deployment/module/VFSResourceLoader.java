@@ -73,8 +73,7 @@ public class VFSResourceLoader implements ResourceLoader {
 
     /** {@inheritDoc} */
     public ClassSpec getClassSpec(final String name) throws IOException {
-        final String fileName = name.replace('.', '/') + ".class";
-        final VirtualFile file = root.getChild(fileName);
+        final VirtualFile file = root.getChild(name);
         if (!file.exists()) {
             return null;
         }

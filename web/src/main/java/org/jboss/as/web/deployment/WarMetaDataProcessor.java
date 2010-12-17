@@ -62,12 +62,13 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
      * Merge everything into WarMetaData.
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!isWarDeployment(phaseContext.getDeploymentUnit())) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        WarMetaData warMetaData = phaseContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
-        DeploymentStructure structure = phaseContext.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
+        DeploymentStructure structure = deploymentUnit.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
         assert structure != null;
         assert structure.getEntries() != null;
 
