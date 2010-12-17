@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class JBossASEmbeddedInContainerTestCase {
+
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "sar-example.sar");

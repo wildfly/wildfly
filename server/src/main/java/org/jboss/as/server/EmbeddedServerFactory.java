@@ -31,11 +31,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.LogManager;
 
@@ -45,6 +47,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * <p>
@@ -66,7 +70,6 @@ import org.jboss.modules.ModuleLoader;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
- * @version $Revision: 1.1 $
  */
 public class EmbeddedServerFactory {
 
@@ -75,19 +78,18 @@ public class EmbeddedServerFactory {
     private EmbeddedServerFactory() {
     }
 
-    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps) throws Throwable {
+    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv) throws Throwable {
 
         if (jbossHomeDir == null || jbossHomeDir.isDirectory() == false)
             throw new IllegalStateException("Invalid jboss.home.dir: " + jbossHomeDir);
 
-        if (systemProps.getProperty(ServerEnvironment.HOME_DIR) == null) {
+        if (systemProps.getProperty(ServerEnvironment.HOME_DIR) == null)
             systemProps.setProperty(ServerEnvironment.HOME_DIR, jbossHomeDir.getAbsolutePath());
-        }
 
         setupCleanDirectories(jbossHomeDir, systemProps);
 
         File modulesDir = new File(jbossHomeDir + "/modules");
-        ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir, "org.jboss.logmanager");
+        final ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir);
 
         // Initialize the Logging system
         ModuleIdentifier logModuleId = ModuleIdentifier.create("org.jboss.logmanager");
@@ -105,34 +107,71 @@ public class EmbeddedServerFactory {
             Thread.currentThread().setContextClassLoader(ctxClassLoader);
         }
 
-        // Load the server Module
-        ModuleIdentifier serverModuleId = ModuleIdentifier.create("org.jboss.as.server");
-        Module serverModule = moduleLoader.loadModule(serverModuleId);
+        // Load the server Module and get its ClassLoader
+        final ModuleIdentifier serverModuleId = ModuleIdentifier.create("org.jboss.as.server");
+        final Module serverModule = moduleLoader.loadModule(serverModuleId);
+        final ModuleClassLoader serverModuleClassLoader = serverModule.getClassLoader();
 
-        // Determine the ServerEnvironment
-        ModuleClassLoader serverModuleClassLoader = serverModule.getClassLoader();
-        Class<?> serverMainClass = serverModuleClassLoader.loadClass("org.jboss.as.server.Main");
-        Method determineEnvironmentMethod = serverMainClass.getMethod("determineEnvironment", String[].class, Properties.class);
-        Object serverEnvironment = determineEnvironmentMethod.invoke(null, new String[0], systemProps);
+        StandaloneServer standaloneServer = new StandaloneServer() {
 
-        // Get the StandaloneServer instance
-        final Class<?> serverClass = serverModuleClassLoader.loadClass("org.jboss.as.server.StandaloneServer");
-        Class<?> serverFactoryClass = serverModuleClassLoader.loadClass("org.jboss.as.server.StandaloneServerFactory");
-        Method createMethod = serverFactoryClass.getMethod("create", serverEnvironment.getClass());
-        final Object server = createMethod.invoke(null, serverEnvironment);
+            private Object serverController;
 
-        InvocationHandler invocationHandler = new InvocationHandler() {
             @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                Method targetMethod = serverClass.getMethod(method.getName(), method.getParameterTypes());
-                return targetMethod.invoke(server, args);
+            public void start() throws ServerStartException {
+                try {
+                    // Determine the ServerEnvironment
+                    Class<?> serverMainClass = serverModuleClassLoader.loadClass(Main.class.getName());
+                    Method determineEnvironmentMethod = serverMainClass.getMethod("determineEnvironment", String[].class, Properties.class, Map.class);
+                    Object serverEnvironment = determineEnvironmentMethod.invoke(null, new String[0], systemProps, systemEnv);
+
+                    Class<?> bootstrapFactoryClass = serverModuleClassLoader.loadClass(Bootstrap.Factory.class.getName());
+                    Method newInstanceMethod = bootstrapFactoryClass.getMethod("newInstance");
+                    Object bootstrap = newInstanceMethod.invoke(null);
+
+                    Class<?> configurationClass = serverModuleClassLoader.loadClass(Bootstrap.Configuration.class.getName());
+                    Constructor<?> configurationCtor = configurationClass.getConstructor();
+                    Object configuration = configurationCtor.newInstance();
+
+                    Method setServerEnvironmentMethod = configurationClass.getMethod("setServerEnvironment", serverEnvironment.getClass());
+                    setServerEnvironmentMethod.invoke(configuration, serverEnvironment);
+
+                    Method setModuleLoaderMethod = configurationClass.getMethod("setModuleLoader", ModuleLoader.class);
+                    setModuleLoaderMethod.invoke(configuration, moduleLoader);
+
+                    Class<?> bootstrapClass = serverModuleClassLoader.loadClass(Bootstrap.class.getName());
+                    Method bootstrapStartMethod = bootstrapClass.getMethod("start", configurationClass, List.class);
+                    Object future = bootstrapStartMethod.invoke(bootstrap, configuration, Collections.<ServiceActivator>emptyList());
+
+                    Class<?> asyncFutureClass = serverModuleClassLoader.loadClass(AsyncFuture.class.getName());
+                    Method getMethod = asyncFutureClass.getMethod("get");
+                    serverController = getMethod.invoke(future);
+
+                } catch (RuntimeException rte) {
+                    throw rte;
+                } catch (Exception ex) {
+                    throw new ServerStartException(ex);
+                }
+            }
+
+            @Override
+            public void stop() {
+                if (serverController != null) {
+                    try {
+                        Class<?> serverControllerClass = serverModuleClassLoader.loadClass(ServerController.class.getName());
+                        Method shutdownMethod = serverControllerClass.getMethod("shutdown");
+                        shutdownMethod.invoke(serverController);
+
+                        Method awaitTerminationMethod = serverControllerClass.getMethod("awaitTermination");
+                        awaitTerminationMethod.invoke(serverController);
+                    } catch (RuntimeException rte) {
+                        throw rte;
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
             }
         };
-
-        ClassLoader classLoader = StandaloneServer.class.getClassLoader();
-        Class<?>[] interfaces = new Class[] { StandaloneServer.class };
-        Object proxy = Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
-        return (StandaloneServer) proxy;
+        return standaloneServer;
     }
 
     static void setupCleanDirectories(File jbossHomeDir, Properties props) {
@@ -253,7 +292,7 @@ public class EmbeddedServerFactory {
         if (jbossHomeDir.isDirectory() == false)
             throw new IllegalStateException("Invalid jboss home directory: " + jbossHomeDir);
 
-        StandaloneServer server = create(jbossHomeDir, System.getProperties());
+        StandaloneServer server = create(jbossHomeDir, System.getProperties(), System.getenv());
         server.start();
     }
 }

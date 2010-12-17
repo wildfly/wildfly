@@ -21,14 +21,8 @@
  */
 package org.jboss.as.server;
 
-import java.util.List;
-
-import org.jboss.msc.service.ServiceActivator;
-
 /**
  * The standalone server interface.
- *
- * This is used by the Arquillian embedded container, please preserve compatiblity.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
@@ -36,8 +30,6 @@ import org.jboss.msc.service.ServiceActivator;
 public interface StandaloneServer {
 
     void start() throws ServerStartException;
-
-    void start(List<ServiceActivator> serviceActivators) throws ServerStartException;
 
     void stop();
 }
