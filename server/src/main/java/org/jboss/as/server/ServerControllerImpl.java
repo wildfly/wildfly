@@ -128,6 +128,9 @@ final class ServerControllerImpl implements ServerController {
             } catch (UpdateFailedException e) {
                 resultHandler.handleFailure(e, param);
                 return;
+            } catch (Throwable t) {
+                resultHandler.handleFailure(t, param);
+                return;
             }
         }
         update.applyUpdate(updateContext, resultHandler, param);

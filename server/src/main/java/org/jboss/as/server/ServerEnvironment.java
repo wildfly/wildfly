@@ -228,7 +228,7 @@ public class ServerEnvironment implements Serializable {
 
         tmp = getFileFromProperty(SERVER_BASE_DIR, props);
         if (tmp == null) {
-            tmp = new File(homeDir, "standalone");
+            tmp = new File(homeDir, standalone ? "standalone" : "domain/servers/" + serverName);
         }
         serverBaseDir = tmp;
 
