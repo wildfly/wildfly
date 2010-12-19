@@ -30,16 +30,22 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Services {
+
     private Services() {
     }
 
     /**
+     * The service name of the root application server service.
+     */
+    public static final ServiceName JBOSS_AS = ServiceName.JBOSS.append("as");
+
+    /**
      * The service corresponding to the {@link ServerController} for this instance.
      */
-    public static final ServiceName JBOSS_SERVER_CONTROLLER = ServiceName.JBOSS.append("server-controller");
+    public static final ServiceName JBOSS_SERVER_CONTROLLER = JBOSS_AS.append("server-controller");
 
     /**
      * The internal deployer chains service used by all deployments.
      */
-    public static final ServiceName JBOSS_DEPLOYER_CHAINS = ServiceName.JBOSS.append("deployer-chains");
+    public static final ServiceName JBOSS_DEPLOYER_CHAINS = JBOSS_AS.append("deployer-chains");
 }

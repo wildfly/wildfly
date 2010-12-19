@@ -28,9 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
@@ -43,6 +40,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 import org.jboss.threads.AsyncFuture;
@@ -76,13 +74,12 @@ final class BootstrapImpl implements Bootstrap {
         if (configurationPersister == null) {
             throw new IllegalArgumentException("configurationPersister is null");
         }
-        final ServiceContainer container = ServiceContainer.Factory.create("jbossas");
+        final ServiceContainer container = ServiceContainer.Factory.create("jboss-as-server");
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
-        final Service<ServerController> serverControllerService = new ServerControllerService(configuration, extraServices);
-        container.addListener(new BootstrapListener(future, serverControllerService, container, configuration.getStartTime()));
-        tracker.addService(ServerControllerService.JBOSS_AS_NAME, serverControllerService)
-            .addAliases(Services.JBOSS_SERVER_CONTROLLER)
+        final Service<?> applicationServerService = new ApplicationServerService(extraServices, configuration);
+        container.addListener(new BootstrapListener(future, container, configuration.getStartTime()));
+        tracker.addService(Services.JBOSS_AS, applicationServerService)
             .install();
         return future;
     }
@@ -108,6 +105,10 @@ final class BootstrapImpl implements Bootstrap {
             setResult(controller);
         }
 
+        void failed(Throwable t) {
+            setFailed(t);
+        }
+
         void failed(final int failed) {
             setFailed(new Exception(String.format("Server failed to start (%d services failed)", Integer.valueOf(failed))));
         }
@@ -122,15 +123,13 @@ final class BootstrapImpl implements Bootstrap {
         private final AtomicInteger missingDeps = new AtomicInteger();
         private final EnumMap<ServiceController.Mode, AtomicInteger> map;
         private final StartTask future;
-        private final Service<ServerController> serverControllerService;
         private final ServiceContainer serviceContainer;
         private final long startTime;
         private final Set<ServiceName> missingDepsSet = Collections.synchronizedSet(new TreeSet<ServiceName>());
         private volatile boolean cancelLikely;
 
-        public BootstrapListener(final StartTask future, final Service<ServerController> serverControllerService, final ServiceContainer serviceContainer, final long startTime) {
+        public BootstrapListener(final StartTask future, final ServiceContainer serviceContainer, final long startTime) {
             this.future = future;
-            this.serverControllerService = serverControllerService;
             this.serviceContainer = serviceContainer;
             this.startTime = startTime;
             final EnumMap<ServiceController.Mode, AtomicInteger> map = new EnumMap<ServiceController.Mode, AtomicInteger>(ServiceController.Mode.class);
@@ -209,7 +208,13 @@ final class BootstrapImpl implements Bootstrap {
                 return;
             }
             final int failed = this.failed.get() + outstanding;
-            future.done(serverControllerService.getValue());
+            final ServiceController<?> serverControllerService;
+            try {
+                serverControllerService = container.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
+                future.done((ServerController) serverControllerService.getValue());
+            } catch (ServiceNotFoundException e) {
+                future.failed(e);
+            }
             final long elapsedTime = Math.max(System.currentTimeMillis() - startTime, 0L);
             final Logger log = Logger.getLogger("org.jboss.as");
             final int started = this.started.get();

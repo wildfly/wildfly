@@ -26,8 +26,11 @@
     <dependencies>
         <module name="system" export="false">
             <exports>
-                <include path="org/jboss/modules"/>
-                <include path="org/jboss/modules/ref"/>
+                <include-set>
+                    <path name="org/jboss/modules"/>
+                    <path name="org/jboss/modules/ref"/>
+                    <path name="org/jboss/modules/management"/>
+                </include-set>
             </exports>
         </module>
     </dependencies>

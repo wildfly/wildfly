@@ -64,6 +64,7 @@ import org.jboss.as.server.services.net.SocketBindingManagerService;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
+import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
@@ -86,13 +87,9 @@ import org.jboss.msc.service.TrackingServiceTarget;
  */
 final class ServerControllerService implements Service<ServerController> {
 
-    public static final ServiceName JBOSS_AS_NAME = ServiceName.JBOSS.append("as");
-
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final Bootstrap.Configuration configuration;
-
-    private final List<ServiceActivator> extraServices;
 
     private DeploymentModuleLoader deploymentModuleLoader;
 
@@ -100,9 +97,8 @@ final class ServerControllerService implements Service<ServerController> {
     private ServerController serverController;
     private Set<ServiceName> bootServices;
 
-    public ServerControllerService(final Bootstrap.Configuration configuration, final List<ServiceActivator> extraServices) {
+    public ServerControllerService(final Bootstrap.Configuration configuration) {
         this.configuration = configuration;
-        this.extraServices = extraServices;
     }
 
     /** {@inheritDoc} */
@@ -120,20 +116,6 @@ final class ServerControllerService implements Service<ServerController> {
 
         // Install the environment before fetching and using the persister
         serverEnvironment.install();
-
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
-            public ServiceTarget getServiceTarget() {
-                return serviceTarget;
-            }
-
-            public ServiceRegistry getServiceRegistry() {
-                return container;
-            }
-        };
-
-        for(ServiceActivator activator : extraServices) {
-            activator.activate(serviceActivatorContext);
-        }
 
         final ServerModel serverModel = new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset());
 
@@ -182,14 +164,6 @@ final class ServerControllerService implements Service<ServerController> {
 
         log.info("Activating core services");
 
-        // TODO: decide the fate of these
-
-        // Graceful shutdown
-        ShutdownHandlerImpl.addService(serviceTarget);
-
-        // Server environment services; todo: drop environment service, fold in path services
-        ServerEnvironmentServices.addServices(serverEnvironment, serviceTarget);
-
         serviceTarget.addService(ServerModel.SERVICE_NAME, new Service<ServerModel>() {
             public void start(StartContext context) throws StartException {
             }
@@ -201,12 +175,6 @@ final class ServerControllerService implements Service<ServerController> {
                 return serverModel;
             }
         }).install();
-
-        // Socket binding manager
-        serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
-            new SocketBindingManagerService(configuration.getPortOffset()))
-            .setInitialMode(ServiceController.Mode.ON_DEMAND)
-            .install();
 
         serverController.applyUpdates(updates, false, true);
         for (AbstractServerModelUpdate<?> update : updates) {
@@ -261,26 +229,20 @@ final class ServerControllerService implements Service<ServerController> {
 
     /** {@inheritDoc} */
     public synchronized void stop(final StopContext context) {
-        Logger.getLogger("org.jboss.as").infof("Shutdown requested; stopping all services");
         serverController = null;
         final ServiceContainer container = context.getController().getServiceContainer();
         final Set<ServiceName> bootServices = this.bootServices;
         context.asynchronous();
-        final MultipleRemoveListener<Runnable> removeListener = MultipleRemoveListener.create(new Runnable() {
-            public void run() {
-                context.complete();
-                Logger.getLogger("org.jboss.as").infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
-            }
-        });
+        MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
         for (ServiceName serviceName : bootServices) {
             final ServiceController<?> controller = container.getService(serviceName);
             if (controller != null) {
-                controller.addListener(removeListener);
+                controller.addListener(listener);
                 controller.setMode(ServiceController.Mode.REMOVE);
             }
         }
         // tick the count down
-        removeListener.done();
+        listener.done();
     }
 
     /** {@inheritDoc} */

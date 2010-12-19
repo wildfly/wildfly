@@ -28,6 +28,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.logmanager" optional="true"/>
+        <module name="org.jboss.logmanager"/>
     </dependencies>
 </module>

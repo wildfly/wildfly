@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -39,17 +38,6 @@ import org.jboss.msc.service.StopContext;
 public class ShutdownHandlerImpl implements ShutdownHandler, Service<ShutdownHandler> {
 
     private static Logger logger = Logger.getLogger("org.jboss.as.server");
-
-    /**
-     * Creates an instance of ShutdownHandlerImpl and configures the BatchBuilder to install it.
-     *
-     * @param target service batch builder to use to install the service.  Cannot be {@code null}
-     */
-    public static void addService(ServiceTarget target) {
-
-        ShutdownHandlerImpl service = new ShutdownHandlerImpl();
-        target.addService(SERVICE_NAME, service).install();
-    }
 
     // ShutdownHandler
 
