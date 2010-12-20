@@ -29,9 +29,9 @@ import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
 
+import java.util.Properties;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.server.mgmt.DomainServerConfigurationPersister;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 
 /**
@@ -50,8 +50,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final List<AbstractServerModelUpdate<?>> updates;
     private final ServerEnvironment providedEnvironment;
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.server");
-
     public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name " + serverName + " is invalid; cannot be null or blank");
@@ -60,7 +58,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.portOffset = portOffset;
         this.startServices = startServices;
         this.updates = updates;
-        providedEnvironment = new ServerEnvironment(System.getProperties(), System.getenv(), false);
+        final Properties properties = System.getProperties();
+        properties.setProperty("jboss.server.name", serverName);
+        providedEnvironment = new ServerEnvironment(properties, System.getenv(), false);
     }
 
     public void run(final List<ServiceActivator> runServices) {

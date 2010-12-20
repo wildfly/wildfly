@@ -58,17 +58,11 @@ import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
-import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
-import org.jboss.as.server.services.net.SocketBindingManager;
-import org.jboss.as.server.services.net.SocketBindingManagerService;
-import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -113,9 +107,6 @@ final class ServerControllerService implements Service<ServerController> {
         final int threads = (int) (Runtime.getRuntime().availableProcessors() * 1.5f);
         final ExecutorService executor = new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>());
         container.setExecutor(executor);
-
-        // Install the environment before fetching and using the persister
-        serverEnvironment.install();
 
         final ServerModel serverModel = new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset());
 

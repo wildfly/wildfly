@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,6 +61,7 @@ import org.jboss.msc.service.TrackingServiceTarget;
 final class ApplicationServerService implements Service<Void> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as");
+    private static final Logger configLog = Logger.getLogger("org.jboss.as.config");
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
     private List<ServiceName> services;
@@ -71,7 +74,31 @@ final class ApplicationServerService implements Service<Void> {
     }
 
     public synchronized void start(final StartContext context) throws StartException {
+        final Bootstrap.Configuration configuration = this.configuration;
+        final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
+
+        // Install the environment before doing anything
+        serverEnvironment.install();
+
         log.infof("JBoss AS %s \"%s\" starting", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
+        if (configLog.isDebugEnabled()) {
+            final Properties properties = System.getProperties();
+            final StringBuilder b = new StringBuilder(8192);
+            b.append("Configured system properties:");
+            for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
+                b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
+            }
+            configLog.debug(b);
+            if (configLog.isTraceEnabled()) {
+                b.setLength(0);
+                final Map<String,String> env = System.getenv();
+                b.append("Configured system environment:");
+                for (String key : new TreeSet<String>(env.keySet())) {
+                    b.append("\n\t").append(key).append(" = ").append(env.get(key));
+                }
+                configLog.trace(b);
+            }
+        }
         final ServiceController<?> myController = context.getController();
         final ServiceContainer container = myController.getServiceContainer();
         long startTime = this.startTime;
@@ -85,11 +112,9 @@ final class ApplicationServerService implements Service<Void> {
         myController.addListener(bootstrapListener);
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         serviceTarget.addDependency(myController.getName());
-        Bootstrap.Configuration configuration = this.configuration;
         serviceTarget
                 .addService(Services.JBOSS_SERVER_CONTROLLER, new ServerControllerService(configuration))
                 .install();
-        final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             public ServiceTarget getServiceTarget() {
                 return serviceTarget;
