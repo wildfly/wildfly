@@ -78,7 +78,7 @@ public class EmbeddedServerFactory {
     private EmbeddedServerFactory() {
     }
 
-    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv) throws Throwable {
+    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) throws Throwable {
 
         if (jbossHomeDir == null || jbossHomeDir.isDirectory() == false)
             throw new IllegalStateException("Invalid jboss.home.dir: " + jbossHomeDir);
@@ -89,7 +89,7 @@ public class EmbeddedServerFactory {
         setupCleanDirectories(jbossHomeDir, systemProps);
 
         File modulesDir = new File(jbossHomeDir + "/modules");
-        final ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir);
+        final ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir, systemPackages);
 
         // Initialize the Logging system
         ModuleIdentifier logModuleId = ModuleIdentifier.create("org.jboss.logmanager");
