@@ -62,7 +62,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT_MOUNT_HANDLE, mountHandle);
         } catch (IOException e) {
             failed = true;
-            throw new DeploymentUnitProcessingException("Failed to mount deployment content");
+            throw new DeploymentUnitProcessingException("Failed to mount deployment content", e);
         } finally {
             if(failed) {
                 VFSUtils.safeClose(handle);
@@ -72,7 +72,9 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
 
     public void undeploy(DeploymentUnit context) {
         final ResourceRoot resourceRoot = context.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final Closeable mountHandle = resourceRoot.getMountHandle();
-        VFSUtils.safeClose(mountHandle);
+        if (resourceRoot != null) {
+            final Closeable mountHandle = resourceRoot.getMountHandle();
+            VFSUtils.safeClose(mountHandle);
+        }
     }
 }
