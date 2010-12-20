@@ -23,7 +23,14 @@
 package org.jboss.as.server;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.services.net.SocketBindingManager;
@@ -31,6 +38,7 @@ import org.jboss.as.server.services.net.SocketBindingManagerService;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
@@ -54,17 +62,29 @@ final class ApplicationServerService implements Service<Void> {
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
     private List<ServiceName> services;
+    private volatile long startTime;
 
     ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
         this.extraServices = extraServices;
         this.configuration = configuration;
+        startTime = configuration.getStartTime();
     }
 
     public synchronized void start(final StartContext context) throws StartException {
         log.infof("JBoss AS %s \"%s\" starting", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
-        final ServiceContainer container = context.getController().getServiceContainer();
+        final ServiceController<?> myController = context.getController();
+        final ServiceContainer container = myController.getServiceContainer();
+        long startTime = this.startTime;
+        if (startTime == -1) {
+            startTime = System.currentTimeMillis();
+        } else {
+            this.startTime = -1;
+        }
+        final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime);
+        container.addListener(bootstrapListener);
+        myController.addListener(bootstrapListener);
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
-        serviceTarget.addDependency(context.getController().getName());
+        serviceTarget.addDependency(myController.getName());
         Bootstrap.Configuration configuration = this.configuration;
         serviceTarget
                 .addService(Services.JBOSS_SERVER_CONTROLLER, new ServerControllerService(configuration))
@@ -139,5 +159,122 @@ final class ApplicationServerService implements Service<Void> {
 
     public Void getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
+    }
+
+    private static class BootstrapListener extends AbstractServiceListener<Object> {
+
+        private final AtomicInteger started = new AtomicInteger();
+        private final AtomicInteger failed = new AtomicInteger();
+        private final AtomicInteger outstanding = new AtomicInteger();
+        private final AtomicBoolean done = new AtomicBoolean();
+        private final AtomicInteger missingDeps = new AtomicInteger();
+        private final EnumMap<ServiceController.Mode, AtomicInteger> map;
+        private final ServiceContainer serviceContainer;
+        private final long startTime;
+        private final Set<ServiceName> missingDepsSet = Collections.synchronizedSet(new TreeSet<ServiceName>());
+        private volatile boolean cancelLikely;
+
+        public BootstrapListener(final ServiceContainer serviceContainer, final long startTime) {
+            this.serviceContainer = serviceContainer;
+            this.startTime = startTime;
+            final EnumMap<ServiceController.Mode, AtomicInteger> map = new EnumMap<ServiceController.Mode, AtomicInteger>(ServiceController.Mode.class);
+            for (ServiceController.Mode mode : ServiceController.Mode.values()) {
+                map.put(mode, new AtomicInteger());
+            }
+            this.map = map;
+        }
+
+        public void listenerAdded(final ServiceController<?> controller) {
+            final ServiceController.Mode mode = controller.getMode();
+            if (mode == ServiceController.Mode.ACTIVE) {
+                outstanding.incrementAndGet();
+            } else {
+                controller.removeListener(this);
+            }
+            map.get(mode).incrementAndGet();
+        }
+
+        public void serviceStarted(final ServiceController<?> controller) {
+            started.incrementAndGet();
+            controller.removeListener(this);
+            tick(controller.getServiceContainer());
+        }
+
+        public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
+            failed.incrementAndGet();
+            controller.removeListener(this);
+            tick(controller.getServiceContainer());
+        }
+
+        public void dependencyFailed(final ServiceController<? extends Object> controller) {
+            controller.removeListener(this);
+            tick(controller.getServiceContainer());
+        }
+
+        public void dependencyUninstalled(final ServiceController<? extends Object> controller) {
+            missingDeps.incrementAndGet();
+            missingDepsSet.add(controller.getName());
+            check();
+        }
+
+        public void dependencyInstalled(final ServiceController<? extends Object> controller) {
+            missingDeps.decrementAndGet();
+            missingDepsSet.remove(controller.getName());
+            check();
+        }
+
+        public void serviceRemoved(final ServiceController<?> controller) {
+            cancelLikely = true;
+            controller.removeListener(this);
+            tick(controller.getServiceContainer());
+        }
+
+        private void check() {
+            int outstanding = this.outstanding.get();
+            if (outstanding == missingDeps.get()) {
+                finish(serviceContainer, outstanding);
+            }
+        }
+
+        private void tick(final ServiceContainer container) {
+            int outstanding = this.outstanding.decrementAndGet();
+            if (outstanding != missingDeps.get()) {
+                return;
+            }
+            finish(container, outstanding);
+        }
+
+        private void finish(final ServiceContainer container, final int outstanding) {
+            if (done.getAndSet(true)) {
+                return;
+            }
+            container.removeListener(this);
+            if (cancelLikely) {
+                return;
+            }
+            final int failed = this.failed.get() + outstanding;
+            final long elapsedTime = Math.max(System.currentTimeMillis() - startTime, 0L);
+            final Logger log = Logger.getLogger("org.jboss.as");
+            final int started = this.started.get();
+            final int active = map.get(ServiceController.Mode.ACTIVE).get();
+            final int passive = map.get(ServiceController.Mode.PASSIVE).get();
+            final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
+            final int never = map.get(ServiceController.Mode.NEVER).get();
+            if (failed == 0) {
+                log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
+            } else {
+                final StringBuilder b = new StringBuilder();
+                b.append(String.format("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive)));
+                final Set<ServiceName> set = missingDepsSet;
+                final Iterator<ServiceName> i = set.iterator();
+                if (i.hasNext()) {
+                    b.append("\n    Services missing dependencies:");
+                    do {
+                        b.append("\n        ").append(i.next());
+                    } while (i.hasNext());
+                }
+                log.error(b);
+            }
+        }
     }
 }
