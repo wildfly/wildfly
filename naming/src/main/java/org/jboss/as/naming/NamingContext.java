@@ -79,6 +79,14 @@ public class NamingContext implements EventContext {
 
     private static final String PACKAGE_PREFIXES = "org.jboss.as.naming.interfaces";
 
+    static {
+        try {
+            NamingManager.setObjectFactoryBuilder(ObjectFactoryBuilder.INSTANCE);
+        } catch(Throwable t) {
+            log.warn("Failed to set ObjectFactoryBuilder", t);
+        }
+    }
+
     /**
      * Initialize the naming components required by {@link javax.naming.spi.NamingManager}.
      */
@@ -91,11 +99,6 @@ public class NamingContext implements EventContext {
                 NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
         } catch (NamingException e) {
             log.warn("Failed to set InitialContextFactoryBuilder", e);
-        }
-        try {
-            NamingManager.setObjectFactoryBuilder(ObjectFactoryBuilder.INSTANCE);
-        } catch(Throwable t) {
-            log.warn("Failed to set ObjectFactoryBuilder", t);
         }
     }
 
