@@ -47,6 +47,7 @@
     <properties>
         <!-- This part of the testuite we want to execute by default. -->
         <skipExecUnitTests>false</skipExecUnitTests>
+        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>    
     
     <build>
@@ -65,15 +66,83 @@
                         </property>
                         <property>
                           <name>jboss.home</name>
-                          <value>../../build/target/jboss-${jboss.as.release.version}</value>
+                          <value>${jboss.home}</value>
                         </property>
                         <property>
                           <name>jboss.embedded.root</name>
                           <value>target/embedded</value>
                         </property>
                     </systemProperties>
+                    <includes>
+                        <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
+                    </includes>
                 </configuration>
+                <!-- 
+                <executions>
+                    <execution> -->
+                        <!-- (Legacy) Tests not using arquillian  -->
+                        <!-- <id>default-test</id>
+                        <configuration>
+                            <includes>
+                                <include>org/jboss/as/test/flat/**/*TestCase.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution> --> 
+                        <!-- Tests that run using arquillian + embedded AS-->
+                        <!-- <id>arquillian</id>
+                        <phase>test</phase>
+                        <goals>
+                             <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions> -->             
             </plugin>
+            <plugin>
+                <groupId>org.jboss.maven.surefire.modular</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>1.0.0.Alpha1</version>
+                <executions>
+                    <execution>
+	                    <goals>
+	                        <goal>test</goal>
+	                    </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--  standard surefire options -->
+                    <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->                    
+                    <enableAssertions>true</enableAssertions>
+                    <systemProperties>
+                        <property>
+                          <name>java.util.logging.manager</name>
+                          <value>org.jboss.logmanager.LogManager</value>
+                        </property>
+                        <property>
+                          <name>jboss.home.dir</name>
+                          <value>${jboss.home}</value>
+                        </property>
+                        <property>
+                          <name>org.jboss.boot.log.file</name>
+                          <value>${jboss.home}/standalone/log/boot.log</value>
+                        </property>
+                    </systemProperties>
+                    <includes>
+                        <include>org/jboss/as/test/surefire/**/*TestCase.java</include>
+                    </includes>
+                    <!-- Extra forked plugin options -->
+                    <logModule>org.jboss.logmanager</logModule>
+                    <logConfiguration>${jboss.home}/standalone/configuration/logging.properties</logConfiguration>
+                    <roots>
+                        <root>${jboss.home}/modules</root>
+                    </roots>
+                </configuration>
+            </plugin>      
         </plugins>
     </build>
     

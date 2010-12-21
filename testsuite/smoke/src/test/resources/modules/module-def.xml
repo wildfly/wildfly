@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modules xmlns="urn:jboss:surefire-module:1.0" targetNs="urn:jboss:module:1.0">
+   <!--  
+       The jboss.surefire.module is added automatically by the framework and looks like this:
+       
+       <module name="jboss.surefire.module">
+           <main-class name="org.apache.maven.surefire.booter.SurefireBooter"/>
+           <resources>
+               <resource-root path="$org.apache.maven.surefire:surefire-api$"/>
+               <resource-root path="$org.jboss.maven.surefire.modular:surefire-booter$"/>
+               <resource-root path="$junit:junit$"/>>
+               <resource-root path="$$CLASSES$$"/>
+               <resource-root path="$$TEST.CLASSES$$"/>
+           </resources>
+       </module>
+       
+       $groupId:artifactId$ gets the dependency jar from maven using the version used by the project using this plugin
+       $$CLASS$$ is the target/classes directory of the project using this plugin
+       $$TEST.CLASSES$$ is the target/test-classes directory of the project using this plugin
+    -->
+       
+    <test-module-dependencies>
+        <module name="org.jboss.as.standalone"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.threads"/>
+    </test-module-dependencies>
+</modules>
