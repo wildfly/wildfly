@@ -54,12 +54,10 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
 
         boolean failed = false;
         Closeable handle = null;
+        final MountHandle mountHandle;
         try {
             handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentHash, deploymentRoot);
-            final MountHandle mountHandle = new MountHandle(handle);
-            final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle, false);
-            deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
-            deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT_MOUNT_HANDLE, mountHandle);
+            mountHandle = new MountHandle(handle);
         } catch (IOException e) {
             failed = true;
             throw new DeploymentUnitProcessingException("Failed to mount deployment content", e);
@@ -68,10 +66,12 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
                 VFSUtils.safeClose(handle);
             }
         }
+        final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle, false);
+        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
     }
 
     public void undeploy(DeploymentUnit context) {
-        final ResourceRoot resourceRoot = context.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot resourceRoot = context.removeAttachment(Attachments.DEPLOYMENT_ROOT);
         if (resourceRoot != null) {
             final Closeable mountHandle = resourceRoot.getMountHandle();
             VFSUtils.safeClose(mountHandle);

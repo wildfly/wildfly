@@ -60,6 +60,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.updates = updates;
         final Properties properties = System.getProperties();
         properties.setProperty("jboss.server.name", serverName);
+        properties.setProperty("jboss.server.deploy.dir", properties.getProperty("jboss.home.dir") + "/domain/content");
         providedEnvironment = new ServerEnvironment(properties, System.getenv(), false);
     }
 

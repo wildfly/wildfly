@@ -69,10 +69,6 @@ public final class Attachments {
      */
     public static final AttachmentKey<ResourceRoot> DEPLOYMENT_ROOT = AttachmentKey.create(ResourceRoot.class);
     /**
-     * The primary deployment root.
-     */
-    public static final AttachmentKey<MountHandle> DEPLOYMENT_ROOT_MOUNT_HANDLE = AttachmentKey.create(MountHandle.class);
-    /**
      * The additional resource roots of the deployment unit.
      */
     public static final AttachmentKey<AttachmentList<ResourceRoot>> RESOURCE_ROOTS = AttachmentKey.createList(ResourceRoot.class);

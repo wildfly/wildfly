@@ -83,7 +83,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             return;
         }
         // TODO: This needs to be ported to add additional resource roots the standard way
-        final MountHandle mountHandle = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT_MOUNT_HANDLE);
+        final MountHandle mountHandle = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();
         try {
             final ClassPathEntry[] entries = createResourceRoots(deploymentRoot, mountHandle);
             final DeploymentStructure structure = new DeploymentStructure(entries);

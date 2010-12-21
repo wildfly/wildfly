@@ -98,7 +98,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         if (deployment != null) {
 
             // Prevent garbage collection of the MountHandle which will close the file
-            MountHandle mount = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT_MOUNT_HANDLE);
+            MountHandle mount = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();
             deployment.addAttachment(MountHandle.class, mount);
 
             // Mark the bundle to start automatically

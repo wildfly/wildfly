@@ -23,12 +23,91 @@
 package org.jboss.as.server.deployment;
 
 /**
+ * An enumeration of the phases of a deployment unit's processing cycle.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum Phase {
 
+    /* == TEMPLATE ==
+     * Upon entry, this phase performs the following actions:
+     * <ul>
+     * <li></li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following phase attachments:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following deployment unit attachments, in addition to those defined
+     * for the previous phase:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     * In this phase, these phase attachments may be modified:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     */
+
+    /**
+     * This phase creates the initial root structure.  Depending on the service for this phase will ensure that the
+     * deployment unit's initial root structure is available and accessible.
+     * <p>
+     * Upon entry, this phase performs the following actions:
+     * <ul>
+     * <li>The primary deployment root is mounted (during {@link #STRUCTURE_MOUNT})</li>
+     * <li>Other internal deployment roots are mounted (during {@link #STRUCTURE_NESTED_JAR})</li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following phase attachments:
+     * <ul>
+     * <li><i>N/A</i></li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following deployment unit attachments:
+     * <ul>
+     * <li>{@link Attachments#DEPLOYMENT_ROOT} - the mounted deployment root for this deployment unit</li>
+     * </ul>
+     * <p>
+     * In this phase, these phase attachments may be modified:
+     * <ul>
+     * </ul>
+     * <p>
+     */
     STRUCTURE(null),
-    VALIDATE(null),
+    /**
+     * This phase assembles information from the root structure to prepare for adding and processing additional external
+     * structure, such as from class path entries and other similar mechanisms.
+     * <p>
+     * Upon entry, this phase performs the following actions:
+     * <ul>
+     * <li>The JAR MANIFEST is read and made available during {@link #PARSE_MANIFEST}.</li>
+     * <li>The annotation index for the root structure is calculated during {@link #PARSE_ANNOTATION_INDEX}.</li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following phase attachments:
+     * <ul>
+     * <li>{@link Attachments#MANIFEST} - the parsed manifest of the root structure</li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following deployment unit attachments, in addition to those defined
+     * for the previous phase:
+     * <ul>
+     * <li><i>N/A</i></li>
+     * </ul>
+     * <p>
+     * In this phase, these phase attachments may be modified:
+     * <ul>
+     * <li>{@link Attachments#CLASS_PATH_ENTRIES} - class path entries found in the manifest and elsewhere.</li>
+     * <li>{@link Attachments#EXTENSION_LIST_ENTRIES} - extension-list entries found in the manifest and elsewhere.</li>
+     * </ul>
+     * <p>
+     *
+     */
     PARSE(null),
     DEPENDENCIES(null),
     MODULARIZE(null),
