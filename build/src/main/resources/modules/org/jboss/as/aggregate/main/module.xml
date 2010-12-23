@@ -40,7 +40,7 @@
         <module name="org.jboss.as.osgi" />
         <module name="org.jboss.as.remoting" />
         <module name="org.jboss.as.sar" />
-        <module name="org.jboss.as.standalone-client" />
+        <module name="org.jboss.as.server" />
         <module name="org.jboss.as.threads" />
         <module name="org.jboss.as.transactions" />
         <module name="org.jboss.as.web" />

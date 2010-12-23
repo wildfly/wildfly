@@ -325,10 +325,6 @@
 
         <module-def name="org.jboss.as.standalone"/>
 
-        <module-def name="org.jboss.as.standalone-client">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-standalone-client"/>
-        </module-def>
-    	
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>

@@ -1014,7 +1014,7 @@ public final class ModelXmlParsers {
             ParseUtils.requireNoContent(reader);
 
             list.add(new ServerModelDeploymentAdd(uniqueName, runtimeName, hash));
-            list.add(new ServerModelDeploymentStartUpdate(uniqueName, runtimeName, hash));
+            list.add(new ServerModelDeploymentStartUpdate(uniqueName));
         }
     }
 

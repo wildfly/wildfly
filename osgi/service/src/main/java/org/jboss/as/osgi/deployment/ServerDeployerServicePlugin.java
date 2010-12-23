@@ -27,12 +27,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.deployment.DeploymentService;
-import org.jboss.as.standalone.client.api.deployment.DeploymentAction;
-import org.jboss.as.standalone.client.api.deployment.DeploymentPlan;
-import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;
-import org.jboss.as.standalone.client.api.deployment.ServerDeploymentActionResult;
-import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
-import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.as.server.client.api.deployment.DeploymentAction;
+import org.jboss.as.server.client.api.deployment.DeploymentPlan;
+import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentActionResult;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;

@@ -40,8 +40,8 @@ import org.jboss.as.model.ServerSubsystemUpdate;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingRemove;
-import org.jboss.as.standalone.client.api.StandaloneClient;
-import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
+import org.jboss.as.server.client.api.StandaloneClient;
+import org.jboss.as.server.client.api.StandaloneUpdateResult;
 import org.jboss.as.web.WebConnectorAdd;
 import org.jboss.as.web.WebConnectorRemove;
 

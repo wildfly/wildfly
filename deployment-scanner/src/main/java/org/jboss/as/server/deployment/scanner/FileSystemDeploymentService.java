@@ -316,7 +316,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         continue;
                     }
                     updates.add(new ServerModelDeploymentAdd(fileName, fileName, hash));
-                    updates.add(new ServerModelDeploymentStartUpdate(fileName, fileName, hash));
+                    updates.add(new ServerModelDeploymentStartUpdate(fileName));
                     uploaded = true;
                 }
 

@@ -48,8 +48,8 @@ import org.jboss.as.messaging.jms.JMSQueueRemove;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerSubsystemUpdate;
 import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.standalone.client.api.StandaloneClient;
-import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
+import org.jboss.as.server.client.api.StandaloneClient;
+import org.jboss.as.server.client.api.StandaloneUpdateResult;
 
 /**
  * Demo using the AS management API to create and destroy a JMS queue.

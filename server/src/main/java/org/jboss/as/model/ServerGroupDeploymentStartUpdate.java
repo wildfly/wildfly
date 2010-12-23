@@ -35,15 +35,11 @@ public class ServerGroupDeploymentStartUpdate extends AbstractModelUpdate<Server
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final String deploymentUnitName;
-    private final String deploymentRuntimeName;
-    private final byte[] deploymentHash;
 
     public ServerGroupDeploymentStartUpdate(final String deploymentUnitName, final String deploymentRuntimeName, final byte[] deploymentHash) {
         if (deploymentUnitName == null)
             throw new IllegalArgumentException("deploymentUnitName is null");
         this.deploymentUnitName = deploymentUnitName;
-        this.deploymentRuntimeName = deploymentRuntimeName;
-        this.deploymentHash = deploymentHash;
     }
 
       @Override
@@ -53,7 +49,7 @@ public class ServerGroupDeploymentStartUpdate extends AbstractModelUpdate<Server
 
     @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerModelDeploymentStartUpdate(deploymentUnitName, deploymentRuntimeName, deploymentHash);
+        return new ServerModelDeploymentStartUpdate(deploymentUnitName);
     }
 
     @Override

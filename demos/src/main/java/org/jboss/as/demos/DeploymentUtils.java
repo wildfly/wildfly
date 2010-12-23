@@ -40,10 +40,10 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.jboss.as.standalone.client.api.StandaloneClient;
-import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;
-import org.jboss.as.standalone.client.api.deployment.DuplicateDeploymentNameException;
-import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.server.client.api.StandaloneClient;
+import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
+import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;

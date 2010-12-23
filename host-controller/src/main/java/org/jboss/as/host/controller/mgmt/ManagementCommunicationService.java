@@ -46,7 +46,7 @@ import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
-import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
+import org.jboss.as.server.client.impl.StandaloneClientProtocol;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

@@ -39,7 +39,7 @@
   
     <dependency>
       <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-standalone-client</artifactId>
+      <artifactId>jboss-as-server</artifactId>
     </dependency>
 
     <dependency>

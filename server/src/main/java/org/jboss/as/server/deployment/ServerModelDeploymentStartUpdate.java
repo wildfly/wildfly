@@ -46,16 +46,12 @@ public class ServerModelDeploymentStartUpdate extends AbstractServerModelUpdate<
 
     private ServerGroupDeploymentElement deploymentElement;
     private final String deploymentUnitName;
-    private final String deploymentRuntimeName;
-    private final byte[] deploymentHash;
 
-    public ServerModelDeploymentStartUpdate(final String deploymentUnitName,final String deploymentRuntimeName, final byte[] deploymentHash) {
+    public ServerModelDeploymentStartUpdate(final String deploymentUnitName) {
         super(false, true);
         if (deploymentUnitName == null)
             throw new IllegalArgumentException("deploymentUnitName is null");
         this.deploymentUnitName = deploymentUnitName;
-        this.deploymentRuntimeName = deploymentRuntimeName;
-        this.deploymentHash = deploymentHash;
     }
 
     public String getDeploymentUnitName() {
@@ -93,7 +89,7 @@ public class ServerModelDeploymentStartUpdate extends AbstractServerModelUpdate<
                 controller.setMode(ServiceController.Mode.ACTIVE);
             } else {
                 final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-                final DeploymentUnitService service = new DeploymentUnitService(deploymentUnitName, deploymentRuntimeName, deploymentHash, null);
+                final DeploymentUnitService service = new DeploymentUnitService(deploymentUnitName, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(), null);
                 serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())

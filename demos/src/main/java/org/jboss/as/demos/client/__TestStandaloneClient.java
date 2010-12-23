@@ -33,10 +33,10 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.PathElementUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.ServerPathAdd;
-import org.jboss.as.standalone.client.api.StandaloneClient;
-import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
-import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
-import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.as.server.client.api.StandaloneClient;
+import org.jboss.as.server.client.api.StandaloneUpdateResult;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 
 /**
  *

@@ -26,16 +26,35 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 
+import org.jboss.as.model.ManagementElement;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.mgmt.ManagementCommunicationService;
+import org.jboss.as.server.mgmt.ManagementCommunicationServiceInjector;
+import org.jboss.as.server.mgmt.ServerConfigurationPersister;
+import org.jboss.as.server.mgmt.ServerControllerOperationHandler;
+import org.jboss.as.server.mgmt.ShutdownHandler;
+import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -80,7 +99,11 @@ public final class Main {
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getSystemModuleLoader());
                 configuration.setPortOffset(0);
-                bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
+                bootstrap.start(configuration, Arrays.<ServiceActivator>asList(new ServiceActivator() {
+                    public void activate(final ServiceActivatorContext serviceActivatorContext) {
+                        installManagement(serviceActivatorContext.getServiceTarget());
+                    }
+                })).get();
                 return;
             }
         } catch (Throwable t) {
@@ -172,4 +195,14 @@ public final class Main {
 
         return url;
     }
+
+    public static void installManagement(ServiceTarget batchBuilder) {
+        ManagementInstallationService installer = new ManagementInstallationService();
+        batchBuilder
+                .addService(ManagementInstallationService.SERVICE_NAME, installer)
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class,
+                        installer.getServerControllerInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+    }
+
 }

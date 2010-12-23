@@ -157,7 +157,6 @@
         <module>remoting</module>
         <module>sar</module>
         <module>server</module>
-        <module>standalone-client</module>
         <module>testsuite</module>
         <module>threads</module>
         <module>transactions</module>
@@ -502,12 +501,6 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-standalone-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

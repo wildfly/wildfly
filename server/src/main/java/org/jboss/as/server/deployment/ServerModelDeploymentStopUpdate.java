@@ -63,7 +63,7 @@ public class ServerModelDeploymentStopUpdate extends AbstractServerModelUpdate<V
         if (element == null) {
             return null;
         }
-        return new ServerModelDeploymentStartUpdate(deploymentUnitName, element.getRuntimeName(), element.getSha1Hash());
+        return new ServerModelDeploymentStartUpdate(deploymentUnitName);
     }
 
     @Override

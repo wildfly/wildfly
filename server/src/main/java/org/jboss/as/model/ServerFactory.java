@@ -171,7 +171,7 @@ public final class ServerFactory {
             final ServerModelDeploymentAdd add = new ServerModelDeploymentAdd(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash());
             list.add(add);
             if (element.isStart()) {
-                list.add(new ServerModelDeploymentStartUpdate(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash()));
+                list.add(new ServerModelDeploymentStartUpdate(element.getUniqueName()));
             }
         }
 
