@@ -81,6 +81,10 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
         else throw new IllegalStateException("Unknown module " + module);
     }
 
+    public void relinkModule(Module module) throws ModuleLoadException {
+        relink(module);
+    }
+
     public String toString() {
         return "as-deployment";
     }

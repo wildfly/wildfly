@@ -22,22 +22,14 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.io.IOException;
-
-import java.util.List;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleSpec;
-import org.jboss.modules.MultiplePathFilterBuilder;
-import org.jboss.modules.PathFilter;
-import org.jboss.modules.PathFilters;
 
 /**
  * Processor responsible for creating a module for the deployment and attach it to the deployment.
@@ -53,104 +45,33 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentModuleLoader deploymentModuleLoader  = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
-        if(deploymentModuleLoader == null) {
+        final DeploymentModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
+        if (deploymentModuleLoader == null) {
             return;
         }
-
-        final ResourceRoot mainRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
-
-        if (mainRoot == null) {
-            return;
-        }
-
-        final List<ResourceRoot> additionalRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        final List<ModuleDependency> dependencies = deploymentUnit.getAttachment(Attachments.MODULE_DEPENDENCIES);
-
-        // TODO: account for nested DUs here
         final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentUnit.getName());
-
-        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
-
-        // Add internal resource roots
-        addResourceRoot(specBuilder, mainRoot);
-        if(additionalRoots != null) for (ResourceRoot additionalRoot : additionalRoots) {
-            addResourceRoot(specBuilder, additionalRoot);
-        }
-
-        // Add external resource roots
-        // TODO: Class-Path items
-        // TODO: Extension-List items
-
-        // Add all module dependencies
-        // TODO: read this from config
-        final boolean childFirst = false;
-        if (childFirst) {
-            specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-        }
-        for (ModuleDependency dependency : dependencies) {
-            final List<FilterSpecification> importFilters = dependency.getImportFilters();
-            final List<FilterSpecification> exportFilters = dependency.getExportFilters();
-            final PathFilter importFilter;
-            final PathFilter exportFilter;
-            final MultiplePathFilterBuilder importBuilder = PathFilters.multiplePathFilterBuilder(true);
-            for (FilterSpecification filter : importFilters) {
-                importBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
-            }
-            if (dependency.isImportServices()) {
-                importBuilder.addFilter(PathFilters.getMetaInfServicesFilter(), true);
-            }
-            importBuilder.addFilter(PathFilters.getMetaInfSubdirectoriesFilter(), false);
-            importBuilder.addFilter(PathFilters.getMetaInfFilter(), false);
-            importFilter = importBuilder.create();
-            if (exportFilters.isEmpty()) {
-                exportFilter = PathFilters.acceptAll();
-            } else {
-                final MultiplePathFilterBuilder exportBuilder = PathFilters.multiplePathFilterBuilder(dependency.isExport());
-                for (FilterSpecification filter : exportFilters) {
-                    exportBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
-                }
-                exportFilter = exportBuilder.create();
-            }
-            DependencySpec depSpec = DependencySpec.createModuleDependencySpec(importFilter, exportFilter, dependency.getModuleLoader(), dependency.getIdentifier(), dependency.isOptional());
-            specBuilder.addDependency(depSpec);
-        }
-        if (! childFirst) {
-            specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-        }
-
-        final ModuleSpec moduleSpec = specBuilder.create();
-
-        deploymentModuleLoader.addModuleSpec(moduleSpec);
-
         try {
             final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
+            deploymentModuleLoader.relinkModule(module);
             deploymentUnit.putAttachment(Attachments.MODULE, module);
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e);
         }
     }
 
-    private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource) throws DeploymentUnitProcessingException {
-        try {
-            specBuilder.addResourceRoot(new VFSResourceLoader(resource.getRootName(), resource.getRoot()));
-        } catch(IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e);
-        }
-    }
-
     public void undeploy(DeploymentUnit context) {
         final DeploymentModuleLoader deploymentModuleLoader = context.getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
-        if(deploymentModuleLoader == null) {
+        if (deploymentModuleLoader == null) {
             return;
         }
         final Module module = context.getAttachment(Attachments.MODULE);
         if (module != null) {
-            deploymentModuleLoader.removeModuleSpec(module.getIdentifier());
             deploymentModuleLoader.removeModule(module);
+            context.removeAttachment(Attachments.MODULE);
         }
     }
 }

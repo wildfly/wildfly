@@ -116,6 +116,12 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService.getDeploymentUnitInjector());
             phaseServiceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
             phaseServiceBuilder.addDependency(context.getController().getName());
+
+            final List<ServiceName> nextPhaseDeps = processorContext.getAttachment(Attachments.NEXT_PHASE_DEPS);
+            if(nextPhaseDeps != null) {
+                phaseServiceBuilder.addDependencies(nextPhaseDeps);
+            }
+
             phaseServiceBuilder.install();
         }
         serviceNames = new HashSet<ServiceName>(serviceTarget.getSet());

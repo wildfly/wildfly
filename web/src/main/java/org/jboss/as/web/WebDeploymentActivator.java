@@ -48,7 +48,7 @@ class WebDeploymentActivator {
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()));
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_INDEX_WAR, new WarAnnotationIndexProcessor());
-        updateContext.addDeploymentProcessor(Phase.MODULARIZE, Phase.MODULARIZE_WAR, new WarModuleConfigProcessor());
+        updateContext.addDeploymentProcessor(Phase.CONFIGURE_MODULE, Phase.CONFIGURE_MODULE_WAR, new WarModuleConfigProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());

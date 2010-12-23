@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Deployment unit processor that will extract module dependencies from an archive.
@@ -50,6 +51,9 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
         if(manifest == null)
             return;
 
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
+
         final String dependencyString = manifest.getMainAttributes().getValue("Dependencies");
         if(dependencyString == null)
             return;
@@ -63,7 +67,13 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "optional");
-            ModuleDependency dependency = new ModuleDependency(Module.getSystemModuleLoader(), dependencyId, optional, export, false);
+            final ModuleLoader dependencyLoader;
+            if(dependencyId.getName().startsWith("deployment.")) {
+                dependencyLoader = deploymentModuleLoader;
+            } else {
+                dependencyLoader = Module.getSystemModuleLoader();
+            }
+            ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, false);
             phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
         }
     }

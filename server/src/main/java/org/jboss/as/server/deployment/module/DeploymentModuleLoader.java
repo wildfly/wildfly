@@ -24,6 +24,8 @@ package org.jboss.as.server.deployment.module;
 
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadError;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 
@@ -55,4 +57,6 @@ public abstract class DeploymentModuleLoader extends ModuleLoader {
      * @param module The module identifier
      */
     public abstract void removeModule(Module module);
+
+    public abstract void relinkModule(Module module) throws ModuleLoadException;
 }

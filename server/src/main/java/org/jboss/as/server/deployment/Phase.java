@@ -110,6 +110,7 @@ public enum Phase {
      */
     PARSE(null),
     DEPENDENCIES(null),
+    CONFIGURE_MODULE(null),
     MODULARIZE(null),
     POST_MODULE(null),
     INSTALL(null),
@@ -148,6 +149,7 @@ public enum Phase {
     public static final int STRUCTURE_NESTED_JAR_RA                     = 0x200;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x300;
     public static final int STRUCTURE_WAR_DEPLOYMENT                    = 0x400;
+    public static final int STRUCTURE_DEPLOYMENT_MODULE_LOADER          = 0x500;
 
     // VALIDATE
     // (empty)
@@ -182,10 +184,11 @@ public enum Phase {
     public static final int DEPENDENCIES_WAR_MODULE                     = 0x600;
     public static final int DEPENDENCIES_ARQUILLIAN                     = 0x700;
 
+    // CONFIGURE_MODULE
+    public static final int CONFIGURE_MODULE_WAR                        = 0x100;
+    public static final int CONFIGURE_MODULE_SPEC                       = 0x200;
+
     // MODULARIZE
-    public static final int MODULARIZE_WAR                              = 0x100;
-    public static final int MODULARIZE_CONFIG                           = 0x200;
-    public static final int MODULARIZE_DEPLOYMENT_MODULE_LOADER         = 0x300;
     public static final int MODULARIZE_DEPLOYMENT                       = 0x400;
 
     // POST_MODULE
