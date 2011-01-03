@@ -85,7 +85,7 @@ public enum Phase {
      * <p>
      * Upon entry, this phase performs the following actions:
      * <ul>
-     * <li>The JAR MANIFEST is read and made available during {@link #PARSE_MANIFEST}.</li>
+     * <li>The root content's MANIFEST is read and made available during {@link #PARSE_MANIFEST}.</li>
      * <li>The annotation index for the root structure is calculated during {@link #PARSE_ANNOTATION_INDEX}.</li>
      * </ul>
      * <p>
@@ -106,9 +106,35 @@ public enum Phase {
      * <li>{@link Attachments#EXTENSION_LIST_ENTRIES} - extension-list entries found in the manifest and elsewhere.</li>
      * </ul>
      * <p>
-     *
      */
     PARSE(null),
+    /**
+     * In this phase, the full structure of the deployment unit is made available and module dependencies may be assembled.
+     * <p>
+     * Upon entry, this phase performs the following actions:
+     * <ul>
+     * <li>Any additional external structure is mounted during {@link #XXX}</li>
+     * <li></li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following phase attachments:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following deployment unit attachments, in addition to those defined
+     * for the previous phase:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     * In this phase, these phase attachments may be modified:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+
+     */
     DEPENDENCIES(null),
     CONFIGURE_MODULE(null),
     MODULARIZE(null),
@@ -116,6 +142,11 @@ public enum Phase {
     INSTALL(null),
     CLEANUP(null),
     ;
+
+    /**
+     * This is the key for the attachment to use as the phase's "value".  The attachment is taken from
+     * the deployment unit.  If a phase doesn't have a single defining "value", {@code null} is specified.
+     */
     private final AttachmentKey<?> phaseKey;
 
     private Phase(final AttachmentKey<?> key) {
@@ -150,9 +181,6 @@ public enum Phase {
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x300;
     public static final int STRUCTURE_WAR_DEPLOYMENT                    = 0x400;
     public static final int STRUCTURE_DEPLOYMENT_MODULE_LOADER          = 0x500;
-
-    // VALIDATE
-    // (empty)
 
     // PARSE
     public static final int PARSE_MANIFEST                              = 0x0100;
