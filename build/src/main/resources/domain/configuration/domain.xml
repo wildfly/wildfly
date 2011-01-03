@@ -23,6 +23,7 @@
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+                            urn:jboss:domain:ejb3:1.0 jboss-ejb3.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd
                             urn:jboss:domain:ee:1.0 jboss-ee.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
@@ -40,6 +41,7 @@
 
     <extensions>
         <extension module="org.jboss.as.connector"/>
+        <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
@@ -57,6 +59,10 @@
     </extensions>
 
     <profiles>
+        <profile name="ejb3">
+            <subsystem xmlns="urn:jboss:domain:ejb3:1.0"/>
+        </profile>
+        
         <profile name="osgi">
             <subsystem xmlns="urn:jboss:domain:osgi:1.0">
                 <properties>
@@ -167,6 +173,7 @@
              </subsystem>
         </profile>
         <profile name="default">
+            <include profile="ejb3"/>
             <include profile="messaging"/>
             <include profile="osgi"/>
             <include profile="web"/>

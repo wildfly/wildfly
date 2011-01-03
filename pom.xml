@@ -153,6 +153,7 @@
         <module>domain-client</module>
         <module>domain-controller</module>
         <module>ee</module>
+        <module>ejb3</module>
         <module>host-controller</module>
         <module>jmx</module>
         <module>logging</module>
@@ -440,6 +441,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-ejb3</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

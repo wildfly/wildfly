@@ -287,6 +287,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-ee"/>
         </module-def>
 
+        <module-def name="org.jboss.as.ejb3">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-ejb3"/>
+        </module-def>
+
         <module-def name="org.jboss.as.host-controller">
             <maven-resource group="org.jboss.as" artifact="jboss-as-host-controller"/>
         </module-def>
