@@ -509,7 +509,7 @@
             <maven-resource group="org.picketbox" artifact="jboss-security-spi"/>
             <maven-resource group="org.picketbox" artifact="jbosssx"/>
             <maven-resource group="org.picketbox" artifact="picketbox-bare"/>
-            </module-def>
+        </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">
             <maven-resource group="org.slf4j" artifact="jcl-over-slf4j"/>

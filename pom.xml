@@ -1411,10 +1411,10 @@
             </dependency>
 
             <dependency>
-               <groupId>org.jboss.metadata</groupId>
-               <artifactId>jboss-metadata-common</artifactId>
-               <version>${version.org.jboss.metadata.common}</version>
-               <exclusions>
+                <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-common</artifactId>
+                <version>${version.org.jboss.metadata.common}</version>
+                <exclusions>
                     <exclusion>
                         <groupId>org.jboss</groupId>
                         <artifactId>jboss-common-core</artifactId>
