@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -22,29 +20,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.aggregate">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:jboss:domain:weld:1.0"
+            xmlns="urn:jboss:domain:weld:1.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
 
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
+    <!-- The naming subsystem root element -->
+    <xs:element name="subsystem" type="subsystem"/>
 
-    <dependencies>
-        <module name="org.jboss.as.connector" />
-        <module name="org.jboss.as.domain" />
-        <module name="org.jboss.as.domain-client" />
-        <module name="org.jboss.as.jmx" />
-        <module name="org.jboss.as.logging" />
-        <module name="org.jboss.as.managed-beans" />
-        <module name="org.jboss.as.messaging" />
-        <module name="org.jboss.as.naming" />
-        <module name="org.jboss.as.osgi" />
-        <module name="org.jboss.as.remoting" />
-        <module name="org.jboss.as.sar" />
-        <module name="org.jboss.as.server" />
-        <module name="org.jboss.as.threads" />
-        <module name="org.jboss.as.transactions" />
-        <module name="org.jboss.as.web" />
-        <module name="org.jboss.as.weld" />
-    </dependencies>
+    <xs:complexType name="subsystem"/>
 
-</module>
+</xs:schema>

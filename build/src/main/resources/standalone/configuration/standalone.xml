@@ -20,13 +20,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:1.0" 
+<server xmlns="urn:jboss:domain:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
                             urn:jboss:domain:connector:1.0 jboss-connector.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
-                            urn:jboss:domain:ee:1.0 jboss-ee.xsd                            
+                            urn:jboss:domain:ee:1.0 jboss-ee.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
@@ -54,10 +54,11 @@
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web" />
-        <extension module="org.jboss.as.security"/>
+        <extension module="org.jboss.as.weld" />
     </extensions>
 
     <management interface="default" port="9999"/>
@@ -116,7 +117,7 @@
                 <keepalive-time time="10" unit="seconds"/>
             </bounded-queue-thread-pool>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />        
+        <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:security:1.0"/>
@@ -126,6 +127,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment socket-binding="txn-socket-process-id"/>
@@ -180,7 +182,7 @@
                 org.jboss.osgi.spi.util;version=1.0,
                 org.jboss.osgi.testing;version=1.0,
                 org.jboss.osgi.vfs;version=1.0,
-                
+
                 org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.osgi,
                 org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
                 org.jboss.shrinkwrap.impl.base,
@@ -202,7 +204,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-            <journal-file-size>102400</journal-file-size> 
+            <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
             <journal-type>NIO</journal-type>
             <!-- disable messaging persistence -->
@@ -225,12 +227,12 @@
                </netty-acceptor>
             </acceptors>
 
-            <security-settings>   
-               <security-setting match="#">   
-                   <permission type="createNonDurableQueue" roles="guest"/>   
+            <security-settings>
+               <security-setting match="#">
+                   <permission type="createNonDurableQueue" roles="guest"/>
                    <permission type="deleteNonDurableQueue" roles="guest"/>
-                    <permission type="consume" roles="guest"/>   
-                    <permission type="send" roles="guest"/>   
+                    <permission type="consume" roles="guest"/>
+                    <permission type="send" roles="guest"/>
                </security-setting>
             </security-settings>
 

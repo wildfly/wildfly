@@ -35,7 +35,7 @@ public class WarDeploymentMarker {
         context.putAttachment(Attachments.WAR_DEPLOYMENT_MARKER, true);
     }
 
-    static boolean isWarDeployment(final DeploymentUnit context) {
+    public static boolean isWarDeployment(final DeploymentUnit context) {
         final Boolean result = context.getAttachment(Attachments.WAR_DEPLOYMENT_MARKER);
         return result != null && result;
     }

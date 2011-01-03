@@ -49,10 +49,11 @@
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web"/>
-        <extension module="org.jboss.as.security"/>
+        <extension module="org.jboss.as.weld" />
     </extensions>
 
     <profiles>
@@ -84,7 +85,7 @@
                 </modules>
             </subsystem>
         </profile>
-        
+
         <profile name="messaging">
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
@@ -227,6 +228,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
 
             <subsystem xmlns="urn:jboss:domain:connector:1.0">
                 <archive-validation enabled="true"/>
@@ -256,7 +258,7 @@
         </profile>
     </profiles>
 
-    <!--  
+    <!--
          Named interfaces that can be referenced elsewhere. Different
          mechanisms for associating an IP address with the interface
          are shown.

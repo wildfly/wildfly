@@ -32,7 +32,7 @@
       <artifactId>jboss-parent</artifactId>
       <version>6-beta-1</version>
     </parent>
-    
+
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-parent</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
@@ -54,6 +54,7 @@
 
         <!-- Dependency versions. Please keep alphabetical -->
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
+        <version.com.google.guava>r06</version.com.google.guava>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP1</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-api>2.0.2-FCS</version.javax.faces.jsf-api>
@@ -68,9 +69,11 @@
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
+        <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP6</version.org.jboss.arquillian>
+        <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.ironjacamar>1.0.0.Beta3</version.org.jboss.ironjacamar>
@@ -119,6 +122,8 @@
         <version.org.jboss.stdio.jboss-stdio>1.0.0.CR3</version.org.jboss.stdio.jboss-stdio>
         <version.org.jboss.threads.jboss-threads>2.0.0.CR8</version.org.jboss.threads.jboss-threads>
         <version.jboss.web>7.0.0.Beta1</version.jboss.web>
+        <version.org.jboss.weld.weld>1.1.0.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
@@ -127,7 +132,9 @@
         <version.org.picketbox>4.0.0.Alpha2</version.org.picketbox>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
+        <version.org.slf4j.slf4j-ext>1.5.8</version.org.slf4j.slf4j-ext>
         <version.osgi>4.2.0</version.osgi>
+        <version.ch.qos.cal10n.cal10n-api>0.7.2</version.ch.qos.cal10n.cal10n-api>
 
         <!-- Surefire args -->
         <surefire.jpda.args />
@@ -164,6 +171,7 @@
         <module>threads</module>
         <module>transactions</module>
         <module>web</module>
+        <module>weld</module>
     </modules>
 
     <build>
@@ -545,6 +553,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-weld</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-testsuite-protocol-base</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -558,9 +572,21 @@
             <!-- External Dependencies -->
 
             <dependency>
+                <groupId>ch.qos.cal10n</groupId>
+                <artifactId>cal10n-api</artifactId>
+                <version>${version.ch.qos.cal10n.cal10n-api}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${version.com.h2database.h2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${version.com.google.guava}</version>
             </dependency>
 
             <dependency>
@@ -668,6 +694,12 @@
                         <artifactId>tools</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.javax.persistence</groupId>
+                <artifactId>hibernate-jpa-2.0-api</artifactId>
+                <version>${version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api}</version>
             </dependency>
 
             <dependency>
@@ -792,6 +824,18 @@
                         <artifactId>jboss-transaction-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.interceptor</groupId>
+                <artifactId>jboss-interceptor-core</artifactId>
+                <version>${version.org.jboss.interceptor}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.interceptor</groupId>
+                <artifactId>jboss-interceptor-spi</artifactId>
+                <version>${version.org.jboss.interceptor}</version>
             </dependency>
 
             <dependency>
@@ -1504,6 +1548,70 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-core</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.enterprise</groupId>
+                        <artifactId>cdi-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.interceptor</groupId>
+                        <artifactId>jboss-interceptor-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.interceptor</groupId>
+                        <artifactId>jboss-interceptor-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>jsr250-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-ext</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ch.qos.cal10n</groupId>
+                        <artifactId>cal10n-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-spi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-api</artifactId>
+                <version>${version.org.jboss.weld.weld-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-spi</artifactId>
+                <version>${version.org.jboss.weld.weld-api}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.xnio</groupId>
                 <artifactId>xnio-api</artifactId>
                 <version>${version.org.jboss.xnio.xnio-api}</version>
@@ -1620,6 +1728,12 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${version.org.slf4j.slf4j-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-ext</artifactId>
+                <version>${version.org.slf4j.slf4j-ext}</version>
             </dependency>
 
         </dependencies>

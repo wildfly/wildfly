@@ -22,38 +22,30 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.server">
-
-    <main-class name="org.jboss.as.server.DomainServerMain"/>
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.weld.core">
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module name="ch.qos.cal10n" />
+        <module name="com.google.guava"/>
         <module name="javax.api"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.jandex"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.marshalling.river" services="import"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.logmanager"/>
-        <module name="org.jboss.logmanager.log4j"/>
-        <module name="org.jboss.vfs"/>
-        <module name="org.jboss.stdio"/>
-        <module name="org.jboss.threads"/>
-        <module name="org.jboss.as.deployment-repository"/>
-        <module name="org.jboss.as.domain"/>
-        <module name="org.jboss.as.logging"/>
-        <module name="org.jboss.as.naming"/>
-        <module name="org.jboss.as.osgi"/>
-        <module name="org.jboss.as.process-controller"/>
-        <module name="org.jboss.as.protocol"/>
-        <module name="org.jboss.as.remoting"/>
-        <module name="org.jboss.as.threads"/>
-        <module name="org.jboss.as.transactions"/>
-        <module name="org.jboss.as.weld"/>
+        <module name="javax.annotation.api"/>
+        <module name="javax.el.api" />
+        <module name="javax.enterprise.api"/>
+        <module name="javax.inject.api"/>
+        <module name="javax.interceptor.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.transaction.api"/>
+        <module name="javax.validation.api"/>
+        <module name="org.javassist"/>
+        <module name="org.jboss.interceptor"/>
+        <module name="org.jboss.interceptor.spi"/>
+        <module name="org.jboss.weld.api" />
+        <module name="org.jboss.weld.spi" />
+        <module name="org.slf4j" />
+        <module name="org.slf4j.ext" />
     </dependencies>
 </module>

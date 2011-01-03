@@ -22,29 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.aggregate">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.interceptor.spi">
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.jboss.as.connector" />
-        <module name="org.jboss.as.domain" />
-        <module name="org.jboss.as.domain-client" />
-        <module name="org.jboss.as.jmx" />
-        <module name="org.jboss.as.logging" />
-        <module name="org.jboss.as.managed-beans" />
-        <module name="org.jboss.as.messaging" />
-        <module name="org.jboss.as.naming" />
-        <module name="org.jboss.as.osgi" />
-        <module name="org.jboss.as.remoting" />
-        <module name="org.jboss.as.sar" />
-        <module name="org.jboss.as.server" />
-        <module name="org.jboss.as.threads" />
-        <module name="org.jboss.as.transactions" />
-        <module name="org.jboss.as.web" />
-        <module name="org.jboss.as.weld" />
+    
     </dependencies>
-
 </module>

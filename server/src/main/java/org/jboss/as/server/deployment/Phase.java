@@ -214,6 +214,7 @@ public enum Phase {
     public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x1400;
     public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1500;
     public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1600;
+    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1700;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -225,6 +226,7 @@ public enum Phase {
     public static final int DEPENDENCIES_ARQUILLIAN                     = 0x700;
     public static final int DEPENDENCIES_CLASS_PATH                     = 0x800;
     public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x900;
+    public static final int DEPENDENCIES_WELD                           = 0xA00;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_WAR                        = 0x100;
@@ -236,6 +238,8 @@ public enum Phase {
     // POST_MODULE
     public static final int POST_MODULE_ANNOTATION_WAR                  = 0x100;
     public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x200;
+    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x300;
+    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x400;
 
     // INSTALL
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;
@@ -250,10 +254,11 @@ public enum Phase {
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0A00;
     public static final int INSTALL_DS_DEPLOYMENT                       = 0x0B00;
     public static final int INSTALL_MANAGED_BEAN_DEPLOYMENT             = 0x0C00;
-    public static final int INSTALL_BEAN_CONTAINER                      = 0x0D00;
-    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x0E00;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x0F00;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1000;
+    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x0D00;
+    public static final int INSTALL_BEAN_CONTAINER                      = 0x0E00;
+    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x0F00;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1000;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1100;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;
