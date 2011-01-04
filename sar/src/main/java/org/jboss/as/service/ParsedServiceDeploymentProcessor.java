@@ -22,20 +22,28 @@
 
 package org.jboss.as.service;
 
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import javax.management.MBeanServer;
 
+import org.jboss.as.jmx.MBeanRegistrationService;
+import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.service.descriptor.JBossServiceConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.jmx.MBeanRegistrationService;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
@@ -53,14 +61,6 @@ import org.jboss.msc.value.LookupSetMethodValue;
 import org.jboss.msc.value.MethodValue;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
-
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * DeploymentUnit processor responsible for taking JBossServiceXmlDescriptor configuration and creating the
@@ -195,7 +195,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     }
 
     private Injector<Object> getPropertyInjector(final Value<Class<?>> classValue, final String propertyName, final CreateDestroyService<?> startStopService, final Value<?> value) {
-        return new MethodInjector<Object>(cached(new LookupSetMethodValue(classValue, propertyName)), startStopService, null, Collections.singletonList(value));
+        return new MethodInjector<Object>(cached(new LookupSetMethodValue(classValue, propertyName)), startStopService, Values.nullValue(), Collections.singletonList(value));
     }
 
     private ServiceName convert(final String name) {
