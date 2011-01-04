@@ -22,14 +22,14 @@
 
 package org.jboss.as.server.deployment;
 
-import java.io.Closeable;
 import java.util.jar.Manifest;
-import org.jboss.as.server.deployment.module.ClassPathEntry;
+
+import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.module.ClassPathEntry;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
@@ -97,6 +97,11 @@ public final class Attachments {
      * The server deployment repository
      */
     public static final AttachmentKey<ServerDeploymentRepository> SERVER_DEPLOYMENT_REPOSITORY = AttachmentKey.create(ServerDeploymentRepository.class);
+    /**
+     * An attachment that indicates if a {@link ResourceRoot} should be indexed by the {@link AnnotationIndexProcessor}. If this
+     * is not present then the resource root is indexed by default.
+     */
+    public static final AttachmentKey<Boolean> INDEX_RESOURCE_ROOT = AttachmentKey.create(Boolean.class);
 
     //
     // VALIDATE
@@ -106,9 +111,11 @@ public final class Attachments {
     // PARSE
     //
     /**
-     * The annotation index for this deployment.
+     * The annotation index for this deployment. This is attached to the {@link ResourceRoot}s of the deployment that contain
+     * the annotations
      */
     public static final AttachmentKey<Index> ANNOTATION_INDEX = AttachmentKey.create(Index.class);
+
 
     //
     // DEPENDENCIES

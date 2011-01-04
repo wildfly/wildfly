@@ -22,6 +22,10 @@
 
 package org.jboss.as.server.deployment.annotation;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,13 +39,11 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
-import java.io.InputStream;
-import java.util.List;
-
 /**
- * Deployment unit processor responsible for creating and attaching an annotation index for a deployment unit.
+ * Deployment unit processor responsible for creating and attaching an annotation index for a resource root
  *
  * @author John E. Bailey
+ * @author Stuart Douglas
  */
 public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
 
@@ -53,28 +55,42 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.getAttachment(Attachments.ANNOTATION_INDEX) != null)
-            return;
+        final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
+        final List<ResourceRoot> resourceRoots = phaseContext.getDeploymentUnit().getAttachment(Attachments.RESOURCE_ROOTS);
+        if (resourceRoots != null) {
+            allResourceRoots.addAll(resourceRoots);
+        }
+        allResourceRoots.add(phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT));
 
-        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile virtualFile = resourceRoot.getRoot();
-        final Indexer indexer = new Indexer();
-        try {
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
-            for(VirtualFile classFile : classChildren) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = classFile.openStream();
-                    indexer.index(inputStream);
-                } finally {
-                    VFSUtils.safeClose(inputStream);
-                }
+        for (ResourceRoot resourceRoot : allResourceRoots) {
+            if (resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX) != null) {
+                continue;
             }
-            final Index index = indexer.complete();
-            deploymentUnit.putAttachment(Attachments.ANNOTATION_INDEX, index);
-        } catch(Throwable t) {
-            throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
+            // if this flag is present and set to false then do not index the resource
+            Boolean shouldIndexResource = resourceRoot.getAttachment(Attachments.INDEX_RESOURCE_ROOT);
+            if (shouldIndexResource != null && !shouldIndexResource) {
+                continue;
+            }
+
+            final VirtualFile virtualFile = resourceRoot.getRoot();
+            final Indexer indexer = new Indexer();
+            try {
+                final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
+                        VisitorAttributes.RECURSE_LEAVES_ONLY));
+                for (VirtualFile classFile : classChildren) {
+                    InputStream inputStream = null;
+                    try {
+                        inputStream = classFile.openStream();
+                        indexer.index(inputStream);
+                    } finally {
+                        VFSUtils.safeClose(inputStream);
+                    }
+                }
+                final Index index = indexer.complete();
+                resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, index);
+            } catch (Throwable t) {
+                throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
+            }
         }
     }
 

@@ -22,6 +22,9 @@
 
 package org.jboss.as.connector.deployers.processors;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeploymentService;
@@ -29,13 +32,16 @@ import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.TxnServices;
+import org.jboss.jandex.Index;
 import org.jboss.jca.common.annotations.Annotations;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
@@ -45,8 +51,8 @@ import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -88,9 +94,11 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             // Annotation merging
             Annotations annotator = new Annotations();
-            AnnotationRepository repository = new JandexAnnotationRepositoryImpl(
-                    deploymentUnit.getAttachment(Attachments.ANNOTATION_INDEX), classLoader);
-            cmd = annotator.merge(cmd, repository, classLoader);
+            Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
+            for (Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
+                AnnotationRepository repository = new JandexAnnotationRepositoryImpl(entry.getValue(), classLoader);
+                    cmd = annotator.merge(cmd, repository, classLoader);
+            }
 
             // Validate metadata
             cmd.validate();
