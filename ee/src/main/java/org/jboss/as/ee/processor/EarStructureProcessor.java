@@ -23,13 +23,11 @@
 package org.jboss.as.ee.processor;
 
 import static org.jboss.as.ee.processor.EarDeploymentMarker.markDeployment;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
