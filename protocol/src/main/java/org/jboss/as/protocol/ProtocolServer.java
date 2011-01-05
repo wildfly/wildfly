@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
@@ -93,9 +94,16 @@ public final class ProtocolServer {
                                 }
                             }
                             safeHandleConnection(socket);
+                        } catch (SocketException e) {
+                            if (!stop) {
+                                // we do not log if service is stopped, we assume the exception was caused by closing the
+                                // ServerSocket
+                                log.errorf(e, "Failed to accept a connection");
+                            }
                         } catch (IOException e) {
                             log.errorf(e, "Failed to accept a connection");
                         }
+
                     }
                 } finally {
                     StreamUtils.safeClose(serverSocket);
@@ -117,6 +125,7 @@ public final class ProtocolServer {
         final Thread thread = this.thread;
         boundAddress = null;
         if (thread != null) {
+            // thread.interupt may not actually interupt socket.accept()
             thread.interrupt();
         }
         StreamUtils.safeClose(serverSocket);
