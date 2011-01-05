@@ -180,7 +180,8 @@ public enum Phase {
     public static final int STRUCTURE_NESTED_JAR_RA                     = 0x200;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x300;
     public static final int STRUCTURE_WAR_DEPLOYMENT                    = 0x400;
-    public static final int STRUCTURE_DEPLOYMENT_MODULE_LOADER          = 0x500;
+    public static final int STRUCTURE_EAR_DEPLOYMENT                    = 0x500;
+    public static final int STRUCTURE_DEPLOYMENT_MODULE_LOADER          = 0x600;
 
     // PARSE
     public static final int PARSE_MANIFEST                              = 0x0100;

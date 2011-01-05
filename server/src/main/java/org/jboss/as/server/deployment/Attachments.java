@@ -103,6 +103,11 @@ public final class Attachments {
      */
     public static final AttachmentKey<Boolean> INDEX_RESOURCE_ROOT = AttachmentKey.create(Boolean.class);
 
+    /**
+     * The list of ear child roots detected.
+     */
+    public static final AttachmentKey<AttachmentList<ResourceRoot>> EAR_CHILD_ROOTS = AttachmentKey.createList(ResourceRoot.class);
+
     //
     // VALIDATE
     //
