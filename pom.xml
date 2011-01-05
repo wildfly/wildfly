@@ -144,6 +144,7 @@
         <module>domain</module>
         <module>domain-client</module>
         <module>domain-controller</module>
+        <module>ee</module>
         <module>host-controller</module>
         <module>jmx</module>
         <module>logging</module>
@@ -423,6 +424,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-domain-controller</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-ee</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
