@@ -21,22 +21,25 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.metadata.parser.servlet.WebFragmentMetaDataParser;
+import org.jboss.as.metadata.parser.util.NoopXmlResolver;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.metadata.parser.servlet.WebFragmentMetaDataParser;
-import org.jboss.as.metadata.parser.util.NoopXmlResolver;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-import org.jboss.as.web.deployment.helpers.DeploymentStructure;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -59,10 +62,9 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
             webFragments = new HashMap<String, WebFragmentMetaData>();
             warMetaData.setWebFragmentsMetaData(webFragments);
         }
-        DeploymentStructure structure = deploymentUnit.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
-        assert structure != null;
-        assert structure.getEntries() != null;
-        for (DeploymentStructure.ClassPathEntry resourceRoot : structure.getEntries()) {
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        assert resourceRoots != null;
+        for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(WEB_FRAGMENT_XML);
                 if (webFragment.exists() && webFragment.isFile()) {
@@ -72,7 +74,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                         inputFactory.setXMLResolver(NoopXmlResolver.create());
                         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-                        webFragments.put(resourceRoot.getName(), WebFragmentMetaDataParser.parse(xmlReader));
+                        webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader));
                     } catch (Exception e) {
                         throw new DeploymentUnitProcessingException("Failed to parse " + webFragment, e);
                     } finally {

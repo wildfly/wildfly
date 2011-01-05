@@ -34,11 +34,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.web.deployment.helpers.DeploymentStructure;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -68,9 +69,8 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
-        DeploymentStructure structure = deploymentUnit.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
-        assert structure != null;
-        assert structure.getEntries() != null;
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        assert resourceRoots != null;
 
         WebMetaData specMetaData = warMetaData.getWebMetaData();
         boolean isComplete = false;
@@ -94,9 +94,9 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         Map<String, VirtualFile> scis = new HashMap<String, VirtualFile>();
         boolean fragmentFound = false;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
-        for (DeploymentStructure.ClassPathEntry resourceRoot : structure.getEntries()) {
+        for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
-                jarsSet.add(resourceRoot.getName());
+                jarsSet.add(resourceRoot.getRootName());
                 // Find overlays
                 VirtualFile overlay = resourceRoot.getRoot().getChild("META-INF/resources");
                 if (overlay.exists()) {
@@ -106,7 +106,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 VirtualFile sci = resourceRoot.getRoot()
                         .getChild("META-INF/services/javax.servlet.ServletContainerInitializer");
                 if (sci.exists()) {
-                    scis.put(resourceRoot.getName(), sci);
+                    scis.put(resourceRoot.getRootName(), sci);
                 }
             }
         }

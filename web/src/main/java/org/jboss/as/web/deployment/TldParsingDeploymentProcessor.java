@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -30,15 +32,14 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.metadata.parser.jsp.TldMetaDataParser;
+import org.jboss.as.metadata.parser.util.NoopXmlResolver;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.metadata.parser.jsp.TldMetaDataParser;
-import org.jboss.as.metadata.parser.util.NoopXmlResolver;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-import org.jboss.as.web.deployment.helpers.DeploymentStructure;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -69,10 +70,9 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         tldsMetaData.setTlds(tlds);
         // TLDs are located in WEB-INF or any subdir (except the top level "classes" and "lib")
         // and in JARs from WEB-INF/lib, in META-INF or any subdir
-        DeploymentStructure structure = deploymentUnit.getAttachment(DeploymentStructure.ATTACHMENT_KEY);
-        assert structure != null;
-        assert structure.getEntries() != null;
-        for (DeploymentStructure.ClassPathEntry resourceRoot : structure.getEntries()) {
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        assert resourceRoots != null;
+        for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(META_INF);
                 if (webFragment.exists() && webFragment.isDirectory()) {

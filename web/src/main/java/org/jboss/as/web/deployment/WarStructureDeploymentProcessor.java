@@ -37,16 +37,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
-import org.jboss.as.web.deployment.helpers.DeploymentStructure;
-import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -95,18 +87,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // TODO: This needs to be ported to add additional resource roots the standard way
         final MountHandle mountHandle = deploymentResourceRoot.getMountHandle();
         try {
-            final ClassPathEntry[] entries = createClassPathEntries(deploymentRoot, mountHandle);
-            final DeploymentStructure structure = new DeploymentStructure(entries);
-            deploymentUnit.putAttachment(DeploymentStructure.ATTACHMENT_KEY, structure);
-
-            final ServiceTarget target = phaseContext.getServiceTarget();
-            final ServiceName sName = phaseContext.getPhaseServiceName().append("war", "structure");
-            target.addService(sName, new DeploymentStructureService(structure)).addDependency(phaseContext.getPhaseServiceName()).install();
-            target.addDependency(sName);
 
             // add standard resource roots, this should eventually replace ClassPathEntry
-            final ResourceRoot[] resourceRoots = createResourceRoots(deploymentUnit
-                    .getAttachment(DeploymentStructure.ATTACHMENT_KEY));
+            final List<ResourceRoot> resourceRoots = createResourceRoots(deploymentRoot, mountHandle);
             for (ResourceRoot root : resourceRoots) {
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
             }
@@ -135,31 +118,16 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * @return the resource roots
      * @throws IOException for any error
      */
-    ClassPathEntry[] createClassPathEntries(final VirtualFile deploymentRoot, MountHandle mountHandle) throws IOException,
+    private List<ResourceRoot> createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle)
+            throws IOException,
             DeploymentUnitProcessingException {
-        final List<ClassPathEntry> entries = new ArrayList<ClassPathEntry>();
+        final List<ResourceRoot> entries = new ArrayList<ResourceRoot>();
         // WEB-INF classes
-        entries.add(new ClassPathEntry(deploymentRoot.getChild(WEB_INF_CLASSES), null));
+        entries.add(new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
+                .getChild(WEB_INF_CLASSES), null, false));
         // WEB-INF lib
         createWebInfLibResources(deploymentRoot, entries);
-        return entries.toArray(new ClassPathEntry[entries.size()]);
-    }
-
-    private ResourceRoot[] createResourceRoots(final DeploymentStructure structure) {
-        if (structure == null) {
-            return NO_ROOTS;
-        }
-        final ClassPathEntry[] entries = structure.getEntries();
-        if (entries == null || entries.length == 0) {
-            return NO_ROOTS;
-        }
-        final int length = entries.length;
-        final ResourceRoot[] roots = new ResourceRoot[length];
-        for (int i = 0; i < length; i++) {
-            final ClassPathEntry entry = entries[i];
-            roots[i] = new ResourceRoot(entry.getName(), entry.getRoot(), entry.getMountHandle(), false);
-        }
-        return roots;
+        return entries;
     }
 
     /**
@@ -169,49 +137,19 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * @param resourcesRoots the resource root map
      * @throws IOException for any error
      */
-    void createWebInfLibResources(final VirtualFile deploymentRoot, List<ClassPathEntry> entries) throws IOException, DeploymentUnitProcessingException {
+    void createWebInfLibResources(final VirtualFile deploymentRoot, List<ResourceRoot> entries) throws IOException,
+            DeploymentUnitProcessingException {
         final VirtualFile webinfLib = deploymentRoot.getChild(WEB_INF_LIB);
         if(webinfLib.exists()) {
             final List<VirtualFile> archives = webinfLib.getChildren(DEFAULT_WEB_INF_LIB_FILTER);
             for(final VirtualFile archive : archives) {
                 try {
                     final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
-                    entries.add(new ClassPathEntry(archive, closable));
+                    entries.add(new ResourceRoot(archive.getName(), archive, new MountHandle(closable), false));
                 } catch (IOException e) {
                     throw new DeploymentUnitProcessingException("failed to process " + archive, e);
                 }
             }
         }
     }
-
-
-    static class DeploymentStructureService implements Service<Void> {
-        final DeploymentStructure structure;
-        public DeploymentStructureService(DeploymentStructure structure) {
-            this.structure = structure;
-        }
-
-        /** {@inheritDoc} */
-        public Void getValue() throws IllegalStateException {
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        public void start(StartContext context) throws StartException {
-            //
-        }
-
-        /** {@inheritDoc} */
-        public void stop(StopContext context) {
-            for(final ClassPathEntry entry : structure.getEntries()) {
-                try {
-                    entry.close();
-                } catch(IOException ignore) {
-                    //
-                }
-            }
-        }
-
-    }
-
 }
