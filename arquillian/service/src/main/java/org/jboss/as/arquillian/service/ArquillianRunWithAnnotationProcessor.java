@@ -22,13 +22,16 @@
 
 package org.jboss.as.arquillian.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -48,13 +51,18 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final Index index = phaseContext.getDeploymentUnit().getAttachment(Attachments.ANNOTATION_INDEX);
-        if (index == null)
-            return; // Skip if there is no annotation index
+        final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(phaseContext.getDeploymentUnit());
 
+        final List<AnnotationInstance> instances = new ArrayList<AnnotationInstance>();
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
-        final List<AnnotationInstance> instances = index.getAnnotations(runWithName);
-        if (instances == null || instances.isEmpty())
+
+        for (Index index : indexes.values()) {
+            final List<AnnotationInstance> annotations = index.getAnnotations(runWithName);
+            if (annotations != null) {
+                instances.addAll(annotations);
+            }
+        }
+        if (instances.isEmpty())
             return; // Skip if there are no @RunWith annotations
 
         final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
