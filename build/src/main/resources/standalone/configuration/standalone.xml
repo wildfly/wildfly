@@ -26,6 +26,7 @@
                             urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
                             urn:jboss:domain:connector:1.0 jboss-connector.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:ee:1.0 jboss-ee.xsd                            
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
@@ -42,6 +43,7 @@
         <extension module="org.jboss.as.arquillian.service"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
+        <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
@@ -112,6 +114,7 @@
             </bounded-queue-thread-pool>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />        
+        <subsystem xmlns="urn:jboss:domain:ee:1.0" />
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">

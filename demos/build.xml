@@ -37,6 +37,7 @@
         <echo>  rar              - deploys a resource adapter</echo>
         <echo>  ds               - deploys a test bean for data sources</echo>
         <echo>  war              - deploys a simple servlet and connects to it</echo>
+        <echo>  ear              - deploys an ear</echo>    	
 <!-- Requires full EE api to be imported, which needs review before advertising
         <echo>  webapp           - deploys a servlet using jms and a database</echo>
 -->

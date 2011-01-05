@@ -24,6 +24,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:ee:1.0 jboss-ee.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
                             urn:jboss:domain:transactions:1.0 jboss-txn.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
@@ -42,6 +43,7 @@
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
+        <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -209,6 +211,7 @@
                     <keepalive-time time="10" unit="seconds"/>
                 </bounded-queue-thread-pool>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
