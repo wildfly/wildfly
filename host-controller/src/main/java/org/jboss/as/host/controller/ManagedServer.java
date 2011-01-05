@@ -22,6 +22,12 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,28 +53,23 @@ import org.jboss.as.model.ServerFactory;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandlerResponse;
+import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ProtocolUtils;
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
-import static org.jboss.as.protocol.StreamUtils.safeFinish;
-
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.Services;
-import org.jboss.as.server.mgmt.domain.HostControllerClient;
-import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
+import org.jboss.as.server.mgmt.domain.HostControllerClient;
+import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
-import static org.jboss.marshalling.Marshalling.createByteInput;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassTable;
 import org.jboss.marshalling.Unmarshaller;
@@ -353,15 +354,15 @@ public final class ManagedServer {
         String javaHome = jvmElement.getJavaHome();
         if (javaHome == null) { // TODO should this be possible?
             if(environment.getDefaultJVM() != null) {
-                return environment.getDefaultJVM().getAbsolutePath();
+                String defaultJvm = environment.getDefaultJVM().getAbsolutePath();
+                if (!defaultJvm.equals("java") || (defaultJvm.equals("java") && System.getenv("JAVA_HOME") != null)) {
+                    return defaultJvm;
+                }
             }
-            return "java"; // hope for the best
+            javaHome = DefaultJvmUtils.getCurrentJvmHome();
         }
 
-        File f = new File(javaHome);
-        f = new File(f, "bin");
-        f = new File (f, "java");
-        return f.getAbsolutePath();
+        return DefaultJvmUtils.findJavaExecutable(javaHome);
     }
 
     public void setServerManagementConnection(Connection serverManagementConnection) {

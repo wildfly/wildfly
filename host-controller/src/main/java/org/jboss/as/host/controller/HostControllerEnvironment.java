@@ -9,6 +9,8 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Properties;
 
+import org.jboss.as.process.DefaultJvmUtils;
+
 /**
  * Encapsulates the runtime environment for a {@link HostController}.
  *
@@ -242,6 +244,9 @@ public class HostControllerEnvironment {
         System.setProperty(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
 
         if(defaultJVM != null) {
+            if (defaultJVM.equals("java")) {
+                defaultJVM = DefaultJvmUtils.findJavaExecutable(DefaultJvmUtils.getCurrentJvmHome());
+            }
             this.defaultJVM = new File(defaultJVM);
         } else {
             this.defaultJVM = null;
