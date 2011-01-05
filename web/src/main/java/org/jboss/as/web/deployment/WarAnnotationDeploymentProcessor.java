@@ -21,10 +21,13 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import java.lang.reflect.AnnotatedElement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
@@ -35,12 +38,12 @@ import javax.servlet.annotation.WebListener;
 import javax.servlet.annotation.WebServlet;
 
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-
+import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -85,10 +88,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
-        final WarAnnotationIndex index = deploymentUnit.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
-        if (index == null) {
-            return; // Skip if there is no annotation index
-        }
+
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
         Map<String, WebMetaData> annotationsMetaData = warMetaData.getAnnotationsMetaData();
@@ -102,15 +102,12 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         final ClassLoader classLoader = module.getClassLoader();
 
-        // Process web-inf/classes
-        if (index.getRootIndex() != null) {
-            annotationsMetaData.put("", processAnnotations(index.getRootIndex(), classLoader));
-        }
+        Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
 
         // Process lib/*.jar
-        for(final String pathName : index.getPathNames()) {
-            final Index jarIndex = index.getIndex(pathName);
-            annotationsMetaData.put(pathName, processAnnotations(jarIndex, classLoader));
+        for (final Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
+            final Index jarIndex = entry.getValue();
+            annotationsMetaData.put(entry.getKey().getRootName(), processAnnotations(jarIndex, classLoader));
         }
     }
 

@@ -22,18 +22,16 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.model.BootUpdateContext;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WarAnnotationDeploymentProcessor;
-import org.jboss.as.web.deployment.WarAnnotationIndexProcessor;
 import org.jboss.as.web.deployment.WarClassloadingDependencyProcessor;
 import org.jboss.as.web.deployment.WarDeploymentInitializingProcessor;
 import org.jboss.as.web.deployment.WarDeploymentProcessor;
 import org.jboss.as.web.deployment.WarMetaDataProcessor;
-import org.jboss.as.web.deployment.WarModuleConfigProcessor;
 import org.jboss.as.web.deployment.WarStructureDeploymentProcessor;
 import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
@@ -47,8 +45,6 @@ class WebDeploymentActivator {
         // Web specific deployment processors ....
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()));
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_INDEX_WAR, new WarAnnotationIndexProcessor());
-        updateContext.addDeploymentProcessor(Phase.CONFIGURE_MODULE, Phase.CONFIGURE_MODULE_WAR, new WarModuleConfigProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());

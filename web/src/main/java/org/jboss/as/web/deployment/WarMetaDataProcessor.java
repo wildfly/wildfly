@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,8 +50,6 @@ import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 /**
  * Merge all metadata into a main JBossWebMetaData.
@@ -242,7 +242,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             specMetaData.setVersion("3.0");
         }
         // Augment with meta data from annotations in /WEB-INF/classes
-        WebMetaData classesAnnotatedMetaData = annotationsMetaData.get("");
+        WebMetaData classesAnnotatedMetaData = annotationsMetaData.get("classes");
         if (classesAnnotatedMetaData != null) {
             if (isComplete) {
                 // Discard @WebFilter, @WebListener and @WebServlet

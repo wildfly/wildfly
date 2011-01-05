@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,17 +33,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ModuleDependencies;
-import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.module.ModuleDependencies;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -54,8 +59,6 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 /**
  * SCI deployment processor.
@@ -72,10 +75,6 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
-        }
-        final WarAnnotationIndex index = deploymentUnit.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
-        if (index == null) {
-            return; // Skip if there is no annotation index
         }
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
@@ -146,19 +145,14 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             }
         }
         Class<?>[] typesArray = typesMap.keySet().toArray(new Class<?>[0]);
+
+        final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
+
         // Find classes which extend, implement, or are annotated by HandlesTypes
         for (Class<?> type : typesArray) {
             DotName className = DotName.createSimple(type.getName());
-            if (index.getRootIndex() != null) {
-                Set<ClassInfo> classInfos = processHandlesType(className, type, index.getRootIndex());
-                Set<Class<?>> classes = loadClassInfoSet(classInfos, classLoader);
-                Set<ServletContainerInitializer> sciSet = typesMap.get(type);
-                for (ServletContainerInitializer sci : sciSet) {
-                   handlesTypes.get(sci).addAll(classes);
-                }
-            }
-            for (final String pathName : index.getPathNames()) {
-                final Index jarIndex = index.getIndex(pathName);
+            for (final Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
+                final Index jarIndex = entry.getValue();
                 Set<ClassInfo> classInfos = processHandlesType(className, type, jarIndex);
                 Set<Class<?>> classes = loadClassInfoSet(classInfos, classLoader);
                 Set<ServletContainerInitializer> sciSet = typesMap.get(type);
