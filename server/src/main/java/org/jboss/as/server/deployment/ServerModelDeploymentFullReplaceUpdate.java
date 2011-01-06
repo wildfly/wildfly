@@ -84,6 +84,8 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
                 controller.setMode(ServiceController.Mode.REMOVE);
             } else {
                 deploy(updateContext);
+                // TODO - connect to service lifecycle properly
+                resultHandler.handleSuccess(null, param);
             }
         }
         else if (resultHandler != null) {

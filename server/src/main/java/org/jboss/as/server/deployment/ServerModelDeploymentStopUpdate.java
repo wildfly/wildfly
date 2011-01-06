@@ -85,6 +85,9 @@ public class ServerModelDeploymentStopUpdate extends AbstractServerModelUpdate<V
         final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
         if (deploymentElement != null) {
             controller.setMode(ServiceController.Mode.NEVER);
+            // TODO - connect to service lifecycle properly
+            if (resultHandler != null)
+                resultHandler.handleSuccess(null, param);
         }
         else if (resultHandler != null) {
             resultHandler.handleSuccess(null, param);

@@ -95,6 +95,10 @@ public class ServerModelDeploymentStartUpdate extends AbstractServerModelUpdate<
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+
+                // TODO - connect to service lifecycle properly
+                if (resultHandler != null)
+                    resultHandler.handleSuccess(null, param);
             }
         }
         else if (resultHandler != null) {
