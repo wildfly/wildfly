@@ -93,11 +93,14 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
 
     public synchronized void stop(final StopContext context) {
         // Delete the first phase deployer
-        final ServiceController<?> controller = context.getController().getServiceContainer().getRequiredService(Services.JBOSS_DEPLOYMENT_UNIT.append(name).append(FIRST_PHASE_NAME));
-        controller.setMode(ServiceController.Mode.REMOVE);
-        final MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
-        controller.addListener(listener);
-        listener.done();
+        final ServiceController<?> controller = context.getController().getServiceContainer().getService(
+                deploymentUnit.getServiceName().append(FIRST_PHASE_NAME));
+        if (controller != null) {
+            controller.setMode(ServiceController.Mode.REMOVE);
+            final MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
+            controller.addListener(listener);
+            listener.done();
+        }
     }
 
     public synchronized DeploymentUnit getValue() throws IllegalStateException, IllegalArgumentException {
