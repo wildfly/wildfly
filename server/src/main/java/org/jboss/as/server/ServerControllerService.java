@@ -44,6 +44,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
@@ -191,6 +192,7 @@ final class ServerControllerService implements Service<ServerController> {
 
         // Activate core processors for jar deployment
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor()));
+        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_MANIFEST, new ManifestAttachmentProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));

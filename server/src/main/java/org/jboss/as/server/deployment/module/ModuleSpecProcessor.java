@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.Services;
+import static org.jboss.as.server.deployment.module.ModuleRootMarker.*;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -70,9 +71,13 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
 
         // Add internal resource roots
-        addResourceRoot(specBuilder, mainRoot);
+        if(isModuleRoot(mainRoot)) {
+            addResourceRoot(specBuilder, mainRoot);
+        }
         if (additionalRoots != null) for (ResourceRoot additionalRoot : additionalRoots) {
-            addResourceRoot(specBuilder, additionalRoot);
+            if(isModuleRoot(additionalRoot)) {
+                addResourceRoot(specBuilder, additionalRoot);
+            }
         }
 
         // Add external resource roots
@@ -85,7 +90,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         if (childFirst) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         }
-        for (ModuleDependency dependency : dependencies) {
+        if(dependencies != null) for (ModuleDependency dependency : dependencies) {
             final List<FilterSpecification> importFilters = dependency.getImportFilters();
             final List<FilterSpecification> exportFilters = dependency.getExportFilters();
             final PathFilter importFilter;

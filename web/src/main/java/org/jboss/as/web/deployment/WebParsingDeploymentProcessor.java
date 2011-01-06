@@ -53,7 +53,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile webXml = deploymentRoot.getRoot().getChild(WEB_XML);
-        WarMetaData warMetaData = deploymentRoot.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
         if (webXml.exists()) {
             InputStream is = null;

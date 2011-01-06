@@ -22,9 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
@@ -38,48 +36,20 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * The top-level service corresponding to a deployment unit.
+ * Abstract service responsible for managing the life-cycle of a {@link DeploymentUnit}.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John Bailey
  */
-public final class DeploymentUnitService implements Service<DeploymentUnit> {
+public abstract class AbstractDeploymentUnitService implements Service<DeploymentUnit> {
     private static final String FIRST_PHASE_NAME = Phase.values()[0].name();
-
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
-    private final InjectedValue<ServerDeploymentRepository> serverDeploymentRepositoryInjector = new InjectedValue<ServerDeploymentRepository>();
-    private final String name;
-    private final String runtimeName;
-    private final byte[] deploymentHash;
-    private final DeploymentUnit parent;
-
     private DeploymentUnit deploymentUnit;
-
-    /**
-     * Construct a new instance.
-     *
-     * @param name the deployment unit simple name
-     * @param runtimeName the deployoment runtime name
-     * @param deploymentHash the deployment hash
-     * @param parent
-     */
-    public DeploymentUnitService(final String name, final String runtimeName, final byte[] deploymentHash,  final DeploymentUnit parent) {
-        this.name = name;
-        this.parent = parent;
-        this.runtimeName = runtimeName;
-        this.deploymentHash = deploymentHash;
-    }
 
     public synchronized void start(final StartContext context) throws StartException {
         // Create the first phase deployer
         final ServiceContainer container = context.getController().getServiceContainer();
 
-        deploymentUnit = new DeploymentUnitImpl(parent, name, new DelegatingServiceRegistry(container));
-        deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, runtimeName);
-        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_HASH, deploymentHash);
-
-        // Attach the deployment repo
-        deploymentUnit.putAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY, serverDeploymentRepositoryInjector.getValue());
-
+        deploymentUnit = createAndInitializeDeploymentUnit(container);
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
@@ -91,10 +61,19 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
         phaseServiceBuilder.install();
     }
 
+    /**
+     * Template method required for implementations to create and fully initialize a deployment unit instance.  This method
+     * should be used to attach any initial deployment unit attachments required for the deployment type.
+     *
+     * @param container The service container
+     * @return An initialized DeploymentUnit instance
+     */
+    protected abstract DeploymentUnit createAndInitializeDeploymentUnit(final ServiceContainer container);
+
     public synchronized void stop(final StopContext context) {
         // Delete the first phase deployer
-        final ServiceController<?> controller = context.getController().getServiceContainer().getService(
-                deploymentUnit.getServiceName().append(FIRST_PHASE_NAME));
+        final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
+        final ServiceController<?> controller = context.getController().getServiceContainer().getService(serviceName);
         if (controller != null) {
             controller.setMode(ServiceController.Mode.REMOVE);
             final MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
@@ -110,9 +89,5 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
 
     Injector<DeployerChains> getDeployerChainsInjector() {
         return deployerChainsInjector;
-    }
-
-    Injector<ServerDeploymentRepository> getServerDeploymentRepositoryInjector() {
-        return serverDeploymentRepositoryInjector;
     }
 }

@@ -121,11 +121,12 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
 
     private void deploy(final UpdateContext updateContext) {
         final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-        final DeploymentUnitService service = new DeploymentUnitService(newDeployment, newDeploymentRuntimeName, newDeploymentHash, null);
+        final RootDeploymentUnitService service = new RootDeploymentUnitService(newDeployment, newDeploymentRuntimeName, newDeploymentHash, null);
         serviceTarget.addService(Services.JBOSS_DEPLOYMENT.append(newDeployment), service)
             .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
             .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
-            .setInitialMode(ServiceController.Mode.ACTIVE);
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
     }
 
     @Override

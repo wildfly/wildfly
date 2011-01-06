@@ -89,7 +89,7 @@ public class ServerModelDeploymentStartUpdate extends AbstractServerModelUpdate<
                 controller.setMode(ServiceController.Mode.ACTIVE);
             } else {
                 final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-                final DeploymentUnitService service = new DeploymentUnitService(deploymentUnitName, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(), null);
+                final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(), null);
                 serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())

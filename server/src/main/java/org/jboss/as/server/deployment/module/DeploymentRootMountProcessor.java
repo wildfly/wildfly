@@ -35,16 +35,22 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 /**
+ * Deployment processor responsible for mounting and attaching the resource root for this deployment.
+ *
  * @author John Bailey
  */
 public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ServerDeploymentRepository serverDeploymentRepository = phaseContext.getDeploymentUnit().getAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT) != null) {
+            return;
+        }
+        final ServerDeploymentRepository serverDeploymentRepository = deploymentUnit.getAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY);
         if(serverDeploymentRepository == null) {
             throw new DeploymentUnitProcessingException("No deployment repository available.");
         }
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
         final String deploymentName = deploymentUnit.getName();
         final String deploymentRuntimeName = deploymentUnit.getAttachment(Attachments.RUNTIME_NAME);
         final byte[] deploymentHash = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_HASH);
@@ -68,6 +74,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
         }
         final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle, false);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
+
     }
 
     public void undeploy(DeploymentUnit context) {

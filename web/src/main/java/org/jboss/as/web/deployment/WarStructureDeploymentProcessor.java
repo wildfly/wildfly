@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment;
 
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import static org.jboss.as.server.deployment.module.ModuleRootMarker.*;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 import java.io.Closeable;
@@ -123,8 +125,10 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             DeploymentUnitProcessingException {
         final List<ResourceRoot> entries = new ArrayList<ResourceRoot>();
         // WEB-INF classes
-        entries.add(new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
-                .getChild(WEB_INF_CLASSES), null, false));
+        final ResourceRoot webInfClassesRoot = new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
+                .getChild(WEB_INF_CLASSES), null, false);
+        markRoot(webInfClassesRoot);
+        entries.add(webInfClassesRoot);
         // WEB-INF lib
         createWebInfLibResources(deploymentRoot, entries);
         return entries;
@@ -134,7 +138,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * Create the ResourceRoots for .jars in the WEB-INF/lib folder.
      *
      * @param deploymentRoot the deployment root
-     * @param resourcesRoots the resource root map
      * @throws IOException for any error
      */
     void createWebInfLibResources(final VirtualFile deploymentRoot, List<ResourceRoot> entries) throws IOException,
@@ -145,7 +148,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             for(final VirtualFile archive : archives) {
                 try {
                     final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
-                    entries.add(new ResourceRoot(archive.getName(), archive, new MountHandle(closable), false));
+                    final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable), false);
+                    markRoot(webInfArchiveRoot);
+                    entries.add(webInfArchiveRoot);
                 } catch (IOException e) {
                     throw new DeploymentUnitProcessingException("failed to process " + archive, e);
                 }

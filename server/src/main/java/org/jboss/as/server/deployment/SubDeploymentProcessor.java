@@ -1,0 +1,78 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.server.deployment;
+
+import java.util.List;
+import static org.jboss.as.server.deployment.SubDeploymentMarker.isSubDeployment;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
+
+/**
+ * Deployment processor responsible to creating deployment unit services for sub-deployment.
+ *
+ * @author John Bailey
+ */
+public class SubDeploymentProcessor implements DeploymentUnitProcessor {
+
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final List<ResourceRoot> childRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+
+        if (childRoots != null) {
+            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+            for (final ResourceRoot childRoot : childRoots) {
+                if(!isSubDeployment(childRoot)) {
+                    continue;
+                }
+                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit);
+                final ServiceName serviceName = deploymentUnit.getServiceName().append(childRoot.getRootName());
+
+                serviceTarget.addService(serviceName, service)
+                        .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+            }
+
+        }
+    }
+
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        final List<ResourceRoot> childRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        if (childRoots != null) {
+            final ServiceRegistry serviceRegistry = deploymentUnit.getServiceRegistry();
+            for (final ResourceRoot childRoot : childRoots) {
+                if(!isSubDeployment(childRoot)) {
+                    continue;
+                }
+                final ServiceName serviceName = deploymentUnit.getServiceName().append(childRoot.getRootName());
+                final ServiceController<?> serviceController = serviceRegistry.getService(serviceName);
+                if (serviceController != null) {
+                    serviceController.setMode(ServiceController.Mode.REMOVE);
+                }
+            }
+        }
+    }
+}

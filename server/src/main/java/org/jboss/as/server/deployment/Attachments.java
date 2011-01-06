@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.module.ClassPathEntry;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
@@ -80,10 +81,7 @@ public final class Attachments {
      * ?????
      */
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
-    /**
-     * The list of subdeployments detected.
-     */
-    public static final AttachmentKey<AttachmentList<ResourceRoot>> SUBDEPLOYMENT_ROOTS = AttachmentKey.createList(ResourceRoot.class);
+
     /**
      * The list of class path entries given in the manifest and structure configurations.
      */
@@ -104,9 +102,14 @@ public final class Attachments {
     public static final AttachmentKey<Boolean> INDEX_RESOURCE_ROOT = AttachmentKey.create(Boolean.class);
 
     /**
-     * The list of ear child roots detected.
+     * A marker attachment to identify a resource root that should be included as a module root.
      */
-    public static final AttachmentKey<AttachmentList<ResourceRoot>> EAR_CHILD_ROOTS = AttachmentKey.createList(ResourceRoot.class);
+    public static final AttachmentKey<Boolean> MODULE_ROOT_MARKER = AttachmentKey.create(Boolean.class);
+
+    /**
+     * A marker attachment to identify a resource root that is also a sub-deployment.
+     */
+    public static final AttachmentKey<Boolean> SUB_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
 
     //
     // VALIDATE

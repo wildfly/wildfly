@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.server.deployment.annotation;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class AnnotationIndexUtils {
         }
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
         Map<ResourceRoot, Index> indexes = new HashMap<ResourceRoot, Index>();
-        for (ResourceRoot resourceRoot : resourceRoots) {
+        if(resourceRoots != null )for (ResourceRoot resourceRoot : resourceRoots) {
             Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
             if (index != null) {
                 indexes.put(resourceRoot, index);

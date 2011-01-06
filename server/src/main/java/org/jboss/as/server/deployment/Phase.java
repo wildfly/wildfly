@@ -182,6 +182,7 @@ public enum Phase {
     public static final int STRUCTURE_WAR_DEPLOYMENT                    = 0x400;
     public static final int STRUCTURE_EAR_DEPLOYMENT                    = 0x500;
     public static final int STRUCTURE_DEPLOYMENT_MODULE_LOADER          = 0x600;
+    public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x700;
 
     // PARSE
     public static final int PARSE_MANIFEST                              = 0x0100;

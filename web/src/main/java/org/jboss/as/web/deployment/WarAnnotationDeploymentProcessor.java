@@ -139,7 +139,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 try {
                     type = classLoader.loadClass(classInfo.name().toString());
                 } catch (Exception e) {
-                    throw new DeploymentUnitProcessingException("Could not process @WebServlet on " + target);
+                    throw new DeploymentUnitProcessingException("Could not process @WebServlet on " + target, e);
                 }
                 if (type != null) {
                     processor.process(metaData, type);

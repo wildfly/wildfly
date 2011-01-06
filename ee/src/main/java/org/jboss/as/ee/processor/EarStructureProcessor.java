@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.processor;
 
+import java.util.ArrayList;
 import static org.jboss.as.ee.processor.EarDeploymentMarker.markDeployment;
 import java.io.Closeable;
 import java.io.IOException;
@@ -33,6 +34,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
@@ -49,13 +52,21 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  */
 public class EarStructureProcessor implements DeploymentUnitProcessor {
     private static final String EAR_EXTENSION = ".ear";
+    private static final String JAR_EXTENSION = ".jar";
+    private static final String WAR_EXTENSION = ".war";
     private static final Set<String> CHILD_ARCHIVE_EXTENSIONS = new HashSet<String>();
-
     static {
-        CHILD_ARCHIVE_EXTENSIONS.add(".jar");
-        CHILD_ARCHIVE_EXTENSIONS.add(".war");
-        CHILD_ARCHIVE_EXTENSIONS.add(".sar");
+        CHILD_ARCHIVE_EXTENSIONS.add(JAR_EXTENSION);
+        CHILD_ARCHIVE_EXTENSIONS.add(WAR_EXTENSION);
     }
+
+    private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(CHILD_ARCHIVE_EXTENSIONS,  new VisitorAttributes() {
+        public boolean isLeavesOnly() {
+            return false;
+        }
+    });
+
+    private static final String DEFAULT_LIB_DIR = "lib";
 
     private static Closeable NO_OP_CLOSEABLE = new Closeable() {
         public void close() throws IOException {
@@ -77,20 +88,28 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         //  Let other processors know this is an EAR deployment
         markDeployment(deploymentUnit);
 
+        //  Make sure we don't index or add this as a module root
+        resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+        ModuleRootMarker.markRoot(resourceRoot, false);
+
         // Process all the children
         try {
-            final List<VirtualFile> childArchives = virtualFile.getChildren(new SuffixMatchFilter(CHILD_ARCHIVE_EXTENSIONS, VisitorAttributes.RECURSE_LEAVES_ONLY));
+            final List<VirtualFile> childArchives = new ArrayList<VirtualFile>(virtualFile.getChildren(CHILD_ARCHIVE_FILTER));
+            final VirtualFile libDir = virtualFile.getChild(DEFAULT_LIB_DIR);
+            if(libDir.exists()) {
+                childArchives.addAll(libDir.getChildren(CHILD_ARCHIVE_FILTER));
+            }
 
             for (final VirtualFile child : childArchives) {
-                final Closeable closable;
-                if (child.isFile()) {
-                    closable = VFS.mountZip(child, child, TempFileProviderService.provider());
-                } else {
-                    closable = NO_OP_CLOSEABLE;
-                }
+                final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
                 final MountHandle mountHandle = new MountHandle(closable);
                 final ResourceRoot childResource = new ResourceRoot(child, mountHandle, false);
-                deploymentUnit.addToAttachmentList(Attachments.EAR_CHILD_ROOTS, childResource);
+                if(child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
+                    ModuleRootMarker.markRoot(childResource);
+                } else {
+                    SubDeploymentMarker.markRoot(childResource);
+                }
+                deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
             }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to process children for EAR [" + virtualFile + "]", e);
@@ -98,7 +117,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(DeploymentUnit context) {
-        final List<ResourceRoot> childRoots = context.removeAttachment(Attachments.EAR_CHILD_ROOTS);
+        final List<ResourceRoot> childRoots = context.removeAttachment(Attachments.RESOURCE_ROOTS);
         if(childRoots != null) {
             for(ResourceRoot childRoot : childRoots) {
                 VFSUtils.safeClose(childRoot.getMountHandle());

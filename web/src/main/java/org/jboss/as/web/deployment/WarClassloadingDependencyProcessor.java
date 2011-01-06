@@ -21,8 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ModuleDependencies;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -54,15 +54,17 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         }
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
         // Add module dependencies on Java EE apis
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, JAVAX_SERVLET_API, false, false, false));
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, JAVAX_SERVLET_JSP_API, false, false, false));
+
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_SERVLET_API, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_SERVLET_API, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_SERVLET_JSP_API, false, false, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
         // JFC hack...
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, SYSTEM, false, false, false));
-        ModuleDependencies.addDependency(deploymentUnit, new ModuleDependency(moduleLoader, LOG, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, SYSTEM, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, LOG, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

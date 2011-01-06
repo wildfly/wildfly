@@ -44,7 +44,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
-import org.jboss.as.server.deployment.module.ModuleDependencies;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
@@ -100,7 +99,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         // FIXME: for now, look in all dependencies for SCIs
-        for (ModuleDependency dependency : ModuleDependencies.getAttachedDependencies(deploymentUnit).getDependencies()) {
+        for (ModuleDependency dependency : deploymentUnit.getAttachment(Attachments.MODULE_DEPENDENCIES)) {
             ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 serviceLoader = Module.loadServiceFromCurrent(dependency.getIdentifier(), ServletContainerInitializer.class);
