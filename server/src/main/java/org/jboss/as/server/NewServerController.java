@@ -20,30 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.server;
 
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.ModelController;
+import org.jboss.msc.service.ServiceContainer;
 
 /**
+ *
+ * TODO: this will be renamed to {@code ServerController} and replace that type
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface OperationHandler {
+public interface NewServerController extends ModelController {
 
     /**
-     * Get the description for this operation, without address information.
+     * Get this server's environment.
      *
-     * @return the description
+     * @return the environment
      */
-    ModelNode getOperationDescription();
+    ServerEnvironment getServerEnvironment();
 
     /**
-     * Apply this update to the given model entity. This method should either
-     * successfully change the model entity, or leave the entity unchanged
-     * and throw an {@code UpdateFailedException}.
+     * Get this server's service container.
      *
-     * @param submodel the model entity to which the update should be applied
-     * @param operation the operation description
-     * @throws IllegalArgumentException if the update is not valid
+     * @return the container
      */
-    void applyModelUpdate(ModelNode submodel, ModelNode operation) throws IllegalArgumentException;
+    ServiceContainer getServiceContainer();
 }

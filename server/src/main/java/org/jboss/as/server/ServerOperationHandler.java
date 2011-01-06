@@ -20,30 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.server;
 
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface OperationHandler {
+public interface ServerOperationHandler extends OperationHandler {
 
     /**
-     * Get the description for this operation, without address information.
+     * Execute an update in a container.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
+     * regardless of the outcome of the operation.
      *
-     * @return the description
+     * @param controller the server controller
+     * @param submodel the submodel state after this update was applied to the model
+     * @param operation the operation data
+     * @param resultHandler the result handler to invoke when the operation is complete
      */
-    ModelNode getOperationDescription();
-
-    /**
-     * Apply this update to the given model entity. This method should either
-     * successfully change the model entity, or leave the entity unchanged
-     * and throw an {@code UpdateFailedException}.
-     *
-     * @param submodel the model entity to which the update should be applied
-     * @param operation the operation description
-     * @throws IllegalArgumentException if the update is not valid
-     */
-    void applyModelUpdate(ModelNode submodel, ModelNode operation) throws IllegalArgumentException;
+    void executeUpdate(NewServerController controller, ModelNode submodel, ModelNode operation, ResultHandler resultHandler);
 }
