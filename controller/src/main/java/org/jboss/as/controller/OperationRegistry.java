@@ -176,11 +176,12 @@ final class OperationSubregistry {
     }
 
     OperationHandler getHandler(final ListIterator<PathElement> iterator, final String child, final String operationName) {
-        final OperationRegistry childRegistry = childRegistriesUpdater.get(this, child);
+        final Map<String, OperationRegistry> snapshot = childRegistriesUpdater.get(this);
+        final OperationRegistry childRegistry = snapshot.get(child);
         if (childRegistry != null) {
             return childRegistry.getHandler(iterator, operationName);
         } else {
-            final OperationRegistry wildcardRegistry = childRegistriesUpdater.get(this, "*");
+            final OperationRegistry wildcardRegistry = snapshot.get("*");
             if (wildcardRegistry != null) {
                 return wildcardRegistry.getHandler(iterator, operationName);
             } else {
