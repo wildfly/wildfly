@@ -19,13 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.controller;
 
-/**
- * TODO add class javadoc for PathElement
+import java.util.regex.Pattern;
+import org.jboss.dmr.Property;
 
- * @author Brian Stansberry
+/**
+ * An element of a path specification for matching operations with addresses.
  *
+ * @author Brian Stansberry
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class PathElement {
 
@@ -33,59 +37,132 @@ public class PathElement {
 
     private final String key;
     private final String value;
-    private final boolean wildcard;
 
-    public PathElement(final String key) {
+    private final int hashCode;
+
+    /**
+     * A valid key contains alphanumerics and underscores, cannot start with a number, and cannot start or end with
+     * {@code -}.
+     */
+    private static final Pattern VALID_KEY_PATTERN = Pattern.compile("[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
+
+    private static final Pattern VALID_VALUE_PATTERN = Pattern.compile("\\*|[^*\\p{Space}\\p{Cntrl}]+");
+
+    /**
+     * Construct a new instance with a wildcard value.
+     *
+     * @param key the path key to match
+     * @return the new path element
+     */
+    public static PathElement pathElement(final String key) {
+        return new PathElement(key);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param key the path key to match
+     * @param value the path value or wildcard to match
+     * @return the new path element
+     */
+    public static PathElement pathElement(final String key, final String value) {
+        return new PathElement(key, value);
+    }
+
+    /**
+     * Construct a new instance with a wildcard value.
+     *
+     * @param key the path key to match
+     */
+    PathElement(final String key) {
         this(key, WILDCARD_VALUE);
     }
 
-    public PathElement(final String key, final String value) {
-        if (key == null || key.length() == 0) {
-            throw new IllegalArgumentException("key cannot be null or empty");
+    /**
+     * Construct a new instance.
+     *
+     * @param key the path key to match
+     * @param value the path value or wildcard to match
+     */
+    PathElement(final String key, final String value) {
+        if (key == null || !VALID_KEY_PATTERN.matcher(key).matches()) {
+            throw new IllegalArgumentException("Invalid key specification");
         }
-        if (WILDCARD_VALUE.equals(key)) {
-            throw new IllegalArgumentException("key cannot be '*'");
-        }
-        if (value == null || value.length() == 0) {
-            throw new IllegalArgumentException("value cannot be null or empty");
+        if (value == null || !VALID_VALUE_PATTERN.matcher(value).matches()) {
+            throw new IllegalArgumentException("Invalid value specification");
         }
         this.key = key;
-        this.value = value;
-        this.wildcard = WILDCARD_VALUE.equals(value);
+        this.value = value.equals(WILDCARD_VALUE) ? WILDCARD_VALUE : value;
+        hashCode = key.hashCode() * 19 + value.hashCode();
     }
 
+    /**
+     * Get the path key.
+     *
+     * @return the path key
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * Get the path value.
+     *
+     * @return the path value
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * Determine whether the given property matches this element.
+     *
+     * @param property the property to check
+     *
+     * @return {@code true} if the property matches
+     */
+    public boolean matches(Property property) {
+        return property.getName().equals(key) && (value == WILDCARD_VALUE || property.getValue().asString().equals(value));
+    }
+
+    /**
+     * Determine whether the value is the wildcard value.
+     *
+     * @return {@code true} if the value is the wildcard value
+     */
     public boolean isWildcard() {
         return WILDCARD_VALUE == value;
     }
 
     @Override
     public int hashCode() {
-        return key.hashCode();
+        return hashCode;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj)
-            return true;
-        if (obj instanceof PathElement) {
-            final PathElement other = (PathElement) obj;
-            return (key.equals(other.key) && (wildcard || other.wildcard || value.equals(other.value)));
-        }
-        return false;
+    /**
+     * Determine whether this object is equal to another.
+     *
+     * @param other the other object
+     *
+     * @return {@code true} if they are equal, {@code false} otherwise
+     */
+    public boolean equals(Object other) {
+        return other instanceof PathElement && equals((PathElement) other);
+    }
+
+    /**
+     * Determine whether this object is equal to another.
+     *
+     * @param other the other object
+     *
+     * @return {@code true} if they are equal, {@code false} otherwise
+     */
+    public boolean equals(PathElement other) {
+        return this == other || other != null && other.key.equals(key) && other.value.equals(value);
     }
 
     @Override
     public String toString() {
         return "\"" + key + "\" => \"" + value + "\"";
     }
-
-
 }
