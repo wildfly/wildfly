@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import org.jboss.dmr.ModelNode;
@@ -39,7 +41,7 @@ import org.jboss.dmr.Property;
  * @author Brian Stansberry
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class PathAddress {
+public class PathAddress implements Iterable<PathElement> {
 
     private static final PathAddress EMPTY_ADDRESS = new PathAddress(Collections.<PathElement>emptyList());
 
@@ -69,7 +71,7 @@ public class PathAddress {
         } else {
             return EMPTY_ADDRESS;
         }
-        return new PathAddress(new ArrayList<PathElement>(pathMap.values()));
+        return new PathAddress(Collections.unmodifiableList(new ArrayList<PathElement>(pathMap.values())));
     }
 
     public static PathAddress pathAddress(List<PathElement> elements) {
@@ -86,7 +88,7 @@ public class PathAddress {
                 throw duplicateElement(name);
             }
         }
-        return new PathAddress(newList);
+        return new PathAddress(Collections.unmodifiableList(newList));
     }
 
     public static PathAddress pathAddress(PathElement... elements) {
@@ -97,21 +99,21 @@ public class PathAddress {
         return new IllegalArgumentException("Duplicate path element \"" + name + "\" found");
     }
 
-    private final List<PathElement> addressType;
+    private final List<PathElement> pathAddressList;
 
-    PathAddress(final List<PathElement> addressType) {
-        assert addressType != null : "addressType is null";
-        this.addressType = addressType;
+    PathAddress(final List<PathElement> pathAddressList) {
+        assert pathAddressList != null : "pathAddressList is null";
+        this.pathAddressList = pathAddressList;
     }
 
-    public List<PathElement> getAddressType() {
-        return addressType;
+    public ListIterator<PathElement> iterator() {
+        return pathAddressList.listIterator();
     }
 
     @Override
     public int hashCode() {
         int result = 17;
-        result += 31 * addressType.hashCode();
+        result += 31 * pathAddressList.hashCode();
         return result;
     }
 
@@ -132,6 +134,6 @@ public class PathAddress {
      * @return {@code true} if they are equal, {@code false} otherwise
      */
     public boolean equals(PathAddress other) {
-        return this == other || other != null && addressType.equals(other.addressType);
+        return this == other || other != null && pathAddressList.equals(other.pathAddressList);
     }
 }

@@ -30,6 +30,13 @@ import org.jboss.dmr.ModelNode;
 public interface OperationHandler {
 
     /**
+     * Get the description for this operation, without address information.
+     *
+     * @return the description
+     */
+    ModelNode getOperationDescription();
+
+    /**
      * Apply a model update.
      *
      * @param submodel the submodel that this operation handler may operate upon
