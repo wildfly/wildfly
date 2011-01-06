@@ -48,7 +48,7 @@ public class AnnotationIndexUtils {
         }
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
         Map<ResourceRoot, Index> indexes = new HashMap<ResourceRoot, Index>();
-        if(resourceRoots != null )for (ResourceRoot resourceRoot : resourceRoots) {
+        for (ResourceRoot resourceRoot : allResourceRoots) {
             Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
             if (index != null) {
                 indexes.put(resourceRoot, index);
