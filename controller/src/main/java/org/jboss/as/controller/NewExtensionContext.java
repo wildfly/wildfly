@@ -20,47 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.controller;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Phase;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
- *
- * TODO: this will be renamed to {@code ServerController} and replace that type
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewServerController extends ModelController {
+public interface NewExtensionContext {
 
     /**
-     * Get this server's environment.
+     * Register a new subsystem type.
      *
-     * @return the environment
+     * @param name the name of the subsystem
+     * @param xmlNameSpace the XML namespace of the subsystem elements
+     * @param elementReader the element reader for the subsystem XML element
      */
-    ServerEnvironment getServerEnvironment();
-
-    /**
-     * Get this server's service container registry.
-     *
-     * @return the container registry
-     */
-    ServiceRegistry getServiceRegistry();
-
-    /**
-     * The server controller boot context.
-     */
-    interface BootContext {
-
-        /**
-         * Add a deployment processor.
-         *
-         * @param phase the processor phase install into (must not be {@code null})
-         * @param priority the priority within the selected phase
-         * @param processor the processor to install
-         */
-        void addDeploymentProcessor(Phase phase, int priority, DeploymentUnitProcessor processor);
-    }
+    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace, XMLElementReader<ModelNode> elementReader);
 }

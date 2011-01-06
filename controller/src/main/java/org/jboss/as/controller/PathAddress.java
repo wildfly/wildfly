@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -43,7 +42,10 @@ import org.jboss.dmr.Property;
  */
 public class PathAddress implements Iterable<PathElement> {
 
-    private static final PathAddress EMPTY_ADDRESS = new PathAddress(Collections.<PathElement>emptyList());
+    /**
+     * An empty address.
+     */
+    public static final PathAddress EMPTY_ADDRESS = new PathAddress(Collections.<PathElement>emptyList());
 
     /**
      * Creates an UpdateIdentifier from the given ModelNode address.  The given node is expected
@@ -106,15 +108,63 @@ public class PathAddress implements Iterable<PathElement> {
         this.pathAddressList = pathAddressList;
     }
 
+    /**
+     * Get a portion of this address using segments starting at {@code start} (inclusive).
+     *
+     * @param start the start index
+     * @return the partial address
+     */
+    public PathAddress subAddress(int start) {
+        final List<PathElement> list = pathAddressList;
+        return new PathAddress(list.subList(start, list.size()));
+    }
+
+    /**
+     * Get a portion of this address using segments between {@code start} (inclusive) and {@code end} (exclusive).
+     *
+     * @param start the start index
+     * @param end the end index
+     * @return the partial address
+     */
+    public PathAddress subAddress(int start, int end) {
+        return new PathAddress(pathAddressList.subList(start, end));
+    }
+
+    /**
+     * Create a new path address by appending more elements to the end of this address.
+     *
+     * @param additionalElements the elements to append
+     * @return the new path address
+     */
+    public PathAddress append(List<PathElement> additionalElements) {
+        final ArrayList<PathElement> newList = new ArrayList<PathElement>(pathAddressList.size() + additionalElements.size());
+        newList.addAll(pathAddressList);
+        newList.addAll(additionalElements);
+        return pathAddress(additionalElements);
+    }
+
+    /**
+     * Create a new path address by appending more elements to the end of this address.
+     *
+     * @param additionalElements the elements to append
+     * @return the new path address
+     */
+    public PathAddress append(PathElement... additionalElements) {
+        return append(Arrays.asList(additionalElements));
+    }
+
+    /**
+     * Iterate over the elements of this path address.
+     *
+     * @return the iterator
+     */
     public ListIterator<PathElement> iterator() {
         return pathAddressList.listIterator();
     }
 
     @Override
     public int hashCode() {
-        int result = 17;
-        result += 31 * pathAddressList.hashCode();
-        return result;
+        return pathAddressList.hashCode();
     }
 
     /**

@@ -25,6 +25,7 @@ package org.jboss.as.server;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,9 +37,12 @@ public interface ServerOperationHandler extends OperationHandler {
      * regardless of the outcome of the operation.
      *
      * @param controller the server controller
+     * @param serviceTarget the target for new services
      * @param submodel the submodel state after this update was applied to the model
      * @param operation the operation data
      * @param resultHandler the result handler to invoke when the operation is complete
      */
-    void executeUpdate(NewServerController controller, ModelNode submodel, ModelNode operation, ResultHandler resultHandler);
+    void executeUpdate(NewServerController controller, ServiceTarget serviceTarget, ModelNode submodel, ModelNode operation, ResultHandler resultHandler);
+
+
 }
