@@ -98,6 +98,7 @@ public final class DeploymentUnitService implements Service<DeploymentUnit> {
         if (controller != null) {
             controller.setMode(ServiceController.Mode.REMOVE);
             final MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
+            context.asynchronous();
             controller.addListener(listener);
             listener.done();
         }
