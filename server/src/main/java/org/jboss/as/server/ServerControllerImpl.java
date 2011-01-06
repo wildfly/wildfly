@@ -25,11 +25,12 @@ package org.jboss.as.server;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-
 import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
@@ -41,6 +42,7 @@ import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ServerUpdateController;
 import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.Status;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.ServiceContainer;
@@ -71,14 +73,22 @@ final class ServerControllerImpl implements ServerController {
     }
 
     /** {@inheritDoc} */
+    @Override
     @Deprecated
     public ServerModel getServerModel() {
         return serverModel;
     }
 
     /** {@inheritDoc} */
+    @Override
     public ServerEnvironment getServerEnvironment() {
         return serverEnvironment;
+    }
+
+    @Override
+    public void execute(final ModelNode request, final Queue<ModelNode> responseQueue) {
+        // FIXME implemenet execute(ModelNode, Queue<ModelNode)
+        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
@@ -89,9 +99,9 @@ final class ServerControllerImpl implements ServerController {
         final int count = updates.size();
         log.debugf("Received %d updates", Integer.valueOf(count));
 
-        List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(count);
+        final List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(count);
         if (modelOnly && ! serverEnvironment.isStandalone()) {
-            Exception e = new IllegalStateException("Update sets that only affect the configuration and not the runtime are not valid on a domain-based server");
+            final Exception e = new IllegalStateException("Update sets that only affect the configuration and not the runtime are not valid on a domain-based server");
             //noinspection ForLoopReplaceableByForEach
             for (int i = 0; i < count; i++) {
                 results.add(UpdateResultHandlerResponse.createFailureResponse(e));
@@ -112,7 +122,7 @@ final class ServerControllerImpl implements ServerController {
         log.debugf("Executed %d updates", Integer.valueOf(updates.size()));
         try {
             latch.await();
-        } catch(InterruptedException e) {
+        } catch(final InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new ManagementException("failed to execute updates", e);
         }
@@ -120,15 +130,16 @@ final class ServerControllerImpl implements ServerController {
         return results;
     }
 
+    @Override
     public <R, P> void update(final AbstractServerModelUpdate<R> update, final UpdateResultHandler<R, P> resultHandler, final P param) {
         final UpdateContextImpl updateContext = new UpdateContextImpl(container.batchBuilder(), registry);
         synchronized (serverModel) {
             try {
                 serverModel.update(update);
-            } catch (UpdateFailedException e) {
+            } catch (final UpdateFailedException e) {
                 resultHandler.handleFailure(e, param);
                 return;
-            } catch (Throwable t) {
+            } catch (final Throwable t) {
                 resultHandler.handleFailure(t, param);
                 return;
             }
@@ -136,18 +147,22 @@ final class ServerControllerImpl implements ServerController {
         update.applyUpdate(updateContext, resultHandler, param);
     }
 
+    @Override
     public void shutdown() {
         container.shutdown();
     }
 
+    @Override
     public boolean isShutdownComplete() {
         return container.isShutdownComplete();
     }
 
+    @Override
     public void awaitTermination() throws InterruptedException {
         container.awaitTermination();
     }
 
+    @Override
     public void awaitTermination(final long time, final TimeUnit unit) throws InterruptedException {
         container.awaitTermination(time, unit);
     }
@@ -162,10 +177,12 @@ final class ServerControllerImpl implements ServerController {
             serviceRegistry = registry;
         }
 
+        @Override
         public ServiceRegistry getServiceRegistry() {
             return serviceRegistry;
         }
 
+        @Override
         public ServiceTarget getServiceTarget() {
             return serviceTarget;
         }
@@ -187,14 +204,14 @@ final class ServerControllerImpl implements ServerController {
         private final List<UpdateResultHandlerResponse<?>> responses;
         private final CountDownLatch latch;
 
-        public ServerUpdateCommitHandlerImpl(List<UpdateResultHandlerResponse<?>> responses, int count, CountDownLatch latch) {
+        public ServerUpdateCommitHandlerImpl(final List<UpdateResultHandlerResponse<?>> responses, final int count, final CountDownLatch latch) {
             this.responses = responses;
             this.count = count;
             this.latch = latch;
         }
 
         @Override
-        public void handleUpdateCommit(ServerUpdateController controller, Status priorStatus) {
+        public void handleUpdateCommit(final ServerUpdateController controller, final Status priorStatus) {
             log.tracef("Committed with prior status %s", priorStatus);
             configurationPersister.persist(ServerControllerImpl.this, serverModel);
 
@@ -205,21 +222,21 @@ final class ServerControllerImpl implements ServerController {
         }
 
         @Override
-        public void handleCancellation(Integer param) {
+        public void handleCancellation(final Integer param) {
             log.tracef("Update %d cancelled", param);
             map.put(param, UpdateResultHandlerResponse.createCancellationResponse());
         }
 
         @Override
-        public void handleFailure(Throwable cause, Integer param) {
+        public void handleFailure(final Throwable cause, final Integer param) {
             log.tracef("Update %d failed with %s", param, cause);
             map.put(param, UpdateResultHandlerResponse.createFailureResponse(cause));
         }
 
         @Override
-        public void handleRollbackCancellation(Integer param) {
+        public void handleRollbackCancellation(final Integer param) {
             log.tracef("Update %d rollback cancelled", param);
-            UpdateResultHandlerResponse<?> rsp = map.get(param);
+            final UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
                 return;
@@ -228,9 +245,9 @@ final class ServerControllerImpl implements ServerController {
         }
 
         @Override
-        public void handleRollbackFailure(Throwable cause, Integer param) {
+        public void handleRollbackFailure(final Throwable cause, final Integer param) {
             log.tracef("Update %d rollback failed with %s", param, cause);
-            UpdateResultHandlerResponse<?> rsp = map.get(param);
+            final UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
                 return;
@@ -239,9 +256,9 @@ final class ServerControllerImpl implements ServerController {
         }
 
         @Override
-        public void handleRollbackSuccess(Integer param) {
+        public void handleRollbackSuccess(final Integer param) {
             log.tracef("Update %d rolled back", param);
-            UpdateResultHandlerResponse<?> rsp = map.get(param);
+            final UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
                 return;
@@ -250,9 +267,9 @@ final class ServerControllerImpl implements ServerController {
         }
 
         @Override
-        public void handleRollbackTimeout(Integer param) {
+        public void handleRollbackTimeout(final Integer param) {
             log.tracef("Update %d rollback timed out", param);
-            UpdateResultHandlerResponse<?> rsp = map.get(param);
+            final UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
                 return;
@@ -261,13 +278,13 @@ final class ServerControllerImpl implements ServerController {
         }
 
         @Override
-        public void handleSuccess(Object result, Integer param) {
+        public void handleSuccess(final Object result, final Integer param) {
             log.tracef("Update %d succeeded", param);
             map.put(param, UpdateResultHandlerResponse.createSuccessResponse(result));
         }
 
         @Override
-        public void handleTimeout(Integer param) {
+        public void handleTimeout(final Integer param) {
             log.tracef("Update %d timed out", param);
             responses.set(param.intValue(), UpdateResultHandlerResponse.createTimeoutResponse());
         }

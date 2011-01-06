@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -56,9 +57,11 @@ import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
+import org.jboss.as.model.PathElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandlerResponse;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -86,6 +89,9 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     private ScheduledFuture<?> pollingFuture;
     private DomainDeploymentHandler deploymentPlanHandler;
     private DomainDeploymentRepository deploymentRepository;
+
+    private final ModelNode modelRoot = new ModelNode();
+    private final Map<List<PathElement>, ModelNode> modelMetaData = new ConcurrentHashMap<List<PathElement>, ModelNode>();
 
     public DomainControllerImpl() {
     }
@@ -124,15 +130,16 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
 
             deploymentPlanHandler = new DomainDeploymentHandler(this, scheduledExecutorService.getValue());
             pollingFuture = scheduledExecutorService.getValue().scheduleAtFixedRate(new Runnable() {
+                @Override
                 public void run() {
-                    for(HostControllerClient client : clients.values()) {
+                    for(final HostControllerClient client : clients.values()) {
                         if(!client.isActive()) {
                             log.warnf("Registered host controller [%s] is no longer active", client.getId());
                         }
                     }
                 }
             }, 30L, 30L, TimeUnit.SECONDS);
-        } catch (IllegalStateException e) {
+        } catch (final IllegalStateException e) {
             throw new StartException("Failed to start " + getClass().getSimpleName(), e);
         }
     }
@@ -178,6 +185,12 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
 
     // -----------------------------------  Operations invoked by DomainClient
 
+    @Override
+    public void execute(final ModelNode request, final Queue<ModelNode> responseQueue) {
+        // FIXME implemenet execute(ModelNode, Queue<ModelNode)
+        throw new UnsupportedOperationException("implement me");
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.domain.controller.DomainController#getDomainModel()
      */
@@ -200,7 +213,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public HostModel getHostModel(final String hostControllerName) {
 
-        HostControllerClient client = clients.get(hostControllerName);
+        final HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             return null;
         }
@@ -214,11 +227,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      */
     @Override
     public Map<ServerIdentity, ServerStatus> getServerStatuses() {
-        Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
-        Map<String, Future<Map<ServerIdentity, ServerStatus>>> futures = new HashMap<String, Future<Map<ServerIdentity, ServerStatus>>>();
-        for (Map.Entry<String, HostControllerClient> entry : clients.entrySet()) {
+        final Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
+        final Map<String, Future<Map<ServerIdentity, ServerStatus>>> futures = new HashMap<String, Future<Map<ServerIdentity, ServerStatus>>>();
+        for (final Map.Entry<String, HostControllerClient> entry : clients.entrySet()) {
             final HostControllerClient client = entry.getValue();
-            Callable<Map<ServerIdentity, ServerStatus>> callable = new Callable<Map<ServerIdentity, ServerStatus>>() {
+            final Callable<Map<ServerIdentity, ServerStatus>> callable = new Callable<Map<ServerIdentity, ServerStatus>>() {
 
                 @Override
                 public Map<ServerIdentity, ServerStatus> call() {
@@ -229,17 +242,17 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
             futures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
         }
 
-        for (Map.Entry<String, Future<Map<ServerIdentity, ServerStatus>>> entry : futures.entrySet()) {
+        for (final Map.Entry<String, Future<Map<ServerIdentity, ServerStatus>>> entry : futures.entrySet()) {
             try {
-                Map<ServerIdentity, ServerStatus> map = entry.getValue().get();
+                final Map<ServerIdentity, ServerStatus> map = entry.getValue().get();
                 if (map != null) {
                     result.putAll(map);
                 }
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 log.errorf("Interrupted while reading server statuses from host controller %s -- aborting", entry.getKey());
                 Thread.currentThread().interrupt();
                 break;
-            } catch (ExecutionException e) {
+            } catch (final ExecutionException e) {
                 log.errorf(e, "Caught exception while reading server statuses from host controller %s -- ignoring that host controller", entry.getKey());
             }
         }
@@ -252,7 +265,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public ServerModel getServerModel(final String hostControllerName, final String serverName) {
 
-        HostControllerClient client = clients.get(hostControllerName);
+        final HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             log.debugf("Received getServerModel request for unknown host controller %s", hostControllerName);
             return null;
@@ -268,7 +281,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public ServerStatus startServer(final String hostControllerName, final String serverName) {
 
-        HostControllerClient client = clients.get(hostControllerName);
+        final HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             log.debugf("Received startServer request for unknown host controller %s", hostControllerName);
             return ServerStatus.UNKNOWN;
@@ -284,7 +297,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public ServerStatus stopServer(final String hostControllerName, final String serverName, final long gracefulTimeout) {
 
-        HostControllerClient client = clients.get(hostControllerName);
+        final HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             log.debugf("Received stopServer request for unknown host controller %s", hostControllerName);
             return ServerStatus.UNKNOWN;
@@ -300,7 +313,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public ServerStatus restartServer(final String hostControllerName, final String serverName, final long gracefulTimeout) {
 
-        HostControllerClient client = clients.get(hostControllerName);
+        final HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             log.debugf("Received restartServer request for unknown host controller %s", hostControllerName);
             return ServerStatus.UNKNOWN;
@@ -312,7 +325,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
 
     private DomainModel parseDomain(final XMLMapper mapper) {
         try {
-            InputStream reader = configPersister.getConfigurationInputStream();
+            final InputStream reader = configPersister.getConfigurationInputStream();
             final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
             mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(reader)));
             final DomainModel domainModel = new DomainModel();
@@ -320,9 +333,9 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                 domainModel.update(update);
             }
             return domainModel;
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             throw e;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Caught exception during processing of domain.xml", e);
         }
     }
@@ -355,20 +368,20 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#applyUpdates(java.util.List)
      */
     @Override
-    public List<DomainUpdateResult<?>> applyUpdates(List<AbstractDomainModelUpdate<?>> updates) {
+    public List<DomainUpdateResult<?>> applyUpdates(final List<AbstractDomainModelUpdate<?>> updates) {
         if (updates == null || updates.size() == 0) {
             throw new IllegalArgumentException("updates is " + (updates == null ? "null" : "empty"));
         }
         List<DomainUpdateResult<?>> result;
 
-        List<DomainUpdateApplierResponse> domainResults = applyUpdatesToModel(updates);
+        final List<DomainUpdateApplierResponse> domainResults = applyUpdatesToModel(updates);
 
         // Check the last update to verify overall success
-        DomainUpdateApplierResponse last = domainResults.get(domainResults.size() - 1);
+        final DomainUpdateApplierResponse last = domainResults.get(domainResults.size() - 1);
         if (last.isCancelled() || last.isRolledBack() || last.getDomainFailure() != null || last.getHostFailures().size() > 0) {
             // Something failed; don't push to servers
             result = new ArrayList<DomainUpdateResult<?>>();
-            for (DomainUpdateApplierResponse duar : domainResults) {
+            for (final DomainUpdateApplierResponse duar : domainResults) {
                 if (duar.isCancelled()) {
                     result.add(new DomainUpdateResult<Object>(true));
                 }
@@ -395,9 +408,10 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#applyUpdate(org.jboss.as.model.AbstractDomainModelUpdate)
      */
     @Override
-    public <T> DomainUpdateResult<T> applyUpdate(AbstractDomainModelUpdate<T> update) {
+    public <T> DomainUpdateResult<T> applyUpdate(final AbstractDomainModelUpdate<T> update) {
 
         @SuppressWarnings("unchecked")
+        final
         DomainUpdateResult<T> result = (DomainUpdateResult<T>) applyUpdates(Collections.<AbstractDomainModelUpdate<?>>singletonList(update)).get(0);
         return result;
     }
@@ -406,8 +420,8 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#applyUpdateToModel(org.jboss.as.model.AbstractDomainModelUpdate)
      */
     @Override
-    public DomainUpdateApplierResponse applyUpdateToModel(AbstractDomainModelUpdate<?> update) {
-        List<DomainUpdateApplierResponse> responses = applyUpdatesToModel(Collections.<AbstractDomainModelUpdate<?>>singletonList(update));
+    public DomainUpdateApplierResponse applyUpdateToModel(final AbstractDomainModelUpdate<?> update) {
+        final List<DomainUpdateApplierResponse> responses = applyUpdatesToModel(Collections.<AbstractDomainModelUpdate<?>>singletonList(update));
         return responses.get(0);
     }
 
@@ -417,18 +431,18 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public List<DomainUpdateApplierResponse> applyUpdatesToModel(final List<AbstractDomainModelUpdate<?>> updates) {
 
-        int updateCount = updates.size();
+        final int updateCount = updates.size();
         log.debugf("Applying %s domain updates", updateCount);
 
         List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updateCount);
 
         // First we apply updates to our local model copy
         boolean ok = true;
-        List<AbstractDomainModelUpdate<?>> rollbacks = new ArrayList<AbstractDomainModelUpdate<?>>();
-        for (AbstractDomainModelUpdate<?> update : updates) {
+        final List<AbstractDomainModelUpdate<?>> rollbacks = new ArrayList<AbstractDomainModelUpdate<?>>();
+        for (final AbstractDomainModelUpdate<?> update : updates) {
             if (ok) {
                 try {
-                    AbstractDomainModelUpdate<?> rollback = update.getCompensatingUpdate(domainModel);
+                    final AbstractDomainModelUpdate<?> rollback = update.getCompensatingUpdate(domainModel);
                     domainModel.update(update);
                     // Add the rollback after success so we don't rollback
                     // the failed update -- which should not have changed anything
@@ -438,7 +452,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                     // the final result if we apply to servers
                     result.add(new DomainUpdateApplierResponse(false));
                 }
-                catch (UpdateFailedException e) {
+                catch (final UpdateFailedException e) {
                     log.debugf(e, "Failed applying %s", update);
                     ok = false;
                     result.add(new DomainUpdateApplierResponse(e));
@@ -452,11 +466,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
         if (!ok) {
             // Apply compensating updates to fix our local model
             for (int i = 0; i < rollbacks.size(); i++) {
-                AbstractDomainModelUpdate<?> rollback = rollbacks.get(i);
+                final AbstractDomainModelUpdate<?> rollback = rollbacks.get(i);
                 try {
                     domainModel.update(rollback);
                 }
-                catch (UpdateFailedException e) {
+                catch (final UpdateFailedException e) {
                     // TODO uh oh. Reload from the file?
                 }
             }
@@ -478,14 +492,14 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public List<UpdateResultHandlerResponse<?>> applyUpdatesToServer(final ServerIdentity server, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
 
-        HostControllerClient client = clients.get(server.getHostName());
+        final HostControllerClient client = clients.get(server.getHostName());
         List<UpdateResultHandlerResponse<?>> responses;
 
         if (client == null) {
             log.debugf("Unknown host controller %s", server.getHostName());
             // TODO better handle disappearance of host
             responses = new ArrayList<UpdateResultHandlerResponse<?>>();
-            UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
+            final UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
             for (int i = 0; i < updates.size(); i++) {
                 responses.add(failure);
             }
@@ -500,10 +514,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#executeDeploymentPlan(org.jboss.as.domain.client.api.deployment.DeploymentPlan, java.util.concurrent.BlockingQueue)
      */
     @Override
-    public void executeDeploymentPlan(DeploymentPlan plan, BlockingQueue<List<StreamedResponse>> responseQueue) {
+    public void executeDeploymentPlan(final DeploymentPlan plan, final BlockingQueue<List<StreamedResponse>> responseQueue) {
         deploymentPlanHandler.executeDeploymentPlan(plan, responseQueue);
     }
 
+    @Override
     public byte[] addDeploymentContent(final String name, final String runtimeName, final InputStream stream)
         throws IOException {
         if (deploymentRepository == null) {
@@ -516,18 +531,18 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#isDeploymentNameUnique(java.lang.String)
      */
     @Override
-    public boolean isDeploymentNameUnique(String deploymentName) {
+    public boolean isDeploymentNameUnique(final String deploymentName) {
         return (domainModel.getDeployment(deploymentName) == null);
     }
 
     private List<DomainUpdateApplierResponse> applyUpdatesToHostControllers(final List<AbstractDomainModelUpdate<?>> updates,
-            List<AbstractDomainModelUpdate<?>> rollbacks) {
+            final List<AbstractDomainModelUpdate<?>> rollbacks) {
 
-        List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updates.size());
+        final List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updates.size());
 
         // We update host controllers concurrently
-        Map<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> futures = new HashMap<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>>();
-        for (Map.Entry<String, HostControllerClient> entry : clients.entrySet()) {
+        final Map<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> futures = new HashMap<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>>();
+        for (final Map.Entry<String, HostControllerClient> entry : clients.entrySet()) {
             final HostControllerClient client = entry.getValue();
             final Callable<List<ModelUpdateResponse<List<ServerIdentity>>>> callable = new Callable<List<ModelUpdateResponse<List<ServerIdentity>>>>() {
 
@@ -547,14 +562,14 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
         boolean ok = true;
         for (int i = 0; i < updates.size(); i++) {
 
-            Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();
-            List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
+            final Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();
+            final List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
 
-            for (Map.Entry<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> entry : futures.entrySet()) {
+            for (final Map.Entry<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> entry : futures.entrySet()) {
                 try {
-                    List<ModelUpdateResponse<List<ServerIdentity>>> list = entry.getValue().get();
+                    final List<ModelUpdateResponse<List<ServerIdentity>>> list = entry.getValue().get();
                     if (list.size() > i) {
-                        ModelUpdateResponse<List<ServerIdentity>> hostResponse = list.get(i);
+                        final ModelUpdateResponse<List<ServerIdentity>> hostResponse = list.get(i);
                         if (hostResponse.isSuccess()) {
                             servers.addAll(hostResponse.getResult());
                         }
@@ -563,11 +578,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                         }
                     }
                     // else this host didn't get this far
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     log.debug("Interrupted reading host controller response");
                     Thread.currentThread().interrupt();
                     hostFailures.put(entry.getKey(), new UpdateFailedException(e));
-                } catch (ExecutionException e) {
+                } catch (final ExecutionException e) {
                     log.debug("Execution exception reading host controller response", e);
                     hostFailures.put(entry.getKey(), new UpdateFailedException(e));
                 }
@@ -595,23 +610,23 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
 
             // Apply compensating updates to fix our local model
             for (int i = 0; i < rollbacks.size(); i++) {
-                AbstractDomainModelUpdate<?> rollback = rollbacks.get(i);
+                final AbstractDomainModelUpdate<?> rollback = rollbacks.get(i);
                 try {
                     domainModel.update(rollback);
                 }
-                catch (UpdateFailedException e) {
+                catch (final UpdateFailedException e) {
                     // TODO uh oh. Reload from the file?
                 }
             }
 
             // List of servers we fail to successfully roll back
-            Set<String> outOfSync = new HashSet<String>();
+            final Set<String> outOfSync = new HashSet<String>();
 
-            Map<String, Future<Boolean>> rollbackFutures = new HashMap<String, Future<Boolean>>(futures.size());
-            for (Map.Entry<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> entry : futures.entrySet()) {
+            final Map<String, Future<Boolean>> rollbackFutures = new HashMap<String, Future<Boolean>>(futures.size());
+            for (final Map.Entry<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> entry : futures.entrySet()) {
                 try {
                     // For this host figure out how many updates need to be rolled back
-                    List<ModelUpdateResponse<List<ServerIdentity>>> rspList = entry.getValue().get();
+                    final List<ModelUpdateResponse<List<ServerIdentity>>> rspList = entry.getValue().get();
                     int idx = rspList.size() - 1;
                     if (idx >= 0 && !rspList.get(idx).isSuccess()) {
                         idx--; // !isSuccess one shouldn't have affected model state so no rollback of it
@@ -634,46 +649,46 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                     }
                     // Tell the host to roll back
                     final HostControllerClient client = clients.get(entry.getKey());
-                    Callable<Boolean> callable = new Callable<Boolean>() {
+                    final Callable<Boolean> callable = new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            List<ModelUpdateResponse<List<ServerIdentity>>> rsp = client.updateDomainModel(hostControllerRollbacks);
+                            final List<ModelUpdateResponse<List<ServerIdentity>>> rsp = client.updateDomainModel(hostControllerRollbacks);
                             return Boolean.valueOf(rsp.size() == hostControllerRollbacks.size() && rsp.get(rsp.size() - 1).isSuccess());
                         }
                     };
                     rollbackFutures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
 
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     Thread.currentThread().interrupt();
                     outOfSync.add(entry.getKey());
-                } catch (ExecutionException e) {
+                } catch (final ExecutionException e) {
                     outOfSync.add(entry.getKey());
                 }
             }
 
             // Wait until rollbacks complete
-            for (Map.Entry<String, Future<Boolean>> entry : rollbackFutures.entrySet()) {
+            for (final Map.Entry<String, Future<Boolean>> entry : rollbackFutures.entrySet()) {
                 try {
                     if (!entry.getValue().get()) {
                         outOfSync.add(entry.getKey());
                     }
-                }  catch (InterruptedException e) {
+                }  catch (final InterruptedException e) {
                     Thread.currentThread().interrupt();
                     outOfSync.add(entry.getKey());
-                } catch (ExecutionException e) {
+                } catch (final ExecutionException e) {
                     outOfSync.add(entry.getKey());
                 }
             }
 
-            for (String host : outOfSync) {
+            for (final String host : outOfSync) {
                 // Rollback failed; need to push the whole model
-                HostControllerClient client = clients.get(host);
+                final HostControllerClient client = clients.get(host);
                 client.updateDomainModel(domainModel);
             }
 
             // Update the result list to record the rollbacks
             for (int i = 0; i < result.size(); i++) {
-                DomainUpdateApplierResponse rsp = result.get(i);
+                final DomainUpdateApplierResponse rsp = result.get(i);
                 if (rsp.getHostFailures().size() < 0) {
                     result.set(i, new DomainUpdateApplierResponse(false));
                 }
@@ -687,30 +702,30 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                                                               final List<DomainUpdateApplierResponse> domainResults,
                                                               final boolean allowOverallRollback) {
         List<DomainUpdateResult<?>> result;
-        Map<AbstractDomainModelUpdate<?>, AbstractServerModelUpdate<?>> serverByDomain =
+        final Map<AbstractDomainModelUpdate<?>, AbstractServerModelUpdate<?>> serverByDomain =
             new HashMap<AbstractDomainModelUpdate<?>, AbstractServerModelUpdate<?>>();
-        Map<AbstractServerModelUpdate<?>, DomainUpdateResult<Object>> resultsByUpdate = new HashMap<AbstractServerModelUpdate<?>, DomainUpdateResult<Object>>();
+        final Map<AbstractServerModelUpdate<?>, DomainUpdateResult<Object>> resultsByUpdate = new HashMap<AbstractServerModelUpdate<?>, DomainUpdateResult<Object>>();
         for (int i = 0; i < updates.size(); i++) {
-            AbstractDomainModelUpdate<?> domainUpdate = updates.get(i);
-            AbstractServerModelUpdate<?> serverUpdate = domainUpdate.getServerModelUpdate();
+            final AbstractDomainModelUpdate<?> domainUpdate = updates.get(i);
+            final AbstractServerModelUpdate<?> serverUpdate = domainUpdate.getServerModelUpdate();
             if (serverUpdate != null) {
                 serverByDomain.put(domainUpdate, serverUpdate);
                 resultsByUpdate.put(serverUpdate, new DomainUpdateResult<Object>());
             }
         }
-        Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> updatesByServer = getUpdatesByServer(updates, domainResults, serverByDomain);
+        final Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> updatesByServer = getUpdatesByServer(updates, domainResults, serverByDomain);
 
         log.debugf("updates affect %s", updatesByServer.keySet());
 
         // TODO Add param to configure pushing out concurrently
-        for (Map.Entry<ServerIdentity, List<AbstractServerModelUpdate<?>>> entry : updatesByServer.entrySet()) {
-            ServerIdentity server = entry.getKey();
-            List<AbstractServerModelUpdate<?>> serverUpdates = entry.getValue();
+        for (final Map.Entry<ServerIdentity, List<AbstractServerModelUpdate<?>>> entry : updatesByServer.entrySet()) {
+            final ServerIdentity server = entry.getKey();
+            final List<AbstractServerModelUpdate<?>> serverUpdates = entry.getValue();
             // Push them out
-            List<UpdateResultHandlerResponse<?>> rsps = applyUpdatesToServer(server, serverUpdates, allowOverallRollback);
+            final List<UpdateResultHandlerResponse<?>> rsps = applyUpdatesToServer(server, serverUpdates, allowOverallRollback);
             for (int i = 0; i < serverUpdates.size(); i++) {
-                UpdateResultHandlerResponse<?> rsp = rsps.get(i);
-                AbstractServerModelUpdate<?> serverUpdate = entry.getValue().get(i);
+                final UpdateResultHandlerResponse<?> rsp = rsps.get(i);
+                final AbstractServerModelUpdate<?> serverUpdate = entry.getValue().get(i);
                 DomainUpdateResult<Object> dur = resultsByUpdate.get(serverUpdate);
 
                 if (rsp.isCancelled()) {
@@ -733,8 +748,8 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
         }
 
         result = new ArrayList<DomainUpdateResult<?>>();
-        for (AbstractDomainModelUpdate<?> domainUpdate : updates) {
-            AbstractServerModelUpdate<?> serverUpdate = serverByDomain.get(domainUpdate);
+        for (final AbstractDomainModelUpdate<?> domainUpdate : updates) {
+            final AbstractServerModelUpdate<?> serverUpdate = serverByDomain.get(domainUpdate);
             DomainUpdateResult<?> dur = resultsByUpdate.get(serverUpdate);
             if (dur == null) {
                 // Update did not impact servers
@@ -750,13 +765,13 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
             final List<DomainUpdateApplierResponse> domainResults,
             final Map<AbstractDomainModelUpdate<?>, AbstractServerModelUpdate<?>> serverByDomain) {
 
-        Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> result = new HashMap<ServerIdentity, List<AbstractServerModelUpdate<?>>>();
+        final Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> result = new HashMap<ServerIdentity, List<AbstractServerModelUpdate<?>>>();
 
         for (int i = 0; i < domainResults.size(); i++) {
-            DomainUpdateApplierResponse domainResult = domainResults.get(i);
-            AbstractDomainModelUpdate<?> domainUpdate = domainUpdates.get(i);
-            AbstractServerModelUpdate<?> serverUpdate = serverByDomain.get(domainUpdate);
-            for (ServerIdentity server : domainResult.getServers()) {
+            final DomainUpdateApplierResponse domainResult = domainResults.get(i);
+            final AbstractDomainModelUpdate<?> domainUpdate = domainUpdates.get(i);
+            final AbstractServerModelUpdate<?> serverUpdate = serverByDomain.get(domainUpdate);
+            for (final ServerIdentity server : domainResult.getServers()) {
                 List<AbstractServerModelUpdate<?>> serverList = result.get(server);
                 if (serverList == null) {
                     serverList = new ArrayList<AbstractServerModelUpdate<?>>();
@@ -772,13 +787,13 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#applyHostUpdates(java.lang.String, java.util.List)
      */
     @Override
-    public List<HostUpdateResult<?>> applyHostUpdates(String hostControllerName, List<AbstractHostModelUpdate<?>> updates) {
+    public List<HostUpdateResult<?>> applyHostUpdates(final String hostControllerName, final List<AbstractHostModelUpdate<?>> updates) {
 
         List<HostUpdateResult<?>> result;
-        HostControllerClient client = clients.get(hostControllerName);
+        final HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             result = new ArrayList<HostUpdateResult<?>>(updates.size());
-            HostUpdateResult<Object> hur = new HostUpdateResult<Object>(new UpdateFailedException("Host " + hostControllerName + " is unknown"));
+            final HostUpdateResult<Object> hur = new HostUpdateResult<Object>(new UpdateFailedException("Host " + hostControllerName + " is unknown"));
             for (int i = 0; i < updates.size(); i++) {
                 result.add(hur);
             }

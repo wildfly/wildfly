@@ -34,12 +34,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.net.SocketFactory;
 
 import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
@@ -49,6 +52,12 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.mgmt.DomainControllerClientOperationHandler;
+import org.jboss.as.domain.controller.mgmt.DomainControllerOperationHandler;
+import org.jboss.as.host.controller.mgmt.HostControllerOperationHandler;
+import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
+import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
+import org.jboss.as.host.controller.mgmt.ManagementOperationHandlerService;
+import org.jboss.as.host.controller.mgmt.ServerToHostControllerOperationHandler;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -61,20 +70,15 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessControllerClient;
+import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.server.ServerState;
-import org.jboss.as.domain.controller.mgmt.DomainControllerOperationHandler;
-import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
-import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
-import org.jboss.as.host.controller.mgmt.ManagementOperationHandlerService;
-import org.jboss.as.host.controller.mgmt.HostControllerOperationHandler;
-import org.jboss.as.host.controller.mgmt.ServerToHostControllerOperationHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
@@ -90,8 +94,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLMapper;
-
-import javax.net.SocketFactory;
 
 /**
  * A HostController.
@@ -124,7 +126,7 @@ public class HostController {
      */
     private final byte[] authCode;
 
-    public HostController(HostControllerEnvironment environment, final byte[] authCode) {
+    public HostController(final HostControllerEnvironment environment, final byte[] authCode) {
         this.authCode = authCode;
         if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
@@ -140,26 +142,26 @@ public class HostController {
     }
 
     public Map<ServerIdentity, ServerStatus> getServerStatuses() {
-        Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
-        for (ServerElement se : getHostModel().getServers()) {
-            ServerIdentity id = new ServerIdentity(getName(), se.getServerGroup(), se.getName());
-            ServerStatus status = determineServerStatus(se);
+        final Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
+        for (final ServerElement se : getHostModel().getServers()) {
+            final ServerIdentity id = new ServerIdentity(getName(), se.getServerGroup(), se.getName());
+            final ServerStatus status = determineServerStatus(se);
             result.put(id, status);
         }
         return result;
     }
 
-    private ServerStatus determineServerStatus(String serverName) {
+    private ServerStatus determineServerStatus(final String serverName) {
         return determineServerStatus(getHostModel().getServer(serverName));
     }
 
-    private ServerStatus determineServerStatus(ServerElement se) {
+    private ServerStatus determineServerStatus(final ServerElement se) {
         ServerStatus status;
         if (se == null) {
             status = ServerStatus.DOES_NOT_EXIST;
         }
         else {
-            ManagedServer client = servers.get(ManagedServer.getServerProcessName(se.getName()));
+            final ManagedServer client = servers.get(ManagedServer.getServerProcessName(se.getName()));
             if (client == null) {
                 status = se.isStart() ? ServerStatus.STOPPED : ServerStatus.DISABLED;
             }
@@ -191,8 +193,8 @@ public class HostController {
         return status;
     }
 
-    public ServerModel getServerModel(String serverName) {
-        ManagedServer client = servers.get(ManagedServer.getServerProcessName(serverName));
+    public ServerModel getServerModel(final String serverName) {
+        final ManagedServer client = servers.get(ManagedServer.getServerProcessName(serverName));
         if (client == null) {
             log.debugf("Received getServerModel request for unknown server %s", serverName);
             return null;
@@ -223,7 +225,7 @@ public class HostController {
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         batchBuilder.addListener(new AbstractServiceListener<Object>() {
             @Override
-            public void serviceFailed(ServiceController<?> serviceController, StartException reason) {
+            public void serviceFailed(final ServiceController<?> serviceController, final StartException reason) {
                 log.errorf(reason, "Service [%s] failed.", serviceController.getName());
             }
         });
@@ -256,39 +258,46 @@ public class HostController {
     /**
      * The connection from a server to HC was closed
      */
-    public void connectionClosed(String processName) {
+    public void connectionClosed(final String processName) {
         if (stopping.get())
             return;
 
-        ManagedServer server = servers.get(processName);
+        final ManagedServer server = servers.get(processName);
 
         if (server == null) {
             log.errorf("No server called %s with a closed connection", processName);
             return;
         }
 
-        ServerState state = server.getState();
+        final ServerState state = server.getState();
         if (state == ServerState.STOPPED || state == ServerState.STOPPING || state == ServerState.MAX_FAILED) {
             log.debugf("Ignoring closed connection for server %s in the %s state", processName, state);
             return;
         }
     }
 
+
+    public void execute(final ModelNode request, final Queue<ModelNode> responseQueue) {
+        // FIXME implemenet execute(ModelNode, Queue<ModelNode)
+        throw new UnsupportedOperationException("implement me");
+    }
+
+    // FIXME remove: replace with execute(ModelNode, Queue<ModelNode>)
     public List<HostUpdateResult<?>> applyHostUpdates(final List<AbstractHostModelUpdate<?>> updates) {
 
-        List<HostUpdateApplierResponse> hostResults = getModelManager().applyHostModelUpdates(updates);
-        boolean allowOverallRollback = true; // FIXME make allowOverallRollback configurable
+        final List<HostUpdateApplierResponse> hostResults = getModelManager().applyHostModelUpdates(updates);
+        final boolean allowOverallRollback = true; // FIXME make allowOverallRollback configurable
         return applyUpdatesToServers(updates, hostResults, allowOverallRollback);
     }
 
     public List<UpdateResultHandlerResponse<?>> applyUpdatesToServer(final ServerIdentity server, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
 
-        ManagedServer client = servers.get(ManagedServer.getServerProcessName(server.getServerName()));
+        final ManagedServer client = servers.get(ManagedServer.getServerProcessName(server.getServerName()));
         List<UpdateResultHandlerResponse<?>> responses;
         if (client == null) {
             // TODO better handle disappearance of server
             responses = new ArrayList<UpdateResultHandlerResponse<?>>();
-            UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
+            final UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
             for (int i = 0; i < updates.size(); i++) {
                 responses.add(failure);
             }
@@ -300,13 +309,13 @@ public class HostController {
     }
 
     public List<UpdateResultHandlerResponse<?>> applyServerUpdates(final String serverName, final List<AbstractServerModelUpdate<?>> updates,
-            boolean allowOverallRollback) {
+            final boolean allowOverallRollback) {
         final ManagedServer server = servers.get(ManagedServer.getServerProcessName(serverName));
         if(server == null) {
             log.debugf("Cannot apply updates to unknown server %s", serverName);
-            UpdateResultHandlerResponse<?> urhr = UpdateResultHandlerResponse.createFailureResponse(new UpdateFailedException("No server available with name " + serverName));
-            int size = updates.size();
-            List<UpdateResultHandlerResponse<?>> list = new ArrayList<UpdateResultHandlerResponse<?>>(size);
+            final UpdateResultHandlerResponse<?> urhr = UpdateResultHandlerResponse.createFailureResponse(new UpdateFailedException("No server available with name " + serverName));
+            final int size = updates.size();
+            final List<UpdateResultHandlerResponse<?>> list = new ArrayList<UpdateResultHandlerResponse<?>>(size);
             for (int i = 0; i < size; i++) {
                 list.add(urhr);
             }
@@ -320,9 +329,9 @@ public class HostController {
      *
      * @param serverName the name of the server
      */
-    void availableServer(String serverName) {
+    void availableServer(final String serverName) {
         try {
-            ManagedServer server = servers.get(serverName);
+            final ManagedServer server = servers.get(serverName);
             if (server == null) {
                 log.errorf("No server called %s available", serverName);
                 return;
@@ -333,7 +342,7 @@ public class HostController {
             log.infof("Sending config to server %s", serverName);
             server.startServerProcess();
             server.setState(ServerState.STARTING);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.errorf(e, "Could not start server %s", serverName);
         }
     }
@@ -361,11 +370,11 @@ public class HostController {
      *
      * @param serverName the name of the server
      */
-    void stoppedServer(String serverName) {
+    void stoppedServer(final String serverName) {
         if (stopping.get())
             return;
 
-        ManagedServer server = servers.get(serverName);
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for stop", serverName);
             return;
@@ -374,14 +383,14 @@ public class HostController {
 
         try {
             processControllerClient.stopProcess(serverName);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             if (stopping.get())
                 return;
             log.errorf(e, "Could not stop server %s in PM", serverName);
         }
         try {
             processControllerClient.removeProcess(serverName);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             if (stopping.get())
                 return;
             log.errorf(e, "Could not stop server %s", serverName);
@@ -395,8 +404,8 @@ public class HostController {
      *
      * @param serverName the name of the server
      */
-    void startedServer(String serverName) {
-        ManagedServer server = servers.get(serverName);
+    void startedServer(final String serverName) {
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for start", serverName);
             return;
@@ -412,8 +421,8 @@ public class HostController {
      *
      * @param serverName the name of the server
      */
-    void failedStartServer(String serverName) {
-        ManagedServer server = servers.get(serverName);
+    void failedStartServer(final String serverName) {
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists", serverName);
             return;
@@ -430,8 +439,8 @@ public class HostController {
      * @param serverName the name of the server
      * @param state the server's state
      */
-    void reconnectedServer(String serverName, ServerState state) {
-        ManagedServer server = servers.get(serverName);
+    void reconnectedServer(final String serverName, final ServerState state) {
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server found for reconnected server %s", serverName);
             return;
@@ -442,7 +451,7 @@ public class HostController {
         if (state.isRestartOnReconnect()) {
             try {
                 server.startServerProcess();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 log.errorf(e, "Could not start reconnected server %s", server.getServerProcessName());
             }
         }
@@ -454,8 +463,8 @@ public class HostController {
      *
      * @param downServerName the process name of the server.
      */
-    public void downServer(String downServerName) {
-        ManagedServer server = servers.get(downServerName);
+    public void downServer(final String downServerName) {
+        final ManagedServer server = servers.get(downServerName);
         if (server == null) {
             log.errorf("No server called %s exists", downServerName);
             return;
@@ -467,13 +476,13 @@ public class HostController {
             try {
                 server.removeServerProcess();
                 server.addServerProcess();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 log.errorf("Error removing and adding process %s", downServerName);
                 return;
             }
             try {
                 server.startServerProcess();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 // AutoGenerated
                 throw new RuntimeException(e);
             }
@@ -490,28 +499,36 @@ public class HostController {
         configuration.setThreadFactory(Executors.defaultThreadFactory());
         configuration.setSocketFactory(SocketFactory.getDefault());
         processControllerClient = ProcessControllerClient.connect(configuration, authCode, new ProcessMessageHandler() {
+            @Override
             public void handleProcessAdded(final ProcessControllerClient client, final String processName) {
             }
 
+            @Override
             public void handleProcessStarted(final ProcessControllerClient client, final String processName) {
             }
 
+            @Override
             public void handleProcessStopped(final ProcessControllerClient client, final String processName, final long uptimeMillis) {
             }
 
+            @Override
             public void handleProcessRemoved(final ProcessControllerClient client, final String processName) {
             }
 
+            @Override
             public void handleProcessInventory(final ProcessControllerClient client, final Map<String, ProcessInfo> inventory) {
                 // TODO: reconcile our server list against the process controller inventory
             }
 
+            @Override
             public void handleConnectionShutdown(final ProcessControllerClient client) {
             }
 
+            @Override
             public void handleConnectionFailure(final ProcessControllerClient client, final IOException cause) {
             }
 
+            @Override
             public void handleConnectionFinished(final ProcessControllerClient client) {
             }
         });
@@ -553,7 +570,7 @@ public class HostController {
                 .addDependency(DomainController.SERVICE_NAME)
                 .install();
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Exception starting local domain controller", e);
         }
     }
@@ -563,12 +580,12 @@ public class HostController {
 
         final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 10L);
 
-        HostModel hostConfig = getHostModel();
+        final HostModel hostConfig = getHostModel();
         final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainControllerElement();
         final InetAddress hostAddress;
         try {
             hostAddress = InetAddress.getByName(remoteDomainControllerElement.getHost());
-        } catch (UnknownHostException e) {
+        } catch (final UnknownHostException e) {
             throw new RuntimeException("Failed to get remote domain controller address", e);
         }
         final ManagementElement managementElement = hostConfig.getManagementElement();
@@ -576,7 +593,7 @@ public class HostController {
         serviceTarget.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<DomainControllerConnection>() {
                 @Override
-                public void serviceFailed(ServiceController<? extends DomainControllerConnection> serviceController, StartException reason) {
+                public void serviceFailed(final ServiceController<? extends DomainControllerConnection> serviceController, final StartException reason) {
                     log.error("Failed to register with domain controller.", reason);
                 }
             })
@@ -594,14 +611,14 @@ public class HostController {
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
-        HostModel hostConfig = getHostModel();
+        final HostModel hostConfig = getHostModel();
         final ManagementElement managementElement = hostConfig.getManagementElement();
         if(managementElement == null) {
             throw new IllegalStateException("null management configuration");
         }
         final Set<InterfaceElement> hostInterfaces = hostConfig.getInterfaces();
         if(hostInterfaces != null) {
-            for(InterfaceElement interfaceElement : hostInterfaces) {
+            for(final InterfaceElement interfaceElement : hostInterfaces) {
                 if(interfaceElement.getName().equals(managementElement.getInterfaceName())) {
                     interfaceElement.activate(serviceActivatorContext);
                     break;
@@ -622,14 +639,17 @@ public class HostController {
         final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
         serviceTarget.addService(executorServiceName, new Service<ScheduledExecutorService>() {
             private ScheduledExecutorService executorService;
-            public synchronized void start(StartContext context) throws StartException {
+            @Override
+            public synchronized void start(final StartContext context) throws StartException {
                 executorService = Executors.newScheduledThreadPool(20, threadFactoryValue.getValue());
             }
 
-            public synchronized void stop(StopContext context) {
+            @Override
+            public synchronized void stop(final StopContext context) {
                 executorService.shutdown();
             }
 
+            @Override
             public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
                 return executorService;
             }
@@ -665,12 +685,12 @@ public class HostController {
         this.domainControllerConnection = domainControllerConnection;
 
         // By having a remote repo as a secondary content will be synced only if needed
-        FallbackRepository repository = new FallbackRepository(fileRepository, domainControllerConnection.getRemoteFileRepository());
+        final FallbackRepository repository = new FallbackRepository(fileRepository, domainControllerConnection.getRemoteFileRepository());
         modelManager.setFileRepository(repository);
         this.remoteBackedRepository = repository;
     }
 
-    void setManagementSocketAddress(InetSocketAddress managementSocketAddress) {
+    void setManagementSocketAddress(final InetSocketAddress managementSocketAddress) {
         this.managementSocketAddress = managementSocketAddress;
     }
 
@@ -696,12 +716,12 @@ public class HostController {
         modelManager.setDomainModel(domain);
     }
 
-    public ManagedServer getServer(String name) {
+    public ManagedServer getServer(final String name) {
         return servers.get(name);
     }
 
-    private void checkState(ManagedServer server, ServerState expected) {
-        ServerState state = server.getState();
+    private void checkState(final ManagedServer server, final ServerState expected) {
+        final ServerState state = server.getState();
         if (state != expected) {
             log.warnf("Server %s is not in the expected %s state: %s" , server.getServerProcessName(), expected, state);
         }
@@ -714,12 +734,12 @@ public class HostController {
     }
 
     private void synchronizeDeployments() {
-        DomainModel domainConfig = getDomainModel();
-        Set<String> serverGroupNames = domainConfig.getServerGroupNames();
-        for (ServerElement server : getHostModel().getServers()) {
-            String serverGroupName = server.getServerGroup();
+        final DomainModel domainConfig = getDomainModel();
+        final Set<String> serverGroupNames = domainConfig.getServerGroupNames();
+        for (final ServerElement server : getHostModel().getServers()) {
+            final String serverGroupName = server.getServerGroup();
             if (serverGroupNames.remove(serverGroupName)) {
-                for (ServerGroupDeploymentElement deployment : domainConfig.getServerGroup(serverGroupName).getDeployments()) {
+                for (final ServerGroupDeploymentElement deployment : domainConfig.getServerGroup(serverGroupName).getDeployments()) {
                     // Force a sync
                     remoteBackedRepository.getDeploymentFiles(deployment.getSha1Hash());
                 }
@@ -731,15 +751,15 @@ public class HostController {
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
                 synchronizeDeployments();
-                HostModel hostConfig = getHostModel();
-                for (ServerElement serverEl : hostConfig.getServers()) {
+                final HostModel hostConfig = getHostModel();
+                for (final ServerElement serverEl : hostConfig.getServers()) {
                     // TODO take command line input on what servers to start
                     if (serverEl.isStart()) {
-                        String serverName = serverEl.getName();
+                        final String serverName = serverEl.getName();
                         log.info("Starting server " + serverName);
                         try {
                             startServer(serverName, managementSocketAddress);
-                        } catch (IOException e) {
+                        } catch (final IOException e) {
                             // FIXME handle failure to start server
                             log.error("Failed to start server " + serverName, e);
                         }
@@ -754,10 +774,10 @@ public class HostController {
         }
     }
 
-    public ServerStatus startServer(String serverName) {
+    public ServerStatus startServer(final String serverName) {
         try {
-            String processName = ManagedServer.getServerProcessName(serverName);
-            ManagedServer server = servers.get(processName);
+            final String processName = ManagedServer.getServerProcessName(serverName);
+            final ManagedServer server = servers.get(processName);
             boolean canStart = true;
             if (server != null) {
                 if (server.getState() != ServerState.STOPPED) {
@@ -773,7 +793,7 @@ public class HostController {
                 startServer(serverName, managementSocketAddress);
             }
         }
-        catch (Exception e) {
+        catch (final Exception e) {
             log.errorf(e, "Failed to start server %s", serverName);
         }
 
@@ -784,7 +804,7 @@ public class HostController {
             if (status == ServerStatus.STARTING) {
                 try {
                     Thread.sleep(100);
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
                 }
@@ -797,10 +817,10 @@ public class HostController {
         return status;
     }
 
-    public ServerStatus stopServer(String serverName, long gracefulTimeout) {
+    public ServerStatus stopServer(final String serverName, final long gracefulTimeout) {
         try {
-            String processName = ManagedServer.getServerProcessName(serverName);
-            ManagedServer server = servers.get(processName);
+            final String processName = ManagedServer.getServerProcessName(serverName);
+            final ManagedServer server = servers.get(processName);
             if (server != null) {
                 if (gracefulTimeout > -1) {
                     // FIXME implement gracefulShutdown
@@ -821,20 +841,20 @@ public class HostController {
                 }
             }
         }
-        catch (Exception e) {
+        catch (final Exception e) {
             log.errorf(e, "Failed to stop server %s", serverName);
         }
 
         return determineServerStatus(serverName);
     }
 
-    public ServerStatus restartServer(String serverName, long gracefulTimeout) {
+    public ServerStatus restartServer(final String serverName, final long gracefulTimeout) {
         stopServer(serverName, gracefulTimeout);
         return startServer(serverName);
     }
 
-    private void startServer(String serverName, InetSocketAddress managementSocket) throws IOException {
-        ManagedServer server = new ManagedServer(serverName, getDomainModel(), getHostModel(), environment, processControllerClient, managementSocket);
+    private void startServer(final String serverName, final InetSocketAddress managementSocket) throws IOException {
+        final ManagedServer server = new ManagedServer(serverName, getDomainModel(), getHostModel(), environment, processControllerClient, managementSocket);
         servers.put(server.getServerProcessName(), server);
         server.addServerProcess();
         server.startServerProcess();
@@ -844,29 +864,29 @@ public class HostController {
                                                               final List<HostUpdateApplierResponse> hostResults,
                                                               final boolean allowOverallRollback) {
         List<HostUpdateResult<?>> result;
-        Map<AbstractHostModelUpdate<?>, AbstractServerModelUpdate<?>> serverByHost = new HashMap<AbstractHostModelUpdate<?>, AbstractServerModelUpdate<?>>();
-        Map<AbstractServerModelUpdate<?>, HostUpdateResult<Object>> resultsByUpdate = new HashMap<AbstractServerModelUpdate<?>, HostUpdateResult<Object>>();
+        final Map<AbstractHostModelUpdate<?>, AbstractServerModelUpdate<?>> serverByHost = new HashMap<AbstractHostModelUpdate<?>, AbstractServerModelUpdate<?>>();
+        final Map<AbstractServerModelUpdate<?>, HostUpdateResult<Object>> resultsByUpdate = new HashMap<AbstractServerModelUpdate<?>, HostUpdateResult<Object>>();
         for (int i = 0; i < updates.size(); i++) {
-            AbstractHostModelUpdate<?> hostUpdate = updates.get(i);
-            AbstractServerModelUpdate<?> serverUpdate = hostUpdate.getServerModelUpdate();
+            final AbstractHostModelUpdate<?> hostUpdate = updates.get(i);
+            final AbstractServerModelUpdate<?> serverUpdate = hostUpdate.getServerModelUpdate();
             if (serverUpdate != null) {
                 serverByHost.put(hostUpdate, serverUpdate);
                 resultsByUpdate.put(serverUpdate, new HostUpdateResult<Object>());
             }
         }
-        Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> updatesByServer =
+        final Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> updatesByServer =
                 getUpdatesByServer(updates, hostResults, serverByHost);
 
         // TODO Add param to configure pushing out concurrently
-        for (Map.Entry<ServerIdentity, List<AbstractServerModelUpdate<?>>> entry : updatesByServer.entrySet()) {
-            ServerIdentity server = entry.getKey();
-            List<AbstractServerModelUpdate<?>> serverUpdates = entry.getValue();
+        for (final Map.Entry<ServerIdentity, List<AbstractServerModelUpdate<?>>> entry : updatesByServer.entrySet()) {
+            final ServerIdentity server = entry.getKey();
+            final List<AbstractServerModelUpdate<?>> serverUpdates = entry.getValue();
             // Push them out
-            List<UpdateResultHandlerResponse<?>> rsps = applyUpdatesToServer(server, serverUpdates,
+            final List<UpdateResultHandlerResponse<?>> rsps = applyUpdatesToServer(server, serverUpdates,
                     allowOverallRollback);
             for (int i = 0; i < serverUpdates.size(); i++) {
-                UpdateResultHandlerResponse<?> rsp = rsps.get(i);
-                AbstractServerModelUpdate<?> serverUpdate = entry.getValue().get(i);
+                final UpdateResultHandlerResponse<?> rsp = rsps.get(i);
+                final AbstractServerModelUpdate<?> serverUpdate = entry.getValue().get(i);
                 HostUpdateResult<Object> hur = resultsByUpdate.get(serverUpdate);
 
                 if (rsp.isCancelled()) {
@@ -885,8 +905,8 @@ public class HostController {
         }
 
         result = new ArrayList<HostUpdateResult<?>>();
-        for (AbstractHostModelUpdate<?> hostUpdate : updates) {
-            AbstractServerModelUpdate<?> serverUpdate = serverByHost.get(hostUpdate);
+        for (final AbstractHostModelUpdate<?> hostUpdate : updates) {
+            final AbstractServerModelUpdate<?> serverUpdate = serverByHost.get(hostUpdate);
             HostUpdateResult<?> hur = resultsByUpdate.get(serverUpdate);
             if (hur == null) {
                 // Update did not impact servers
@@ -902,13 +922,13 @@ public class HostController {
             final List<HostUpdateApplierResponse> hostResults,
             final Map<AbstractHostModelUpdate<?>, AbstractServerModelUpdate<?>> serverByHost) {
 
-        Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> result = new HashMap<ServerIdentity, List<AbstractServerModelUpdate<?>>>();
+        final Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> result = new HashMap<ServerIdentity, List<AbstractServerModelUpdate<?>>>();
 
         for (int i = 0; i < hostResults.size(); i++) {
-            HostUpdateApplierResponse domainResult = hostResults.get(i);
-            AbstractHostModelUpdate<?> domainUpdate = hostUpdates.get(i);
-            AbstractServerModelUpdate<?> serverUpdate = serverByHost.get(domainUpdate);
-            for (ServerIdentity server : domainResult.getServers()) {
+            final HostUpdateApplierResponse domainResult = hostResults.get(i);
+            final AbstractHostModelUpdate<?> domainUpdate = hostUpdates.get(i);
+            final AbstractServerModelUpdate<?> serverUpdate = serverByHost.get(domainUpdate);
+            for (final ServerIdentity server : domainResult.getServers()) {
                 List<AbstractServerModelUpdate<?>> serverList = result.get(server);
                 if (serverList == null) {
                     serverList = new ArrayList<AbstractServerModelUpdate<?>>();

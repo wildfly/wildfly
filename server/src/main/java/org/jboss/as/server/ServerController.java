@@ -23,12 +23,14 @@
 package org.jboss.as.server;
 
 import java.util.List;
-
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.model.UpdateResultHandlerResponse;
+import org.jboss.dmr.ModelNode;
 
 /**
  * The API entry point for a server controller, which manages the state of running server.
@@ -52,6 +54,8 @@ public interface ServerController {
      * @return the environment
      */
     ServerEnvironment getServerEnvironment();
+
+    void execute(final ModelNode request, final Queue<ModelNode> responseQueue);
 
     /**
      * Apply a series of updates.

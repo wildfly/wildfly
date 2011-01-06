@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
@@ -24,6 +25,7 @@ import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.model.UpdateResultHandlerResponse;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -39,6 +41,8 @@ public interface DomainController {
      * with the service container of a Host Controller that is acting as the domain controller.
      */
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller");
+
+    void execute(final ModelNode request, final Queue<ModelNode> responseQueue);
 
     /**
      * Registers a Host Controller with this domain controller.
@@ -60,6 +64,7 @@ public interface DomainController {
      *
      * @return the configuration. Will not return <code>null</code>
      */
+    // FIXME remove: this is just another operation to execute
     DomainModel getDomainModel();
 
     /**
@@ -68,6 +73,7 @@ public interface DomainController {
      *
      * @return the names, or an empty set if no host controllers are registered.
      */
+    // FIXME remove: this is just another operation to execute
     Set<String> getHostControllerNames();
 
     /**
@@ -78,6 +84,7 @@ public interface DomainController {
      * @return the host controller configuration, or <code>null</code> if no
      *         Host Controller with the given name is currently registered
      */
+    // FIXME remove: this is just another operation to execute
     HostModel getHostModel(final String hostControllerName);
 
     /**
@@ -87,6 +94,7 @@ public interface DomainController {
      * @return map keyed by the {@link ServerIdentity fully-specified identity} of the servers
      *        with the server's current {@link ServerStatus} status as the value.
      */
+    // FIXME remove: this is just another operation to execute
     Map<ServerIdentity, ServerStatus> getServerStatuses();
 
     /**
@@ -98,6 +106,7 @@ public interface DomainController {
      * @return the current server configuration, or <code>null</code> if the Host Controller isn't currently
      *          registered or the server isn't started
      */
+    // FIXME remove: this is just another operation to execute
     ServerModel getServerModel(final String hostControllerName, final String serverName);
 
     /**
@@ -108,6 +117,7 @@ public interface DomainController {
      *
      * @return the status of the server after the attempt to start it
      */
+    // FIXME remove: this is just another operation to execute
     ServerStatus startServer(final String hostControllerName, final String serverName);
 
     /**
@@ -121,6 +131,7 @@ public interface DomainController {
      *
      * @return the status of the server after the attempt to stop it
      */
+    // FIXME remove: this is just another operation to execute
     ServerStatus stopServer(final String hostControllerName, final String serverName, final long gracefulTimeout);
 
     /**
@@ -134,6 +145,7 @@ public interface DomainController {
      *
      * @return the status of the server after the attempt to restart it
      */
+    // FIXME remove: this is just another operation to execute
     ServerStatus restartServer(final String hostControllerName, final String serverName, final long gracefulTimeout);
 
     /**
@@ -150,6 +162,7 @@ public interface DomainController {
      *
      * @return the results of the updates
      */
+    // FIXME remove: this is just another operation to execute
     List<DomainUpdateResult<?>> applyUpdates(List<AbstractDomainModelUpdate<?>> updates);
 
     /**
@@ -164,6 +177,7 @@ public interface DomainController {
      *
      * @return the result of the update
      */
+    // FIXME remove: this is just another operation to execute
     <T> DomainUpdateResult<T> applyUpdate(AbstractDomainModelUpdate<T> update);
 
     /**
@@ -176,6 +190,7 @@ public interface DomainController {
      * @return the results of the updates in a form appropriate for providing
      *          input to a {@link DomainUpdateApplier}'s callbacks
      */
+    // FIXME remove as the only usage is DomainDeploymentHandler, which should disappear
     List<DomainUpdateApplierResponse> applyUpdatesToModel(final List<AbstractDomainModelUpdate<?>> updates);
 
     /**
@@ -188,6 +203,8 @@ public interface DomainController {
      * @return the results of the update in a form appropriate for providing
      *          input to a {@link DomainUpdateApplier}'s callbacks
      */
+    // FIXME -- remove -- clients don't get to control the overall process of applying updates
+    // across the domain
     DomainUpdateApplierResponse applyUpdateToModel(AbstractDomainModelUpdate<?> update);
 
     /**
@@ -205,6 +222,7 @@ public interface DomainController {
      *
      * @return the results of the updates
      */
+    // FIXME remove: this is just another operation to execute
     List<HostUpdateResult<?>> applyHostUpdates(String hostControllerName, List<AbstractHostModelUpdate<?>> updates);
 
     /**
@@ -218,6 +236,8 @@ public interface DomainController {
      * @return the result of the update in a form appropriate for providing input
      *          to an {@link UpdateResultHandler}'s callbacks
      */
+    // FIXME -- remove -- clients don't get to control the overall process of applying updates
+    // across the domain
     List<UpdateResultHandlerResponse<?>> applyUpdatesToServer(final ServerIdentity server,
             final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback);
 
@@ -230,6 +250,7 @@ public interface DomainController {
      * @return <code>true</code> if there is no deployment with the given name
      *         currently registered with the domain; <code>false</code> otherwise
      */
+    // FIXME remove: this is just another operation to execute
     boolean isDeploymentNameUnique(String deploymentName);
 
     /**
@@ -245,6 +266,7 @@ public interface DomainController {
      *
      * @throws IOException if there is a problem reading or storing the content
      */
+    // TODO figure out how to handle this
     byte[] addDeploymentContent(final String uniqueName, final String runtimeName, final InputStream stream)
     throws IOException;
 
@@ -255,6 +277,7 @@ public interface DomainController {
      * @param plan the plan. Cannot be <code>null</code>
      * @param responseQueue the queue to which progress updates should be written
      */
+    // FIXME remove: this is just another operation to execute
     void executeDeploymentPlan(DeploymentPlan plan, BlockingQueue<List<StreamedResponse>> responseQueue);
 
 }
