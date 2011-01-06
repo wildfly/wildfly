@@ -24,6 +24,7 @@ package org.jboss.as.server;
 
 import java.util.concurrent.Executors;
 
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
@@ -31,7 +32,9 @@ import org.jboss.as.server.client.impl.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.mgmt.ManagementCommunicationService;
 import org.jboss.as.server.mgmt.ManagementCommunicationServiceInjector;
+import org.jboss.as.server.mgmt.ModelControllerOperationHandler;
 import org.jboss.as.server.mgmt.ServerControllerOperationHandler;
+import org.jboss.as.server.mgmt.PrototypeServerModelController;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.msc.inject.Injector;
@@ -80,6 +83,20 @@ public class ManagementInstallationService implements Service<ManagementInstalla
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             ServerDeploymentManagerImpl.addService(serverModel, context.getController().getServiceContainer(), target);
+
+            //Register the new model controller
+            //TODO This should probably get registered somewhere else
+            PrototypeServerModelController serverModelController = new PrototypeServerModelController();
+            target.addService(PrototypeServerModelController.SERVICE_NAME, serverModelController)
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            //And the model controller operation handler
+            ModelControllerOperationHandler modelControllerOperationHandler = new ModelControllerOperationHandler();
+            target.addService(PrototypeServerModelController.SERVICE_NAME.append(ModelControllerOperationHandler.OPERATION_HANDLER_NAME_SUFFIX), modelControllerOperationHandler)
+                    .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,
+                            new ManagementCommunicationServiceInjector(modelControllerOperationHandler))
+                     .addDependency(PrototypeServerModelController.SERVICE_NAME, ModelController.class, modelControllerOperationHandler.getModelControllerValue())
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
         }
 
     }

@@ -22,6 +22,9 @@
 
 package org.jboss.as.protocol;
 
+import static org.jboss.as.protocol.ProtocolConstants.CHUNK_END;
+import static org.jboss.as.protocol.ProtocolConstants.CHUNK_START;
+
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.FilterInputStream;
@@ -33,9 +36,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.Executor;
-import org.jboss.logging.Logger;
 
-import static org.jboss.as.protocol.ProtocolConstants.*;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

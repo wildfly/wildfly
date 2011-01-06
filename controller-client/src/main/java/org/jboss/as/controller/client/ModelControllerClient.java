@@ -20,26 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.client;
 
+import java.io.Closeable;
+import java.net.InetAddress;
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface ModelController {
-
-    /**
-     * Register an operation handler in this controller.
-     *
-     * @param address the address the operation applies to
-     * @param name the operation name
-     * @param handler the operation handler
-     */
-    void registerOperationHandler(PathAddress address, String name, OperationHandler handler);
+public interface ModelControllerClient extends Closeable{
 
     /**
      * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler.
@@ -69,5 +62,18 @@ public interface ModelController {
          * Attempt to cancel this operation.
          */
         void cancel();
+    }
+
+    class Factory {
+        /**
+         * Create an {@link org.jboss.as.PrototypeDetypedClient.client.api.StandaloneClient} instance for a remote address and port.
+         *
+         +         * @param address The remote address to connect to
+         * @param port The remote port
+         * @return A domain client
+         */
+        public static ModelControllerClient create(final InetAddress address, int port) {
+            return new ModelControllerClientImpl(address, port);
+        }
     }
 }

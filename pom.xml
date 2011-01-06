@@ -160,6 +160,7 @@
         <module>arquillian</module>
         <module>connector</module>
         <module>controller</module>
+        <module>controller-client</module>
         <module>demos</module>
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
@@ -1187,6 +1188,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-controller</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-controller-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

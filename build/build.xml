@@ -314,6 +314,14 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
 
+        <module-def name="org.jboss.as.controller">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.controller-client">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-controller-client"/>
+        </module-def>
+
         <module-def name="org.jboss.as.deployment-repository">
             <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-repository"/>
         </module-def>
@@ -430,6 +438,10 @@
 
         <module-def name="org.jboss.common-core">
             <maven-resource group="org.jboss" artifact="jboss-common-core"/>
+        </module-def>
+
+        <module-def name="org.jboss.dmr">
+            <maven-resource group="org.jboss" artifact="jboss-dmr"/>
         </module-def>
 
         <module-def name="org.jboss.integration.jboss-jca-spi">
