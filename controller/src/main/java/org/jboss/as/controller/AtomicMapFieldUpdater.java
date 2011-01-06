@@ -40,7 +40,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     @SuppressWarnings( { "unchecked" })
     AtomicMapFieldUpdater(AtomicReferenceFieldUpdater<C, Map> updater) {
-        this.updater = (AtomicReferenceFieldUpdater<C, Map<K, V>>) updater;
+        this.updater = (AtomicReferenceFieldUpdater) updater;
     }
 
     public void clear(C instance) {
