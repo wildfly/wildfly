@@ -43,8 +43,6 @@ public class ExampleRunner {
             deploymentUtils = new DeploymentUtils("ear-example.ear", ConfigService.class.getPackage());
             deploymentUtils.deploy();
 
-        }catch(Exception e){
-            e.printStackTrace();
         }finally{
             deploymentUtils.undeploy();
             safeClose(deploymentUtils);
