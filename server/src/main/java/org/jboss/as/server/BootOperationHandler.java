@@ -22,54 +22,21 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.as.controller.ResultHandler;
 
 /**
- *
- * TODO: this will be renamed to {@code ServerController} and replace that type
+ * An operation handler for boot-time operations.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewServerController extends ModelController {
+public interface BootOperationHandler extends ServerOperationHandler<NewBootOperationContext> {
 
     /**
-     * Get this server's environment.
+     * Execute an operation at boot time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
+     * regardless of the outcome of the operation.
      *
-     * @return the environment
+     * @param context the operation context for this operation
+     * @param resultHandler the result handler to invoke when the operation is complete
      */
-    ServerEnvironment getServerEnvironment();
-
-    /**
-     * Get this server's service container registry.
-     *
-     * @return the container registry
-     */
-    ServiceRegistry getServiceRegistry();
-
-    /**
-     * Get the server controller state.
-     *
-     * @return the state
-     */
-    State getState();
-
-    /**
-     * The server controller state.
-     */
-    enum State {
-        /**
-         * The server is starting up; both boot-time and run-time updates are being processed.
-         */
-        STARTING,
-        /**
-         * The server is running; only run-time updates are being processed.
-         */
-        RUNNING,
-        /**
-         * The server requires a restart in order to bring further updates into effect because a boot-time update
-         * was processed at run time.
-         */
-        RESTART_REQUIRED,
-    }
+    void execute(NewBootOperationContext context, ResultHandler resultHandler);
 }

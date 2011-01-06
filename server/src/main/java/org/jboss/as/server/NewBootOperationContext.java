@@ -22,21 +22,20 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
 
 /**
- * An operation handler which applies to a server.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * The server controller boot context.
  */
-public interface ServerOperationHandler<C extends NewOperationContext> extends OperationHandler {
+public interface NewBootOperationContext extends NewOperationContext {
+
     /**
-     * Execute an operation.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
+     * Add a deployment processor.
      *
-     * @param context the operation context for this operation
-     * @param resultHandler the result handler to invoke when the operation is complete
+     * @param phase the processor phase install into (must not be {@code null})
+     * @param priority the priority within the selected phase
+     * @param processor the processor to install
      */
-    void execute(C context, ResultHandler resultHandler);
+    void addDeploymentProcessor(Phase phase, int priority, DeploymentUnitProcessor processor);
 }

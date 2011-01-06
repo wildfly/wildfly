@@ -22,21 +22,8 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.ResultHandler;
-
 /**
- * An operation handler which applies to a server.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- */
-public interface ServerOperationHandler<C extends NewOperationContext> extends OperationHandler {
-    /**
-     * Execute an operation.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
-     *
-     * @param context the operation context for this operation
-     * @param resultHandler the result handler to invoke when the operation is complete
-     */
-    void execute(C context, ResultHandler resultHandler);
+* The operation context for run time operations.
+*/
+public interface NewRuntimeOperationContext extends NewOperationContext {
 }

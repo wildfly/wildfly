@@ -20,42 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.server;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * An operation handler.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface OperationHandler {
+public interface NewOperationContext {
 
     /**
-     * Get the description for this operation, without address information.
+     * Get the operation being executed.
      *
-     * @return the description
+     * @return the operation
      */
-    ModelNode getOperationDescription();
+    ModelNode getOperation();
 
     /**
-     * Apply this operation to the given model entity. This method should either
-     * successfully change the model entity, or leave the entity unchanged
-     * and throw an {@code OperationFailedException}.
+     * Get the booting server controller.
      *
-     * @param submodel the model entity to which the operation should be applied
-     * @param operation the operation description
-     * @throws IllegalArgumentException if the operation is not valid
+     * @return the server controller
      */
-    void applyModelOperation(ModelNode submodel, ModelNode operation) throws IllegalArgumentException;
+    NewServerController getServerController();
 
     /**
-     * Calculate what the compensating operation would be if an operation were executed against the given submodel.
+     * Get the target to which new services may be added.
      *
-     * @param submodel the submodel
-     * @param operation the operation
-     * @return the compensating operation
-     * @throws IllegalArgumentException if the operation does not apply to a submodel
+     * @return the service target
      */
-    ModelNode calculateCompensatingOperation(ModelNode submodel, ModelNode operation) throws IllegalArgumentException;
+    ServiceTarget getServiceTarget();
+
+    /**
+     * Get the a view of the sub-model that this operation affects, if it does affect
+     * a model element.
+     *
+     * @return the sub-model view, may be empty
+     */
+    ModelNode getSubModel();
 }
