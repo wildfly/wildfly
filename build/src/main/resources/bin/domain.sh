@@ -133,17 +133,17 @@ while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
       eval \"$JAVA\" $JAVA_OPTS \
-         -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log \
-         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
-         -jboss-home "$JBOSS_HOME" \
+         -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA\" \
          -- \
-         -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log \
-         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          $JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA\" \
@@ -152,17 +152,17 @@ while true; do
    else
       # Execute the JVM in the background
       eval \"$JAVA\" $JAVA_OPTS \
-         -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log \
-         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
-         -jboss-home "$JBOSS_HOME" \
+         -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA\" \
          -- \
-         -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log \
-         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          $JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA\" \
