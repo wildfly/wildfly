@@ -38,8 +38,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
-import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
@@ -205,7 +205,6 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
                 final CountDownLatch completeLatch = new CountDownLatch(1);
                 final IOExceptionHolder holder = new IOExceptionHolder();
                 ModelController.Operation result = modelController.execute(operation, new ResultHandler() {
-
                     @Override
                     public void handleResultFragment(String[] location, ModelNode result) {
                         try {
@@ -223,11 +222,13 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
                     }
 
                     @Override
-                    public void handleResultComplete() {
+                    public void handleResultComplete(ModelNode compensatingOperation) {
                         try {
                             asynchOperations.remove(asynchronousRequestId);
                             synchronized (marshaller) {
                                 marshaller.writeByte(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
+                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
+                                marshaller.writeObject(compensatingOperation);
                                 marshaller.flush();
                             }
                             completeLatch.countDown();

@@ -94,8 +94,8 @@ public class __ThrowawayClientTest {
         }
 
         @Override
-        public void handleResultComplete() {
-            System.out.println("Handle complete");
+        public void handleResultComplete(ModelNode compensatingOperation) {
+            System.out.println("Handle complete " + compensatingOperation);
             success = true;
             completeLatch.countDown();
         }
@@ -106,6 +106,12 @@ public class __ThrowawayClientTest {
             completeLatch.countDown();
         }
 
+        @Override
+        public void handleException(Exception e) {
+            System.out.println("Handle exception");
+            completeLatch.countDown();
+        }
+
         void waitForFragment() throws InterruptedException {
             fragmentLatch.await();
         }
@@ -113,5 +119,6 @@ public class __ThrowawayClientTest {
         void waitForComplete() throws InterruptedException {
             completeLatch.await();
         }
+
     }
 }

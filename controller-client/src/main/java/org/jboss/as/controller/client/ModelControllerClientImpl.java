@@ -84,14 +84,15 @@ class ModelControllerClientImpl implements ModelControllerClient {
         }
 
         final AsynchronousOperation result = new AsynchronousOperation();
-        executorService.execute(new Runnable() {
+        executorService.execute (new Runnable() {
             public void run() {
                 try {
                     Future<Void> f = new ExecuteAsynchronousRequest(result, operation, handler).execute(getConnectionStrategy());
 
                     while (true) {
                         try {
-                            Void v = f.get(500, TimeUnit.MILLISECONDS);
+                            //Avoid this thread hanging forever if the client gets shut down
+                            f.get(500, TimeUnit.MILLISECONDS);
                             break;
                         } catch (TimeoutException e) {
                             if (executorService.isShutdown()) {
@@ -101,6 +102,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
                     }
 
                 } catch (Exception e) {
+                    e.printStackTrace();
                     throw new RuntimeException("Failed to execute operation ", e);
                 }
             }
@@ -109,12 +111,20 @@ class ModelControllerClientImpl implements ModelControllerClient {
     }
 
     @Override
-    public ModelNode execute(final ModelNode operation) throws CancellationException {
+    public ModelNode execute(final ModelNode operation) throws CancellationException, IOException {
         if (operation == null) {
             throw new IllegalArgumentException("Null operation");
         }
         try {
             return new ExecuteSynchronousRequest(operation).executeForResult(getConnectionStrategy());
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof IOException) {
+                throw new IOException(e);
+            }
+            if (e.getCause() instanceof CancellationException) {
+                throw new CancellationException(e.getCause().getMessage());
+            }
+            throw new RuntimeException("Failed to execute operation ", e);
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute operation ", e);
         }
@@ -224,8 +234,9 @@ class ModelControllerClientImpl implements ModelControllerClient {
                 marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
                 marshaller.writeObject(operation);
                 marshaller.finish();
-            }
-            finally {
+            } catch (Exception e) {
+                handler.handleException(e);
+            } finally {
                 safeFinish(marshaller);
             }
         }
@@ -237,33 +248,39 @@ class ModelControllerClientImpl implements ModelControllerClient {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
             try {
-
-                //TODO Handle the Operation
-
                 LOOP:
                 while (true) {
                     byte command = unmarshaller.readByte();
                     switch (command) {
-                    case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT:
-                        expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_LOCATION);
-                        String[] location = unmarshal(unmarshaller, String[].class);
-                        expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_OPERATION);
-                        ModelNode node = unmarshal(unmarshaller, ModelNode.class);
-                        handler.handleResultFragment(location, node);
-                        break;
-                    case ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION:
-                        handler.handleCancellation();
-                        break LOOP;
-                    case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:
-                        handler.handleResultComplete();
-                        break LOOP;
-                    case ModelControllerClientProtocol.PARAM_REQUEST_ID:
-                        result.setAsynchronousId(unmarshaller.readInt());
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown response code " + command);
+                        case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT:{
+                            expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_LOCATION);
+                            String[] location = unmarshal(unmarshaller, String[].class);
+                            expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_OPERATION);
+                            ModelNode node = unmarshal(unmarshaller, ModelNode.class);
+                            handler.handleResultFragment(location, node);
+                            break;
+                        }
+                        case ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION:{
+                            handler.handleCancellation();
+                            break LOOP;
+                        }
+                        case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:{
+                            expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_OPERATION);
+                            ModelNode node = unmarshal(unmarshaller, ModelNode.class);
+                            handler.handleResultComplete(node);
+                            break LOOP;
+                        }
+                        case ModelControllerClientProtocol.PARAM_REQUEST_ID:{
+                            result.setAsynchronousId(unmarshaller.readInt());
+                            break;
+                        }
+                        default:{
+                            throw new IllegalStateException("Unknown response code " + command);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                handler.handleException(e);
             } finally {
                 safeFinish(unmarshaller);
             }
@@ -311,12 +328,14 @@ class ModelControllerClientImpl implements ModelControllerClient {
         SimpleFuture<Integer> asynchronousId = new SimpleFuture<Integer>();
 
         @Override
-        public void cancel() {
+        public void cancel() throws IOException {
             try {
                 int i = asynchronousId.get().intValue();
                 if (i >= 0) {
                     new CancelAsynchronousOperationRequest(i).executeForResult(getConnectionStrategy());
                 }
+            } catch (IOException e) {
+                throw e;
             } catch (Exception e) {
                 throw new RuntimeException("Could not cancel request ", e);
             }

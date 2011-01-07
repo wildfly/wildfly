@@ -24,7 +24,6 @@ package org.jboss.as.controller;
 
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**

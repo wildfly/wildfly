@@ -23,6 +23,7 @@
 package org.jboss.as.controller.client;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.CancellationException;
 
@@ -50,8 +51,9 @@ public interface ModelControllerClient extends Closeable{
      * @return the result
      * @throws CancellationException if the operation was cancelled due to interruption (the thread's interrupt
      * status will be set)
+     * @throws IOException if an error happened talking to the remote host
      */
-    ModelNode execute(ModelNode operation) throws CancellationException;
+    ModelNode execute(ModelNode operation) throws CancellationException, IOException;
 
     /**
      * A handle for a specific running operation.
@@ -60,8 +62,9 @@ public interface ModelControllerClient extends Closeable{
 
         /**
          * Attempt to cancel this operation.
+         * @throws IOException if an error happened talking to the remote host
          */
-        void cancel();
+        void cancel() throws IOException;
     }
 
     class Factory {

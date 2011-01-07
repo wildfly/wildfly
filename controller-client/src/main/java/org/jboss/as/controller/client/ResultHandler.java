@@ -37,7 +37,23 @@ public interface ResultHandler {
      */
     void handleResultFragment(String[] location, ModelNode result);
 
-    void handleResultComplete();
+    /**
+     * Handle operation completion.  The compensating update for the completed update
+     * is passed in; if there is no such possible update, the value is {@code undefined}.
+     *
+     * @param compensatingOperation the compensating operation object
+     */
+    void handleResultComplete(ModelNode compensatingOperation);
 
+    /**
+     * Signify that this operation was cancelled.
+     */
     void handleCancellation();
+
+    /**
+     * An exception occurred talking to the remote host
+     *
+     * @param e the exception
+     */
+    void handleException(Exception e);
 }

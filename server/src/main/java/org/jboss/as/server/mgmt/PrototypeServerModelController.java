@@ -25,7 +25,7 @@ import org.jboss.as.controller.AbstractModelController;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ResultHandler;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -71,10 +71,9 @@ public class PrototypeServerModelController extends AbstractModelController impl
                     try {
                         Thread.sleep(sleep * 2);
                     } catch (InterruptedException e) {
-                        System.out.println("!!! Interrupted");
                         return;
                     }
-                    handler.handleResultComplete();
+                    handler.handleResultComplete(new ModelNode());
                 }
             });
             t.start();
@@ -90,7 +89,7 @@ public class PrototypeServerModelController extends AbstractModelController impl
 
         } else {
             handler.handleResultFragment(new String[] {"result"}, operation);
-            handler.handleResultComplete();
+            handler.handleResultComplete(new ModelNode());
             return new ModelController.Operation() {
 
                 @Override
