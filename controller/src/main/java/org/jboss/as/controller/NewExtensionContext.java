@@ -32,6 +32,7 @@ public interface NewExtensionContext {
     /**
      * Register a new subsystem type.  The returned registration object should be used
      * to configure XML parsers, operation handlers, and other subsystem-specific constructs
+<<<<<<< HEAD
      * for the new subsystem.  If the subsystem registration is deemed invalid by the time the
      * extension registration is complete, the subsystem registration will be ignored, and an
      * error message will be logged.
@@ -45,4 +46,13 @@ public interface NewExtensionContext {
      * @throws IllegalArgumentException if the subsystem name or namespace has already been registered
      */
     SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException;
+=======
+     * for the new subsystem.
+     *
+     * @param name the name of the subsystem
+     * @param xmlNameSpace the XML namespace of the subsystem elements
+     * @throws IllegalArgumentException if the subsystem name or namespace has already been registered
+     */
+    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace);
+>>>>>>> XML based config persister using new StaxMapper API
 }
