@@ -20,27 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.controller;
 
-import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ResultHandler;
+import java.util.Collections;
+import java.util.List;
 import org.jboss.dmr.ModelNode;
 
 /**
- * An operation handler for run-time operations.
+ * A configuration persister which does not store configuration changes.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface RuntimeOperationHandler extends ServerOperationHandler<NewRuntimeOperationContext> {
+public final class NullConfigurationPersister implements NewConfigurationPersister {
 
-    /**
-     * Execute an operation at run time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
-     *
-     * @param context the operation context for this operation
-     * @param operation the operation being executed
-     * @param resultHandler the result handler to invoke when the operation is complete
-     * @return a handle which may be used to asynchronously cancel this operation
-     */
-    Cancellable execute(NewRuntimeOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    /** {@inheritDoc} */
+    public void store(final ModelNode model) {
+        // no op
+    }
+
+    /** {@inheritDoc} */
+    public List<ModelNode> load() {
+        return Collections.emptyList();
+    }
 }

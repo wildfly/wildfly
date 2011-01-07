@@ -20,27 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.controller;
 
-import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * An operation handler for run-time operations.
+ * A base implementation of an operation context.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface RuntimeOperationHandler extends ServerOperationHandler<NewRuntimeOperationContext> {
+public class NewOperationContextImpl implements NewOperationContext {
+    private final ModelController controller;
+    private ModelNode subModel;
 
     /**
-     * Execute an operation at run time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
+     * Construct a new instance.
      *
-     * @param context the operation context for this operation
-     * @param operation the operation being executed
-     * @param resultHandler the result handler to invoke when the operation is complete
-     * @return a handle which may be used to asynchronously cancel this operation
+     * @param controller the model controller
+     * @param subModel the affected submodel
      */
-    Cancellable execute(NewRuntimeOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    public NewOperationContextImpl(final ModelController controller, final ModelNode subModel) {
+        this.controller = controller;
+        this.subModel = subModel;
+    }
+
+    /** {@inheritDoc} */
+    public ModelController getController() {
+        return controller;
+    }
+
+    /** {@inheritDoc} */
+    public ModelNode getSubModel() {
+        return subModel;
+    }
 }

@@ -47,7 +47,7 @@ public interface ModelController {
      * @param handler the result handler
      * @return a handle which may be used to cancel the operation
      */
-    Operation execute(ModelNode operation, ResultHandler handler);
+    Cancellable execute(ModelNode operation, ResultHandler handler);
 
     /**
      * Execute an operation synchronously.
@@ -56,17 +56,7 @@ public interface ModelController {
      * @return the result
      * @throws CancellationException if the operation was cancelled due to interruption (the thread's interrupt
      * status will be set)
+     * @throws OperationFailedException if the operation failed; the exception will include the cause
      */
-    ModelNode execute(ModelNode operation) throws CancellationException;
-
-    /**
-     * A handle for a specific running operation.
-     */
-    interface Operation {
-
-        /**
-         * Attempt to cancel this operation.
-         */
-        void cancel();
-    }
+    ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException;
 }

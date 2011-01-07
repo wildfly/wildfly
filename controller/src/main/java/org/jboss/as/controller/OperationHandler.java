@@ -40,13 +40,12 @@ public interface OperationHandler {
 
     /**
      * Execute an operation.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.  This method returns an operation which would reverse
-     * (undo) this operation, if possible.
+     * regardless of the outcome of the operation.
      *
      * @param context the context for this operation
      * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
-     * @return the compensating operation
+     * @return a handle which may be used to asynchronously cancel this operation
      */
-    ModelNode execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

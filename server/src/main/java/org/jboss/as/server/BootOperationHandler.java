@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -36,12 +37,12 @@ public interface BootOperationHandler extends ServerOperationHandler<NewBootOper
 
     /**
      * Execute an operation at boot time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.  This method returns an operation which would reverse
-     * (undo) this operation, if possible.
+     * regardless of the outcome of the operation.
      *
      * @param context the operation context for this operation
      * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
+     * @return a handler which may be used to asynchronously cancel this operation
      */
-    ModelNode execute(NewBootOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    Cancellable execute(NewBootOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

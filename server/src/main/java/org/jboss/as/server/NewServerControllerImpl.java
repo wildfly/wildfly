@@ -22,20 +22,44 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.AbstractModelController;
+import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.NewConfigurationPersister;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewOperationContextImpl;
+import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class NewServerControllerImpl extends AbstractModelController implements NewServerController {
+final class NewServerControllerImpl extends BasicModelController implements NewServerController {
 
-    NewServerControllerImpl() {
+    private final ServiceContainer container;
+    private final ServiceRegistry registry;
+    private final ServerEnvironment serverEnvironment;
+    private final NewConfigurationPersister configurationPersister;
+    private volatile State state;
+
+    NewServerControllerImpl(final ServiceContainer container, final ServiceRegistry registry, final ServerEnvironment serverEnvironment, final NewConfigurationPersister configurationPersister) {
+        super(configurationPersister);
+        this.container = container;
+        this.registry = registry;
+        this.serverEnvironment = serverEnvironment;
+        this.configurationPersister = configurationPersister;
+    }
+
+    void init() {
         registerOperationHandler(PathAddress.EMPTY_ADDRESS, "shutdown", /*todo*/ null);
         registerOperationHandler(PathAddress.EMPTY_ADDRESS, "restart", /*todo*/ null);
+        state = State.STARTING;
     }
 
     /**
@@ -44,7 +68,7 @@ public final class NewServerControllerImpl extends AbstractModelController imple
      * @return the environment
      */
     public ServerEnvironment getServerEnvironment() {
-        return null;
+        return serverEnvironment;
     }
 
     /**
@@ -53,7 +77,7 @@ public final class NewServerControllerImpl extends AbstractModelController imple
      * @return the container registry
      */
     public ServiceRegistry getServiceRegistry() {
-        return null;
+        return registry;
     }
 
     /**
@@ -62,18 +86,63 @@ public final class NewServerControllerImpl extends AbstractModelController imple
      * @return the state
      */
     public State getState() {
-        return null;
+        return state;
     }
 
-    /**
-     * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler.
-     *
-     * @param operation the operation to execute
-     * @param handler the result handler
-     *
-     * @return a handle which may be used to cancel the operation
-     */
-    public Operation execute(final ModelNode operation, final ResultHandler handler) {
-        return null;
+    /** {@inheritDoc} */
+    protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
+        if (operationHandler instanceof BootOperationHandler && state == State.STARTING) {
+            return new BootContextImpl(subModel);
+        } else if (operationHandler instanceof RuntimeOperationHandler && state != State.RESTART_REQUIRED) {
+            return new RuntimeContextImpl(subModel);
+        } else {
+            return super.getOperationContext(subModel, operation, operationHandler);
+        }
+    }
+
+    /** {@inheritDoc} */
+    protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
+        if (context instanceof NewBootOperationContext) {
+            return ((BootOperationHandler)operationHandler).execute((NewBootOperationContext) context, operation, resultHandler);
+        } else if (context instanceof NewRuntimeOperationContext) {
+            return ((RuntimeOperationHandler)operationHandler).execute((NewRuntimeOperationContext) context, operation, resultHandler);
+        } else {
+            return super.doExecute(context, operation, operationHandler, resultHandler);
+        }
+    }
+
+    private class BootContextImpl extends NewOperationContextImpl implements NewBootOperationContext {
+
+        private BootContextImpl(final ModelNode subModel) {
+            super(NewServerControllerImpl.this, subModel);
+        }
+
+        public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
+        }
+
+        public NewServerController getController() {
+            return (NewServerController) super.getController();
+        }
+
+        public ServiceTarget getServiceTarget() {
+            // TODO: A tracking service listener which will somehow call complete when the operation is done
+            return container;
+        }
+    }
+
+    private class RuntimeContextImpl extends NewOperationContextImpl implements NewRuntimeOperationContext {
+
+        private RuntimeContextImpl(final ModelNode subModel) {
+            super(NewServerControllerImpl.this, subModel);
+        }
+
+        public NewServerController getController() {
+            return (NewServerController) super.getController();
+        }
+
+        public ServiceTarget getServiceTarget() {
+            // TODO: A tracking service listener which will somehow call complete when the operation is done
+            return container;
+        }
     }
 }

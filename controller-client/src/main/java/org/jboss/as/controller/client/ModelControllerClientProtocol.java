@@ -41,7 +41,7 @@ public interface ModelControllerClientProtocol {
     int PARAM_HANDLE_RESULT_COMPLETE = 0x64;
     int PARAM_HANDLE_CANCELLATION = 0x65;
     int PARAM_REQUEST_ID = 0x66;
-
+    int PARAM_HANDLE_RESULT_FAILED = 0x67;
 
     int HANDLER_ID = 0x76;
 }

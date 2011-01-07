@@ -20,27 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
-
-import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.dmr.ModelNode;
+package org.jboss.as.controller;
 
 /**
- * An operation handler for run-time operations.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * A handle for a specific cancellable running operation.
  */
-public interface RuntimeOperationHandler extends ServerOperationHandler<NewRuntimeOperationContext> {
+public interface Cancellable {
 
     /**
-     * Execute an operation at run time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
-     *
-     * @param context the operation context for this operation
-     * @param operation the operation being executed
-     * @param resultHandler the result handler to invoke when the operation is complete
-     * @return a handle which may be used to asynchronously cancel this operation
+     * Attempt to cancel this operation.
      */
-    Cancellable execute(NewRuntimeOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    void cancel();
+
+    /**
+     * An empty implementation which does nothing when a cancel is requested.
+     */
+    Cancellable NULL = new Cancellable() {
+        public void cancel() {
+        }
+    };
 }

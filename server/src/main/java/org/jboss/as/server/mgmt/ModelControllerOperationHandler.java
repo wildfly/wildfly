@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
@@ -85,7 +86,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
 
     private final AtomicInteger currentAsynchronousRequestId = new AtomicInteger();
 
-    private final Map<Integer, ModelController.Operation> asynchOperations = Collections.synchronizedMap(new HashMap<Integer, ModelController.Operation>());
+    private final Map<Integer, Cancellable> asynchOperations = Collections.synchronizedMap(new HashMap<Integer, Cancellable>());
 
     private static Marshaller getMarshaller() throws IOException {
         return ProtocolUtils.getMarshaller(CONFIG);
@@ -204,7 +205,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
 
                 final CountDownLatch completeLatch = new CountDownLatch(1);
                 final IOExceptionHolder holder = new IOExceptionHolder();
-                ModelController.Operation result = modelController.execute(operation, new ResultHandler() {
+                Cancellable result = modelController.execute(operation, new ResultHandler() {
                     @Override
                     public void handleResultFragment(String[] location, ModelNode result) {
                         try {
@@ -229,6 +230,21 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
                                 marshaller.writeByte(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
                                 marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
                                 marshaller.writeObject(compensatingOperation);
+                                marshaller.flush();
+                            }
+                            completeLatch.countDown();
+                        } catch (IOException e) {
+                            handleIOException(e);
+                        }
+                    }
+
+                    public void handleFailed(final ModelNode failureDescription) {
+                        try {
+                            asynchOperations.remove(asynchronousRequestId);
+                            synchronized (marshaller) {
+                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
+                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
+                                marshaller.writeObject(failureDescription);
                                 marshaller.flush();
                             }
                             completeLatch.countDown();
@@ -314,7 +330,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
                 safeFinish(unmarshaller);
             }
 
-            ModelController.Operation operation = asynchOperations.get(Integer.valueOf(operationId));
+            Cancellable operation = asynchOperations.get(Integer.valueOf(operationId));
             if (operation != null) {
                 operation.cancel();
             }

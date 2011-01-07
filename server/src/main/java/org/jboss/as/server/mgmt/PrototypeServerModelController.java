@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,8 +21,8 @@
  */
 package org.jboss.as.server.mgmt;
 
-import org.jboss.as.controller.AbstractModelController;
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
@@ -40,16 +40,20 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class PrototypeServerModelController extends AbstractModelController implements Service<PrototypeServerModelController>{
+public class PrototypeServerModelController extends BasicModelController implements Service<PrototypeServerModelController>{
 
     public static final ServiceName SERVICE_NAME = Services.JBOSS_AS.append("server", "model", "controller");
+
+    public PrototypeServerModelController() {
+        super(configurationPersister);
+    }
 
     @Override
     public void registerOperationHandler(PathAddress address, String name, OperationHandler handler) {
     }
 
     @Override
-    public Operation execute(final ModelNode operation, final ResultHandler handler) {
+    public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
         //Just a silly echo thing handled for now
         String operationName = operation.get("operation").asString();
         if (!"echo".equals(operationName)) {
@@ -78,7 +82,7 @@ public class PrototypeServerModelController extends AbstractModelController impl
             });
             t.start();
 
-            return new ModelController.Operation() {
+            return new Cancellable() {
 
                 @Override
                 public void cancel() {
@@ -90,7 +94,7 @@ public class PrototypeServerModelController extends AbstractModelController impl
         } else {
             handler.handleResultFragment(new String[] {"result"}, operation);
             handler.handleResultComplete(new ModelNode());
-            return new ModelController.Operation() {
+            return new Cancellable() {
 
                 @Override
                 public void cancel() {

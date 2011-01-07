@@ -25,11 +25,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -151,6 +153,49 @@ public class PathAddress implements Iterable<PathElement> {
      */
     public PathAddress append(PathElement... additionalElements) {
         return append(Arrays.asList(additionalElements));
+    }
+
+    /**
+     * Navigate to this address in the given model node.
+     *
+     * @param model the model node
+     * @param create {@code true} to create the last part of the node if it does not exist
+     * @return the submodel
+     * @throws NoSuchElementException if the model contains no such element
+     */
+    public ModelNode navigate(ModelNode model, boolean create) throws NoSuchElementException {
+        final Iterator<PathElement> i = pathAddressList.iterator();
+        while (i.hasNext()) {
+            final PathElement element = i.next();
+            if (create && ! i.hasNext()) {
+                model = model.require(element.getKey()).get(element.getValue());
+            } else {
+                model = model.require(element.getKey()).require(element.getValue());
+            }
+        }
+        return model;
+    }
+
+    /**
+     * Convert this path address to its model node representation.
+     *
+     * @return the model node list of properties
+     */
+    public ModelNode toModelNode() {
+        final ModelNode node = new ModelNode();
+        for (PathElement element : pathAddressList) {
+            node.add(element.getKey(), element.getValue());
+        }
+        return node;
+    }
+
+    /**
+     * Get the size of this path, in elements.
+     *
+     * @return the size
+     */
+    public int size() {
+        return pathAddressList.size();
     }
 
     /**

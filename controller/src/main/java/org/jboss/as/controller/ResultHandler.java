@@ -46,6 +46,13 @@ public interface ResultHandler {
     void handleResultComplete(ModelNode compensatingOperation);
 
     /**
+     * Handle an operation failure.
+     *
+     * @param failureDescription the failure description
+     */
+    void handleFailed(ModelNode failureDescription);
+
+    /**
      * Signify that this operation was cancelled.
      */
     void handleCancellation();
