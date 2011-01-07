@@ -30,6 +30,15 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractModelController implements ModelController {
+    private final OperationRegistry registry = OperationRegistry.create();
+
+    public void registerOperationHandler(final PathAddress address, final String name, final OperationHandler handler) {
+        registry.register(address, name, handler);
+    }
+
+    protected OperationHandler getHandler(final PathAddress address, final String name) {
+        return registry.getHandler(address, name);
+    }
 
     public ModelNode execute(final ModelNode operation) {
         final AtomicInteger status = new AtomicInteger();
