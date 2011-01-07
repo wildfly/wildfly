@@ -39,6 +39,16 @@ public interface OperationHandler {
     ModelNode getOperationDescription();
 
     /**
+     * Execute an operation.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
+     * regardless of the outcome of the operation.
+     *
+     * @param context the context for this operation
+     * @param operation the operation being executed
+     * @param resultHandler the result handler to invoke when the operation is complete
+     */
+    void execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
+
+    /**
      * Apply this operation to the given model entity. This method should either
      * successfully change the model entity, or leave the entity unchanged
      * and throw an {@code OperationFailedException}.

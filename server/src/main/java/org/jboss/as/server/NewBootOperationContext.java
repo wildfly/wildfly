@@ -28,7 +28,7 @@ import org.jboss.as.server.deployment.Phase;
 /**
  * The server controller boot context.
  */
-public interface NewBootOperationContext extends NewOperationContext {
+public interface NewBootOperationContext extends NewServerOperationContext {
 
     /**
      * Add a deployment processor.

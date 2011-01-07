@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -31,31 +30,18 @@ import org.jboss.msc.service.ServiceTarget;
 public interface NewOperationContext {
 
     /**
-     * Get the operation being executed.
+     * Get the model controller performing this update.
      *
-     * @return the operation
+     * @return the controller
      */
-    ModelNode getOperation();
-
-    /**
-     * Get the booting server controller.
-     *
-     * @return the server controller
-     */
-    NewServerController getServerController();
-
-    /**
-     * Get the target to which new services may be added.
-     *
-     * @return the service target
-     */
-    ServiceTarget getServiceTarget();
+    ModelController getController();
 
     /**
      * Get the a view of the sub-model that this operation affects, if it does affect
      * a model element.
      *
-     * @return the sub-model view, may be empty
+     * @return the sub-model view
+     * @throws IllegalArgumentException if no sub-model is associated with this operation
      */
-    ModelNode getSubModel();
+    ModelNode getSubModel() throws IllegalArgumentException;
 }

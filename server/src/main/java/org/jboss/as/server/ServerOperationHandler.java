@@ -22,21 +22,37 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * An operation handler which applies to a server.
+ * An operation handler which applies to a server.  For any given operation, either of the {@code execute} methods
+ * may be invoked depending on the state of the server, or whether the operation is running on the domain or host
+ * controller.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ServerOperationHandler<C extends NewOperationContext> extends OperationHandler {
+public interface ServerOperationHandler<C extends NewServerOperationContext> extends OperationHandler {
+
     /**
-     * Execute an operation.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
+     * Execute an operation without applying it to the runtime environment.  This method <b>must</b> invoke one of the
+     * completion methods on {@code resultHandler} regardless of the outcome of the operation.
      *
-     * @param context the operation context for this operation
+     * @param context the context for this operation
+     * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
      */
-    void execute(C context, ResultHandler resultHandler);
+    void execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
+
+    /**
+     * Execute an operation, also applying it to the runtime environment.  This method <b>must</b> invoke one of the
+     * completion methods on {@code resultHandler} regardless of the outcome of the operation.
+     *
+     * @param context the context for this operation
+     * @param operation the operation being executed
+     * @param resultHandler the result handler to invoke when the operation is complete
+     */
+    void execute(C context, ModelNode operation, ResultHandler resultHandler);
 }

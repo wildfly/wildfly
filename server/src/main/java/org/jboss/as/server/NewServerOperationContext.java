@@ -22,23 +22,21 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * An operation handler for run-time operations.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface RuntimeOperationHandler extends ServerOperationHandler<NewRuntimeOperationContext> {
+public interface NewServerOperationContext extends NewOperationContext {
+
+    /** {@inheritDoc} */
+    NewServerController getController();
 
     /**
-     * Execute an operation at run time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
+     * Get the target to which new services may be added.
      *
-     * @param context the operation context for this operation
-     * @param operation the operation being executed
-     * @param resultHandler the result handler to invoke when the operation is complete
+     * @return the service target
      */
-    void execute(NewRuntimeOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    ServiceTarget getServiceTarget();
 }

@@ -25,5 +25,5 @@ package org.jboss.as.server;
 /**
 * The operation context for run time operations.
 */
-public interface NewRuntimeOperationContext extends NewOperationContext {
+public interface NewRuntimeOperationContext extends NewServerOperationContext {
 }

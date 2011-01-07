@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * An operation handler for boot-time operations.
@@ -36,7 +37,8 @@ public interface BootOperationHandler extends ServerOperationHandler<NewBootOper
      * regardless of the outcome of the operation.
      *
      * @param context the operation context for this operation
+     * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
      */
-    void execute(NewBootOperationContext context, ResultHandler resultHandler);
+    void execute(NewBootOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }
