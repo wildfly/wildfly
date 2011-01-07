@@ -84,6 +84,8 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
 
         // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib
         deploymentResourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+        // Make sure the root does not end up in the module
+        ModuleRootMarker.markRoot(deploymentResourceRoot, false);
 
         // TODO: This needs to be ported to add additional resource roots the standard way
         final MountHandle mountHandle = deploymentResourceRoot.getMountHandle();
