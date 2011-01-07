@@ -23,18 +23,21 @@
 package org.jboss.as.controller;
 
 /**
+ * An extension to the JBoss Application Server.  Implementations of this interface should
+ * have a zero-arg constructor.  Extension modules must contain a {@code META-INF/services/org.jboss.as.controller.NewExtension}
+ * file with a line containing the name of the implementation class.
+ *
+ * @see java.util.ServiceLoader
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewExtensionContext {
+public interface NewExtension {
 
     /**
-     * Register a new subsystem type.  The returned registration object should be used
-     * to configure XML parsers, operation handlers, and other subsystem-specific constructs
-     * for the new subsystem.
+     * Initialize this extension by registering its operation handlers and configuration
+     * parsers.
      *
-     * @param name the name of the subsystem
-     * @param xmlNameSpace the XML namespace of the subsystem elements
-     * @throws IllegalArgumentException if the subsystem name or namespace has already been registered
+     * @param context the extension context
      */
-    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace);
+    void initialize(NewExtensionContext context);
 }

@@ -126,7 +126,7 @@
         <version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
-        <version.org.jboss.staxmapper>1.0.0.Beta2</version.org.jboss.staxmapper>
+        <version.org.jboss.staxmapper>1.0.0.Beta3</version.org.jboss.staxmapper>
         <version.org.jboss.stdio.jboss-stdio>1.0.0.CR3</version.org.jboss.stdio.jboss-stdio>
         <version.org.jboss.threads.jboss-threads>2.0.0.CR8</version.org.jboss.threads.jboss-threads>
         <version.jboss.web>7.0.0.Beta1</version.jboss.web>
@@ -1535,7 +1535,12 @@
             </dependency>
 
             <dependency>
-<<<<<<< HEAD
+               <groupId>org.jboss</groupId>
+               <artifactId>jboss-dmr</artifactId>
+               <version>${version.org.jboss.jboss-dmr}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.classfilewriter</groupId>
                 <artifactId>jboss-classfilewriter</artifactId>
                 <version>${version.org.jboss.classfilewriter}</version>
@@ -1545,11 +1550,6 @@
                 <groupId>org.jboss.invocation</groupId>
                 <artifactId>jboss-invocation</artifactId>
                 <version>${version.org.jboss.invocaton}</version>
-=======
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-dmr</artifactId>
-                <version>${version.org.jboss.jboss-dmr}</version>
->>>>>>> First cut on detyped API using jboss-dmr
             </dependency>
 
             <dependency>

@@ -22,19 +22,26 @@
 
 package org.jboss.as.controller;
 
+import java.util.List;
+import org.jboss.dmr.ModelNode;
+
 /**
+ * The configuration persister for a model.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewExtensionContext {
+public interface NewConfigurationPersister {
 
     /**
-     * Register a new subsystem type.  The returned registration object should be used
-     * to configure XML parsers, operation handlers, and other subsystem-specific constructs
-     * for the new subsystem.
+     * Persist the given configuration model.
      *
-     * @param name the name of the subsystem
-     * @param xmlNameSpace the XML namespace of the subsystem elements
-     * @throws IllegalArgumentException if the subsystem name or namespace has already been registered
+     * @param model the model to persist
      */
-    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace);
+    void store(ModelNode model) throws ConfigurationPersistenceException;
+
+    /**
+     * Load the configuration model, returning it as a list of updates to be
+     * executed by the controller.
+     */
+    List<ModelNode> load() throws ConfigurationPersistenceException;
 }
