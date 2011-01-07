@@ -73,6 +73,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             }
         }
         final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle, false);
+        ModuleRootMarker.markRoot(resourceRoot);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
 
     }
