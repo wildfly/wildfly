@@ -94,8 +94,7 @@ public class BasicModelController implements ModelController {
         final OperationHandler operationHandler = registry.getHandler(address, operationName);
         final ModelNode subModel;
         try {
-            // todo, this is a bit of a hack - only create a new node if the operation is called "add"
-            subModel = address.navigate(model, operationName.equals("add"));
+            subModel = address.navigate(model, false);
         } catch (NoSuchElementException e) {
             handler.handleResultFragment(NO_STRINGS, getFailureResult(e));
             return Cancellable.NULL;

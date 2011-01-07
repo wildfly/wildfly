@@ -45,7 +45,7 @@ public class PrototypeServerModelController extends BasicModelController impleme
     public static final ServiceName SERVICE_NAME = Services.JBOSS_AS.append("server", "model", "controller");
 
     public PrototypeServerModelController() {
-        super(configurationPersister);
+        super(null);
     }
 
     @Override

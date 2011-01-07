@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.protocol.Connection;
@@ -172,7 +173,12 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-            ModelNode result = modelController.execute(operation);
+            ModelNode result = null;
+            try {
+                result = modelController.execute(operation);
+            } catch (OperationFailedException e) {
+                throw new IOException(e);
+            }
             final Marshaller marshaller = getMarshaller();
             try {
                 marshaller.start(createByteOutput(outputStream));

@@ -34,7 +34,8 @@ public interface NewExtensionContext {
      *
      * @param name the name of the subsystem
      * @param xmlNameSpace the XML namespace of the subsystem elements
+     * @param addHandler the handler to use for new subsystem adds
      * @throws IllegalArgumentException if the subsystem name or namespace has already been registered
      */
-    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace);
+    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace, OperationHandler addHandler);
 }

@@ -50,9 +50,9 @@ public interface SubsystemRegistration {
     void setDeploymentParser(XMLElementReader<ModelNode> reader);
 
     /**
-     * Register a subsystem operation handler.  Subsystems must at least register an "add" handler.  The "remove"
-     * and "read" handlers are automatically registered and cannot be overridden.  The given address is relative,
-     * so to register an operation which runs on the root of the subsystem, use {@link PathAddress#EMPTY_ADDRESS}.
+     * Register a subsystem operation handler.  The "add, "remove", and "read" handlers are automatically registered
+     * and cannot be overridden.  The given address is relative, so to register an operation which runs on the root
+     * of the subsystem, use {@link PathAddress#EMPTY_ADDRESS}.
      *
      * @param operationName the operation name (must not be {@code null})
      * @param relativeAddress the relative address (must not be {@code null})
