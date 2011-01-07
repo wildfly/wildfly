@@ -24,8 +24,6 @@
 
 <module xmlns="urn:jboss:module:1.0" name="org.jboss.as.domain-controller">
 
-    <main-class name="org.jboss.as.domain.controller.Main"/>
-
     <resources>
         <!-- Insert resources here -->
     </resources>
