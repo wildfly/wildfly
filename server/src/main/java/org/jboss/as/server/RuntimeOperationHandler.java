@@ -34,11 +34,12 @@ public interface RuntimeOperationHandler extends ServerOperationHandler<NewRunti
 
     /**
      * Execute an operation at run time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
+     * regardless of the outcome of the operation.  This method returns an operation which would reverse
+     * (undo) this operation, if possible.
      *
      * @param context the operation context for this operation
      * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
      */
-    void execute(NewRuntimeOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    ModelNode execute(NewRuntimeOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

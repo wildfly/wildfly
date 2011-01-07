@@ -26,7 +26,9 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * An operation handler for boot-time operations.
+ * An operation handler for boot-time operations.  These operations will only be applied to the running container
+ * state at boot time.  Executing a boot-time operation at run time will prevent further run-time updates from being
+ * applied to the container until it is restarted.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -34,11 +36,12 @@ public interface BootOperationHandler extends ServerOperationHandler<NewBootOper
 
     /**
      * Execute an operation at boot time.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
+     * regardless of the outcome of the operation.  This method returns an operation which would reverse
+     * (undo) this operation, if possible.
      *
      * @param context the operation context for this operation
      * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
      */
-    void execute(NewBootOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    ModelNode execute(NewBootOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

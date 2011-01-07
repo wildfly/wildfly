@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.registry;
 
 import java.util.Collections;
 import java.util.Iterator;

@@ -40,21 +40,13 @@ public interface OperationHandler {
 
     /**
      * Execute an operation.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
-     * regardless of the outcome of the operation.
+     * regardless of the outcome of the operation.  This method returns an operation which would reverse
+     * (undo) this operation, if possible.
      *
      * @param context the context for this operation
      * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
-     */
-    void execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
-
-    /**
-     * Calculate what the compensating operation would be if an operation were executed against the given submodel.
-     *
-     * @param submodel the submodel
-     * @param operation the operation
      * @return the compensating operation
-     * @throws IllegalArgumentException if the operation does not apply to a submodel
      */
-    ModelNode calculateCompensatingOperation(ModelNode submodel, ModelNode operation) throws IllegalArgumentException;
+    ModelNode execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

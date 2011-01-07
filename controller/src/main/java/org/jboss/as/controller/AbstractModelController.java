@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jboss.as.controller.registry.OperationRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -32,14 +33,23 @@ import org.jboss.dmr.ModelNode;
 public abstract class AbstractModelController implements ModelController {
     private final OperationRegistry registry = OperationRegistry.create();
 
+    /** {@inheritDoc} */
     public void registerOperationHandler(final PathAddress address, final String name, final OperationHandler handler) {
         registry.register(address, name, handler);
     }
 
+    /**
+     * Get the operation handler for an address and name.
+     *
+     * @param address the address
+     * @param name the name
+     * @return the operation handler
+     */
     protected OperationHandler getHandler(final PathAddress address, final String name) {
         return registry.getHandler(address, name);
     }
 
+    /** {@inheritDoc} */
     public ModelNode execute(final ModelNode operation) {
         final AtomicInteger status = new AtomicInteger();
         final ModelNode finalResult = new ModelNode();
@@ -50,7 +60,7 @@ public abstract class AbstractModelController implements ModelController {
                 }
             }
 
-            public void handleResultComplete() {
+            public void handleResultComplete(final ModelNode compensatingOperation) {
                 synchronized (finalResult) {
                     status.set(1);
                     finalResult.notify();
