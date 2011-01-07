@@ -49,17 +49,6 @@ public interface OperationHandler {
     void execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
 
     /**
-     * Apply this operation to the given model entity. This method should either
-     * successfully change the model entity, or leave the entity unchanged
-     * and throw an {@code OperationFailedException}.
-     *
-     * @param submodel the model entity to which the operation should be applied
-     * @param operation the operation description
-     * @throws IllegalArgumentException if the operation is not valid
-     */
-    void applyModelOperation(ModelNode submodel, ModelNode operation) throws IllegalArgumentException;
-
-    /**
      * Calculate what the compensating operation would be if an operation were executed against the given submodel.
      *
      * @param submodel the submodel
