@@ -37,9 +37,9 @@ import org.jboss.as.controller.PathElement;
 public abstract class OperationRegistry {
 
     private final String valueString;
-    private final Subregistry parent;
+    private final OperationSubregistry parent;
 
-    OperationRegistry(final String valueString, final Subregistry parent) {
+    OperationRegistry(final String valueString, final OperationSubregistry parent) {
         this.valueString = valueString;
         this.parent = parent;
     }

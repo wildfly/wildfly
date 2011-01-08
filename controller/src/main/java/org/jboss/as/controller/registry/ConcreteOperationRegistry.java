@@ -31,14 +31,14 @@ import org.jboss.as.controller.PathElement;
 
 final class ConcreteOperationRegistry extends OperationRegistry {
     @SuppressWarnings( { "unused" })
-    private volatile Map<String, Subregistry> children;
+    private volatile Map<String, OperationSubregistry> children;
     @SuppressWarnings( { "unused" })
     private volatile Map<String, OperationHandler> handlers;
 
-    private static final AtomicMapFieldUpdater<ConcreteOperationRegistry, String, Subregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteOperationRegistry.class, Map.class, "children"));
+    private static final AtomicMapFieldUpdater<ConcreteOperationRegistry, String, OperationSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteOperationRegistry.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteOperationRegistry, String, OperationHandler> handlersUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteOperationRegistry.class, Map.class, "handlers"));
 
-    ConcreteOperationRegistry(final String valueString, final Subregistry parent) {
+    ConcreteOperationRegistry(final String valueString, final OperationSubregistry parent) {
         super(valueString, parent);
         childrenUpdater.clear(this);
         handlersUpdater.clear(this);
@@ -51,8 +51,8 @@ final class ConcreteOperationRegistry extends OperationRegistry {
         final PathElement next = iterator.next();
         try {
             final String key = next.getKey();
-            final Map<String, Subregistry> snapshot = childrenUpdater.get(this);
-            final Subregistry subregistry = snapshot.get(key);
+            final Map<String, OperationSubregistry> snapshot = childrenUpdater.get(this);
+            final OperationSubregistry subregistry = snapshot.get(key);
             return subregistry == null ? null : subregistry.getHandler(iterator, next.getValue(), operationName);
         } finally {
             iterator.previous();
@@ -66,8 +66,8 @@ final class ConcreteOperationRegistry extends OperationRegistry {
         final PathElement next = iterator.next();
         try {
             final String key = next.getKey();
-            final Map<String, Subregistry> snapshot = childrenUpdater.get(this);
-            final Subregistry subregistry = snapshot.get(key);
+            final Map<String, OperationSubregistry> snapshot = childrenUpdater.get(this);
+            final OperationSubregistry subregistry = snapshot.get(key);
             return subregistry == null ? Collections.<String, OperationHandler>emptyMap() : subregistry.getHandlers(iterator, next.getValue());
         } finally {
             iterator.previous();
@@ -84,15 +84,15 @@ final class ConcreteOperationRegistry extends OperationRegistry {
         getSubregistry(element.getKey()).register(element.getValue(), iterator, operationName, handler);
     }
 
-    Subregistry getSubregistry(String key) {
+    OperationSubregistry getSubregistry(String key) {
         for (;;) {
-            final Map<String, Subregistry> snapshot = childrenUpdater.get(this);
-            final Subregistry subregistry = snapshot.get(key);
+            final Map<String, OperationSubregistry> snapshot = childrenUpdater.get(this);
+            final OperationSubregistry subregistry = snapshot.get(key);
             if (subregistry != null) {
                 return subregistry;
             } else {
-                final Subregistry newRegistry = new Subregistry(key, this);
-                final Subregistry appearing = childrenUpdater.putAtomic(this, key, newRegistry, snapshot);
+                final OperationSubregistry newRegistry = new OperationSubregistry(key, this);
+                final OperationSubregistry appearing = childrenUpdater.putAtomic(this, key, newRegistry, snapshot);
                 if (appearing == null) {
                     return newRegistry;
                 } else if (appearing != newRegistry) {

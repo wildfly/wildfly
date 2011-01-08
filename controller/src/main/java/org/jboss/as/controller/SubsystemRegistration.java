@@ -71,4 +71,15 @@ public interface SubsystemRegistration {
      * @throws IllegalArgumentException
      */
     void registerDeploymentOperationHandler(String operationName, PathAddress relativeAddress, OperationHandler handler) throws IllegalArgumentException;
+
+    /**
+     * Register the existence of an addressable portion of the model. Subsystems
+     * must at least register the root node of the subsystem. The given address is relative,
+     * so to register the the root of the subsystem, use {@link PathAddress#EMPTY_ADDRESS}.
+     *
+     * @param relativeAddress  the relative address (must not be {@code null})
+     * @param descriptionProvider source for descriptive information describing this
+     *                            portion of the model (must not be {@code null})
+     */
+    void registerSubModel(PathAddress relativeAddress, ModelDescriptionProvider descriptionProvider);
 }

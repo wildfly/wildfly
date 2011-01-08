@@ -22,36 +22,34 @@
 
 package org.jboss.as.controller.registry;
 
-import java.util.Collections;
 import java.util.ListIterator;
-import java.util.Map;
-import org.jboss.as.controller.OperationHandler;
+
+import org.jboss.as.controller.ModelDescriptionProvider;
 import org.jboss.as.controller.PathElement;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ProxyOperationRegistry extends OperationRegistry {
-    private final OperationHandler operationHandler;
+final class ProxyDescriptionProviderRegistry extends DescriptionProviderRegistry {
+    private final ModelDescriptionProvider provider;
 
-    ProxyOperationRegistry(final String valueString, final OperationSubregistry parent, final OperationHandler operationHandler) {
+    ProxyDescriptionProviderRegistry(final String valueString, final DescriptionProviderSubregistry parent, final ModelDescriptionProvider provider) {
         super(valueString, parent);
-        this.operationHandler = operationHandler;
+        this.provider = provider;
     }
 
-    OperationHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
-        return operationHandler;
+    @Override
+    ModelDescriptionProvider getModelDescriptionProvider(final ListIterator<PathElement> iterator) {
+        return provider;
     }
 
-    Map<String, OperationHandler> getHandlers(final ListIterator<PathElement> iterator) {
-        return Collections.emptyMap();
+    @Override
+    void register(final ListIterator<PathElement> iterator, final ModelDescriptionProvider provider) {
+        throw new IllegalArgumentException("A proxy provider is already registered at location '" + getLocationString() + "'");
     }
 
-    void register(final ListIterator<PathElement> iterator, final String operationName, final OperationHandler handler) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
-    }
-
-    void registerProxyHandler(final ListIterator<PathElement> iterator, final OperationHandler handler) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    @Override
+    void registerProxyProvider(final ListIterator<PathElement> iterator, final ModelDescriptionProvider provider) {
+        throw new IllegalArgumentException("A proxy provider is already registered at location '" + getLocationString() + "'");
     }
 }
