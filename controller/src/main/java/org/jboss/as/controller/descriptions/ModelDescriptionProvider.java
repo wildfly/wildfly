@@ -19,32 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller;
+package org.jboss.as.controller.descriptions;
 
+import org.jboss.as.controller.registry.DescriptionProviderRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
- * TODO add class javadoc for ModelDescriptionProvider
+ * Provides information (description, list of attributes, list of children)
+ * describing the structure of an addressable model node. Each
+ * {@code ModelDescriptionProvider} implementation is associated with a
+ * single addressable model node.
+ *
+ * TODO document the structure of the description itself.
+ *
+ * @see DescriptionProviderRegistry#register(org.jboss.as.controller.PathAddress, ModelDescriptionProvider)
  *
  * @author Brian Stansberry
  */
 public interface ModelDescriptionProvider {
 
     /**
-     * Get the descriptive information (human-friendly description, list of attributes,
-     * list of children, list of operations) describing a model node.
+     * Gets the descriptive information (human-friendly description, list of attributes,
+     * list of children) describing a model node. The descriptive information
+     * does not include any description of operations.
+     * <p>
+     * The implementation must assume that the caller intends to modify the
+     * returned {@code ModelNode} (e.g. append a list of operation descriptions),
+     * so it should not hand out a reference to any internal data structures.
+     * </p>
      *
      * @param recursive {@code true} if full information for children is desired
      * (and for children's children, recursively); {@code false}
      * if only brief information describing the model's
      * relationship to its children is needed
      *
-     * @return {@link ModelNode} describing the meta-information
-     *
-     * @throws IllegalArgumentException if there is no meta-information available
-     * for the given {@code address}
+     * @return {@link ModelNode} describing the model node's
      */
-    ModelNode getMetaInformation(boolean recursive);
-
-
+    ModelNode getModelDescription(boolean recursive);
 }

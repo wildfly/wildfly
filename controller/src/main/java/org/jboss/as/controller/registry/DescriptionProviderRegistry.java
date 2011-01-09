@@ -24,9 +24,9 @@ package org.jboss.as.controller.registry;
 
 import java.util.ListIterator;
 
-import org.jboss.as.controller.ModelDescriptionProvider;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionProvider;
 
 /**
  * A registry of providers of descriptions of portions of the model.  This registry is thread-safe.

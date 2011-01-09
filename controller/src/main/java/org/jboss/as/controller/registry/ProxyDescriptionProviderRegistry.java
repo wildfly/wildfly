@@ -24,8 +24,8 @@ package org.jboss.as.controller.registry;
 
 import java.util.ListIterator;
 
-import org.jboss.as.controller.ModelDescriptionProvider;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionProvider;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

@@ -26,8 +26,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.ModelDescriptionProvider;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionProvider;
 
 final class ConcreteDescriptionProviderRegistry extends DescriptionProviderRegistry {
     @SuppressWarnings( { "unused" })
