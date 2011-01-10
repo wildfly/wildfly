@@ -34,8 +34,12 @@ public class ModelDescriptionConstants {
     public static final String CHILDREN = "children";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
+    public static final String EXTENSION = "extension";
+    public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
+    public static final String INCLUDE = "include";
     public static final String INTERFACE = "interface";
+    public static final String JVM = "jvm";
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MIN_LENGTH = "min-length";
@@ -55,6 +59,8 @@ public class ModelDescriptionConstants {
     public static final String SERVER = "server";
     public static final String SERVER_GROUP = "server-group";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
+    public static final String SYSTEM_PROPERTY = "system-property";
+    public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TYPE = "type";
     public static final String VALUE_TYPE = "value-type";
 
