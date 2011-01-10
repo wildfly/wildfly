@@ -24,7 +24,6 @@ package org.jboss.as.controller.client;
 import java.net.InetAddress;
 import java.util.concurrent.CountDownLatch;
 
-import org.jboss.as.controller.client.ModelControllerClient.Operation;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -52,7 +51,7 @@ public class __ThrowawayClientTest {
 
             System.out.println("--- Asynchronous operation");
             TestResultHandler handler = new TestResultHandler();
-            Operation operation = client.execute(createOperation(1000), handler);
+            Cancellable operation = client.execute(createOperation(1000), handler);
             System.out.println("Control returned to client");
             handler.waitForFragment();
             System.out.println("Fragment signalled");
@@ -60,7 +59,7 @@ public class __ThrowawayClientTest {
 
             System.out.println("--- Asynchronous cancelled operation");
             TestResultHandler handler2 = new TestResultHandler();
-            Operation operation2 = client.execute(createOperation(1000), handler2);
+            Cancellable operation2 = client.execute(createOperation(1000), handler2);
             handler2.waitForFragment();
             operation2.cancel();
             handler2.waitForComplete();

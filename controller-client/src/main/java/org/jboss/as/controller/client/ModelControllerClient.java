@@ -42,7 +42,7 @@ public interface ModelControllerClient extends Closeable{
      * @param handler the result handler
      * @return a handle which may be used to cancel the operation
      */
-    Operation execute(ModelNode operation, ResultHandler handler);
+    Cancellable execute(ModelNode operation, ResultHandler handler);
 
     /**
      * Execute an operation synchronously.
@@ -54,18 +54,6 @@ public interface ModelControllerClient extends Closeable{
      * @throws IOException if an error happened talking to the remote host
      */
     ModelNode execute(ModelNode operation) throws CancellationException, IOException;
-
-    /**
-     * A handle for a specific running operation.
-     */
-    interface Operation {
-
-        /**
-         * Attempt to cancel this operation.
-         * @throws IOException if an error happened talking to the remote host
-         */
-        void cancel() throws IOException;
-    }
 
     class Factory {
         /**

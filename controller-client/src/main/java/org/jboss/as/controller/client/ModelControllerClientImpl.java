@@ -75,7 +75,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
     }
 
     @Override
-    public Operation execute(final ModelNode operation, final ResultHandler handler) {
+    public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
         if (operation == null) {
             throw new IllegalArgumentException("Null operation");
         }
@@ -324,7 +324,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
 
 
 
-    private class AsynchronousOperation implements Operation {
+    private class AsynchronousOperation implements Cancellable {
         SimpleFuture<Integer> asynchronousId = new SimpleFuture<Integer>();
 
         @Override
