@@ -228,19 +228,20 @@ public enum Phase {
     public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x300;
 
     // INSTALL
-    public static final int INSTALL_MODULE_CONTEXT                      = 0x100;
-    public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x200;
-    public static final int INSTALL_OSGI_ATTACHMENTS                    = 0x300;
-    public static final int INSTALL_WAR_METADATA                        = 0x400;
-    public static final int INSTALL_RA_DEPLOYMENT                       = 0x500;
-    public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x600;
-    public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x700;
-    public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x800;
-    public static final int INSTALL_DS_DEPLOYMENT                       = 0x900;
-    public static final int INSTALL_MANAGED_BEAN_DEPLOYMENT             = 0xA00;
-    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0xB00;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0xC00;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0xD00;
+    public static final int INSTALL_APP_CONTEXT                         = 0x100;
+    public static final int INSTALL_MODULE_CONTEXT                      = 0x200;
+    public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x300;
+    public static final int INSTALL_OSGI_ATTACHMENTS                    = 0x400;
+    public static final int INSTALL_WAR_METADATA                        = 0x500;
+    public static final int INSTALL_RA_DEPLOYMENT                       = 0x600;
+    public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x700;
+    public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x800;
+    public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x900;
+    public static final int INSTALL_DS_DEPLOYMENT                       = 0xA00;
+    public static final int INSTALL_MANAGED_BEAN_DEPLOYMENT             = 0xB00;
+    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0xC00;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0xD00;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0xE00;
 
     // CLEANUP
     // (none)

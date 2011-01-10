@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Configuration object used to managed a collection a JNDI namespace bindings for a deployment.  This is primarally used
+ * Configuration object used to managed a collection a JNDI namespace bindings for a deployment.  This is primarily used
  * to detect duplicate namespace bindings.
  *
  * @author John E. Bailey

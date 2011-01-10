@@ -20,28 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming.deployment;
+package org.jboss.as.ee.structure;
 
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
- * Common names used for deploying naming related services at different scopes.
+ * Marker class used to mark a {@link DeploymentUnit} as an EAR deployment.
  *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ContextNames {
-    /**
-     * Parent ServiceName for all naming services.
-     */
-    public static final ServiceName NAMING = ServiceName.JBOSS.append("naming");
+public class EarDeploymentMarker {
+    private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
 
-    /**
-     * Jndi name for java: namespace
-     */
-    public static final JndiName JAVA_CONTEXT_NAME = JndiName.of("java:");
+    private EarDeploymentMarker() {
+    }
 
-    /**
-     * ServiceName for java: namespace
-     */
-    public static final ServiceName JAVA_CONTEXT_SERVICE_NAME = NAMING.append("context", "java");
+    public static void markDeployment(final DeploymentUnit context) {
+        context.putAttachment(ATTACHMENT_KEY, true);
+    }
+
+
+    public static boolean isEarDeployment(final DeploymentUnit context) {
+        return context.getAttachment(ATTACHMENT_KEY) != null && context.getAttachment(ATTACHMENT_KEY);
+    }
 }

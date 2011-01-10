@@ -20,10 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.processor;
+package org.jboss.as.ee.structure;
 
 import java.util.ArrayList;
-import static org.jboss.as.ee.processor.EarDeploymentMarker.markDeployment;
+import static org.jboss.as.ee.structure.EarDeploymentMarker.markDeployment;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashSet;

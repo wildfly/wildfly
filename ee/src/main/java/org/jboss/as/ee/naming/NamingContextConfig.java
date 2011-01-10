@@ -20,30 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.processor;
+package org.jboss.as.ee.naming;
 
+import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Marker class used to mark a {@link DeploymentUnit} as an EAR deployment.
+ * Configuration item which holds onto the jndi and service name for a module context instance.
  *
- * @author John Bailey
+ * @author John E. Bailey
  */
-public class EarDeploymentMarker {
-    private static final AttachmentKey<EarDeploymentMarker> ATTACHMENT_KEY = AttachmentKey.create(EarDeploymentMarker.class);
+public class NamingContextConfig {
+    private final ServiceName contextServiceName;
+    private final JndiName contextName;
 
-    private static final EarDeploymentMarker INSTANCE = new EarDeploymentMarker();
-
-    private EarDeploymentMarker() {
+    /**
+     * Create a new instance.
+     *
+     * @param contextServiceName The context service name
+     * @param contextName The context jndi name.
+     */
+    public NamingContextConfig(ServiceName contextServiceName, JndiName contextName) {
+        this.contextServiceName = contextServiceName;
+        this.contextName = contextName;
     }
 
-    static void markDeployment(final DeploymentUnit context) {
-        context.putAttachment(ATTACHMENT_KEY, INSTANCE);
+    /**
+     * Get the context service name.
+     *
+     * @return The service name
+     */
+    public ServiceName getContextServiceName() {
+        return contextServiceName;
     }
 
-
-    static boolean isEarDeployment(final DeploymentUnit context) {
-        return context.getAttachment(ATTACHMENT_KEY) != null;
+    /**
+     * Get the context jndi name.
+     *
+     * @return The jndi name
+     */
+    public JndiName getContextName() {
+        return contextName;
     }
 }
