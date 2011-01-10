@@ -22,23 +22,21 @@
 
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
+ * Helper used to mark and check WAR deployments.
+ *
  * @author John Bailey
  */
 public class WarDeploymentMarker {
-    private static final AttachmentKey<WarDeploymentMarker> ATTACHMENT_KEY = AttachmentKey.create(WarDeploymentMarker.class);
-
-    private static final WarDeploymentMarker INSTANCE = new WarDeploymentMarker();
-
     static void markDeployment(final DeploymentUnit context) {
-        context.putAttachment(ATTACHMENT_KEY, INSTANCE);
+        context.putAttachment(Attachments.WAR_DEPLOYMENT_MARKER, true);
     }
 
-
     static boolean isWarDeployment(final DeploymentUnit context) {
-        return context.getAttachment(ATTACHMENT_KEY) != null;
+        final Boolean result = context.getAttachment(Attachments.WAR_DEPLOYMENT_MARKER);
+        return result != null && result;
     }
 }

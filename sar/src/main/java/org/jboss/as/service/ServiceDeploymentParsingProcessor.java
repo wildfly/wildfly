@@ -45,7 +45,8 @@ import java.io.InputStream;
  * @author John E. Bailey
  */
 public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcessor {
-
+    static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
+    static final String SERVICE_DESCRIPTOR_SUFFIX = "-service.xml";
     private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
@@ -69,11 +70,10 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
         if(deploymentRoot == null || !deploymentRoot.exists())
             return;
 
-        final String deploymentRootName = deploymentRoot.getName();
         VirtualFile serviceXmlFile = null;
-        if(deploymentRootName.endsWith(".jar") || deploymentRootName.endsWith(".sar")) {
-            serviceXmlFile = deploymentRoot.getChild("META-INF/jboss-service.xml");
-        } else if(deploymentRootName.endsWith("-service.xml")) {
+        if(deploymentRoot.isDirectory()) {
+            serviceXmlFile = deploymentRoot.getChild(SERVICE_DESCRIPTOR_PATH);
+        } else if(deploymentRoot.getName().endsWith(SERVICE_DESCRIPTOR_SUFFIX)) {
             serviceXmlFile = deploymentRoot;
         }
         if(serviceXmlFile == null || !serviceXmlFile.exists())

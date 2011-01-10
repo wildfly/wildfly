@@ -111,6 +111,16 @@ public final class Attachments {
      */
     public static final AttachmentKey<Boolean> SUB_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
 
+    /**
+     * A Marker attachment to identify an EAR deployment.
+     */
+    public static final AttachmentKey<Boolean> EAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
+
+    /**
+     * A Marker attachment to identify an WAR deployment.
+     */
+    public static final AttachmentKey<Boolean> WAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
+
     //
     // VALIDATE
     //

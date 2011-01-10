@@ -23,6 +23,7 @@
 package org.jboss.as.ee.structure;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
@@ -31,17 +32,16 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  * @author John Bailey
  */
 public class EarDeploymentMarker {
-    private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
-
     private EarDeploymentMarker() {
     }
 
     public static void markDeployment(final DeploymentUnit context) {
-        context.putAttachment(ATTACHMENT_KEY, true);
+        context.putAttachment(Attachments.EAR_DEPLOYMENT_MARKER, true);
     }
 
 
     public static boolean isEarDeployment(final DeploymentUnit context) {
-        return context.getAttachment(ATTACHMENT_KEY) != null && context.getAttachment(ATTACHMENT_KEY);
+        final Boolean result = context.getAttachment(Attachments.EAR_DEPLOYMENT_MARKER);
+        return result != null && result.booleanValue();
     }
 }
