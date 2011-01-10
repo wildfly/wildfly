@@ -35,6 +35,7 @@ public class ModelDescriptionConstants {
     public static final String ADDRESS = "address";
     public static final String ATTRIBUTES = "attributes";
     public static final String CHILDREN = "children";
+    public static final String DEFAULT = "default";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String EXTENSION = "extension";
@@ -50,10 +51,12 @@ public class ModelDescriptionConstants {
     public static final String MIN_OCCURS = "min-occurs";
     public static final String MODEL_DESCRIPTION = "model-description";
     public static final String NAME = "name";
+    public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
     public static final String NILLABLE = "nillable";
     public static final String OP = "operation";
     public static final String OP_ADDR = "address";
+    public static final String OPERATION = "operation-name";
     public static final String OPERATIONS = "operations";
     public static final String OPERATION_NAME = "operation-name";
     public static final String PATH = "path";

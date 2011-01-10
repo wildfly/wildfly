@@ -1,0 +1,158 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.remoting;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+
+import java.util.Locale;
+
+import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.dmr.ModelNode;
+
+/**
+ * @author Emanuel Muckenhuber
+ */
+public class RemotingSubsystemUnitTestCase {
+
+    static final DescriptionProvider NULL_PROVIDER = new DescriptionProvider() {
+        public ModelNode getModelDescription(Locale locale) {
+            return new ModelNode();
+        }
+    };
+
+    static final ModelNode model = new ModelNode();
+    static final ModelNode subsystemRoot = new ModelNode();
+    static final ModelNode connectorRoot = new ModelNode();
+    static final TestController c = new TestController();
+    static {
+        subsystemRoot.add("profile").add("web").add("subsystem").add("remoting").protect();
+        connectorRoot.set(subsystemRoot).add("connector").protect();
+        model.get("profile", "web", "subsystem"); // initialize the model structure
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        ModelNodeRegistration reg = c.getRegistry().registerSubModel(PathElement.pathElement("profile", "web"), NULL_PROVIDER);
+        reg = reg.registerSubModel(PathElement.pathElement("subsystem", "remoting"), NewRemotingSubsystemProviders.SUBSYSTEM);
+        reg.registerOperationHandler("add", new NewRemotingSubsystemAdd(), NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
+        reg = reg.registerSubModel(PathElement.pathElement("connector"), NULL_PROVIDER);
+        reg.registerOperationHandler("add-connector", new NewConnectorAdd(), NewRemotingSubsystemProviders.CONNECTOR_ADD, false);
+        reg.registerOperationHandler("remove-connector", new NewConnectorRemove(), NewRemotingSubsystemProviders.CONNECTOR_REMOVE, false);
+
+        try {
+
+            // Create the subsystem
+            {
+                final ModelNode operation = new ModelNode();
+                operation.get(ADDRESS).set(subsystemRoot.clone());
+                operation.get(OPERATION).set("add");
+                operation.get(REQUEST_PROPERTIES, "thread-pool").set("remoting-thread-pool");
+                final ModelNode response = c.execute(operation);
+            }
+            // One
+            {
+                final ModelNode operation = new ModelNode();
+                operation.get(ADDRESS).set(connectorRoot.clone().add("one"));
+                operation.get(OPERATION).set("add-connector");
+                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-one");
+                operation.get(REQUEST_PROPERTIES, "sasl");
+
+                final ModelNode response = c.execute(operation);
+            }
+            // Two
+            {
+                final ModelNode operation = new ModelNode();
+                operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
+                operation.get(OPERATION).set("add-connector");
+                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-two");
+
+                final ModelNode response = c.execute(operation);
+            }
+            // Three
+            {
+                final ModelNode operation = new ModelNode();
+                operation.get(ADDRESS).set(connectorRoot.clone().add("three"));
+                operation.get(OPERATION).set("add-connector");
+                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-three");
+                operation.get(REQUEST_PROPERTIES, "authentication-provider").set("test");
+
+                final ModelNode response = c.execute(operation);
+            }
+
+            System.out.println(model);
+            System.out.println("----");
+
+            // Remove two
+            {
+                final ModelNode operation = new ModelNode();
+                operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
+                operation.get(OPERATION).set("remove-connector");
+
+                final ModelNode response = c.execute(operation);
+            }
+
+            System.out.println(model);
+            System.out.println("----");
+
+            // Add two
+            {
+                final ModelNode operation = new ModelNode();
+                operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
+                operation.get(OPERATION).set("add-connector");
+                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-two");
+                operation.get(REQUEST_PROPERTIES, "sasl");
+
+                final ModelNode response = c.execute(operation);
+            }
+
+        } catch (OperationFailedException e) {
+            e.printStackTrace();
+            System.err.println(e.getFailureDescription());
+        }
+
+        System.out.println(model);
+        System.out.println(" ---- ");
+
+    }
+
+    static class TestController extends BasicModelController {
+
+        protected TestController() {
+            super(model, new NullConfigurationPersister());
+        }
+
+        /** {@inheritDoc} */
+        protected ModelNodeRegistration getRegistry() {
+            return super.getRegistry();
+        }
+
+    }
+
+}

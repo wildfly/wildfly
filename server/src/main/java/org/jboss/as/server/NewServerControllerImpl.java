@@ -142,6 +142,10 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
             // TODO: A tracking service listener which will somehow call complete when the operation is done
             return container;
         }
+
+        public ServiceRegistry getServiceRegistry() {
+            return registry;
+        }
     }
 
     private class RuntimeContextImpl extends NewOperationContextImpl implements NewRuntimeOperationContext {
@@ -157,6 +161,10 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         public ServiceTarget getServiceTarget() {
             // TODO: A tracking service listener which will somehow call complete when the operation is done
             return container;
+        }
+
+        public ServiceRegistry getServiceRegistry() {
+            return registry;
         }
     }
 }

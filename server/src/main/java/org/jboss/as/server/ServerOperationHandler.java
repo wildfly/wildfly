@@ -25,7 +25,7 @@ package org.jboss.as.server;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.client.ResultHandler;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**

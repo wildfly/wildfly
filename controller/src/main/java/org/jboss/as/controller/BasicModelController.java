@@ -95,7 +95,8 @@ public class BasicModelController implements ModelController {
         // todo - define this structure
         node.get("success").set(false);
         do {
-            node.get("cause").add(t.getClass().getName(), t.getLocalizedMessage());
+            final String message = t.getLocalizedMessage();
+            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
             t = t.getCause();
         } while (t != null);
         return node;

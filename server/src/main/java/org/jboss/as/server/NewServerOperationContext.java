@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -39,4 +40,12 @@ public interface NewServerOperationContext extends NewOperationContext {
      * @return the service target
      */
     ServiceTarget getServiceTarget();
+
+    /**
+     * Get the service registry.
+     *
+     * @return the service registry.
+     */
+    ServiceRegistry getServiceRegistry();
+
 }
