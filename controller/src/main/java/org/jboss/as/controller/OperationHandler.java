@@ -32,13 +32,6 @@ import org.jboss.dmr.ModelNode;
 public interface OperationHandler {
 
     /**
-     * Get the description for this operation, without address information.
-     *
-     * @return the description
-     */
-    ModelNode getOperationDescription();
-
-    /**
      * Execute an operation.  This method <b>must</b> invoke one of the completion methods on {@code resultHandler}
      * regardless of the outcome of the operation.
      *
