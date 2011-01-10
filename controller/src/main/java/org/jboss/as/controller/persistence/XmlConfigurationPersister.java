@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.persistence;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

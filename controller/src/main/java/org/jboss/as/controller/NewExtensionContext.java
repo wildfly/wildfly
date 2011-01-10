@@ -23,6 +23,8 @@
 package org.jboss.as.controller;
 
 /**
+ * The context for registering a new extension.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface NewExtensionContext {
@@ -30,7 +32,12 @@ public interface NewExtensionContext {
     /**
      * Register a new subsystem type.  The returned registration object should be used
      * to configure XML parsers, operation handlers, and other subsystem-specific constructs
-     * for the new subsystem.
+     * for the new subsystem.  If the subsystem registration is deemed invalid by the time the
+     * extension registration is complete, the subsystem registration will be ignored, and an
+     * error message will be logged.
+     * <p>
+     * On add, the global subsystem-add handler will create an empty node for this subsystem and call
+     * the given add handler with the operation payload as well as the new, empty subsystem model node.
      *
      * @param name the name of the subsystem
      * @param xmlNameSpace the XML namespace of the subsystem elements

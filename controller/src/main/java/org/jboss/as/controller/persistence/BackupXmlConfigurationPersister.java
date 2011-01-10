@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.persistence;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,7 +38,7 @@ import javax.xml.namespace.QName;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
+public class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
 
     /**
      * Construct a new instance.

@@ -26,7 +26,10 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.registry.OperationRegistry;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -40,7 +43,12 @@ public class BasicModelController implements ModelController {
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private static final String[] NO_STRINGS = new String[0];
-    private final OperationRegistry registry = OperationRegistry.create();
+    private final ModelNodeRegistration registry = ModelNodeRegistration.Factory.create(new DescriptionProvider() {
+        // TODO - this is wrong, just a temp until everything is described
+        public ModelNode getModelDescription() {
+            return new ModelNode();
+        }
+    });
     private final ModelNode model;
     private final NewConfigurationPersister configurationPersister;
 
@@ -54,11 +62,6 @@ public class BasicModelController implements ModelController {
         this.configurationPersister = configurationPersister;
     }
 
-    /** {@inheritDoc} */
-    public void registerOperationHandler(final PathAddress address, final String name, final OperationHandler handler) {
-        registry.register(address, name, handler);
-    }
-
     /**
      * Get the operation handler for an address and name.
      *
@@ -67,7 +70,7 @@ public class BasicModelController implements ModelController {
      * @return the operation handler
      */
     protected OperationHandler getHandler(final PathAddress address, final String name) {
-        return registry.getHandler(address, name);
+        return registry.getOperationHandler(address, name);
     }
 
     /**
@@ -91,7 +94,7 @@ public class BasicModelController implements ModelController {
     public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
         final PathAddress address = PathAddress.pathAddress(operation.get("address"));
         final String operationName = operation.get("operation").asString();
-        final OperationHandler operationHandler = registry.getHandler(address, operationName);
+        final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
         final ModelNode subModel;
         try {
             subModel = address.navigate(model, false);

@@ -27,7 +27,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class OperationFailedException extends Exception {
+public class OperationFailedException extends Exception {
 
     private final ModelNode failureDescription;
 

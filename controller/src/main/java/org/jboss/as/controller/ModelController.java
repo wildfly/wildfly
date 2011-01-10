@@ -32,15 +32,6 @@ import org.jboss.dmr.ModelNode;
 public interface ModelController {
 
     /**
-     * Register an operation handler in this controller.
-     *
-     * @param address the address the operation applies to
-     * @param name the operation name
-     * @param handler the operation handler
-     */
-    void registerOperationHandler(PathAddress address, String name, OperationHandler handler);
-
-    /**
      * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler.
      *
      * @param operation the operation to execute

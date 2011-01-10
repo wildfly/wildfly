@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.persistence;
 
 /**
  * An exception relating to a configuration persistence problem.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ConfigurationPersistenceException extends Exception {
+public class ConfigurationPersistenceException extends Exception {
 
     private static final long serialVersionUID = 3004052407520201440L;
 

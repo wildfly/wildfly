@@ -24,7 +24,7 @@ package org.jboss.as.server;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewOperationContextImpl;
 import org.jboss.as.controller.OperationHandler;
@@ -57,8 +57,6 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     }
 
     void init() {
-        registerOperationHandler(PathAddress.EMPTY_ADDRESS, "shutdown", /*todo*/ null);
-        registerOperationHandler(PathAddress.EMPTY_ADDRESS, "restart", /*todo*/ null);
         state = State.STARTING;
     }
 

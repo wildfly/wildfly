@@ -21,39 +21,24 @@
  */
 package org.jboss.as.controller.descriptions;
 
-import org.jboss.as.controller.registry.DescriptionProviderRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Provides information (description, list of attributes, list of children)
- * describing the structure of an addressable model node. Each
- * {@code ModelDescriptionProvider} implementation is associated with a
- * single addressable model node.
- *
- * TODO document the structure of the description itself.
- *
- * @see DescriptionProviderRegistry#register(org.jboss.as.controller.PathAddress, ModelDescriptionProvider)
+ * describing the structure of an addressable model node or operation.
  *
  * @author Brian Stansberry
  */
-public interface ModelDescriptionProvider {
+public interface DescriptionProvider {
 
     /**
      * Gets the descriptive information (human-friendly description, list of attributes,
-     * list of children) describing a model node. The descriptive information
-     * does not include any description of operations.
+     * list of children) describing a single model node or operation.
      * <p>
      * The implementation must assume that the caller intends to modify the
-     * returned {@code ModelNode} (e.g. append a list of operation descriptions),
-     * so it should not hand out a reference to any internal data structures.
-     * </p>
+     * returned {@code ModelNode} so it should not hand out a reference to any internal data structures.
      *
-     * @param recursive {@code true} if full information for children is desired
-     * (and for children's children, recursively); {@code false}
-     * if only brief information describing the model's
-     * relationship to its children is needed
-     *
-     * @return {@link ModelNode} describing the model node's
+     * @return {@link ModelNode} describing the model node's structure
      */
-    ModelNode getModelDescription(boolean recursive);
+    ModelNode getModelDescription();
 }

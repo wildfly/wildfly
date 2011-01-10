@@ -21,11 +21,11 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ModelDescriptionProvider} implementations for sub-models that occur
+ * {@link org.jboss.as.controller.descriptions.DescriptionProvider} implementations for sub-models that occur
  * across different types of models.
  *
  * @author Brian Stansberry
@@ -40,9 +40,9 @@ public final class CommonProviders {
      * Provider for a sub-model that names a "path" but doesn't require
      * the actual path to be specified.
      */
-    public static final ModelDescriptionProvider NAMED_PATH_PROVIDER = new ModelDescriptionProvider() {
+    public static final DescriptionProvider NAMED_PATH_PROVIDER = new DescriptionProvider() {
         @Override
-        public ModelNode getModelDescription(final boolean recursive) {
+        public ModelNode getModelDescription() {
             return PathDescription.getNamedPathDescription();
         }
     };
@@ -50,9 +50,9 @@ public final class CommonProviders {
     /**
      * Provider for a sub-model that names a "path" and specifies the actual path.
      */
-    public static final ModelDescriptionProvider SPECIFIED_PATH_PROVIDER = new ModelDescriptionProvider() {
+    public static final DescriptionProvider SPECIFIED_PATH_PROVIDER = new DescriptionProvider() {
         @Override
-        public ModelNode getModelDescription(final boolean recursive) {
+        public ModelNode getModelDescription() {
             return PathDescription.getSpecifiedPathDescription();
         }
     };

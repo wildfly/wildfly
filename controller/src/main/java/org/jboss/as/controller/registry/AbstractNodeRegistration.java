@@ -22,36 +22,38 @@
 
 package org.jboss.as.controller.registry;
 
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.dmr.ModelNode;
 
 /**
- * A registry of model operations.  This registry is thread-safe.
+ * A registry of model node information.  This registry is thread-safe.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class OperationRegistry {
+abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     private final String valueString;
-    private final OperationSubregistry parent;
+    private final NodeSubregistry parent;
 
-    OperationRegistry(final String valueString, final OperationSubregistry parent) {
+    AbstractNodeRegistration(final String valueString, final NodeSubregistry parent) {
         this.valueString = valueString;
         this.parent = parent;
     }
 
-    /**
-     * Create a new empty registry.
-     *
-     * @return the new registry
-     */
-    public static OperationRegistry create() {
-        return new ConcreteOperationRegistry(null, null);
-    }
+    /** {@inheritDoc} */
+    public abstract ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider);
+
+    /** {@inheritDoc} */
+    public abstract void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited);
+
+    /** {@inheritDoc} */
+    public abstract void registerProxySubModel(final PathElement address, final OperationHandler handler) throws IllegalArgumentException;
 
     /**
      * Get a handler at a specific address.
@@ -60,7 +62,7 @@ public abstract class OperationRegistry {
      * @param operationName the operation name
      * @return the operation handler, or {@code null} if none match
      */
-    public final OperationHandler getHandler(PathAddress pathAddress, String operationName) {
+    public final OperationHandler getOperationHandler(PathAddress pathAddress, String operationName) {
         return getHandler(pathAddress.iterator(), operationName);
     }
 
@@ -72,38 +74,34 @@ public abstract class OperationRegistry {
      * @param address the address
      * @return the handlers
      */
-    public Map<String, OperationHandler> getHandlers(PathAddress address) {
-        // might be a direct view, might be a copy - so just be safe
-        return Collections.unmodifiableMap(getHandlers(address.iterator()));
+    public Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address) {
+        return getOperationDescriptions(address.iterator());
     }
 
-    abstract Map<String, OperationHandler> getHandlers(ListIterator<PathElement> iterator);
+    abstract Map<String, DescriptionProvider> getOperationDescriptions(ListIterator<PathElement> iterator);
 
-    /**
-     * Register an operation handler.
-     *
-     * @param pathAddress the applicable path
-     * @param operationName the operation name
-     * @param handler the handler for the operation
-     * @throws IllegalArgumentException if a handler is already registered at that location
-     */
-    public void register(PathAddress pathAddress, String operationName, OperationHandler handler) {
-        register(pathAddress.iterator(), operationName, handler);
+    /** {@inheritDoc} */
+    public DescriptionProvider getOperationDescription(final PathAddress address, final String operationName) {
+        return null;
     }
 
-    abstract void register(ListIterator<PathElement> iterator, String operationName, OperationHandler handler);
+    abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName);
 
-    /**
-     * Register a proxy handler that will handle all requests at or below the given address.
-     *
-     * @param pathAddress the address to proxy
-     * @param handler the handler to proxy to
-     */
-    public void registerProxyHandler(PathAddress pathAddress, OperationHandler handler) {
-        registerProxyHandler(pathAddress.iterator(), handler);
+    /** {@inheritDoc} */
+    public DescriptionProvider getModelDescription(final PathAddress address) {
+        return null;
     }
 
-    abstract void registerProxyHandler(ListIterator<PathElement> iterator, OperationHandler handler);
+    abstract DescriptionProvider getModelDescription(Iterator<PathElement> iterator);
+
+    /** {@inheritDoc} */
+    public ModelNode getNodeDescription(final boolean recursive) {
+        final ModelNode node = new ModelNode();
+        appendNodeDescription(node, recursive);
+        return node;
+    }
+
+    abstract void appendNodeDescription(ModelNode node, boolean recursive);
 
     final String getLocationString() {
         if (parent == null) {
@@ -112,5 +110,4 @@ public abstract class OperationRegistry {
             return parent.getLocationString() + valueString + ")";
         }
     }
-
 }

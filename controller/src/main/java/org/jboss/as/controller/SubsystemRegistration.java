@@ -22,11 +22,19 @@
 
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 
 /**
+ * A subsystem registration.
+ * <p>
+ * If no XML mappings are defined, then a simple empty XML mapping is used.
+ * If no root {@code remove} operation is defined for either submodel, one is automatically generated which simply
+ * removes the node in question, including sub-nodes.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface SubsystemRegistration {
@@ -38,8 +46,9 @@ public interface SubsystemRegistration {
      * populated.
      *
      * @param reader the element reader
+     * @param writer the element writer
      */
-    void setSubsystemParser(XMLElementReader<ModelNode> reader);
+    void setSubsystemXmlMapping(XMLElementReader<ModelNode> reader, XMLElementWriter<ModelNode> writer);
 
     /**
      * Set the parser for the per-deployment configuration for this element, if any.
@@ -47,40 +56,21 @@ public interface SubsystemRegistration {
      * (TODO: round this out.)
      *
      * @param reader the element reader
+     * @param writer the element writer
      */
-    void setDeploymentParser(XMLElementReader<ModelNode> reader);
+    void setDeploymentXmlMapping(XMLElementReader<ModelNode> reader, XMLElementWriter<ModelNode> writer);
 
     /**
-     * Register a subsystem operation handler.  The "add, "remove", and "read" handlers are automatically registered
-     * and cannot be overridden.  The given address is relative, so to register an operation which runs on the root
-     * of the subsystem, use {@link PathAddress#EMPTY_ADDRESS}.
+     * Get the model node registration for this subsystem.
      *
-     * @param operationName the operation name (must not be {@code null})
-     * @param relativeAddress the relative address (must not be {@code null})
-     * @param handler the handler (must not be {@code null})
-     * @throws IllegalArgumentException if the operation name, address, or handler is {@code null} or invalid, or if
-     * the operation name is already registered at that address
+     * @return the subsystem-level model node registration
      */
-    void registerOperationHandler(String operationName, PathAddress relativeAddress, OperationHandler handler) throws IllegalArgumentException;
+    ModelNodeRegistration registerSubsystemModel(DescriptionProvider descriptionProvider);
 
     /**
-     * TODO: a per-deployment operation handler for add/remove/modify of per-deployment overrides
+     * Get the deployment model node registration for this subsystem.
      *
-     * @param operationName
-     * @param relativeAddress
-     * @param handler
-     * @throws IllegalArgumentException
+     * @return the deployment-level model node registration
      */
-    void registerDeploymentOperationHandler(String operationName, PathAddress relativeAddress, OperationHandler handler) throws IllegalArgumentException;
-
-    /**
-     * Register the existence of an addressable portion of the model. Subsystems
-     * must at least register the root node of the subsystem. The given address is relative,
-     * so to register the the root of the subsystem, use {@link PathAddress#EMPTY_ADDRESS}.
-     *
-     * @param relativeAddress  the relative address (must not be {@code null})
-     * @param descriptionProvider source for descriptive information describing this
-     *                            portion of the model (must not be {@code null})
-     */
-    void registerSubModel(PathAddress relativeAddress, ModelDescriptionProvider descriptionProvider);
+    ModelNodeRegistration registerDeploymentModel(DescriptionProvider descriptionProvider);
 }

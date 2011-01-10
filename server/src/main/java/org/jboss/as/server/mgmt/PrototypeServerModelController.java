@@ -23,8 +23,6 @@ package org.jboss.as.server.mgmt;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
@@ -46,10 +44,6 @@ public class PrototypeServerModelController extends BasicModelController impleme
 
     public PrototypeServerModelController() {
         super(null);
-    }
-
-    @Override
-    public void registerOperationHandler(PathAddress address, String name, OperationHandler handler) {
     }
 
     @Override
