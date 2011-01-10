@@ -23,7 +23,8 @@
 package org.jboss.as.ee.structure;
 
 import java.util.ArrayList;
-import static org.jboss.as.ee.structure.EarDeploymentMarker.markDeployment;
+import org.jboss.as.ee.config.EarConfig;
+import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,6 +40,8 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.metadata.ear.spec.Ear6xMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -51,7 +54,6 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  * @author John Bailey
  */
 public class EarStructureProcessor implements DeploymentUnitProcessor {
-    private static final String EAR_EXTENSION = ".ear";
     private static final String JAR_EXTENSION = ".jar";
     private static final String WAR_EXTENSION = ".war";
     private static final Set<String> CHILD_ARCHIVE_EXTENSIONS = new HashSet<String>();
@@ -76,28 +78,38 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile virtualFile = resourceRoot.getRoot();
-
-        // Make sure this is an EAR deployment
-        if (!virtualFile.getName().toLowerCase().endsWith(EAR_EXTENSION)) {
+        if(!isEarDeployment(deploymentUnit)) {
             return;
         }
 
-        //  Let other processors know this is an EAR deployment
-        markDeployment(deploymentUnit);
+        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile virtualFile = resourceRoot.getRoot();
 
         //  Make sure we don't index or add this as a module root
         resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
         ModuleRootMarker.markRoot(resourceRoot, false);
 
+        String libDirName = DEFAULT_LIB_DIR;
+
+        final EarConfig earConfig = deploymentUnit.getAttachment(EarConfig.ATTACHMENT_KEY);
+        if(earConfig != null) {
+            final EarMetaData earMetaData = earConfig.getEarMetaData();
+            if(earMetaData instanceof Ear6xMetaData) {
+                final String xmlLibDirName = Ear6xMetaData.class.cast(earMetaData).getLibraryDirectory();
+                if(xmlLibDirName != null) {
+                    libDirName = xmlLibDirName;
+                }
+            }
+        }
+
         // Process all the children
         try {
             final List<VirtualFile> childArchives = new ArrayList<VirtualFile>(virtualFile.getChildren(CHILD_ARCHIVE_FILTER));
-            final VirtualFile libDir = virtualFile.getChild(DEFAULT_LIB_DIR);
-            if(libDir.exists()) {
-                childArchives.addAll(libDir.getChildren(CHILD_ARCHIVE_FILTER));
+            if(!libDirName.isEmpty()) {
+                final VirtualFile libDir = virtualFile.getChild(libDirName);
+                if(libDir.exists()) {
+                    childArchives.addAll(libDir.getChildren(CHILD_ARCHIVE_FILTER));
+                }
             }
 
             for (final VirtualFile child : childArchives) {

@@ -88,6 +88,7 @@
         <version.org.jboss.modules.jboss-modules>1.0.0.Beta12</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.metadata.common>7.0.0.Alpha2</version.org.jboss.metadata.common>
         <version.org.jboss.metadata.web>7.0.0.Alpha2</version.org.jboss.metadata.web>
+        <version.org.jboss.metadata.ear>2.0.0.Alpha4</version.org.jboss.metadata.ear>
         <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.common>1.0.6</version.org.jboss.osgi.common>
         <version.org.jboss.osgi.deployment>1.0.9</version.org.jboss.osgi.deployment>
@@ -1440,6 +1441,18 @@
                         <artifactId>jboss-reflect</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+               <groupId>org.jboss.metadata</groupId>
+               <artifactId>jboss-metadata-ear</artifactId>
+               <version>${version.org.jboss.metadata.ear}</version>
+               <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+               </exclusions>
             </dependency>
 
             <dependency>

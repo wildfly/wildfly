@@ -24,6 +24,8 @@ package org.jboss.as.ee.service;
 
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
+import org.jboss.as.ee.structure.ApplicationXmlParsingProcessor;
+import org.jboss.as.ee.structure.EarInitializationProcessor;
 import org.jboss.as.ee.structure.EarStructureProcessor;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
@@ -53,7 +55,9 @@ public final class EeSubsystemAdd extends AbstractSubsystemAdd<EeSubsystemElemen
     @Override
     protected void applyUpdateBootAction(BootUpdateContext updateContext) {
         logger.info("Activating EE subsystem");
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT, new EarStructureProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new ApplicationXmlParsingProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_STRUCTURE, new EarStructureProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
     }

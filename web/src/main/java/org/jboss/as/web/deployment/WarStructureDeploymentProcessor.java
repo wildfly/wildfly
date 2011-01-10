@@ -22,6 +22,7 @@
 
 package org.jboss.as.web.deployment;
 
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import static org.jboss.as.server.deployment.module.ModuleRootMarker.*;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
