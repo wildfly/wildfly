@@ -61,10 +61,6 @@
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-        </dependency>
         
         <!-- Test Dependencies -->
         <dependency>

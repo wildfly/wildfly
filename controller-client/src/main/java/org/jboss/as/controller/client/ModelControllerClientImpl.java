@@ -22,10 +22,6 @@
 package org.jboss.as.controller.client;
 
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
-import static org.jboss.as.protocol.StreamUtils.safeFinish;
-import static org.jboss.marshalling.Marshalling.createByteInput;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,14 +39,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.as.protocol.ProtocolUtils;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.SimpleClassResolver;
-import org.jboss.marshalling.Unmarshaller;
 
 /**
 *
@@ -58,11 +50,6 @@ import org.jboss.marshalling.Unmarshaller;
 * @version $Revision: 1.1 $
 */
 class ModelControllerClientImpl implements ModelControllerClient {
-    private static final MarshallingConfiguration CONFIG;
-    static {
-        CONFIG = new MarshallingConfiguration();
-        CONFIG.setClassResolver(new SimpleClassResolver(ModelControllerClientImpl.class.getClassLoader()));
-    }
     private static final long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(5L);
     private final InetAddress address;
     private final int port;
@@ -134,16 +121,14 @@ class ModelControllerClientImpl implements ModelControllerClient {
         executorService.shutdown();
     }
 
-    private static Marshaller getMarshaller() throws IOException {
-        return ProtocolUtils.getMarshaller(CONFIG);
-    }
-
-    private static Unmarshaller getUnmarshaller() throws IOException {
-        return ProtocolUtils.getUnmarshaller(CONFIG);
-    }
-
     private ManagementRequestConnectionStrategy getConnectionStrategy() {
         return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
+    }
+
+    private ModelNode readNode(InputStream in) throws IOException {
+        ModelNode node = new ModelNode();
+        node.readExternal(in);
+        return node;
     }
 
     private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
@@ -174,32 +159,16 @@ class ModelControllerClientImpl implements ModelControllerClient {
         /** {@inheritDoc} */
         @Override
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            try {
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
-                marshaller.writeObject(operation);
-                marshaller.finish();
-            }
-            finally {
-                safeFinish(marshaller);
-            }
+            output.write(ModelControllerClientProtocol.PARAM_OPERATION);
+            operation.writeExternal(output);
         }
 
 
         /** {@inheritDoc} */
         @Override
         protected ModelNode receiveResponse(InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_OPERATION);
-                ModelNode result = unmarshal(unmarshaller, ModelNode.class);
-                unmarshaller.finish();
-                return result;
-            } finally {
-                safeFinish(unmarshaller);
-            }
+            expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+            return readNode(input);
         }
     }
 
@@ -228,35 +197,28 @@ class ModelControllerClientImpl implements ModelControllerClient {
         /** {@inheritDoc} */
         @Override
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            try {
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
-                marshaller.writeObject(operation);
-                marshaller.finish();
-            } catch (Exception e) {
-                handler.handleException(e);
-            } finally {
-                safeFinish(marshaller);
-            }
+            output.write(ModelControllerClientProtocol.PARAM_OPERATION);
+            operation.writeExternal(output);
         }
 
 
         /** {@inheritDoc} */
         @Override
         protected Void receiveResponse(InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
             try {
                 LOOP:
                 while (true) {
-                    byte command = unmarshaller.readByte();
+                    int command = input.read();
                     switch (command) {
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT:{
-                            expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_LOCATION);
-                            String[] location = unmarshal(unmarshaller, String[].class);
-                            expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_OPERATION);
-                            ModelNode node = unmarshal(unmarshaller, ModelNode.class);
+                            expectHeader(input, ModelControllerClientProtocol.PARAM_LOCATION);
+                            int length = StreamUtils.readInt(input);
+                            String[] location = new String[length];
+                            for (int i = 0 ; i < length ; i++) {
+                                location[i] = StreamUtils.readUTFZBytes(input);
+                            }
+                            expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+                            ModelNode node = readNode(input);
                             handler.handleResultFragment(location, node);
                             break;
                         }
@@ -265,13 +227,13 @@ class ModelControllerClientImpl implements ModelControllerClient {
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:{
-                            expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_OPERATION);
-                            ModelNode node = unmarshal(unmarshaller, ModelNode.class);
+                            expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+                            ModelNode node = readNode(input);
                             handler.handleResultComplete(node);
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_REQUEST_ID:{
-                            result.setAsynchronousId(unmarshaller.readInt());
+                            result.setAsynchronousId(StreamUtils.readInt(input));
                             break;
                         }
                         default:{
@@ -281,8 +243,6 @@ class ModelControllerClientImpl implements ModelControllerClient {
                 }
             } catch (Exception e) {
                 handler.handleException(e);
-            } finally {
-                safeFinish(unmarshaller);
             }
             return null;
         }
@@ -309,16 +269,8 @@ class ModelControllerClientImpl implements ModelControllerClient {
         /** {@inheritDoc} */
         @Override
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            try {
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(ModelControllerClientProtocol.PARAM_REQUEST_ID);
-                marshaller.writeInt(asynchronousId);
-                marshaller.finish();
-            }
-            finally {
-                safeFinish(marshaller);
-            }
+            output.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
+            StreamUtils.writeInt(output, asynchronousId);
         }
     }
 

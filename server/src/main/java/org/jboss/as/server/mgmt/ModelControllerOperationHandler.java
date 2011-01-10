@@ -22,11 +22,7 @@
 package org.jboss.as.server.mgmt;
 
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.readByte;
-import static org.jboss.as.protocol.StreamUtils.safeFinish;
-import static org.jboss.marshalling.Marshalling.createByteInput;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,18 +39,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.ProtocolUtils;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.ByteOutput;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.SimpleClassResolver;
-import org.jboss.marshalling.Unmarshaller;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -69,14 +60,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ModelControllerOperationHandler extends AbstractMessageHandler implements ManagementOperationHandler, Service<ManagementOperationHandler> {
 
-    private static MarshallingConfiguration CONFIG;
-
-    static {
-        CONFIG = new MarshallingConfiguration();
-        final ClassLoader cl = ModelControllerOperationHandler.class.getClassLoader();
-        CONFIG.setClassResolver(new SimpleClassResolver(cl));
-    }
-
     private static final Logger log = Logger.getLogger("org.jboss.server.management");
 
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
@@ -88,14 +71,6 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
     private final AtomicInteger currentAsynchronousRequestId = new AtomicInteger();
 
     private final Map<Integer, Cancellable> asynchOperations = Collections.synchronizedMap(new HashMap<Integer, Cancellable>());
-
-    private static Marshaller getMarshaller() throws IOException {
-        return ProtocolUtils.getMarshaller(CONFIG);
-    }
-
-    private static Unmarshaller getUnmarshaller() throws IOException {
-        return ProtocolUtils.getUnmarshaller(CONFIG);
-    }
 
     public InjectedValue<ModelController> getModelControllerValue() {
         return modelControllerValue;
@@ -148,20 +123,19 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
         }
     }
 
+    private ModelNode readNode(InputStream in) throws IOException {
+        ModelNode node = new ModelNode();
+        node.readExternal(in);
+        return node;
+    }
+
     private abstract class ExecuteOperation extends ManagementResponse {
         ModelNode operation;
 
         @Override
         protected final void readRequest(final InputStream inputStream) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(inputStream));
-            try {
-                expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_OPERATION);
-                operation = unmarshal(unmarshaller, ModelNode.class);
-                unmarshaller.finish();
-            } finally {
-                safeFinish(unmarshaller);
-            }
+            expectHeader(inputStream, ModelControllerClientProtocol.PARAM_OPERATION);
+            operation = readNode(inputStream);
         }
     }
 
@@ -179,16 +153,8 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
             } catch (OperationFailedException e) {
                 throw new IOException(e);
             }
-            final Marshaller marshaller = getMarshaller();
-            try {
-                marshaller.start(createByteOutput(outputStream));
-                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
-                marshaller.writeObject(result);
-                marshaller.finish();
-            }
-            finally {
-                safeFinish(marshaller);
-            }
+            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+            result.writeExternal(outputStream);
         }
     }
 
@@ -203,116 +169,102 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-
-            final Marshaller marshaller = getMarshaller();
-            try {
-                final ByteOutput output = createByteOutput(outputStream);
-                marshaller.start(output);
-
-                final CountDownLatch completeLatch = new CountDownLatch(1);
-                final IOExceptionHolder holder = new IOExceptionHolder();
-                Cancellable result = modelController.execute(operation, new ResultHandler() {
-                    @Override
-                    public void handleResultFragment(String[] location, ModelNode result) {
-                        try {
-                            synchronized (marshaller) {
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT);
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_LOCATION);
-                                marshaller.writeObject(location);
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
-                                marshaller.writeObject(result);
-                                marshaller.flush();
+            final CountDownLatch completeLatch = new CountDownLatch(1);
+            final IOExceptionHolder holder = new IOExceptionHolder();
+            Cancellable result = modelController.execute(operation, new ResultHandler() {
+                @Override
+                public void handleResultFragment(String[] location, ModelNode result) {
+                    try {
+                        synchronized (outputStream) {
+                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT);
+                            outputStream.write(ModelControllerClientProtocol.PARAM_LOCATION);
+                            StreamUtils.writeInt(outputStream, location.length);
+                            for (String loc : location) {
+                                StreamUtils.writeUTFZBytes(outputStream, loc);
                             }
-                        } catch (IOException e) {
-                            handleIOException(e);
+                            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                            result.writeExternal(outputStream);
+                            outputStream.flush();
                         }
-                    }
-
-                    @Override
-                    public void handleResultComplete(ModelNode compensatingOperation) {
-                        try {
-                            asynchOperations.remove(asynchronousRequestId);
-                            synchronized (marshaller) {
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
-                                marshaller.writeObject(compensatingOperation);
-                                marshaller.flush();
-                            }
-                            completeLatch.countDown();
-                        } catch (IOException e) {
-                            handleIOException(e);
-                        }
-                    }
-
-                    public void handleFailed(final ModelNode failureDescription) {
-                        try {
-                            asynchOperations.remove(asynchronousRequestId);
-                            synchronized (marshaller) {
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_OPERATION);
-                                marshaller.writeObject(failureDescription);
-                                marshaller.flush();
-                            }
-                            completeLatch.countDown();
-                        } catch (IOException e) {
-                            handleIOException(e);
-                        }
-                    }
-
-                    @Override
-                    public void handleCancellation() {
-                        try {
-                            asynchOperations.remove(asynchronousRequestId);
-                            synchronized (marshaller) {
-                                marshaller.writeByte(ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION);
-                                marshaller.flush();
-                            }
-                            completeLatch.countDown();
-                        } catch (IOException e) {
-                            handleIOException(e);
-                        }
-                    }
-
-                    private void handleIOException(IOException e) {
-                        asynchOperations.remove(asynchronousRequestId);
-                        holder.setException(e);
-                        completeLatch.countDown();
-                    }
-                });
-
-                if (completeLatch.getCount() == 0) {
-                    //It was handled synchronously or has completed by now
-
-//                    synchronized (marshaller) {
-//                        marshaller.writeByte(ModelControllerClientProtocol.RTN_REQUEST_ID);
-//                        marshaller.writeInt(-1);
-//                    }
-                } else {
-                    //It was handled asynchronously
-                    asynchOperations.put(Integer.valueOf(asynchronousRequestId), result);
-                    synchronized (marshaller) {
-                        marshaller.writeByte(ModelControllerClientProtocol.PARAM_REQUEST_ID);
-                        marshaller.writeInt(asynchronousRequestId);
-                        marshaller.flush();
-                    }
-
-                    while (true) {
-                        try {
-                            completeLatch.await();
-                            break;
-                        } catch (InterruptedException e) {
-                        }
-                    }
-
-                    if (holder.getException() != null) {
-                        throw holder.getException();
+                    } catch (IOException e) {
+                        handleIOException(e);
                     }
                 }
 
-                marshaller.finish();
-            }
-            finally {
-                safeFinish(marshaller);
+                @Override
+                public void handleResultComplete(ModelNode compensatingOperation) {
+                    try {
+                        asynchOperations.remove(asynchronousRequestId);
+                        synchronized (outputStream) {
+                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
+                            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                            compensatingOperation.writeExternal(outputStream);
+                            //outputStream.flush();
+                        }
+                        completeLatch.countDown();
+                    } catch (IOException e) {
+                        handleIOException(e);
+                    }
+                }
+
+                public void handleFailed(final ModelNode failureDescription) {
+                    try {
+                        asynchOperations.remove(asynchronousRequestId);
+                        synchronized (outputStream) {
+                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
+                            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                            failureDescription.writeExternal(outputStream);
+                            //outputStream.flush();
+                        }
+                        completeLatch.countDown();
+                    } catch (IOException e) {
+                        handleIOException(e);
+                    }
+                }
+
+                @Override
+                public void handleCancellation() {
+                    try {
+                        asynchOperations.remove(asynchronousRequestId);
+                        synchronized (outputStream) {
+                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION);
+                            //outputStream.flush();
+                        }
+                        completeLatch.countDown();
+                    } catch (IOException e) {
+                        handleIOException(e);
+                    }
+                }
+
+                private void handleIOException(IOException e) {
+                    asynchOperations.remove(asynchronousRequestId);
+                    holder.setException(e);
+                    completeLatch.countDown();
+                }
+            });
+
+            if (completeLatch.getCount() == 0) {
+                //It was handled synchronously or has completed by now
+            } else {
+                //It was handled asynchronously
+                asynchOperations.put(Integer.valueOf(asynchronousRequestId), result);
+                synchronized (outputStream) {
+                    outputStream.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
+                    StreamUtils.writeInt(outputStream, asynchronousRequestId);
+                    outputStream.flush();
+                }
+
+                while (true) {
+                    try {
+                        completeLatch.await();
+                        break;
+                    } catch (InterruptedException e) {
+                    }
+                }
+
+                if (holder.getException() != null) {
+                    throw holder.getException();
+                }
             }
         }
     }
@@ -325,24 +277,15 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
 
         @Override
         protected final void readRequest(final InputStream inputStream) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(inputStream));
-            int operationId = 0;
-            try {
-                expectHeader(unmarshaller, ModelControllerClientProtocol.PARAM_REQUEST_ID);
-                operationId = unmarshaller.readInt();
-                unmarshaller.finish();
-            } finally {
-                safeFinish(unmarshaller);
-            }
+
+            expectHeader(inputStream, ModelControllerClientProtocol.PARAM_REQUEST_ID);
+            int operationId = StreamUtils.readInt(inputStream);
 
             Cancellable operation = asynchOperations.get(Integer.valueOf(operationId));
             if (operation != null) {
                 operation.cancel();
             }
         }
-
-
     }
 
     private final class IOExceptionHolder {
