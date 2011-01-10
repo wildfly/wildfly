@@ -104,6 +104,9 @@ public class DeploymentUtils implements Closeable {
             builder = deployment.addDeployment(manager, builder);
         }
         manager.execute(builder.build()).get();
+
+        // Evil hack, remove when we have update results blocking on all deployment services
+        Thread.sleep(2000);
     }
 
     public synchronized void undeploy() throws ExecutionException, InterruptedException {
