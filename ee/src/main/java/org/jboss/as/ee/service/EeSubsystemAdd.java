@@ -57,7 +57,7 @@ public final class EeSubsystemAdd extends AbstractSubsystemAdd<EeSubsystemElemen
         logger.info("Activating EE subsystem");
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new ApplicationXmlParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_STRUCTURE, new EarStructureProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
     }

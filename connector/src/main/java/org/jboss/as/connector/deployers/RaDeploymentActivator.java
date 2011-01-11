@@ -28,7 +28,7 @@ import org.jboss.as.connector.deployers.processors.DsDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
-import org.jboss.as.connector.deployers.processors.RaNestedJarInlineProcessor;
+import org.jboss.as.connector.deployers.processors.RaStructureProcessor;
 import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
 import org.jboss.as.connector.jndi.JndiStrategyService;
@@ -68,6 +68,6 @@ public class RaDeploymentActivator {
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_XML_DEPLOYMENT, new RaXmlDeploymentProcessor(mdrService.getValue()));
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_DS, new DsDependencyProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DS_DEPLOYMENT, new DsDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_NESTED_JAR_RA, new RaNestedJarInlineProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_RAR, new RaStructureProcessor());
     }
 }

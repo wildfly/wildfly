@@ -95,11 +95,23 @@ public final class Attachments {
      * The server deployment repository
      */
     public static final AttachmentKey<ServerDeploymentRepository> SERVER_DEPLOYMENT_REPOSITORY = AttachmentKey.create(ServerDeploymentRepository.class);
+
+    /**
+     * The annotation index for this deployment. This is attached to the {@link ResourceRoot}s of the deployment that contain
+     * the annotations
+     */
+    public static final AttachmentKey<Index> ANNOTATION_INDEX = AttachmentKey.create(Index.class);
+
     /**
      * An attachment that indicates if a {@link ResourceRoot} should be indexed by the {@link AnnotationIndexProcessor}. If this
      * is not present then the resource root is indexed by default.
      */
     public static final AttachmentKey<Boolean> INDEX_RESOURCE_ROOT = AttachmentKey.create(Boolean.class);
+
+    /**
+     * A list of paths within a root to ignore when indexing.
+     */
+    public static final AttachmentKey<AttachmentList<String>> INDEX_IGNORE_PATHS = AttachmentKey.createList(String.class);
 
     /**
      * A marker attachment to identify a resource root that should be included as a module root.
@@ -128,11 +140,6 @@ public final class Attachments {
     //
     // PARSE
     //
-    /**
-     * The annotation index for this deployment. This is attached to the {@link ResourceRoot}s of the deployment that contain
-     * the annotations
-     */
-    public static final AttachmentKey<Index> ANNOTATION_INDEX = AttachmentKey.create(Index.class);
 
 
     //

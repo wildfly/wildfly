@@ -24,8 +24,10 @@ package org.jboss.as.server.deployment.annotation;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,6 +38,7 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
@@ -53,6 +56,7 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
@@ -72,11 +76,26 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                 continue;
             }
 
+            final List<String> indexIgnorePathList = resourceRoot.getAttachment(Attachments.INDEX_IGNORE_PATHS);
+            final Set<String> indexIgnorePaths;
+            if (indexIgnorePathList != null && !indexIgnorePathList.isEmpty()) {
+                indexIgnorePaths = new HashSet<String>(indexIgnorePathList);
+            } else {
+                indexIgnorePaths = null;
+            }
+
             final VirtualFile virtualFile = resourceRoot.getRoot();
             final Indexer indexer = new Indexer();
             try {
-                final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                        VisitorAttributes.RECURSE_LEAVES_ONLY));
+                final VisitorAttributes visitorAttributes = new VisitorAttributes();
+                visitorAttributes.setLeavesOnly(true);
+                visitorAttributes.setRecurseFilter(new VirtualFileFilter() {
+                    public boolean accepts(VirtualFile file) {
+                        return indexIgnorePaths == null || !indexIgnorePaths.contains(file.getPathNameRelativeTo(virtualFile));
+                    }
+                });
+
+                final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", visitorAttributes));
                 for (VirtualFile classFile : classChildren) {
                     InputStream inputStream = null;
                     try {

@@ -40,9 +40,6 @@ public final class ResourceRoot extends SimpleAttachable {
     private final boolean export;
     private final List<PathFilter> exportFilters = new ArrayList<PathFilter>();
 
-    private boolean subDeployment;
-    private boolean classpathEntry;
-
     public ResourceRoot(final VirtualFile root, final MountHandle mountHandle, final boolean export) {
         this(root.getName(), root, mountHandle, export);
     }

@@ -196,8 +196,7 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_MANIFEST, new ManifestAttachmentProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_SERVICE_LOADER, new ServiceLoaderProcessor()));
+        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
