@@ -48,57 +48,50 @@ import org.osgi.framework.Version;
  */
 public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private ServiceRegistry serviceRegistry;
-
-    public OSGiAttachmentsDeploymentProcessor(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-    }
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
 
         // Check if we already have an OSGi deployment
-        Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnitContext);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnit);
 
-        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnitContext.getName());
-        VirtualFile virtualFile = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-
-
+        ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
+        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnit.getName());
+        VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         // Check for attached BundleInfo
-        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(deploymentUnitContext);
+        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(deploymentUnit);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
-            OSGiDeploymentAttachment.attachDeployment(deploymentUnitContext, deployment);
+            OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
 
         // Check for attached OSGiMetaData
-        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaDataAttachment(deploymentUnitContext);
+        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaDataAttachment(deploymentUnit);
         if (deployment == null && metadata != null) {
             String symbolicName = metadata.getBundleSymbolicName();
             Version version = metadata.getBundleVersion();
             deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
             deployment.addAttachment(OSGiMetaData.class, metadata);
-            OSGiDeploymentAttachment.attachDeployment(deploymentUnitContext, deployment);
+            OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
 
         // Check for attached XModule
-        XModule resModule = XModuleAttachment.getXModuleAttachment(deploymentUnitContext);
+        XModule resModule = XModuleAttachment.getXModuleAttachment(deploymentUnit);
         if (deployment == null && resModule != null) {
             String symbolicName = resModule.getName();
             Version version = resModule.getVersion();
             deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
             deployment.addAttachment(XModule.class, resModule);
-            OSGiDeploymentAttachment.attachDeployment(deploymentUnitContext, deployment);
+            OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
 
         // Create the {@link OSGiDeploymentService}
         if (deployment != null) {
 
             // Prevent garbage collection of the MountHandle which will close the file
-            MountHandle mount = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();
+            MountHandle mount = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();
             deployment.addAttachment(MountHandle.class, mount);
 
             // Mark the bundle to start automatically
@@ -108,7 +101,8 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    public void undeploy(DeploymentUnit context) {
-        OSGiDeploymentService.removeService(context);
+    @Override
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        OSGiDeploymentService.removeService(deploymentUnit);
     }
 }

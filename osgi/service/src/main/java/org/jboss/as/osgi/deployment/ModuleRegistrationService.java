@@ -22,9 +22,9 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.server.deployment.DeploymentService;
 import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.PackageAdminService;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.BatchBuilder;
@@ -60,7 +60,7 @@ public class ModuleRegistrationService extends AbstractService<Deployment> {
         ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
-        serviceBuilder.addDependency(DeploymentService.getServiceName(contextName));
+        serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT.append(contextName));
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.install();
     }
@@ -69,7 +69,7 @@ public class ModuleRegistrationService extends AbstractService<Deployment> {
      * Get the service name for a given context
      */
     public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = DeploymentService.getServiceName(contextName);
+        ServiceName deploymentServiceName = Services.JBOSS_DEPLOYMENT.append(contextName);
         return ModuleRegistrationService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 

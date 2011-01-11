@@ -192,8 +192,9 @@ public enum Phase {
     public static final int PARSE_MANIFEST                              = 0x0100;
     public static final int PARSE_CLASS_PATH                            = 0x0200;
     public static final int PARSE_EXTENSION_LIST                        = 0x0300;
-    public static final int PARSE_MANIFEST_OSGI                         = 0x0400;
+    public static final int PARSE_OSGI_MANIFEST                         = 0x0400;
     public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0500;
+    public static final int PARSE_OSGI_XSERVICE_PROPERTIES              = 0x0550;
     public static final int PARSE_WEB_DEPLOYMENT                        = 0x0600;
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0700;
     public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0800;

@@ -45,12 +45,6 @@ import org.osgi.framework.BundleException;
  */
 public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
 
-    private ServiceRegistry serviceRegistry;
-
-    public BundleInfoAttachmentProcessor(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-    }
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
@@ -76,8 +70,9 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
 
         // Nothing to do if this is not a valid manifest
         if (BundleInfo.isValidateBundleManifest(manifest)) {
-            // Construct and attach the {@link BundleInfo}
             try {
+                // Construct and attach the {@link BundleInfo}
+                ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
                 String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnit.getName());
                 info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
                 BundleInfoAttachment.attachBundleInfo(deploymentUnit, info);
@@ -87,7 +82,8 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(DeploymentUnit context) {
-        BundleInfoAttachment.detachBundleInfo(context);
+    @Override
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        BundleInfoAttachment.detachBundleInfo(deploymentUnit);
     }
 }

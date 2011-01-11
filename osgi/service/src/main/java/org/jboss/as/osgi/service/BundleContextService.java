@@ -22,11 +22,11 @@
 
 package org.jboss.as.osgi.service;
 
-import org.jboss.as.server.deployment.DeploymentService;
 import org.jboss.as.osgi.deployment.InstallBundleInitiatorService;
 import org.jboss.as.osgi.deployment.ModuleRegistrationService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
@@ -109,7 +109,7 @@ public class BundleContextService implements Service<BundleContext> {
                     // Check if we have an {@link OSGiDeploymentService}
                     ServiceContainer container = context.getController().getServiceContainer();
                     ServiceName osgiDeploymentService = OSGiDeploymentService.getServiceName(contextName);
-                    ServiceName deploymentService = DeploymentService.getServiceName(contextName);
+                    ServiceName deploymentService = Services.JBOSS_DEPLOYMENT.append(contextName);
                     if (container.getService(deploymentService) != null && container.getService(osgiDeploymentService) == null) {
                         ServiceName serviceName = ModuleRegistrationService.getServiceName(contextName);
                         try {

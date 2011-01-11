@@ -43,9 +43,7 @@ import org.osgi.framework.Version;
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
  */
-public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor {
-
-    // private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
+public class OSGiXServicePropertiesProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -58,7 +56,7 @@ public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor
 
         // Get the OSGi XService properties
         String resName = "META-INF/jbosgi-xservice.properties";
-        VirtualFile virtualFile = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         VirtualFile xserviceFile = virtualFile.getChild(resName);
         if (xserviceFile.exists()) {
             try {
@@ -76,6 +74,7 @@ public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    public void undeploy(final DeploymentUnit context) {
+    @Override
+    public void undeploy(final DeploymentUnit deploymentUnit) {
     }
 }

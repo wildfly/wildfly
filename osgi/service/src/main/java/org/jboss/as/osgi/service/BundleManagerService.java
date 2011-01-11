@@ -73,13 +73,11 @@ public class BundleManagerService implements Service<BundleManager> {
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    //private final InjectedValue<ClassifyingModuleLoaderService> injectedModuleLoader = new InjectedValue<ClassifyingModuleLoaderService>();
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     //private final InjectedValue<ServerDeploymentManager> injectedDeploymentManager = new InjectedValue<ServerDeploymentManager>();
     private final InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
     private final SubsystemState subsystemState;
 
-    //private Injector<ClassifyingModuleLoaderService> osgiModuleLoaderInjector;
     private BundleManager bundleManager;
 
     private BundleManagerService(SubsystemState subsystemState) {
@@ -89,7 +87,6 @@ public class BundleManagerService implements Service<BundleManager> {
     public static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
         BundleManagerService service = new BundleManagerService(subsystemState);
         ServiceBuilder<?> serviceBuilder = target.addService(BundleManagerService.SERVICE_NAME, service);
-        //serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         //serviceBuilder.addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);

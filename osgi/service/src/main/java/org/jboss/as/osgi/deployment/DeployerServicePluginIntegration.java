@@ -26,13 +26,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.server.deployment.DeploymentService;
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentActionResult;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
@@ -57,13 +57,13 @@ import org.osgi.framework.BundleException;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class ServerDeployerServicePlugin extends AbstractDeployerServicePlugin {
+public class DeployerServicePluginIntegration extends AbstractDeployerServicePlugin {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private ServerDeploymentManager deploymentManager;
 
-    public ServerDeployerServicePlugin(BundleManager bundleManager, ServerDeploymentManager deploymentManager) {
+    public DeployerServicePluginIntegration(BundleManager bundleManager, ServerDeploymentManager deploymentManager) {
         super(bundleManager);
         this.deploymentManager = deploymentManager;
     }
@@ -160,7 +160,7 @@ public class ServerDeployerServicePlugin extends AbstractDeployerServicePlugin {
                         getBundleManager().uninstallBundle(dep);
 
                     // Sanity check that the {@link DeploymentService} is there
-                    serviceName = DeploymentService.getServiceName(contextName);
+                    serviceName = Services.JBOSS_DEPLOYMENT.append(contextName);
                     if (getBundleManager().getServiceContainer().getService(serviceName) == null)
                         log.warnf("Cannot find deployment service: %s", serviceName);
 

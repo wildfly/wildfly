@@ -22,9 +22,9 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.server.deployment.DeploymentService;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.osgi.service.BundleManagerService;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
@@ -86,7 +86,7 @@ public class InstallBundleInitiatorService extends AbstractService<Deployment> {
     }
 
     public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = DeploymentService.getServiceName(contextName);
+        ServiceName deploymentServiceName = Services.JBOSS_DEPLOYMENT.append(contextName);
         return SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 

@@ -94,8 +94,8 @@
         <version.org.jboss.osgi.deployment>1.0.9</version.org.jboss.osgi.deployment>
         <version.org.jboss.osgi.framework>1.0.0.Alpha15</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.jmx>1.0.9</version.org.jboss.osgi.jmx>
-        <version.org.jboss.osgi.resolver>1.0.4</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.spi>1.0.19</version.org.jboss.osgi.spi>
+        <version.org.jboss.osgi.resolver>1.0.5</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.spi>1.0.20</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.4</version.org.jboss.osgi.vfs>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>

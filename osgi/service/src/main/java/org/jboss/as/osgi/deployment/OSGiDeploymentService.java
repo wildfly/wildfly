@@ -26,14 +26,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.jboss.as.server.deployment.DeploymentService;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -76,9 +76,21 @@ public class OSGiDeploymentService implements Service<Deployment> {
         this.deployment = deployment;
     }
 
-    public static void addService(DeploymentPhaseContext context) {
-        final DeploymentUnit deploymentUnitContext = context.getDeploymentUnit();
-        addService(context.getServiceTarget(), OSGiDeploymentAttachment.getAttachment(deploymentUnitContext), deploymentUnitContext.getName());
+    public static void addService(DeploymentPhaseContext phaseContext) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        final Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnit);
+        final String contextName = deploymentUnit.getName();
+
+        final OSGiDeploymentService service = new OSGiDeploymentService(deployment);
+        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
+        serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
+        serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
+        serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT.append(contextName));
+        serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
+        serviceBuilder.addListener(listener);
+        serviceBuilder.install();
     }
 
     public static void removeService(DeploymentUnit context) {
@@ -89,23 +101,11 @@ public class OSGiDeploymentService implements Service<Deployment> {
         }
     }
 
-    public static void addService(ServiceTarget serviceTarget, Deployment deployment, String contextName) {
-        OSGiDeploymentService service = new OSGiDeploymentService(deployment);
-        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
-        serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
-        serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
-        serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
-        serviceBuilder.addDependency(DeploymentService.getServiceName(contextName));
-        serviceBuilder.setInitialMode(Mode.ACTIVE);
-        serviceBuilder.addListener(listener);
-        serviceBuilder.install();
-    }
-
     /**
      * Get the OSGiDeploymentService name for a given context
      */
     public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = DeploymentService.getServiceName(contextName);
+        ServiceName deploymentServiceName = Services.JBOSS_DEPLOYMENT.append(contextName);
         return OSGiDeploymentService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 

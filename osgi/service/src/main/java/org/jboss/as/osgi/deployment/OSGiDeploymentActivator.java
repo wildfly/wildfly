@@ -22,10 +22,9 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.BootUpdateContext;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
 
 /**
  * Installs the various {@link DeploymentUnitProcessor}s required for OSGi deployments.
@@ -38,9 +37,8 @@ public class OSGiDeploymentActivator {
      * Activate the services required for service deployments.
      */
     public void activate(final BootUpdateContext updateContext) {
-        ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_BUNDLE_INFO, new BundleInfoAttachmentProcessor(serviceRegistry));
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_ATTACHMENTS, new OSGiAttachmentsDeploymentProcessor(serviceRegistry));
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_ATTACHMENTS, new OSGiAttachmentsDeploymentProcessor(serviceRegistry));
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_BUNDLE_INFO, new BundleInfoAttachmentProcessor());
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_XSERVICE_PROPERTIES, new OSGiXServicePropertiesProcessor());
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_ATTACHMENTS, new OSGiAttachmentsDeploymentProcessor());
     }
 }
