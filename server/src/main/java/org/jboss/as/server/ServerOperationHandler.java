@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.dmr.ModelNode;
@@ -35,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ServerOperationHandler<C extends NewServerOperationContext> extends OperationHandler {
+public interface ServerOperationHandler extends OperationHandler {
 
     /**
      * Execute an operation, also applying it to the runtime environment.  This method <b>must</b> invoke one of the
@@ -46,5 +47,5 @@ public interface ServerOperationHandler<C extends NewServerOperationContext> ext
      * @param resultHandler the result handler to invoke when the operation is complete
      * @return a handle which may be used to asynchronously cancel this operation
      */
-    Cancellable execute(C context, ModelNode operation, ResultHandler resultHandler);
+    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }
