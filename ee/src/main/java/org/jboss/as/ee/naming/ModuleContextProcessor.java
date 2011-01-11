@@ -26,6 +26,8 @@ import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
 
 import javax.naming.Context;
 
+import org.jboss.as.naming.deployment.ContextService;
+import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -65,8 +67,12 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         serviceTarget.addService(moduleContextServiceName.append("module-name"), moduleNameBinder).addDependency(
                 moduleContextServiceName, Context.class, moduleNameBinder.getContextInjector()).install();
 
-        phaseContext.getDeploymentUnit().putAttachment(Attachments.MODULE_CONTEXT_CONFIG,
-                new NamingContextConfig(moduleContextServiceName));
+        final ContextService envContextService = new ContextService(JndiName.of("env"));
+        serviceTarget.addService(moduleContextServiceName.append("env"), envContextService)
+            .addDependency(moduleContextServiceName, Context.class, envContextService.getParentContextInjector())
+            .install();
+
+        phaseContext.getDeploymentUnit().putAttachment(Attachments.MODULE_CONTEXT_CONFIG, new NamingContextConfig(moduleContextServiceName));
     }
 
     private String getModuleName(final DeploymentUnit deploymentUnit) {

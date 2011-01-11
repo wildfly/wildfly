@@ -112,8 +112,9 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName managedBeanServiceName = ManagedBeanService.SERVICE_NAME.append(deploymentContext.getName(), managedBeanName);
         final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(managedBeanServiceName, managedBeanService);
 
-        final ServiceName managedBeanContextServiceName = moduleContextServiceName.append(managedBeanName, "context");
-        final JndiName managedBeanContextJndiName = ContextNames.MODULE_CONTEXT_NAME.append(managedBeanName + "-context");
+        final ServiceName moduleEnvContextServiceName = moduleContextServiceName.append("env");
+        final ServiceName managedBeanContextServiceName = moduleEnvContextServiceName.append(managedBeanName);
+        final JndiName managedBeanContextJndiName = ContextNames.MODULE_CONTEXT_NAME.append("env").append(managedBeanName);
 
         // Process managed bean resources
         for (ResourceConfiguration resourceConfiguration : managedBeanConfiguration.getResourceConfigurations()) {
@@ -132,7 +133,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ContextService actualBeanContext = new ContextService(managedBeanContextJndiName);
         serviceTarget.addService(managedBeanContextServiceName, actualBeanContext)
-            .addDependency(moduleContextServiceName, Context.class, actualBeanContext.getParentContextInjector())
+            .addDependency(moduleEnvContextServiceName, Context.class, actualBeanContext.getParentContextInjector())
             .install();
 
         // Add an object factory reference for this managed bean

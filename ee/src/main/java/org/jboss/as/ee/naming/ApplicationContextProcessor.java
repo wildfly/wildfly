@@ -24,6 +24,8 @@ package org.jboss.as.ee.naming;
 
 import javax.naming.Context;
 
+import org.jboss.as.naming.deployment.ContextService;
+import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -63,6 +65,11 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
                 .immediateValue(deploymentUnit.getName()));
         serviceTarget.addService(applicationContextServiceName.append("app-name"), applicationNameBinder).addDependency(
                 applicationContextServiceName, Context.class, applicationNameBinder.getContextInjector()).install();
+
+        final ContextService envContextService = new ContextService(JndiName.of("env"));
+        serviceTarget.addService(applicationContextServiceName.append("env"), envContextService)
+            .addDependency(applicationContextServiceName, Context.class, envContextService.getParentContextInjector())
+            .install();
 
         phaseContext.getDeploymentUnit().putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG,
                 new NamingContextConfig(applicationContextServiceName));
