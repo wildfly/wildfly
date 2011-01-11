@@ -27,6 +27,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -58,7 +59,17 @@ public class BasicModelController implements ModelController {
      * @param configurationPersister the configuration persister to use to store changes
      */
     protected BasicModelController(final NewConfigurationPersister configurationPersister) {
-        model = new ModelNode().setEmptyObject();
+        this(new ModelNode().setEmptyObject(), configurationPersister);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param the model
+     * @param configurationPersister the configuration persister to use to store changes
+     */
+    protected BasicModelController(ModelNode model, final NewConfigurationPersister configurationPersister) {
+        this.model = model;
         this.configurationPersister = configurationPersister;
     }
 
@@ -94,8 +105,8 @@ public class BasicModelController implements ModelController {
     @Override
     public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
         try {
-            final PathAddress address = PathAddress.pathAddress(operation.require("address"));
-            final String operationName = operation.require("operation").asString();
+            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.ADDRESS));
+            final String operationName = operation.require(ModelDescriptionConstants.OPERATION_NAME).asString();
             final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
             final ModelNode subModel;
             if (operationHandler instanceof ModelAddOperationHandler) {
@@ -174,6 +185,10 @@ public class BasicModelController implements ModelController {
      */
     protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
         return operationHandler.execute(context, operation, resultHandler);
+    }
+
+    protected ModelNodeRegistration getRegistry() {
+        return registry;
     }
 
     /** {@inheritDoc} */

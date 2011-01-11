@@ -32,6 +32,7 @@ public class ModelDescriptionConstants {
 
     public static final String ADD = "add";
     public static final String ADD_OPERATION = "add-operation";
+    public static final String ADDRESS = "address";
     public static final String ATTRIBUTES = "attributes";
     public static final String CHILDREN = "children";
     public static final String DEPLOYMENT = "deployment";
@@ -56,10 +57,14 @@ public class ModelDescriptionConstants {
     public static final String PATH = "path";
     public static final String PORT = "port";
     public static final String PROFILE = "profile";
+    public static final String READ_ATTRIBUTES_OF_TYPE_OPERATION = "read-attributes-of-type-operation";
+    public static final String READ_NAMED_ATTRIBUTE_OPERATION = "read-named-attribute-operation";
+    public static final String READ_SUB_MODEL_OPERATION = "read-sub-model-operation";
     public static final String REMOVE = "remove";
     public static final String REMOVE_OPERATION = "remove-operation";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
+    public static final String RECURSIVE = "recursive";
     public static final String REQUIRED = "required";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SERVER = "server";
