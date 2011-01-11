@@ -23,30 +23,19 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * An operation handler which applies to a server.  For any given operation, either of the {@code execute} methods
- * may be invoked depending on the state of the server, or whether the operation is running on the domain or host
- * controller.
+ * An operation handler which applies to a server.  For any given operation, if the operation handler in question
+ * also implements {@link org.jboss.as.controller.ModelQueryOperationHandler} or one of its subtypes, either of the
+ * {@code execute} methods may be invoked depending on the state of the server, or whether the operation is running
+ * on the domain or host controller.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface ServerOperationHandler<C extends NewServerOperationContext> extends OperationHandler {
-
-    /**
-     * Execute an operation without applying it to the runtime environment.  This method <b>must</b> invoke one of the
-     * completion methods on {@code resultHandler} regardless of the outcome of the operation.
-     *
-     * @param context the context for this operation
-     * @param operation the operation being executed
-     * @param resultHandler the result handler to invoke when the operation is complete
-     * @return a handle which may be used to asynchronously cancel this operation
-     */
-    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
 
     /**
      * Execute an operation, also applying it to the runtime environment.  This method <b>must</b> invoke one of the

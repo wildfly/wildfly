@@ -24,11 +24,11 @@ package org.jboss.as.server;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewOperationContextImpl;
 import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
@@ -45,7 +45,6 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     private final ServiceContainer container;
     private final ServiceRegistry registry;
     private final ServerEnvironment serverEnvironment;
-    private final NewConfigurationPersister configurationPersister;
     private volatile State state;
 
     NewServerControllerImpl(final ServiceContainer container, final ServiceRegistry registry, final ServerEnvironment serverEnvironment, final NewConfigurationPersister configurationPersister) {
@@ -53,7 +52,6 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         this.container = container;
         this.registry = registry;
         this.serverEnvironment = serverEnvironment;
-        this.configurationPersister = configurationPersister;
     }
 
     void init() {
@@ -91,7 +89,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
         if (operationHandler instanceof BootOperationHandler && state == State.STARTING) {
             return new BootContextImpl(subModel);
-        } else if (operationHandler instanceof RuntimeOperationHandler && state != State.RESTART_REQUIRED) {
+        } else if (operationHandler instanceof RuntimeOperationHandler && ! (state == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
             return new RuntimeContextImpl(subModel);
         } else {
             return super.getOperationContext(subModel, operation, operationHandler);

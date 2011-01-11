@@ -23,7 +23,6 @@
 package org.jboss.as.controller;
 
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,7 +42,6 @@ public class BasicModelController implements ModelController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
-    private static final String[] NO_STRINGS = new String[0];
     private final ModelNodeRegistration registry = ModelNodeRegistration.Factory.create(new DescriptionProvider() {
         // TODO - this is wrong, just a temp until everything is described
         @Override
@@ -95,45 +93,54 @@ public class BasicModelController implements ModelController {
     /** {@inheritDoc} */
     @Override
     public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
-        final PathAddress address = PathAddress.pathAddress(operation.get("address"));
-        final String operationName = operation.get("operation").asString();
-        final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
-        final ModelNode subModel;
         try {
-            subModel = address.navigate(model, false);
-        } catch (final NoSuchElementException e) {
-            handler.handleResultFragment(NO_STRINGS, getFailureResult(e));
-            return Cancellable.NULL;
-        }
-        final NewOperationContext context = getOperationContext(subModel, operation, operationHandler);
-        final ResultHandler persistingHandler = new ResultHandler() {
-            @Override
-            public void handleResultFragment(final String[] location, final ModelNode result) {
-                handler.handleResultFragment(location, result);
-            }
-
-            @Override
-            public void handleResultComplete(final ModelNode compensatingOperation) {
-                handler.handleResultComplete(compensatingOperation);
-                try {
-                    configurationPersister.store(model);
-                } catch (final ConfigurationPersistenceException e) {
-                    log.warnf("Failed to persist configuration change: %s", e);
+            final PathAddress address = PathAddress.pathAddress(operation.require("address"));
+            final String operationName = operation.require("operation").asString();
+            final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
+            final ModelNode subModel;
+            if (operationHandler instanceof ModelAddOperationHandler) {
+                subModel = new ModelNode();
+            } else if (operationHandler instanceof ModelQueryOperationHandler) {
+                // or model update operation handler...
+                final ModelNode model = this.model;
+                synchronized (model) {
+                    subModel = address.navigate(model, false).clone();
                 }
+            } else {
+                subModel = null;
             }
+            final NewOperationContext context = getOperationContext(subModel, operation, operationHandler);
+            final ResultHandler useHandler = (operationHandler instanceof ModelUpdateOperationHandler) ? new ResultHandler() {
+                @Override
+                public void handleResultFragment(final String[] location, final ModelNode result) {
+                    handler.handleResultFragment(location, result);
+                }
 
-            @Override
-            public void handleFailed(final ModelNode failureDescription) {
-                handler.handleFailed(failureDescription);
-            }
+                @Override
+                public void handleResultComplete(final ModelNode compensatingOperation) {
+                    final ModelNode model = BasicModelController.this.model;
+                    synchronized (model) {
+                        address.navigate(model, true).set(subModel);
+                    }
+                    handler.handleResultComplete(compensatingOperation);
+                    try {
+                        configurationPersister.store(model);
+                    } catch (final ConfigurationPersistenceException e) {
+                        log.warnf("Failed to persist configuration change: %s", e);
+                    }
+                }
 
-            @Override
-            public void handleCancellation() {
-                handler.handleCancellation();
-            }
-        };
-        try {
-            return doExecute(context, operation, operationHandler, persistingHandler);
+                @Override
+                public void handleFailed(final ModelNode failureDescription) {
+                    handler.handleFailed(failureDescription);
+                }
+
+                @Override
+                public void handleCancellation() {
+                    handler.handleCancellation();
+                }
+            } : handler;
+            return doExecute(context, operation, operationHandler, useHandler);
         } catch (final Throwable t) {
             handler.handleFailed(getFailureResult(t));
             return Cancellable.NULL;
@@ -155,7 +162,7 @@ public class BasicModelController implements ModelController {
     }
 
     /**
-     * Actually perform this operation.  By default, this method simply calls the {@link OperationHandler#execute(NewOperationContext, ModelNode, ResultHandler)}
+     * Actually perform this operation.  By default, this method simply calls the appropriate {@code execute()}
      * method, applying the operation to the relevant submodel.  If this method throws an exception, the result handler
      * will automatically be notified.  If the operation completes successfully, any configuration change will be persisted.
      *
@@ -166,7 +173,14 @@ public class BasicModelController implements ModelController {
      * @return a handle which can be used to asynchronously cancel the operation
      */
     protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
-        return operationHandler.execute(context, operation, resultHandler);
+        if (operationHandler instanceof ModelQueryOperationHandler) {
+            final ModelQueryOperationHandler castHandler = (ModelQueryOperationHandler) operationHandler;
+            return castHandler.execute(context, operation, resultHandler);
+        } else {
+            // no effect
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
     }
 
     /** {@inheritDoc} */

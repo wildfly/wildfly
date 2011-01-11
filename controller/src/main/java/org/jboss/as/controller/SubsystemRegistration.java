@@ -32,8 +32,6 @@ import org.jboss.staxmapper.XMLElementWriter;
  * A subsystem registration.
  * <p>
  * If no XML mappings are defined, then a simple empty XML mapping is used.
- * If no root {@code remove} operation is defined for either submodel, one is automatically generated which simply
- * removes the node in question, including sub-nodes.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

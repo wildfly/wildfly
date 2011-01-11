@@ -22,11 +22,25 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.dmr.ModelNode;
+
 /**
- * An operation handler.  If an operation handler reads or affects the configuration model, it must implement
- * {@link ModelQueryOperationHandler}, {@link ModelUpdateOperationHandler}, or {@link ModelAddOperationHandler}.
+ * A model add operation handler.  An add operation is an update operation which results in a new node
+ * being added to the model.  If a node already exists at the given address, the operation fails with an error.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface OperationHandler {
+public interface ModelAddOperationHandler extends ModelUpdateOperationHandler {
+
+    /**
+     * Execute the model add, passing the result to {@code resultHandler}. This method <b>must</b> invoke one of the
+     * completion methods on {@code resultHandler} regardless of the outcome of the operation.
+     *
+     * @param context the context for this operation
+     * @param operation the operation being executed
+     * @param resultHandler the result handler to invoke when the operation is complete
+     *
+     * @return a handle which may be used to asynchronously cancel this operation
+     */
+    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

@@ -51,6 +51,10 @@ public class NewOperationContextImpl implements NewOperationContext {
 
     /** {@inheritDoc} */
     public ModelNode getSubModel() {
+        final ModelNode subModel = this.subModel;
+        if (subModel == null) {
+            throw new IllegalArgumentException("Operation does not apply to a submodel");
+        }
         return subModel;
     }
 }

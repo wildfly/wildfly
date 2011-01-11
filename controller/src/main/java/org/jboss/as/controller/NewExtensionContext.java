@@ -36,13 +36,14 @@ public interface NewExtensionContext {
      * extension registration is complete, the subsystem registration will be ignored, and an
      * error message will be logged.
      * <p>
-     * On add, the global subsystem-add handler will create an empty node for this subsystem and call
-     * the given add handler with the operation payload as well as the new, empty subsystem model node.
+     * The new subsystem registration <em>should</em> register a handler and description for the
+     * {@code add} operation at its root address.  The new subsystem registration <em>may</em> register a
+     * {@code remove} operation at its root address.  If either of these operations are not registered, a
+     * simple generic version of the missing operation will be produced.
      *
      * @param name the name of the subsystem
      * @param xmlNameSpace the XML namespace of the subsystem elements
-     * @param addHandler the handler to use for new subsystem adds
      * @throws IllegalArgumentException if the subsystem name or namespace has already been registered
      */
-    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace, OperationHandler addHandler);
+    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace);
 }
