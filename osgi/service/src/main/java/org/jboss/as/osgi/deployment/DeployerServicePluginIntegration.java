@@ -34,13 +34,17 @@ import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.DeployerService;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.SystemDeployerService;
@@ -87,6 +91,7 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                     ServiceContainer serviceContainer = getBundleManager().getServiceContainer();
                     BatchBuilder batchBuilder = serviceContainer.batchBuilder();
                     InstallBundleInitiatorService.addService(batchBuilder, contextName, dep);
+                    OSGiDeploymentLatchService.addService(batchBuilder, contextName);
                     batchBuilder.install();
 
                     // Build and execute the deployment plan
@@ -98,42 +103,42 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
 
                     // Pickup the installed bundle
                     final CountDownLatch latch = new CountDownLatch(1);
-                    ServiceName serviceName = OSGiDeploymentService.getServiceName(contextName);
+                    ServiceName serviceName = OSGiDeploymentLatchService.getServiceName(contextName);
                     ServiceController<?> controller = serviceContainer.getService(serviceName);
-                    if (controller != null) {
-                        controller.addListener(new AbstractServiceListener<Object>() {
+                    controller.addListener(new AbstractServiceListener<Object>() {
 
-                            @Override
-                            public void listenerAdded(ServiceController<? extends Object> controller) {
-                                if (controller.getState() == State.UP)
-                                    serviceStarted(controller);
-                                else if (controller.getState() == State.START_FAILED)
-                                    serviceFailed(controller, controller.getStartException());
-                            }
+                        @Override
+                        public void listenerAdded(ServiceController<? extends Object> controller) {
+                            if (controller.getState() == State.UP)
+                                serviceStarted(controller);
+                            else if (controller.getState() == State.START_FAILED)
+                                serviceFailed(controller, controller.getStartException());
+                        }
 
-                            @Override
-                            public void serviceStarted(ServiceController<? extends Object> controller) {
-                                log.tracef("Service started: %s", controller.getName());
-                                controller.removeListener(this);
-                                latch.countDown();
-                            }
+                        @Override
+                        public void serviceStarted(ServiceController<? extends Object> controller) {
+                            log.tracef("Service started: %s", controller.getName());
+                            controller.removeListener(this);
+                            controller.setMode(Mode.REMOVE);
+                            latch.countDown();
+                        }
 
-                            @Override
-                            public void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
-                                log.tracef(reason, "Service failed: %s", controller.getName());
-                                controller.removeListener(this);
-                                latch.countDown();
-                            }
-                        });
-                        latch.await(10, TimeUnit.SECONDS);
-                        if (controller.getState() == State.START_FAILED)
-                            throw controller.getStartException();
-                        if (controller.getState() != State.UP)
-                            throw new BundleException("OSGiDeploymentService not available: " + serviceName);
+                        @Override
+                        public void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
+                            log.tracef(reason, "Service failed: %s", controller.getName());
+                            controller.removeListener(this);
+                            controller.setMode(Mode.REMOVE);
+                            latch.countDown();
+                        }
+                    });
+                    latch.await(10, TimeUnit.SECONDS);
+                    if (controller.getState() == State.START_FAILED)
+                        throw controller.getStartException();
+                    if (controller.getState() != State.UP)
+                        throw new BundleException("OSGiDeploymentService not available: " + serviceName);
 
-                        Deployment bundleDep = (Deployment) controller.getValue();
-                        bundle = bundleDep.getAttachment(Bundle.class);
-                    }
+                    Deployment bundleDep = (Deployment) controller.getValue();
+                    bundle = bundleDep.getAttachment(Bundle.class);
                 } catch (RuntimeException rte) {
                     throw rte;
                 } catch (BundleException ex) {
@@ -166,9 +171,10 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
 
                     // Undeploy through the deployment manager
                     DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-                    DeploymentPlan plan = builder.undeploy(contextName).remove(contextName).build();
-                    Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-                    future.get();
+                    builder = builder.undeploy(contextName).remove(contextName);
+                    DeploymentPlan plan = builder.build();
+                    DeploymentAction removeAction = builder.getLastAction();
+                    executeDeploymentPlan(plan, removeAction);
 
                 } catch (RuntimeException rte) {
                     throw rte;
@@ -179,18 +185,40 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
         };
     }
 
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
+    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction action) throws Exception {
 
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
         ServerDeploymentPlanResult planResult = future.get();
 
-        ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(deployAction.getId());
+        ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(action.getId());
         if (actionResult != null) {
             Exception deploymentException = (Exception) actionResult.getDeploymentException();
             if (deploymentException != null)
                 throw deploymentException;
         }
 
-        return deployAction.getDeploymentUnitUniqueName();
+        return action.getDeploymentUnitUniqueName();
+    }
+
+    static class OSGiDeploymentLatchService extends AbstractService<Deployment> {
+
+        private InjectedValue<Deployment> injectedDeployment = new InjectedValue<Deployment>();
+
+        static void addService(BatchBuilder batchBuilder, String contextName) {
+            OSGiDeploymentLatchService service = new OSGiDeploymentLatchService();
+            ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
+            serviceBuilder.addDependency(OSGiDeploymentService.getServiceName(contextName), Deployment.class,
+                    service.injectedDeployment);
+            serviceBuilder.install();
+        }
+
+        static ServiceName getServiceName(String contextName) {
+            return OSGiDeploymentService.SERVICE_NAME_BASE.append("latch", contextName);
+        }
+
+        @Override
+        public Deployment getValue() throws IllegalStateException {
+            return injectedDeployment.getValue();
+        }
     }
 }
