@@ -33,6 +33,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -42,27 +44,30 @@ import org.jboss.msc.service.ServiceTarget;
  */
 final class NewServerControllerImpl extends BasicModelController implements NewServerController {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
+
     private final ServiceContainer container;
     private final ServiceRegistry registry;
     private final ServerEnvironment serverEnvironment;
     private volatile State state;
 
-    NewServerControllerImpl(final ServiceContainer container, final ServiceRegistry registry, final ServerEnvironment serverEnvironment, final NewConfigurationPersister configurationPersister) {
+    NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment, final NewConfigurationPersister configurationPersister) {
         super(configurationPersister);
         this.container = container;
-        this.registry = registry;
         this.serverEnvironment = serverEnvironment;
+        registry = new DelegatingServiceRegistry(container);
     }
 
     void init() {
         state = State.STARTING;
     }
 
-    /**
-     * Get this server's environment.
-     *
-     * @return the environment
-     */
+    void finishBoot() {
+        state = State.RUNNING;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ServerEnvironment getServerEnvironment() {
         return serverEnvironment;
     }
@@ -87,8 +92,13 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
 
     /** {@inheritDoc} */
     protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
-        if (operationHandler instanceof BootOperationHandler && state == State.STARTING) {
-            return new BootContextImpl(subModel);
+        if (operationHandler instanceof BootOperationHandler) {
+            if (state == State.STARTING) {
+                return new BootContextImpl(subModel);
+            } else {
+                state = State.RESTART_REQUIRED;
+                return super.getOperationContext(subModel, operation, operationHandler);
+            }
         } else if (operationHandler instanceof RuntimeOperationHandler && ! (state == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
             return new RuntimeContextImpl(subModel);
         } else {
