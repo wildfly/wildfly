@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -48,7 +49,7 @@ public class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
      * @param rootParser the root model parser
      * @param rootDeparser the root model deparser
      */
-    public BackupXmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<ModelNode> rootParser, final XMLElementWriter<ModelNode> rootDeparser) {
+    public BackupXmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<List<ModelNode>> rootParser, final XMLElementWriter<ModelNode> rootDeparser) {
         super(fileName, rootElement, rootParser, rootDeparser);
     }
 

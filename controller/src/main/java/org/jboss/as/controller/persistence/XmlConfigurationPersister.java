@@ -49,7 +49,7 @@ import javax.xml.stream.XMLStreamWriter;
 public class XmlConfigurationPersister implements NewConfigurationPersister {
     private final File fileName;
     private final QName rootElement;
-    private final XMLElementReader<ModelNode> rootParser;
+    private final XMLElementReader<List<ModelNode>> rootParser;
     private final XMLElementWriter<ModelNode> rootDeparser;
 
     /**
@@ -60,7 +60,7 @@ public class XmlConfigurationPersister implements NewConfigurationPersister {
      * @param rootParser the root model parser
      * @param rootDeparser the root model deparser
      */
-    public XmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<ModelNode> rootParser, final XMLElementWriter<ModelNode> rootDeparser) {
+    public XmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<List<ModelNode>> rootParser, final XMLElementWriter<ModelNode> rootDeparser) {
         this.fileName = fileName;
         this.rootElement = rootElement;
         this.rootParser = rootParser;
