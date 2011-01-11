@@ -21,20 +21,32 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -46,90 +58,124 @@ import org.jboss.dmr.ModelType;
  */
 public class ProfileDescription {
 
-    private static final ModelNode PROFILE_NODE = new ModelNode();
-    private static final ModelNode PROFILE_WITH_INCLUDES_NODE;
+    private static final String RESOURCE_NAME = ProfileDescription.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelNode PROFILE_ADD_OPERATION = new ModelNode();
-    private static final ModelNode PROFILE_REMOVE_OPERATION = new ModelNode();
-
-    private static final ModelNode PROFILE_INCLUDE_ADD_OPERATION = new ModelNode();
-    private static final ModelNode PROFILE_INCLUDE_REMOVE_OPERATION = new ModelNode();
-
-    static {
-        //FIXME Load all descriptions from a resource file
-
-        PROFILE_NODE.get(DESCRIPTION).set("A named set of subsystem configurations.");
-        PROFILE_NODE.get(HEAD_COMMENT_ALLOWED).set(true);
-        PROFILE_NODE.get(TAIL_COMMENT_ALLOWED).set(true);
-        PROFILE_NODE.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-        PROFILE_NODE.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
-        PROFILE_NODE.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-        PROFILE_NODE.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-
-        PROFILE_ADD_OPERATION.get(OPERATION_NAME).set("add-profile");
-        PROFILE_ADD_OPERATION.get(DESCRIPTION).set("Add a new 'profile' child");
-        PROFILE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
-        PROFILE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(DESCRIPTION).set("The value of the profile's 'name' attribute");
-        PROFILE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(REQUIRED).set(true);
-        PROFILE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(MIN_LENGTH).set(1);
-        PROFILE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(NILLABLE).set(false);
-        PROFILE_ADD_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
-
-        PROFILE_REMOVE_OPERATION.get(OPERATION_NAME).set("remove-profile");
-        PROFILE_REMOVE_OPERATION.get(DESCRIPTION).set("Remove a 'profile' child");
-        PROFILE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
-        PROFILE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(DESCRIPTION).set("The value of the profile's 'name' attribute");
-        PROFILE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(REQUIRED).set(true);
-        PROFILE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(MIN_LENGTH).set(1);
-        PROFILE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(NILLABLE).set(false);
-        PROFILE_REMOVE_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
-
-        PROFILE_WITH_INCLUDES_NODE = PROFILE_NODE.clone();
-        PROFILE_WITH_INCLUDES_NODE.get(ATTRIBUTES, INCLUDE, TYPE).set(ModelType.LIST);
-        PROFILE_WITH_INCLUDES_NODE.get(ATTRIBUTES, INCLUDE, DESCRIPTION).set("The name of other profiles to include in this profile");
-        PROFILE_WITH_INCLUDES_NODE.get(ATTRIBUTES, INCLUDE, REQUIRED).set(true);
-        PROFILE_WITH_INCLUDES_NODE.get(ATTRIBUTES, INCLUDE, VALUE_TYPE).set(ModelType.STRING);
-
-        PROFILE_INCLUDE_ADD_OPERATION.get(OPERATION_NAME).set("add-profile-include");
-        PROFILE_INCLUDE_ADD_OPERATION.get(DESCRIPTION).set("Add a profile to the list of included profiles");
-        PROFILE_INCLUDE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
-        PROFILE_INCLUDE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(DESCRIPTION).set("The name of the included profile");
-        PROFILE_INCLUDE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(REQUIRED).set(true);
-        PROFILE_INCLUDE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(MIN_LENGTH).set(1);
-        PROFILE_INCLUDE_ADD_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(NILLABLE).set(false);
-        PROFILE_INCLUDE_ADD_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
-
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(OPERATION_NAME).set("remove-profile-include");
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(DESCRIPTION).set("Remove a profile from the list of included profiles");
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(DESCRIPTION).set("The name of the included profile");
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(REQUIRED).set(true);
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(MIN_LENGTH).set(1);
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(REQUEST_PROPERTIES).get(NAME).get(NILLABLE).set(false);
-        PROFILE_INCLUDE_REMOVE_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
+    public static ModelNode getProfileDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = getBasicProfileDescription(bundle);
+        appendSubsystemChild(root, bundle);
+        return root;
     }
 
-    public static ModelNode getProfileDescription() {
-        return PROFILE_NODE.clone();
+    private static ModelNode getBasicProfileDescription(final ResourceBundle bundle) {
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("profile"));
+        root.get(HEAD_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(true);
+        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("profile.name"));
+        root.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+        root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
+        root.get(ATTRIBUTES, NAME, HEAD_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, NAME, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(OPERATIONS).setEmptyObject();
+        return root;
     }
 
-    public static ModelNode getProfileWithIncludesDescription() {
-        return PROFILE_WITH_INCLUDES_NODE.clone();
+    public static ModelNode getProfileWithIncludesDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = getBasicProfileDescription(bundle);
+        root.get(CHILDREN, INCLUDE, DESCRIPTION).set(bundle.getString("profile.includes"));
+        root.get(CHILDREN, INCLUDE, MIN_OCCURS).set(0);
+        root.get(CHILDREN, INCLUDE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, INCLUDE, MODEL_DESCRIPTION).setEmptyObject();
+        appendSubsystemChild(root, bundle);
+        return root;
     }
 
-    public static ModelNode getProfileAddOperation() {
-        return PROFILE_ADD_OPERATION.clone();
+    public static ModelNode getProfileIncludesDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("profile.include"));
+        root.get(HEAD_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, PROFILE, TYPE).set(ModelType.LIST);
+        root.get(ATTRIBUTES, PROFILE, DESCRIPTION).set(bundle.getString("profile.include.profile"));
+        root.get(ATTRIBUTES, PROFILE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, PROFILE, VALUE_TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, PROFILE, HEAD_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, PROFILE, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(OPERATIONS).setEmptyObject();
+        return root;
     }
 
-    public static ModelNode getProfileRemoveOperation() {
-        return PROFILE_REMOVE_OPERATION.clone();
+    private static void appendSubsystemChild(final ModelNode root, final ResourceBundle bundle) {
+        root.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set(bundle.getString("profile.subsystem"));
+        root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
+        root.get(CHILDREN, SUBSYSTEM, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION).setEmptyObject();
     }
 
-    public static ModelNode getProfileIncludeAddOperation() {
-        return PROFILE_INCLUDE_ADD_OPERATION.clone();
+    public static ModelNode getProfileAddOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ADD);
+        root.get(DESCRIPTION).set(bundle.getString("profile.add"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.add.name"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
     }
 
-    public static ModelNode getProfileIncludeRemoveOperation() {
-        return PROFILE_INCLUDE_REMOVE_OPERATION.clone();
+    public static ModelNode getProfileRemoveOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(REMOVE);
+        root.get(DESCRIPTION).set(bundle.getString("profile.remove"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.remove.name"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
+    }
+
+    public static ModelNode getProfileIncludeAddOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ADD);
+        root.get(DESCRIPTION).set(bundle.getString("profile.includes.add"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.includes.add.include"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
+    }
+
+    public static ModelNode getProfileIncludeRemoveOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(REMOVE);
+        root.get(DESCRIPTION).set(bundle.getString("profile.includes.remove"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.includes.remove.include"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
+    }
+
+    private static ResourceBundle getResourceBundle(Locale locale) {
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 }

@@ -21,193 +21,156 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Model description for path elements.
+ * Model descriptions for path elements.
  *
  * @author Brian Stansberry
  */
 public class PathDescription {
 
-    private static final ModelNode PATH_NODE = new ModelNode();
-    private static final ModelNode SPECIFIED_PATH_NODE;
-
-    private static final ModelNode SET_NAMED_PATH_OPERATION = new ModelNode();
-    private static final ModelNode SET_RELATIVE_TO_OPERATION = new ModelNode();
-    private static final ModelNode SET_SPECIFIED_PATH_OPERATION;
-
-    private static final ModelNode NAMED_PATH_ADD_OPERATION = new ModelNode();
-    private static final ModelNode PATH_REMOVE_OPERATION = new ModelNode();
-
-    private static final ModelNode SPECIFIED_PATH_ADD_OPERATION;
-
     private static final String RELATIVE_TO = "relative-to";
 
-    static {
-        //FIXME Load all descriptions from a resource file
+    private static final String RESOURCE_NAME = PathDescription.class.getPackage().getName() + ".LocalDescriptions";
 
-        PATH_NODE.get(DESCRIPTION).set("A named filesystem path, but without a requirement to specify " +
-                "the actual path. If no actual path is specified, acts as a " +
-                "placeholder in the model (e.g. at the domain level) " +
-                "until a fully specified path definition is applied at a " +
-                "lower level (e.g. at the host level, where available addresses " +
-                "are known.)");
-        PATH_NODE.get(HEAD_COMMENT_ALLOWED).set(true);
-        PATH_NODE.get(TAIL_COMMENT_ALLOWED).set(false);
-        PATH_NODE.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-        PATH_NODE.get(ATTRIBUTES, NAME, DESCRIPTION).set(
-                "The name of the path. Cannot be one of the standard fixed paths " +
-                "provided by the system: "+
-                "\n" +
-                "    jboss.home - the root directory of the JBoss AS distribution \n"+
-                "    user.home - user's home directory \n"+
-                "    user.dir - user's current working directory \n"+
-                "    java.home - java installation directory\n"+
-                "    jboss.server.base.dir - root directory for an individual server instance \n"+
-                "\n" +
-                "Note that the system provides other standard paths that can be "+
-                "overridden by declaring them in the configuration file. See "+
-                "the 'relative-to' attribute documentation for a complete "+
-                "list of standard paths.");
-        PATH_NODE.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-        PATH_NODE.get(ATTRIBUTES, PATH, TYPE).set(ModelType.STRING);
-        PATH_NODE.get(ATTRIBUTES, PATH, DESCRIPTION).set(
-                "The actual filesystem path. Treated as an absolute path, unless the " +
-                "'relative-to' attribute is specified, in which case the value " +
-                "is treated as relative to that path. " +
-                "\n" +
-                "If treated as an absolute path, the actual runtime pathname specified " +
-                "by the value of this attribute will be determined as follows: " +
-                "\n" +
-                "If this value is already absolute, then the value is directly " +
-                "used.  Otherwise the runtime pathname is resolved in a " +
-                "system-dependent way.  On UNIX systems, a relative pathname is  " +
-                "made absolute by resolving it against the current user directory. " +
-                "On Microsoft Windows systems, a relative pathname is made absolute " +
-                "by resolving it against the current directory of the drive named by the " +
-                "pathname, if any; if not, it is resolved against the current user " +
-                "directory.");
-        PATH_NODE.get(ATTRIBUTES, PATH, REQUIRED).set(false);
-        PATH_NODE.get(ATTRIBUTES, PATH, MIN_LENGTH).set(1);
-        PATH_NODE.get(ATTRIBUTES, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        PATH_NODE.get(ATTRIBUTES, RELATIVE_TO, DESCRIPTION).set(
-                "The name of another previously named path, or of one of the " +
-                "standard paths provided by the system. If 'relative-to' is " +
-                "provided, the value of the 'path' attribute is treated as " +
-                "relative to the path specified by this attribute. The standard " +
-                "paths provided by the system include:\n" +
-                "\n" +
-                "jboss.home - the root directory of the JBoss AS distribution\n"+
-                "user.home - user's home directory\n"+
-                "user.dir - user's current working directory\n"+
-                "java.home - java installation directory\n"+
-                "jboss.server.base.dir - root directory for an individual server instance\n"+
-                "jboss.server.data.dir - directory the server will use for persistent data file storage\n"+
-                "jboss.server.log.dir - directory the server will use for log file storage\n"+
-                "jboss.server.tmp.dir - directory the server will use for temporary file storage\n"+
-                "jboss.domain.servers.dir - directory under which a host controller will create the working area for individual server instances");
-        PATH_NODE.get(ATTRIBUTES, RELATIVE_TO, REQUIRED).set(false);
+    public static ModelNode getNamedPathDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-        SPECIFIED_PATH_NODE = PATH_NODE.clone();
-        SPECIFIED_PATH_NODE.get(ATTRIBUTES, PATH, REQUIRED).set(true);
-
-        SET_NAMED_PATH_OPERATION.get(OPERATION_NAME).set("setPath");
-        SET_NAMED_PATH_OPERATION.get(DESCRIPTION).set("Set the value of the 'path' attribute");
-        SET_NAMED_PATH_OPERATION.get(REQUEST_PROPERTIES, PATH, TYPE).set(ModelType.STRING);
-        SET_NAMED_PATH_OPERATION.get(REQUEST_PROPERTIES, PATH, DESCRIPTION).set("The new value of the 'path' attribute");
-        SET_NAMED_PATH_OPERATION.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(true);
-        SET_NAMED_PATH_OPERATION.get(REQUEST_PROPERTIES, PATH, MIN_LENGTH).set(1);
-        SET_NAMED_PATH_OPERATION.get(REQUEST_PROPERTIES, PATH, NILLABLE).set(true);
-        SET_NAMED_PATH_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
-
-        SET_RELATIVE_TO_OPERATION.get(OPERATION_NAME).set("setRelativeTo");
-        SET_RELATIVE_TO_OPERATION.get(DESCRIPTION).set("Set the value of the 'relative-to' attribute");
-        SET_RELATIVE_TO_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        SET_RELATIVE_TO_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, DESCRIPTION).set("The new value of the 'relative-to' attribute");
-        SET_RELATIVE_TO_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, REQUIRED).set(true);
-        SET_RELATIVE_TO_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, NILLABLE).set(true);
-        SET_RELATIVE_TO_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
-
-        SET_SPECIFIED_PATH_OPERATION = SET_NAMED_PATH_OPERATION.clone();
-        SET_SPECIFIED_PATH_OPERATION.get(REQUEST_PROPERTIES).get(PATH).get(NILLABLE).set(false);
-
-        NAMED_PATH_ADD_OPERATION.get(OPERATION_NAME).set("add-path");
-        NAMED_PATH_ADD_OPERATION.get(DESCRIPTION).set("Add a new 'path' child");
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set("The value of the path's 'name' attribute");
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, PATH, TYPE).set(ModelType.STRING);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, PATH, DESCRIPTION).set("The value of the path's 'path' attribute");
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(false);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, PATH, MIN_LENGTH).set(1);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, PATH, NILLABLE).set(true);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, DESCRIPTION).set("The value of the path's 'relative-to' attribute");
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, REQUIRED).set(false);
-        NAMED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, RELATIVE_TO, NILLABLE).set(true);
-        NAMED_PATH_ADD_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
-
-        SPECIFIED_PATH_ADD_OPERATION = NAMED_PATH_ADD_OPERATION.clone();
-        SPECIFIED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(true);
-        SPECIFIED_PATH_ADD_OPERATION.get(REQUEST_PROPERTIES, PATH, NILLABLE).set(false);
-
-        PATH_REMOVE_OPERATION.get(OPERATION_NAME).set("remove-path");
-        PATH_REMOVE_OPERATION.get(DESCRIPTION).set("Remove a 'path' child");
-        PATH_REMOVE_OPERATION.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        PATH_REMOVE_OPERATION.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set("The value of the path's 'name' attribute");
-        PATH_REMOVE_OPERATION.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        PATH_REMOVE_OPERATION.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        PATH_REMOVE_OPERATION.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
-        PATH_REMOVE_OPERATION.get(REPLY_PROPERTIES).setEmptyObject();
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("named_path"));
+        root.get(HEAD_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("path.name"));
+        root.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+        root.get(ATTRIBUTES, NAME, HEAD_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, NAME, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, PATH, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, PATH, DESCRIPTION).set(bundle.getString("path.path"));
+        root.get(ATTRIBUTES, PATH, REQUIRED).set(false);
+        root.get(ATTRIBUTES, PATH, MIN_LENGTH).set(1);
+        root.get(ATTRIBUTES, PATH, HEAD_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, PATH, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, RELATIVE_TO, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, RELATIVE_TO, DESCRIPTION).set(bundle.getString("path.relative-to"));
+        root.get(ATTRIBUTES, RELATIVE_TO, REQUIRED).set(false);
+        root.get(ATTRIBUTES, RELATIVE_TO, HEAD_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, RELATIVE_TO, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(OPERATIONS).setEmptyObject();
+        return root;
     }
 
-    public static ModelNode getNamedPathDescription() {
-        return PATH_NODE.clone();
+    public static ModelNode getSpecifiedPathDescription(final Locale locale) {
+        final ModelNode root = getNamedPathDescription(locale);
+        root.get(ATTRIBUTES, PATH, REQUIRED).set(true);
+        return root;
     }
 
-    public static ModelNode getSpecifiedPathDescription() {
-        return SPECIFIED_PATH_NODE.clone();
+    public static ModelNode getSetNamedPathOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set("setPath");
+        root.get(DESCRIPTION).set(bundle.getString("path.setPath"));
+        root.get(REQUEST_PROPERTIES, PATH, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, PATH, DESCRIPTION).set(bundle.getString("path.setPath.path"));
+        root.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, PATH, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, PATH, NILLABLE).set(true);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return root;
     }
 
-    public static ModelNode getSetNamedPathOperation() {
-        return SET_NAMED_PATH_OPERATION.clone();
+    public static ModelNode getSetSpecifiedPathOperation(final Locale locale) {
+        final ModelNode root = getSetNamedPathOperation(locale);
+        root.get(REQUEST_PROPERTIES).get(PATH).get(NILLABLE).set(false);
+        return root;
     }
 
-    public static ModelNode getSetSpecifiedPathOperation() {
-        return SET_SPECIFIED_PATH_OPERATION.clone();
+    public static ModelNode getSetRelativeToOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set("setRelativeTo");
+        root.get(DESCRIPTION).set(bundle.getString("path.setRelativeTo"));
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, DESCRIPTION).set(bundle.getString("path.setRelativeTo.relative-to"));
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, NILLABLE).set(true);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return root;
     }
 
-    public static ModelNode getSetRelativeToOperation() {
-        return SET_RELATIVE_TO_OPERATION.clone();
+    public static ModelNode getNamedPathAddOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ADD);
+        root.get(DESCRIPTION).set(bundle.getString("path.add"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("path.add.name"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, PATH, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, PATH, DESCRIPTION).set(bundle.getString("path.add.path"));
+        root.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, PATH, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, PATH, NILLABLE).set(true);
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, DESCRIPTION).set(bundle.getString("path.add.relative-to"));
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, RELATIVE_TO, NILLABLE).set(true);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
     }
 
-    public static ModelNode getNamedPathAddOperation() {
-        return NAMED_PATH_ADD_OPERATION.clone();
+    public static ModelNode getSpecifiedPathAddOperation(final Locale locale) {
+        final ModelNode root = getNamedPathAddOperation(locale);
+        root.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, PATH, NILLABLE).set(false);
+        return root;
     }
 
-    public static ModelNode getSpecifiedPathAddOperation() {
-        return SPECIFIED_PATH_ADD_OPERATION.clone();
+    public static ModelNode getPathRemoveOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(REMOVE);
+        root.get(DESCRIPTION).set(bundle.getString("path.remove"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("path.remove.name"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
     }
 
-    public static ModelNode getPathRemoveOperation() {
-        return PATH_REMOVE_OPERATION.clone();
+    private static ResourceBundle getResourceBundle(Locale locale) {
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 }

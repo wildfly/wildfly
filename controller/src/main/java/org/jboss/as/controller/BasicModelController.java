@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +46,8 @@ public class BasicModelController implements ModelController {
     private static final String[] NO_STRINGS = new String[0];
     private final ModelNodeRegistration registry = ModelNodeRegistration.Factory.create(new DescriptionProvider() {
         // TODO - this is wrong, just a temp until everything is described
-        public ModelNode getModelDescription() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
             return new ModelNode();
         }
     });
@@ -91,6 +93,7 @@ public class BasicModelController implements ModelController {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
         final PathAddress address = PathAddress.pathAddress(operation.get("address"));
         final String operationName = operation.get("operation").asString();
@@ -98,36 +101,40 @@ public class BasicModelController implements ModelController {
         final ModelNode subModel;
         try {
             subModel = address.navigate(model, false);
-        } catch (NoSuchElementException e) {
+        } catch (final NoSuchElementException e) {
             handler.handleResultFragment(NO_STRINGS, getFailureResult(e));
             return Cancellable.NULL;
         }
         final NewOperationContext context = getOperationContext(subModel, operation, operationHandler);
         final ResultHandler persistingHandler = new ResultHandler() {
+            @Override
             public void handleResultFragment(final String[] location, final ModelNode result) {
                 handler.handleResultFragment(location, result);
             }
 
+            @Override
             public void handleResultComplete(final ModelNode compensatingOperation) {
                 handler.handleResultComplete(compensatingOperation);
                 try {
                     configurationPersister.store(model);
-                } catch (ConfigurationPersistenceException e) {
+                } catch (final ConfigurationPersistenceException e) {
                     log.warnf("Failed to persist configuration change: %s", e);
                 }
             }
 
+            @Override
             public void handleFailed(final ModelNode failureDescription) {
                 handler.handleFailed(failureDescription);
             }
 
+            @Override
             public void handleCancellation() {
                 handler.handleCancellation();
             }
         };
         try {
             return doExecute(context, operation, operationHandler, persistingHandler);
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             handler.handleFailed(getFailureResult(t));
             return Cancellable.NULL;
         }
@@ -163,16 +170,19 @@ public class BasicModelController implements ModelController {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ModelNode execute(final ModelNode operation) throws OperationFailedException {
         final AtomicInteger status = new AtomicInteger();
         final ModelNode finalResult = new ModelNode();
         final Cancellable handle = execute(operation, new ResultHandler() {
+            @Override
             public void handleResultFragment(final String[] location, final ModelNode result) {
                 synchronized (finalResult) {
                     finalResult.get(location).set(result);
                 }
             }
 
+            @Override
             public void handleResultComplete(final ModelNode compensatingOperation) {
                 synchronized (finalResult) {
                     status.set(1);
@@ -180,6 +190,7 @@ public class BasicModelController implements ModelController {
                 }
             }
 
+            @Override
             public void handleFailed(final ModelNode failureDescription) {
                 synchronized (finalResult) {
                     status.set(3);
@@ -188,6 +199,7 @@ public class BasicModelController implements ModelController {
                 }
             }
 
+            @Override
             public void handleCancellation() {
                 synchronized (finalResult) {
                     status.set(2);
@@ -207,7 +219,7 @@ public class BasicModelController implements ModelController {
                             case 3: throw new OperationFailedException(finalResult);
                         }
                         finalResult.wait();
-                    } catch (InterruptedException e) {
+                    } catch (final InterruptedException e) {
                         intr = true;
                         handle.cancel();
                     }

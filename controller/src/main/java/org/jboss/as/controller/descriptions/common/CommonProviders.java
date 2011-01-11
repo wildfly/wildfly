@@ -21,6 +21,8 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
@@ -42,8 +44,8 @@ public final class CommonProviders {
      */
     public static final DescriptionProvider NAMED_PATH_PROVIDER = new DescriptionProvider() {
         @Override
-        public ModelNode getModelDescription() {
-            return PathDescription.getNamedPathDescription();
+        public ModelNode getModelDescription(final Locale locale) {
+            return PathDescription.getNamedPathDescription(locale);
         }
     };
 
@@ -52,8 +54,8 @@ public final class CommonProviders {
      */
     public static final DescriptionProvider SPECIFIED_PATH_PROVIDER = new DescriptionProvider() {
         @Override
-        public ModelNode getModelDescription() {
-            return PathDescription.getSpecifiedPathDescription();
+        public ModelNode getModelDescription(final Locale locale) {
+            return PathDescription.getSpecifiedPathDescription(locale);
         }
     };
 }

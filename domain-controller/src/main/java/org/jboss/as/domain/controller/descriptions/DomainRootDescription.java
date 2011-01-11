@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
@@ -41,10 +42,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.descriptions.common.CommonAttributes;
 import org.jboss.as.controller.descriptions.common.PathDescription;
-import org.jboss.as.controller.descriptions.host.HostRootDescription;
+import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -54,92 +57,97 @@ import org.jboss.dmr.ModelNode;
  */
 public class DomainRootDescription {
 
-    private static final ModelNode ROOT = new ModelNode();
-    static {
-        // FIXME load descriptions from an external resource
-        ROOT.get(DESCRIPTION).set("The root node of the domain-level management model.");
-        ROOT.get(HEAD_COMMENT_ALLOWED).set(true);
-        ROOT.get(TAIL_COMMENT_ALLOWED).set(true);
-        ROOT.get(ATTRIBUTES, NAMESPACES).set(CommonAttributes.getNamespacePrefixAttribute());
-        ROOT.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonAttributes.getSchemaLocationAttribute());
+    private static final String RESOURCE_NAME = DomainRootDescription.class.getPackage().getName() + ".LocalDescriptions";
 
-        ROOT.get(CHILDREN, EXTENSION, DESCRIPTION).set("A list of extension modules.");
-        ROOT.get(CHILDREN, EXTENSION, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, EXTENSION, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, EXTENSION, MODEL_DESCRIPTION).setEmptyObject();
+    public static ModelNode getDescription(final Locale locale) {
 
-        ROOT.get(CHILDREN, PATH, DESCRIPTION).set("A list of named filesystem paths. " +
-                "The paths may or may not be fully specified (i.e. include the actual paths.");
-        ROOT.get(CHILDREN, PATH, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("domain"));
+        root.get(HEAD_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(true);
+        root.get(ATTRIBUTES, NAMESPACES).set(CommonAttributes.getNamespacePrefixAttribute(null));
+        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonAttributes.getSchemaLocationAttribute(null));
 
-        ROOT.get(CHILDREN, PROFILE, DESCRIPTION).set("A list of profiles available for use in the domain");
-        ROOT.get(CHILDREN, PROFILE, MIN_OCCURS).set(1);
-        ROOT.get(CHILDREN, PROFILE, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, PROFILE, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(OPERATIONS).setEmptyObject();
 
-        ROOT.get(CHILDREN, INTERFACE, DESCRIPTION).set("A list of named network interfaces available for use in the domain. " +
-                "The interfaces may or may not be fully specified (i.e. include " +
-                "criteria on how to determine their IP address.");
-        ROOT.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, INTERFACE, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, EXTENSION, DESCRIPTION).set(bundle.getString("domain.extension"));
+        root.get(CHILDREN, EXTENSION, MIN_OCCURS).set(0);
+        root.get(CHILDREN, EXTENSION, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, EXTENSION, MODEL_DESCRIPTION).setEmptyObject();
 
-        ROOT.get(CHILDREN, SOCKET_BINDING_GROUP, DESCRIPTION).set("A list of socket binding groups available for use in the domain");
-        ROOT.get(CHILDREN, SOCKET_BINDING_GROUP, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, SOCKET_BINDING_GROUP, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, PATH, DESCRIPTION).set(bundle.getString("domain.path"));
+        root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
+        root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
 
-        ROOT.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set("A list of system properties to set on all servers in the domain.");
-        ROOT.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, PROFILE, DESCRIPTION).set(bundle.getString("domain.profile"));
+        root.get(CHILDREN, PROFILE, MIN_OCCURS).set(1);
+        root.get(CHILDREN, PROFILE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, PROFILE, MODEL_DESCRIPTION).setEmptyObject();
 
-        ROOT.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set("A list of deployments available for use in the domain");
-        ROOT.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, DEPLOYMENT, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("domain.interface"));
+        root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);
+        root.get(CHILDREN, INTERFACE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).setEmptyObject();
 
-        ROOT.get(CHILDREN, SERVER_GROUP, DESCRIPTION).set("A list of server groups available for use in the domain");
-        ROOT.get(CHILDREN, SERVER_GROUP, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, SERVER_GROUP, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, SERVER_GROUP, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, SOCKET_BINDING_GROUP, DESCRIPTION).set(bundle.getString("domain.socket-binding-group"));
+        root.get(CHILDREN, SOCKET_BINDING_GROUP, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SOCKET_BINDING_GROUP, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION).setEmptyObject();
 
-        ROOT.get(CHILDREN, HOST, DESCRIPTION).set("Host controllers currently running in the domain");
-        ROOT.get(CHILDREN, HOST, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, HOST, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, HOST, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("domain.system-property"));
+        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
 
-        ROOT.get(CHILDREN, SERVER, DESCRIPTION).set("Servers currently running in the domain");
-        ROOT.get(CHILDREN, SERVER, MIN_OCCURS).set(0);
-        ROOT.get(CHILDREN, SERVER, MAX_OCCURS).set(Integer.MAX_VALUE);
-        ROOT.get(CHILDREN, SERVER, MODEL_DESCRIPTION).setEmptyObject();
-    }
+        root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("domain.deployment"));
+        root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
+        root.get(CHILDREN, DEPLOYMENT, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION).setEmptyObject();
 
-    public static ModelNode getDescription(final boolean recursive) {
-        final ModelNode root = ROOT.clone();
-        if (recursive) {
-            root.get(CHILDREN, EXTENSION, MODEL_DESCRIPTION).set("TODO");  // TODO fill out EXTENSION
-            root.get(CHILDREN, PATH, MODEL_DESCRIPTION).set(PathDescription.getNamedPathDescription());
-            root.get(CHILDREN, PROFILE, MODEL_DESCRIPTION).set("TODO");  // TODO fill out PROFILE
-            root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).set("TODO");  // TODO fill out INTERFACE
-            root.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SOCKET_BINDING_GROUP
-            root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SYSTEM_PROPERTY
-            root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION).set("TODO");  // TODO fill out DEPLOYMENT
-            root.get(CHILDREN, SERVER_GROUP, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SERVER_GROUP
-            root.get(CHILDREN, HOST, MODEL_DESCRIPTION).set(HostRootDescription.getDescription(recursive));
-            root.get(CHILDREN, SERVER, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SERVER
-        }
+        root.get(CHILDREN, SERVER_GROUP, DESCRIPTION).set(bundle.getString("domain.server-group"));
+        root.get(CHILDREN, SERVER_GROUP, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SERVER_GROUP, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SERVER_GROUP, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, HOST, DESCRIPTION).set(bundle.getString("domain.host"));
+        root.get(CHILDREN, HOST, MIN_OCCURS).set(0);
+        root.get(CHILDREN, HOST, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, HOST, MODEL_DESCRIPTION).setEmptyObject();
+
         return root;
     }
 
+    private static ResourceBundle getResourceBundle(Locale locale) {
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+    }
+
     public static void main(final String[] args) {
-        final ModelNode root = getDescription(true);
-        root.get(ModelDescriptionConstants.OPERATIONS).add(PathDescription.getNamedPathAddOperation());
-        root.get(ModelDescriptionConstants.OPERATIONS).add(PathDescription.getPathRemoveOperation());
-        root.get(CHILDREN, PATH, ModelDescriptionConstants.OPERATIONS).add(PathDescription.getSetNamedPathOperation());
-        root.get(CHILDREN, PATH, ModelDescriptionConstants.OPERATIONS).add(PathDescription.getSetRelativeToOperation());
+        final ModelNode root = getDescription(null);
+        root.get(CHILDREN, EXTENSION, MODEL_DESCRIPTION).set("TODO");  // TODO fill out EXTENSION
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).set(PathDescription.getNamedPathDescription(null));
+        root.get(CHILDREN, PROFILE, MODEL_DESCRIPTION).set(ProfileDescription.getProfileDescription(null));
+        root.get(CHILDREN, PROFILE, MODEL_DESCRIPTION, CHILDREN, "include", MODEL_DESCRIPTION).set(ProfileDescription.getProfileIncludesDescription(null));
+        root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).set("TODO");  // TODO fill out INTERFACE
+        root.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SOCKET_BINDING_GROUP
+        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SYSTEM_PROPERTY
+        root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION).set("TODO");  // TODO fill out DEPLOYMENT
+        root.get(CHILDREN, SERVER_GROUP, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SERVER_GROUP
+//        root.get(CHILDREN, HOST, MODEL_DESCRIPTION).set(HostRootDescription.getDescription(recursive));
+        root.get(CHILDREN, SERVER, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SERVER
+        root.get(OPERATIONS).set("TODO");
+        ModelNode op = PathDescription.getNamedPathAddOperation(null);
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
+        op = PathDescription.getPathRemoveOperation(null);
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
+        op = PathDescription.getSetNamedPathOperation(null);
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
+        op = PathDescription.getSetRelativeToOperation(null);
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
         System.out.println(root);
     }
 

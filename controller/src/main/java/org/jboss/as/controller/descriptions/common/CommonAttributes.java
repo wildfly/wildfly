@@ -21,10 +21,14 @@
  */package org.jboss.as.controller.descriptions.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -36,29 +40,37 @@ import org.jboss.dmr.ModelType;
  */
 public class CommonAttributes {
 
-    private static final ModelNode NAMESPACE_PREFIX_ATTRIBUTE = new ModelNode();
-    private static final ModelNode SCHEMA_LOCATION_ATTRIBUTE = new ModelNode();
+    private static final String RESOURCE_NAME = CommonAttributes.class.getPackage().getName() + ".LocalDescriptions";
 
-    static {
-        NAMESPACE_PREFIX_ATTRIBUTE.get(NAME).set("namespaces");
-        NAMESPACE_PREFIX_ATTRIBUTE.get(TYPE).set(ModelType.OBJECT);
-        NAMESPACE_PREFIX_ATTRIBUTE.get(VALUE_TYPE).set(ModelType.STRING);
-        NAMESPACE_PREFIX_ATTRIBUTE.get(DESCRIPTION).set("Map of namespaces used in the configuration XML document, where keys are namespace prefixes and values are schema URIs.");
-        NAMESPACE_PREFIX_ATTRIBUTE.get(REQUIRED).set(false);
-
-        SCHEMA_LOCATION_ATTRIBUTE.get(NAME).set("schema-locations");
-        SCHEMA_LOCATION_ATTRIBUTE.get(TYPE).set(ModelType.OBJECT);
-        SCHEMA_LOCATION_ATTRIBUTE.get(VALUE_TYPE).set(ModelType.STRING);
-        SCHEMA_LOCATION_ATTRIBUTE.get(DESCRIPTION).set("Map of locations of XML schemas used in the configuration XML document, where keys are schema URIs and values are locations where the schema can be found.");
-        SCHEMA_LOCATION_ATTRIBUTE.get(REQUIRED).set(false);
+    public static ModelNode getNamespacePrefixAttribute(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(TYPE).set(ModelType.OBJECT);
+        root.get(VALUE_TYPE).set(ModelType.STRING);
+        root.get(DESCRIPTION).set(bundle.getString("namespaces"));
+        root.get(REQUIRED).set(false);
+        root.get(HEAD_COMMENT_ALLOWED).set(false);
+        root.get(TAIL_COMMENT_ALLOWED).set(false);
+        return root;
     }
 
-    public static ModelNode getNamespacePrefixAttribute() {
-        return NAMESPACE_PREFIX_ATTRIBUTE.clone();
+    public static ModelNode getSchemaLocationAttribute(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(TYPE).set(ModelType.OBJECT);
+        root.get(VALUE_TYPE).set(ModelType.STRING);
+        root.get(DESCRIPTION).set(bundle.getString("schema-locations"));
+        root.get(REQUIRED).set(false);
+        root.get(HEAD_COMMENT_ALLOWED).set(false);
+        root.get(TAIL_COMMENT_ALLOWED).set(false);
+        return root;
     }
 
-    public static ModelNode getSchemaLocationAttribute() {
-        return SCHEMA_LOCATION_ATTRIBUTE.clone();
+    private static ResourceBundle getResourceBundle(Locale locale) {
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 
 }

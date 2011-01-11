@@ -21,6 +21,8 @@
  */
 package org.jboss.as.controller.descriptions;
 
+import java.util.Locale;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,7 +40,10 @@ public interface DescriptionProvider {
      * The implementation must assume that the caller intends to modify the
      * returned {@code ModelNode} so it should not hand out a reference to any internal data structures.
      *
+     * @param locale the locale to use to generate any localized text used in the description.
+     *               May be {@code null}, in which case {@link Locale#getDefault()} should be used
+     *
      * @return {@link ModelNode} describing the model node's structure
      */
-    ModelNode getModelDescription();
+    ModelNode getModelDescription(Locale locale);
 }
