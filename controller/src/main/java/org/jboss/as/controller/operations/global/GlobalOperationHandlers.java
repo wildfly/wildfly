@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
  */
 public class GlobalOperationHandlers {
 
-    final static String[] NO_LOCATION = new String[0];
+    static final String[] NO_LOCATION = new String[0];
 
     static String[] getLocation(ModelNode operation) {
         List<ModelNode> nodes = operation.get(ADDRESS).asList();
@@ -58,7 +58,7 @@ public class GlobalOperationHandlers {
         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
                 final ModelNode result;
-                if (operation.require(REQUEST_PROPERTIES, RECURSIVE).asBoolean()) {
+                if (operation.require(REQUEST_PROPERTIES).require(RECURSIVE).asBoolean()) {
                     result = context.getSubModel().clone();
                 } else {
                     result = new ModelNode();
@@ -91,7 +91,7 @@ public class GlobalOperationHandlers {
         @Override
         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
-                String attributeName = operation.require(REQUEST_PROPERTIES, NAME).asString();
+                String attributeName = operation.require(REQUEST_PROPERTIES).require(NAME).asString();
                 ModelNode result = context.getSubModel().require(attributeName).clone();
 
                 resultHandler.handleResultFragment(new String[0], result);
@@ -109,7 +109,7 @@ public class GlobalOperationHandlers {
         @Override
         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
-                ModelType type = operation.require(REQUEST_PROPERTIES, TYPE).asType();
+                ModelType type = operation.require(REQUEST_PROPERTIES).require(TYPE).asType();
 
                 ModelNode subModel = context.getSubModel().clone();
 

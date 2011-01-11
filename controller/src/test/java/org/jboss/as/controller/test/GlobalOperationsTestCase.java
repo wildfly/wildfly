@@ -99,7 +99,7 @@ public class GlobalOperationsTestCase {
 
         assertEquals(2, result.keys().size());
         assertEquals("Profile A", result.require("name").asString());
-        ModelNode content = result.require("subsystem", "test1");
+        ModelNode content = result.require("subsystem").require("test1");
         List<ModelNode> list = content.asList();
         assertEquals(2, list.size());
         assertEquals(1, list.get(0).asInt());
@@ -144,7 +144,7 @@ public class GlobalOperationsTestCase {
         assertEquals("l1A", list.get(0).asString());
         assertEquals("l1B", list.get(1).asString());
         assertEquals(Long.MAX_VALUE, result.require("long").asLong());
-        assertEquals("objVal", result.require("object", "value").asString());
+        assertEquals("objVal", result.require("object").require("value").asString());
         Property prop = result.require("property").asProperty();
         assertEquals("prop1", prop.getName());
         assertEquals("value1", prop.getValue().asString());
