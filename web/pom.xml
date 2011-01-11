@@ -115,6 +115,6 @@
        <groupId>org.jboss.web</groupId>
        <artifactId>jbossweb</artifactId>
     </dependency>
-  
+
  </dependencies>
 </project>

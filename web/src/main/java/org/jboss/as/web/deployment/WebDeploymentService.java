@@ -24,11 +24,14 @@ package org.jboss.as.web.deployment;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
+import org.jboss.as.ee.naming.NamespaceSelectorService;
+import org.jboss.as.web.NamingListener;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * A service starting a web deployment.
@@ -39,6 +42,7 @@ class WebDeploymentService implements Service<Context> {
 
     private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
+    private final InjectedValue<NamespaceSelectorService> namespaceSelector = new InjectedValue<NamespaceSelectorService>();
 
     public WebDeploymentService(final StandardContext context) {
         this.context = context;
@@ -47,16 +51,21 @@ class WebDeploymentService implements Service<Context> {
     /** {@inheritDoc} */
     public synchronized void start(StartContext startContext) throws StartException {
         try {
-            context.create();
-        } catch (Exception e) {
-            throw new StartException("failed to create context", e);
+            NamingListener.beginComponentStart(namespaceSelector.getValue());
+            try {
+                context.create();
+            } catch (Exception e) {
+                throw new StartException("failed to create context", e);
+            }
+            try {
+                context.start();
+            } catch (LifecycleException e) {
+                throw new StartException("failed to start context", e);
+            }
+            log.info("registering web context: " + context.getName());
+        } finally {
+            NamingListener.endComponentStart();
         }
-        try {
-            context.start();
-        } catch (LifecycleException e) {
-            throw new StartException("failed to start context", e);
-        }
-        log.info("registering web context: " + context.getName());
     }
 
     /** {@inheritDoc} */
@@ -80,6 +89,10 @@ class WebDeploymentService implements Service<Context> {
             throw new IllegalStateException();
         }
         return context;
+    }
+
+    public InjectedValue<NamespaceSelectorService> getNamespaceSelector() {
+        return namespaceSelector;
     }
 
 }

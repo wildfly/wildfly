@@ -22,7 +22,6 @@
 
 package org.jboss.as.managedbean.processors;
 
-import org.jboss.as.ee.naming.NamingContextConfig;
 import static org.jboss.as.naming.deployment.NamespaceBindings.getNamespaceBindings;
 
 import java.lang.reflect.Field;
@@ -34,6 +33,8 @@ import javax.naming.Context;
 import javax.naming.LinkRef;
 import javax.naming.Reference;
 
+import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.managedbean.config.ManagedBeanConfiguration;
 import org.jboss.as.managedbean.config.ManagedBeanConfigurations;
@@ -112,7 +113,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(managedBeanServiceName, managedBeanService);
 
         final ServiceName managedBeanContextServiceName = moduleContextServiceName.append(managedBeanName, "context");
-        final JndiName managedBeanContextJndiName = moduleContext.getContextName().append(managedBeanName + "-context");
+        final JndiName managedBeanContextJndiName = ContextNames.MODULE_CONTEXT_NAME.append(managedBeanName + "-context");
 
         // Process managed bean resources
         for (ResourceConfiguration resourceConfiguration : managedBeanConfiguration.getResourceConfigurations()) {
@@ -136,7 +137,8 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Add an object factory reference for this managed bean
         final Reference managedBeanFactoryReference = ManagedBeanObjectFactory.createReference(beanClass, managedBeanServiceName.toString());
-        final ResourceBinder<Reference> managedBeanFactoryBinder = new ResourceBinder<Reference>(moduleContext.getContextName().append(managedBeanName), Values.immediateValue(managedBeanFactoryReference));
+        final ResourceBinder<Reference> managedBeanFactoryBinder = new ResourceBinder<Reference>(
+                ContextNames.MODULE_CONTEXT_NAME.append(managedBeanName), Values.immediateValue(managedBeanFactoryReference));
         final ServiceName referenceBinderName = moduleContextServiceName.append(managedBeanName);
         serviceTarget.addService(referenceBinderName, managedBeanFactoryBinder)
             .addDependency(moduleContextServiceName, Context.class, managedBeanFactoryBinder.getContextInjector())
@@ -162,7 +164,8 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             serviceBuilder.addDependency(beanContextServiceName, Context.class, lookupValue.getContextInjector());
         }
 
-        final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName : moduleContext.getContextName().append(targetContextName).getAbsoluteName());
+        final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName
+                : ContextNames.MODULE_CONTEXT_NAME.append(targetContextName).getAbsoluteName());
         final boolean shouldBind;
         try {
             shouldBind = getNamespaceBindings(deploymentContext).addBinding(localContextName, linkRef);

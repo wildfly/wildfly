@@ -22,10 +22,16 @@
 
 package org.jboss.as.naming;
 
-import javax.naming.spi.ObjectFactory;
-import org.jboss.as.naming.context.ObjectFactoryBuilder;
-import org.jboss.as.naming.util.NameParser;
-import org.jboss.as.naming.util.NamingUtils;
+import static org.jboss.as.naming.util.NamingUtils.asReference;
+import static org.jboss.as.naming.util.NamingUtils.asReferenceable;
+import static org.jboss.as.naming.util.NamingUtils.cast;
+import static org.jboss.as.naming.util.NamingUtils.emptyName;
+import static org.jboss.as.naming.util.NamingUtils.isEmpty;
+import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
+import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+
+import java.util.Hashtable;
 
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
@@ -42,17 +48,12 @@ import javax.naming.Referenceable;
 import javax.naming.event.EventContext;
 import javax.naming.event.NamingListener;
 import javax.naming.spi.NamingManager;
+import javax.naming.spi.ObjectFactory;
 import javax.naming.spi.ResolveResult;
-import java.util.Hashtable;
 
-import static org.jboss.as.naming.util.NamingUtils.asReference;
-import static org.jboss.as.naming.util.NamingUtils.asReferenceable;
-import static org.jboss.as.naming.util.NamingUtils.cast;
-import static org.jboss.as.naming.util.NamingUtils.emptyName;
-import static org.jboss.as.naming.util.NamingUtils.isEmpty;
-import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
-import static org.jboss.as.naming.util.NamingUtils.namingException;
-import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.naming.util.NameParser;
+import org.jboss.as.naming.util.NamingUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -155,6 +156,13 @@ public class NamingContext implements EventContext {
         } else {
             this.environment = new Hashtable<String, Object>();
         }
+    }
+
+    /**
+     * Create a new naming context with the given namingStore and an empty name
+     */
+    public NamingContext(final NamingStore namingStore, final Hashtable<String, Object> environment) throws NamingException {
+        this(emptyName(), namingStore, environment);
     }
 
     /** {@inheritDoc} */

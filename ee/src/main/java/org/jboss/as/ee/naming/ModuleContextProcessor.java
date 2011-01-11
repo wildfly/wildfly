@@ -22,16 +22,15 @@
 
 package org.jboss.as.ee.naming;
 
+import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
+
 import javax.naming.Context;
 
-import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
-import org.jboss.as.naming.deployment.ContextService;
-import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -52,56 +51,36 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(isEarDeployment(deploymentUnit)) {
+        if (isEarDeployment(deploymentUnit)) {
             return;
         }
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final ServiceName parentContextName = getParentContextServiceName(deploymentUnit);
-        final ServiceName moduleContextServiceName = parentContextName.append(deploymentUnit.getName());
-        final JndiName moduleContextJndiName = getContextJndiName(deploymentUnit);
+        final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(deploymentUnit);
+        final RootContextService contextService = new RootContextService();
+        serviceTarget.addService(moduleContextServiceName, contextService).install();
 
-        final ContextService contextService = new ContextService(moduleContextJndiName);
-        serviceTarget.addService(moduleContextServiceName, contextService)
-            .addDependency(parentContextName, Context.class, contextService.getParentContextInjector())
-            .install();
+        final BinderService<String> moduleNameBinder = new BinderService<String>("ModuleName", Values
+                .immediateValue(getModuleName(deploymentUnit)));
+        serviceTarget.addService(moduleContextServiceName.append("module-name"), moduleNameBinder).addDependency(
+                moduleContextServiceName, Context.class, moduleNameBinder.getContextInjector()).install();
 
-        final BinderService<String> moduleNameBinder = new BinderService<String>("ModuleName", Values.immediateValue(getModuleName(deploymentUnit)));
-        serviceTarget.addService(moduleContextServiceName.append("module-name"), moduleNameBinder)
-            .addDependency(moduleContextServiceName, Context.class, moduleNameBinder.getContextInjector())
-            .install();
-
-        phaseContext.getDeploymentUnit().putAttachment(Attachments.MODULE_CONTEXT_CONFIG, new NamingContextConfig(moduleContextServiceName, moduleContextJndiName));
+        phaseContext.getDeploymentUnit().putAttachment(Attachments.MODULE_CONTEXT_CONFIG,
+                new NamingContextConfig(moduleContextServiceName));
     }
 
     private String getModuleName(final DeploymentUnit deploymentUnit) {
         final DeploymentUnit parent = deploymentUnit.getParent();
-        if(parent != null && isEarDeployment(parent)) {
-            return  parent.getName() + "/" + deploymentUnit.getName();
+        if (parent != null && isEarDeployment(parent)) {
+            return parent.getName() + "/" + deploymentUnit.getName();
         }
         return deploymentUnit.getName();
     }
 
-    private ServiceName getParentContextServiceName(final DeploymentUnit deploymentUnit) {
-         final DeploymentUnit parent = deploymentUnit.getParent();
-        if(parent != null && isEarDeployment(parent)) {
-            return ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(parent.getName());
-        }
-        return ContextNames.GLOBAL_CONTEXT_SERVICE_NAME;
-    }
-
-    private JndiName getContextJndiName(final DeploymentUnit deploymentUnit) {
-         final DeploymentUnit parent = deploymentUnit.getParent();
-        if(parent != null && isEarDeployment(parent)) {
-            return ContextNames.GLOBAL_CONTEXT_NAME.append(parent.getName()).append(deploymentUnit.getName());
-        }
-        return ContextNames.GLOBAL_CONTEXT_NAME.append(deploymentUnit.getName());
-    }
-
     public void undeploy(DeploymentUnit context) {
-        final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(context.getName());
+        final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(context);
         final ServiceController<?> serviceController = context.getServiceRegistry().getService(moduleContextServiceName);
-        if(serviceController != null) {
+        if (serviceController != null) {
             serviceController.setMode(ServiceController.Mode.REMOVE);
         }
     }

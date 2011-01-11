@@ -23,9 +23,7 @@
 package org.jboss.as.ee.naming;
 
 import javax.naming.Context;
-import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
-import org.jboss.as.naming.deployment.ContextService;
-import org.jboss.as.naming.deployment.JndiName;
+
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,31 +49,29 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(!isEarDeployment(deploymentUnit)) {
+        if (deploymentUnit.getParent() != null) {
             return;
         }
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final ServiceName applicationContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(deploymentUnit.getName());
-        final JndiName applicationContextJndiName = ContextNames.GLOBAL_CONTEXT_NAME.append(deploymentUnit.getName());
-        final ContextService contextService = new ContextService(applicationContextJndiName);
-        serviceTarget.addService(applicationContextServiceName, contextService)
-            .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, Context.class, contextService.getParentContextInjector())
-            .install();
+        final ServiceName applicationContextServiceName = ContextServiceNameBuilder.app(deploymentUnit);
+        final RootContextService contextService = new RootContextService();
+        serviceTarget.addService(applicationContextServiceName, contextService).install();
 
-        final BinderService<String> applicationNameBinder = new BinderService<String>("AppName", Values.immediateValue(deploymentUnit.getName()));
-        serviceTarget.addService(applicationContextServiceName.append("app-name"), applicationNameBinder)
-            .addDependency(applicationContextServiceName, Context.class, applicationNameBinder.getContextInjector())
-            .install();
+        final BinderService<String> applicationNameBinder = new BinderService<String>("AppName", Values
+                .immediateValue(deploymentUnit.getName()));
+        serviceTarget.addService(applicationContextServiceName.append("app-name"), applicationNameBinder).addDependency(
+                applicationContextServiceName, Context.class, applicationNameBinder.getContextInjector()).install();
 
-        phaseContext.getDeploymentUnit().putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, new NamingContextConfig(applicationContextServiceName, applicationContextJndiName));
+        phaseContext.getDeploymentUnit().putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG,
+                new NamingContextConfig(applicationContextServiceName));
     }
 
     public void undeploy(DeploymentUnit context) {
-        final ServiceName applicationContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(context.getName());
+        final ServiceName applicationContextServiceName = ContextServiceNameBuilder.app(context);
         final ServiceController<?> serviceController = context.getServiceRegistry().getService(applicationContextServiceName);
-        if(serviceController != null) {
+        if (serviceController != null) {
             serviceController.setMode(ServiceController.Mode.REMOVE);
         }
     }

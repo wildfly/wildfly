@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.naming;
 
-import org.jboss.as.naming.deployment.JndiName;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -33,7 +31,6 @@ import org.jboss.msc.service.ServiceName;
  */
 public class NamingContextConfig {
     private final ServiceName contextServiceName;
-    private final JndiName contextName;
 
     /**
      * Create a new instance.
@@ -41,9 +38,8 @@ public class NamingContextConfig {
      * @param contextServiceName The context service name
      * @param contextName The context jndi name.
      */
-    public NamingContextConfig(ServiceName contextServiceName, JndiName contextName) {
+    public NamingContextConfig(ServiceName contextServiceName) {
         this.contextServiceName = contextServiceName;
-        this.contextName = contextName;
     }
 
     /**
@@ -53,14 +49,5 @@ public class NamingContextConfig {
      */
     public ServiceName getContextServiceName() {
         return contextServiceName;
-    }
-
-    /**
-     * Get the context jndi name.
-     *
-     * @return The jndi name
-     */
-    public JndiName getContextName() {
-        return contextName;
     }
 }

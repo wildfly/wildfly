@@ -26,24 +26,30 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.naming.Context;
+
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
+import org.jboss.as.ee.naming.ContextServiceNameBuilder;
+import org.jboss.as.ee.naming.NamespaceSelectorService;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.web.NamingListener;
 import org.jboss.as.web.WebSubsystemElement;
 import org.jboss.as.web.deployment.mock.MemoryRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -94,6 +100,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         // Create the context
         final StandardContext webContext = new StandardContext();
         final ContextConfig config = new JBossContextConfig(deploymentUnit);
+
+        webContext.addInstanceListener(NamingListener.class.getName());
+
         // Set the deployment root
         try {
             webContext.setDocBase(deploymentRoot.getPhysicalFile().getAbsolutePath());
@@ -146,10 +155,23 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
            metaDataSecurityDomain = metaDataSecurityDomain.trim();
         }
 
+        //Add the namespace selector service
+        ServiceName appNs = ContextServiceNameBuilder.app(deploymentUnit);
+        ServiceName moduleNs = ContextServiceNameBuilder.module(deploymentUnit);
+        ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
+        NamespaceSelectorService namespaceSelector = new NamespaceSelectorService();
+        serviceTarget.addService(namespaceSelectorServiceName, namespaceSelector)
+            .addDependency(appNs, Context.class,namespaceSelector.getApp())
+            .addDependency(moduleNs, Context.class,namespaceSelector.getModule())
+            .addDependency(moduleNs, Context.class,namespaceSelector.getComp())
+            .install();
+
         // Add the context service
         try {
-            serviceTarget.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
+            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
+            serviceTarget.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), webDeploymentService)
                 .addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
+                .addDependency(namespaceSelectorServiceName, NamespaceSelectorService.class,webDeploymentService.getNamespaceSelector())
                 .setInitialMode(Mode.ACTIVE)
                 .install();
         } catch (ServiceRegistryException e) {

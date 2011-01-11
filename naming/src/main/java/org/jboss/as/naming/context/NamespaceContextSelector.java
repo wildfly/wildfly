@@ -24,6 +24,8 @@ package org.jboss.as.naming.context;
 
 import javax.naming.Context;
 
+import org.jboss.as.naming.util.ThreadLocalStack;
+
 /**
  * Selects a naming context based on the provided identifier (eg. comp).  Maintains a thread local used to managed the current selector.
  * The current selector will be used by instances of {@code org.jboss.as.naming.contexts.NamespaceObjectFactory} to determine
@@ -33,15 +35,24 @@ import javax.naming.Context;
  */
 public abstract class NamespaceContextSelector {
     /* Thread local maintaining the current context selector */
-    private static ThreadLocal<NamespaceContextSelector> currentSelector = new ThreadLocal<NamespaceContextSelector>();
+    private static ThreadLocalStack<NamespaceContextSelector> currentSelector = new ThreadLocalStack<NamespaceContextSelector>();
 
     /**
      * Set the current context selector for the current thread.
      *
      * @param selector The current selector
      */
-    public static void setCurrentSelector(final NamespaceContextSelector selector) {
-        currentSelector.set(selector);
+    public static void pushCurrentSelector(final NamespaceContextSelector selector) {
+        currentSelector.push(selector);
+    }
+
+    /**
+     * Pops the current selector for the thread, replacing it with the previous selector
+     *
+     * @param selector The current selector
+     */
+    public static NamespaceContextSelector popCurrentSelector() {
+        return currentSelector.pop();
     }
 
     /**
@@ -50,7 +61,7 @@ public abstract class NamespaceContextSelector {
      * @return The current context selector.
      */
     public static NamespaceContextSelector getCurrentSelector() {
-        return currentSelector.get();
+        return currentSelector.peek();
     }
 
     /**
