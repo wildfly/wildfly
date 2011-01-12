@@ -177,6 +177,29 @@ public class PathAddress implements Iterable<PathElement> {
     }
 
     /**
+     * Navigate to, and remove, this address in the given model node.
+     *
+     * @param model the model node
+     * @return the submodel
+     * @throws NoSuchElementException if the model contains no such element
+     */
+    public ModelNode remove(ModelNode model) throws NoSuchElementException {
+        final Iterator<PathElement> i = pathAddressList.iterator();
+        while (i.hasNext()) {
+            final PathElement element = i.next();
+            if (i.hasNext()) {
+                model = model.require(element.getKey()).require(element.getValue());
+            } else {
+                final ModelNode parent = model.require(element.getKey());
+                // TODO: remove()
+                model = parent.get(element.getValue()).clone();
+                parent.get(element.getValue()).clear();
+            }
+        }
+        return model;
+    }
+
+    /**
      * Convert this path address to its model node representation.
      *
      * @return the model node list of properties

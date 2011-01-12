@@ -132,7 +132,11 @@ public class BasicModelController implements ModelController {
                 public void handleResultComplete(final ModelNode compensatingOperation) {
                     final ModelNode model = BasicModelController.this.model;
                     synchronized (model) {
-                        address.navigate(model, true).set(subModel);
+                        if (operationHandler instanceof ModelRemoveOperationHandler) {
+                            address.remove(model);
+                        } else {
+                            address.navigate(model, true).set(subModel);
+                        }
                     }
                     handler.handleResultComplete(compensatingOperation);
                     try {
