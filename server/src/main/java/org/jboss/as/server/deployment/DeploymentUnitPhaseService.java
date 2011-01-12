@@ -132,7 +132,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         final DeploymentUnit deploymentUnitContext = deploymentUnitInjector.getValue();
         final DeployerChains chains = deployerChainsInjector.getValue();
         final List<DeploymentUnitProcessor> list = chains.getChain(phase);
-        final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator();
+        final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator(list.size());
         while (iterator.hasPrevious()) {
             final DeploymentUnitProcessor prev = iterator.previous();
             safeUndeploy(deploymentUnitContext, phase, prev);
