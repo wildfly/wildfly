@@ -78,7 +78,7 @@ public final class Attachments {
      */
     public static final AttachmentKey<Manifest> MANIFEST = AttachmentKey.create(Manifest.class);
     /**
-     * ?????
+     * Available when the deployment contains a valid OSGi manifest
      */
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
 

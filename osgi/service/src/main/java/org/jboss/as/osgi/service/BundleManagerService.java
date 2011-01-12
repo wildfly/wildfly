@@ -147,10 +147,6 @@ public class BundleManagerService implements Service<BundleManager> {
         // Set the Framework's {@link IntegrationMode}
         props.put(IntegrationMode.class.getName(), IntegrationMode.CONTAINER);
 
-        // Setup the default {@link ModuleLoader}
-        //ModuleLoader moduleLoader = injectedModuleLoader.getValue().getModuleLoader();
-        //props.put(ModuleLoader.class.getName(), moduleLoader);
-
         // Setup the {@link ServiceContainer}
         ServiceContainer container = context.getController().getServiceContainer();
         props.put(ServiceContainer.class.getName(), container);

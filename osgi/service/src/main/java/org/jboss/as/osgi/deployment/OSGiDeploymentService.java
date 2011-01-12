@@ -34,6 +34,7 @@ import org.jboss.as.osgi.service.StartLevelService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
+import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -148,6 +149,18 @@ public class OSGiDeploymentService implements Service<Deployment> {
             bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);
+        }
+
+        // [JBAS-8801] Undeployment leaks root deployment service
+        // [TODO] remove this workaround
+        ServiceName serviceName = Services.JBOSS_DEPLOYMENT.append(context.getController().getName().getSimpleName());
+        ServiceController<?> controller = context.getController().getServiceContainer().getService(serviceName);
+        if (controller != null) {
+            controller.setMode(Mode.REMOVE);
+        }
+        MountHandle mount = deployment.getAttachment(MountHandle.class);
+        if (mount != null) {
+            mount.close();
         }
     }
 
