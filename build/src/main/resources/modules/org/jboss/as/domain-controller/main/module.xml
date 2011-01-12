@@ -41,5 +41,6 @@
         <module name="org.jboss.as.deployment-repository"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.protocol"/>
+        <module name="org.jboss.dmr"/>
     </dependencies>
 </module>
