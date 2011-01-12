@@ -22,13 +22,13 @@
 
 package org.jboss.as.naming;
 
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.spi.NamingManager;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * @author John E. Bailey
@@ -44,7 +44,9 @@ public class InitialContextFactoryTestCase {
         assertTrue(context instanceof NamingContext);
 
         // Test with builder
-        NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
+        if (!NamingManager.hasInitialContextFactoryBuilder()) {
+            NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
+        }
         initialContext = new InitialContext();
         context = (Context)initialContext.lookup("");
         assertTrue(context instanceof NamingContext);

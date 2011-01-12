@@ -22,15 +22,20 @@
 
 package org.jboss.as.naming.context;
 
+import static org.jboss.as.naming.util.NamingUtils.asReference;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
+
 import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
-import static org.jboss.as.naming.util.NamingUtils.asReference;
-import static org.jboss.as.naming.util.NamingUtils.namingException;
+
+import org.jboss.as.naming.ServiceAwareObjectFactory;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * ObjectFactoryBuilder implementation used to support custom object factories being loaded from modules. This class
@@ -41,6 +46,8 @@ import org.jboss.modules.Module;
 public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuilder, ObjectFactory {
 
     public static final ObjectFactoryBuilder INSTANCE = new ObjectFactoryBuilder();
+
+    private volatile ServiceRegistry serviceRegistry;
 
     private ObjectFactoryBuilder() {
     }
@@ -98,6 +105,14 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
         return null;
     }
 
+    /**
+     * Sets the service registry to use for service references
+     *
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry) {
+        this.serviceRegistry = serviceRegistry;
+    }
+
     private ObjectFactory factoryFromReference(final Reference reference, final Hashtable<?, ?> environment) throws Exception {
         if (reference instanceof ModularReference) {
             return factoryFromModularReference(ModularReference.class.cast(reference), environment);
@@ -114,7 +129,11 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
     private ObjectFactory factoryFromReference(final Reference reference, final ClassLoader classLoader, final Hashtable<?, ?> environment) throws Exception {
         try {
             final Class<?> factoryClass = classLoader.loadClass(reference.getFactoryClassName());
-            return ObjectFactory.class.cast(factoryClass.newInstance());
+            ObjectFactory factory = ObjectFactory.class.cast(factoryClass.newInstance());
+            if (factory instanceof ServiceAwareObjectFactory) {
+                ((ServiceAwareObjectFactory) factory).injectServiceRegistry(serviceRegistry);
+            }
+            return factory;
         } catch (Throwable t) {
             throw namingException("Failed to create object factory from classloader.", t);
         }

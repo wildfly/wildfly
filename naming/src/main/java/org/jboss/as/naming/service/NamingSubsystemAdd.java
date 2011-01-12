@@ -22,23 +22,23 @@
 
 package org.jboss.as.naming.service;
 
+import javax.management.MBeanServer;
+import javax.naming.Context;
+import javax.naming.Reference;
+
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
-
-import javax.management.MBeanServer;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.Reference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -55,6 +55,8 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         log.info("Activating Naming Subsystem");
+
+        ObjectFactoryBuilder.INSTANCE.setServiceRegistry(updateContext.getServiceRegistry());
 
         NamingContext.initializeNamingManager();
 
