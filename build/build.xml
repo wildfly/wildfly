@@ -337,13 +337,17 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-web"/>
             <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
             <maven-resource group="org.jboss.web" artifact="jbossweb"/>
-            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-war"/>
-            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
-    		    <maven-resource group="org.jboss" artifact="jboss-mdr"/>
         </module-def>
 
         <module-def name="org.jboss.as.threads">
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.metadata">
+            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-common"/>
+            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-web"/>
+            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-merge"/>
+            <maven-resource group="org.jboss.as.metadata" artifact="jboss-metadata-parser"/>
         </module-def>
 
         <module-def name="org.jboss.common-core">

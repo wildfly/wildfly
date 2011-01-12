@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -32,9 +34,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.metadata.parser.jbossweb.JBossWebMetaDataParser;
-import org.jboss.as.metadata.parser.util.NoopXmlResolver;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
+import org.jboss.metadata.parser.jbossweb.JBossWebMetaDataParser;
+import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
 
 /**

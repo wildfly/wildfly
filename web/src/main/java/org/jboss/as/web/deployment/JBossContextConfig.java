@@ -64,6 +64,7 @@ import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.metadata.merge.web.jboss.JBossWebMetaDataMerger;
 import org.jboss.metadata.web.jboss.JBossAnnotationsMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
@@ -155,7 +156,7 @@ public class JBossContextConfig extends ContextConfig {
         JBossWebMetaData sharedJBossWebMetaData = new JBossWebMetaData();
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         // FIXME: Default jboss-web.xml config
-        sharedJBossWebMetaData.merge(null, warMetaData.getSharedWebMetaData());
+        JBossWebMetaDataMerger.merge(sharedJBossWebMetaData, null, warMetaData.getSharedWebMetaData());
         processWebMetaData(sharedJBossWebMetaData);
     }
 

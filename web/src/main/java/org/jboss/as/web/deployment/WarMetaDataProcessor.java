@@ -42,6 +42,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
+import org.jboss.metadata.merge.web.jboss.JBossWebMetaDataMerger;
+import org.jboss.metadata.merge.web.spec.WebCommonMetaDataMerger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.AbsoluteOrderingMetaData;
 import org.jboss.metadata.web.spec.OrderingElementMetaData;
@@ -252,7 +254,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 classesAnnotatedMetaData.setServlets(null);
                 classesAnnotatedMetaData.setServletMappings(null);
             }
-            specMetaData.augment(classesAnnotatedMetaData, null, true);
+            WebCommonMetaDataMerger.augment(specMetaData, classesAnnotatedMetaData, null, true);
         }
         // Augment with meta data from fragments and annotations from the
         // corresponding JAR
@@ -274,11 +276,11 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             }
             if (jarAnnotatedMetaData != null) {
                 // Merge annotations corresponding to the JAR
-                webFragmentMetaData.augment(jarAnnotatedMetaData, null, true);
+                WebCommonMetaDataMerger.augment(webFragmentMetaData, jarAnnotatedMetaData, null, true);
             }
             // Merge fragment meta data according to the conflict rules
             try {
-                mergedFragmentMetaData.augment(webFragmentMetaData, specMetaData, false);
+                WebCommonMetaDataMerger.augment(mergedFragmentMetaData, webFragmentMetaData, specMetaData, false);
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Deployment error processing fragment for JAR: " + jar, e);
             }
@@ -300,22 +302,22 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             }
             if (jarAnnotatedMetaData != null) {
                 // Merge annotations corresponding to the JAR
-                webFragmentMetaData.augment(jarAnnotatedMetaData, null, true);
+                WebCommonMetaDataMerger.augment(webFragmentMetaData, jarAnnotatedMetaData, null, true);
             }
             // Merge fragment meta data according to the conflict rules
             try {
-                mergedFragmentMetaData.augment(webFragmentMetaData, specMetaData, false);
+                WebCommonMetaDataMerger.augment(mergedFragmentMetaData, webFragmentMetaData, specMetaData, false);
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Deployment error processing fragment for JAR: " + jar, e);
             }
         }
-        specMetaData.augment(mergedFragmentMetaData, null, true);
+        WebCommonMetaDataMerger.augment(specMetaData, mergedFragmentMetaData, null, true);
 
         // Override with meta data (JBossWebMetaData)
         // Create a merged view
         JBossWebMetaData mergedMetaData = new JBossWebMetaData();
         JBossWebMetaData metaData = warMetaData.getJbossWebMetaData();
-        mergedMetaData.merge(metaData, specMetaData);
+        JBossWebMetaDataMerger.merge(mergedMetaData, metaData, specMetaData);
         // FIXME: Incorporate any ear level overrides
 
         warMetaData.setMergedJBossWebMetaData(mergedMetaData);

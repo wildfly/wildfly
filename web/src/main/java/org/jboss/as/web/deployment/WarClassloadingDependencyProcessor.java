@@ -40,9 +40,7 @@ import org.jboss.modules.ModuleLoader;
  */
 public class WarClassloadingDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
-    private static final ModuleIdentifier JAVAX_SERVLET_API = ModuleIdentifier.create("javax.servlet.api");
-    private static final ModuleIdentifier JAVAX_SERVLET_JSP_API = ModuleIdentifier.create("javax.servlet.jsp.api");
+    private static final ModuleIdentifier JAVAX_EE_API = ModuleIdentifier.create("javaee.api");
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
     private static final ModuleIdentifier SYSTEM = ModuleIdentifier.create("system");
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
@@ -55,9 +53,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
         // Add module dependencies on Java EE apis
 
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_SERVLET_API, false, false, false));
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_SERVLET_API, false, false, false));
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_SERVLET_JSP_API, false, false, false));
+        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
