@@ -44,7 +44,10 @@ public class ContextServiceNameBuilder {
      * Returns the service name for the java:module context of the deployment
      */
     public static ServiceName module(final DeploymentUnit deploymentUnit) {
-        DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        DeploymentUnit parent = deploymentUnit.getParent();
+        if(parent == null) {
+            return ContextNames.MODULE_CONTEXT_SERVICE_NAME.append(deploymentUnit.getName());
+        }
         return ContextNames.MODULE_CONTEXT_SERVICE_NAME.append(parent.getName()).append(deploymentUnit.getName());
     }
 

@@ -47,7 +47,7 @@ public class ContextNames extends org.jboss.as.naming.deployment.ContextNames{
     /**
      * Parent ServiceName for java:app namespace
      */
-    public static final ServiceName APPLICATION_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("application");
+    public static final ServiceName APPLICATION_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("app");
 
     /**
      * Jndi name for java:module namespace
@@ -68,5 +68,5 @@ public class ContextNames extends org.jboss.as.naming.deployment.ContextNames{
     /**
      * Parent ServiceName for java:comp namespace
      */
-    public static final ServiceName COMPONENT_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("component");
+    public static final ServiceName COMPONENT_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("comp");
 }

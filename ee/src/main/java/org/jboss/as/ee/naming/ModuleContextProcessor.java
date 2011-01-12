@@ -64,7 +64,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
 
         final BinderService<String> moduleNameBinder = new BinderService<String>("ModuleName", Values
                 .immediateValue(getModuleName(deploymentUnit)));
-        serviceTarget.addService(moduleContextServiceName.append("module-name"), moduleNameBinder).addDependency(
+        serviceTarget.addService(moduleContextServiceName.append("ModuleName"), moduleNameBinder).addDependency(
                 moduleContextServiceName, Context.class, moduleNameBinder.getContextInjector()).install();
 
         final ContextService envContextService = new ContextService(JndiName.of("env"));

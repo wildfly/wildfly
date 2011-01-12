@@ -63,7 +63,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
 
         final BinderService<String> applicationNameBinder = new BinderService<String>("AppName", Values
                 .immediateValue(deploymentUnit.getName()));
-        serviceTarget.addService(applicationContextServiceName.append("app-name"), applicationNameBinder).addDependency(
+        serviceTarget.addService(applicationContextServiceName.append("AppName"), applicationNameBinder).addDependency(
                 applicationContextServiceName, Context.class, applicationNameBinder.getContextInjector()).install();
 
         final ContextService envContextService = new ContextService(JndiName.of("env"));
