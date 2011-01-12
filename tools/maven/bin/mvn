@@ -31,22 +31,19 @@
 #   MAVEN_OPTS - parameters passed to the Java VM when running Maven
 #     e.g. to debug Maven itself, use
 #       set MAVEN_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
+#   MAVEN_SKIP_RC - flag to disable loading of mavenrc files
 # ----------------------------------------------------------------------------
 
-QUOTED_ARGS=""
-while [ "$1" != "" ] ; do
+if [ -z "$MAVEN_SKIP_RC" ] ; then
 
-  QUOTED_ARGS="$QUOTED_ARGS \"$1\""
-  shift
+  if [ -f /etc/mavenrc ] ; then
+    . /etc/mavenrc
+  fi
 
-done
+  if [ -f "$HOME/.mavenrc" ] ; then
+    . "$HOME/.mavenrc"
+  fi
 
-if [ -f /etc/mavenrc ] ; then
-  . /etc/mavenrc
-fi
-
-if [ -f "$HOME/.mavenrc" ] ; then
-  . "$HOME/.mavenrc"
 fi
 
 # OS specific support.  $var _must_ be set to either true or false.
@@ -154,11 +151,9 @@ if $cygwin; then
     HOME=`cygpath --path --windows "$HOME"`
 fi
 
-maven_exec_cmd="\"$JAVACMD\" \
+exec "$JAVACMD" \
   $MAVEN_OPTS \
-  -classpath \"${M2_HOME}\"/boot/plexus-classworlds-*.jar \
-  \"-Dclassworlds.conf=${M2_HOME}/bin/m2.conf\" \
-  \"-Dmaven.home=${M2_HOME}\"  \
-  ${CLASSWORLDS_LAUNCHER}"
-
-eval $maven_exec_cmd "$QUOTED_ARGS"
+  -classpath "${M2_HOME}"/boot/plexus-classworlds-*.jar \
+  "-Dclassworlds.conf=${M2_HOME}/bin/m2.conf" \
+  "-Dmaven.home=${M2_HOME}"  \
+  ${CLASSWORLDS_LAUNCHER} "$@"
