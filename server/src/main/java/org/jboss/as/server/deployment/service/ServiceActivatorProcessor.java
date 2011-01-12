@@ -47,7 +47,7 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.getAttachment(ServiceActivatorMarker.ATTACHMENT_KEY) == null)
+        if(deploymentUnit.getAttachment(Attachments.SERVICES).getServiceImplementations(ServiceActivator.class.getName()).isEmpty())
             return; // Skip it if it has not been marked
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);

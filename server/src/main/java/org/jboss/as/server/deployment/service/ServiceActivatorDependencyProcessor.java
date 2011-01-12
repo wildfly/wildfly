@@ -40,7 +40,6 @@ import org.jboss.msc.service.ServiceActivator;
  */
 public class ServiceActivatorDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final String SERVICE_ACTIVATOR_PATH = "META-INF/services/" + ServiceActivator.class.getName();
     private static final ModuleDependency MSC_DEP = new ModuleDependency(Module.getSystemModuleLoader(), ModuleIdentifier.create("org.jboss.msc"), false, false, false);
 
     /**
@@ -52,8 +51,7 @@ public class ServiceActivatorDependencyProcessor implements DeploymentUnitProces
         final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         if(deploymentRoot == null)
             return;
-        if(deploymentRoot.getRoot().getChild(SERVICE_ACTIVATOR_PATH).exists()) {
-            phaseContext.getDeploymentUnit().putAttachment(ServiceActivatorMarker.ATTACHMENT_KEY, new ServiceActivatorMarker());
+        if(! phaseContext.getDeploymentUnit().getAttachment(Attachments.SERVICES).getServiceImplementations(ServiceActivator.class.getName()).isEmpty()) {
             phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, MSC_DEP);
         }
     }

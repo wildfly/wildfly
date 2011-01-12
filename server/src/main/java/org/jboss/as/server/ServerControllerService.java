@@ -44,6 +44,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.deployment.ServiceLoaderProcessor;
 import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
@@ -197,11 +198,12 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));
+        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_SERVICE_LOADER, new ServiceLoaderProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.MODULARIZE).add(new RegisteredProcessor(Phase.MODULARIZE_DEPLOYMENT, new ModuleDeploymentProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
 
         // All deployers are registered

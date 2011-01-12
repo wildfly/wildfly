@@ -147,6 +147,11 @@ public final class Attachments {
      */
     public static final AttachmentKey<DeploymentModuleLoader> DEPLOYMENT_MODULE_LOADER = AttachmentKey.create(DeploymentModuleLoader.class);
 
+    /**
+     * An index of {@link java.util.ServiceLoader}-type services in this deployment unit
+     */
+    public static final AttachmentKey<ServicesAttachment> SERVICES = AttachmentKey.create(ServicesAttachment.class);
+
     //
     // POST_MODULE
     //
