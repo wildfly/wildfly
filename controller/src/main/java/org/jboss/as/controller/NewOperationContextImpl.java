@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -31,22 +32,30 @@ import org.jboss.dmr.ModelNode;
  */
 public class NewOperationContextImpl implements NewOperationContext {
     private final ModelController controller;
-    private ModelNode subModel;
+    private final ModelNodeRegistration registry;
+    private final ModelNode subModel;
 
     /**
      * Construct a new instance.
      *
      * @param controller the model controller
+     * @param registry the registry
      * @param subModel the affected submodel
      */
-    public NewOperationContextImpl(final ModelController controller, final ModelNode subModel) {
+    public NewOperationContextImpl(final ModelController controller, final ModelNodeRegistration registry, final ModelNode subModel) {
         this.controller = controller;
+        this.registry = registry;
         this.subModel = subModel;
     }
 
     /** {@inheritDoc} */
     public ModelController getController() {
         return controller;
+    }
+
+    /** {@inheritDoc} */
+    public ModelNodeRegistration getRegistry() {
+        return registry;
     }
 
     /** {@inheritDoc} */

@@ -25,11 +25,12 @@ package org.jboss.as.server;
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewOperationContextImpl;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
@@ -91,22 +92,24 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     }
 
     /** {@inheritDoc} */
+    @Override
     protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
         if (operationHandler instanceof BootOperationHandler) {
             if (state == State.STARTING) {
-                return new BootContextImpl(subModel);
+                return new BootContextImpl(subModel, getRegistry());
             } else {
                 state = State.RESTART_REQUIRED;
                 return super.getOperationContext(subModel, operation, operationHandler);
             }
         } else if (operationHandler instanceof RuntimeOperationHandler && ! (state == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
-            return new RuntimeContextImpl(subModel);
+            return new RuntimeContextImpl(subModel, getRegistry());
         } else {
             return super.getOperationContext(subModel, operation, operationHandler);
         }
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
         if (context instanceof NewBootOperationContext) {
             return ((BootOperationHandler)operationHandler).execute((NewBootOperationContext) context, operation, resultHandler);
@@ -127,13 +130,14 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
 
     private class BootContextImpl extends NewOperationContextImpl implements NewBootOperationContext {
 
-        private BootContextImpl(final ModelNode subModel) {
-            super(NewServerControllerImpl.this, subModel);
+        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
+            super(NewServerControllerImpl.this, registry, subModel);
         }
 
         public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
         }
 
+        @Override
         public NewServerController getController() {
             return (NewServerController) super.getController();
         }
@@ -150,10 +154,11 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
 
     private class RuntimeContextImpl extends NewOperationContextImpl implements NewRuntimeOperationContext {
 
-        private RuntimeContextImpl(final ModelNode subModel) {
-            super(NewServerControllerImpl.this, subModel);
+        private RuntimeContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
+            super(NewServerControllerImpl.this, registry, subModel);
         }
 
+        @Override
         public NewServerController getController() {
             return (NewServerController) super.getController();
         }

@@ -43,13 +43,7 @@ public class BasicModelController implements ModelController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
-    private final ModelNodeRegistration registry = ModelNodeRegistration.Factory.create(new DescriptionProvider() {
-        // TODO - this is wrong, just a temp until everything is described
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return new ModelNode();
-        }
-    });
+    private final ModelNodeRegistration registry;
     private final ModelNode model;
     private final NewConfigurationPersister configurationPersister;
 
@@ -59,7 +53,7 @@ public class BasicModelController implements ModelController {
      * @param configurationPersister the configuration persister to use to store changes
      */
     protected BasicModelController(final NewConfigurationPersister configurationPersister) {
-        this(new ModelNode().setEmptyObject(), configurationPersister);
+        this(new ModelNode().setEmptyObject(), configurationPersister, null);
     }
 
     /**
@@ -67,10 +61,21 @@ public class BasicModelController implements ModelController {
      *
      * @param the model
      * @param configurationPersister the configuration persister to use to store changes
+     * @param rootDescriptionProvider the description provider of the root element
      */
-    protected BasicModelController(ModelNode model, final NewConfigurationPersister configurationPersister) {
+    protected BasicModelController(ModelNode model, final NewConfigurationPersister configurationPersister, DescriptionProvider rootDescriptionProvider) {
         this.model = model;
         this.configurationPersister = configurationPersister;
+        if (rootDescriptionProvider == null) {
+            rootDescriptionProvider = new DescriptionProvider() {
+                // TODO - this is wrong, just a temp until everything is described
+                @Override
+                public ModelNode getModelDescription(final Locale locale) {
+                    return new ModelNode();
+                }
+            };
+        }
+        this.registry = ModelNodeRegistration.Factory.create(rootDescriptionProvider);
     }
 
     /**
@@ -184,7 +189,7 @@ public class BasicModelController implements ModelController {
      */
     @SuppressWarnings("unused")
     protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
-        return new NewOperationContextImpl(this, subModel);
+        return new NewOperationContextImpl(this, getRegistry(), subModel);
     }
 
     /**

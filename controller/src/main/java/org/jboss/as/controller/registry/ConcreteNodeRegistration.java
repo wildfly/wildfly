@@ -22,24 +22,30 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 final class ConcreteNodeRegistration extends AbstractNodeRegistration {
-    @SuppressWarnings( { "unused" })
+
     private volatile Map<String, NodeSubregistry> children;
-    @SuppressWarnings( { "unused" })
+
     private volatile Map<String, OperationEntry> operations;
-    @SuppressWarnings( { "unused" })
+
     private volatile DescriptionProvider descriptionProvider;
+
+    private volatile Set<String> attributeNames;
 
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "operations"));
@@ -52,6 +58,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         descriptionProviderUpdater.set(this, provider);
     }
 
+    @Override
     public ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
         if (address == null) {
             throw new IllegalArgumentException("address is null");
@@ -64,6 +71,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         return child.register(address.getValue(), descriptionProvider);
     }
 
+    @Override
     OperationHandler getHandler(ListIterator<PathElement> iterator, String operationName) {
         final OperationEntry entry = operationsUpdater.get(this, operationName);
         if (entry != null && entry.isInherited()) {
@@ -79,6 +87,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         return subregistry == null ? null : subregistry.getHandler(iterator, next.getValue(), operationName);
     }
 
+    @Override
     Map<String, DescriptionProvider> getOperationDescriptions(ListIterator<PathElement> iterator) {
         if (! iterator.hasNext()) {
             final HashMap<String, DescriptionProvider> map = new HashMap<String, DescriptionProvider>();
@@ -98,12 +107,14 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
+    @Override
     public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
         if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited)) != null) {
             throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
+    @Override
     public void registerProxySubModel(final PathElement address, final OperationHandler handler) throws IllegalArgumentException {
         getOrCreateSubregistry(address.getKey()).registerProxySubModel(address.getValue(), handler);
     }
@@ -136,6 +147,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         getOrCreateSubregistry(element.getKey()).registerProxySubModel(element.getValue(), handler);
     }
 
+    @Override
     DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
@@ -150,6 +162,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
+    @Override
     DescriptionProvider getModelDescription(final Iterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
@@ -163,9 +176,54 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
-    void appendNodeDescription(final ModelNode node, final boolean recursive) {
-        // TODO
+    @Override
+    Set<String> getAttributeNames(Iterator<PathElement> iterator) {
+        if (iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return Collections.emptySet();
+            }
+            return subregistry.getAttributeNames(iterator, next.getValue());
+        } else {
+            Set<String> attrs = attributeNames;
+            if (attrs == null) {
+                if (descriptionProvider != null) {
+                    ModelNode node = descriptionProvider.getModelDescription(null);
+                    node = node.get(ATTRIBUTES);
+                    if (node.isDefined()) {
+                        attrs = node.keys();
+                    }
+                    attrs = Collections.unmodifiableSet(attrs);
+                }
+                if (attrs == null) {
+                    attrs = Collections.emptySet();
+                }
+                attributeNames = Collections.unmodifiableSet(attrs);
+            }
+            return attrs;
+        }
     }
+
+    @Override
+    Set<String> getChildNames(Iterator<PathElement> iterator) {
+        if (iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return Collections.emptySet();
+            }
+            return subregistry.getChildNames(iterator, next.getValue());
+        } else {
+            Map<String, NodeSubregistry> children = this.children;
+            if (children != null) {
+                return Collections.unmodifiableSet(children.keySet());
+            }
+            return Collections.emptySet();
+        }
+    }
+
+
 
     private static final class OperationEntry {
         private final OperationHandler operationHandler;

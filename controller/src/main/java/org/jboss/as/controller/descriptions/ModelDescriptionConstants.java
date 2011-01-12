@@ -34,6 +34,7 @@ public class ModelDescriptionConstants {
     public static final String ADD_OPERATION = "add-operation";
     public static final String ADDRESS = "address";
     public static final String ATTRIBUTES = "attributes";
+    public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
     public static final String DEFAULT = "default";
     public static final String DEPLOYMENT = "deployment";
@@ -44,6 +45,7 @@ public class ModelDescriptionConstants {
     public static final String INCLUDE = "include";
     public static final String INTERFACE = "interface";
     public static final String JVM = "jvm";
+    public static final String LOCALE = "locale";
     public static final String MANAGEMENT = "management";
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
@@ -62,8 +64,11 @@ public class ModelDescriptionConstants {
     public static final String PATH = "path";
     public static final String PORT = "port";
     public static final String PROFILE = "profile";
-    public static final String READ_ATTRIBUTES_OF_TYPE_OPERATION = "read-attributes-of-type-operation";
-    public static final String READ_NAMED_ATTRIBUTE_OPERATION = "read-named-attribute-operation";
+    public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
+    public static final String READ_CHILDREN_NAMES_OPERATION = "read-children_names";
+    public static final String READ_OPERATION_DESCRIPTION_OPERATION = "read-operation-description";
+    public static final String READ_OPERATION_NAMES_OPERATION = "read-operation-names";
+    public static final String READ_RESOURCE_DESCRIPTION_OPERATION = "read-resource-description";
     public static final String READ_SUB_MODEL_OPERATION = "read-sub-model-operation";
     public static final String REMOVE = "remove";
     public static final String REMOVE_OPERATION = "remove-operation";

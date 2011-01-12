@@ -21,18 +21,24 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTES_OF_TYPE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_NAMED_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_SUB_MODEL_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -60,9 +66,9 @@ public class GlobalDescriptions {
                 node.get(DESCRIPTION).set(bundle.getString("global.read-sub-model"));
                 node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
                 node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-sub-model.recursive"));
-                node.get(REQUEST_PROPERTIES, RECURSIVE, REQUIRED).set(false);
                 node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
                 node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+                //TODO value type
                 node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-sub-model.reply"));
                 node.protect();
 
@@ -71,22 +77,22 @@ public class GlobalDescriptions {
         };
     }
 
-    public static DescriptionProvider getReadNamedAttributeValueOperationDescription() {
+    public static DescriptionProvider getReadAttributeOperationDescription() {
         return new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 ResourceBundle bundle = getResourceBundle(locale);
 
                 ModelNode node = new ModelNode();
-                node.get(OPERATION_NAME).set(READ_NAMED_ATTRIBUTE_OPERATION);
-                node.get(DESCRIPTION).set(bundle.getString("global.get-named-attribute"));
+                node.get(OPERATION_NAME).set(READ_ATTRIBUTE_OPERATION);
+                node.get(DESCRIPTION).set(bundle.getString("global.read-attribute"));
 
                 node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-                node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.get-named-attribute.type"));
-                node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+                node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.read-attribute.type"));
                 node.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
-                node.get(REPLY_PROPERTIES, TYPE).set(bundle.getString("global.get-named-attribute.reply.type"));
-                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.get-named-attribute.reply"));
+                node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+                node.get(REPLY_PROPERTIES, VALUE_TYPE).set(bundle.getString("global.read-attribute.reply.type"));
+                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-attribute.reply"));
                 node.protect();
 
                 return node;
@@ -94,28 +100,100 @@ public class GlobalDescriptions {
         };
     }
 
-    public static DescriptionProvider getReadAttributesOfTypeOperationDescription() {
+    public static DescriptionProvider getReadChildrenNamesOperationDescription() {
         return new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 ResourceBundle bundle = getResourceBundle(locale);
 
                 ModelNode node = new ModelNode();
-                node.get(OPERATION_NAME).set(READ_ATTRIBUTES_OF_TYPE_OPERATION);
-                node.get(DESCRIPTION).set(bundle.getString("global.get-attribute-of-type"));
+                node.get(OPERATION_NAME).set(READ_CHILDREN_NAMES_OPERATION);
+                node.get(DESCRIPTION).set(bundle.getString("global.read-children-names"));
 
-                node.get(REQUEST_PROPERTIES, TYPE, TYPE).set(ModelType.STRING);
-                node.get(REQUEST_PROPERTIES, TYPE, DESCRIPTION).set(bundle.getString("global.get-attribute-of-value.type"));
-                node.get(REQUEST_PROPERTIES, TYPE, REQUIRED).set(true);
-                node.get(REQUEST_PROPERTIES, TYPE, NILLABLE).set(false);
+                node.get(REQUEST_PROPERTIES, CHILD_TYPE, TYPE).set(ModelType.STRING);
+                node.get(REQUEST_PROPERTIES, CHILD_TYPE, DESCRIPTION).set(bundle.getString("global.read-children-names.child-type"));
+                node.get(REQUEST_PROPERTIES, CHILD_TYPE, NILLABLE).set(false);
                 node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
-                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.get-attribute-of-type.reply"));
+                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-names.reply"));
+                node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
 
                 node.protect();
                 return node;
             }
         };
     }
+
+    public static DescriptionProvider getReadOperationNamesOperation() {
+        return new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ResourceBundle bundle = getResourceBundle(locale);
+
+                ModelNode node = new ModelNode();
+                node.get(OPERATION_NAME).set(READ_OPERATION_NAMES_OPERATION);
+                node.get(DESCRIPTION).set(bundle.getString("global.read-operation-names"));
+
+                node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+                node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
+                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-operation-names.reply"));
+
+                node.protect();
+                return node;
+            }
+        };
+    }
+
+    public static DescriptionProvider getReadOperationOperation() {
+        return new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ResourceBundle bundle = getResourceBundle(locale);
+
+                ModelNode node = new ModelNode();
+                node.get(OPERATION_NAME).set(READ_OPERATION_DESCRIPTION_OPERATION);
+                node.get(DESCRIPTION).set(bundle.getString("global.read-operation"));
+                node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+                node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.read-operation.type"));
+                node.get(REQUEST_PROPERTIES, TYPE, NILLABLE).set(false);
+                node.get(REQUEST_PROPERTIES, LOCALE, TYPE).set(ModelType.STRING);
+                node.get(REQUEST_PROPERTIES, LOCALE, NILLABLE).set(true);
+                node.get(REQUEST_PROPERTIES, LOCALE, DESCRIPTION).set(bundle.getString("global.read-operation.locale"));
+
+                node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+                //TODO value type?
+                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-operation.type"));
+
+                node.protect();
+                return node;
+            }
+        };
+    }
+
+    public static DescriptionProvider getReadResourceDescriptionOperationDescription() {
+        return new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ResourceBundle bundle = getResourceBundle(locale);
+
+                ModelNode node = new ModelNode();
+                node.get(OPERATION_NAME).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+                node.get(DESCRIPTION).set(bundle.getString("global.read-resource-description"));
+                node.get(REQUEST_PROPERTIES, OPERATIONS, TYPE).set(ModelType.BOOLEAN);
+                node.get(REQUEST_PROPERTIES, OPERATIONS, DESCRIPTION).set(bundle.getString("global.read-resource-description.operations"));
+                node.get(REQUEST_PROPERTIES, OPERATIONS, NILLABLE).set(true);
+                node.get(REQUEST_PROPERTIES, LOCALE, TYPE).set(ModelType.STRING);
+                node.get(REQUEST_PROPERTIES, LOCALE, NILLABLE).set(true);
+                node.get(REQUEST_PROPERTIES, LOCALE, DESCRIPTION).set(bundle.getString("global.read-resource-description.locale"));
+
+                node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource-description.reply"));
+                node.protect();
+
+                return node;
+            }
+        };
+    }
+
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

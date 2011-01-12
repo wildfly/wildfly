@@ -25,11 +25,12 @@ package org.jboss.as.controller.registry;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
 
 /**
  * A registry of model node information.  This registry is thread-safe.
@@ -82,26 +83,29 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     public DescriptionProvider getOperationDescription(final PathAddress address, final String operationName) {
-        return null;
+        return getOperationDescription(address.iterator(), operationName);
     }
 
     abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName);
 
     /** {@inheritDoc} */
     public DescriptionProvider getModelDescription(final PathAddress address) {
-        return null;
+        return getModelDescription(address.iterator());
     }
 
     abstract DescriptionProvider getModelDescription(Iterator<PathElement> iterator);
 
-    /** {@inheritDoc} */
-    public ModelNode getNodeDescription(final boolean recursive) {
-        final ModelNode node = new ModelNode();
-        appendNodeDescription(node, recursive);
-        return node;
+    public Set<String> getAttributeNames(PathAddress address) {
+        return getAttributeNames(address.iterator());
     }
 
-    abstract void appendNodeDescription(ModelNode node, boolean recursive);
+    abstract Set<String> getAttributeNames(Iterator<PathElement> iterator);
+
+    public Set<String> getChildNames(PathAddress address) {
+        return getChildNames(address.iterator());
+    }
+
+    abstract Set<String> getChildNames(Iterator<PathElement> iterator);
 
     final String getLocationString() {
         if (parent == null) {

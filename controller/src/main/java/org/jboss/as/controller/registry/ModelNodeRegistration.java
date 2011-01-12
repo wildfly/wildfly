@@ -23,11 +23,12 @@
 package org.jboss.as.controller.registry;
 
 import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
 
 /**
  * A registration for a model node which consists of a node description plus operation descriptions.
@@ -83,6 +84,22 @@ public interface ModelNodeRegistration {
     DescriptionProvider getOperationDescription(PathAddress address, String operationName);
 
     /**
+     * Get the names of the attributes for a node
+     *
+     * @param address the address, relative to this node
+     * @return the attribute names. If there are none an empty set is returned
+     */
+    Set<String> getAttributeNames(PathAddress address);
+
+    /**
+     * Get the names of the operations for a node
+     *
+     * @param address the address, relative to this node
+     * @return the operation names. If there are none an empty set is returned
+     */
+    Set<String> getChildNames(PathAddress address);
+
+    /**
      * Get the model description at the given address, or {@code null} if none exists.
      *
      * @param address the address, relative to this node
@@ -97,14 +114,6 @@ public interface ModelNodeRegistration {
      * @return the operation map
      */
     Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address);
-
-    /**
-     * Get a complete description of this node, and optionally, all of its subnodes.
-     *
-     * @param recursive {@code true} if the query should be recursive, {@code false} otherwise
-     * @return the description
-     */
-    ModelNode getNodeDescription(boolean recursive);
 
     /**
      * A factory for creating a new, root model node registration.

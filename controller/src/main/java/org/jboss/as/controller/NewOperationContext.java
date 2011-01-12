@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,6 +36,13 @@ public interface NewOperationContext {
      * @return the controller
      */
     ModelController getController();
+
+    /**
+     * Get the model node registry
+     *
+     * @return the registry
+     */
+    ModelNodeRegistration getRegistry();
 
     /**
      * Get the a view of the sub-model that this operation affects, if it does affect

@@ -26,7 +26,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -131,5 +133,29 @@ final class NodeSubregistry {
             }
         }
         return childRegistry.getModelDescription(iterator);
+    }
+
+    Set<String> getChildNames(final Iterator<PathElement> iterator, final String child){
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
+        AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry == null) {
+            childRegistry = snapshot.get("*");
+            if (childRegistry == null) {
+                return null;
+            }
+        }
+        return childRegistry.getChildNames(iterator);
+    }
+
+    Set<String> getAttributeNames(final Iterator<PathElement> iterator, final String child){
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
+        AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry == null) {
+            childRegistry = snapshot.get("*");
+            if (childRegistry == null) {
+                return null;
+            }
+        }
+        return childRegistry.getAttributeNames(iterator);
     }
 }
