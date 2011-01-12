@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.deployment;
 
-import com.sun.servicetag.ServiceTag;
 import java.util.EnumMap;
 import java.util.List;
 import org.jboss.msc.service.Service;

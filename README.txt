@@ -51,15 +51,15 @@ For all of the above tests: "./build.sh test -Pall-tests"
 
 Using Eclipse
 -------------
-To use eclipse you need to use the m2eclipse plugin (http://m2eclipse.sonatype.org/).
-The following steps are recommended:
 1. Install the latest version of eclipse
-2. Set Xmx in eclipse.ini to be at least 512M, and make sure it's using java 6
-3. On the command line run ./build.sh eclipse:m2eclipse
-4. launch eclipse and install the m2eclipse plugin, and make sure it uses your repo configs
-5. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted set forbidden reference to WARNING
-6. In eclipse preferences Java->Code Style, import the cleanup, templates, and formatter configs in ide-configs/eclipse
-7. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
+2. Make sure Xmx in eclipse.ini is at least 512M, and it's using java 6
+3. Launch eclispe and install the m2eclipse plugin, make sure it uses your repo configs
+   (get it from: http://m2eclipse.sonatype.org/sites/m2e)
+4. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted
+   set forbidden reference to WARNING
+5. In eclipse preferences Java->Code Style, import the cleanup, templates, and
+   formatter configs in ide-configs/eclipse
+6. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
    and deselect all actions except for "Remove trailing whitespace"
-8. Use import on the root pom, which will pull in all modules
-9. Wait (m2eclipse takes awhile on initial import, especially if you did not do step 3)
+7. Use import on the root pom, which will pull in all modules
+8. Wait (m2eclipse takes awhile on initial import)
