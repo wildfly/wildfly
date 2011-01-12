@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.dmr.ModelNode;
+
 /**
  * An operation handler.  If an operation handler reads or affects the configuration model, it must implement
  * {@link ModelQueryOperationHandler}, {@link ModelUpdateOperationHandler}, or {@link ModelAddOperationHandler}.
@@ -29,4 +31,15 @@ package org.jboss.as.controller;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface OperationHandler {
+    /**
+     * Execute the operation, passing the result to {@code resultHandler}.  The submodel is not available
+     * unless one of the subtypes of this interface is implemented.  This method <b>must</b> invoke one of
+     * the completion methods on {@code resultHandler} regardless of the outcome of the operation.
+     *
+     * @param context the context for this operation
+     * @param operation the operation being executed
+     * @param resultHandler the result handler to invoke when the operation is complete
+     * @return a handle which may be used to asynchronously cancel this operation
+     */
+    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

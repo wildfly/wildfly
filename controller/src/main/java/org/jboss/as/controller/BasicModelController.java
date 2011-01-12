@@ -173,14 +173,7 @@ public class BasicModelController implements ModelController {
      * @return a handle which can be used to asynchronously cancel the operation
      */
     protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
-        if (operationHandler instanceof ModelQueryOperationHandler) {
-            final ModelQueryOperationHandler castHandler = (ModelQueryOperationHandler) operationHandler;
-            return castHandler.execute(context, operation, resultHandler);
-        } else {
-            // no effect
-            resultHandler.handleResultComplete(new ModelNode());
-            return Cancellable.NULL;
-        }
+        return operationHandler.execute(context, operation, resultHandler);
     }
 
     /** {@inheritDoc} */
