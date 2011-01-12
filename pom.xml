@@ -119,7 +119,7 @@
         <version.org.jboss.staxmapper>1.0.0.Beta2</version.org.jboss.staxmapper>
         <version.org.jboss.stdio.jboss-stdio>1.0.0.CR3</version.org.jboss.stdio.jboss-stdio>
         <version.org.jboss.threads.jboss-threads>2.0.0.CR8</version.org.jboss.threads.jboss-threads>
-        <version.jboss.web>3.0.0-beta-7</version.jboss.web>
+        <version.jboss.web>7.0.0.Beta1</version.jboss.web>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
