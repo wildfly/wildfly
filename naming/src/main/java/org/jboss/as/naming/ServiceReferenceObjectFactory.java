@@ -35,6 +35,7 @@ import javax.naming.spi.ObjectFactory;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.ServiceController.State;
@@ -77,7 +78,12 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
         }
         final String sname = (String) nameAdr.getContent();
         final ServiceName serviceName = ServiceName.parse(sname);
-        final ServiceController<?> controller = serviceRegistry.getRequiredService(serviceName);
+        final ServiceController<?> controller;
+        try {
+            controller = serviceRegistry.getRequiredService(serviceName);
+        } catch (ServiceNotFoundException e) {
+            throw new NamingException("Could not resolve service " + serviceName);
+        }
 
         ServiceReferenceListener listener = new ServiceReferenceListener();
         controller.addListener(listener);
