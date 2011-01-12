@@ -117,6 +117,14 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         }
     }
 
+    /** {@inheritDoc} */
+    protected void persistConfiguration(final ModelNode model) {
+        // do not persist during startup
+        if (state != State.STARTING) {
+            super.persistConfiguration(model);
+        }
+    }
+
     private class BootContextImpl extends NewOperationContextImpl implements NewBootOperationContext {
 
         private BootContextImpl(final ModelNode subModel) {

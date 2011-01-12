@@ -137,13 +137,9 @@ public class BasicModelController implements ModelController {
                         } else {
                             address.navigate(model, true).set(subModel);
                         }
+                        persistConfiguration(model);
                     }
                     handler.handleResultComplete(compensatingOperation);
-                    try {
-                        configurationPersister.store(model);
-                    } catch (final ConfigurationPersistenceException e) {
-                        log.warnf("Failed to persist configuration change: %s", e);
-                    }
                 }
 
                 @Override
@@ -160,6 +156,19 @@ public class BasicModelController implements ModelController {
         } catch (final Throwable t) {
             handler.handleFailed(getFailureResult(t));
             return Cancellable.NULL;
+        }
+    }
+
+    /**
+     * Persist the configuration after an update was executed.
+     *
+     * @param model the new model
+     */
+    protected void persistConfiguration(final ModelNode model) {
+        try {
+            configurationPersister.store(model);
+        } catch (final ConfigurationPersistenceException e) {
+            log.warnf("Failed to persist configuration change: %s", e);
         }
     }
 
