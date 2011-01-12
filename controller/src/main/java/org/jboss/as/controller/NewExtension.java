@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+
 /**
  * An extension to the JBoss Application Server.  Implementations of this interface should
  * have a zero-arg constructor.  Extension modules must contain a {@code META-INF/services/org.jboss.as.controller.NewExtension}
@@ -40,4 +42,11 @@ public interface NewExtension {
      * @param context the extension context
      */
     void initialize(NewExtensionContext context);
+
+    /**
+     * Initialize the XML parsers for this extension.
+     *
+     * @param context the extension parsing context
+     */
+    void initializeParsers(ExtensionParsingContext context);
 }

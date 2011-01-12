@@ -20,27 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.controller.parsing;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
- * A mapper between {@code standalone.xml} and a model.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class StandaloneXml implements XMLElementReader<ModelNode>, XMLElementWriter<ModelNode> {
+public interface ExtensionParsingContext {
 
-    public void readElement(final XMLExtendedStreamReader reader, final ModelNode modelNode) throws XMLStreamException {
+    /**
+     * Set the parser for the profile-wide subsystem configuration XML element.  The element is always
+     * called {@code "subsystem"}.  The reader should populate the given model node with the appropriate
+     * "subsystem add" update, without the address or operation name as that information will be automatically
+     * populated.
+     *
+     * @param reader the element reader
+     * @param writer the element writer
+     */
+    void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader, XMLElementWriter<ModelNode> writer);
 
-    }
+    /**
+     * Set the parser for the per-deployment configuration for this element, if any.
+     *
+     * (TODO: round this out.)
+     *
+     * @param reader the element reader
+     * @param writer the element writer
+     */
+    void setDeploymentXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader, XMLElementWriter<ModelNode> writer);
 
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-    }
 }

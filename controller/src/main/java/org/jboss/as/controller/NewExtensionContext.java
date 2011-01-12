@@ -42,8 +42,7 @@ public interface NewExtensionContext {
      * simple generic version of the missing operation will be produced.
      *
      * @param name the name of the subsystem
-     * @param xmlNameSpace the XML namespace of the subsystem elements
      * @throws IllegalArgumentException if the subsystem name or namespace has already been registered
      */
-    SubsystemRegistration registerSubsystem(String name, String xmlNameSpace);
+    SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException;
 }

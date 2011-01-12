@@ -121,6 +121,7 @@ public class BasicModelController implements ModelController {
                 subModel = null;
             }
             final NewOperationContext context = getOperationContext(subModel, operation, operationHandler);
+            // TODO: do not persist during boot!
             final ResultHandler useHandler = (operationHandler instanceof ModelUpdateOperationHandler) ? new ResultHandler() {
                 @Override
                 public void handleResultFragment(final String[] location, final ModelNode result) {

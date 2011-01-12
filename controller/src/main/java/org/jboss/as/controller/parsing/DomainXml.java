@@ -20,33 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.parsing;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import java.util.List;
+import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
 
 /**
- * A subsystem registration.
- * <p>
- * If no XML mappings are defined, then a simple empty XML mapping is used.
+ * A mapper between {@code standalone.xml} and a model.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface SubsystemRegistration {
-    /**
-     * Get the model node registration for this subsystem.
-     *
-     * @return the subsystem-level model node registration
-     */
-    ModelNodeRegistration registerSubsystemModel(DescriptionProvider descriptionProvider);
+public class DomainXml extends CommonXml {
 
-    /**
-     * Get the deployment model node registration for this subsystem.
-     *
-     * @return the deployment-level model node registration
-     */
-    ModelNodeRegistration registerDeploymentModel(DescriptionProvider descriptionProvider);
+    public DomainXml(final ModuleLoader loader, final NewExtensionContext context) {
+        super(loader, context);
+    }
+
+    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> nodes) throws XMLStreamException {
+
+    }
+
+    public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+    }
 }
