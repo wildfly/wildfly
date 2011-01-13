@@ -88,6 +88,8 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         //  Make sure we don't index or add this as a module root
         resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
         ModuleRootMarker.markRoot(resourceRoot, false);
+        // Make sure any annotation deployers run against the EAR deployment.
+        deploymentUnit.putAttachment(Attachments.PROCESS_CHILD_ANNOTATION_INDEX, false);
 
         String libDirName = DEFAULT_LIB_DIR;
 

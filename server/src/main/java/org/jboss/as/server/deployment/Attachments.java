@@ -114,6 +114,14 @@ public final class Attachments {
     public static final AttachmentKey<AttachmentList<String>> INDEX_IGNORE_PATHS = AttachmentKey.createList(String.class);
 
     /**
+     * Flag to determine whether to process the child annotation indexes as part of the parent deployment.
+     * Ex.  An EAR deployment should not processes nested JAR index when checking for deployable annotations.
+     * It should rely on the child actually being deployed.  WARs and RARs on the other hand should process all the
+     * children as though the are all one index.
+     */
+    public static final AttachmentKey<Boolean> PROCESS_CHILD_ANNOTATION_INDEX = AttachmentKey.create(Boolean.class);
+
+    /**
      * A marker attachment to identify a resource root that should be included as a module root.
      */
     public static final AttachmentKey<Boolean> MODULE_ROOT_MARKER = AttachmentKey.create(Boolean.class);

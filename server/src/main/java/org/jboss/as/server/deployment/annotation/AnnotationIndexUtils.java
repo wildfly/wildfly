@@ -42,9 +42,12 @@ public class AnnotationIndexUtils {
 
     public static Map<ResourceRoot, Index> getAnnotationIndexes(final DeploymentUnit deploymentUnit) {
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
-        final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if (resourceRoots != null) {
-            allResourceRoots.addAll(resourceRoots);
+        final Boolean processChildren = deploymentUnit.getAttachment(Attachments.PROCESS_CHILD_ANNOTATION_INDEX);
+        if(processChildren == null || processChildren) {
+            final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+            if (resourceRoots != null) {
+                allResourceRoots.addAll(resourceRoots);
+            }
         }
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
         Map<ResourceRoot, Index> indexes = new HashMap<ResourceRoot, Index>();
