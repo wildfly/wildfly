@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -52,8 +54,8 @@ final class ExtensionParsingContextImpl implements ExtensionParsingContext {
      * @param writer the element writer
      */
     public void setSubsystemXmlMapping(final String namespaceUri, final XMLElementReader<List<ModelNode>> reader, final XMLElementWriter<ModelNode> writer) {
-
-        //
+        xmlMapper.registerRootElement(new QName(namespaceUri), reader);
+        subsystemWriters.put(namespaceUri, writer);
     }
 
     /**

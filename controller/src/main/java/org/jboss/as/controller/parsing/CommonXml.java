@@ -23,6 +23,8 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
@@ -157,6 +159,28 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
+    protected void writeExtensions(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        for(final ModelNode extension : modelNode.asList()) {
+            writer.writeEmptyElement(Element.EXTENSION.getLocalName());
+            writer.writeAttribute(Attribute.MODULE.getLocalName(), extension.asString());
+        }
+    }
+
+    protected void writePaths(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        writer.writeStartElement(Element.PATHS.getLocalName());
+
+        for(final Property path : node.asPropertyList()) {
+            final ModelNode value = path.getValue();
+            writer.writeEmptyElement(Element.PATH.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), path.getName());
+            writer.writeAttribute(Attribute.PATH.getLocalName(), value.get("path").asString());
+            if(value.has("relativeTo")) {
+                writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), value.get("relativeTo").asString());
+            }
+        }
+        writer.writeEndElement();
+    }
+
     protected void parseExtensions(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
@@ -279,8 +303,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     private void parseProperties(final XMLExtendedStreamReader reader, final String operationName, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         final ModelNode systemPropertySet = new ModelNode();
-        systemPropertySet.get("address").set(address);
-        systemPropertySet.get("operation").set(operationName);
+        systemPropertySet.get(OP_ADDR).set(address);
+        systemPropertySet.get(OP).set(operationName);
         final ModelNode properties = systemPropertySet.get("properties").setEmptyObject();
         while (reader.nextTag() != END_ELEMENT) {
             if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {

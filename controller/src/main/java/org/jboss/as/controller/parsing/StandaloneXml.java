@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.hexStringToByteArray;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -348,5 +349,9 @@ public class StandaloneXml extends CommonXml {
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
+        writeExtensions(writer, modelNode.get(EXTENSION));
+        if(modelNode.has("path")) {
+            writePaths(writer, modelNode.get("path"));
+        }
     }
 }

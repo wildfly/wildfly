@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
@@ -50,7 +51,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * A mapper between {@code host.xml} and a model.
  *
- * @author Brian Stansberrh
+ * @author Brian Stansberry
  */
 public class HostXml extends CommonXml {
 
@@ -72,6 +73,12 @@ public class HostXml extends CommonXml {
 
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writeNamespaces(writer, modelNode);
+        writeSchemaLocation(writer, modelNode);
+        writeExtensions(writer, modelNode.get(EXTENSION));
+        if(modelNode.has("path")) {
+            writePaths(writer, modelNode.get("path"));
+        }
     }
 
     private void readHostElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
