@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -47,7 +48,8 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.getAttachment(Attachments.SERVICES).getServiceImplementations(ServiceActivator.class.getName()).isEmpty())
+        final ServicesAttachment servicesAttachment = deploymentUnit.getAttachment(Attachments.SERVICES);
+        if(servicesAttachment == null || servicesAttachment.getServiceImplementations(ServiceActivator.class.getName()).isEmpty())
             return; // Skip it if it has not been marked
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);

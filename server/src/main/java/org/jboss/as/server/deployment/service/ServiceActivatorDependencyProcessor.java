@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment.service;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,7 +52,8 @@ public class ServiceActivatorDependencyProcessor implements DeploymentUnitProces
         final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         if(deploymentRoot == null)
             return;
-        if(! phaseContext.getDeploymentUnit().getAttachment(Attachments.SERVICES).getServiceImplementations(ServiceActivator.class.getName()).isEmpty()) {
+        final ServicesAttachment servicesAttachments = phaseContext.getDeploymentUnit().getAttachment(Attachments.SERVICES);
+        if(servicesAttachments != null && !servicesAttachments.getServiceImplementations(ServiceActivator.class.getName()).isEmpty()) {
             phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, MSC_DEP);
         }
     }
