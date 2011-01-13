@@ -46,9 +46,10 @@ import org.jboss.msc.service.ServiceController.Mode;
  */
 public class NewConnectorRemove implements RuntimeOperationHandler, ModelRemoveOperationHandler {
 
-    final static OperationHandler INSTANCE = new NewConnectorRemove();
+    static final OperationHandler INSTANCE = new NewConnectorRemove();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode address = operation.get(ADDRESS);
@@ -69,10 +70,12 @@ public class NewConnectorRemove implements RuntimeOperationHandler, ModelRemoveO
             final ServiceController<?> controller = ((NewRuntimeOperationContext)context).getServiceRegistry().getService(ConnectorElement.connectorName(connectorName));
             if(controller != null) {
                 controller.addListener(new AbstractServiceListener<Object>() {
-                    public void listenerAdded(ServiceController<? extends Object> controller) {
+                    @Override
+                    public void listenerAdded(final ServiceController<? extends Object> controller) {
                         controller.setMode(Mode.REMOVE);
                     }
-                    public void serviceRemoved(ServiceController<? extends Object> controller) {
+                    @Override
+                    public void serviceRemoved(final ServiceController<? extends Object> controller) {
                         //
                     }
                 });
