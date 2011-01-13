@@ -22,16 +22,34 @@
 
 package org.jboss.as.controller.parsing;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -42,11 +60,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-
-import static javax.xml.stream.XMLStreamConstants.*;
-import static org.jboss.as.controller.parsing.ParseUtils.*;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -138,7 +151,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeNamespaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        for (ModelNode namespace : modelNode.get("namespace").asList()) {
+        for (final ModelNode namespace : modelNode.get("namespace").asList()) {
             final Property property = namespace.asProperty();
             writer.writeNamespace(property.getName(), property.getValue().asString());
         }
@@ -162,9 +175,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
             // Register element handlers for this extension
             try {
-                Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
+                final Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
                 boolean initialized = false;
-                for (NewExtension extension : module.loadService(NewExtension.class)) {
+                for (final NewExtension extension : module.loadService(NewExtension.class)) {
                     extension.initializeParsers(context);
                     if (!initialized) {
                         initialized = true;
@@ -177,9 +190,606 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 add.get("address").set(address).add("extension", moduleName);
                 add.get("operation").set("add-extension");
                 list.add(add);
-            } catch (ModuleLoadException e) {
+            } catch (final ModuleLoadException e) {
                 throw new XMLStreamException("Failed to load module", e);
             }
+        }
+    }
+
+    protected void parsePaths(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final boolean requirePath) throws XMLStreamException {
+        final Set<String> pathNames = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case PATH: {
+                            parsePath(reader, address, list, requirePath, pathNames);
+                            break;
+                        } default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                } default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parsePath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final boolean requirePath, final Set<String> defined) throws XMLStreamException {
+        String name = null;
+        String path = null;
+        String relativeTo = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value.trim();
+                        if (RESTRICTED_PATHS.contains(value)) {
+                            throw new XMLStreamException(name + " is reserved", reader.getLocation());
+                        }
+                        if(! defined.add(name)) {
+                            throw new XMLStreamException(name + " already defined", reader.getLocation());
+                        }
+                        break;
+                    } case PATH: {
+                        path = value;
+                        break;
+                    }
+                    case RELATIVE_TO: {
+                        relativeTo = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        if(name == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if(requirePath && path == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.PATH));
+        }
+        requireNoContent(reader);
+        final ModelNode update = new ModelNode();
+        update.get("address").set(address);
+        update.get("operation").set("update-path");
+        update.get("name").set(name);
+        update.get("path").set(path);
+        if (relativeTo != null) update.get("relativeTo").set(relativeTo);
+        list.add(update);
+    }
+
+    protected void parseSystemProperties(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        parseProperties(reader, "set-system-properties", address, list);
+    }
+
+    protected void parseEnvironmentVariables(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        parseProperties(reader, "set-environment-variables", address, list);
+    }
+
+    private void parseProperties(final XMLExtendedStreamReader reader, final String operationName, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        final ModelNode systemPropertySet = new ModelNode();
+        systemPropertySet.get("address").set(address);
+        systemPropertySet.get("operation").set(operationName);
+        final ModelNode properties = systemPropertySet.get("properties").setEmptyObject();
+        while (reader.nextTag() != END_ELEMENT) {
+            if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+                throw unexpectedElement(reader);
+            }
+            if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
+                throw unexpectedElement(reader);
+            }
+            final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
+            properties.get(array[0]).set(array[1]);
+        }
+        list.add(systemPropertySet);
+    }
+
+    protected void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        // Handle attributes
+        String interfaceName = null;
+        int port = 0;
+        int maxThreads = -1;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case INTERFACE: {
+                        interfaceName = value;
+                        break;
+                    }
+                    case PORT: {
+                        port = Integer.parseInt(value);
+                        if (port < 0) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + port + " -- cannot be negative",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    case MAX_THREADS: {
+                        maxThreads = Integer.parseInt(value);
+                        if (maxThreads < 1) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + maxThreads + " -- must be greater than 0",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (interfaceName == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
+        }
+        final ModelNode addMgmt = new ModelNode();
+        addMgmt.get("address").set(address);
+        addMgmt.get("operation").set("add-management");
+        addMgmt.get("interface-name").set(interfaceName);
+        addMgmt.get("port").set(port);
+        list.add(addMgmt);
+
+        if (maxThreads > 0) {
+            // TODO - this is non-optimal.
+            final ModelNode setSocketThreads = new ModelNode();
+            setSocketThreads.get("address").set(address);
+            setSocketThreads.get("operation").set("set-management-socket-threads");
+            setSocketThreads.get("max-threads").set(maxThreads);
+            list.add(setSocketThreads);
+        }
+        reader.discardRemainder();
+
+    }
+
+    protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> updates, final Set<String> jvmNames) throws XMLStreamException {
+
+        // Handle attributes
+        final List<ModelNode> attrUpdates = new ArrayList<ModelNode>();
+        String name = null;
+        String type = JvmType.SUN.toString();
+        String home = null;
+        Boolean debugEnabled = null;
+        String debugOptions = null;
+        Boolean envClasspathIgnored = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        if (name != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+
+                        if (!jvmNames.add(value)) {
+                            throw new XMLStreamException("Duplicate JVM declaration " + value, reader.getLocation());
+                        }
+                        name = value;
+                        break;
+                    }
+                    case JAVA_HOME: {
+                        if (home != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        home = value;
+                        final ModelNode update = new ModelNode();
+                        update.get("operation").set("java-home");
+                        update.get("java-home").set(home);
+                        attrUpdates.add(update);
+                        break;
+                    }
+                    case TYPE: {
+                        try {
+                            // Validate the type against the enum
+                            Enum.valueOf(JvmType.class, value);
+                            type = value;
+                        } catch (final IllegalArgumentException e) {
+                            throw ParseUtils.invalidAttributeValue(reader, i);
+                        }
+                        break;
+                    }
+                    case DEBUG_ENABLED: {
+                        if (debugEnabled != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        debugEnabled = Boolean.valueOf(value);
+                        final ModelNode update = new ModelNode();
+                        update.get("operation").set("set-debug-enabled");
+                        update.get("enabled").set(debugEnabled);
+                        attrUpdates.add(update);
+                        break;
+                    }
+                    case DEBUG_OPTIONS: {
+                        if (debugOptions != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        debugOptions = value;
+                        final ModelNode update = new ModelNode();
+                        update.get("operation").set("set-debug-options");
+                        update.get("debug-options").set(debugOptions);
+                        attrUpdates.add(update);
+                        break;
+                    }
+                    case ENV_CLASSPATH_IGNORED: {
+                        if (envClasspathIgnored != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        envClasspathIgnored = Boolean.valueOf(value);
+                        final ModelNode update = new ModelNode();
+                        update.get("operation").set("set-env-classpath-ignored");
+                        update.get("env-classpath-ignored").set(envClasspathIgnored);
+                        attrUpdates.add(update);
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (name == null) {
+            // FIXME and fix xsd. A name is only required at domain and host
+            // level (i.e. when wrapped in <jvms/>). At server-group and server
+            // levels it can be unnamed, in which case configuration from
+            // domain and host levels aren't mixed in. OR make name required in xsd always
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        final ModelNode address = jvmNames == null ? parentAddress : parentAddress.clone().add(ModelDescriptionConstants.JVM, name);
+
+        final ModelNode addUpdate = new ModelNode();
+        addUpdate.get("address").set(address);
+        addUpdate.get("operation").set("add");
+        addUpdate.get("name").set(name);
+        addUpdate.get("jvm-type").set(type);
+        updates.add(addUpdate);
+
+        // Now we've done the add and we know the address
+        for (final ModelNode attrUpdate : attrUpdates) {
+            attrUpdate.get("address").set(address);
+            updates.add(attrUpdate);
+        }
+
+        // Handle elements
+        boolean hasJvmOptions = false;
+        boolean hasEnvironmentVariables = false;
+        boolean hasSystemProperties = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case HEAP: {
+                            parseHeap(reader, address, updates);
+                            break;
+                        }
+                        case PERMGEN: {
+                            parsePermgen(reader, address, updates);
+                            break;
+                        }
+                        case STACK: {
+                            parseStack(reader, address, updates);
+                            break;
+                        }
+                        case AGENT_LIB: {
+                            parseAgentLib(reader, address, updates);
+                            break;
+                        }
+                        case AGENT_PATH: {
+                            parseAgentPath(reader, address, updates);
+                            break;
+                        }
+                        case JAVA_AGENT: {
+                            parseJavaagent(reader, address, updates);
+                            break;
+                        }
+                        case ENVIRONMENT_VARIABLES: {
+                            if (hasEnvironmentVariables) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            parseEnvironmentVariables(reader, address, updates);
+                            hasEnvironmentVariables = true;
+                            break;
+                        }
+                        case SYSTEM_PROPERTIES: {
+                            if (hasSystemProperties) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            parseSystemProperties(reader, address, updates);
+                            hasSystemProperties = true;
+                            break;
+                        }
+                        case JVM_OPTIONS: {
+                            if (hasJvmOptions) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            parseJvmOptions(reader, address, updates);
+                            hasJvmOptions = true;
+                            break;
+                        }
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseHeap(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SIZE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-heap-size");
+                        update.get("size").set(value);
+                        updates.add(update);
+                        break;
+                    }
+                    case MAX_SIZE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-max-heap-size");
+                        update.get("size").set(value);
+                        updates.add(update);
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parsePermgen(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SIZE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-permgen-size");
+                        update.get("size").set(value);
+                        updates.add(update);
+                        break;
+                    }
+                    case MAX_SIZE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-max-permgen-size");
+                        update.get("size").set(value);
+                        updates.add(update);
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseStack(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        // Handle attributes
+        boolean sizeSet = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SIZE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-stack-size");
+                        update.get("size").set(value);
+                        updates.add(update);
+                        sizeSet = true;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (!sizeSet) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SIZE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseAgentLib(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        // Handle attributes
+        boolean valueSet = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case VALUE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-agent-lib");
+                        update.get("agent-lib").set(value);
+                        updates.add(update);
+                        valueSet = true;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (!valueSet) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseAgentPath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        // Handle attributes
+        boolean valueSet = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case VALUE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-agent-path");
+                        update.get("agent-path").set(value);
+                        updates.add(update);
+                        valueSet = true;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (!valueSet) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseJavaagent(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        // Handle attributes
+        boolean valueSet = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case VALUE: {
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("set-java-agent");
+                        update.get("java-agent").set(value);
+                        updates.add(update);
+                        valueSet = true;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (!valueSet) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseJvmOptions(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        // Handle attributes
+        ParseUtils.requireNoAttributes(reader);
+        // Handle elements
+        boolean optionSet = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (element == Element.OPTION) {
+                        // Handle attributes
+                        String option = null;
+                        final int count = reader.getAttributeCount();
+                        for (int i = 0; i < count; i++) {
+                            final String attrValue = reader.getAttributeValue(i);
+                            if (reader.getAttributeNamespace(i) != null) {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                            else {
+                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                switch (attribute) {
+                                    case VALUE: {
+                                        option = attrValue;
+                                        break;
+                                    }
+                                    default:
+                                        throw ParseUtils.unexpectedAttribute(reader, i);
+                                }
+                            }
+                        }
+                        if (option == null) {
+                            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                        }
+
+                        // PropertyAdd
+                        final ModelNode update = new ModelNode();
+                        update.get("address").set(address);
+                        update.get("operation").set("add-jvm-option");
+                        update.get("option").set(option);
+                        updates.add(update);
+                        optionSet = true;
+                        // Handle elements
+                        ParseUtils.requireNoContent(reader);
+                    } else {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+        if (!optionSet) {
+            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.OPTION));
         }
     }
 
@@ -191,7 +801,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
             throw unexpectedElement(reader);
         }
-        Element element = Element.forName(reader.getLocalName());
+        final Element element = Element.forName(reader.getLocalName());
         switch (element) {
             case ANY_ADDRESS:
             case ANY_IPV4_ADDRESS:
@@ -226,16 +836,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
      *
      * @throws javax.xml.stream.XMLStreamException if an error occurs
      */
-    protected void parseSimpleInterfaceCriterion(XMLExtendedStreamReader reader, ModelNode criteria) throws XMLStreamException {
+    protected void parseSimpleInterfaceCriterion(final XMLExtendedStreamReader reader, final ModelNode criteria) throws XMLStreamException {
         if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
             throw unexpectedElement(reader);
         }
-        Element element = Element.forName(reader.getLocalName());
+        final Element element = Element.forName(reader.getLocalName());
         final String localName = element.getLocalName();
         switch (element) {
             case INET_ADDRESS: {
                 requireSingleAttribute(reader, Attribute.VALUE.getLocalName());
-                String value = reader.getAttributeValue(0);
+                final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate IP address
                 criteria.add(localName, value);
@@ -254,7 +864,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             case NIC: {
                 requireSingleAttribute(reader, Attribute.NAME.getLocalName());
-                String value = reader.getAttributeValue(0);
+                final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate NIC name
                 criteria.add(localName, value);
@@ -262,7 +872,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             case NIC_MATCH: {
                 requireSingleAttribute(reader, Attribute.PATTERN.getLocalName());
-                String value = reader.getAttributeValue(0);
+                final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate pattern
                 criteria.add(localName, value);
@@ -287,10 +897,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     node.get("mask").set(mask);
                     break;
                 }
-                catch (NumberFormatException e) {
+                catch (final NumberFormatException e) {
                     throw new XMLStreamException("Invalid mask " + split[1] + " (" + e.getLocalizedMessage() +")", reader.getLocation(), e);
                 }
-                catch (UnknownHostException e) {
+                catch (final UnknownHostException e) {
                     throw new XMLStreamException("Invalid address " + split[1] + " (" + e.getLocalizedMessage() +")", reader.getLocation(), e);
                 }
             }
@@ -298,7 +908,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseInterfaces(final XMLExtendedStreamReader reader, final Set<String> names, final ModelNode address, final List<ModelNode> list, boolean checkSpecified) throws XMLStreamException {
+    protected void parseInterfaces(final XMLExtendedStreamReader reader, final Set<String> names, final ModelNode address, final List<ModelNode> list, final boolean checkSpecified) throws XMLStreamException {
         requireNoAttributes(reader);
 
         while (reader.nextTag() != END_ELEMENT) {
@@ -322,14 +932,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseSocketBindingGroup(final XMLExtendedStreamReader reader, Set<String> interfaces, final ModelNode address, List<ModelNode> bindingUpdates, boolean allowInclude) throws XMLStreamException {
-        Set<String> includedGroups = new HashSet<String>();
-        Set<String> socketBindings = new HashSet<String>();
+    protected void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final List<ModelNode> bindingUpdates, final boolean allowInclude) throws XMLStreamException {
+        final Set<String> includedGroups = new HashSet<String>();
+        final Set<String> socketBindings = new HashSet<String>();
 
         // Handle attributes
-        String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
+        final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
         final String name = attrValues[0];
-        String defaultInterface = attrValues[1];
+        final String defaultInterface = attrValues[1];
 
         final ModelNode bindingGroupUpdate = new ModelNode();
         bindingGroupUpdate.get("address").set(address).add("socket-binding-group", name);
@@ -374,9 +984,71 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         bindingUpdates.add(bindingGroupUpdate);
     }
 
-    protected String parseSocketBinding(final XMLExtendedStreamReader reader, Set<String> interfaces, ModelNode binding, final String inheritedInterfaceName) throws XMLStreamException {
+    protected void parseSocketBindingGroupRef(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+        // Handle attributes
+        String name = null;
+        int offset = -1;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case REF: {
+                        if (name != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        name = value;
+                        break;
+                    }
+                    case PORT_OFFSET: {
+                        try {
+                            if (offset != -1)
+                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                            offset = Integer.parseInt(value);
+                            if (offset < 0) {
+                                throw new XMLStreamException(offset + " is not a valid " +
+                                        attribute.getLocalName() + " -- must be greater than zero",
+                                        reader.getLocation());
+                            }
+                        } catch (final NumberFormatException e) {
+                            throw new XMLStreamException(offset + " is not a valid " +
+                                    attribute.getLocalName(), reader.getLocation(), e);
+                        }
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.REF));
+        }
 
-        EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+
+        ModelNode update = new ModelNode();
+        update.get("address").set(address);
+        update.get("operation").set("set-socket-binding-group");
+        update.get("name").set(name);
+        updates.add(update);
+
+        if (offset < 0) {
+            offset = 0;
+        }
+        update = new ModelNode();
+        update.get("address").set(address);
+        update.get("operation").set("set-socket-binding-port-offset");
+        update.get("offset").set(offset);
+        updates.add(update);
+    }
+
+    protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode binding, final String inheritedInterfaceName) throws XMLStreamException {
+
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String name = null;
 
         // Handle attributes
@@ -412,14 +1084,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     }
                     case MULTICAST_ADDRESS: {
                         try {
-                            InetAddress mcastAddr = InetAddress.getByName(value);
+                            final InetAddress mcastAddr = InetAddress.getByName(value);
                             if (!mcastAddr.isMulticastAddress()) {
                                 throw new XMLStreamException("Value " + value + " for attribute " +
                                         attribute.getLocalName() + " is not a valid multicast address",
                                         reader.getLocation());
                             }
                             binding.get("multicast-address").set(mcastAddr.toString());
-                        } catch (UnknownHostException e) {
+                        } catch (final UnknownHostException e) {
                             throw new XMLStreamException("Value " + value + " for attribute " +
                                     attribute.getLocalName() + " is not a valid multicast address",
                                     reader.getLocation(), e);

@@ -52,6 +52,8 @@ public class ModelDescriptionConstants {
     public static final String NAME = "name";
     public static final String NAMESPACES = "namespaces";
     public static final String NILLABLE = "nillable";
+    public static final String OP = "operation";
+    public static final String OP_ADDR = "address";
     public static final String OPERATIONS = "operations";
     public static final String OPERATION_NAME = "operation-name";
     public static final String PATH = "path";

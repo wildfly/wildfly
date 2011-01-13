@@ -22,20 +22,30 @@
 
 package org.jboss.as.controller.parsing;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.hexStringToByteArray;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-
-import static javax.xml.stream.XMLStreamConstants.*;
-import static org.jboss.as.controller.parsing.ParseUtils.*;
 
 /**
  * A mapper between {@code standalone.xml} and a model.
@@ -48,6 +58,7 @@ public class StandaloneXml extends CommonXml {
         super(loader, context);
     }
 
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList) throws XMLStreamException {
         final ModelNode address = new ModelNode().setEmptyList();
         if (reader.nextTag() != START_ELEMENT) {
@@ -117,7 +128,7 @@ public class StandaloneXml extends CommonXml {
             element = nextElement(reader);
         }
         // Interfaces
-        Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<String>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, list, true);
             element = nextElement(reader);
@@ -129,7 +140,7 @@ public class StandaloneXml extends CommonXml {
         }
         // System properties
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseServerModelSystemProperties(reader, list);
+            parseSystemProperties(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -194,7 +205,7 @@ public class StandaloneXml extends CommonXml {
                             try {
                                 hash = hexStringToByteArray(value);
                             }
-                            catch (Exception e) {
+                            catch (final Exception e) {
                                throw new XMLStreamException("Value " + value +
                                        " for attribute " + attribute.getLocalName() +
                                        " does not represent a properly hex-encoded SHA1 hash",
@@ -226,7 +237,7 @@ public class StandaloneXml extends CommonXml {
             if (hash == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
             }
-            boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
+            final boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
 
             // Handle elements
             requireNoContent(reader);
@@ -240,24 +251,6 @@ public class StandaloneXml extends CommonXml {
             deploymentAdd.get("start").set(toStart);
             list.add(deploymentAdd);
         }
-    }
-
-    private void parseServerModelSystemProperties(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-        final ModelNode systemPropertySet = new ModelNode();
-        systemPropertySet.get("address").setEmptyList();
-        systemPropertySet.get("operation").set("set-system-properties");
-        final ModelNode properties = systemPropertySet.get("properties").setEmptyObject();
-        while (reader.nextTag() != END_ELEMENT) {
-            if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-                throw unexpectedElement(reader);
-            }
-            if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
-                throw unexpectedElement(reader);
-            }
-            final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
-            properties.get(array[0]).set(array[1]);
-        }
-        list.add(systemPropertySet);
     }
 
     private void parseServerProfile(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -343,79 +336,6 @@ public class StandaloneXml extends CommonXml {
 
     }
 
-    protected void parsePaths(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final boolean requirePath) throws XMLStreamException {
-        final Set<String> pathNames = new HashSet<String>();
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case PATH: {
-                            parsePath(reader, address, list, requirePath, pathNames);
-                            break;
-                        } default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
-                    break;
-                } default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
-    protected void parsePath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final boolean requirePath, final Set<String> defined) throws XMLStreamException {
-        String name = null;
-        String path = null;
-        String relativeTo = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value.trim();
-                        if (RESTRICTED_PATHS.contains(value)) {
-                            throw new XMLStreamException(name + " is reserved", reader.getLocation());
-                        }
-                        if(! defined.add(name)) {
-                            throw new XMLStreamException(name + " already defined", reader.getLocation());
-                        }
-                        break;
-                    } case PATH: {
-                        path = value;
-                        break;
-                    }
-                    case RELATIVE_TO: {
-                        relativeTo = value;
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-        }
-        if(name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        if(requirePath && path == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.PATH));
-        }
-        requireNoContent(reader);
-        final ModelNode update = new ModelNode();
-        update.get("address").set(address);
-        update.get("operation").set("update-path");
-        update.get("name").set(name);
-        update.get("path").set(path);
-        if (relativeTo != null) update.get("relativeTo").set(relativeTo);
-        list.add(update);
-    }
-
     private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
         final ModelNode update = new ModelNode();
         update.get("address").set(address);
@@ -424,6 +344,7 @@ public class StandaloneXml extends CommonXml {
         operationList.add(update);
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);

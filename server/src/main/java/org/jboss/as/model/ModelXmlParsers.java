@@ -51,6 +51,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.server.Extension;
 import org.jboss.as.server.ExtensionContext;
+import org.jboss.as.controller.parsing.JvmType;
 import org.jboss.as.model.socket.AbstractInterfaceCriteriaElement;
 import org.jboss.as.model.socket.CompoundCriteriaElement;
 import org.jboss.as.model.socket.InterfaceAdd;

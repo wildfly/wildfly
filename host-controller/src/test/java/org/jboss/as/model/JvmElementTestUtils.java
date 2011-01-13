@@ -21,6 +21,8 @@
  */
 package org.jboss.as.model;
 
+import org.jboss.as.controller.parsing.JvmType;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

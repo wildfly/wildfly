@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.controller.parsing.JvmType;
+
 /**
  * Updates a {@link JvmElement}'s {@link JvmElement#getJavaHome() java home}.
  *

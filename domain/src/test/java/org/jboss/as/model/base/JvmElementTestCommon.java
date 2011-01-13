@@ -31,9 +31,9 @@ import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.parsing.JvmType;
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.JvmOptionsElement;
-import org.jboss.as.model.JvmType;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.UpdateFailedException;

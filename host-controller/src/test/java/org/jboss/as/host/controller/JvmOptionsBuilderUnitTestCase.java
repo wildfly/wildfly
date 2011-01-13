@@ -27,10 +27,10 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.parsing.JvmType;
 import org.jboss.as.host.controller.JvmOptionsBuilderFactory;
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.JvmElementTestUtils;
-import org.jboss.as.model.JvmType;
 import org.junit.Test;
 
 /**
