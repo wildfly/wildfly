@@ -25,6 +25,8 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.hexStringToByteArray;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -244,8 +246,8 @@ public class StandaloneXml extends CommonXml {
             requireNoContent(reader);
 
             final ModelNode deploymentAdd = new ModelNode();
-            deploymentAdd.get("address").setEmptyList();
-            deploymentAdd.get("operation").set("add-deployment");
+            deploymentAdd.get(OP_ADDR).setEmptyList();
+            deploymentAdd.get(OP).set("add-deployment");
             deploymentAdd.get("unique-name").set(uniqueName);
             deploymentAdd.get("runtime-name").set(runtimeName);
             deploymentAdd.get("sha1").set(hash);
@@ -319,8 +321,8 @@ public class StandaloneXml extends CommonXml {
             throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
         }
         final ModelNode addServerMgmt = new ModelNode();
-        addServerMgmt.get("address").set(address);
-        addServerMgmt.get("operation").set("add-server-management");
+        addServerMgmt.get(OP_ADDR).set(address);
+        addServerMgmt.get(OP).set("add-server-management");
         addServerMgmt.get("interface-name").set(interfaceName);
         addServerMgmt.get("port").set(port);
         list.add(addServerMgmt);
@@ -328,8 +330,8 @@ public class StandaloneXml extends CommonXml {
         if (maxThreads > 0) {
             // TODO - this is non-optimal.
             final ModelNode setSocketThreads = new ModelNode();
-            setSocketThreads.get("address").set(address);
-            setSocketThreads.get("operation").set("set-server-management-socket-threads");
+            setSocketThreads.get(OP_ADDR).set(address);
+            setSocketThreads.get(OP).set("set-server-management-socket-threads");
             setSocketThreads.get("max-threads").set(maxThreads);
             list.add(setSocketThreads);
         }
@@ -339,8 +341,8 @@ public class StandaloneXml extends CommonXml {
 
     private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
         final ModelNode update = new ModelNode();
-        update.get("address").set(address);
-        update.get("operation").set("set-server-name");
+        update.get(OP_ADDR).set(address);
+        update.get(OP).set("set-server-name");
         update.get("server-name").set(value);
         operationList.add(update);
     }
