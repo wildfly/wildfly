@@ -21,8 +21,9 @@
  */
 package org.jboss.as.naming.util;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.EmptyStackException;
-import java.util.Stack;
 
 /**
  *
@@ -31,19 +32,19 @@ import java.util.Stack;
  */
 public class ThreadLocalStack<E> {
 
-    private final ThreadLocal<Stack<E>> stack = new ThreadLocal<Stack<E>>();
+    private final ThreadLocal<Deque<E>> deque = new ThreadLocal<Deque<E>>();
 
     public void push(E item) {
-        Stack<E> st = stack.get();
+        Deque<E> st = deque.get();
         if (st == null) {
-            st = new Stack<E>();
-            stack.set(st);
+            st = new ArrayDeque<E>();
+            deque.set(st);
         }
         st.push(item);
     }
 
     public E peek() {
-        Stack<E> st = stack.get();
+        Deque<E> st = deque.get();
         if (st == null) {
             return null;
         }
@@ -51,13 +52,13 @@ public class ThreadLocalStack<E> {
     }
 
     public E pop() {
-        Stack<E> st = stack.get();
+        Deque<E> st = deque.get();
         if (st == null) {
             throw new EmptyStackException();
         }
         E val = st.pop();
         if (st.isEmpty()) {
-            stack.remove();
+            deque.remove();
         }
         return val;
     }
