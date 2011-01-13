@@ -22,47 +22,35 @@
 
 package org.jboss.as.jmx;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-enum Element {
-    // must be first
-    UNKNOWN(null),
+class NewJMXSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    JMX_CONNECTOR(CommonAttributes.JMX_CONNECTOR),
-    ;
+    static final NewJMXSubsystemAdd INSTANCE = new NewJMXSubsystemAdd();
 
-    private final String name;
-
-    Element(final String name) {
-        this.name = name;
+    private NewJMXSubsystemAdd() {
+        //
     }
 
-    /**
-     * Get the local name of this element.
-     *
-     * @return the local name
-     */
-    public String getLocalName() {
-        return name;
-    }
+    /** {@inheritDoc} */
+    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    private static final Map<String, Element> MAP;
-
-    static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+        if(context instanceof NewRuntimeOperationContext) {
+            final NewRuntimeOperationContext bootContext = (NewRuntimeOperationContext) context;
+            // Add the MBean service
+            MBeanServerService.addService(bootContext.getServiceTarget());
         }
-        MAP = map;
+
+        return Cancellable.NULL;
     }
 
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
-        return element == null ? UNKNOWN : element;
-    }
 }

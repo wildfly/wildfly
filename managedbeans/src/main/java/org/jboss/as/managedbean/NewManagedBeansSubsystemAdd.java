@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class NewManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class NewManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     static final NewManagedBeansSubsystemAdd INSTANCE = new NewManagedBeansSubsystemAdd();
 

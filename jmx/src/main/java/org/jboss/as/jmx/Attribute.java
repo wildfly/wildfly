@@ -32,8 +32,8 @@ enum Attribute {
 
     UNKNOWN(null),
 
-    SERVER_BINDING("server-binding"),
-    REGISTRY_BINDING("registry-binding"),
+    SERVER_BINDING(CommonAttributes.SERVER_BINDING),
+    REGISTRY_BINDING(CommonAttributes.REGISTRY_BINDING),
     ;
     private final String name;
 
