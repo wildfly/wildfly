@@ -89,8 +89,12 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
         controller.addListener(listener);
         synchronized (listener) {
             // if we are interupted just let the exception propegate for now
-            if (!listener.finished) {
-                listener.wait();
+            while (!listener.finished) {
+                try {
+                    listener.wait();
+                } catch (InterruptedException e) {
+                    throw new NamingException("Thread interupted while retrieving service reference for service " + serviceName);
+                }
             }
         }
         switch (listener.getState()) {
