@@ -32,11 +32,11 @@ public enum Attribute {
     // always first
     UNKNOWN(null),
 
-    NAME("name"),
-    PATH("path"),
-    RELATIVE_TO("relative-to"),
-    SCAN_ENABLED("scan-enabled"),
-    SCAN_INTERVAL("scan-interval"),
+    NAME(CommonAttributes.NAME),
+    PATH(CommonAttributes.PATH),
+    RELATIVE_TO(CommonAttributes.RELATIVE_TO),
+    SCAN_ENABLED(CommonAttributes.SCAN_ENABLED),
+    SCAN_INTERVAL(CommonAttributes.SCAN_INTERVAL),
     ;
 
     private final String name;
