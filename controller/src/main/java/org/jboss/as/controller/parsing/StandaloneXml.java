@@ -401,8 +401,94 @@ public class StandaloneXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
         writeExtensions(writer, modelNode.get(EXTENSION));
+        if (modelNode.has("server-name")) {
+            writeServerName(writer, modelNode.get("server-name"));
+        }
+        if (modelNode.has("extension")) {
+            writeExtensions(writer, modelNode.get("extension"));
+        }
+        // writeServerProfile(writer, modelNode);
         if(modelNode.has("path")) {
             writePaths(writer, modelNode.get("path"));
         }
+        if (modelNode.has("server-management")) {
+            writeServerManagement(writer, modelNode.get("server-management"));
+        }
+        if (modelNode.has("socket-binding-group")) {
+            writeSocketBindingGroup(writer, modelNode.get("socket-binding-group"));
+        }
+        if (modelNode.has("system-properties")) {
+            writeProperties(writer, modelNode.get("system-properties"), Element.SYSTEM_PROPERTIES);
+        }
+        if (modelNode.has("deployments")) {
+            writeServerDeployments(writer, modelNode.get("deployments"));
+        }
     }
+
+    private void writeServerName(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writeAttribute(writer, Attribute.NAME, modelNode.asString());
+    }
+
+    private void writeServerPaths(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+
+        writer.writeStartElement(Element.PATHS.getLocalName());
+        List<ModelNode> paths = modelNode.get("paths").asList();
+
+        for (ModelNode path : paths) {
+            writer.writeStartElement(Element.PATH.getLocalName());
+            String name = path.get("name").asString();
+            String realPath = path.get("path").asString();
+
+            writeAttribute(writer, Attribute.NAME, name);
+            writeAttribute(writer, Attribute.PATH, realPath);
+
+            ModelNode relativeNode = path.get("relativeTo");
+            if (relativeNode.isDefined()) {
+                writeAttribute(writer, Attribute.RELATIVE_TO, relativeNode.asString());
+            }
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeServerManagement(final XMLExtendedStreamWriter writer, final ModelNode serverManagement)
+            throws XMLStreamException {
+        String iface = serverManagement.get("interface-name").asString();
+        String port = serverManagement.get("port").asString();
+        ModelNode maxThreads = serverManagement.get("max-threads");
+
+        writer.writeStartElement(Element.MANAGEMENT.getLocalName());
+        writeAttribute(writer, Attribute.INTERFACE, iface);
+        writeAttribute(writer, Attribute.PORT, port);
+        if (maxThreads.isDefined()) {
+            writeAttribute(writer, Attribute.MAX_THREADS, maxThreads.asString());
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeServerDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
+            throws XMLStreamException {
+        writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+        for (ModelNode deployment : modelNode.asList()) {
+            String uniqueName = deployment.get("unique-name").asString();
+            String runtimeName = deployment.get("runtime-name").asString();
+            String sha1 = deployment.get("sha1").asString();
+            String start = deployment.get("start").asString();
+            writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
+            writeAttribute(writer, Attribute.NAME, uniqueName);
+            writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
+            writeAttribute(writer, Attribute.SHA1, sha1);
+            writeAttribute(writer, Attribute.START, start);
+            writer.writeEndElement();
+
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writer.writeStartElement(Element.PROFILE.getLocalName());
+        // TODO: delegate this to all the sub systems...
+        writer.writeEndElement();
+    }
+
 }

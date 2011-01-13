@@ -170,7 +170,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
         }
         if (b.length() > 0) {
-            writer.writeAttribute(Namespace.XML_SCHEMA_INSTANCE.getUriString(), Attribute.SCHEMA_LOCATION.getLocalName(), b.toString());
+            writer.writeAttribute(Namespace.XML_SCHEMA_INSTANCE.getUriString(), Attribute.SCHEMA_LOCATION.getLocalName(), b
+                    .toString());
         }
     }
 
@@ -1101,4 +1102,141 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         updates.add(binding);
         return name;
     }
+
+    protected void writeInterfaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writer.writeStartElement(Element.INTERFACES.getLocalName());
+        List<ModelNode> interfaces = modelNode.get("interfaces").asList();
+        for (ModelNode iface : interfaces) {
+            writer.writeStartElement(Element.INTERFACE.getLocalName());
+            writeAttribute(writer, Attribute.NAME, iface.get("name").asString());
+
+            ModelNode criteria = iface.get("criteria");
+            if (criteria.getType() == ModelType.STRING) {
+                String value = criteria.asString();
+                if (value.equals(Element.ANY_ADDRESS.getLocalName())) {
+                    writer.writeEmptyElement(Element.ANY_ADDRESS.getLocalName());
+                } else if (value.equals(Element.ANY_IPV4_ADDRESS.getLocalName())) {
+                    writer.writeEmptyElement(Element.ANY_IPV4_ADDRESS.getLocalName());
+                } else if (value.equals(Element.ANY_IPV6_ADDRESS.getLocalName())) {
+                    writer.writeEmptyElement(Element.ANY_IPV6_ADDRESS.getLocalName());
+                } else {
+                    // we should never get here
+                    throw new RuntimeException("Unkown criteria type: " + value);
+                }
+            } else if (criteria.getType() == ModelType.LIST) {
+                List<ModelNode> values = criteria.asList();
+                writeInterfaceCriteria(writer, values);
+
+            } else {
+                throw new RuntimeException("Unkown type for criteria node " + criteria);
+            }
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeInterfaceCriteria(final XMLExtendedStreamWriter writer, final List<ModelNode> criteria)
+            throws XMLStreamException {
+        for (ModelNode value : criteria) {
+            // any and not elements are represented by properties
+            if (value.getType() == ModelType.PROPERTY) {
+                Property property = value.asProperty();
+                if (property.getName().equals("any")) {
+                    writer.writeStartElement(Element.ANY.getLocalName());
+                    writeInterfaceCriteria(writer, property.getValue().get("any").asList());
+                    writer.writeEndElement();
+                } else if (property.getName().equals("not")) {
+                    writer.writeStartElement(Element.NOT.getLocalName());
+                    writeInterfaceCriteria(writer, property.getValue().get("not").asList());
+                    writer.writeEndElement();
+                } else {
+                    throw new RuntimeException("Unknown property in interface criteria list: " + property);
+                }
+            } else if (value.getType() == ModelType.LIST) {
+                List<ModelNode> values = value.asList();
+                for (ModelNode node : values) {
+                    writeSimpleInterfaceCriteria(writer, node);
+                }
+            }
+        }
+    }
+
+    private void writeSimpleInterfaceCriteria(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        Property property = node.asProperty();
+        Element element = Element.forName(property.getName());
+        writer.writeStartElement(element.getLocalName());
+        switch (element) {
+            case INET_ADDRESS:
+                writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
+                break;
+            case NIC:
+                writeAttribute(writer, Attribute.NAME, property.getValue().asString());
+                break;
+            case NIC_MATCH:
+                writeAttribute(writer, Attribute.PATTERN, property.getValue().asString());
+                break;
+            case SUBNET_MATCH:
+                String network = property.getValue().get("network").asString();
+                String mask = property.getValue().get("mask").asString();
+                String subnet = network + "/" + mask;
+                writeAttribute(writer, Attribute.VALUE, subnet);
+            default:
+                break;
+        }
+        writer.writeEndElement();
+    }
+
+    protected void writeSocketBindingGroup(XMLExtendedStreamWriter writer, ModelNode bindingGroup) throws XMLStreamException {
+        // TODO: binding groups
+
+        writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+        List<ModelNode> bindings = bindingGroup.get("bindings").asList();
+        for (ModelNode binding : bindings) {
+            writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
+            String name = binding.get("name").asString();
+            writeAttribute(writer, Attribute.NAME, name);
+            ModelNode attr = binding.get("port");
+            if (attr.isDefined()) {
+                writeAttribute(writer, Attribute.PORT, attr.asString());
+            }
+            attr = binding.get("fixed-port");
+            if (attr.isDefined()) {
+                writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
+            }
+            attr = binding.get("interface");
+            if (attr.isDefined()) {
+                writeAttribute(writer, Attribute.INTERFACE, attr.asString());
+            }
+            attr = binding.get("multicast-address");
+            if (attr.isDefined()) {
+                writeAttribute(writer, Attribute.MULTICAST_ADDRESS, attr.asString());
+            }
+            attr = binding.get("multicast-port");
+            if (attr.isDefined()) {
+                writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
+            }
+            writer.writeEndElement();
+        }
+
+        writer.writeEndElement();
+    }
+
+    protected void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
+            Element element) throws XMLStreamException {
+        writer.writeStartElement(element.getLocalName());
+        final List<Property> properties = modelNode.asPropertyList();
+        for (Property prop : properties) {
+            writer.writeStartElement(Element.PROPERTY.getLocalName());
+            writeAttribute(writer, Attribute.NAME, prop.getName());
+            writeAttribute(writer, Attribute.VALUE, prop.getValue().asString());
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
+    protected static void writeAttribute(XMLExtendedStreamWriter writer, Attribute attribute, String value)
+            throws XMLStreamException {
+        writeAttribute(writer, attribute, value);
+    }
+
 }
