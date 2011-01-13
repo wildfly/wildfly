@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.parsing;
 
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -40,7 +42,7 @@ public interface ExtensionParsingContext {
      * @param reader the element reader
      * @param writer the element writer
      */
-    void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader, XMLElementWriter<ModelNode> writer);
+    void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<List<ModelNode>> reader, XMLElementWriter<ModelNode> writer);
 
     /**
      * Set the parser for the per-deployment configuration for this element, if any.

@@ -23,7 +23,9 @@
 package org.jboss.as.controller.parsing;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -49,7 +51,9 @@ final class ExtensionParsingContextImpl implements ExtensionParsingContext {
      * @param reader the element reader
      * @param writer the element writer
      */
-    public void setSubsystemXmlMapping(final String namespaceUri, final XMLElementReader<ModelNode> reader, final XMLElementWriter<ModelNode> writer) {
+    public void setSubsystemXmlMapping(final String namespaceUri, final XMLElementReader<List<ModelNode>> reader, final XMLElementWriter<ModelNode> writer) {
+
+        //
     }
 
     /**

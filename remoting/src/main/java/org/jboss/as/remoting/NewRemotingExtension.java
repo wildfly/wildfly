@@ -22,15 +22,11 @@
 
 package org.jboss.as.remoting;
 
-//import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.model.ParseUtils.missingRequired;
-import static org.jboss.as.model.ParseUtils.readProperty;
-import static org.jboss.as.model.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.model.ParseUtils.unexpectedElement;
-import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
+import static org.jboss.as.model.ParseUtils.*;
+import static org.jboss.as.remoting.CommonAttributes.*;
+import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
 import static org.jboss.as.remoting.CommonAttributes.NO_ACTIVE;
@@ -46,11 +42,10 @@ import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
-import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
-import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -95,7 +90,7 @@ public class NewRemotingExtension implements NewExtension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewRemotingSubsystemParser.INSTANCE, NewRemotingSubsystemParser.INSTANCE);
     }
 
-    static final class NewRemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<ModelNode>, XMLElementWriter<ModelNode> {
+    static final class NewRemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
 
         private static final NewRemotingSubsystemParser INSTANCE = new NewRemotingSubsystemParser();
 
@@ -104,7 +99,9 @@ public class NewRemotingExtension implements NewExtension {
 
         }
 
-        public void readElement(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+
+            final ModelNode address = new ModelNode();
 
             String threadPoolName = null;
             final int count = reader.getAttributeCount();
@@ -128,7 +125,13 @@ public class NewRemotingExtension implements NewExtension {
                 throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL));
             }
 
-            node.get("add", REQUEST_PROPERTIES, THREAD_POOL).set(threadPoolName);
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(new ModelNode());
+            subsystem.get(REQUEST_PROPERTIES, THREAD_POOL).set(threadPoolName);
+            list.add(subsystem);
+
+            final ModelNode connectorAddress = address.add(CONNECTOR);
 
             // Handle elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -138,7 +141,7 @@ public class NewRemotingExtension implements NewExtension {
                         switch (element) {
                             case CONNECTOR: {
                                 // Add connector updates
-                                parseConnector(reader, node);
+                                parseConnector(reader, connectorAddress, list);
                                 break;
                             }
                             default: {
@@ -155,7 +158,7 @@ public class NewRemotingExtension implements NewExtension {
 
         }
 
-        void parseConnector(XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
+        void parseConnector(XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
 
             String name = null;
             String socketBinding = null;
@@ -188,11 +191,10 @@ public class NewRemotingExtension implements NewExtension {
             assert name != null;
             assert socketBinding != null;
 
-            final ModelNode requestProperties = node.get("add-connector", REQUEST_PROPERTIES);
-
-            requestProperties.get(NAME).set(name);
+            // The operation request properties
+            final ModelNode requestProperties = new ModelNode();
+            // requestProperties.get(NAME).set(name); // Name is part of the address
             requestProperties.get(SOCKET_BINDING).set(socketBinding);
-
 
             // Handle nested elements.
             final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
@@ -228,6 +230,12 @@ public class NewRemotingExtension implements NewExtension {
                     }
                 }
             }
+
+            final ModelNode connector = new ModelNode();
+            connector.get(OP).set(ADD_CONNECTOR);
+            connector.get(OP_ADDR).set(address.add(name));
+            connector.get(REQUEST_PROPERTIES).set(requestProperties);
+            list.add(connector);
         }
 
         ModelNode parseSaslElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
