@@ -77,12 +77,12 @@ public class NewRemotingExtension implements NewExtension {
 
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(NewRemotingSubsystemProviders.SUBSYSTEM);
-        subsystem.registerOperationHandler("add", NewRemotingSubsystemAdd.INSTANCE, NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerOperationHandler(ADD, NewRemotingSubsystemAdd.INSTANCE, NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
 
         // Remoting connectors
         final ModelNodeRegistration connectors = subsystem.registerSubModel(PathElement.pathElement(CONNECTOR), NewRemotingSubsystemProviders.CONNECTOR_SPEC);
-        connectors.registerOperationHandler("add-connector", NewConnectorAdd.INSTANCE, NewRemotingSubsystemProviders.CONNECTOR_ADD, false);
-        connectors.registerOperationHandler("remove-connector", NewConnectorRemove.INSTANCE, NewRemotingSubsystemProviders.CONNECTOR_REMOVE, false);
+        connectors.registerOperationHandler(ADD, NewConnectorAdd.INSTANCE, NewRemotingSubsystemProviders.CONNECTOR_ADD, false);
+        connectors.registerOperationHandler(REMOVE, NewConnectorRemove.INSTANCE, NewRemotingSubsystemProviders.CONNECTOR_REMOVE, false);
     }
 
     /** {@inheritDoc} */

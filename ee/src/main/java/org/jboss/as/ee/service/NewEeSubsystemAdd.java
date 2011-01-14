@@ -24,6 +24,7 @@ package org.jboss.as.ee.service;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -59,7 +60,7 @@ public class NewEeSubsystemAdd implements ModelAddOperationHandler, BootOperatio
         }
 
         final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
+        compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         resultHandler.handleResultComplete(compensatingOperation);

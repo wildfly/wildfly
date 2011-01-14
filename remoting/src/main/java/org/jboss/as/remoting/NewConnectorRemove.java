@@ -22,8 +22,9 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.PROPERTIES;
@@ -52,13 +53,13 @@ public class NewConnectorRemove implements RuntimeOperationHandler, ModelRemoveO
     @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(ADDRESS);
+        final ModelNode address = operation.get(OP_ADDR);
         final String connectorName = address.get(address.asInt() - 1).asString();
         final ModelNode connector = context.getSubModel();
 
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set("add-connector");
+        compensating.get(OP_ADDR).set(address);
+        compensating.get(OP).set(ADD);
         // compensating.get(REQUEST_PROPERTIES, NAME).set(connectorName);
         compensating.get(REQUEST_PROPERTIES, SASL).set(connector.get(SASL));
         compensating.get(REQUEST_PROPERTIES, AUTHENTICATION_PROVIDER).set(connector.get(AUTHENTICATION_PROVIDER));

@@ -54,7 +54,7 @@ public class NewDeploymentScannerEnable  implements ModelUpdateOperationHandler,
         final String name = address.get(address.asInt() - 1).asString();
 
         final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("disable-scanner");
+        compensatingOperation.get(OP).set("disable");
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         if(context instanceof NewRuntimeOperationContext) {

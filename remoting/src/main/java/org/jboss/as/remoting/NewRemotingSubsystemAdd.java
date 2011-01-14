@@ -22,12 +22,12 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
-
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -52,8 +52,8 @@ class NewRemotingSubsystemAdd implements ModelAddOperationHandler {
 
         // Compensating is remove
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set("remove");
+        compensating.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensating.get(OP).set(REMOVE);
 
         resultHandler.handleResultComplete(compensating);
 

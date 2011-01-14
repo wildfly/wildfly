@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment.scanner;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 
 import java.util.concurrent.TimeUnit;
@@ -60,7 +61,7 @@ class NewDeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperat
         final String relativeTo = operation.get(REQUEST_PROPERTIES, CommonAttributes.RELATIVE_TO).asString();
 
         final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove-scanner");
+        compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(address);
 
         if(context instanceof NewRuntimeOperationContext) {

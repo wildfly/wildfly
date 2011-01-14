@@ -121,8 +121,8 @@ public class BasicModelController implements ModelController {
     @Override
     public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
         try {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.ADDRESS));
-            final String operationName = operation.require(ModelDescriptionConstants.OPERATION_NAME).asString();
+            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+            final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
             final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
             final ModelNode subModel;
             if (operationHandler instanceof ModelAddOperationHandler) {

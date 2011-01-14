@@ -22,9 +22,10 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
@@ -75,7 +76,7 @@ public class NewConnectorAdd implements RuntimeOperationHandler, ModelAddOperati
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(ADDRESS);
+        final ModelNode address = operation.get(OP_ADDR);
         final String name = address.get(address.asInt() - 1).asString();
 
         // Create the service.
@@ -103,8 +104,8 @@ public class NewConnectorAdd implements RuntimeOperationHandler, ModelAddOperati
 
         // Compensating is remove
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set("remove-connector");
+        compensating.get(OP_ADDR).set(address);
+        compensating.get(OP).set(REMOVE);
         compensating.get(REQUEST_PROPERTIES, NAME).set(name);
 
         // Apply to model

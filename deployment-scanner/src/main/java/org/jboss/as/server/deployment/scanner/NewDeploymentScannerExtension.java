@@ -22,8 +22,10 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.model.ParseUtils.requireNoAttributes;
 import static org.jboss.as.model.ParseUtils.requireNoContent;
@@ -60,10 +62,10 @@ public class NewDeploymentScannerExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewDeploymentSubsystemProviders.SUBSYSTEM);
         // Register operation handlers
-        registration.registerOperationHandler("add-scanner", NewDeploymentScannerAdd.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ADD, false);
-        registration.registerOperationHandler("remove-scanner", NewDeploymentScannerRemove.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_REMOVE, false);
-        registration.registerOperationHandler("enable-scanner", NewDeploymentScannerEnable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ENABLE, false);
-        registration.registerOperationHandler("disable-scanner", NewDeploymentScannerDisable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_DISABLE, false);
+        registration.registerOperationHandler(ADD, NewDeploymentScannerAdd.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ADD, false);
+        registration.registerOperationHandler(REMOVE, NewDeploymentScannerRemove.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_REMOVE, false);
+        registration.registerOperationHandler("enable", NewDeploymentScannerEnable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ENABLE, false);
+        registration.registerOperationHandler("disable", NewDeploymentScannerDisable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_DISABLE, false);
     }
 
     /** {@inheritDoc} */
