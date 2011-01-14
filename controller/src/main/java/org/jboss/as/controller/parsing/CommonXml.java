@@ -23,6 +23,7 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
@@ -414,7 +415,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         home = value;
                         final ModelNode update = new ModelNode();
-                        update.get(OP).set("java-home");
+                        update.get(OP).set("set-java-home");
                         update.get("java-home").set(home);
                         attrUpdates.add(update);
                         break;
@@ -476,7 +477,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         final ModelNode addUpdate = new ModelNode();
         addUpdate.get(OP_ADDR).set(address);
-        addUpdate.get(OP).set("add");
+        addUpdate.get(OP).set(ADD);
         addUpdate.get("name").set(name);
         addUpdate.get("jvm-type").set(type);
         updates.add(addUpdate);
@@ -967,6 +968,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         final ModelNode bindingGroupUpdate = new ModelNode();
         bindingGroupUpdate.get(OP_ADDR).set(address).add("socket-binding-group", name);
+        bindingGroupUpdate.get(OP).set(ADD);
         final ModelNode bindings = bindingGroupUpdate.get("bindings");
         bindings.setEmptyList();
 

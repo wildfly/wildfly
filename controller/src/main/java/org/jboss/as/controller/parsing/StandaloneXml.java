@@ -74,6 +74,9 @@ public class StandaloneXml extends CommonXml {
     }
 
     private void readServerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
         // attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {

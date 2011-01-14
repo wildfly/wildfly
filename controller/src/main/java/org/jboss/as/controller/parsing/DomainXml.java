@@ -51,7 +51,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A mapper between {@code standalone.xml} and a model.
+ * A mapper between {@code domain.xml} and a model.
  *
  * @author Emanuel Muckenhuber
  */
@@ -61,10 +61,12 @@ public class DomainXml extends CommonXml {
         super(loader, context);
     }
 
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> nodes) throws XMLStreamException {
         readDomainElement(reader, new ModelNode(), nodes);
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
@@ -75,6 +77,9 @@ public class DomainXml extends CommonXml {
     }
 
     void readDomainElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
         // attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -117,7 +122,7 @@ public class DomainXml extends CommonXml {
             parseProfiles(reader, address, list);
             element = nextElement(reader);
         }
-        Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<String>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, list, false);
             element = nextElement(reader);
@@ -163,7 +168,7 @@ public class DomainXml extends CommonXml {
 
     }
 
-    void parseDomainSocketBindingGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list, Set<String> interfaces) throws XMLStreamException {
+    void parseDomainSocketBindingGroups(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> interfaces) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
@@ -185,7 +190,7 @@ public class DomainXml extends CommonXml {
         }
     }
 
-    void parseServerGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
+    void parseServerGroups(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
@@ -280,7 +285,7 @@ public class DomainXml extends CommonXml {
         }
     }
 
-    void parseDeployments(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
+    void parseDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
@@ -314,7 +319,7 @@ public class DomainXml extends CommonXml {
                             try {
                                 hash = ParseUtils.hexStringToByteArray(value);
                             }
-                            catch (Exception e) {
+                            catch (final Exception e) {
                                throw new XMLStreamException("Value " + value +
                                        " for attribute " + attribute.getLocalName() +
                                        " does not represent a properly hex-encoded SHA1 hash",
@@ -346,7 +351,7 @@ public class DomainXml extends CommonXml {
             if (hash == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
             }
-            boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
+            final boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
 
             // Handle elements
             ParseUtils.requireNoContent(reader);
@@ -362,7 +367,7 @@ public class DomainXml extends CommonXml {
         }
     }
 
-    void parseProfiles(XMLExtendedStreamReader reader, final ModelNode address, List<ModelNode> list) throws XMLStreamException {
+    void parseProfiles(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();

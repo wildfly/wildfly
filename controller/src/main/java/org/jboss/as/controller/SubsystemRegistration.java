@@ -24,9 +24,6 @@ package org.jboss.as.controller;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  * A subsystem registration.

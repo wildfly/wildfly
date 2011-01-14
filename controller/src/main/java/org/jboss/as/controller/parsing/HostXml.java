@@ -82,6 +82,9 @@ public class HostXml extends CommonXml {
     }
 
     private void readHostElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
         // attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
