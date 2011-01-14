@@ -20,36 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.service;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
+package org.jboss.as.txn;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class NewEeSubsystemProviders {
+interface CommonAttributes {
 
-    static final String RESOURCE_NAME = NewEeSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    String BINDING= "socket-binding";
+    String CORE_ENVIRONMENT = "core-environment";
+    String COORDINATOR_ENVIRONMENT = "coordinator-environment";
+    String DEFAULT_TIMEOUT = "default-timeout";
+    String ENABLE_STATISTICS = "enable-statistics";
+    String NODE_IDENTIFIER = "node-identifier";
+    String OBJECT_STORE = "object-store";
+    String PATH = "path";
+    String RECOVERY_ENVIRONMENT = "recovery-environment";
+    String RELATIVE_TO = "relative-to";
+    String SOCKET_PROCESS_ID_MAX_PORTS = "socket-process-id-max-ports";
+    String STATUS_BINDING = "status-socket-binding";
 
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
-        }
-    };
-
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
 }

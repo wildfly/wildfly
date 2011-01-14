@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.service;
+package org.jboss.as.txn;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -31,11 +31,23 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewEeSubsystemProviders {
+class TransactionSubsystemProviders {
 
-    static final String RESOURCE_NAME = NewEeSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+
+    static final String RESOURCE_NAME = TransactionSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            // TODO
+            return node;
+        }
+    };
+
+    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
