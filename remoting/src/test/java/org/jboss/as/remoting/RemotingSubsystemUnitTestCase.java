@@ -42,7 +42,8 @@ import org.jboss.dmr.ModelNode;
 public class RemotingSubsystemUnitTestCase {
 
     static final DescriptionProvider NULL_PROVIDER = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
             return new ModelNode();
         }
     };
@@ -57,7 +58,7 @@ public class RemotingSubsystemUnitTestCase {
         model.get("profile", "web", "subsystem"); // initialize the model structure
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
 
         ModelNodeRegistration reg = c.getRegistry().registerSubModel(PathElement.pathElement("profile", "web"), NULL_PROVIDER);
         reg = reg.registerSubModel(PathElement.pathElement("subsystem", "remoting"), NewRemotingSubsystemProviders.SUBSYSTEM);
@@ -132,7 +133,7 @@ public class RemotingSubsystemUnitTestCase {
                 final ModelNode response = c.execute(operation);
             }
 
-        } catch (OperationFailedException e) {
+        } catch (final OperationFailedException e) {
             e.printStackTrace();
             System.err.println(e.getFailureDescription());
         }
@@ -145,10 +146,11 @@ public class RemotingSubsystemUnitTestCase {
     static class TestController extends BasicModelController {
 
         protected TestController() {
-            super(model, new NullConfigurationPersister());
+            super(model, new NullConfigurationPersister(), null);
         }
 
         /** {@inheritDoc} */
+        @Override
         protected ModelNodeRegistration getRegistry() {
             return super.getRegistry();
         }
