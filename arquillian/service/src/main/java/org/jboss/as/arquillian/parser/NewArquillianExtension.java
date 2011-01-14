@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.service;
+package org.jboss.as.arquillian.parser;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -46,16 +46,16 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewEeExtension implements NewExtension {
+public class NewArquillianExtension implements NewExtension {
 
-    public static final String NAMESPACE = "urn:jboss:domain:ee:1.0";
-    private static EESubsystemParser parser = new EESubsystemParser();
+    public static final String NAMESPACE = "urn:jboss:domain:arquillian:1.0";
+    static final ArquillianSubsystemParser parser = new ArquillianSubsystemParser();
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("ee");
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewEeSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, NewEeSubsystemAdd.INSTANCE, NewEeSubsystemProviders.SUBSYSTEM, false);
+        final SubsystemRegistration subsystem = context.registerSubsystem("arquillian");
+        final ModelNodeRegistration registration = subsystem.registerDeploymentModel(NewArquillianProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, NewArquillianSubsystemAdd.INSTANCE, NewArquillianProviders.SUBSYSTEM_ADD, false);
     }
 
     /** {@inheritDoc} */
@@ -63,7 +63,7 @@ public class NewEeExtension implements NewExtension {
         context.setSubsystemXmlMapping(NAMESPACE, parser, parser);
     }
 
-    static class EESubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static class ArquillianSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
 
         /** {@inheritDoc} */
         public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
@@ -80,5 +80,4 @@ public class NewEeExtension implements NewExtension {
             subsystem.get(OP_ADDR).setEmptyObject();
         }
     }
-
 }
