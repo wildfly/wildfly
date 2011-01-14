@@ -22,8 +22,11 @@
 
 package org.jboss.as.server.deployment.module;
 
+import static org.jboss.as.server.deployment.module.ModuleRootMarker.isModuleRoot;
+
 import java.io.IOException;
 import java.util.List;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,7 +34,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.Services;
-import static org.jboss.as.server.deployment.module.ModuleRootMarker.*;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -56,8 +58,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final ResourceRoot mainRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        // Don't create a ModuleSpec for OSGi deployments
+        if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
+            return;
+        }
 
+        final ResourceRoot mainRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (mainRoot == null) {
             return;
         }
@@ -67,6 +73,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         // TODO: account for nested DUs here
         final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentUnit.getName());
+        deploymentUnit.putAttachment(Attachments.MODULE_IDENTIFIER, moduleIdentifier);
 
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
 

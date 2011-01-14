@@ -38,7 +38,11 @@ public class OSGiDeploymentAttachment {
         context.putAttachment(KEY, dep);
     }
 
-    public static Deployment getAttachment(final DeploymentUnit context) {
+    public static Deployment getDeployment(final DeploymentUnit context) {
         return context.getAttachment(KEY);
+    }
+
+    public static void detachDeployment(final DeploymentUnit context) {
+        context.removeAttachment(KEY);
     }
 }

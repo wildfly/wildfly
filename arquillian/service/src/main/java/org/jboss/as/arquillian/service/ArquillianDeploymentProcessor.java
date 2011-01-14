@@ -62,7 +62,7 @@ public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
         serviceBuilder.addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, tracker.injectedArquillianService);
 
         // If this is an OSGi deployment, add a dependency on the associated service
-        Deployment osgiDeployment = OSGiDeploymentAttachment.getAttachment(phaseContext.getDeploymentUnit());
+        Deployment osgiDeployment = OSGiDeploymentAttachment.getDeployment(phaseContext.getDeploymentUnit());
         if (osgiDeployment != null) {
             ServiceName serviceName = OSGiDeploymentService.getServiceName(phaseContext.getDeploymentUnit().getName());
             serviceBuilder.addDependency(serviceName);

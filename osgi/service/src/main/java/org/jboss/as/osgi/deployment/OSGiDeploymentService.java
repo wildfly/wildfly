@@ -79,7 +79,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
     public static void addService(DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        final Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnit);
+        final Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
         final String contextName = deploymentUnit.getName();
 
         final OSGiDeploymentService service = new OSGiDeploymentService(deployment);

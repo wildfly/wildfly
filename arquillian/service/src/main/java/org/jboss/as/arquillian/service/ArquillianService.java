@@ -176,32 +176,28 @@ public class ArquillianService implements Service<ArquillianService> {
 
         @Override
         public Class<?> loadTestClass(String className) throws ClassNotFoundException {
-            Class<?> result = null;
             ArquillianConfig arqConfig = getConfig(className);
             if (arqConfig != null) {
                 if (arqConfig.getTestClasses().contains(className)) {
-                    DeploymentUnit context = arqConfig.getDeploymentUnitContext();
-                    Module module = context.getAttachment(Attachments.MODULE);
-                    if (module != null) {
-                        result = module.getClassLoader().loadClass(className);
-                    }
+                    DeploymentUnit depunit = arqConfig.getDeploymentUnitContext();
+                    Module module = depunit.getAttachment(Attachments.MODULE);
+                    Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depunit);
+                    if (module != null && osgidep != null)
+                        throw new IllegalStateException("Found MODULE attachment for Bundle deployment: " + depunit);
 
-                    if (result == null) {
-                        Deployment dep = OSGiDeploymentAttachment.getAttachment(context);
-                        if (dep != null) {
-                            Bundle bundle = dep.getAttachment(Bundle.class);
-                            result = bundle.loadClass(className);
-                            BundleAssociation.setBundle(bundle);
-                            BundleContext sysContext = getSystemBundleContext();
-                            BundleContextAssociation.setBundleContext(sysContext);
-                            result = bundle.loadClass(className);
-                        }
+                    if (module != null)
+                        return module.getClassLoader().loadClass(className);
+
+                    if (osgidep != null) {
+                        Bundle bundle = osgidep.getAttachment(Bundle.class);
+                        BundleAssociation.setBundle(bundle);
+                        BundleContext sysContext = getSystemBundleContext();
+                        BundleContextAssociation.setBundleContext(sysContext);
+                        return bundle.loadClass(className);
                     }
                 }
             }
-            if (result == null)
-                throw new ClassNotFoundException(className);
-            return result;
+            throw new ClassNotFoundException(className);
         }
 
         @Override

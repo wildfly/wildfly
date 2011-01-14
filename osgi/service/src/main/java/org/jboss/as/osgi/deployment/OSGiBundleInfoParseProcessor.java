@@ -22,59 +22,55 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.io.IOException;
+import java.util.jar.Manifest;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.vfs.VirtualFile;
-import org.osgi.framework.Version;
+import org.osgi.framework.BundleException;
 
 /**
- * Processes deployments that contain META-INF/jbosgi-xservice.properties
+ * Processes deployments that contain a valid OSGi manifest.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
  */
-public class OSGiXServicePropertiesProcessor implements DeploymentUnitProcessor {
+public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnit);
-        if (deployment != null)
+        BundleInfo info = BundleInfoAttachment.getBundleInfo(deploymentUnit);
+        if (info != null)
             return;
 
-        // Get the OSGi XService properties
-        String resName = "META-INF/jbosgi-xservice.properties";
+        // Get the manifest from the deployment's virtual file
         VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        VirtualFile xserviceFile = virtualFile.getChild(resName);
-        if (xserviceFile.exists()) {
-            try {
-                OSGiMetaData metadata = OSGiMetaDataBuilder.load(xserviceFile.openStream());
-                String location = virtualFile.getPathName();
-                String symbolicName = metadata.getBundleSymbolicName();
-                Version version = metadata.getBundleVersion();
-                deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
-                deployment.addAttachment(OSGiMetaData.class, metadata);
-                OSGiMetaDataAttachment.attachOSGiMetaData(deploymentUnit, metadata);
-                OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
-            } catch (IOException ex) {
-                throw new DeploymentUnitProcessingException("Cannot parse: " + xserviceFile);
-            }
+        Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
+        if (manifest == null)
+            return;
+
+        // Construct and attach the {@link BundleInfo}
+        try {
+            ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
+            String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnit.getName());
+            info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
+            BundleInfoAttachment.attachBundleInfo(deploymentUnit, info);
+        } catch (BundleException ex) {
+            throw new DeploymentUnitProcessingException("Cannot create bundle deployment from: " + virtualFile);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
+        BundleInfoAttachment.detachBundleInfo(deploymentUnit);
     }
 }

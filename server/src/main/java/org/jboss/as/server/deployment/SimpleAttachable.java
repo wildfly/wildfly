@@ -34,6 +34,14 @@ public class SimpleAttachable implements Attachable {
     private final Map<AttachmentKey<?>, Object> attachments = new HashMap<AttachmentKey<?>, Object>();
 
     /** {@inheritDoc} */
+    public boolean hasAttachment(AttachmentKey<?> key) {
+        if (key == null) {
+            return false;
+        }
+        return attachments.containsKey(key);
+    }
+
+    /** {@inheritDoc} */
     public <T> T getAttachment(final AttachmentKey<T> key) {
         if (key == null) {
             return null;

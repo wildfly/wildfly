@@ -37,6 +37,7 @@ import org.jboss.modules.ModuleLoadException;
  * @author John E. Bailey
  * @author Jason T. Greene
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Thomas.Diesler@jboss.com
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -53,7 +54,10 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         if (deploymentModuleLoader == null) {
             return;
         }
-        final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentUnit.getName());
+        final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
+        if (moduleIdentifier == null) {
+            return;
+        }
         try {
             final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
             deploymentModuleLoader.relinkModule(module);

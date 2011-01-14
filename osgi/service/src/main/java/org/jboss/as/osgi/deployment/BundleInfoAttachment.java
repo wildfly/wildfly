@@ -38,7 +38,7 @@ public class BundleInfoAttachment {
         context.putAttachment(KEY, info);
     }
 
-    public static BundleInfo getBundleInfoAttachment(final DeploymentUnit context) {
+    public static BundleInfo getBundleInfo(final DeploymentUnit context) {
         return context.getAttachment(KEY);
     }
 

@@ -34,6 +34,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -157,6 +158,14 @@ public final class Attachments {
      * The list of module dependencies.
      */
     public static final AttachmentKey<AttachmentList<ModuleDependency>> MODULE_DEPENDENCIES = AttachmentKey.createList(ModuleDependency.class);
+
+    //
+    // CONFIGURE
+    //
+    /**
+     * The module idetifier.
+     */
+    public static final AttachmentKey<ModuleIdentifier> MODULE_IDENTIFIER = AttachmentKey.create(ModuleIdentifier.class);
 
     //
     // MODULARIZE

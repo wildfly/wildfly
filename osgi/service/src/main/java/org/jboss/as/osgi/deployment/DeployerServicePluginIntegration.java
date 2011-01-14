@@ -119,7 +119,6 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                         public void serviceStarted(ServiceController<? extends Object> controller) {
                             log.tracef("Service started: %s", controller.getName());
                             controller.removeListener(this);
-                            controller.setMode(Mode.REMOVE);
                             latch.countDown();
                         }
 
@@ -127,18 +126,21 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                         public void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
                             log.tracef(reason, "Service failed: %s", controller.getName());
                             controller.removeListener(this);
-                            controller.setMode(Mode.REMOVE);
                             latch.countDown();
                         }
                     });
-                    latch.await(10, TimeUnit.SECONDS);
-                    if (controller.getState() == State.START_FAILED)
-                        throw controller.getStartException();
-                    if (controller.getState() != State.UP)
-                        throw new BundleException("OSGiDeploymentService not available: " + serviceName);
+                    try {
+                        latch.await(10, TimeUnit.SECONDS);
+                        if (controller.getState() == State.START_FAILED)
+                            throw controller.getStartException();
+                        if (controller.getState() != State.UP)
+                            throw new BundleException("OSGiDeploymentService not available: " + serviceName);
 
-                    Deployment bundleDep = (Deployment) controller.getValue();
-                    bundle = bundleDep.getAttachment(Bundle.class);
+                        Deployment bundleDep = (Deployment) controller.getValue();
+                        bundle = bundleDep.getAttachment(Bundle.class);
+                    } finally {
+                        controller.setMode(Mode.REMOVE);
+                    }
                 } catch (RuntimeException rte) {
                     throw rte;
                 } catch (BundleException ex) {
@@ -207,8 +209,9 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
         static void addService(BatchBuilder batchBuilder, String contextName) {
             OSGiDeploymentLatchService service = new OSGiDeploymentLatchService();
             ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
-            serviceBuilder.addDependency(OSGiDeploymentService.getServiceName(contextName), Deployment.class,
-                    service.injectedDeployment);
+            ServiceName serviceName = OSGiDeploymentService.getServiceName(contextName);
+            serviceBuilder.addDependency(serviceName, Deployment.class, service.injectedDeployment);
+            serviceBuilder.setInitialMode(Mode.ACTIVE);
             serviceBuilder.install();
         }
 

@@ -29,6 +29,14 @@ package org.jboss.as.server.deployment;
 public interface Attachable {
 
     /**
+     * Check if an attachment exists for this key.
+     *
+     * @param key the attachment key
+     * @return {@code false} if there is none
+     */
+    boolean hasAttachment(AttachmentKey<?> key);
+
+    /**
      * Get an attachment value.  If no attachment exists for this key, {@code null} is returned.
      *
      * @param key the attachment key

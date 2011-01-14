@@ -46,21 +46,21 @@ import org.osgi.framework.Version;
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
  */
-public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcessor {
+public class OSGiDeploymentInstallProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnit);
+        Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
 
         ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
         String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnit.getName());
         VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         // Check for attached BundleInfo
-        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(deploymentUnit);
+        BundleInfo info = BundleInfoAttachment.getBundleInfo(deploymentUnit);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
@@ -68,7 +68,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         }
 
         // Check for attached OSGiMetaData
-        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaDataAttachment(deploymentUnit);
+        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(deploymentUnit);
         if (deployment == null && metadata != null) {
             String symbolicName = metadata.getBundleSymbolicName();
             Version version = metadata.getBundleVersion();

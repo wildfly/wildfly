@@ -37,12 +37,13 @@ import org.jboss.osgi.spi.util.BundleInfo;
  * @author Thomas.Diesler@jboss.com
  * @since 02-Dec-2010
  */
-public class OSGiManifestAttachmentProcessor implements DeploymentUnitProcessor {
+public class OSGiManifestParseProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
         // Check if we already have an OSGiManifestAttachment
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (manifest != null)
             return;
@@ -54,6 +55,8 @@ public class OSGiManifestAttachmentProcessor implements DeploymentUnitProcessor 
         }
     }
 
-    public void undeploy(DeploymentUnit context) {
+    @Override
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(Attachments.OSGI_MANIFEST);
     }
 }

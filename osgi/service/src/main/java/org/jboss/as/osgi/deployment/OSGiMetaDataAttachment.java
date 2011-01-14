@@ -38,7 +38,11 @@ public class OSGiMetaDataAttachment {
         context.putAttachment(KEY, metadata);
     }
 
-    public static OSGiMetaData getOSGiMetaDataAttachment(final DeploymentUnit context) {
+    public static OSGiMetaData getOSGiMetaData(final DeploymentUnit context) {
         return context.getAttachment(KEY);
+    }
+
+    public static void detachOSGiMetaData(final DeploymentUnit context) {
+        context.removeAttachment(KEY);
     }
 }
