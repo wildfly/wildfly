@@ -34,7 +34,6 @@ import org.jboss.as.osgi.service.StartLevelService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
-import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -157,10 +156,6 @@ public class OSGiDeploymentService implements Service<Deployment> {
         ServiceController<?> controller = context.getController().getServiceContainer().getService(serviceName);
         if (controller != null) {
             controller.setMode(Mode.REMOVE);
-        }
-        MountHandle mount = deployment.getAttachment(MountHandle.class);
-        if (mount != null) {
-            mount.close();
         }
     }
 
