@@ -69,7 +69,7 @@ public class ModelDescriptionConstants {
     public static final String READ_OPERATION_DESCRIPTION_OPERATION = "read-operation-description";
     public static final String READ_OPERATION_NAMES_OPERATION = "read-operation-names";
     public static final String READ_RESOURCE_DESCRIPTION_OPERATION = "read-resource-description";
-    public static final String READ_SUB_MODEL_OPERATION = "read-sub-model-operation";
+    public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String REMOVE = "remove";
     public static final String REMOVE_OPERATION = "remove-operation";
     public static final String REPLY_PROPERTIES = "reply-properties";

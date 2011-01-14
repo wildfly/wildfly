@@ -33,7 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_SUB_MODEL_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -55,21 +55,21 @@ import org.jboss.dmr.ModelType;
 public class GlobalDescriptions {
     private static final String RESOURCE_NAME = PathDescription.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static DescriptionProvider getReadSubModelOperationDescription() {
+    public static DescriptionProvider getReadResourceOperationDescription() {
         return new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 ResourceBundle bundle = getResourceBundle(locale);
 
                 ModelNode node = new ModelNode();
-                node.get(OPERATION_NAME).set(READ_SUB_MODEL_OPERATION);
-                node.get(DESCRIPTION).set(bundle.getString("global.read-sub-model"));
+                node.get(OPERATION_NAME).set(READ_RESOURCE_OPERATION);
+                node.get(DESCRIPTION).set(bundle.getString("global.read-resource"));
                 node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
-                node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-sub-model.recursive"));
+                node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-resource.recursive"));
                 node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
                 node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
                 //TODO value type
-                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-sub-model.reply"));
+                node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource.reply"));
                 node.protect();
 
                 return node;

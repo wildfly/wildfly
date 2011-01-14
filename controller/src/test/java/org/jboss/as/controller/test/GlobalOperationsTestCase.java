@@ -43,7 +43,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_SUB_MODEL_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -125,7 +125,7 @@ public class GlobalOperationsTestCase {
 
     @Test
     public void testRecursiveReadSubModelOperationSimple() throws Exception {
-        ModelNode operation = createOperation(READ_SUB_MODEL_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        ModelNode operation = createOperation(READ_RESOURCE_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
 
         ModelNode result = CONTROLLER.execute(operation);
@@ -135,7 +135,7 @@ public class GlobalOperationsTestCase {
 
     @Test
     public void testNonRecursiveReadSubModelOperationSimple() throws Exception {
-        ModelNode operation = createOperation(READ_SUB_MODEL_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        ModelNode operation = createOperation(READ_RESOURCE_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(REQUEST_PROPERTIES, RECURSIVE).set(false);
 
         ModelNode result = CONTROLLER.execute(operation);
@@ -159,7 +159,7 @@ public class GlobalOperationsTestCase {
 
     @Test
     public void testRecursiveReadSubModelOperationComplex() throws Exception {
-        ModelNode operation = createOperation(READ_SUB_MODEL_OPERATION, "profile", "profileA", "subsystem", "subsystem2");
+        ModelNode operation = createOperation(READ_RESOURCE_OPERATION, "profile", "profileA", "subsystem", "subsystem2");
         operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
 
 
@@ -338,7 +338,7 @@ public class GlobalOperationsTestCase {
         assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
         assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
         assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
-        assertTrue(ops.contains(READ_SUB_MODEL_OPERATION));
+        assertTrue(ops.contains(READ_RESOURCE_OPERATION));
         for (String op : ops) {
             assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
         }
@@ -518,7 +518,7 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            getRegistry().registerOperationHandler(READ_SUB_MODEL_OPERATION, GlobalOperationHandlers.READ_SUB_MODEL, GlobalDescriptions.getReadSubModelOperationDescription(), true);
+            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, GlobalDescriptions.getReadResourceOperationDescription(), true);
             getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, GlobalDescriptions.getReadAttributeOperationDescription(), true);
             getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, GlobalDescriptions.getReadResourceDescriptionOperationDescription(), true);
             getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, GlobalDescriptions.getReadChildrenNamesOperationDescription(), true);

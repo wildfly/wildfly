@@ -51,7 +51,7 @@ public class GlobalOperationHandlers {
 
     static final String[] NO_LOCATION = new String[0];
 
-    public static final ModelQueryOperationHandler READ_SUB_MODEL = new ModelQueryOperationHandler() {
+    public static final ModelQueryOperationHandler READ_RESOURCE = new ModelQueryOperationHandler() {
         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
                 final ModelNode result;
