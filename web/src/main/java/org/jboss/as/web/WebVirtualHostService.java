@@ -26,6 +26,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Valve;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.valves.AccessLogValve;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -42,8 +43,8 @@ class WebVirtualHostService implements Service<Host> {
 
     private final String name;
     private final String[] aliases;
-    private WebHostAccessLogElement accessLog;
-    private WebHostRewriteElement rewrite;
+    private ModelNode accessLog;
+    private ModelNode rewrite;
 
     private final InjectedValue<String> tempPathInjector = new InjectedValue<String>();
     private final InjectedValue<String> accessLogPathInjector = new InjectedValue<String>();
@@ -96,11 +97,11 @@ class WebVirtualHostService implements Service<Host> {
         return host;
     }
 
-    void setAccessLog(WebHostAccessLogElement accessLog) {
+    void setAccessLog(final ModelNode accessLog) {
         this.accessLog = accessLog;
     }
 
-    void setRewrite(WebHostRewriteElement rewrite) {
+    void setRewrite(ModelNode rewrite) {
         this.rewrite = rewrite;
     }
 
@@ -116,18 +117,18 @@ class WebVirtualHostService implements Service<Host> {
         return webServer;
     }
 
-    static Valve createAccessLogValve(final String logDirectory, final WebHostAccessLogElement element) {
+    static Valve createAccessLogValve(final String logDirectory, final ModelNode element) {
         final AccessLogValve log = new AccessLogValve();
         log.setDirectory(logDirectory);
-        log.setResolveHosts(element.isResolveHosts());
-        log.setRotatable(element.isRotate());
-        log.setPattern(element.getPattern());
-        log.setPrefix(element.getPrefix());
+        log.setResolveHosts(element.get(CommonAttributes.RESOLVE_HOSTS).asBoolean());
+        log.setRotatable(element.get(CommonAttributes.ROTATE).asBoolean());
+        log.setPattern(element.get(CommonAttributes.PATTERN).asString());
+        log.setPrefix(element.get(CommonAttributes.PREFIX).asString());
         // TODO extended?
         return log;
     }
 
-    static Valve createRewriteValve(final WebHostRewriteElement element) {
+    static Valve createRewriteValve(final ModelNode element) {
         final RewriteValve rewrite = new RewriteValve();
         // TODO
         return rewrite;

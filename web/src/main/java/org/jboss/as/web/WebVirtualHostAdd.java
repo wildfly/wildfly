@@ -70,13 +70,13 @@ public class WebVirtualHostAdd extends AbstractWebSubsystemUpdate<Void> {
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
             .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getWebServer());
         if(accessLog != null) {
-            service.setAccessLog(accessLog);
+            // service.setAccessLog(accessLog);
             // Create the access log service
             accessLogService(name, accessLog.getDirectory(), target);
             serviceBuilder.addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(name, "access-log"), String.class, service.getAccessLogPathInjector());
         }
         if(rewrite != null) {
-            service.setRewrite(rewrite);
+            // service.setRewrite(rewrite);
         }
         serviceBuilder.install();
     }

@@ -22,8 +22,11 @@
 
 package org.jboss.as.server.services.path;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+
 import java.io.File;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -44,6 +47,11 @@ public class AbsolutePathService extends AbstractPathService {
     public static void addService(final ServiceName sname, final String abstractPath, final ServiceTarget serviceTarget) {
         AbsolutePathService service = new AbsolutePathService(abstractPath);
         serviceTarget.addService(sname, service).install();
+    }
+
+    public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {
+        final String path = element.require(PATH).asString();
+        addService(name, path, serviceTarget);
     }
 
     public AbsolutePathService(final String abstractPath) {

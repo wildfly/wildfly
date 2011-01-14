@@ -22,8 +22,12 @@
 
 package org.jboss.as.server.services.path;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+
 import java.io.File;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -50,6 +54,12 @@ public class RelativePathService extends AbstractPathService {
         serviceTarget.addService(name, service)
             .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath)
             .install();
+    }
+
+    public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {
+        final String relativePath = element.require(PATH).asString();
+        final String relativeTo = element.require(RELATIVE_TO).asString();
+        addService(name, relativePath, relativeTo, serviceTarget);
     }
 
     public RelativePathService(final String relativePath) {

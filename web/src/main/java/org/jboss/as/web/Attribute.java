@@ -31,37 +31,55 @@ import java.util.Map;
 enum Attribute {
     UNKNOWN(null),
 
-    CHECK_INTERVAL("check-interval"),
-
-    DEFAULT_HOST("default-host"), DEVELOPMENT("development"), DIRECTORY("directory"), DISABLED("disabled"), DISPLAY_SOOURCE_FRAGMENT("display-source-fragment"), DUMP_SMAP("dump-smap"),
-
-    ENABLED("enabled"), ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT("error-on-use-bean-invalid-class-attribute"), EXECUTOR("executor"), EXTENDED("extended"),
-
-    FILE_ENCONDING("file-encoding"),
-
-    GENERATE_STRINGS_AS_CHAR_ARRAYS("generate-strings-as-char-arrays"),
-
-    JAVA_ENCODING("java-encoding"),
-
-    KEEP_GENERATED("keep-generated"),
-
-    LISTINGS("listings"),
-
-    MAPPED_FILE("mapped-file"), MAX_DEPTH("max-depth"), MAX_POST_SIZE("max-post-size"), MODIFIFICATION_TEST_INTERVAL("modification-test-interval"), MAX_SAVE_POST_SIZE("max-save-post-size"),
-
-    NAME("name"),
-
-    PATH("path"), PATTERN("pattern"), PREFIX("prefix"), PROTOCOL("protocol"), PROXY_NAME("proxy-name"), PROXY_PORT("proxy-port"),
-
-    READ_ONLY("read-only"), REDIRECT_PORT("redirect-por"),  RECOMPILE_ON_FAIL("recompile-on-fail"), RELATIVE_TO("relative-to"), RESOLVE_HOSTS("resolve-hosts"), ROTATE("rotate"),
-
-    SCHEME("scheme"), SCRATCH_DIR("scratch-dir"), SECRET("secret"), SECURE("secure"), SENDFILE("sendfile"), SMAP("smap"), SOCKET_BINDING("socket-binding"), SOURCE_VM("source-vm"),
-
-    TARGET_VM("target-vm"), TRIM_SPACES("trim-spaces"), TAG_POOLING("tag-pooling"),
-
-    WEBDAV("webdav"),
-
-    X_POWERED_BY("x-powered-by"), ENABLE_LOOKUPS("enable-lookups"), VALUE("value"),
+    CHECK_INTERVAL(CommonAttributes.CHECK_INTERVAL),
+    DEFAULT_HOST(CommonAttributes.DEFAULT_HOST),
+    DEVELOPMENT(CommonAttributes.DEVELOPMENT),
+    DIRECTORY(CommonAttributes.DIRECTORY),
+    DISABLED(CommonAttributes.DISABLED),
+    DISPLAY_SOOURCE_FRAGMENT(CommonAttributes.DISPLAY_SOURCE_FRAGMENT),
+    DUMP_SMAP(CommonAttributes.DUMP_SMAP),
+    ENABLED(CommonAttributes.ENABLED),
+    ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT(CommonAttributes.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE),
+    EXECUTOR(CommonAttributes.EXECUTOR),
+    EXTENDED(CommonAttributes.EXTENDED),
+    FILE_ENCONDING(CommonAttributes.FILE_ENCONDING),
+    GENERATE_STRINGS_AS_CHAR_ARRAYS(CommonAttributes.GENERATE_STRINGS_AS_CHAR_ARRAYS),
+    JAVA_ENCODING(CommonAttributes.JAVA_ENCODING),
+    KEEP_GENERATED(CommonAttributes.KEEP_GENERATED),
+    LISTINGS(CommonAttributes.LISTINGS),
+    MAPPED_FILE(CommonAttributes.MAPPED_FILE),
+    MAX_DEPTH(CommonAttributes.MAX_DEPTH),
+    MAX_POST_SIZE(CommonAttributes.MAX_POST_SIZE),
+    MODIFIFICATION_TEST_INTERVAL(CommonAttributes.MODIFIFICATION_TEST_INTERVAL),
+    MAX_SAVE_POST_SIZE(CommonAttributes.MAX_SAVE_POST_SIZE),
+    NAME(CommonAttributes.NAME),
+    PATH(CommonAttributes.PATH),
+    PATTERN(CommonAttributes.PATTERN),
+    PREFIX(CommonAttributes.PREFIX),
+    PROTOCOL(CommonAttributes.PROTOCOL),
+    PROXY_NAME(CommonAttributes.PROXY_NAME),
+    PROXY_PORT(CommonAttributes.PROXY_PORT),
+    READ_ONLY(CommonAttributes.READ_ONLY),
+    REDIRECT_PORT(CommonAttributes.REDIRECT_PORT),
+    RECOMPILE_ON_FAIL(CommonAttributes.RECOMPILE_ON_FAIL),
+    RELATIVE_TO(CommonAttributes.RELATIVE_TO),
+    RESOLVE_HOSTS(CommonAttributes.RESOLVE_HOSTS),
+    ROTATE(CommonAttributes.ROTATE),
+    SCHEME(CommonAttributes.SCHEME),
+    SCRATCH_DIR(CommonAttributes.SCRATCH_DIR),
+    SECRET(CommonAttributes.SECRET),
+    SECURE(CommonAttributes.SECURE),
+    SENDFILE(CommonAttributes.SENDFILE),
+    SMAP(CommonAttributes.SMAP),
+    SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
+    SOURCE_VM(CommonAttributes.SOURCE_VM),
+    TARGET_VM(CommonAttributes.TARGET_VM),
+    TRIM_SPACES(CommonAttributes.TRIM_SPACES),
+    TAG_POOLING(CommonAttributes.TAG_POOLING),
+    WEBDAV(CommonAttributes.WEBDAV),
+    X_POWERED_BY(CommonAttributes.X_POWERED_BY),
+    ENABLE_LOOKUPS(CommonAttributes.ENABLE_LOOKUPS),
+    VALUE(CommonAttributes.VALUE),
     ;
 
     private final String name;
