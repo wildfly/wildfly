@@ -301,27 +301,80 @@ public class GlobalOperationsTestCase {
     public void testReadResourceDescriptionOperation() throws Exception {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         ModelNode result = CONTROLLER.execute(operation);
-        checkRootNodeDescription(result);
+        checkRootNodeDescription(result, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA");
+        result = CONTROLLER.execute(operation);
+        checkProfileNodeDescription(result, false, false);
+
+        //TODO this is not possible - the wildcard address does not correspond to anything in the real model
+        //operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "*");
+        //result = CONTROLLER.execute(operation);
+        //checkProfileNodeDescription(result, false);
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         result = CONTROLLER.execute(operation);
-        checkSubsystem1Description(result);
+        checkSubsystem1Description(result, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
         result = CONTROLLER.execute(operation);
-        checkType1Descrition(result);
+        checkType1Description(result);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing2");
         result = CONTROLLER.execute(operation);
-        checkType1Descrition(result);
+        checkType1Description(result);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type2", "other");
         result = CONTROLLER.execute(operation);
-        checkType2Descrition(result);
+        checkType2Description(result);
+        assertFalse(result.get(OPERATIONS).isDefined());
+    }
+
+    @Test
+    public void testReadRecursiveResourceDescriptionOperation() throws Exception {
+        ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        ModelNode result = CONTROLLER.execute(operation);
+        checkRootNodeDescription(result, true, false);
+        assertFalse(result.get(OPERATIONS).isDefined());
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA");
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkProfileNodeDescription(result, true, false);
+
+        //TODO this is not possible - the wildcard address does not correspond to anything in the real model
+        //operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "*");
+        //operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        //result = CONTROLLER.execute(operation);
+        //checkProfileNodeDescription(result, false);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkSubsystem1Description(result, true, false);
+        assertFalse(result.get(OPERATIONS).isDefined());
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkType1Description(result);
+        assertFalse(result.get(OPERATIONS).isDefined());
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing2");
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkType1Description(result);
+        assertFalse(result.get(OPERATIONS).isDefined());
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type2", "other");
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkType2Description(result);
         assertFalse(result.get(OPERATIONS).isDefined());
     }
 
@@ -330,7 +383,7 @@ public class GlobalOperationsTestCase {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(REQUEST_PROPERTIES, OPERATIONS).set(true);
         ModelNode result = CONTROLLER.execute(operation);
-        checkRootNodeDescription(result);
+        checkRootNodeDescription(result, false, true);
         assertTrue(result.require(OPERATIONS).isDefined());
         Set<String> ops = result.require(OPERATIONS).keys();
         assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
@@ -343,39 +396,61 @@ public class GlobalOperationsTestCase {
             assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
         }
 
-
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(REQUEST_PROPERTIES,OPERATIONS).set(true);
         result = CONTROLLER.execute(operation);
-        checkSubsystem1Description(result);
-        assertTrue(result.require(OPERATIONS).isDefined());
-        ops = result.require(OPERATIONS).keys();
-        //TODO should the inherited ops be picked up?
-        assertEquals(2, ops.size());
-        assertTrue(ops.contains("testA1-1"));
-        assertTrue(ops.contains("testA1-2"));
+        checkSubsystem1Description(result, false, true);
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
         operation.get(REQUEST_PROPERTIES, OPERATIONS).set(true);
         result = CONTROLLER.execute(operation);
-        checkType1Descrition(result);
-        //TODO should the inherited ops be picked up?
-        assertTrue(result.get(OPERATIONS).asList().isEmpty());
+        checkType1Description(result);
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing2");
         operation.get(REQUEST_PROPERTIES,OPERATIONS).set(true);
         result = CONTROLLER.execute(operation);
-        checkType1Descrition(result);
-        //TODO should the inherited ops be picked up?
-        assertTrue(result.get(OPERATIONS).asList().isEmpty());
+        checkType1Description(result);
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type2", "other");
         operation.get(REQUEST_PROPERTIES,OPERATIONS).set(true);
         result = CONTROLLER.execute(operation);
-        checkType2Descrition(result);
-        //TODO should the inherited ops be picked up?
-        assertTrue(result.get(OPERATIONS).asList().isEmpty());
+        checkType2Description(result);
     }
+
+    @Test
+    public void testRecursiveReadResourceDescriptionWithOperationsOperation() throws Exception {
+        ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(REQUEST_PROPERTIES, OPERATIONS).set(true);
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        ModelNode result = CONTROLLER.execute(operation);
+        checkRootNodeDescription(result, true, true);
+
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        operation.get(REQUEST_PROPERTIES,OPERATIONS).set(true);
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkSubsystem1Description(result, true, true);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
+        operation.get(REQUEST_PROPERTIES, OPERATIONS).set(true);
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkType1Description(result);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing2");
+        operation.get(REQUEST_PROPERTIES,OPERATIONS).set(true);
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkType1Description(result);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type2", "other");
+        operation.get(REQUEST_PROPERTIES,OPERATIONS).set(true);
+        operation.get(REQUEST_PROPERTIES, RECURSIVE).set(true);
+        result = CONTROLLER.execute(operation);
+        checkType2Description(result);
+    }
+
 
 
     private void checkRecursiveSubSystem1(ModelNode result) {
@@ -418,24 +493,57 @@ public class GlobalOperationsTestCase {
         assertEquals(ModelType.TYPE, result.require("type").asType());
     }
 
-    private void checkRootNodeDescription(ModelNode result) {
-        assertNotNull(result);
+    private void checkRootNodeDescription(ModelNode result, boolean recursive, boolean operations) {
         assertEquals("The root node of the test management API", result.require(DESCRIPTION).asString());
         assertEquals("A list of profiles", result.require(CHILDREN).require(PROFILE).require(DESCRIPTION).asString());
         assertEquals(1, result.require(CHILDREN).require(PROFILE).require(MIN_OCCURS).asInt());
-        ModelNode modelDescription = result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION);
-        assertEquals("A named set of subsystem configs", modelDescription.require(DESCRIPTION).asString());
-        assertEquals(ModelType.STRING, modelDescription.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
-        assertEquals("The name of the profile", modelDescription.require(ATTRIBUTES).require(NAME).require(DESCRIPTION).asString());
-        assertEquals(true, modelDescription.require(ATTRIBUTES).require(NAME).require(REQUIRED).asBoolean());
-        assertEquals(1, modelDescription.require(ATTRIBUTES).require(NAME).require(MIN_LENGTH).asInt());
-        assertEquals("The subsystems that make up the profile", modelDescription.require(CHILDREN).require(SUBSYSTEM).require(DESCRIPTION).asString());
-        assertEquals(1, modelDescription.require(CHILDREN).require(SUBSYSTEM).require(MIN_OCCURS).asInt());
-        assertFalse(modelDescription.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).isDefined());
+
+        if (operations) {
+            assertTrue(result.require(OPERATIONS).isDefined());
+            Set<String> ops = result.require(OPERATIONS).keys();
+            assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(READ_RESOURCE_OPERATION));
+            for (String op : ops) {
+                assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
+            }
+        } else {
+            assertFalse(result.get(OPERATIONS).isDefined());
+        }
+
+
+        if (!recursive) {
+            assertFalse(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).isDefined());
+            return;
+        }
+        assertTrue(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).isDefined());
+        assertEquals(1, result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).keys().size());
+        checkProfileNodeDescription(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).require("*"), true, operations);
     }
 
-    private void checkSubsystem1Description(ModelNode result) {
+    private void checkProfileNodeDescription(ModelNode result, boolean recursive, boolean operations) {
+        assertEquals("A named set of subsystem configs", result.require(DESCRIPTION).asString());
+        assertEquals(ModelType.STRING, result.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
+        assertEquals("The name of the profile", result.require(ATTRIBUTES).require(NAME).require(DESCRIPTION).asString());
+        assertEquals(true, result.require(ATTRIBUTES).require(NAME).require(REQUIRED).asBoolean());
+        assertEquals(1, result.require(ATTRIBUTES).require(NAME).require(MIN_LENGTH).asInt());
+        assertEquals("The subsystems that make up the profile", result.require(CHILDREN).require(SUBSYSTEM).require(DESCRIPTION).asString());
+        assertEquals(1, result.require(CHILDREN).require(SUBSYSTEM).require(MIN_OCCURS).asInt());
+        if (!recursive) {
+            assertFalse(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).isDefined());
+            return;
+        }
+        assertTrue(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).isDefined());
+        assertEquals(5, result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).keys().size());
+        checkSubsystem1Description(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).require("subsystem1"), recursive, operations);
+    }
+
+    private void checkSubsystem1Description(ModelNode result, boolean recursive, boolean operations) {
         assertNotNull(result);
+
         assertEquals("A test subsystem 1", result.require(DESCRIPTION).asString());
         assertEquals(ModelType.LIST, result.require(ATTRIBUTES).require("attr1").require(TYPE).asType());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("attr1").require(VALUE_TYPE).asType());
@@ -443,13 +551,34 @@ public class GlobalOperationsTestCase {
         assertTrue(result.require(ATTRIBUTES).require("attr1").require(REQUIRED).asBoolean());
         assertEquals("The children1", result.require(CHILDREN).require("type1").require(DESCRIPTION).asString());
         assertEquals(1, result.require(CHILDREN).require("type1").require(MIN_OCCURS).asInt());
-        assertFalse(result.require(CHILDREN).require("type1").require(MODEL_DESCRIPTION).isDefined());
+
+        assertEquals("The children1", result.require(CHILDREN).require("type1").require(DESCRIPTION).asString());
         assertEquals("The children2", result.require(CHILDREN).require("type2").require(DESCRIPTION).asString());
         assertEquals(1, result.require(CHILDREN).require("type2").require(MIN_OCCURS).asInt());
-        assertFalse(result.require(CHILDREN).require("type2").require(MODEL_DESCRIPTION).isDefined());
+        assertEquals(1, result.require(CHILDREN).require("type2").require(MIN_OCCURS).asInt());
+
+        if (operations) {
+            assertTrue(result.require(OPERATIONS).isDefined());
+            Set<String> ops = result.require(OPERATIONS).keys();
+            //TODO should the inherited ops be picked up?
+            assertEquals(2, ops.size());
+            assertTrue(ops.contains("testA1-1"));
+            assertTrue(ops.contains("testA1-2"));
+        } else {
+            assertFalse(result.get(OPERATIONS).isDefined());
+        }
+
+        if (!recursive) {
+            assertFalse(result.require(CHILDREN).require("type1").require(MODEL_DESCRIPTION).isDefined());
+            assertFalse(result.require(CHILDREN).require("type2").require(MODEL_DESCRIPTION).isDefined());
+            return;
+        }
+
+        checkType1Description(result.require(CHILDREN).require("type1").require(MODEL_DESCRIPTION).require("*"));
+        checkType2Description(result.require(CHILDREN).require("type2").require(MODEL_DESCRIPTION).require("other"));
     }
 
-    private void checkType1Descrition(ModelNode result) {
+    private void checkType1Description(ModelNode result) {
         assertNotNull(result);
         assertEquals("A type 1", result.require(DESCRIPTION).asString());
         assertEquals(ModelType.STRING, result.require(ATTRIBUTES).require("name").require(TYPE).asType());
@@ -458,14 +587,23 @@ public class GlobalOperationsTestCase {
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("value").require(TYPE).asType());
         assertEquals("The value of the thing", result.require(ATTRIBUTES).require("value").require(DESCRIPTION).asString());
         assertTrue(result.require(ATTRIBUTES).require("value").require(REQUIRED).asBoolean());
+        //TODO should the inherited ops be picked up?
+        if (result.has(OPERATIONS)) {
+            assertTrue(result.get(OPERATIONS).asList().isEmpty());
+        }
+
     }
 
-    private void checkType2Descrition(ModelNode result) {
+    private void checkType2Description(ModelNode result) {
         assertNotNull(result);
         assertEquals("A type 2", result.require(DESCRIPTION).asString());
         assertEquals(ModelType.STRING, result.require(ATTRIBUTES).require("name").require(TYPE).asType());
         assertEquals("The name of the thing", result.require(ATTRIBUTES).require("name").require(DESCRIPTION).asString());
         assertTrue(result.require(ATTRIBUTES).require("name").require(REQUIRED).asBoolean());
+        //TODO should the inherited ops be picked up?
+        if (result.has(OPERATIONS)) {
+            assertTrue(result.get(OPERATIONS).asList().isEmpty());
+        }
     }
 
     private ModelNode createOperation(String operationName, String...address) {
@@ -513,7 +651,7 @@ public class GlobalOperationsTestCase {
                     node.get(DESCRIPTION).set("The root node of the test management API");
                     node.get(CHILDREN, PROFILE, DESCRIPTION).set("A list of profiles");
                     node.get(CHILDREN, PROFILE, MIN_OCCURS).set(1);
-                    node.get(CHILDREN, PROFILE, MODEL_DESCRIPTION).set(getProfileModelDescription());
+                    node.get(CHILDREN, PROFILE, MODEL_DESCRIPTION);
                     return node;
                 }
             });
@@ -527,7 +665,7 @@ public class GlobalOperationsTestCase {
 
 
 
-            ModelNodeRegistration profileAReg = getRegistry().registerSubModel(PathElement.pathElement("profile", "profileA"), new DescriptionProvider() {
+            ModelNodeRegistration profileReg = getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -535,23 +673,7 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            ModelNodeRegistration profileBReg = getRegistry().registerSubModel(PathElement.pathElement("profile", "profileB"), new DescriptionProvider() {
-
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return getProfileModelDescription();
-                }
-            });
-
-            ModelNodeRegistration profileCReg = getRegistry().registerSubModel(PathElement.pathElement("profile", "profileC"), new DescriptionProvider() {
-
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return getProfileModelDescription();
-                }
-            });
-
-            ModelNodeRegistration profileASub1Reg = profileAReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
+            ModelNodeRegistration profileSub1Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -587,9 +709,8 @@ public class GlobalOperationsTestCase {
                 }
             };
 
-            ModelNodeRegistration profileASub1RegChildType11 = profileASub1Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), thingProvider);
-            ModelNodeRegistration profileASub1RegChildType12 = profileASub1Reg.registerSubModel(PathElement.pathElement("type1", "thing2"), thingProvider);
-            ModelNodeRegistration profileASub1RegChildType2 = profileASub1Reg.registerSubModel(PathElement.pathElement("type2", "other"), new DescriptionProvider() {
+            ModelNodeRegistration profileSub1RegChildType11 = profileSub1Reg.registerSubModel(PathElement.pathElement("type1", "*"), thingProvider);
+            ModelNodeRegistration profileSub1RegChildType2 = profileSub1Reg.registerSubModel(PathElement.pathElement("type2", "other"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -602,7 +723,7 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            ModelNodeRegistration profileASub2Reg = profileAReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem2"), new DescriptionProvider() {
+            ModelNodeRegistration profileASub2Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem2"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -659,7 +780,7 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            ModelNodeRegistration profileBSub3Reg = profileBReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
+            ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -675,9 +796,8 @@ public class GlobalOperationsTestCase {
 
 
 
-            profileASub1Reg.registerOperationHandler("testA1-1",
+            profileSub1Reg.registerOperationHandler("testA1-1",
                     new OperationHandler() {
-
                         @Override
                         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
@@ -694,7 +814,7 @@ public class GlobalOperationsTestCase {
                         }
                     },
                     false);
-            profileASub1Reg.registerOperationHandler("testA1-2",
+            profileSub1Reg.registerOperationHandler("testA1-2",
                     new OperationHandler() {
 
                         @Override
@@ -735,7 +855,7 @@ public class GlobalOperationsTestCase {
                     },
                     false);
 
-            ModelNodeRegistration profileCSub4Reg = profileCReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
+            ModelNodeRegistration profileCSub4Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -751,7 +871,7 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            ModelNodeRegistration profileCSub5Reg = profileCReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
+            ModelNodeRegistration profileCSub5Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {

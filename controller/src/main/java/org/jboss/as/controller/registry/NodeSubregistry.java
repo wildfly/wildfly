@@ -23,6 +23,7 @@
 package org.jboss.as.controller.registry;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
@@ -49,6 +50,14 @@ final class NodeSubregistry {
         this.keyName = keyName;
         this.parent = parent;
         childRegistriesUpdater.clear(this);
+    }
+
+    Set<String> getChildNames(){
+        Map<String, AbstractNodeRegistration> snapshot = this.childRegistries;
+        if (snapshot == null) {
+            return Collections.emptySet();
+        }
+        return new HashSet<String>(snapshot.keySet());
     }
 
     ModelNodeRegistration register(final String elementValue, final DescriptionProvider provider) {
@@ -157,5 +166,18 @@ final class NodeSubregistry {
             }
         }
         return childRegistry.getAttributeNames(iterator);
+    }
+
+
+    Set<PathElement> getChildAddresses(final Iterator<PathElement> iterator, final String child){
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
+        AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry == null) {
+            childRegistry = snapshot.get("*");
+            if (childRegistry == null) {
+                return null;
+            }
+        }
+        return childRegistry.getChildAddresses(iterator);
     }
 }

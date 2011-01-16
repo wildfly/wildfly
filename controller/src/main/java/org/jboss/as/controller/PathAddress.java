@@ -28,11 +28,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -142,7 +142,7 @@ public class PathAddress implements Iterable<PathElement> {
         final ArrayList<PathElement> newList = new ArrayList<PathElement>(pathAddressList.size() + additionalElements.size());
         newList.addAll(pathAddressList);
         newList.addAll(additionalElements);
-        return pathAddress(additionalElements);
+        return pathAddress(newList);
     }
 
     /**
@@ -241,6 +241,7 @@ public class PathAddress implements Iterable<PathElement> {
      * @param other the other object
      * @return {@code true} if they are equal, {@code false} otherwise
      */
+    @Override
     public boolean equals(Object other) {
         return other instanceof PathAddress && equals((PathAddress)other);
     }

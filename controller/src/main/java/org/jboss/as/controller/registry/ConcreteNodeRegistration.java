@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
@@ -223,6 +224,29 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
+    @Override
+    Set<PathElement> getChildAddresses(Iterator<PathElement> iterator) {
+        if (iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return Collections.emptySet();
+            }
+            return subregistry.getChildAddresses(iterator, next.getValue());
+        } else {
+            Map<String, NodeSubregistry> children = this.children;
+            if (children != null) {
+                Set<PathElement> elements = new HashSet<PathElement>();
+                for (Map.Entry<String, NodeSubregistry> entry : children.entrySet()) {
+                    for (String entryChild : entry.getValue().getChildNames()) {
+                        elements.add(PathElement.pathElement(entry.getKey(), entryChild));
+                    }
+                }
+                return elements;
+            }
+            return Collections.emptySet();
+        }
+    }
 
 
     private static final class OperationEntry {

@@ -89,4 +89,9 @@ final class ProxyNodeRegistration extends AbstractNodeRegistration {
     Set<String> getChildNames(Iterator<PathElement> iterator) {
         return null;
     }
+
+    @Override
+    Set<PathElement> getChildAddresses(Iterator<PathElement> iterator) {
+        return null;
+    }
 }

@@ -99,6 +99,9 @@ public interface ModelNodeRegistration {
      */
     Set<String> getChildNames(PathAddress address);
 
+
+    Set<PathElement> getChildAddresses(PathAddress address);
+
     /**
      * Get the model description at the given address, or {@code null} if none exists.
      *
@@ -114,6 +117,7 @@ public interface ModelNodeRegistration {
      * @return the operation map
      */
     Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address);
+
 
     /**
      * A factory for creating a new, root model node registration.

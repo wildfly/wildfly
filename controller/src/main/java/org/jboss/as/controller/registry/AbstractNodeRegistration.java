@@ -107,6 +107,12 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     abstract Set<String> getChildNames(Iterator<PathElement> iterator);
 
+    public Set<PathElement> getChildAddresses(PathAddress address){
+        return getChildAddresses(address.iterator());
+    }
+
+    abstract Set<PathElement> getChildAddresses(Iterator<PathElement> iterator);
+
     final String getLocationString() {
         if (parent == null) {
             return "";

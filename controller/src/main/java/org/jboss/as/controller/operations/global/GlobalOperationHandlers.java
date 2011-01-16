@@ -22,8 +22,10 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -37,6 +39,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -187,6 +190,7 @@ public class GlobalOperationHandlers {
         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
                 String operationName = operation.require(REQUEST_PROPERTIES).require(NAME).asString();
+
                 ModelNodeRegistration registry = context.getRegistry();
                 DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.pathAddress(operation.require(ADDRESS)), operationName);
 
@@ -206,28 +210,16 @@ public class GlobalOperationHandlers {
         @Override
         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
-                boolean operations = false;
-                if (operation.get(REQUEST_PROPERTIES, OPERATIONS).isDefined()) {
-                    operations = operation.get(REQUEST_PROPERTIES, OPERATIONS).asBoolean();
-                }
+                final boolean operations = operation.get(REQUEST_PROPERTIES, OPERATIONS).isDefined() ? operation.get(REQUEST_PROPERTIES, OPERATIONS).asBoolean() : false;
+                final boolean recursive = operation.get(REQUEST_PROPERTIES, RECURSIVE).isDefined() ? operation.get(REQUEST_PROPERTIES, RECURSIVE).asBoolean() : false;
 
-                ModelNodeRegistration registry = context.getRegistry();
-                PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
-                DescriptionProvider descriptionProvider = registry.getModelDescription(address);
-                ModelNode result = descriptionProvider.getModelDescription(getLocale(operation));
+                final ModelNodeRegistration registry = context.getRegistry();
+                final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
+                final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
+                final Locale locale = getLocale(operation);
+                final ModelNode result = descriptionProvider.getModelDescription(getLocale(operation));
 
-                if (operations) {
-                    Map<String, DescriptionProvider> ops = registry.getOperationDescriptions(address);
-                    if (ops.size() > 0) {
-
-                        for (Map.Entry<String, DescriptionProvider> entry : ops.entrySet()) {
-                            result.get(OPERATIONS, entry.getKey()).set(entry.getValue().getModelDescription(getLocale(operation)));
-                        }
-
-                    } else {
-                        result.get(OPERATIONS).setEmptyList();
-                    }
-                }
+                addDescription(result, recursive, operations, registry, address, locale);
 
                 resultHandler.handleResultFragment(new String[0], result);
                 resultHandler.handleResultComplete(null);
@@ -236,7 +228,34 @@ public class GlobalOperationHandlers {
             }
             return Cancellable.NULL;
         }
+
+        private void addDescription(ModelNode result, boolean recursive, boolean operations, ModelNodeRegistration registry, PathAddress address, Locale locale) {
+
+            if (operations) {
+                Map<String, DescriptionProvider> ops = registry.getOperationDescriptions(address);
+                if (ops.size() > 0) {
+
+                    for (Map.Entry<String, DescriptionProvider> entry : ops.entrySet()) {
+                        result.get(OPERATIONS, entry.getKey()).set(entry.getValue().getModelDescription(locale));
+                    }
+
+                } else {
+                    result.get(OPERATIONS).setEmptyList();
+                }
+            }
+
+            if (recursive && result.has(CHILDREN)) {
+                for (PathElement element : registry.getChildAddresses(address)) {
+                    PathAddress childAddress = address.append(element);
+                    ModelNode child = registry.getModelDescription(childAddress).getModelDescription(locale);
+                    addDescription(child, recursive, operations, registry, childAddress, locale);
+                    result.get(CHILDREN, element.getKey(),MODEL_DESCRIPTION, element.getValue()).set(child);
+                }
+            }
+        }
     };
+
+
 
     private static Locale getLocale(ModelNode operation) {
         if (!operation.has(REQUEST_PROPERTIES)) {
