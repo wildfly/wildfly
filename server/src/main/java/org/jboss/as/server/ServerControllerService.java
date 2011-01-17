@@ -33,21 +33,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.BootUpdateContext;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.server.deployment.ServiceLoaderProcessor;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SubDeploymentProcessor;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
-import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
@@ -149,10 +149,6 @@ final class ServerControllerService implements Service<ServerController> {
                 }
                 deployers.get(phase).add(new RegisteredProcessor(priority, processor));
             }
-
-            public ServerEnvironment getServerEnvironment() {
-                return serverEnvironment;
-            }
         };
 
         log.info("Activating core services");
@@ -192,8 +188,8 @@ final class ServerControllerService implements Service<ServerController> {
 
         // Activate core processors for jar deployment
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor()));
+        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor()));
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_MANIFEST, new ManifestAttachmentProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));

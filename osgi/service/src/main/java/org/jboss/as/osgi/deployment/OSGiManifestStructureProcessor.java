@@ -37,7 +37,7 @@ import org.jboss.osgi.spi.util.BundleInfo;
  * @author Thomas.Diesler@jboss.com
  * @since 02-Dec-2010
  */
-public class OSGiManifestParseProcessor implements DeploymentUnitProcessor {
+public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

@@ -32,7 +32,6 @@ import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentActionResult;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
-import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -158,18 +157,42 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
             @Override
             protected void uninstallBundle(Deployment dep, Bundle bundle) throws BundleException {
                 try {
-                    String contextName = InstallBundleInitiatorService.getContextName(dep);
-
                     // If there is no {@link OSGiDeploymentService} for the given bundle
                     // we unregister the deployment explicitly from the {@link BundleManager}
+                    String contextName = InstallBundleInitiatorService.getContextName(dep);
                     ServiceName serviceName = OSGiDeploymentService.getServiceName(contextName);
-                    if (getBundleManager().getServiceContainer().getService(serviceName) == null)
+                    ServiceController<?> controller = getBundleManager().getServiceContainer().getService(serviceName);
+                    if (controller == null) {
                         getBundleManager().uninstallBundle(dep);
+                        return;
+                    }
 
                     // Sanity check that the {@link DeploymentService} is there
-                    serviceName = Services.JBOSS_DEPLOYMENT.append(contextName);
-                    if (getBundleManager().getServiceContainer().getService(serviceName) == null)
-                        log.warnf("Cannot find deployment service: %s", serviceName);
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    controller.addListener(new AbstractServiceListener<Object>() {
+
+                        @Override
+                        public void listenerAdded(ServiceController<? extends Object> controller) {
+                            if (controller.getState() == State.REMOVED)
+                                serviceRemoved(controller);
+                            else if (controller.getState() == State.START_FAILED)
+                                serviceFailed(controller, controller.getStartException());
+                        }
+
+                        @Override
+                        public void serviceRemoved(ServiceController<? extends Object> controller) {
+                            log.tracef("Service removed: %s", controller.getName());
+                            controller.removeListener(this);
+                            latch.countDown();
+                        }
+
+                        @Override
+                        public void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
+                            log.tracef(reason, "Service failed: %s", controller.getName());
+                            controller.removeListener(this);
+                            latch.countDown();
+                        }
+                    });
 
                     // Undeploy through the deployment manager
                     DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
@@ -178,8 +201,16 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                     DeploymentAction removeAction = builder.getLastAction();
                     executeDeploymentPlan(plan, removeAction);
 
+                    latch.await(10, TimeUnit.SECONDS);
+                    if (controller.getState() == State.START_FAILED)
+                        throw controller.getStartException();
+                    if (controller.getState() != State.REMOVED)
+                        throw new BundleException("OSGiDeploymentService not removed: " + serviceName);
+
                 } catch (RuntimeException rte) {
                     throw rte;
+                } catch (BundleException ex) {
+                    throw ex;
                 } catch (Exception ex) {
                     throw new BundleException("Cannot undeploy bundle: " + dep, ex);
                 }

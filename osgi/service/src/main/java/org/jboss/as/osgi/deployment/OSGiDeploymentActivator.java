@@ -37,7 +37,7 @@ public class OSGiDeploymentActivator {
      * Activate the services required for service deployments.
      */
     public void activate(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_MANIFEST, new OSGiManifestParseProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_OSGI_MANIFEST, new OSGiManifestStructureProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_BUNDLE_INFO, new OSGiBundleInfoParseProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_PROPERTIES, new OSGiXServiceParseProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_DEPLOYMENT, new OSGiDeploymentInstallProcessor());

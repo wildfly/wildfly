@@ -27,7 +27,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.markDeployment;
 
 import org.jboss.vfs.VirtualFile;
 
@@ -41,9 +40,13 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
     static final String WAR_EXTENSION = ".war";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        VirtualFile virtualFile = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
+            return;
+        }
+        VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         if(virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
-            markDeployment(phaseContext.getDeploymentUnit());
+            WarDeploymentMarker.markDeployment(deploymentUnit);
         }
     }
 
