@@ -36,6 +36,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class ProxyNodeRegistration extends AbstractNodeRegistration {
+
     private final OperationHandler operationHandler;
 
     ProxyNodeRegistration(final String valueString, final NodeSubregistry parent, final OperationHandler operationHandler) {
@@ -62,6 +63,21 @@ final class ProxyNodeRegistration extends AbstractNodeRegistration {
     public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
+    @Override
+    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler,
+            final OperationHandler writeHandler) {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
+
+    @Override
+    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler) {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
+
+    @Override
+    public void registerWriteOnlyAttribute(final String attributeName, final OperationHandler writeHandler) {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
 
     @Override
     public void registerProxySubModel(final PathElement address, final OperationHandler handler) throws IllegalArgumentException {
@@ -81,17 +97,23 @@ final class ProxyNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    Set<String> getAttributeNames(Iterator<PathElement> iterator) {
+    Set<String> getAttributeNames(final Iterator<PathElement> iterator) {
         return null;
     }
 
     @Override
-    Set<String> getChildNames(Iterator<PathElement> iterator) {
+    Set<String> getChildNames(final Iterator<PathElement> iterator) {
         return null;
     }
 
     @Override
-    Set<PathElement> getChildAddresses(Iterator<PathElement> iterator) {
+    Set<PathElement> getChildAddresses(final Iterator<PathElement> iterator) {
+        return null;
+    }
+
+    @Override
+    AttributeAccess getAttribute(final ListIterator<PathElement> address, final String attributeName) {
+        // todo
         return null;
     }
 }

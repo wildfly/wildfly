@@ -48,12 +48,15 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     }
 
     /** {@inheritDoc} */
+    @Override
     public abstract ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider);
 
     /** {@inheritDoc} */
+    @Override
     public abstract void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited);
 
     /** {@inheritDoc} */
+    @Override
     public abstract void registerProxySubModel(final PathElement address, final OperationHandler handler) throws IllegalArgumentException;
 
     /**
@@ -63,11 +66,19 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      * @param operationName the operation name
      * @return the operation handler, or {@code null} if none match
      */
-    public final OperationHandler getOperationHandler(PathAddress pathAddress, String operationName) {
+    @Override
+    public final OperationHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
         return getHandler(pathAddress.iterator(), operationName);
     }
 
     abstract OperationHandler getHandler(ListIterator<PathElement> iterator, String operationName);
+
+    @Override
+    public AttributeAccess getAttributeAccess(final PathAddress address, final String attributeName) {
+        return getAttribute(address.iterator(), attributeName);
+    }
+
+    abstract AttributeAccess getAttribute(final ListIterator<PathElement> address, final String attributeName);
 
     /**
      * Get all the handlers at a specific address.
@@ -75,13 +86,15 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      * @param address the address
      * @return the handlers
      */
-    public Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address) {
+    @Override
+    public Map<String, DescriptionProvider> getOperationDescriptions(final PathAddress address) {
         return getOperationDescriptions(address.iterator());
     }
 
     abstract Map<String, DescriptionProvider> getOperationDescriptions(ListIterator<PathElement> iterator);
 
     /** {@inheritDoc} */
+    @Override
     public DescriptionProvider getOperationDescription(final PathAddress address, final String operationName) {
         return getOperationDescription(address.iterator(), operationName);
     }
@@ -89,25 +102,29 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName);
 
     /** {@inheritDoc} */
+    @Override
     public DescriptionProvider getModelDescription(final PathAddress address) {
         return getModelDescription(address.iterator());
     }
 
     abstract DescriptionProvider getModelDescription(Iterator<PathElement> iterator);
 
-    public Set<String> getAttributeNames(PathAddress address) {
+    @Override
+    public Set<String> getAttributeNames(final PathAddress address) {
         return getAttributeNames(address.iterator());
     }
 
     abstract Set<String> getAttributeNames(Iterator<PathElement> iterator);
 
-    public Set<String> getChildNames(PathAddress address) {
+    @Override
+    public Set<String> getChildNames(final PathAddress address) {
         return getChildNames(address.iterator());
     }
 
     abstract Set<String> getChildNames(Iterator<PathElement> iterator);
 
-    public Set<PathElement> getChildAddresses(PathAddress address){
+    @Override
+    public Set<PathElement> getChildAddresses(final PathAddress address){
         return getChildAddresses(address.iterator());
     }
 

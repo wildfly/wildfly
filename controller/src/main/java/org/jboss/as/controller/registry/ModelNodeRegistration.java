@@ -58,6 +58,42 @@ public interface ModelNodeRegistration {
     void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
 
     /**
+     * Records that the given attribute can be both read from and written to, and
+     * provides operation handlers for the read and the write.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     * @param readHandler the handler for attribute reads. May be {@code null}
+     *                    in which case the default handling is used
+     * @param writeHandler the handler for attribute writes. Cannot be {@code null}
+     *
+     * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     */
+    void registerReadWriteAttribute(String attributeName, OperationHandler readHandler, OperationHandler writeHandler);
+
+    /**
+     * Records that the given attribute can be read from but not written to, and
+     * optionally provides an operation handler for the read.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     * @param readHandler the handler for attribute reads. May be {@code null}
+     *                    in which case the default handling is used
+     *
+     * @throws IllegalArgumentException if {@code attributeName} is {@code null}
+     */
+    void registerReadOnlyAttribute(String attributeName, OperationHandler readHandler);
+
+    /**
+     * Records that the given attribute can be written to but not read from, and
+     * provides an operation handler for the write.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     * @param writeHandler the handler for attribute writes. Cannot be {@code null}
+     *
+     * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     */
+    void registerWriteOnlyAttribute(String attributeName, OperationHandler writeHandler);
+
+    /**
      * Register a proxy model node.  The operation handler should register operations to return the description
      * of subnodes.  TODO: define those operations
      *
@@ -90,6 +126,15 @@ public interface ModelNodeRegistration {
      * @return the attribute names. If there are none an empty set is returned
      */
     Set<String> getAttributeNames(PathAddress address);
+
+    /**
+     * Gets the information on how to read from or write to the given attribute.
+     *
+     * @param attributeName the name of the attribute
+     *
+     * @return the handling information, or {@code null} if the attribute or address is unknown
+     */
+    AttributeAccess getAttributeAccess(PathAddress address, String attributeName);
 
     /**
      * Get the names of the operations for a node
@@ -133,7 +178,7 @@ public interface ModelNodeRegistration {
          * @param rootModelDescriptionProvider the model description provider for the root model node
          * @return the new root model node registration
          */
-        public static ModelNodeRegistration create(DescriptionProvider rootModelDescriptionProvider) {
+        public static ModelNodeRegistration create(final DescriptionProvider rootModelDescriptionProvider) {
             if (rootModelDescriptionProvider == null) {
                 throw new IllegalArgumentException("rootModelDescriptionProvider is null");
             }

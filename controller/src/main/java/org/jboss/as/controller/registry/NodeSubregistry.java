@@ -53,7 +53,7 @@ final class NodeSubregistry {
     }
 
     Set<String> getChildNames(){
-        Map<String, AbstractNodeRegistration> snapshot = this.childRegistries;
+        final Map<String, AbstractNodeRegistration> snapshot = this.childRegistries;
         if (snapshot == null) {
             return Collections.emptySet();
         }
@@ -166,6 +166,21 @@ final class NodeSubregistry {
             }
         }
         return childRegistry.getAttributeNames(iterator);
+    }
+
+    AttributeAccess getAttributeReadHandler(final ListIterator<PathElement> iterator, final String child, final String attributeName) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
+        final AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry != null) {
+            return childRegistry.getAttribute(iterator, attributeName);
+        } else {
+            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
+            if (wildcardRegistry != null) {
+                return wildcardRegistry.getAttribute(iterator, attributeName);
+            } else {
+                return null;
+            }
+        }
     }
 
 
