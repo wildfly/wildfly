@@ -451,7 +451,7 @@
         
         <dependency>
             <groupId>org.jboss.osgi.vfs</groupId>
-            <artifactId>jboss-osgi-vfs30</artifactId>
+            <artifactId>jbosgi-vfs30</artifactId>
         </dependency>
         
         <dependency>

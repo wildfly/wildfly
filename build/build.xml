@@ -449,8 +449,8 @@
         </module-def>
         
         <module-def name="org.jboss.osgi.vfs">
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jboss-osgi-vfs"/>
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jboss-osgi-vfs30"/>
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
         </module-def>
         
         <module-def name="org.jboss.remoting3">

@@ -71,7 +71,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.vfs</groupId>
-            <artifactId>jboss-osgi-vfs</artifactId>
+            <artifactId>jbosgi-vfs</artifactId>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
@@ -90,7 +90,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.vfs</groupId>
-            <artifactId>jboss-osgi-vfs30</artifactId>
+            <artifactId>jbosgi-vfs30</artifactId>
             <scope>provided</scope>
         </dependency>
         
