@@ -96,7 +96,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
     public static void removeService(DeploymentUnit context) {
         final ServiceName serviceName = getServiceName(context.getName());
         final ServiceController<?> serviceController = context.getServiceRegistry().getService(serviceName);
-        if(serviceController != null) {
+        if (serviceController != null) {
             serviceController.setMode(Mode.REMOVE);
         }
     }
@@ -213,19 +213,15 @@ public class OSGiDeploymentService implements Service<Deployment> {
                         // Obtain the autoStart properties from the initiating deployment
                         // If this call is not a result of BundleContext.installBundle(...)
                         // there won't be an {@link InstallBundleInitiatorService}
-                        String contextName = InstallBundleInitiatorService.getContextName(dep);
-                        ServiceName serviceName = InstallBundleInitiatorService.getServiceName(contextName);
-                        ServiceController<?> initiatingController = serviceContainer.getService(serviceName);
-                        if (initiatingController != null) {
-                            try {
-                                Deployment initiatingDeployment = (Deployment) initiatingController.getValue();
-                                autoStart = initiatingDeployment.isAutoStart();
-                                Integer startlevel = initiatingDeployment.getStartLevel();
-                                if (startlevel != null)
-                                    startLevel.setBundleStartLevel(bundle, startlevel);
-                            } finally {
-                                initiatingController.setMode(Mode.REMOVE);
-                            }
+                        String contextName = DeploymentHolderService.getContextName(dep);
+                        ServiceName serviceName = DeploymentHolderService.getServiceName(contextName);
+                        ServiceController<?> holderService = serviceContainer.getService(serviceName);
+                        if (holderService != null) {
+                            Deployment initiatingDeployment = (Deployment) holderService.getValue();
+                            autoStart = initiatingDeployment.isAutoStart();
+                            Integer startlevel = initiatingDeployment.getStartLevel();
+                            if (startlevel != null)
+                                startLevel.setBundleStartLevel(bundle, startlevel);
                         }
 
                         if (autoStart) {

@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -38,31 +39,43 @@ import org.jboss.osgi.framework.bundle.AbstractBundleContext;
 import org.jboss.osgi.framework.bundle.BundleManager;
 
 /**
- * A service that marks a bundle deployment through the BundleContext.installBundle(...) API.
+ * A holder service for an OSGi deployment.
  *
- * The {@link Deployment} returned by the service value is the one constructed in {@link AbstractBundleContext} It is not the
- * one constructed by the OSGi {@link DeploymentUnitProcessor}s
+ * The {@link Deployment} is the one constructed in {@link AbstractBundleContext}. It is not the one constructed by the OSGi
+ * {@link DeploymentUnitProcessor}s
  *
  * @author Thomas.Diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class InstallBundleInitiatorService extends AbstractService<Deployment> {
+public class DeploymentHolderService extends AbstractService<Deployment> {
 
-    private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "bundle", "install");
+    private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment", "holder");
     private final Deployment deployment;
 
     private InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
 
-    private InstallBundleInitiatorService(Deployment deployment) {
+    private DeploymentHolderService(Deployment deployment) {
         this.deployment = deployment;
     }
 
     public static void addService(BatchBuilder batchBuilder, String contextName, Deployment dep) {
-        InstallBundleInitiatorService service = new InstallBundleInitiatorService(dep);
+        DeploymentHolderService service = new DeploymentHolderService(dep);
         ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.install();
+    }
+
+    public static void removeService(ServiceContainer container, String contextName) {
+        ServiceController<?> controller = container.getService(getServiceName(contextName));
+        if (controller != null)
+            controller.setMode(Mode.REMOVE);
+    }
+
+    public static String getLocation(ServiceRegistry registry, String contextName) {
+        // If this service is registered use the location from the original deployemnt
+        ServiceController<?> controller = registry.getService(getServiceName(contextName));
+        return controller != null ? ((Deployment) controller.getValue()).getLocation() : contextName;
     }
 
     /**
@@ -88,12 +101,6 @@ public class InstallBundleInitiatorService extends AbstractService<Deployment> {
     public static ServiceName getServiceName(String contextName) {
         ServiceName deploymentServiceName = Services.JBOSS_DEPLOYMENT.append(contextName);
         return SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
-    }
-
-    public static String getLocation(ServiceRegistry registry, String contextName) {
-        // If this service is registered use the location from the original deployemnt
-        ServiceController<?> controller = registry.getService(getServiceName(contextName));
-        return controller != null ? ((Deployment) controller.getValue()).getLocation() : contextName;
     }
 
     @Override

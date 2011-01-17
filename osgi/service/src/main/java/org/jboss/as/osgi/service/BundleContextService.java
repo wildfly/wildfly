@@ -22,7 +22,7 @@
 
 package org.jboss.as.osgi.service;
 
-import org.jboss.as.osgi.deployment.InstallBundleInitiatorService;
+import org.jboss.as.osgi.deployment.DeploymentHolderService;
 import org.jboss.as.osgi.deployment.ModuleRegistrationService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
@@ -104,7 +104,7 @@ public class BundleContextService implements Service<BundleContext> {
                     }
 
                     Deployment dep = userBundle.getDeployment();
-                    String contextName = InstallBundleInitiatorService.getContextName(dep);
+                    String contextName = DeploymentHolderService.getContextName(dep);
 
                     // Check if we have an {@link OSGiDeploymentService}
                     ServiceContainer container = context.getController().getServiceContainer();

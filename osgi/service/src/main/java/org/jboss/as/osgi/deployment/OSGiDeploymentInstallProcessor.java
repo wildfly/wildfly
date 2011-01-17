@@ -56,7 +56,7 @@ public class OSGiDeploymentInstallProcessor implements DeploymentUnitProcessor {
         Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
 
         ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnit.getName());
+        String location = DeploymentHolderService.getLocation(serviceRegistry, deploymentUnit.getName());
         VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         // Check for attached BundleInfo

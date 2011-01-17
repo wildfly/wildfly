@@ -82,14 +82,14 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                 log.tracef("Install deployment: %s", dep);
 
                 Bundle bundle = null;
-                String contextName = InstallBundleInitiatorService.getContextName(dep);
+                String contextName = DeploymentHolderService.getContextName(dep);
+                ServiceContainer serviceContainer = getBundleManager().getServiceContainer();
                 DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
                 try {
 
                     // Install the initiator service
-                    ServiceContainer serviceContainer = getBundleManager().getServiceContainer();
                     BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-                    InstallBundleInitiatorService.addService(batchBuilder, contextName, dep);
+                    DeploymentHolderService.addService(batchBuilder, contextName, dep);
                     OSGiDeploymentLatchService.addService(batchBuilder, contextName);
                     batchBuilder.install();
 
@@ -147,6 +147,9 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                 } catch (Exception ex) {
                     throw new BundleException("Cannot deploy bundle: " + dep, ex);
                 }
+                finally {
+                    DeploymentHolderService.removeService(serviceContainer, contextName);
+                }
 
                 if (bundle == null)
                     throw new IllegalStateException("Cannot find bundle: " + contextName);
@@ -159,7 +162,7 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                 try {
                     // If there is no {@link OSGiDeploymentService} for the given bundle
                     // we unregister the deployment explicitly from the {@link BundleManager}
-                    String contextName = InstallBundleInitiatorService.getContextName(dep);
+                    String contextName = DeploymentHolderService.getContextName(dep);
                     ServiceName serviceName = OSGiDeploymentService.getServiceName(contextName);
                     ServiceController<?> controller = getBundleManager().getServiceContainer().getService(serviceName);
                     if (controller == null) {

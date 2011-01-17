@@ -61,7 +61,7 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
         // Construct and attach the {@link BundleInfo}
         try {
             ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-            String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnit.getName());
+            String location = DeploymentHolderService.getLocation(serviceRegistry, deploymentUnit.getName());
             info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
             BundleInfoAttachment.attachBundleInfo(deploymentUnit, info);
         } catch (BundleException ex) {
