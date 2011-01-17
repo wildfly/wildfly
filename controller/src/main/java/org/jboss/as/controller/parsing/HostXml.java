@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -184,7 +185,7 @@ public class HostXml extends CommonXml {
     private void setHostName(final ModelNode address, final List<ModelNode> operationList, final String value) {
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address);
-        update.get(OP).set("set-host-name");
+        update.get(OP).set("write-host-name");
         update.get("host-name").set(value);
         operationList.add(update);
     }
@@ -246,8 +247,8 @@ public class HostXml extends CommonXml {
 
         if (hasLocal) {
             final ModelNode update = new ModelNode();
-            update.get("address").set(address);
-            update.get("operation").set("set-local-domain-controller");
+            update.get(OP_ADDR).set(address);
+            update.get(OP).set("write-local-domain-controller");
             list.add(update);
         }
     }
@@ -290,8 +291,8 @@ public class HostXml extends CommonXml {
         }
 
         final ModelNode update = new ModelNode();
-        update.get("address").set(address);
-        update.get("operation").set("set-remote-domain-controller");
+        update.get(OP_ADDR).set(address);
+        update.get(OP).set("write-remote-domain-controller");
         update.get("host-name").set(host);
         update.get("port").set(port);
         list.add(update);
@@ -392,8 +393,8 @@ public class HostXml extends CommonXml {
 
         final ModelNode address = parentAddress.clone().add(ModelDescriptionConstants.SERVER, name);
         final ModelNode addUpdate = new ModelNode();
-        addUpdate.get("address").set(address);
-        addUpdate.get("operation").set("add");
+        addUpdate.get(OP_ADDR).set(address);
+        addUpdate.get(OP).set(ADD);
         addUpdate.get("name").set(name);
         addUpdate.get("group").set(group);
         list.add(addUpdate);
@@ -450,8 +451,8 @@ public class HostXml extends CommonXml {
 
         final boolean isStart = start == null ? true : start.booleanValue();
         final ModelNode startUpdate = new ModelNode();
-        startUpdate.get("address").set(address);
-        startUpdate.get("operation").set("set-start");
+        startUpdate.get(OP_ADDR).set(address);
+        startUpdate.get(OP).set("write-start");
         startUpdate.get("start").set(isStart);
         list.add(startUpdate);
     }

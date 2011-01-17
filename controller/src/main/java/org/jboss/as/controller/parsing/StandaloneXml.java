@@ -249,6 +249,9 @@ public class StandaloneXml extends CommonXml {
             requireNoContent(reader);
 
             final ModelNode deploymentAdd = new ModelNode();
+            // TODO decide whether deployments are an attribute of list type or a child
+//            deploymentAdd.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
+//            deploymentAdd.get(OP).set(ADD);
             deploymentAdd.get(OP_ADDR).setEmptyList();
             deploymentAdd.get(OP).set("add-deployment");
             deploymentAdd.get("unique-name").set(uniqueName);
@@ -261,6 +264,7 @@ public class StandaloneXml extends CommonXml {
 
     private void parseServerProfile(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
         // Attributes
+        // FIXME -- either change this or remove "name" from the xsd
         requireNoAttributes(reader);
 
         // Content
@@ -334,7 +338,7 @@ public class StandaloneXml extends CommonXml {
             // TODO - this is non-optimal.
             final ModelNode setSocketThreads = new ModelNode();
             setSocketThreads.get(OP_ADDR).set(address);
-            setSocketThreads.get(OP).set("set-server-management-socket-threads");
+            setSocketThreads.get(OP).set("write-server-management-socket-threads");
             setSocketThreads.get("max-threads").set(maxThreads);
             list.add(setSocketThreads);
         }
@@ -345,7 +349,7 @@ public class StandaloneXml extends CommonXml {
     private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address);
-        update.get(OP).set("set-server-name");
+        update.get(OP).set("write-server-name");
         update.get("server-name").set(value);
         operationList.add(update);
     }

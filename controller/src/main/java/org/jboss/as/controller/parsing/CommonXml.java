@@ -24,8 +24,11 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
@@ -139,7 +142,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void writeSchemaLocation(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         final StringBuilder b = new StringBuilder();
-        final Iterator<ModelNode> iterator = modelNode.get("schema-location").asList().iterator();
+        final Iterator<ModelNode> iterator = modelNode.get(SCHEMA_LOCATIONS).asList().iterator();
         while (iterator.hasNext()) {
             final ModelNode location = iterator.next();
             final Property property = location.asProperty();
@@ -154,7 +157,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeNamespaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        for (final ModelNode namespace : modelNode.get("namespace").asList()) {
+        for (final ModelNode namespace : modelNode.get(NAMESPACES).asList()) {
             final Property property = namespace.asProperty();
             writer.writeNamespace(property.getName(), property.getValue().asString());
         }
@@ -212,8 +215,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     throw new IllegalStateException("No META-INF/services/" + NewExtension.class.getName() + " found for " + module.getIdentifier());
                 }
                 final ModelNode add = new ModelNode();
-                add.get(OP_ADDR).set(address).add("extension", moduleName);
-                add.get(OP).set("add-extension");
+                add.get(OP_ADDR).set(address).add(EXTENSION, moduleName);
+                add.get(OP).set(ADD);
                 list.add(add);
             } catch (final ModuleLoadException e) {
                 throw new XMLStreamException("Failed to load module", e);
@@ -287,7 +290,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoContent(reader);
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address);
-        update.get(OP).set("update-path");
+        update.get(OP).set("write-path");
         update.get("name").set(name);
         update.get("path").set(path);
         if (relativeTo != null) update.get("relativeTo").set(relativeTo);
@@ -295,11 +298,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseSystemProperties(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-        parseProperties(reader, "set-system-properties", address, list);
+        parseProperties(reader, "write-system-properties", address, list);
     }
 
     protected void parseEnvironmentVariables(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-        parseProperties(reader, "set-environment-variables", address, list);
+        parseProperties(reader, "write-environment-variables", address, list);
     }
 
     private void parseProperties(final XMLExtendedStreamReader reader, final String operationName, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
@@ -374,7 +377,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             // TODO - this is non-optimal.
             final ModelNode setSocketThreads = new ModelNode();
             setSocketThreads.get(OP_ADDR).set(address);
-            setSocketThreads.get(OP).set("set-management-socket-threads");
+            setSocketThreads.get(OP).set("write-management-socket-threads");
             setSocketThreads.get("max-threads").set(maxThreads);
             list.add(setSocketThreads);
         }
@@ -415,7 +418,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         home = value;
                         final ModelNode update = new ModelNode();
-                        update.get(OP).set("set-java-home");
+                        update.get(OP).set("write-java-home");
                         update.get("java-home").set(home);
                         attrUpdates.add(update);
                         break;
@@ -435,7 +438,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         debugEnabled = Boolean.valueOf(value);
                         final ModelNode update = new ModelNode();
-                        update.get(OP).set("set-debug-enabled");
+                        update.get(OP).set("write-debug-enabled");
                         update.get("enabled").set(debugEnabled);
                         attrUpdates.add(update);
                         break;
@@ -445,7 +448,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         debugOptions = value;
                         final ModelNode update = new ModelNode();
-                        update.get(OP).set("set-debug-options");
+                        update.get(OP).set("write-debug-options");
                         update.get("debug-options").set(debugOptions);
                         attrUpdates.add(update);
                         break;
@@ -455,7 +458,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         envClasspathIgnored = Boolean.valueOf(value);
                         final ModelNode update = new ModelNode();
-                        update.get(OP).set("set-env-classpath-ignored");
+                        update.get(OP).set("write-env-classpath-ignored");
                         update.get("env-classpath-ignored").set(envClasspathIgnored);
                         attrUpdates.add(update);
                         break;
@@ -570,7 +573,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case SIZE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-heap-size");
+                        update.get(OP).set("write-heap-size");
                         update.get("size").set(value);
                         updates.add(update);
                         break;
@@ -578,7 +581,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case MAX_SIZE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-max-heap-size");
+                        update.get(OP).set("write-max-heap-size");
                         update.get("size").set(value);
                         updates.add(update);
                         break;
@@ -606,7 +609,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case SIZE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-permgen-size");
+                        update.get(OP).set("write-permgen-size");
                         update.get("size").set(value);
                         updates.add(update);
                         break;
@@ -614,7 +617,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case MAX_SIZE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-max-permgen-size");
+                        update.get(OP).set("write-max-permgen-size");
                         update.get("size").set(value);
                         updates.add(update);
                         break;
@@ -643,7 +646,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case SIZE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-stack-size");
+                        update.get(OP).set("write-stack-size");
                         update.get("size").set(value);
                         updates.add(update);
                         sizeSet = true;
@@ -676,7 +679,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case VALUE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-agent-lib");
+                        update.get(OP).set("write-agent-lib");
                         update.get("agent-lib").set(value);
                         updates.add(update);
                         valueSet = true;
@@ -709,7 +712,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case VALUE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-agent-path");
+                        update.get(OP).set("write-agent-path");
                         update.get("agent-path").set(value);
                         updates.add(update);
                         valueSet = true;
@@ -742,7 +745,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case VALUE: {
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("set-java-agent");
+                        update.get(OP).set("write-java-agent");
                         update.get("java-agent").set(value);
                         updates.add(update);
                         valueSet = true;
@@ -944,6 +947,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw new XMLStreamException("Duplicate interface declaration", reader.getLocation());
             }
             final ModelNode interfaceAdd = new ModelNode();
+            // TODO should this be a child instead of an attribute?
             interfaceAdd.get(OP_ADDR).set(address);
             interfaceAdd.get(OP).set("add-interface");
 
@@ -1058,7 +1062,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address);
-        update.get(OP).set("set-socket-binding-group");
+        update.get(OP).set("write-socket-binding-group");
         update.get("name").set(name);
         updates.add(update);
 
@@ -1067,7 +1071,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
         update = new ModelNode();
         update.get(OP_ADDR).set(address);
-        update.get(OP).set("set-socket-binding-port-offset");
+        update.get(OP).set("write-socket-binding-port-offset");
         update.get("offset").set(offset);
         updates.add(update);
     }

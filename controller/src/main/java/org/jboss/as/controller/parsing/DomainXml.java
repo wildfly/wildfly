@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -239,8 +240,8 @@ public class DomainXml extends CommonXml {
             }
 
             final ModelNode group = new ModelNode();
-            group.get(OP).set("add-server-group");
-            group.get(OP_ADDR).set(address.clone().add("server-group"));
+            group.get(OP).set(ADD);
+            group.get(OP_ADDR).set(address.clone().add("server-group", name));
             group.get(REQUEST_PROPERTIES, PROFILE).set(profile);
             list.add(group);
             // list.add(new DomainServerGroupAdd(name, profile));
@@ -357,6 +358,9 @@ public class DomainXml extends CommonXml {
             ParseUtils.requireNoContent(reader);
 
             final ModelNode deploymentAdd = new ModelNode();
+            // TODO decide whether deployments are an attribute of list type or a child
+//          deploymentAdd.get(OP_ADDR).set(address).add(DEPLOYMENT, uniqueName);
+//          deploymentAdd.get(OP).set(ADD);
             deploymentAdd.get(OP_ADDR).set(address);
             deploymentAdd.get(OP).set("add-deployment");
             deploymentAdd.get(REQUEST_PROPERTIES, "unique-name").set(uniqueName);
@@ -426,9 +430,9 @@ public class DomainXml extends CommonXml {
             }
 
             final ModelNode profile = new ModelNode();
-            profile.get(OP).set("add-profile");
-            profile.get(OP_ADDR).set(address.clone().add(name));
-            profile.get(REQUEST_PROPERTIES).set(profileIncludes);
+            profile.get(OP).set(ADD);
+            profile.get(OP_ADDR).set(address).add(PROFILE, name);
+            profile.get(REQUEST_PROPERTIES, "includes").set(profileIncludes);
             list.add(profile);
 
             // Process subsystems
