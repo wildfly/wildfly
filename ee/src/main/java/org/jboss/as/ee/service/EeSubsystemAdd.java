@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.service;
 
+import org.jboss.as.ee.container.processor.BeanContainerInstallProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
 import org.jboss.as.ee.structure.ApplicationXmlParsingProcessor;
@@ -60,6 +61,7 @@ public final class EeSubsystemAdd extends AbstractSubsystemAdd<EeSubsystemElemen
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_BEAN_CONTAINER, new BeanContainerInstallProcessor());
     }
 
     @Override

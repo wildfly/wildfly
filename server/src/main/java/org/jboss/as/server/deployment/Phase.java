@@ -238,7 +238,7 @@ public enum Phase {
     public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x800;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x900;
     public static final int INSTALL_DS_DEPLOYMENT                       = 0xA00;
-    public static final int INSTALL_MANAGED_BEAN_DEPLOYMENT             = 0xB00;
+    public static final int INSTALL_BEAN_CONTAINER                      = 0xB00;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0xC00;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0xD00;
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0xE00;

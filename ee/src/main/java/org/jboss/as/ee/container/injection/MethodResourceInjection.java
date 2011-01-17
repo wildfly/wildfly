@@ -20,24 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.container.injection;
 
-import org.jboss.as.ee.container.AbstractBeanContainer;
-import org.jboss.as.ee.container.BeanContainerConfig;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
+import java.lang.reflect.Method;
 
-import java.util.List;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.inject.SetMethodInjector;
+import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
- * Implementation of {@link org.jboss.as.ee.container.BeanContainer} used to managed instances of managed beans.
+ * Resource injection capable of executing the resource injection using a Method instance.
  *
- * @param <T> The managed bean object type
+ * @param <V> The value type being injected
  *
  * @author John E. Bailey
  */
-public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(BeanContainerConfig containerConfig, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        super(containerConfig, resourceInjections, interceptors);
+public class MethodResourceInjection<V> extends AbstractResourceInjection<V> {
+    private final Value<Method> methodValue;
+
+    /**
+     * Construct an instance.
+     *
+     * @param methodValue The method value to use for injection
+     * @param value The injeciton value
+     * @param primitive Is the argument type primitive
+     */
+    public MethodResourceInjection(final Value<Method> methodValue, final Value<V> value, final boolean primitive) {
+        super(value, primitive);
+        this.methodValue = methodValue;
+    }
+
+    /** {@inheritDoc} */
+    protected Injector<V> getInjector(final Object target) {
+        return new SetMethodInjector<V>(Values.immediateValue(target), methodValue);
     }
 }

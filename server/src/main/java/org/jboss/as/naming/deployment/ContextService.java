@@ -39,16 +39,16 @@ import javax.naming.NamingException;
  */
 public class ContextService implements Service<Context> {
     private final InjectedValue<Context> parentContextValue = new InjectedValue<Context>();
-    private final JndiName name;
+    private final String localName;
     private Context context;
 
     /**
      * Create an instance with a specific name.
      *
-     * @param name The context name in the parent context
+     * @param localName The context name in the parent context
      */
-    public ContextService(final JndiName name) {
-        this.name = name;
+    public ContextService(final String localName) {
+        this.localName = localName;
     }
 
     /**
@@ -60,9 +60,9 @@ public class ContextService implements Service<Context> {
     public synchronized void start(final StartContext context) throws StartException {
         final Context parentContext = parentContextValue.getValue();
         try {
-            this.context = parentContext.createSubcontext(name.getLocalName());
+            this.context = parentContext.createSubcontext(localName);
         } catch (NamingException e) {
-            throw new StartException("Failed to create sub-context with name '" + name + "' in context '" + parentContext + "'", e);
+            throw new StartException("Failed to create sub-context with name '" + localName + "' in context '" + parentContext + "'", e);
         }
     }
 
@@ -74,9 +74,9 @@ public class ContextService implements Service<Context> {
     public synchronized void stop(StopContext context) {
         final Context parentContext = parentContextValue.getValue();
         try {
-            parentContext.destroySubcontext(name.getLocalName());
+            parentContext.destroySubcontext(localName);
         } catch (NamingException e) {
-            throw new IllegalStateException("Failed to destroy sub-context with name '" + name + "' from context '" + parentContext + "'", e);
+            throw new IllegalStateException("Failed to destroy sub-context with name '" + localName + "' from context '" + parentContext + "'", e);
         }
     }
 

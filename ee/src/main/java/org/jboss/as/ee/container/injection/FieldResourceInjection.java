@@ -20,24 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.container.injection;
 
-import org.jboss.as.ee.container.AbstractBeanContainer;
-import org.jboss.as.ee.container.BeanContainerConfig;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
+import java.lang.reflect.Field;
 
-import java.util.List;
+import org.jboss.msc.inject.FieldInjector;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
- * Implementation of {@link org.jboss.as.ee.container.BeanContainer} used to managed instances of managed beans.
+ * Resource injection capable of executing the resource injection using a Field instance.
  *
- * @param <T> The managed bean object type
+ * @param <V> The value type being injected
  *
  * @author John E. Bailey
  */
-public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(BeanContainerConfig containerConfig, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        super(containerConfig, resourceInjections, interceptors);
+public class FieldResourceInjection<V> extends AbstractResourceInjection<V> {
+    private final Value<Field> fieldValue;
+
+    /**
+     * Construct an instance.
+     *
+     * @param fieldValue The field on the target.
+     * @param value The injection value
+     * @param primitive Is the field type primitive
+     */
+    public FieldResourceInjection(final Value<Field> fieldValue, final Value<V> value, final boolean primitive) {
+        super(value, primitive);
+        this.fieldValue = fieldValue;
+    }
+
+    /** {@inheritDoc} */
+    protected Injector<V> getInjector(final Object target) {
+        return new FieldInjector<V>(Values.immediateValue(target), fieldValue);
     }
 }

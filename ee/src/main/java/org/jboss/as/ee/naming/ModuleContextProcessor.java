@@ -67,7 +67,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         serviceTarget.addService(moduleContextServiceName.append("ModuleName"), moduleNameBinder).addDependency(
                 moduleContextServiceName, Context.class, moduleNameBinder.getContextInjector()).install();
 
-        final ContextService envContextService = new ContextService(JndiName.of("env"));
+        final ContextService envContextService = new ContextService("env");
         serviceTarget.addService(moduleContextServiceName.append("env"), envContextService)
             .addDependency(moduleContextServiceName, Context.class, envContextService.getParentContextInjector())
             .install();

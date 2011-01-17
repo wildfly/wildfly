@@ -20,38 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.container.interceptor;
 
 import java.lang.reflect.Method;
 
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.SetMethodInjector;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
-
 /**
- * Resource injection capable of executing the resource injection using a Method instance.
+ * Filter used to determine whether or not to run an interceptor on a given method.
  *
- * @param <T> The value type being injected
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class MethodResourceInjection<T> extends ResourceInjection<T> {
-    private final Value<Method> methodValue;
-
+public interface MethodInterceptorFilter {
     /**
-     * Construct an instance.
+     * Determine whether or not to intercept a give method.
      *
-     * @param methodValue The method value to use for injection
-     * @param primitive Is the argument type primitive
+     * @param method The method to check against
+     * @return {@code true} if the method should be intercepted, {@code false} otherwise
      */
-    public MethodResourceInjection(final Value<Method> methodValue, final Value<T> value, final boolean primitive) {
-        super(value, primitive);
-        this.methodValue = methodValue;
-    }
-
-    /** {@inheritDoc} */
-    protected Injector<T> getInjector(final Object target) {
-        return new SetMethodInjector<T>(Values.immediateValue(target), methodValue);
-    }
+    boolean intercepts(final Method method);
 }

@@ -24,7 +24,6 @@ package org.jboss.as.naming.deployment;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -41,20 +40,18 @@ import javax.naming.NamingException;
  * @author John E. Bailey
  */
 public class ResourceBinder<T> implements Service<Object> {
-    public static final ServiceName JAVA_BINDER = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("binder");
-
     private final InjectedValue<Context> namingContextValue = new InjectedValue<Context>();
-    private final JndiName name;
+    private final String localName;
     private final Value<T> value;
 
     /**
      * Construct  new instance.
      *
-     * @param name The JNDI name to use for binding.
+     * @param localName The local name to use for binding.
      * @param value The value to bind into JNDI
      */
-    public ResourceBinder(final JndiName name, final Value<T> value) {
-        this.name = name;
+    public ResourceBinder(final String localName, final Value<T> value) {
+        this.localName = localName;
         this.value = value;
     }
 
@@ -67,9 +64,9 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized void start(StartContext context) throws StartException {
         final Context namingContext = namingContextValue.getValue();
         try {
-            namingContext.rebind(name.getLocalName(), value.getValue());
+            namingContext.rebind(localName, value.getValue());
         } catch (NamingException e) {
-            throw new StartException("Failed to bind resource into context [" + namingContext + "] at location [" + name + "]", e);
+            throw new StartException("Failed to bind resource into context [" + namingContext + "] at location [" + localName + "]", e);
         }
     }
 
@@ -81,9 +78,9 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized void stop(StopContext context) {
         final Context namingContext = namingContextValue.getValue();
         try {
-            namingContext.unbind(name.getLocalName());
+            namingContext.unbind(localName);
         } catch (NamingException e) {
-            throw new RuntimeException("Failed to unbind resource from context [" + namingContext + "] at location [" + name + "]", e);
+            throw new RuntimeException("Failed to unbind resource from context [" + namingContext + "] at location [" + localName + "]", e);
         }
     }
 
@@ -96,9 +93,9 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized Object getValue() throws IllegalStateException {
         final Context namingContext = namingContextValue.getValue();
         try {
-            return namingContext.lookup(name.getLocalName());
+            return namingContext.lookup(localName);
         } catch (NamingException e) {
-            throw new RuntimeException("Failed to lookup value from context [" + namingContext + "] at location [" + name + "]", e);
+            throw new RuntimeException("Failed to lookup value from context [" + namingContext + "] at location [" + localName + "]", e);
         }
     }
 

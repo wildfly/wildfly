@@ -20,24 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
-
-import org.jboss.as.ee.container.AbstractBeanContainer;
-import org.jboss.as.ee.container.BeanContainerConfig;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
+package org.jboss.as.ee.container.interceptor;
 
 import java.util.List;
+import org.jboss.as.ee.container.injection.ResourceInjection;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
- * Implementation of {@link org.jboss.as.ee.container.BeanContainer} used to managed instances of managed beans.
+ * Factory used to create {@link MethodInterceptor} instances from {@link MethodInterceptorConfiguration} instances.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(BeanContainerConfig containerConfig, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        super(containerConfig, resourceInjections, interceptors);
-    }
+public interface MethodInterceptorFactory {
+    /**
+     * Create a {@link MethodInterceptor} instance.
+     *
+     * @param deploymentUnit The current deployment unit.
+     * @param configuration  The interceptor configuration
+     * @param injections     The interceptors injections
+     * @return The MethodInterceptor instance
+     */
+    MethodInterceptor createInterceptor(final DeploymentUnit deploymentUnit, final MethodInterceptorConfiguration configuration, final List<ResourceInjection> injections);
 }

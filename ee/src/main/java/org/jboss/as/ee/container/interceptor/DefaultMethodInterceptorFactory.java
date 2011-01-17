@@ -20,24 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
-
-import org.jboss.as.ee.container.AbstractBeanContainer;
-import org.jboss.as.ee.container.BeanContainerConfig;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
+package org.jboss.as.ee.container.interceptor;
 
 import java.util.List;
+import org.jboss.as.ee.container.injection.ResourceInjection;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
- * Implementation of {@link org.jboss.as.ee.container.BeanContainer} used to managed instances of managed beans.
+ * The default MethodInterceptorFactory instance.  Assumes all configurations use AroundInvoke methods.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(BeanContainerConfig containerConfig, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        super(containerConfig, resourceInjections, interceptors);
+public class DefaultMethodInterceptorFactory implements MethodInterceptorFactory {
+    public MethodInterceptor createInterceptor(final DeploymentUnit deploymentUnit, final MethodInterceptorConfiguration configuration, final List<ResourceInjection> injections) {
+        return AroundInvokeInterceptor.create(configuration.getInterceptorClass(), configuration.getAroundInvokeMethod(), configuration.getMethodFilter(), injections);
     }
 }

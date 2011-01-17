@@ -20,24 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.container.service;
 
-import org.jboss.as.ee.container.AbstractBeanContainer;
 import org.jboss.as.ee.container.BeanContainerConfig;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
-
-import java.util.List;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 /**
- * Implementation of {@link org.jboss.as.ee.container.BeanContainer} used to managed instances of managed beans.
- *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(BeanContainerConfig containerConfig, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        super(containerConfig, resourceInjections, interceptors);
-    }
+public class Attachments {
+    public static final AttachmentKey<AttachmentList<BeanContainerConfig>> BEAN_CONTAINER_CONFIGS = AttachmentKey.createList(BeanContainerConfig.class);
 }

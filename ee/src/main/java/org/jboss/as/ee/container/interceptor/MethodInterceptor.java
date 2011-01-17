@@ -20,38 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
-
-import java.lang.reflect.Field;
-
-import org.jboss.msc.inject.FieldInjector;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
+package org.jboss.as.ee.container.interceptor;
 
 /**
- * Resource injection capable of executing the resource injection using a Field instance.
+ * Contract for intercepting a method.
  *
- * @param <T> The value type being injected
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class FieldResourceInjection<T> extends ResourceInjection<T> {
-    private final Value<Field> fieldValue;
+public interface MethodInterceptor {
+    /**
+     * Determine whether to use an {@link InvocationContext} for interception methods.
+     *
+     * @return {@code true} if this interceptor accepts an InvocationContext
+     */
+    boolean acceptsInvocationContext();
 
     /**
-     * Construct an instance.
+     * Get the method filter used to determine whether or not to apply this filter against a method.
      *
-     * @param fieldValue The field on the target.
-     * @param primitive Is the field type primitive
+     * @return The method filter
      */
-    public FieldResourceInjection(final Value<Field> fieldValue, final Value<T> value, final boolean primitive) {
-        super(value, primitive);
-        this.fieldValue = fieldValue;
-    }
+    MethodInterceptorFilter getMethodFilter();
 
-    /** {@inheritDoc} */
-    protected Injector<T> getInjector(final Object target) {
-        return new FieldInjector<T>(Values.immediateValue(target), fieldValue);
-    }
+    /**
+     * Intercept a method call.
+     *
+     * @param invocationContext The current InvocationContext
+     * @return The result of the method call
+     * @throws Exception If any exceptions occur during interception
+     */
+    Object intercept(final InvocationContext<?> invocationContext) throws Exception;
 }

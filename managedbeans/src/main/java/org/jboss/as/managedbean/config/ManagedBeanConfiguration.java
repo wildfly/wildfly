@@ -25,6 +25,8 @@ package org.jboss.as.managedbean.config;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
+import org.jboss.as.ee.container.interceptor.MethodInterceptorConfiguration;
+import org.jboss.as.ee.container.injection.ResourceInjectionConfiguration;
 
 /**
  * Configuration object which maintains required information to create instances of managed beans.
@@ -38,8 +40,8 @@ public class ManagedBeanConfiguration implements Serializable {
     private Class<?> type;
     private List<Method> postConstructMethods;
     private List<Method> preDestroyMethods;
-    private List<ResourceConfiguration> resourceConfigurations;
-    private List<InterceptorConfiguration> interceptorConfigurations;
+    private List<ResourceInjectionConfiguration> resourceConfigurations;
+    private List<MethodInterceptorConfiguration> interceptorConfigurations;
 
     /**
      * Default constructor.
@@ -125,7 +127,7 @@ public class ManagedBeanConfiguration implements Serializable {
      *
      * @return the resource configurations
      */
-    public List<ResourceConfiguration> getResourceConfigurations() {
+    public List<ResourceInjectionConfiguration> getResourceConfigurations() {
         return resourceConfigurations;
     }
 
@@ -134,7 +136,7 @@ public class ManagedBeanConfiguration implements Serializable {
      *
      * @param resourceConfigurations the resource configurations
      */
-    public void setResourceConfigurations(List<ResourceConfiguration> resourceConfigurations) {
+    public void setResourceConfigurations(List<ResourceInjectionConfiguration> resourceConfigurations) {
         this.resourceConfigurations = resourceConfigurations;
     }
 
@@ -143,7 +145,7 @@ public class ManagedBeanConfiguration implements Serializable {
      *
      * @return The interceptor configurations.
      */
-    public List<InterceptorConfiguration> getInterceptorConfigurations() {
+    public List<MethodInterceptorConfiguration> getInterceptorConfigurations() {
         return interceptorConfigurations;
     }
 
@@ -152,7 +154,7 @@ public class ManagedBeanConfiguration implements Serializable {
      *
      * @param interceptorConfigurations The interceptor configurations.
      */
-    public void setInterceptorConfigurations(List<InterceptorConfiguration> interceptorConfigurations) {
+    public void setInterceptorConfigurations(List<MethodInterceptorConfiguration> interceptorConfigurations) {
         this.interceptorConfigurations = interceptorConfigurations;
     }
 }

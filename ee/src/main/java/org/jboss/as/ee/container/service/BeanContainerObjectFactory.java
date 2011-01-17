@@ -20,24 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.container.service;
 
-import org.jboss.as.ee.container.AbstractBeanContainer;
-import org.jboss.as.ee.container.BeanContainerConfig;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
-
-import java.util.List;
+import java.util.Hashtable;
+import javax.naming.Context;
+import javax.naming.Name;
+import org.jboss.as.ee.container.BeanContainer;
+import org.jboss.as.naming.ServiceReferenceObjectFactory;
 
 /**
- * Implementation of {@link org.jboss.as.ee.container.BeanContainer} used to managed instances of managed beans.
+ * Object factory used to retrieve instances of beans managed by a {@link BeanContainer}.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(BeanContainerConfig containerConfig, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        super(containerConfig, resourceInjections, interceptors);
+public class BeanContainerObjectFactory extends ServiceReferenceObjectFactory {
+    @SuppressWarnings("unchecked")
+    public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
+        final BeanContainer<Object> beanContainer = (BeanContainer<Object>)serviceValue;
+        return beanContainer.getInstance();
     }
 }

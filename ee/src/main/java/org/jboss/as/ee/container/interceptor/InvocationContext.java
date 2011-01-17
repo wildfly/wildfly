@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.container.interceptor;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -40,7 +40,7 @@ public class InvocationContext<T> implements javax.interceptor.InvocationContext
     private T target;
     private Method method;
     private Object[] parameters;
-    private final Iterator<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors;
+    private final Iterator<MethodInterceptor> interceptors;
     private final Map<String, Object> contextData = Collections.emptyMap();
 
     /**
@@ -51,7 +51,7 @@ public class InvocationContext<T> implements javax.interceptor.InvocationContext
      * @param parameters The parameters to the method
      * @param interceptors The interceptor chain
      */
-    public InvocationContext(final T target, final Method method, final Object[] parameters, final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors) {
+    public InvocationContext(final T target, final Method method, final Object[] parameters, final List<MethodInterceptor> interceptors) {
         this.target = target;
         this.method = method;
         this.parameters = parameters;
@@ -98,11 +98,14 @@ public class InvocationContext<T> implements javax.interceptor.InvocationContext
      * @throws Exception
      */
     public Object proceed() throws Exception {
-        if(interceptors.hasNext()) {
-            final ManagedBeanInterceptor.AroundInvokeInterceptor<?> interceptor = interceptors.next();
-            return interceptor.intercept(this);
-        } else {
-            return method.invoke(target, parameters);
+        while(interceptors.hasNext()) {
+            final MethodInterceptor interceptor = interceptors.next();
+            if(interceptor.acceptsInvocationContext()) {
+                return interceptor.intercept(this);
+            } else {
+                interceptor.intercept(null);
+            }
         }
+        return method.invoke(target, parameters);
     }
 }

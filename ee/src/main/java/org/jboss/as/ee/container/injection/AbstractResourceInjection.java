@@ -20,30 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.container.injection;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.Value;
 
 /**
- * Helper object used to coordinate resource injection.  This class will hold onto an injector and an injected value
- * to apply at injection time.
+ * This class will hold onto an injector and an injected value to apply them to the target at injection time.
  *
- * @param <T> The value type being injected
+ * @param <V> The value type being injected
  *
  * @author John E. Bailey
  */
-public abstract class ResourceInjection <T> {
-    private final Value<T> value;
+public abstract class AbstractResourceInjection<V> implements ResourceInjection {
     private final boolean primitiveTarget;
+    private final Value<V> value;
 
     /**
      * Construct new instance.
+     *
+     * @param value The value to inject
      * @param primitiveTarget Is the injection target a primitive value
      */
-    protected ResourceInjection(final Value<T> value, final boolean primitiveTarget) {
-        this.primitiveTarget = primitiveTarget;
+    protected AbstractResourceInjection(final Value<V> value, final boolean primitiveTarget) {
         this.value = value;
+        this.primitiveTarget = primitiveTarget;
     }
 
     /**
@@ -52,12 +53,12 @@ public abstract class ResourceInjection <T> {
      * @param target The target object to inject
      */
     public void inject(final Object target) {
-        final Injector<T> injector = getInjector(target);
-        final T theValue = value.getValue();
-        if(primitiveTarget && theValue == null) {
+        final Injector<V> injector = getInjector(target);
+        final V value = this.value.getValue();
+        if(primitiveTarget && value == null) {
             return; // Skip the injection of null into a primitive target
         }
-        injector.inject(theValue);
+        injector.inject(value);
     }
 
     /**
@@ -66,5 +67,5 @@ public abstract class ResourceInjection <T> {
      * @param target The target object of the injection
      * @return an injector
      */
-    protected abstract Injector<T> getInjector(final Object target);
+    protected abstract Injector<V> getInjector(final Object target);
 }
