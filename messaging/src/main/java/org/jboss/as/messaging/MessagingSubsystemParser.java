@@ -719,9 +719,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         do {
             tag = reader.nextTag();
             localName = reader.getLocalName();
-            if (localName.equals(Element.PERMISSION_ELEMENT_NAME.getLocalName()) == false)
-                break;
             final Element element = Element.forName(reader.getLocalName());
+            if (element != Element.PERMISSION_ELEMENT_NAME) {
+                break;
+            }
 
             List<String> roles = null;
             String type = null;

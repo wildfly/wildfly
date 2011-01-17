@@ -9,26 +9,26 @@ import java.util.Map;
 enum Attribute {
    UNKNOWN(null),
    /* Messaging 1.0 attributes, in alpha order */
-   CONSUME_NAME("consume"),
-   CREATEDURABLEQUEUE_NAME("createDurableQueue"),
-   CREATE_NON_DURABLE_QUEUE_NAME("createNonDurableQueue"),
-   CREATETEMPQUEUE_NAME("createTempQueue"),
-   DELETE_NON_DURABLE_QUEUE_NAME("deleteNonDurableQueue"),
-   DELETEDURABLEQUEUE_NAME("deleteDurableQueue"),
-   DELETETEMPQUEUE_NAME("deleteTempQueue"),
-   KEY("key"),
-   MANAGE_NAME("manage"),
-   MATCH("match"),
-   NAME("name"),
-   PATH("path"),
-   RELATIVE_TO("relative-to"),
-   ROLES_ATTR_NAME("roles"),
-   SEND_NAME("send"),
-   SERVER_ID("server-id"),
-   SOCKET_BINDING("socket-binding"),
-   STRING("string"),
-   TYPE_ATTR_NAME("type"),
-   VALUE("value"),
+   CONSUME_NAME(CommonAttributes.CONSUME_NAME),
+   CREATEDURABLEQUEUE_NAME(CommonAttributes.CREATEDURABLEQUEUE_NAME),
+   CREATE_NON_DURABLE_QUEUE_NAME(CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME),
+   CREATETEMPQUEUE_NAME(CommonAttributes.CREATETEMPQUEUE_NAME),
+   DELETE_NON_DURABLE_QUEUE_NAME(CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME),
+   DELETEDURABLEQUEUE_NAME(CommonAttributes.DELETEDURABLEQUEUE_NAME),
+   DELETETEMPQUEUE_NAME(CommonAttributes.DELETETEMPQUEUE_NAME),
+   KEY(CommonAttributes.KEY),
+   MANAGE_NAME(CommonAttributes.MANAGE_NAME),
+   MATCH(CommonAttributes.MATCH),
+   NAME(CommonAttributes.NAME),
+   PATH(CommonAttributes.PATH),
+   RELATIVE_TO(CommonAttributes.RELATIVE_TO),
+   ROLES_ATTR_NAME(CommonAttributes.ROLES_ATTR_NAME),
+   SEND_NAME(CommonAttributes.SEND_NAME),
+   SERVER_ID(CommonAttributes.SERVER_ID),
+   SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
+   STRING(CommonAttributes.STRING),
+   TYPE_ATTR_NAME(CommonAttributes.TYPE_ATTR_NAME),
+   VALUE(CommonAttributes.VALUE),
    ;
    private final String name;
 
@@ -61,8 +61,4 @@ enum Attribute {
       return element == null ? UNKNOWN : element;
    }
 
-   @Override
-   public String toString() {
-      return getLocalName();
-   }
 }
