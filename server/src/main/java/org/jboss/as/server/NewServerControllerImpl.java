@@ -73,6 +73,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.ManagementSocketAddHandler;
+import org.jboss.as.server.operations.ServerCompositeOperationHandler;
 import org.jboss.as.server.operations.ServerOperationHandlers;
 import org.jboss.as.server.operations.ServerSocketBindingAddHandler;
 import org.jboss.as.server.operations.ServerSocketBindingRemoveHandler;
@@ -136,6 +137,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(ServerCompositeOperationHandler.OPERATION_NAME, ServerCompositeOperationHandler.INSTANCE, ServerCompositeOperationHandler.INSTANCE, false);
 
         // Management socket
         root.registerOperationHandler(ManagementSocketAddHandler.OPERATION_NAME, ManagementSocketAddHandler.INSTANCE, ManagementSocketAddHandler.INSTANCE, false);

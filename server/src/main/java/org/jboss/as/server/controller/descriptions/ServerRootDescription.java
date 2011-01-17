@@ -35,8 +35,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -51,6 +54,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
+import org.jboss.as.server.operations.ServerCompositeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -128,6 +133,24 @@ public class ServerRootDescription {
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION);
 
+        return root;
+    }
+
+    public static ModelNode getCompositeOperationDescription(Locale locale) {
+
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ServerCompositeOperationHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("composite"));
+        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.STEPS, TYPE).set(ModelType.LIST); // TODO details of the type
+        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.STEPS, DESCRIPTION).set(bundle.getString("composite.steps"));
+        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.STEPS, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.ROLLBACK_ON_RUNTIME_FAILURE, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.ROLLBACK_ON_RUNTIME_FAILURE, DESCRIPTION).set(bundle.getString("composite.rollback"));
+        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.ROLLBACK_ON_RUNTIME_FAILURE, REQUIRED).set(false);
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        // TODO details of the reply
+        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("composite.result"));
         return root;
     }
 
