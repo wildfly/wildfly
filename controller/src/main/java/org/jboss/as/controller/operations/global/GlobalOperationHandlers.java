@@ -254,7 +254,7 @@ public class GlobalOperationHandlers {
 
                 addDescription(result, recursive, operations, registry, address, locale);
 
-                resultHandler.handleResultFragment(new String[0], result);
+                resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
                 resultHandler.handleFailed(new ModelNode().set(e.getMessage()));

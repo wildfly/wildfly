@@ -144,7 +144,12 @@ public interface ModelNodeRegistration {
      */
     Set<String> getChildNames(PathAddress address);
 
-
+    /**
+     * Gets the set of direct child address elements under the node at the passed in PathAddress
+     *
+     * @param address the address we want to find children for
+     * @return the set of direct child elements
+     */
     Set<PathElement> getChildAddresses(PathAddress address);
 
     /**
