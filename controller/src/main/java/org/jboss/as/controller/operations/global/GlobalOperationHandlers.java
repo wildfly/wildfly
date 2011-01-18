@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MOD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 
 import java.util.Locale;
 import java.util.Map;
@@ -62,7 +61,7 @@ public class GlobalOperationHandlers {
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 final ModelNode result;
-                if (operation.require(REQUEST_PROPERTIES).require(RECURSIVE).asBoolean()) {
+                if (operation.require(RECURSIVE).asBoolean()) {
                     result = context.getSubModel().clone();
                 } else {
                     result = new ModelNode();
@@ -102,7 +101,7 @@ public class GlobalOperationHandlers {
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
             try {
-                final String attributeName = operation.require(REQUEST_PROPERTIES).require(NAME).asString();
+                final String attributeName = operation.require(NAME).asString();
                 final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
                 if (attributeAccess == null) {
                     resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
@@ -129,7 +128,7 @@ public class GlobalOperationHandlers {
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
             try {
-                final String attributeName = operation.require(REQUEST_PROPERTIES).require(NAME).asString();
+                final String attributeName = operation.require(NAME).asString();
                 final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
                 if (attributeAccess == null) {
                     resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
@@ -152,7 +151,7 @@ public class GlobalOperationHandlers {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
-                final String childName = operation.require(REQUEST_PROPERTIES).require(CHILD_TYPE).asString();
+                String childName = operation.require(CHILD_TYPE).asString();
 
                 ModelNode subModel = context.getSubModel().clone();
                 if (!subModel.isDefined()) {
@@ -222,7 +221,7 @@ public class GlobalOperationHandlers {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
-                final String operationName = operation.require(REQUEST_PROPERTIES).require(NAME).asString();
+                String operationName = operation.require(NAME).asString();
 
                 final ModelNodeRegistration registry = context.getRegistry();
                 final DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.pathAddress(operation.require(ADDRESS)), operationName);
@@ -243,8 +242,8 @@ public class GlobalOperationHandlers {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
-                final boolean operations = operation.get(REQUEST_PROPERTIES, OPERATIONS).isDefined() ? operation.get(REQUEST_PROPERTIES, OPERATIONS).asBoolean() : false;
-                final boolean recursive = operation.get(REQUEST_PROPERTIES, RECURSIVE).isDefined() ? operation.get(REQUEST_PROPERTIES, RECURSIVE).asBoolean() : false;
+                final boolean operations = operation.get(OPERATIONS).isDefined() ? operation.get(OPERATIONS).asBoolean() : false;
+                final boolean recursive = operation.get(RECURSIVE).isDefined() ? operation.get(RECURSIVE).asBoolean() : false;
 
                 final ModelNodeRegistration registry = context.getRegistry();
                 final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
@@ -290,14 +289,11 @@ public class GlobalOperationHandlers {
 
 
 
-    private static Locale getLocale(final ModelNode operation) {
-        if (!operation.has(REQUEST_PROPERTIES)) {
+    private static Locale getLocale(ModelNode operation) {
+        if (!operation.has(LOCALE)) {
             return null;
         }
-        if (!operation.get(REQUEST_PROPERTIES).has(LOCALE)) {
-            return null;
-        }
-        return new Locale(operation.get(REQUEST_PROPERTIES, LOCALE).asString());
+        return new Locale(operation.get(LOCALE).asString());
     }
 
 
