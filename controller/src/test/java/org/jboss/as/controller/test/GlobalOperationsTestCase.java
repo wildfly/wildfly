@@ -200,6 +200,14 @@ public class GlobalOperationsTestCase {
         } catch (OperationFailedException expected) {
         }
 
+        operation.get(NAME).set("string2");
+        try {
+            result = CONTROLLER.execute(operation);
+            fail("Expected error for attribute with no read handler");
+        } catch (OperationFailedException expected) {
+        }
+
+
         operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(NAME).set("name");
         result = CONTROLLER.execute(operation);
@@ -211,6 +219,11 @@ public class GlobalOperationsTestCase {
         result = CONTROLLER.execute(operation);
         assertNotNull(result);
         assertFalse(result.isDefined());
+
+        operation.get(NAME).set("name");
+        result = CONTROLLER.execute(operation);
+        assertNotNull(result);
+        assertEquals("Overridden by special read handler", result.asString());
     }
 
     @Test
@@ -780,6 +793,10 @@ public class GlobalOperationsTestCase {
                 }
             });
 
+            profileASub2Reg.registerReadOnlyAttribute("int", null);
+            profileASub2Reg.registerReadOnlyAttribute("string1", null);
+            profileASub2Reg.registerReadOnlyAttribute("list", null);
+
             ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 
                 @Override
@@ -870,6 +887,8 @@ public class GlobalOperationsTestCase {
                     return node;
                 }
             });
+            profileCSub4Reg.registerReadOnlyAttribute("name", null);
+
 
             ModelNodeRegistration profileCSub5Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
 
@@ -890,6 +909,16 @@ public class GlobalOperationsTestCase {
                     return node;
                 }
             });
+            profileCSub5Reg.registerReadOnlyAttribute("name", new OperationHandler() {
+
+                @Override
+                public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                    resultHandler.handleResultFragment(new String[0], new ModelNode().set("Overridden by special read handler"));
+                    resultHandler.handleResultComplete(null);
+                    return Cancellable.NULL;
+                }
+            });
+            profileCSub5Reg.registerReadOnlyAttribute("value", null);
 
             ModelNodeRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
 
