@@ -34,6 +34,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.server.deployment.Attachments;
@@ -94,6 +95,7 @@ final class NewServerControllerService implements Service<NewServerController> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(final StartContext context) throws StartException {
         final ServiceContainer container = context.getController().getServiceContainer();
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
@@ -126,21 +128,25 @@ final class NewServerControllerService implements Service<NewServerController> {
 
         final AtomicInteger count = new AtomicInteger(1);
         final ResultHandler resultHandler = new ResultHandler() {
+            @Override
             public void handleResultFragment(final String[] location, final ModelNode result) {
             }
 
+            @Override
             public void handleResultComplete(final ModelNode compensatingOperation) {
                 if (count.decrementAndGet() == 0) {
                     // some action
                 }
             }
 
+            @Override
             public void handleFailed(final ModelNode failureDescription) {
                 if (count.decrementAndGet() == 0) {
                     // some action
                 }
             }
 
+            @Override
             public void handleCancellation() {
                 if (count.decrementAndGet() == 0) {
                     // some action
@@ -163,10 +169,12 @@ final class NewServerControllerService implements Service<NewServerController> {
         // Activate deployment module loader
         deploymentModuleLoader = new DeploymentModuleLoaderImpl(configuration.getModuleLoader());
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_DEPLOYMENT_MODULE_LOADER, new DeploymentUnitProcessor() {
+            @Override
             public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
                 phaseContext.getDeploymentUnit().putAttachment(Attachments.DEPLOYMENT_MODULE_LOADER, deploymentModuleLoader);
             }
 
+            @Override
             public void undeploy(DeploymentUnit context) {
                 context.removeAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
             }
@@ -174,8 +182,8 @@ final class NewServerControllerService implements Service<NewServerController> {
 
         // Activate core processors for jar deployment
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor()));
+        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor()));
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_MANIFEST, new ManifestAttachmentProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));
@@ -205,6 +213,7 @@ final class NewServerControllerService implements Service<NewServerController> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(final StopContext context) {
         serverController = null;
         final ServiceContainer container = context.getController().getServiceContainer();
@@ -223,6 +232,7 @@ final class NewServerControllerService implements Service<NewServerController> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized NewServerController getValue() throws IllegalStateException, IllegalArgumentException {
         return serverController;
     }
@@ -236,6 +246,7 @@ final class NewServerControllerService implements Service<NewServerController> {
             this.processor = processor;
         }
 
+        @Override
         public int compareTo(final RegisteredProcessor o) {
             final int rel = Integer.signum(priority - o.priority);
             return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
