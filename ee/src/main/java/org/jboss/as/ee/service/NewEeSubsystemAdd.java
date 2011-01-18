@@ -30,7 +30,11 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.ee.processor.EarStructureProcessor;
+import org.jboss.as.ee.naming.ApplicationContextProcessor;
+import org.jboss.as.ee.naming.ModuleContextProcessor;
+import org.jboss.as.ee.structure.ApplicationXmlParsingProcessor;
+import org.jboss.as.ee.structure.EarInitializationProcessor;
+import org.jboss.as.ee.structure.EarStructureProcessor;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.deployment.Phase;
@@ -56,7 +60,11 @@ public class NewEeSubsystemAdd implements ModelAddOperationHandler, BootOperatio
         if(context instanceof NewBootOperationContext) {
             final NewBootOperationContext bootContext = (NewBootOperationContext) context;
             logger.info("Activating EE subsystem");
-            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT, new EarStructureProcessor());
+            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
+            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new ApplicationXmlParsingProcessor());
+            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
+            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
+            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
         }
 
         final ModelNode compensatingOperation = new ModelNode();
