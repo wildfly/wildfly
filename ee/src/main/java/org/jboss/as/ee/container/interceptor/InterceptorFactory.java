@@ -23,6 +23,7 @@
 package org.jboss.as.ee.container.interceptor;
 
 import java.util.List;
+import org.jboss.as.ee.container.BeanContainerConfiguration;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
@@ -31,14 +32,25 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  *
  * @author John Bailey
  */
-public interface MethodInterceptorFactory {
+public interface InterceptorFactory {
     /**
      * Create a {@link MethodInterceptor} instance.
      *
-     * @param deploymentUnit The current deployment unit.
+     * @param deploymentUnit The current deployment unit
+     * @param classLoader The classloader used for creation
      * @param configuration  The interceptor configuration
      * @param injections     The interceptors injections
      * @return The MethodInterceptor instance
      */
-    MethodInterceptor createInterceptor(final DeploymentUnit deploymentUnit, final MethodInterceptorConfiguration configuration, final List<ResourceInjection> injections);
+    MethodInterceptor createMethodInterceptor(final DeploymentUnit deploymentUnit, final ClassLoader classLoader, final MethodInterceptorConfiguration configuration, final List<ResourceInjection> injections) throws Exception;
+
+    /**
+     * Create a {@link MethodInterceptor} instance.
+     *
+     * @param deploymentUnit The current deployment unit
+     * @param classLoader The classloader used for creation
+     * @param configuration  The interceptor configuration
+     * @return The Interceptor instance
+     */
+    LifecycleInterceptor createLifecycleInterceptor(final DeploymentUnit deploymentUnit, final ClassLoader classLoader, final BeanContainerConfiguration beanContainerConfig, final LifecycleInterceptorConfiguration configuration) throws Exception;
 }

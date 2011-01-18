@@ -88,6 +88,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // Make sure the root does not end up in the module
         ModuleRootMarker.markRoot(deploymentResourceRoot, false);
 
+
         // TODO: This needs to be ported to add additional resource roots the standard way
         final MountHandle mountHandle = deploymentResourceRoot.getMountHandle();
         try {

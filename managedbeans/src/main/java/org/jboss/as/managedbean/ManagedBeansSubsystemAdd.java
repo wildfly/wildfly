@@ -24,6 +24,7 @@ package org.jboss.as.managedbean;
 
 import org.jboss.as.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanDependencyProcessor;
+import org.jboss.as.managedbean.processors.ManagedBeanResourceTargetProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanSubDeploymentProcessor;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
@@ -51,7 +52,9 @@ public class ManagedBeansSubsystemAdd extends AbstractSubsystemAdd<ManagedBeansS
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK, new ManagedBeanSubDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new ManagedBeanDependencyProcessor());
-        updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_ANNOTATION_MANAGED_BEAN, new ManagedBeanAnnotationProcessor());
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_RESOURCE_TARGET, new ManagedBeanResourceTargetProcessor());
+
     }
 
     /** {@inheritDoc} */

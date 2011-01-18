@@ -20,15 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.container.service;
-
-import org.jboss.as.ee.container.BeanContainerConfiguration;
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
+package org.jboss.as.ee.container.interceptor;
 
 /**
+ * Interceptor representing a lifecycle method.
+ *
  * @author John Bailey
  */
-public class Attachments {
-    public static final AttachmentKey<AttachmentList<BeanContainerConfiguration>> BEAN_CONTAINER_CONFIGS = AttachmentKey.createList(BeanContainerConfiguration.class);
+public interface LifecycleInterceptor {
+    /**
+     * Invoke a method call.
+     *
+     * @param target The object being intercepted
+     * @throws Exception If any exceptions occur during interception
+     */
+    void invoke(final Object target) throws Exception;
 }

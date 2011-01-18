@@ -22,6 +22,7 @@
 
 package org.jboss.as.managedbean.processors;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -33,8 +34,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
@@ -65,17 +68,15 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        boolean managedBeansInDeployment = false;
-        Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
-        // check if there are any mananged bean annotations in any of the resource roots
-        for (Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
-            if (entry.getValue().getAnnotations(MANAGED_BEAN_ANNOTATION_NAME) != null) {
-                managedBeansInDeployment = true;
-                break;
-            }
-        }
-        if (!managedBeansInDeployment)
+        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        if(compositeIndex == null) {
             return;
+        }
+        final List<AnnotationInstance> instances = compositeIndex.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME);
+        if (instances == null || instances.isEmpty()) {
+            return;
+        }
+
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
         deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, false));
         deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_LOGGING_ID, false, false, false));

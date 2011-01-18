@@ -29,8 +29,8 @@ import java.lang.reflect.Method;
  *
  * @author John Bailey
  */
-class AllMethodInterceptorFilter implements MethodInterceptorFilter {
-    static AllMethodInterceptorFilter INSTANCE = new AllMethodInterceptorFilter();
+public class MethodInterceptorAllFilter implements MethodInterceptorFilter {
+    public static MethodInterceptorAllFilter INSTANCE = new MethodInterceptorAllFilter();
 
     /**
      * {@inheritDoc} *

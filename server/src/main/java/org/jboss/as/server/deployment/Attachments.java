@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment;
 import java.util.jar.Manifest;
 
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.ClassPathEntry;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
@@ -98,10 +99,21 @@ public final class Attachments {
     public static final AttachmentKey<ServerDeploymentRepository> SERVER_DEPLOYMENT_REPOSITORY = AttachmentKey.create(ServerDeploymentRepository.class);
 
     /**
-     * The annotation index for this deployment. This is attached to the {@link ResourceRoot}s of the deployment that contain
+     * An annotation index for a (@link ResourceRoot). This is attached to the {@link ResourceRoot}s of the deployment that contain
      * the annotations
      */
     public static final AttachmentKey<Index> ANNOTATION_INDEX = AttachmentKey.create(Index.class);
+
+    /**
+     * The composite annotation index for this deployment.
+     */
+    public static final AttachmentKey<CompositeIndex> COMPOSITE_ANNOTATION_INDEX = AttachmentKey.create(CompositeIndex.class);
+
+    /**
+     * Flag to indicate whether to compute the composite annotation index for this deployment.  Absence of this flag will
+     * be cause the composite index to be attached.
+     */
+    public static final AttachmentKey<Boolean> COMPUTE_COMPOSITE_ANNOTATION_INDEX = AttachmentKey.create(Boolean.class);
 
     /**
      * An attachment that indicates if a {@link ResourceRoot} should be indexed by the {@link AnnotationIndexProcessor}. If this

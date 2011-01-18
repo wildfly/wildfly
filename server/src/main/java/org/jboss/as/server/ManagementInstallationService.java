@@ -55,7 +55,6 @@ public class ManagementInstallationService implements Service<ManagementInstalla
 
         ManagementElement managementElement = serverModel.getManagementElement();
         if (managementElement != null) {
-            System.out.println("Installing!");
             final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
             target.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
                     .addDependency(

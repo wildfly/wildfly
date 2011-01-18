@@ -29,11 +29,11 @@ import java.lang.reflect.Method;
  *
  * @author John Bailey
  */
-class MatchMethodInterceptorFilter implements MethodInterceptorFilter {
+public class MethodInterceptorMatchFilter implements MethodInterceptorFilter {
     private final String methodName;
     private final String[] paramTypes;
 
-    public MatchMethodInterceptorFilter(String methodName, String[] paramTypes) {
+    public MethodInterceptorMatchFilter(String methodName, String[] paramTypes) {
         this.methodName = methodName;
         this.paramTypes = paramTypes;
     }

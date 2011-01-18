@@ -48,7 +48,6 @@ public interface ResourceInjection {
      */
     void uninject(final Object target);
 
-
     /**
      * Factory to create injections
      */
@@ -57,16 +56,39 @@ public interface ResourceInjection {
          * Create the correct injection instance.
          *
          * @param resourceConfiguration The resource injection configuration
+         * @param beanClass The bean class to injection should run against.
          * @param value The value for injection
          * @param <V> The value type
          * @return The injection instance
          */
-        public static <V> ResourceInjection create(final ResourceInjectionConfiguration resourceConfiguration, Value<V> value) {
+        public static <V> ResourceInjection create(final ResourceInjectionConfiguration resourceConfiguration, final Class<?> beanClass, Value<V> value) {
+            final Class<?> argClass;
+            try {
+                argClass = beanClass.getClassLoader().loadClass(resourceConfiguration.getInjectedType());
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException("Invalid resource injection configuration.", e);
+            }
             switch(resourceConfiguration.getTargetType()) {
-                case FIELD:
-                    return new FieldResourceInjection<V>(Values.immediateValue(Field.class.cast(resourceConfiguration.getTarget())), value, resourceConfiguration.getInjectedType().isPrimitive());
-                case METHOD:
-                    return new MethodResourceInjection<V>(Values.immediateValue(Method.class.cast(resourceConfiguration.getTarget())), value, resourceConfiguration.getInjectedType().isPrimitive());
+                case FIELD: {
+                    final Field field;
+                    try {
+                        field = beanClass.getDeclaredField(resourceConfiguration.getName());
+                        field.setAccessible(true);
+                    } catch (NoSuchFieldException e) {
+                        throw new IllegalArgumentException("Invalid resource injection configuration.  Field is not found on target class.", e);
+                    }
+                    return new FieldResourceInjection<V>(Values.immediateValue(field), value, argClass.isPrimitive());
+                }
+                case METHOD: {
+                    final Method method;
+                    try {
+                        method = beanClass.getDeclaredMethod(resourceConfiguration.getName(), argClass);
+                        method.setAccessible(true);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Invalid resource injection configuration.  Method could not be retrieved from target class", e);
+                    }
+                    return new MethodResourceInjection<V>(Values.immediateValue(method), value, argClass.isPrimitive());
+                }
                 default:
                     return null;
             }

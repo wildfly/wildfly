@@ -90,6 +90,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         ModuleRootMarker.markRoot(resourceRoot, false);
         // Make sure any annotation deployers run against the EAR deployment.
         deploymentUnit.putAttachment(Attachments.PROCESS_CHILD_ANNOTATION_INDEX, false);
+        deploymentUnit.putAttachment(Attachments.COMPUTE_COMPOSITE_ANNOTATION_INDEX, false);
 
         String libDirName = DEFAULT_LIB_DIR;
 
@@ -121,6 +122,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 if(child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
                     ModuleRootMarker.markRoot(childResource);
                 } else {
+                    childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
                     SubDeploymentMarker.markRoot(childResource);
                 }
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);

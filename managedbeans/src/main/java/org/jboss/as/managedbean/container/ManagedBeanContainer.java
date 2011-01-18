@@ -23,8 +23,8 @@
 package org.jboss.as.managedbean.container;
 
 import org.jboss.as.ee.container.AbstractBeanContainer;
-import org.jboss.as.ee.container.BeanContainerConfig;
 import org.jboss.as.ee.container.injection.ResourceInjection;
+import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
 import org.jboss.as.ee.container.interceptor.MethodInterceptor;
 
 import java.util.List;
@@ -37,7 +37,9 @@ import java.util.List;
  * @author John E. Bailey
  */
 public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(BeanContainerConfig containerConfig, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        super(containerConfig, resourceInjections, interceptors);
+    public ManagedBeanContainer(final Class<T> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections,
+        final List<LifecycleInterceptor> postConstrucInterceptors, final List<LifecycleInterceptor> preDestroyInterceptors, final List<MethodInterceptor> methodInterceptors) {
+
+        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptors);
     }
 }

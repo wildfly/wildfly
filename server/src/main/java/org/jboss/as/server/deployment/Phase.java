@@ -191,21 +191,27 @@ public enum Phase {
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x0D00;
 
     // PARSE
-    public static final int PARSE_CLASS_PATH                            = 0x0100;
-    public static final int PARSE_EXTENSION_LIST                        = 0x0200;
-    public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0300;
-    public static final int PARSE_OSGI_PROPERTIES                       = 0x0400;
-    public static final int PARSE_WEB_DEPLOYMENT                        = 0x0500;
-    public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0600;
-    public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0700;
-    public static final int PARSE_TLD_DEPLOYMENT                        = 0x0800;
-    public static final int PARSE_RA_DEPLOYMENT                         = 0x0900;
-    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x0A00;
-    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x0B00;
-    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x0C00;
-    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x0D00;
-    public static final int PARSE_DATA_SOURCES                          = 0x0E00;
-    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x0F00;
+    public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0100;
+    public static final int PARSE_CLASS_PATH                            = 0x0200;
+    public static final int PARSE_EXTENSION_LIST                        = 0x0300;
+    public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0400;
+    public static final int PARSE_OSGI_PROPERTIES                       = 0x0500;
+    public static final int PARSE_WEB_DEPLOYMENT                        = 0x0600;
+    public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0700;
+    public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0800;
+    public static final int PARSE_TLD_DEPLOYMENT                        = 0x0900;
+    public static final int PARSE_RA_DEPLOYMENT                         = 0x0A00;
+    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x0B00;
+    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x0C00;
+    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x0D00;
+    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x0E00;
+    public static final int PARSE_DATA_SOURCES                          = 0x0F00;
+    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1000;
+    public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1100;
+    public static final int PARSE_BEAN_LIEFCYCLE_ANNOTATION             = 0x1200;
+    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x1300;
+    public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1400;
+    public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1500;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -224,9 +230,8 @@ public enum Phase {
     public static final int MODULARIZE_DEPLOYMENT                       = 0x100;
 
     // POST_MODULE
-    public static final int POST_MODULE_ANNOTATION_MANAGED_BEAN         = 0x100;
-    public static final int POST_MODULE_ANNOTATION_WAR                  = 0x200;
-    public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x300;
+    public static final int POST_MODULE_ANNOTATION_WAR                  = 0x100;
+    public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x200;
 
     // INSTALL
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;

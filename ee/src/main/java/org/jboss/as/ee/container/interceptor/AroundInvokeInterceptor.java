@@ -50,7 +50,12 @@ public class AroundInvokeInterceptor<T> implements MethodInterceptor {
         this.acceptsInvocationContext = aroundInvokeMethod.getParameterTypes().length == 1 && aroundInvokeMethod.getParameterTypes()[0].equals(javax.interceptor.InvocationContext.class);
     }
 
-    public Object intercept(final InvocationContext<?> invocationContext) throws Exception {
+    public Object intercept(final Object target) throws Exception {
+        final T interceptor = setupInterceptor(targetClass, injections);
+        return aroundInvokeMethod.invoke(interceptor);
+    }
+
+    public Object intercept(final Object target, final InvocationContext<?> invocationContext) throws Exception {
         final T interceptor = setupInterceptor(targetClass, injections);
         return aroundInvokeMethod.invoke(interceptor, invocationContext);
     }

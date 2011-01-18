@@ -29,14 +29,16 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.LinkRef;
 import javax.naming.Reference;
-import org.jboss.as.ee.container.BeanContainerConfig;
+import org.jboss.as.ee.container.BeanContainerConfiguration;
 import org.jboss.as.ee.container.BeanContainerFactory;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.ee.container.injection.ResourceInjectionConfiguration;
 import org.jboss.as.ee.container.injection.ResourceInjectionResolver;
+import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
+import org.jboss.as.ee.container.interceptor.LifecycleInterceptorConfiguration;
 import org.jboss.as.ee.container.interceptor.MethodInterceptorConfiguration;
 import org.jboss.as.ee.container.interceptor.MethodInterceptor;
-import org.jboss.as.ee.container.interceptor.MethodInterceptorFactory;
+import org.jboss.as.ee.container.interceptor.InterceptorFactory;
 import org.jboss.as.ee.container.service.Attachments;
 import org.jboss.as.ee.container.service.BeanContainerObjectFactory;
 import org.jboss.as.ee.container.service.BeanContainerService;
@@ -47,6 +49,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -55,34 +58,46 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
 
 /**
- * Deployment processor responsible for converting {@link BeanContainerConfig} instances into {@link org.jboss.as.ee.container.BeanContainer}instances.
+ * Deployment processor responsible for converting {@link org.jboss.as.ee.container.BeanContainerConfiguration} instances into {@link org.jboss.as.ee.container.BeanContainer}instances.
  *
  * @author John Bailey
  */
 public class BeanContainerInstallProcessor implements DeploymentUnitProcessor {
 
-    /** {@inheritDoc} **/
+    /**
+     * {@inheritDoc} *
+     */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final List<BeanContainerConfig> beanContainerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
+        final List<BeanContainerConfiguration> beanContainerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
         if (beanContainerConfigs == null || beanContainerConfigs.isEmpty()) {
             return;
         }
 
-        for (BeanContainerConfig containerConfig : beanContainerConfigs) {
-            processContainerConfig(deploymentUnit, phaseContext.getServiceTarget(), containerConfig);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final ClassLoader classLoader = module.getClassLoader();
+
+        for (BeanContainerConfiguration containerConfig : beanContainerConfigs) {
+            processContainerConfig(deploymentUnit, phaseContext.getServiceTarget(), containerConfig, classLoader);
         }
     }
 
-    protected void processContainerConfig(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final BeanContainerConfig containerConfig) throws DeploymentUnitProcessingException {
+    protected void processContainerConfig(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final BeanContainerConfiguration containerConfig, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
         final BeanContainerFactory containerFactory = containerConfig.getContainerFactory();
+        final String beanName = containerConfig.getName();
+        final Class<?> beanClass;
+        try {
+            beanClass = classLoader.loadClass(containerConfig.getBeanClass());
+        } catch (ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Failed to load bean class", e);
+        }
 
         final ResourceInjectionResolver resolver = containerFactory.getResourceInjectionResolver();
-        final List<ResourceInjection> injections = new ArrayList<ResourceInjection>(containerConfig.getResourceInjectionConfigs().length);
+        final List<ResourceInjection> injections = new ArrayList<ResourceInjection>(containerConfig.getResourceInjectionConfigs().size());
         final Set<ResourceInjectionResolver.ResolverDependency<?>> resourceDependencies = new HashSet<ResourceInjectionResolver.ResolverDependency<?>>();
 
         for (ResourceInjectionConfiguration resourceConfiguration : containerConfig.getResourceInjectionConfigs()) {
-            final ResourceInjectionResolver.ResolverResult result = resolver.resolve(deploymentUnit, containerConfig, resourceConfiguration);
+            final ResourceInjectionResolver.ResolverResult result = resolver.resolve(deploymentUnit, beanName, beanClass, resourceConfiguration);
             resourceDependencies.addAll(result.getDependencies());
 
             injections.add(result.getInjection());
@@ -91,13 +106,32 @@ public class BeanContainerInstallProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final MethodInterceptorFactory methodInterceptorFactory = containerFactory.getMethodInterceptorFactory();
-        final List<MethodInterceptor> interceptors = new ArrayList<MethodInterceptor>(containerConfig.getMethodInterceptorConfigs().length);
-        for (MethodInterceptorConfiguration interceptorConfiguration : containerConfig.getMethodInterceptorConfigs()) {
-            final List<ResourceInjection> interceptorInjections = new ArrayList<ResourceInjection>(interceptorConfiguration.getResourceConfigurations().size());
+        final InterceptorFactory methodInterceptorFactory = containerFactory.getMethodInterceptorFactory();
 
-            for (ResourceInjectionConfiguration resourceConfiguration : interceptorConfiguration.getResourceConfigurations()) {
-                final ResourceInjectionResolver.ResolverResult result = resolver.resolve(deploymentUnit, containerConfig, resourceConfiguration);
+        final List<LifecycleInterceptor> postConstructLifecycles = new ArrayList<LifecycleInterceptor>(containerConfig.getPostConstructLifecycles().size());
+        for(LifecycleInterceptorConfiguration lifecycleConfiguration : containerConfig.getPostConstructLifecycles()) {
+            try {
+                postConstructLifecycles.add(methodInterceptorFactory.createLifecycleInterceptor(deploymentUnit, classLoader, containerConfig, lifecycleConfiguration));
+            } catch (Exception e) {
+                throw new DeploymentUnitProcessingException("Failed to create lifecycle interceptor instance: " + lifecycleConfiguration.getMethodName(), e);
+            }
+        }
+
+        final List<LifecycleInterceptor> preDestroyLifecycles = new ArrayList<LifecycleInterceptor>(containerConfig.getPreDestroyLifecycles().size());
+        for(LifecycleInterceptorConfiguration lifecycleConfiguration : containerConfig.getPreDestroyLifecycles()) {
+            try {
+                preDestroyLifecycles.add(methodInterceptorFactory.createLifecycleInterceptor(deploymentUnit, classLoader, containerConfig, lifecycleConfiguration));
+            } catch (Exception e) {
+                throw new DeploymentUnitProcessingException("Failed to create lifecycle interceptor instance: " + lifecycleConfiguration.getMethodName(), e);
+            }
+        }
+
+        final List<MethodInterceptor> interceptors = new ArrayList<MethodInterceptor>(containerConfig.getMethodInterceptorConfigs().size());
+        for (MethodInterceptorConfiguration interceptorConfiguration : containerConfig.getMethodInterceptorConfigs()) {
+            final List<ResourceInjection> interceptorInjections = new ArrayList<ResourceInjection>(interceptorConfiguration.getResourceInjectionConfigs().size());
+
+            for (ResourceInjectionConfiguration resourceConfiguration : interceptorConfiguration.getResourceInjectionConfigs()) {
+                final ResourceInjectionResolver.ResolverResult result = resolver.resolve(deploymentUnit, beanName, beanClass, resourceConfiguration);
                 resourceDependencies.addAll(result.getDependencies());
 
                 interceptorInjections.add(result.getInjection());
@@ -105,13 +139,17 @@ public class BeanContainerInstallProcessor implements DeploymentUnitProcessor {
                     resourceDependencies.add(bindResource(serviceTarget, result));
                 }
             }
-            interceptors.add(methodInterceptorFactory.createInterceptor(deploymentUnit, interceptorConfiguration, interceptorInjections));
+            try {
+                interceptors.add(methodInterceptorFactory.createMethodInterceptor(deploymentUnit, classLoader, interceptorConfiguration, interceptorInjections));
+            } catch (Exception e) {
+                throw new DeploymentUnitProcessingException("Failed to create interceptor instance: " + interceptorConfiguration.getInterceptorClassName() + "->" + interceptorConfiguration.getMethodName(), e);
+            }
         }
 
-        final BeanContainerFactory.ConstructedBeanContainer constructedContainer = containerFactory.createBeanContainer(deploymentUnit, containerConfig, injections, interceptors);
+        final BeanContainerFactory.ConstructedBeanContainer constructedContainer = containerFactory.createBeanContainer(deploymentUnit, beanName, beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, interceptors);
 
-        final ServiceName beanEnvContextServiceName = constructedContainer.getEnvContextServiceName().append(containerConfig.getName());
-        final ContextService actualBeanContext = new ContextService(containerConfig.getName());
+        final ServiceName beanEnvContextServiceName = constructedContainer.getEnvContextServiceName().append(beanName);
+        final ContextService actualBeanContext = new ContextService(beanName);
         serviceTarget.addService(beanEnvContextServiceName, actualBeanContext)
                 .addDependency(constructedContainer.getEnvContextServiceName(), Context.class, actualBeanContext.getParentContextInjector())
                 .install();
@@ -168,7 +206,9 @@ public class BeanContainerInstallProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    /** {@inheritDoc} **/
+    /**
+     * {@inheritDoc} *
+     */
     public void undeploy(DeploymentUnit context) {
         // TODO
     }

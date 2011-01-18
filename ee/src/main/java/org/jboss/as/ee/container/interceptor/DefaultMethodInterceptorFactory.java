@@ -22,7 +22,9 @@
 
 package org.jboss.as.ee.container.interceptor;
 
+import java.lang.reflect.Method;
 import java.util.List;
+import org.jboss.as.ee.container.BeanContainerConfiguration;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
@@ -31,8 +33,22 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  *
  * @author John Bailey
  */
-public class DefaultMethodInterceptorFactory implements MethodInterceptorFactory {
-    public MethodInterceptor createInterceptor(final DeploymentUnit deploymentUnit, final MethodInterceptorConfiguration configuration, final List<ResourceInjection> injections) {
-        return AroundInvokeInterceptor.create(configuration.getInterceptorClass(), configuration.getAroundInvokeMethod(), configuration.getMethodFilter(), injections);
+public class DefaultMethodInterceptorFactory implements InterceptorFactory {
+
+    public MethodInterceptor createMethodInterceptor(DeploymentUnit deploymentUnit, ClassLoader classLoader, MethodInterceptorConfiguration configuration, List<ResourceInjection> injections) throws Exception {
+        final Class<?> interceptorClass = classLoader.loadClass(configuration.getInterceptorClassName());
+        final Method aroundInvokeMethod;
+        if(configuration.acceptsInvocationContext()) {
+            aroundInvokeMethod = interceptorClass.getMethod(configuration.getMethodName(), javax.interceptor.InvocationContext.class);
+        } else {
+            aroundInvokeMethod = interceptorClass.getMethod(configuration.getMethodName());
+        }
+        return AroundInvokeInterceptor.create(interceptorClass, aroundInvokeMethod, configuration.getMethodFilter(), injections);
+    }
+
+    public LifecycleInterceptor createLifecycleInterceptor(final DeploymentUnit deploymentUnit, final ClassLoader classLoader, final BeanContainerConfiguration beanContainerConfig, final LifecycleInterceptorConfiguration configuration) throws Exception {
+        final Class<?> interceptorClass = classLoader.loadClass(beanContainerConfig.getBeanClass());
+        final Method lifecycleMethod = interceptorClass.getMethod(configuration.getMethodName());
+        return new LifeCycleMethodInterceptor(lifecycleMethod);
     }
 }

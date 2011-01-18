@@ -29,13 +29,6 @@ package org.jboss.as.ee.container.interceptor;
  */
 public interface MethodInterceptor {
     /**
-     * Determine whether to use an {@link InvocationContext} for interception methods.
-     *
-     * @return {@code true} if this interceptor accepts an InvocationContext
-     */
-    boolean acceptsInvocationContext();
-
-    /**
      * Get the method filter used to determine whether or not to apply this filter against a method.
      *
      * @return The method filter
@@ -43,11 +36,28 @@ public interface MethodInterceptor {
     MethodInterceptorFilter getMethodFilter();
 
     /**
-     * Intercept a method call.
+     * Determine whether to use an {@link InvocationContext} for interception methods.
      *
+     * @return {@code true} if this interceptor accepts an InvocationContext
+     */
+    boolean acceptsInvocationContext();
+
+    /**
+     * Intercept a method call without an InvocationContext.
+     *
+     * @param target The object being intercepted
+     * @return The result of the method call
+     * @throws Exception If any exceptions occur during interception
+     */
+    Object intercept(final Object target) throws Exception;
+
+    /**
+     * Intercept a method call with an InvocationContext..
+     *
+     * @param target            The object being intercepted
      * @param invocationContext The current InvocationContext
      * @return The result of the method call
      * @throws Exception If any exceptions occur during interception
      */
-    Object intercept(final InvocationContext<?> invocationContext) throws Exception;
+    Object intercept(final Object target, final InvocationContext<?> invocationContext) throws Exception;
 }

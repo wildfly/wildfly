@@ -21,6 +21,7 @@
  */
 package org.jboss.as.web.deployment;
 
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 import java.io.BufferedReader;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
@@ -43,15 +43,12 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
-import org.jboss.jandex.Index;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.MethodParameterInfo;
 import org.jboss.logging.Logger;
@@ -145,19 +142,19 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         Class<?>[] typesArray = typesMap.keySet().toArray(new Class<?>[0]);
 
-        final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
+        final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        if(index == null) {
+            throw new DeploymentUnitProcessingException("Unable to resolve annotation index for deployment unit " + deploymentUnit);
+        }
 
         // Find classes which extend, implement, or are annotated by HandlesTypes
         for (Class<?> type : typesArray) {
             DotName className = DotName.createSimple(type.getName());
-            for (final Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
-                final Index jarIndex = entry.getValue();
-                Set<ClassInfo> classInfos = processHandlesType(className, type, jarIndex);
-                Set<Class<?>> classes = loadClassInfoSet(classInfos, classLoader);
-                Set<ServletContainerInitializer> sciSet = typesMap.get(type);
-                for (ServletContainerInitializer sci : sciSet) {
-                    handlesTypes.get(sci).addAll(classes);
-                }
+            Set<ClassInfo> classInfos = processHandlesType(className, type, index);
+            Set<Class<?>> classes = loadClassInfoSet(classInfos, classLoader);
+            Set<ServletContainerInitializer> sciSet = typesMap.get(type);
+            for (ServletContainerInitializer sci : sciSet) {
+                handlesTypes.get(sci).addAll(classes);
             }
         }
     }
@@ -197,7 +194,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         return service;
     }
 
-    private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, Index index) throws DeploymentUnitProcessingException {
+    private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, CompositeIndex index) throws DeploymentUnitProcessingException {
         Set<ClassInfo> classes = new HashSet<ClassInfo>();
         if (type.isAnnotation()) {
             List<AnnotationInstance> instances = index.getAnnotations(typeName);

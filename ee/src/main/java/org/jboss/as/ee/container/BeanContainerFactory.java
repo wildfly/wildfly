@@ -25,8 +25,9 @@ package org.jboss.as.ee.container;
 import java.util.List;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.ee.container.injection.ResourceInjectionResolver;
+import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
 import org.jboss.as.ee.container.interceptor.MethodInterceptor;
-import org.jboss.as.ee.container.interceptor.MethodInterceptorFactory;
+import org.jboss.as.ee.container.interceptor.InterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceName;
 
@@ -39,13 +40,17 @@ public interface BeanContainerFactory {
     /**
      * Create the bean container instance.
      *
-     * @param deploymentUnit  The current deployment unit
-     * @param containerConfig The container configuration
-     * @param injections      The containers resource injection instances
-     * @param interceptors    The containers interceptor instances
+     * @param deploymentUnit          The current deployment unit
+     * @param beanName                The bean name
+     * @param beanClass               The bean class
+     * @param classLoader             The classloader
+     * @param injections              The containers resource injection instances
+     * @param postConstructLifecycles The post-constructor lifecycles
+     * @param preDestroyLifecycles    the pre-destroy lifecycles
+     * @param interceptors            The containers interceptor instances
      * @return A bean container service information
      */
-    ConstructedBeanContainer createBeanContainer(final DeploymentUnit deploymentUnit, final BeanContainerConfig containerConfig, final List<ResourceInjection> injections, final List<MethodInterceptor> interceptors);
+    ConstructedBeanContainer createBeanContainer(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<LifecycleInterceptor> postConstructLifecycles, final List<LifecycleInterceptor> preDestroyLifecycles, final List<MethodInterceptor> interceptors);
 
     /**
      * Return the resource injection resolver for this bean container type.
@@ -59,7 +64,7 @@ public interface BeanContainerFactory {
      *
      * @return The interceptor factory
      */
-    MethodInterceptorFactory getMethodInterceptorFactory();
+    InterceptorFactory getMethodInterceptorFactory();
 
     /**
      * Interface used to capture the results of creating a bean container.  Provides the bean container instance as well

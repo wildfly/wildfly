@@ -24,13 +24,13 @@ package org.jboss.as.managedbean.container;
 
 import java.util.List;
 import org.jboss.as.ee.container.BeanContainer;
-import org.jboss.as.ee.container.BeanContainerConfig;
 import org.jboss.as.ee.container.BeanContainerFactory;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.ee.container.injection.ResourceInjectionResolver;
 import org.jboss.as.ee.container.interceptor.DefaultMethodInterceptorFactory;
+import org.jboss.as.ee.container.interceptor.InterceptorFactory;
+import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
 import org.jboss.as.ee.container.interceptor.MethodInterceptor;
-import org.jboss.as.ee.container.interceptor.MethodInterceptorFactory;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.naming.deployment.JndiName;
@@ -44,13 +44,13 @@ import org.jboss.msc.service.ServiceName;
  */
 public class ManagedBeanContainerFactory implements BeanContainerFactory {
     private final ResourceInjectionResolver injectionResolver = new ManagedBeanResourceInjectionResolver();
-    private final MethodInterceptorFactory interceptorFactory = new DefaultMethodInterceptorFactory();
+    private final InterceptorFactory interceptorFactory = new DefaultMethodInterceptorFactory();
 
-    public ConstructedBeanContainer createBeanContainer(final DeploymentUnit deploymentUnit, final BeanContainerConfig containerConfig, final List<ResourceInjection> injections, final List<MethodInterceptor> interceptors) {
-        final ManagedBeanContainer<?> container = new ManagedBeanContainer<Object>(containerConfig, injections, interceptors);
-        final ServiceName containerServiceName = ServiceNames.MANAGED_BEAN.append(deploymentUnit.getName(), containerConfig.getName());
+    public ConstructedBeanContainer createBeanContainer(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<LifecycleInterceptor> postConstructLifecycles, final List<LifecycleInterceptor> preDestroyLifecycles, final List<MethodInterceptor> interceptors) {
+        final ManagedBeanContainer<?> container = createContainer(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, interceptors);
+        final ServiceName containerServiceName = ServiceNames.MANAGED_BEAN.append(deploymentUnit.getName(), beanName);
         final NamingContextConfig moduleContext = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG);
-        final JndiName bindName = ContextNames.MODULE_CONTEXT_NAME.append(containerConfig.getName());
+        final JndiName bindName = ContextNames.MODULE_CONTEXT_NAME.append(beanName);
 
         final ServiceName envContextServiceName = moduleContext.getContextServiceName().append("env");
 
@@ -77,11 +77,15 @@ public class ManagedBeanContainerFactory implements BeanContainerFactory {
         };
     }
 
+    private <T> ManagedBeanContainer<T> createContainer(final Class<T> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<LifecycleInterceptor> postConstructLifecycles, final List<LifecycleInterceptor> preDestroyLifecycles, final List<MethodInterceptor> interceptors) {
+        return new ManagedBeanContainer<T>(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, interceptors);
+    }
+
     public ResourceInjectionResolver getResourceInjectionResolver() {
         return injectionResolver;
     }
 
-    public MethodInterceptorFactory getMethodInterceptorFactory() {
+    public InterceptorFactory getMethodInterceptorFactory() {
         return interceptorFactory;
     }
 }

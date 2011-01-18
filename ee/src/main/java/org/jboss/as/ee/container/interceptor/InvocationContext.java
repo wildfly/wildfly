@@ -33,7 +33,6 @@ import java.util.Map;
  * with an associated interceptor chain.  Uses a simple iterator to manage stepping through the interceptor chain.
  *
  * @param <T> The target object type
- *
  * @author John E. Bailey
  */
 public class InvocationContext<T> implements javax.interceptor.InvocationContext {
@@ -46,9 +45,9 @@ public class InvocationContext<T> implements javax.interceptor.InvocationContext
     /**
      * Create an instance with a set of interceptors to run around the method.
      *
-     * @param target The target object of the invocation
-     * @param method The method invoked
-     * @param parameters The parameters to the method
+     * @param target       The target object of the invocation
+     * @param method       The method invoked
+     * @param parameters   The parameters to the method
      * @param interceptors The interceptor chain
      */
     public InvocationContext(final T target, final Method method, final Object[] parameters, final List<MethodInterceptor> interceptors) {
@@ -58,39 +57,51 @@ public class InvocationContext<T> implements javax.interceptor.InvocationContext
         this.interceptors = interceptors.iterator();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getTarget() {
         return target;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Method getMethod() {
         return method;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object[] getParameters() {
         return this.parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameters(final Object[] parameters) {
         this.parameters = parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Map<String, Object> getContextData() {
         return contextData;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getTimer() {
         return null;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * This implementation will first check to see if there are any more interceptors and if so, will use the next in the chain,
      * if not it will run the method against the target object.
      *
@@ -98,12 +109,12 @@ public class InvocationContext<T> implements javax.interceptor.InvocationContext
      * @throws Exception
      */
     public Object proceed() throws Exception {
-        while(interceptors.hasNext()) {
+        while (interceptors.hasNext()) {
             final MethodInterceptor interceptor = interceptors.next();
-            if(interceptor.acceptsInvocationContext()) {
-                return interceptor.intercept(this);
+            if (interceptor.acceptsInvocationContext()) {
+                return interceptor.intercept(target, this);
             } else {
-                interceptor.intercept(null);
+                interceptor.intercept(target);
             }
         }
         return method.invoke(target, parameters);

@@ -89,7 +89,9 @@ public class ExampleRunner {
         } finally {
             utils.undeploy();
             safeClose(utils);
-            conn.close();
+            if(conn != null) {
+                conn.close();
+            }
         }
     }
 

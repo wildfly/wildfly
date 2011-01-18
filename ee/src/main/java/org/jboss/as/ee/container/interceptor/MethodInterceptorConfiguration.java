@@ -22,49 +22,32 @@
 
 package org.jboss.as.ee.container.interceptor;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptors;
-import org.jboss.as.ee.container.injection.ResourceInjectionConfiguration;
-import static org.jboss.as.ee.container.Util.getSingleAnnotatedMethod;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.Type;
+import org.jboss.as.ee.container.injection.ResourceInjectableConfiguration;
 
 /**
  * Configuration for an interceptor bound to a managed bean class.
  *
  * @author John E. Bailey
  */
-public class MethodInterceptorConfiguration {
-    private static final DotName INTERCEPTORS_ANNOTATION_NAME = DotName.createSimple(Interceptors.class.getName());
-
-    private final Class<?> interceptorClass;
-    private final Method aroundInvokeMethod;
+public class MethodInterceptorConfiguration extends ResourceInjectableConfiguration {
+    private final String interceptorClassName;
+    private final String methodName;
+    private final boolean acceptsInvocationContext;
     private final MethodInterceptorFilter methodFilter;
-    private final List<ResourceInjectionConfiguration> resourceConfigurations;
 
     /**
      * Create an instance with the interceptor class and the resource configurations.
      *
-     * @param interceptorClass       The interceptor class type
-     * @param aroundInvokeMethod     The around invoke method
-     * @param methodFilter           The method filter
-     * @param resourceConfigurations The resource injection configurations
+     * @param interceptorClass         The interceptor class name
+     * @param methodName               The interceptor method name
+     * @param acceptsInvocationContext Flag to determine if the method accepts an invocation context
+     * @param methodFilter             The method filter
      */
-    public MethodInterceptorConfiguration(final Class<?> interceptorClass, final Method aroundInvokeMethod, final MethodInterceptorFilter methodFilter, final List<ResourceInjectionConfiguration> resourceConfigurations) {
-        this.interceptorClass = interceptorClass;
-        this.aroundInvokeMethod = aroundInvokeMethod;
+    public MethodInterceptorConfiguration(final String interceptorClass, final String methodName, final boolean acceptsInvocationContext, final MethodInterceptorFilter methodFilter) {
+        this.interceptorClassName = interceptorClass;
+        this.methodName = methodName;
+        this.acceptsInvocationContext = acceptsInvocationContext;
         this.methodFilter = methodFilter;
-        this.resourceConfigurations = resourceConfigurations;
     }
 
     /**
@@ -72,87 +55,29 @@ public class MethodInterceptorConfiguration {
      *
      * @return The interceptor class
      */
-    public Class<?> getInterceptorClass() {
-        return interceptorClass;
+    public String getInterceptorClassName() {
+        return interceptorClassName;
     }
 
     /**
-     * Get the resource configurations.
+     * Get the interceptor method name.
      *
-     * @return The resource configurations
+     * @return The interceptor method name
      */
-    public List<ResourceInjectionConfiguration> getResourceConfigurations() {
-        return resourceConfigurations;
-    }
-
-    /**
-     * Get the around invoke method.
-     *
-     * @return The around invoke method
-     */
-    public Method getAroundInvokeMethod() {
-        return aroundInvokeMethod;
+    public String getMethodName() {
+        return methodName;
     }
 
     public MethodInterceptorFilter getMethodFilter() {
         return methodFilter;
     }
 
-    public static final List<MethodInterceptorConfiguration> from(final ClassInfo classInfo, final Index index, final Class<?> beanClass, final ClassLoader beanClassLoader) {
-        final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
-        if (classAnnotations == null) {
-            return Collections.emptyList();
-        }
-
-        final List<AnnotationInstance> interceptorAnnotations = classAnnotations.get(INTERCEPTORS_ANNOTATION_NAME);
-        if (interceptorAnnotations == null || interceptorAnnotations.isEmpty()) {
-            return Collections.emptyList();
-        }
-        final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>(interceptorAnnotations.size());
-
-        final Interceptors interceptorsAnnotation = beanClass.getAnnotation(Interceptors.class);
-        final Class<?>[] interceptorTypes = interceptorsAnnotation.value();
-        for (AnnotationInstance annotationInstance : interceptorAnnotations) {
-
-            final Class<?> interceptorType;
-            try {
-                interceptorType = beanClassLoader.loadClass(annotationInstance.name().toString());
-            } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("Failed to interceptor class " + annotationInstance.name(), e);
-            }
-
-            final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorType.getName()));
-            if (interceptorClassInfo == null) {
-                continue; // TODO: Process without index info
-            }
-
-            final AnnotationTarget target = annotationInstance.target();
-            final MethodInterceptorFilter methodFilter;
-            if (target instanceof MethodInfo) {
-                final MethodInfo methodInfo = MethodInfo.class.cast(target);
-                    final List<String> argTypes = new ArrayList<String>(methodInfo.args().length);
-                    for (Type argType : methodInfo.args()) {
-                        argTypes.add(argType.name().toString());
-                    }
-                    methodFilter = new MatchMethodInterceptorFilter(methodInfo.name(), argTypes.toArray(new String[argTypes.size()]));
-            } else {
-                methodFilter = AllMethodInterceptorFilter.INSTANCE;
-            }
-
-            final Method aroundInvokeMethod = getSingleAnnotatedMethod(interceptorType, interceptorClassInfo, AroundInvoke.class, true);
-            final List<ResourceInjectionConfiguration> resourceConfigurations = ResourceInjectionConfiguration.from(interceptorClassInfo, interceptorType, beanClassLoader);
-            interceptorConfigurations.add(new MethodInterceptorConfiguration(interceptorType, aroundInvokeMethod, methodFilter, resourceConfigurations));
-        }
-
-        //Look for any @AroundInvoke methods on bean class
-//        if (classInfo != null) {
-//            final Method aroundInvokeMethod = getSingleAnnotatedMethod(beanClass, classInfo, AroundInvoke.class, true);
-//            if (aroundInvokeMethod != null) {
-//                final List<ResourceInjectionConfiguration> resources = processClassResources(beanClass);
-//                interceptorConfigurations.add(new InterceptorConfiguration(beanClass, aroundInvokeMethod, resources));
-//            }
-//        }
-
-        return interceptorConfigurations;
+    /**
+     * Determine whether the method takes an invocation context.
+     *
+     * @return {@code true} if the method accepts an invocation context
+     */
+    public boolean acceptsInvocationContext() {
+        return acceptsInvocationContext;
     }
 }

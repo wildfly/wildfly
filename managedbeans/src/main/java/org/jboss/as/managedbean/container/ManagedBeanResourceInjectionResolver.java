@@ -25,7 +25,6 @@ package org.jboss.as.managedbean.container;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.Context;
-import org.jboss.as.ee.container.BeanContainerConfig;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.ee.container.injection.ResourceInjectionConfiguration;
 import org.jboss.as.ee.container.injection.ResourceInjectionResolver;
@@ -41,19 +40,23 @@ import org.jboss.msc.service.ServiceName;
  * @author John Bailey
  */
 public class ManagedBeanResourceInjectionResolver implements ResourceInjectionResolver {
-    public ResolverResult resolve(final DeploymentUnit deploymentUnit, final BeanContainerConfig containerConfig, final ResourceInjectionConfiguration configuration) {
+    public ResolverResult resolve(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ResourceInjectionConfiguration configuration) {
 
-        final JndiName managedBeanContextJndiName = ContextNames.MODULE_CONTEXT_NAME.append("env").append(containerConfig.getName());
+        final JndiName managedBeanContextJndiName = ContextNames.MODULE_CONTEXT_NAME.append("env").append(beanName);
         final JndiName localContextName = managedBeanContextJndiName.append(configuration.getLocalContextName());
 
         final NamingLookupValue<Object> lookupValue = new NamingLookupValue<Object>(localContextName);
-        final ResourceInjection injection = ResourceInjection.Factory.create(configuration, lookupValue);
+        final ResourceInjection injection = ResourceInjection.Factory.create(configuration, beanClass, lookupValue);
 
         final NamingContextConfig moduleContext = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG);
-        final ServiceName managedBeanContextServiceName = moduleContext.getContextServiceName().append("env").append(containerConfig.getName());
+        final ServiceName managedBeanContextServiceName = moduleContext.getContextServiceName().append("env").append(beanName);
 
-        final JndiName targetContextName = configuration.getTargetContextName().startsWith("java") ? JndiName.of(configuration.getTargetContextName())
-                : ContextNames.MODULE_CONTEXT_NAME.append(configuration.getTargetContextName());
+        final String targetName = configuration.getTargetContextName();
+        if(targetName == null) {
+            throw new IllegalArgumentException("Resource configuration does not have target JNDI name");
+        }
+
+        final JndiName targetLookupName = targetName.startsWith("java") ? JndiName.of(targetName) : ContextNames.MODULE_CONTEXT_NAME.append(targetName);
 
         final List<ResolverDependency<?>> dependencies = new ArrayList<ResolverDependency<?>>();
         dependencies.add(new ResolverDependency<Context>() {
@@ -84,7 +87,7 @@ public class ManagedBeanResourceInjectionResolver implements ResourceInjectionRe
             }
 
             public String getBindTargetName() {
-                return targetContextName.getAbsoluteName();
+                return targetLookupName.getAbsoluteName();
             }
 
             public List<ResolverDependency<?>> getDependencies() {

@@ -65,7 +65,6 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
             allResourceRoots.addAll(resourceRoots);
         }
         allResourceRoots.add(phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT));
-
         for (ResourceRoot resourceRoot : allResourceRoots) {
             if (resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX) != null) {
                 continue;

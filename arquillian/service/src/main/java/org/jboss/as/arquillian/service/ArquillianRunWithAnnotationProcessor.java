@@ -22,21 +22,18 @@
 
 package org.jboss.as.arquillian.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
-import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
 import org.junit.runner.RunWith;
 
 /**
@@ -51,17 +48,14 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(phaseContext.getDeploymentUnit());
+        final CompositeIndex compositeIndex = phaseContext.getDeploymentUnit().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        if(compositeIndex == null) {
+            return;
+        }
 
-        final List<AnnotationInstance> instances = new ArrayList<AnnotationInstance>();
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
 
-        for (Index index : indexes.values()) {
-            final List<AnnotationInstance> annotations = index.getAnnotations(runWithName);
-            if (annotations != null) {
-                instances.addAll(annotations);
-            }
-        }
+        final List<AnnotationInstance> instances = compositeIndex.getAnnotations(runWithName);
         if (instances.isEmpty())
             return; // Skip if there are no @RunWith annotations
 

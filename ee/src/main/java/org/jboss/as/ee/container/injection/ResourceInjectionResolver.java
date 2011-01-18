@@ -23,7 +23,6 @@
 package org.jboss.as.ee.container.injection;
 
 import java.util.Collection;
-import org.jboss.as.ee.container.BeanContainerConfig;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
@@ -40,11 +39,12 @@ public interface ResourceInjectionResolver {
      * Resolve the injection and the service dependencies for this resource.
      *
      * @param deploymentUnit  The current deployment unit
-     * @param containerConfig The bean container configuration
+     * @param beanName The bean name
+     * @param beanClass The bean class
      * @param configuration   The resource configuration
      * @return The resolved results
      */
-    ResolverResult resolve(final DeploymentUnit deploymentUnit, final BeanContainerConfig containerConfig, final ResourceInjectionConfiguration configuration);
+    ResolverResult resolve(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ResourceInjectionConfiguration configuration);
 
     /**
      * Container object for all the information necessary to properly setup a bean container injection.

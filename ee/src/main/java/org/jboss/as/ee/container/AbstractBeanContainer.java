@@ -22,26 +22,32 @@
 
 package org.jboss.as.ee.container;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import static org.jboss.as.ee.container.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.container.SecurityActions.setContextClassLoader;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.ee.container.interceptor.InterceptingProxyHandler;
+import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
 import org.jboss.as.ee.container.interceptor.MethodInterceptor;
 
 /**
  * @author John Bailey
  */
 public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
-    final BeanContainerConfig config;
-    final List<ResourceInjection> resourceInjections;
-    final List<MethodInterceptor> interceptors;
+    private final Class<T> beanClass;
+    private final ClassLoader beanClassLoader;
+    private final List<ResourceInjection> resourceInjections;
+    private final List<LifecycleInterceptor> postConstrucInterceptors;
+    private final List<LifecycleInterceptor> preDestroyInterceptors;
+    private final List<MethodInterceptor> methodInterceptors;
 
-    protected AbstractBeanContainer(BeanContainerConfig config, List<ResourceInjection> resourceInjections, List<MethodInterceptor> interceptors) {
-        this.config = config;
+    protected AbstractBeanContainer(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<LifecycleInterceptor> postConstrucInterceptors, List<LifecycleInterceptor> preDestroyInterceptors, List<MethodInterceptor> methodInterceptors) {
+        this.beanClass = beanClass;
+        this.beanClassLoader = beanClassLoader;
         this.resourceInjections = resourceInjections;
-        this.interceptors = interceptors;
+        this.postConstrucInterceptors = postConstrucInterceptors;
+        this.preDestroyInterceptors = preDestroyInterceptors;
+        this.methodInterceptors = methodInterceptors;
     }
 
     /**
@@ -71,6 +77,10 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
         return instance;
     }
 
+    protected Class<T> getBeanClass() {
+        return beanClass;
+    }
+
     /**
      * Apply the injections to a newly retrieved bean instance.
      *
@@ -92,17 +102,16 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * @param instance The bean instance
      */
     protected void performPostConstructLifecycle(final T instance) {
-        // Execute the post construct life-cycle
-        final Method[] postConstructMethods = config.getPostConstructMethods();
-        if (postConstructMethods != null) {
+        final List<LifecycleInterceptor> postConstructMethods = postConstrucInterceptors;
+        if (postConstructMethods != null && !postConstructMethods.isEmpty()) {
             final ClassLoader contextCl = getContextClassLoader();
-            setContextClassLoader(config.getBeanClassLoader());
+            setContextClassLoader(beanClassLoader);
             try {
-                for (Method postConstructMethod : postConstructMethods) {
+                for (LifecycleInterceptor postConstructMethod : postConstructMethods) {
                     try {
                         postConstructMethod.invoke(instance);
                     } catch (Throwable t) {
-                        throw new RuntimeException("Failed to invoke post construct method '" + postConstructMethod.getName() + "' for class " + config.getBeanClass(), t);
+                        throw new RuntimeException("Failed to invoke post construct method for class " + getBeanClass(), t);
                     }
                 }
             } finally {
@@ -121,29 +130,20 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
         return InterceptingProxyHandler.createProxy(getBeanClass(), instance, getMethodInterceptors());
     }
 
-    @SuppressWarnings("unchecked")
-    protected Class<T> getBeanClass() {
-        return (Class<T>) config.getBeanClass();
-    }
-
-    protected BeanContainerConfig getContainerConfig() {
-        return config;
-    }
-
     protected List<MethodInterceptor> getMethodInterceptors() {
-        return interceptors;
+        return methodInterceptors;
     }
 
     /**
      * {@inheritDoc}
      */
     public void returnInstance(final T instance) {
-        performPreDestroyLifecycle(instance, getContainerConfig());
+        performPreDestroyLifecycle(instance);
         applyUninjections(instance);
     }
 
     protected void applyUninjections(final T instance) {
-        for(ResourceInjection resourceInjection : getResourceInjections()) {
+        for (ResourceInjection resourceInjection : getResourceInjections()) {
             resourceInjection.uninject(instance);
         }
     }
@@ -152,22 +152,21 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * Perform any pre-destroy life-cycle routines.  By default it will invoke all pre-destroy methods.
      *
      * @param instance The bean instance
-     * @param config The container configuration
      */
-    protected void performPreDestroyLifecycle(final T instance, final BeanContainerConfig config) {
-        final Method[] preDestroyMethods = config.getPreDestroyMethods();
-        if (preDestroyMethods == null) {
+    protected void performPreDestroyLifecycle(final T instance) {
+        final List<LifecycleInterceptor> preDestroyInterceptors = this.preDestroyInterceptors;
+        if (preDestroyInterceptors == null || !preDestroyInterceptors.isEmpty()) {
             return;
         }
         // Execute the post construct life-cycle
         final ClassLoader contextCl = getContextClassLoader();
-        setContextClassLoader(config.getBeanClassLoader());
+        setContextClassLoader(beanClassLoader);
         try {
-            for (Method preDestroyMethod : preDestroyMethods) {
+            for (LifecycleInterceptor preDestroyMethod : preDestroyInterceptors) {
                 try {
                     preDestroyMethod.invoke(instance);
                 } catch (Throwable t) {
-                    throw new RuntimeException("Failed to invoke pre destroy method '" + preDestroyMethod.getName() + "' for class " + config.getBeanClass(), t);
+                    throw new RuntimeException("Failed to invoke pre destroy method for class " + getBeanClass(), t);
                 }
             }
         } finally {
