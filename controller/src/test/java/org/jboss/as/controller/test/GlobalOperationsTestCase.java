@@ -49,7 +49,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -68,6 +70,9 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.GlobalDescriptions;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -225,6 +230,51 @@ public class GlobalOperationsTestCase {
         assertNotNull(result);
         assertEquals("Overridden by special read handler", result.asString());
     }
+
+    @Test
+    public void testWriteAttributeValue() throws Exception {
+        ModelNode read = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileA", "subsystem", "subsystem2");
+        read.get(NAME).set("long");
+        ModelNode result = CONTROLLER.execute(read);
+        assertEquals(ModelType.LONG, result.getType());
+        long original = result.asLong();
+
+        ModelNode write = createOperation(WRITE_ATTRIBUTE_OPERATION, "profile", "profileA", "subsystem", "subsystem2");
+        write.get(NAME).set("long");
+        try {
+            write.get(VALUE).set(99999L);
+            CONTROLLER.execute(write);
+
+            result = CONTROLLER.execute(read);
+            assertEquals(ModelType.LONG, result.getType());
+            assertEquals(99999L, result.asLong());
+
+            write.get(VALUE).set("Not Valid");
+            try {
+                CONTROLLER.execute(write);
+                fail("Expected error setting long property to string");
+            } catch (Exception expected) {
+            }
+
+            //TODO How to set a value to null?
+        } finally {
+            write.get(VALUE).set(original);
+            CONTROLLER.execute(write);
+            result = CONTROLLER.execute(read);
+            assertEquals(ModelType.LONG, result.getType());
+            assertEquals(original, result.asLong());
+        }
+
+        write.get(NAME).set("string1");
+        write.get(VALUE).set("Hello");
+        try {
+            CONTROLLER.execute(write);
+            fail("Expected error setting property with no write handler");
+        } catch (Exception expected) {
+        }
+
+    }
+
 
     @Test
     public void testReadChildrenNames() throws Exception {
@@ -520,6 +570,7 @@ public class GlobalOperationsTestCase {
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
+            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
             for (String op : ops) {
                 assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
             }
@@ -654,10 +705,22 @@ public class GlobalOperationsTestCase {
         return node;
     }
 
+    private static class NullConfigurationPersister implements NewConfigurationPersister{
+
+        @Override
+        public void store(ModelNode model) throws ConfigurationPersistenceException {
+        }
+
+        @Override
+        public List<ModelNode> load() throws ConfigurationPersistenceException {
+            return null;
+        }
+
+    }
 
     private static class TestModelController extends BasicModelController {
         protected TestModelController() {
-            super(MODEL, null, new DescriptionProvider() {
+            super(MODEL, new NullConfigurationPersister(), new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
                     ModelNode node = new ModelNode();
@@ -675,6 +738,7 @@ public class GlobalOperationsTestCase {
             getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, GlobalDescriptions.getReadChildrenNamesOperationDescription(), true);
             getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, GlobalDescriptions.getReadOperationNamesOperation(), true);
             getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, GlobalDescriptions.getReadOperationOperation(), true);
+            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, GlobalDescriptions.getWriteAttributeOperationDescription(), true);
 
 
 
@@ -796,6 +860,7 @@ public class GlobalOperationsTestCase {
             profileASub2Reg.registerReadOnlyAttribute("int", null);
             profileASub2Reg.registerReadOnlyAttribute("string1", null);
             profileASub2Reg.registerReadOnlyAttribute("list", null);
+            profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.LONG, false));
 
             ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 

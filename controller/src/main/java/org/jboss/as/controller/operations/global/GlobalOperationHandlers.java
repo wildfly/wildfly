@@ -145,7 +145,6 @@ public class GlobalOperationHandlers {
         }
     };
 
-
     public static final ModelQueryOperationHandler READ_CHILDREN_NAMES = new ModelQueryOperationHandler() {
 
         @Override

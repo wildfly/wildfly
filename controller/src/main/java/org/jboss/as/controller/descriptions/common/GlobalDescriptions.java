@@ -38,7 +38,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -88,11 +90,33 @@ public class GlobalDescriptions {
                 node.get(DESCRIPTION).set(bundle.getString("global.read-attribute"));
 
                 node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-                node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.read-attribute.type"));
+                node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.read-attribute.name"));
                 node.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
                 node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
                 node.get(REPLY_PROPERTIES, VALUE_TYPE).set(bundle.getString("global.read-attribute.reply.type"));
                 node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-attribute.reply"));
+                node.protect();
+
+                return node;
+            }
+        };
+    }
+    public static DescriptionProvider getWriteAttributeOperationDescription() {
+        return new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ResourceBundle bundle = getResourceBundle(locale);
+
+                ModelNode node = new ModelNode();
+                node.get(OPERATION_NAME).set(WRITE_ATTRIBUTE_OPERATION);
+                node.get(DESCRIPTION).set(bundle.getString("global.write-attribute"));
+
+                node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+                node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.write-attribute.name"));
+                node.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+                node.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
+                node.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("global.write-attribute.value"));
+                node.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
                 node.protect();
 
                 return node;

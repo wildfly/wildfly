@@ -84,6 +84,8 @@ public class ModelDescriptionConstants {
     public static final String SYSTEM_PROPERTY = "system-property";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TYPE = "type";
+    public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
+    public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
 
 }
