@@ -66,14 +66,14 @@ public final class NewExtensionContextImpl implements NewExtensionContext {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return profileRegistration.registerSubModel(new PathElement("subsystem"), descriptionProvider);
+                return profileRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProvider);
             }
 
             public ModelNodeRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return deploymentOverrideRegistration.registerSubModel(new PathElement("configuration"), descriptionProvider);
+                return deploymentOverrideRegistration.registerSubModel(new PathElement("configuration", name), descriptionProvider);
             }
         };
     }
