@@ -38,6 +38,7 @@ import org.jboss.msc.value.Values;
  */
 public class MethodResourceInjection<V> extends AbstractResourceInjection<V> {
     private final Value<Method> methodValue;
+    private Injector<V> injector;
 
     /**
      * Construct an instance.
@@ -52,7 +53,10 @@ public class MethodResourceInjection<V> extends AbstractResourceInjection<V> {
     }
 
     /** {@inheritDoc} */
-    protected Injector<V> getInjector(final Object target) {
-        return new SetMethodInjector<V>(Values.immediateValue(target), methodValue);
+    protected synchronized Injector<V> getInjector(final Object target) {
+        if(injector == null) {
+            injector = new SetMethodInjector<V>(Values.immediateValue(target), methodValue);
+        }
+        return injector;
     }
 }

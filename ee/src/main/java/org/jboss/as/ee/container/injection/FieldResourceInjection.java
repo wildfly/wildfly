@@ -38,6 +38,7 @@ import org.jboss.msc.value.Values;
  */
 public class FieldResourceInjection<V> extends AbstractResourceInjection<V> {
     private final Value<Field> fieldValue;
+    private Injector<V> injector;
 
     /**
      * Construct an instance.
@@ -52,7 +53,10 @@ public class FieldResourceInjection<V> extends AbstractResourceInjection<V> {
     }
 
     /** {@inheritDoc} */
-    protected Injector<V> getInjector(final Object target) {
-        return new FieldInjector<V>(Values.immediateValue(target), fieldValue);
+    protected synchronized Injector<V> getInjector(final Object target) {
+        if(injector == null) {
+            injector = new FieldInjector<V>(Values.immediateValue(target), fieldValue);
+        }
+        return injector;
     }
 }

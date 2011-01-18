@@ -39,7 +39,14 @@ public interface ResourceInjection {
      *
      * @param target The target object to inject
      */
-    void inject(final Object target );
+    void inject(final Object target);
+
+    /**
+     * Run this resource un-injection on the target instance.
+     *
+     * @param target The target object to inject
+     */
+    void uninject(final Object target);
 
 
     /**

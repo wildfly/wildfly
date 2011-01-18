@@ -48,9 +48,9 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * {@inheritDoc}
      */
     public T getInstance() {
-        final T beanInstance = provideBeanInstance(config);
-        applyInjections(beanInstance, config);
-        performPostConstructLifecycle(beanInstance, config);
+        final T beanInstance = provideBeanInstance();
+        applyInjections(beanInstance);
+        performPostConstructLifecycle(beanInstance);
         return createBeanProxy(beanInstance);
     }
 
@@ -58,10 +58,9 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * Provide a bean instance.  By default this will construct a new instance, but this could also be overridden to provide
      * singleton access or to provide a pooled implementation.
      *
-     * @param config The container config
      * @return The instance
      */
-    protected T provideBeanInstance(final BeanContainerConfig config) {
+    protected T provideBeanInstance() {
         final Class<T> beanClass = getBeanClass();
         T instance;
         try {
@@ -76,9 +75,8 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * Apply the injections to a newly retrieved bean instance.
      *
      * @param instance The bean instance
-     * @param config The container config
      */
-    protected void applyInjections(final T instance, final BeanContainerConfig config) {
+    protected void applyInjections(final T instance) {
         for (ResourceInjection resourceInjection : getResourceInjections()) {
             resourceInjection.inject(instance);
         }
@@ -92,9 +90,8 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * Perform any post-construct life-cycle routines.  By default this will run any post-construct methods.
      *
      * @param instance The bean instance
-     * @param config The container configuration
      */
-    protected void performPostConstructLifecycle(final T instance, final BeanContainerConfig config) {
+    protected void performPostConstructLifecycle(final T instance) {
         // Execute the post construct life-cycle
         final Method[] postConstructMethods = config.getPostConstructMethods();
         if (postConstructMethods != null) {
@@ -129,6 +126,10 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
         return (Class<T>) config.getBeanClass();
     }
 
+    protected BeanContainerConfig getContainerConfig() {
+        return config;
+    }
+
     protected List<MethodInterceptor> getMethodInterceptors() {
         return interceptors;
     }
@@ -137,7 +138,14 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * {@inheritDoc}
      */
     public void returnInstance(final T instance) {
-        performPreDestroyLifecycle(instance, config);
+        performPreDestroyLifecycle(instance, getContainerConfig());
+        applyUninjections(instance);
+    }
+
+    protected void applyUninjections(final T instance) {
+        for(ResourceInjection resourceInjection : getResourceInjections()) {
+            resourceInjection.uninject(instance);
+        }
     }
 
     /**

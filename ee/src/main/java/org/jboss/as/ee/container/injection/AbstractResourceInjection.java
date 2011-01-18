@@ -47,11 +47,7 @@ public abstract class AbstractResourceInjection<V> implements ResourceInjection 
         this.primitiveTarget = primitiveTarget;
     }
 
-    /**
-     * Run the injection by passing the injected value into the injector.
-     *
-     * @param target The target object to inject
-     */
+    /** {@inheritDoc} **/
     public void inject(final Object target) {
         final Injector<V> injector = getInjector(target);
         final V value = this.value.getValue();
@@ -59,6 +55,12 @@ public abstract class AbstractResourceInjection<V> implements ResourceInjection 
             return; // Skip the injection of null into a primitive target
         }
         injector.inject(value);
+    }
+
+    /** {@inheritDoc} **/
+    public void uninject(Object target) {
+        final Injector<V> injector = getInjector(target);
+        injector.uninject();
     }
 
     /**
