@@ -112,7 +112,7 @@ final class ProxyNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    AttributeAccess getAttribute(final ListIterator<PathElement> address, final String attributeName) {
+    AttributeAccess getAttributeAccess(final ListIterator<PathElement> address, final String attributeName) {
         // todo
         return null;
     }

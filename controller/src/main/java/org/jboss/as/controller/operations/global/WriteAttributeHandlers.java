@@ -37,20 +37,23 @@ import org.jboss.dmr.ModelType;
  * @version $Revision: 1.1 $
  */
 public class WriteAttributeHandlers {
-    public static abstract class AbstractWriteAttributeOperationHandler implements ModelUpdateOperationHandler {
+    public abstract static class AbstractWriteAttributeOperationHandler implements ModelUpdateOperationHandler {
 
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
             try {
                 final String name = operation.require(NAME).asString();
-                final ModelNode value = operation.require(VALUE);
+                // Don't require VALUE. Let validateValue decide if it's bothered
+                // by and undefined value
+                final ModelNode value = operation.get(VALUE);
 
                 String error = validateValue(name, value);
                 if (error != null) {
                     resultHandler.handleFailed(new ModelNode().set(error));
                 } else {
                     context.getSubModel().require(name).set(value);
+                    // FIXME there should be a compensating operation generated
                     resultHandler.handleResultComplete(null);
                 }
 

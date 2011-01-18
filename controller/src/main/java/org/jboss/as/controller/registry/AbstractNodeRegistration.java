@@ -75,10 +75,10 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     @Override
     public AttributeAccess getAttributeAccess(final PathAddress address, final String attributeName) {
-        return getAttribute(address.iterator(), attributeName);
+        return getAttributeAccess(address.iterator(), attributeName);
     }
 
-    abstract AttributeAccess getAttribute(final ListIterator<PathElement> address, final String attributeName);
+    abstract AttributeAccess getAttributeAccess(final ListIterator<PathElement> address, final String attributeName);
 
     /**
      * Get all the handlers at a specific address.

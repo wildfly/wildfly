@@ -31,9 +31,22 @@ import org.jboss.as.controller.OperationHandler;
 public class AttributeAccess {
 
     public static enum AccessType {
-        READ_ONLY,
-        WRITE_ONLY,
-        READ_WRITE
+        READ_ONLY("read-only"),
+        WRITE_ONLY("write-only"),
+        READ_WRITE("read-write");
+
+        private final String label;
+
+        private AccessType(final String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+
     }
 
     private final AccessType access;

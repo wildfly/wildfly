@@ -278,13 +278,17 @@ public class GlobalOperationHandlers {
             }
 
             if (result.has(ATTRIBUTES)) {
-                final Set<String> attributes = registry.getAttributeNames(address);
 
-                for (String attr : result.require(ATTRIBUTES).keys()) {
-                    if (attributes.contains(attr)) {
-                        final AttributeAccess access = registry.getAttributeAccess(address, attr);
-                        result.get(ATTRIBUTES, attr, ACCESS_TYPE).set(access.getAccessType().toString()); //TODO i18n
-                    }
+                for (final String attr : result.require(ATTRIBUTES).keys()) {
+                     final AttributeAccess access = registry.getAttributeAccess(address, attr);
+                     // If there is metadata for an attribute but no AttributeAccess, assume RO. Can't
+                     // be writable without a registered handler. This opens the possibility that out-of-date metadata
+                     // for attribute "foo" can lead to a read of non-existent-in-model "foo" with
+                     // an unexpected undefined value returned. But it removes the possibility of a
+                     // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
+                     // in the valid attribute "foo" not being readable
+                     final AccessType accessType = access == null ? AccessType.READ_ONLY : access.getAccessType();
+                     result.get(ATTRIBUTES, attr, ACCESS_TYPE).set(accessType.toString()); //TODO i18n
                 }
             }
 

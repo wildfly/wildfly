@@ -74,6 +74,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -207,12 +208,10 @@ public class GlobalOperationsTestCase {
         }
 
         operation.get(NAME).set("string2");
-        try {
-            result = CONTROLLER.execute(operation);
-            fail("Expected error for attribute with no read handler");
-        } catch (OperationFailedException expected) {
-        }
-
+        result = CONTROLLER.execute(operation);
+        assertNotNull(result);
+        assertEquals(ModelType.STRING, result.getType());
+        assertEquals("s2", result.asString());
 
         operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(NAME).set("name");
@@ -614,19 +613,19 @@ public class GlobalOperationsTestCase {
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("attr1").require(VALUE_TYPE).asType());
         assertEquals("The values", result.require(ATTRIBUTES).require("attr1").require(DESCRIPTION).asString());
         assertTrue(result.require(ATTRIBUTES).require("attr1").require(REQUIRED).asBoolean());
-        assertFalse(result.require(ATTRIBUTES).require("attr1").get(ACCESS_TYPE).isDefined());
+        assertEquals(AccessType.READ_ONLY.toString(), result.require(ATTRIBUTES).require("attr1").get(ACCESS_TYPE).asString());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("read-only").require(TYPE).asType());
         assertEquals("A r/o int", result.require(ATTRIBUTES).require("read-only").require(DESCRIPTION).asString());
         assertFalse(result.require(ATTRIBUTES).require("read-only").require(REQUIRED).asBoolean());
-        assertEquals("READ_ONLY", result.require(ATTRIBUTES).require("read-only").get(ACCESS_TYPE).asString());
+        assertEquals(AccessType.READ_ONLY.toString(), result.require(ATTRIBUTES).require("read-only").get(ACCESS_TYPE).asString());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("write-only").require(TYPE).asType());
         assertEquals("A w/o int", result.require(ATTRIBUTES).require("write-only").require(DESCRIPTION).asString());
         assertFalse(result.require(ATTRIBUTES).require("write-only").require(REQUIRED).asBoolean());
-        assertEquals("WRITE_ONLY", result.require(ATTRIBUTES).require("write-only").get(ACCESS_TYPE).asString());
+        assertEquals(AccessType.WRITE_ONLY.toString(), result.require(ATTRIBUTES).require("write-only").get(ACCESS_TYPE).asString());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("read-write").require(TYPE).asType());
         assertEquals("A r/w int", result.require(ATTRIBUTES).require("read-write").require(DESCRIPTION).asString());
         assertFalse(result.require(ATTRIBUTES).require("read-write").require(REQUIRED).asBoolean());
-        assertEquals("READ_WRITE", result.require(ATTRIBUTES).require("read-write").get(ACCESS_TYPE).asString());
+        assertEquals(AccessType.READ_WRITE.toString(), result.require(ATTRIBUTES).require("read-write").get(ACCESS_TYPE).asString());
 
         assertEquals("The children1", result.require(CHILDREN).require("type1").require(DESCRIPTION).asString());
         assertEquals(1, result.require(CHILDREN).require("type1").require(MIN_OCCURS).asInt());
@@ -886,9 +885,6 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            profileASub2Reg.registerReadOnlyAttribute("int", null);
-            profileASub2Reg.registerReadOnlyAttribute("string1", null);
-            profileASub2Reg.registerReadOnlyAttribute("list", null);
             profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.LONG, false));
 
             ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
@@ -981,7 +977,6 @@ public class GlobalOperationsTestCase {
                     return node;
                 }
             });
-            profileCSub4Reg.registerReadOnlyAttribute("name", null);
 
 
             ModelNodeRegistration profileCSub5Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
@@ -1012,7 +1007,6 @@ public class GlobalOperationsTestCase {
                     return Cancellable.NULL;
                 }
             });
-            profileCSub5Reg.registerReadOnlyAttribute("value", null);
 
             ModelNodeRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
 

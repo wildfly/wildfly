@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +37,7 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
+import org.jboss.dmr.ModelNode;
 
 final class ConcreteNodeRegistration extends AbstractNodeRegistration {
 
@@ -216,7 +219,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    AttributeAccess getAttribute(final ListIterator<PathElement> iterator, final String attributeName) {
+    AttributeAccess getAttributeAccess(final ListIterator<PathElement> iterator, final String attributeName) {
 
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
@@ -224,10 +227,23 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
             if (subregistry == null) {
                 return null;
             }
-            return subregistry.getAttributeReadHandler(iterator, next.getValue(), attributeName);
+            return subregistry.getAttributeAccess(iterator, next.getValue(), attributeName);
         } else {
             final Map<String, AttributeAccess> snapshot = attributesUpdater.get(this);
-            return snapshot.get(attributeName);
+            AttributeAccess access = snapshot.get(attributeName);
+            if (access == null) {
+                // If there is metadata for an attribute but no AttributeAccess, assume RO. Can't
+                // be writable without a registered handler. This opens the possibility that out-of-date metadata
+                // for attribute "foo" can lead to a read of non-existent-in-model "foo" with
+                // an unexpected undefined value returned. But it removes the possibility of a
+                // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
+                // in the valid attribute "foo" not being readable
+                final ModelNode desc = descriptionProvider.getModelDescription(null);
+                if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
+                    access = new AttributeAccess(AccessType.READ_ONLY, null, null);
+                }
+            }
+            return access;
         }
     }
 
