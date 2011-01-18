@@ -220,7 +220,7 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x200;
 
     // MODULARIZE
-    public static final int MODULARIZE_DEPLOYMENT                       = 0x400;
+    public static final int MODULARIZE_DEPLOYMENT                       = 0x100;
 
     // POST_MODULE
     public static final int POST_MODULE_ANNOTATION_MANAGED_BEAN         = 0x100;
@@ -228,21 +228,23 @@ public enum Phase {
     public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x300;
 
     // INSTALL
-    public static final int INSTALL_APP_CONTEXT                         = 0x100;
-    public static final int INSTALL_MODULE_CONTEXT                      = 0x200;
-    public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x300;
-    public static final int INSTALL_OSGI_ATTACHMENTS                    = 0x400;
-    public static final int INSTALL_WAR_METADATA                        = 0x500;
-    public static final int INSTALL_RA_DEPLOYMENT                       = 0x600;
-    public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x700;
-    public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x800;
-    public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x900;
-    public static final int INSTALL_DS_DEPLOYMENT                       = 0xA00;
-    public static final int INSTALL_BEAN_CONTAINER                      = 0xB00;
-    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0xC00;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0xD00;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0xE00;
+    public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;
+    public static final int INSTALL_APP_CONTEXT                         = 0x0200;
+    public static final int INSTALL_MODULE_CONTEXT                      = 0x0300;
+    public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0400;
+    public static final int INSTALL_OSGI_ATTACHMENTS                    = 0x0500;
+    public static final int INSTALL_WAR_METADATA                        = 0x0600;
+    public static final int INSTALL_RA_DEPLOYMENT                       = 0x0700;
+    public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0800;
+    public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0900;
+    public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0A00;
+    public static final int INSTALL_DS_DEPLOYMENT                       = 0x0B00;
+    public static final int INSTALL_MANAGED_BEAN_DEPLOYMENT             = 0x0C00;
+    public static final int INSTALL_BEAN_CONTAINER                      = 0x0D00;
+    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x0E00;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x0F00;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1000;
 
     // CLEANUP
-    // (none)
+    public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;
 }

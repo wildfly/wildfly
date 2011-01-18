@@ -30,8 +30,8 @@ import org.jboss.as.server.deployment.module.ClassPathEntry;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
@@ -95,31 +95,11 @@ public final class Attachments {
      * The server deployment repository
      */
     public static final AttachmentKey<ServerDeploymentRepository> SERVER_DEPLOYMENT_REPOSITORY = AttachmentKey.create(ServerDeploymentRepository.class);
-
-    /**
-     * The annotation index for this deployment. This is attached to the {@link ResourceRoot}s of the deployment that contain
-     * the annotations
-     */
-    public static final AttachmentKey<Index> ANNOTATION_INDEX = AttachmentKey.create(Index.class);
-
     /**
      * An attachment that indicates if a {@link ResourceRoot} should be indexed by the {@link AnnotationIndexProcessor}. If this
      * is not present then the resource root is indexed by default.
      */
     public static final AttachmentKey<Boolean> INDEX_RESOURCE_ROOT = AttachmentKey.create(Boolean.class);
-
-    /**
-     * A list of paths within a root to ignore when indexing.
-     */
-    public static final AttachmentKey<AttachmentList<String>> INDEX_IGNORE_PATHS = AttachmentKey.createList(String.class);
-
-    /**
-     * Flag to determine whether to process the child annotation indexes as part of the parent deployment.
-     * Ex.  An EAR deployment should not processes nested JAR index when checking for deployable annotations.
-     * It should rely on the child actually being deployed.  WARs and RARs on the other hand should process all the
-     * children as though the are all one index.
-     */
-    public static final AttachmentKey<Boolean> PROCESS_CHILD_ANNOTATION_INDEX = AttachmentKey.create(Boolean.class);
 
     /**
      * A marker attachment to identify a resource root that should be included as a module root.
@@ -131,16 +111,6 @@ public final class Attachments {
      */
     public static final AttachmentKey<Boolean> SUB_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
 
-    /**
-     * A Marker attachment to identify an EAR deployment.
-     */
-    public static final AttachmentKey<Boolean> EAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
-
-    /**
-     * A Marker attachment to identify an WAR deployment.
-     */
-    public static final AttachmentKey<Boolean> WAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
-
     //
     // VALIDATE
     //
@@ -148,6 +118,11 @@ public final class Attachments {
     //
     // PARSE
     //
+    /**
+     * The annotation index for this deployment. This is attached to the {@link ResourceRoot}s of the deployment that contain
+     * the annotations
+     */
+    public static final AttachmentKey<Index> ANNOTATION_INDEX = AttachmentKey.create(Index.class);
 
 
     //
@@ -184,6 +159,11 @@ public final class Attachments {
     //
     // INSTALL
     //
+
+    /**
+     * The reflection index for the deployment.
+     */
+    public static final AttachmentKey<DeploymentReflectionIndex> REFLECTION_INDEX = AttachmentKey.create(DeploymentReflectionIndex.class);
 
     //
     // CLEANUP
