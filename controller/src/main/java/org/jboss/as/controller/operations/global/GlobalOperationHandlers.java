@@ -110,7 +110,7 @@ public class GlobalOperationHandlers {
                     resultHandler.handleFailed(new ModelNode().set("Attribute " + attributeName + " is write-only")); // TODO i18n
                 } else if (attributeAccess.getReadHandler() == null) {
                     final ModelNode result = context.getSubModel().get(attributeName).clone();
-                    resultHandler.handleResultFragment(new String[0], result);
+                    resultHandler.handleResultFragment(NO_LOCATION, result);
                     resultHandler.handleResultComplete(null);
                 } else {
                     cancellable = attributeAccess.getReadHandler().execute(context, operation, resultHandler);
@@ -179,7 +179,7 @@ public class GlobalOperationHandlers {
                             }
                         }
 
-                        resultHandler.handleResultFragment(new String[0], result);
+                        resultHandler.handleResultFragment(NO_LOCATION, result);
                         resultHandler.handleResultComplete(null);
                     }
                 }
@@ -208,7 +208,7 @@ public class GlobalOperationHandlers {
                     result.setEmptyList();
                 }
 
-                resultHandler.handleResultFragment(new String[0], result);
+                resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
                 resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
@@ -229,7 +229,7 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = descriptionProvider == null ? new ModelNode() : descriptionProvider.getModelDescription(getLocale(operation));
 
-                resultHandler.handleResultFragment(new String[0], result);
+                resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
                 resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
