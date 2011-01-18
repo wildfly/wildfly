@@ -21,7 +21,9 @@
  */
 package org.jboss.as.controller.operations.global;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
@@ -275,6 +277,17 @@ public class GlobalOperationHandlers {
                 }
             }
 
+            if (result.has(ATTRIBUTES)) {
+                final Set<String> attributes = registry.getAttributeNames(address);
+
+                for (String attr : result.require(ATTRIBUTES).keys()) {
+                    if (attributes.contains(attr)) {
+                        final AttributeAccess access = registry.getAttributeAccess(address, attr);
+                        result.get(ATTRIBUTES, attr, ACCESS_TYPE).set(access.getAccessType().toString()); //TODO i18n
+                    }
+                }
+            }
+
             if (recursive && result.has(CHILDREN)) {
                 for (final PathElement element : registry.getChildAddresses(address)) {
                     final PathAddress childAddress = address.append(element);
@@ -288,7 +301,7 @@ public class GlobalOperationHandlers {
 
 
 
-    private static Locale getLocale(ModelNode operation) {
+    private static Locale getLocale(final ModelNode operation) {
         if (!operation.has(LOCALE)) {
             return null;
         }

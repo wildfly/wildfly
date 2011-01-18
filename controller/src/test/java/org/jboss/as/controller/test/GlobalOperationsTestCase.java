@@ -26,6 +26,7 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -613,6 +614,20 @@ public class GlobalOperationsTestCase {
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("attr1").require(VALUE_TYPE).asType());
         assertEquals("The values", result.require(ATTRIBUTES).require("attr1").require(DESCRIPTION).asString());
         assertTrue(result.require(ATTRIBUTES).require("attr1").require(REQUIRED).asBoolean());
+        assertFalse(result.require(ATTRIBUTES).require("attr1").get(ACCESS_TYPE).isDefined());
+        assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("read-only").require(TYPE).asType());
+        assertEquals("A r/o int", result.require(ATTRIBUTES).require("read-only").require(DESCRIPTION).asString());
+        assertFalse(result.require(ATTRIBUTES).require("read-only").require(REQUIRED).asBoolean());
+        assertEquals("READ_ONLY", result.require(ATTRIBUTES).require("read-only").get(ACCESS_TYPE).asString());
+        assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("write-only").require(TYPE).asType());
+        assertEquals("A w/o int", result.require(ATTRIBUTES).require("write-only").require(DESCRIPTION).asString());
+        assertFalse(result.require(ATTRIBUTES).require("write-only").require(REQUIRED).asBoolean());
+        assertEquals("WRITE_ONLY", result.require(ATTRIBUTES).require("write-only").get(ACCESS_TYPE).asString());
+        assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("read-write").require(TYPE).asType());
+        assertEquals("A r/w int", result.require(ATTRIBUTES).require("read-write").require(DESCRIPTION).asString());
+        assertFalse(result.require(ATTRIBUTES).require("read-write").require(REQUIRED).asBoolean());
+        assertEquals("READ_WRITE", result.require(ATTRIBUTES).require("read-write").get(ACCESS_TYPE).asString());
+
         assertEquals("The children1", result.require(CHILDREN).require("type1").require(DESCRIPTION).asString());
         assertEquals(1, result.require(CHILDREN).require("type1").require(MIN_OCCURS).asInt());
 
@@ -760,6 +775,15 @@ public class GlobalOperationsTestCase {
                     node.get(ATTRIBUTES, "attr1", VALUE_TYPE).set(ModelType.INT);
                     node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The values");
                     node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
+                    node.get(ATTRIBUTES, "read-only", TYPE).set(ModelType.INT);
+                    node.get(ATTRIBUTES, "read-only", DESCRIPTION).set("A r/o int");
+                    node.get(ATTRIBUTES, "read-only", REQUIRED).set(false);
+                    node.get(ATTRIBUTES, "write-only", TYPE).set(ModelType.INT);
+                    node.get(ATTRIBUTES, "write-only", DESCRIPTION).set("A w/o int");
+                    node.get(ATTRIBUTES, "write-only", REQUIRED).set(false);
+                    node.get(ATTRIBUTES, "read-write", TYPE).set(ModelType.INT);
+                    node.get(ATTRIBUTES, "read-write", DESCRIPTION).set("A r/w int");
+                    node.get(ATTRIBUTES, "read-write", REQUIRED).set(false);
                     node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
                     node.get(CHILDREN, "type1", MIN_OCCURS).set(1);
                     node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
@@ -769,6 +793,11 @@ public class GlobalOperationsTestCase {
                     return node;
                 }
             });
+
+            profileSub1Reg.registerReadOnlyAttribute("read-only", null);
+            profileSub1Reg.registerWriteOnlyAttribute("write-only", new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.INT));
+            profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.INT));
+            //TODO Validation if we try to set a handler for an attribute that does not exist in model?
 
             DescriptionProvider thingProvider = new DescriptionProvider() {
 

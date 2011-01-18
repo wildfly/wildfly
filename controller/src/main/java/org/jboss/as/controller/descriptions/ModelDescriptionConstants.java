@@ -30,6 +30,7 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
+    public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADD_OPERATION = "add-operation";
     public static final String ADDRESS = "address";
