@@ -22,6 +22,8 @@
 
 package org.jboss.as.security.service;
 
+import java.util.Set;
+
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
@@ -69,7 +71,10 @@ public class SecurityBootstrapService implements Service<Void> {
 
     /** {@inheritDoc} */
     public void stop(StopContext context) {
-        // nothing to do
+        // remove handlers
+        Set handlerKeys = PolicyContext.getHandlerKeys();
+        handlerKeys.remove(CallbackHandlerPolicyContextHandler.CALLBACK_HANDLER_KEY);
+        handlerKeys.remove(SecurityConstants.SUBJECT_CONTEXT_KEY);
     }
 
     /** {@inheritDoc} */

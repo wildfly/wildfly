@@ -78,12 +78,9 @@
 
         <dependency>
         	<groupId>org.picketbox</groupId>
-        	<artifactId>jboss-security-spi</artifactId>
+        	<artifactId>picketbox</artifactId>
         </dependency>
-        <dependency>
-        	<groupId>org.picketbox</groupId>
-        	<artifactId>jbosssx</artifactId>
-        </dependency>
+        
         <dependency>
         	<groupId>org.jboss.spec.javax.security.jacc</groupId>
         	<artifactId>jboss-jacc-api_1.4_spec</artifactId>

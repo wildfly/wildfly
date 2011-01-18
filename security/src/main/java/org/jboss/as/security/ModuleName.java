@@ -22,60 +22,30 @@
 
 package org.jboss.as.security;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Enum for the Security container attributes
+ * Enum to help locate Module names
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public enum Attribute {
-    // must be first
-    UNKNOWN(null),
+public enum ModuleName {
 
-    AUTHENTICATION_MANAGER_CLASS_NAME("authentication-manager-class-name"),
-
-    DEEP_COPY_SUBJECT_MODE("deep-copy-subject-mode"),
-
-    DEFAULT_CALLBACK_HANDLER_CLASS_NAME("default-callback-handler-class-name"),
-
-    SUBJECT_FACTORY_CLASS_NAME("subject-factory-class-name");
+    PICKETBOX("org.picketbox", "main");
 
     private final String name;
 
-    Attribute(final String name) {
+    private final String slot;
+
+    private ModuleName(final String name, final String slot) {
         this.name = name;
+        this.slot = slot;
     }
 
-    /**
-     * Get the local name of this element.
-     *
-     * @return the local name
-     */
-    public String getLocalName() {
+    public String getName() {
         return name;
     }
 
-    private static final Map<String, Attribute> MAP;
-
-    static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
-        for (Attribute element : values()) {
-            final String name = element.getLocalName();
-            if (name != null)
-                map.put(name, element);
-        }
-        MAP = map;
-    }
-
-    public static Attribute forName(String localName) {
-        final Attribute element = MAP.get(localName);
-        return element == null ? UNKNOWN : element;
-    }
-
-    public String toString() {
-        return getLocalName();
+    public String getSlot() {
+        return slot;
     }
 
 }

@@ -25,7 +25,14 @@ package org.jboss.as.security.plugins;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 
@@ -36,16 +43,18 @@ import org.jboss.security.SecurityContextAssociation;
  */
 class SecurityActions {
 
-    static ClassLoader getContextClassLoader() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null)
-            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
+    static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
+                public ModuleClassLoader run() throws ModuleLoadException {
+                    ModuleLoader loader = Module.getCurrentModuleLoader();
+                    ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
+                    return loader.loadModule(identifier).getClassLoader();
                 }
             });
-        else
-            return Thread.currentThread().getContextClassLoader();
+        } catch (PrivilegedActionException pae) {
+            throw new ModuleLoadException(pae);
+        }
     }
 
     static SecurityContext getSecurityContext() {

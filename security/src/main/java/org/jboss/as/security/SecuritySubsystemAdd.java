@@ -26,18 +26,18 @@ import javax.naming.Context;
 import javax.naming.Reference;
 
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.naming.service.JavaContextService;
 import org.jboss.as.security.context.SecurityDomainObjectFactory;
+import org.jboss.as.security.processors.SecurityDependencyProcessor;
 import org.jboss.as.security.service.JaasBinderService;
 import org.jboss.as.security.service.SecurityBootstrapService;
-import org.jboss.as.security.service.SecurityManagementService;
-import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
-import org.jboss.security.ISecurityManagement;
 
 /**
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
@@ -46,21 +46,11 @@ public final class SecuritySubsystemAdd extends AbstractSubsystemAdd<SecuritySub
 
     private static final long serialVersionUID = 5985062059276472263L;
 
-    private final String authenticationManagerClassName;
-
-    private final boolean deepCopySubjectMode;
-
-    private final String defaultCallbackHandlerClassName;
-
     /**
      * Create a new instance
      */
-    protected SecuritySubsystemAdd(String authenticationManagerClassName, boolean deepCopySubjectMode,
-            String defaultCallbackHandlerClassName) {
+    protected SecuritySubsystemAdd() {
         super(Namespace.SECURITY_1_0.getUriString());
-        this.authenticationManagerClassName = authenticationManagerClassName;
-        this.deepCopySubjectMode = deepCopySubjectMode;
-        this.defaultCallbackHandlerClassName = defaultCallbackHandlerClassName;
     }
 
     /** {@inheritDoc} */
@@ -73,32 +63,22 @@ public final class SecuritySubsystemAdd extends AbstractSubsystemAdd<SecuritySub
                 new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param)).setInitialMode(
                 ServiceController.Mode.ACTIVE).install();
 
-        // add security management service
-        final SecurityManagementService securityManagementService = new SecurityManagementService(
-                authenticationManagerClassName, deepCopySubjectMode, defaultCallbackHandlerClassName);
-        target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService).addListener(
-                new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param)).setInitialMode(
-                ServiceController.Mode.ACTIVE).install();
-
         // add service to bind SecurityDomainObjectFactory to JNDI
         final Reference reference = SecurityDomainObjectFactory.createReference("JSM");
         final JaasBinderService binderService = new JaasBinderService(Values.immediateValue(reference));
         target.addService(JaasBinderService.SERVICE_NAME, binderService).addDependency(JavaContextService.SERVICE_NAME,
                 Context.class, binderService.getContextInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
+    }
 
-        // add subject factory service
-        final SubjectFactoryService subjectFactoryService = new SubjectFactoryService();
-        target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService).addDependency(
-                SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                subjectFactoryService.getSecurityManagementInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
+    /** {@inheritDoc} */
+    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
+        updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE, new SecurityDependencyProcessor());
+        super.applyUpdateBootAction(updateContext);
     }
 
     /** {@inheritDoc} */
     protected SecuritySubsystemElement createSubsystemElement() {
         final SecuritySubsystemElement element = new SecuritySubsystemElement();
-        element.setAuthenticationManagerClassName(authenticationManagerClassName);
-        element.setDeepCopySubjectMode(deepCopySubjectMode);
-        element.setDefaultCallbackHandlerClassName(defaultCallbackHandlerClassName);
         return element;
     }
 

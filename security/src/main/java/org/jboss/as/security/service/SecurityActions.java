@@ -20,56 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security;
+package org.jboss.as.security.service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 
 /**
- * Enum for the sub elements of the Security subsystem
+ * Privileged blocks for this package
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-enum Element {
-    // must be first
-    UNKNOWN(null),
+class SecurityActions {
 
-    SECURITY_MANAGEMENT("security-management"),
-
-    SUBJECT_FACTORY("subject-factory"),
-
-    JAAS("jaas");
-
-    private final String name;
-
-    Element(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Get the local name of this element.
-     *
-     * @return the local name
-     */
-    public String getLocalName() {
-        return name;
-    }
-
-    private static final Map<String, Element> MAP;
-
-    static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
-            final String name = element.getLocalName();
-            if (name != null)
-                map.put(name, element);
+    static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
+                public ModuleClassLoader run() throws ModuleLoadException {
+                    ModuleLoader loader = Module.getCurrentModuleLoader();
+                    ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
+                    return loader.loadModule(identifier).getClassLoader();
+                }
+            });
+        } catch (PrivilegedActionException pae) {
+            throw new ModuleLoadException(pae);
         }
-        MAP = map;
-    }
-
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
-        return element == null ? UNKNOWN : element;
     }
 
 }

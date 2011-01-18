@@ -29,6 +29,7 @@
   
   <dependencies>
     <module name="javax.api"/>
+    <module name="javax.xml.stream.api"/>
     <module name="javax.security.jacc.api"/>
     <module name="org.jboss.logging"/>
     <module name="org.picketbox"/>

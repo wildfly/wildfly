@@ -34,8 +34,7 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    SECURITY_1_0("urn:jboss:domain:security:1.0")
-    ;
+    SECURITY_1_0("urn:jboss:domain:security:1.0");
 
     /**
      * The current namespace version.

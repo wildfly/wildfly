@@ -33,8 +33,6 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.security.service.JaasBinderService;
 import org.jboss.as.security.service.SecurityBootstrapService;
-import org.jboss.as.security.service.SecurityManagementService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -51,11 +49,11 @@ public final class SecuritySubsystemElement extends AbstractSubsystemElement<Sec
 
     public static final ServiceName JBOSS_SECURITY = ServiceName.JBOSS.append("security");
 
-    private String authenticationManagerClassName;
+    private SecurityManagementElement securityManagement;
 
-    private boolean deepCopySubjectMode;
+    private SubjectFactoryElement subjectFactory;
 
-    private String defaultCallbackHandlerClassName;
+    private JaasElement jaas;
 
     /**
      * Create a new instance
@@ -73,43 +71,41 @@ public final class SecuritySubsystemElement extends AbstractSubsystemElement<Sec
             bootStrapService.setMode(Mode.REMOVE);
         }
 
-        // remove security management service
-        final ServiceController<?> securityManagementService = updateContext.getServiceRegistry().getService(
-                SecurityManagementService.SERVICE_NAME);
-        if (securityManagementService != null) {
-            securityManagementService.setMode(Mode.REMOVE);
-        }
-
         // remove jaas binder service
         final ServiceController<?> binderService = updateContext.getServiceRegistry()
                 .getService(JaasBinderService.SERVICE_NAME);
         if (binderService != null) {
             binderService.setMode(Mode.REMOVE);
         }
-
-        // remove subject factory service
-        final ServiceController<?> subjectFactoryService = updateContext.getServiceRegistry().getService(
-                SubjectFactoryService.SERVICE_NAME);
-        if (subjectFactoryService != null) {
-            subjectFactoryService.setMode(Mode.REMOVE);
-        }
     }
 
     /** {@inheritDoc} */
     protected AbstractSubsystemAdd<SecuritySubsystemElement> getAdd() {
-        final SecuritySubsystemAdd add = new SecuritySubsystemAdd(authenticationManagerClassName, deepCopySubjectMode,
-                defaultCallbackHandlerClassName);
+        final SecuritySubsystemAdd add = new SecuritySubsystemAdd();
         return add;
     }
 
     /** {@inheritDoc} */
     protected void getUpdates(List<? super AbstractSubsystemUpdate<SecuritySubsystemElement, ?>> list) {
-        // no sub elements yet
+        if (securityManagement != null) {
+            AddSecurityManagementUpdate update = securityManagement.asUpdate();
+            list.add(update);
+        }
+        if (subjectFactory != null) {
+            AddSubjectFactoryUpdate update = subjectFactory.asUpdate();
+            list.add(update);
+        }
+        if (jaas != null) {
+            AddJaasUpdate update = jaas.asUpdate();
+            list.add(update);
+        }
     }
 
     /** {@inheritDoc} */
     protected boolean isEmpty() {
-        return true;
+        if (securityManagement == null && subjectFactory == null && jaas == null)
+            return true;
+        return false;
     }
 
     /** {@inheritDoc} */
@@ -119,70 +115,73 @@ public final class SecuritySubsystemElement extends AbstractSubsystemElement<Sec
 
     /** {@inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        // only write attributes when they are not set to the default values
-        if (!SecuritySubsystemParser.defaultAuthenticationManagerClassName.equals(authenticationManagerClassName))
-            streamWriter.writeAttribute(Attribute.AUTHENTICATION_MANAGER_CLASS_NAME.getLocalName(),
-                    authenticationManagerClassName);
-        if (deepCopySubjectMode)
-            streamWriter.writeAttribute(Attribute.DEEP_COPY_SUBJECT_MODE.getLocalName(), Boolean.TRUE.toString());
-        if (!SecuritySubsystemParser.defaultCallbackHandlerClassName.equals(defaultCallbackHandlerClassName))
-            streamWriter.writeAttribute(Attribute.DEFAULT_CALLBACK_HANDLER_CLASS_NAME.getLocalName(),
-                    defaultCallbackHandlerClassName);
+        // only writes sub elements if they have custom values
+        if (securityManagement != null && !securityManagement.isStandard()) {
+            streamWriter.writeStartElement(Element.SECURITY_MANAGEMENT.getLocalName());
+            securityManagement.writeContent(streamWriter);
+        }
+        if (subjectFactory != null && !subjectFactory.isStandard()) {
+            streamWriter.writeStartElement(Element.SUBJECT_FACTORY.getLocalName());
+            subjectFactory.writeContent(streamWriter);
+        }
+        if (jaas != null && !jaas.isStandard()) {
+            streamWriter.writeStartElement(Element.JAAS.getLocalName());
+            jaas.writeContent(streamWriter);
+        }
         streamWriter.writeEndElement();
     }
 
     /**
-     * Get the class name of the {@code AuthenticationManager} implementation to be used
+     * Sets security management element
      *
-     * @return the class name
+     * @param element
      */
-    public String getAuthenticationManagerClassName() {
-        return authenticationManagerClassName;
+    protected void setSecurityManagement(SecurityManagementElement element) {
+        securityManagement = element;
     }
 
     /**
-     * Set the class name of the {@code AuthenticationManager} implementation to be used
+     * Gets the security management element
      *
-     * @param authenticationManagerClassName the class name
+     * @return the element
      */
-    public void setAuthenticationManagerClassName(String authenticationManagerClassName) {
-        this.authenticationManagerClassName = authenticationManagerClassName;
+    public SecurityManagementElement getSecurityManagement() {
+        return securityManagement;
     }
 
     /**
-     * Get the flag indicating the copy mode
+     * Sets subject factory element
      *
-     * @return the flag
+     * @param element
      */
-    public boolean isDeepCopySubjectMode() {
-        return deepCopySubjectMode;
+    protected void setSubjectFactory(SubjectFactoryElement element) {
+        subjectFactory = element;
     }
 
     /**
-     * Set the flag indicating the copy mode
+     * Gets the security management element
      *
-     * @param deepCopySubjectMode the flag
+     * @return the element
      */
-    public void setDeepCopySubjectMode(boolean deepCopySubjectMode) {
-        this.deepCopySubjectMode = deepCopySubjectMode;
+    public SubjectFactoryElement getSubjectFactory() {
+        return subjectFactory;
     }
 
     /**
-     * Get the class name of the {@code CallbackHandler} implementation to be used
+     * Sets jaas element
      *
-     * @return the class name
+     * @param element
      */
-    public String getDefaultCallbackHandlerClassName() {
-        return defaultCallbackHandlerClassName;
+    protected void setJaas(JaasElement element) {
+        jaas = element;
     }
 
     /**
-     * Set the class name of the {@code CallbackHandler} implementation to be used
+     * Gets the jaas element
      *
-     * @param defaultCallbackHandlerClassName the class name
+     * @return the element
      */
-    public void setDefaultCallbackHandlerClassName(String defaultCallbackHandlerClassName) {
-        this.defaultCallbackHandlerClassName = defaultCallbackHandlerClassName;
+    public JaasElement getJaas() {
+        return jaas;
     }
-
 }

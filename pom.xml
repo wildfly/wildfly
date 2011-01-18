@@ -140,7 +140,7 @@
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.mockito>1.8.4</version.org.mockito>
-        <version.org.picketbox>4.0.0.Alpha2</version.org.picketbox>
+        <version.org.picketbox>4.0.0.Alpha3</version.org.picketbox>
         <version.org.slf4j.jcl-over-slf4j>1.5.10</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.10</version.org.slf4j.slf4j-api>
         <version.org.slf4j.slf4j-ext>1.5.10</version.org.slf4j.slf4j-ext>
@@ -2542,62 +2542,8 @@
 
             <dependency>
                 <groupId>org.picketbox</groupId>
-                <artifactId>jboss-security-spi</artifactId>
+                <artifactId>picketbox</artifactId>
                 <version>${version.org.picketbox}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketbox</groupId>
-                <artifactId>jbosssx</artifactId>
-                <version>${version.org.picketbox}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketbox</groupId>
-                <artifactId>picketbox-bare</artifactId>
-                <version>${version.org.picketbox}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.picketbox</groupId>
-                        <artifactId>identity-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketbox</groupId>
-                        <artifactId>authorization-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketbox</groupId>
-                        <artifactId>acl-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketbox</groupId>
-                        <artifactId>jbosssx-bare</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketbox</groupId>
-                        <artifactId>picketbox-acl-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketbox</groupId>
-                        <artifactId>picketbox-identity-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.persistence</groupId>
-                        <artifactId>persistence-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

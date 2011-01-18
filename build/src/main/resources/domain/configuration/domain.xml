@@ -242,7 +242,15 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:security:1.0">
+        		<jaas>
+        			<application-policy name="other">
+        				<authentication>
+        					<login-module code="UsersRoles" flag="required"/>
+        				</authentication>
+        			</application-policy>
+        		</jaas>
+        	</subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>

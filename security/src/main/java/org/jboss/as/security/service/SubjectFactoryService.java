@@ -50,7 +50,10 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
 
     private SubjectFactory subjectFactory;
 
-    public SubjectFactoryService() {
+    private String subjectFactoryClassName;
+
+    public SubjectFactoryService(String subjectFactoryClassName) {
+        this.subjectFactoryClassName = subjectFactoryClassName;
     }
 
     /** {@inheritDoc} */
@@ -58,7 +61,18 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
         if (log.isDebugEnabled())
             log.debug("Starting SubjectFactoryService");
         final ISecurityManagement injectedSecurityManagement = securityManagementValue.getValue();
-        JBossSecuritySubjectFactory subjectFactory = new JBossSecuritySubjectFactory();
+        int i = subjectFactoryClassName.lastIndexOf(":");
+        if (i == -1)
+            throw new StartException("Missing module name for the subject-factory-class-name attribute");
+        String moduleSpec = subjectFactoryClassName.substring(0, i);
+        String className = subjectFactoryClassName.substring(i + 1);
+        JBossSecuritySubjectFactory subjectFactory = null;
+        try {
+            Class<?> subjectFactoryClazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+            subjectFactory = (JBossSecuritySubjectFactory) subjectFactoryClazz.newInstance();
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
         subjectFactory.setSecurityManagement(injectedSecurityManagement);
         this.subjectFactory = subjectFactory;
     }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.security;
 
+import static org.jboss.as.model.ParseUtils.unexpectedElement;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +35,7 @@ import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.server.ExtensionContext.SubsystemConfiguration;
+import org.jboss.security.config.parser.ApplicationPolicyParser;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -45,10 +48,6 @@ public final class SecuritySubsystemParser implements XMLStreamConstants,
         XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<SecuritySubsystemElement>>> {
 
     private static final SecuritySubsystemParser INSTANCE = new SecuritySubsystemParser();
-
-    static final String defaultAuthenticationManagerClassName = "org.jboss.security.plugins.auth.JaasSecurityManagerBase";
-
-    static final String defaultCallbackHandlerClassName = "org.jboss.security.auth.callback.JBossCallbackHandler";
 
     /**
      * Private constructor to create a singleton
@@ -70,6 +69,52 @@ public final class SecuritySubsystemParser implements XMLStreamConstants,
             throws XMLStreamException {
         final List<AbstractSubsystemUpdate<SecuritySubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<SecuritySubsystemElement, ?>>();
 
+        // no attributes
+        ParseUtils.requireNoAttributes(reader);
+
+        // read elements
+        boolean securityManagementParsed = false;
+        boolean subjectFactoryParsed = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case SECURITY_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SECURITY_MANAGEMENT: {
+                            updates.add(parseSecurityManagement(reader));
+                            securityManagementParsed = true;
+                            break;
+                        }
+                        case SUBJECT_FACTORY: {
+                            updates.add(parseSubjectFactory(reader));
+                            subjectFactoryParsed = true;
+                            break;
+                        }
+                        case JAAS: {
+                            updates.add(parseJaas(reader));
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (!securityManagementParsed)
+            updates.add(new AddSecurityManagementUpdate("default", false, "default"));
+        if (!subjectFactoryParsed)
+            updates.add(new AddSubjectFactoryUpdate("default"));
+
+        final SecuritySubsystemAdd subsystem = new SecuritySubsystemAdd();
+        result.setResult(new ExtensionContext.SubsystemConfiguration<SecuritySubsystemElement>(subsystem, updates));
+    }
+
+    AddSecurityManagementUpdate parseSecurityManagement(XMLExtendedStreamReader reader) throws XMLStreamException {
         // read attributes
         String authenticationManagerClassName = null;
         boolean deepCopySubjectMode = false;
@@ -99,17 +144,49 @@ public final class SecuritySubsystemParser implements XMLStreamConstants,
                 }
             }
         }
-        if (authenticationManagerClassName == null)
-            authenticationManagerClassName = SecuritySubsystemParser.defaultAuthenticationManagerClassName;
-        if (defaultCallbackHandlerClassName == null)
-            defaultCallbackHandlerClassName = SecuritySubsystemParser.defaultCallbackHandlerClassName;
-        final SecuritySubsystemAdd subsystem = new SecuritySubsystemAdd(authenticationManagerClassName, deepCopySubjectMode,
-                defaultCallbackHandlerClassName);
-
-        // no sub elements yet
         ParseUtils.requireNoContent(reader);
 
-        result.setResult(new ExtensionContext.SubsystemConfiguration<SecuritySubsystemElement>(subsystem, updates));
+        if (authenticationManagerClassName == null)
+            authenticationManagerClassName = "default";
+        if (defaultCallbackHandlerClassName == null)
+            defaultCallbackHandlerClassName = "default";
+        return new AddSecurityManagementUpdate(authenticationManagerClassName, deepCopySubjectMode,
+                defaultCallbackHandlerClassName);
     }
 
+    AddSubjectFactoryUpdate parseSubjectFactory(XMLExtendedStreamReader reader) throws XMLStreamException {
+        // read attributes
+        String subjectFactoryClassName = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SUBJECT_FACTORY_CLASS_NAME: {
+                        subjectFactoryClassName = value;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+
+        if (subjectFactoryClassName == null)
+            subjectFactoryClassName = "default";
+        return new AddSubjectFactoryUpdate(subjectFactoryClassName);
+    }
+
+    AddJaasUpdate parseJaas(XMLExtendedStreamReader reader) throws XMLStreamException {
+        // no attributes
+        ParseUtils.requireNoAttributes(reader);
+        ApplicationPolicyParser parser = new ApplicationPolicyParser();
+        AddJaasUpdate jaasUpdate = new AddJaasUpdate();
+        jaasUpdate.setApplicationPolicies(parser.parse(reader));
+        return jaasUpdate;
+    }
 }

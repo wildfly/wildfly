@@ -36,14 +36,21 @@ import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-import javax.naming.spi.ObjectFactory;
 
+import org.jboss.as.naming.ServiceAwareObjectFactory;
 import org.jboss.as.naming.context.ModularReference;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.security.service.SecurityManagementService;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceNotFoundException;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.security.SecurityConstants;
 
 /**
@@ -51,11 +58,13 @@ import org.jboss.security.SecurityConstants;
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public class SecurityDomainObjectFactory implements ObjectFactory, InvocationHandler {
+public class SecurityDomainObjectFactory implements ServiceAwareObjectFactory, InvocationHandler {
 
-    private JNDIBasedSecurityManagement securityManagement = JNDIBasedSecurityManagement.getInstance();
+    private JNDIBasedSecurityManagement securityManagement;
 
-    private ConcurrentHashMap<String, SecurityDomainContext> securityManagerMap = securityManagement.getSecurityManagerMap();
+    private ConcurrentHashMap<String, SecurityDomainContext> securityManagerMap;
+
+    private volatile ServiceRegistry serviceRegistry;
 
     /**
      * Create a complete reference to a {@code SecurityDomainObjectFactory) for a given context identifier
@@ -73,7 +82,7 @@ public class SecurityDomainObjectFactory implements ObjectFactory, InvocationHan
      * atomic name of a security domain.
      */
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        ClassLoader loader = SecurityActions.getContextClassLoader();
+        ClassLoader loader = SecurityActions.getModuleClassLoader();
         Class<?>[] interfaces = { Context.class };
         Context ctx = (Context) Proxy.newProxyInstance(loader, interfaces, this);
         return ctx;
@@ -88,6 +97,23 @@ public class SecurityDomainObjectFactory implements ObjectFactory, InvocationHan
         NameParser parser = ctx.getNameParser("");
         String securityDomain = null;
         Name name = null;
+
+        if (securityManagement == null) {
+            final ServiceController<?> controller;
+            final ServiceName serviceName = SecurityManagementService.SERVICE_NAME;
+            try {
+                controller = serviceRegistry.getRequiredService(serviceName);
+            } catch (ServiceNotFoundException e) {
+                throw new NamingException("Could not resolve service " + serviceName);
+            }
+            if (controller.getState() == State.UP) {
+                securityManagement = (JNDIBasedSecurityManagement) controller.getValue();
+                securityManagerMap = securityManagement.getSecurityManagerMap();
+            }
+            else {
+                throw new NamingException("Could not resolve service " + serviceName);
+            }
+        }
 
         String methodName = method.getName();
         if (methodName.equals("toString") == true)
@@ -175,5 +201,9 @@ public class SecurityDomainObjectFactory implements ObjectFactory, InvocationHan
         public NameClassPair nextElement() {
             return next();
         }
+    }
+
+    public void injectServiceRegistry(ServiceRegistry registry) {
+        this.serviceRegistry = registry;
     }
 }

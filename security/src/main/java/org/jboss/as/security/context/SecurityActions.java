@@ -23,7 +23,15 @@
 package org.jboss.as.security.context;
 
 import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
+
 
 /**
  * Privileged blocks for this package
@@ -32,16 +40,18 @@ import java.security.PrivilegedAction;
  */
 class SecurityActions {
 
-    static ClassLoader getContextClassLoader() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null)
-            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
+    static ModuleClassLoader getModuleClassLoader() throws ModuleLoadException {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
+                public ModuleClassLoader run() throws ModuleLoadException {
+                    ModuleLoader loader = Module.getCurrentModuleLoader();
+                    ModuleIdentifier identifier = ModuleIdentifier.create("org.jboss.as.security", "main");
+                    return loader.loadModule(identifier).getClassLoader();
                 }
             });
-        else
-            return Thread.currentThread().getContextClassLoader();
+        } catch (PrivilegedActionException pae) {
+            throw new ModuleLoadException(pae);
+        }
     }
 
 }

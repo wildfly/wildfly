@@ -42,6 +42,7 @@ import org.jboss.security.mapping.MappingManager;
 /**
  * JNDI based implementation of {@code ISecurityManagement}
  *
+ * @author Anil.Saldhana@redhat.com
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 public class JNDIBasedSecurityManagement implements ISecurityManagement {
@@ -206,10 +207,20 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
      * @throws Exception if creation fails
      */
     private AuthenticationManager createAuthenticationManager(String securityDomain) throws Exception {
-        Class<?> callbackHandlerClazz = SecurityActions.getContextClassLoader().loadClass(callbackHandlerClassName);
+        int i = callbackHandlerClassName.lastIndexOf(":");
+        if (i == -1)
+            throw new IllegalArgumentException("Missing module name for the default-callback-handler-class-name attribute");
+        String moduleSpec = callbackHandlerClassName.substring(0, i);
+        String className = callbackHandlerClassName.substring(i + 1);
+        Class<?> callbackHandlerClazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
         CallbackHandler ch = (CallbackHandler) callbackHandlerClazz.newInstance();
 
-        Class<?> clazz = SecurityActions.getContextClassLoader().loadClass(authenticationManagerClassName);
+        i = authenticationManagerClassName.lastIndexOf(":");
+        if (i == -1)
+            throw new IllegalArgumentException("Missing module name for the authentication-manager-class-name attribute");
+        moduleSpec = authenticationManagerClassName.substring(0, i);
+        className = authenticationManagerClassName.substring(i + 1);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class, CallbackHandler.class });
         return (AuthenticationManager) ctr.newInstance(new Object[] { securityDomain, ch });
     }
@@ -222,7 +233,12 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
      * @throws Exception if creation fails
      */
     private AuthorizationManager createAuthorizationManager(String securityDomain) throws Exception {
-        Class<?> clazz = SecurityActions.getContextClassLoader().loadClass(authorizationManagerClassName);
+        int i = authorizationManagerClassName.lastIndexOf(":");
+        if (i == -1)
+            throw new IllegalArgumentException("Missing module name for the authorization manager class");
+        String moduleSpec = authorizationManagerClassName.substring(0, i);
+        String className = authorizationManagerClassName.substring(i + 1);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
         return (AuthorizationManager) ctr.newInstance(new Object[] { securityDomain });
     }

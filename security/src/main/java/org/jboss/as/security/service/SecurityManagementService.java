@@ -49,15 +49,16 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     private final String callbackHandlerClassName;
 
-    private final String authorizationManagerClassName = "org.jboss.security.plugins.JBossAuthorizationManager";
+    private final String authorizationManagerClassName;
 
     private ISecurityManagement securityManagement;
 
     public SecurityManagementService(String authenticationManagerClassName, boolean deepCopySubjectMode,
-            String callbackHandlerClassName) {
+            String callbackHandlerClassName, String authorizationManagerClassName) {
         this.authenticationManagerClassName = authenticationManagerClassName;
         this.deepCopySubjectMode = deepCopySubjectMode;
         this.callbackHandlerClassName = callbackHandlerClassName;
+        this.authorizationManagerClassName = authorizationManagerClassName;
     }
 
     /** {@inheritDoc} */

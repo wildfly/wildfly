@@ -668,17 +668,7 @@
 
         <dependency>
           <groupId>org.picketbox</groupId>
-          <artifactId>jboss-security-spi</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.picketbox</groupId>
-          <artifactId>jbosssx</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.picketbox</groupId>
-          <artifactId>picketbox-bare</artifactId>
+          <artifactId>picketbox</artifactId>
         </dependency>
 
         <dependency>
