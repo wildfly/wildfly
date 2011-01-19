@@ -31,7 +31,7 @@ import java.util.UUID;
  *
  * @author Brian Stansberry
  */
-public abstract class AbstractServerUpdateActionResult<T extends ServerUpdateActionResult> implements ServerUpdateActionResult {
+public abstract class AbstractServerUpdateActionResult<T extends ServerUpdateActionResult> implements ServerUpdateActionResult, java.io.Serializable {
 
     private final UUID id;
     private Result result;
