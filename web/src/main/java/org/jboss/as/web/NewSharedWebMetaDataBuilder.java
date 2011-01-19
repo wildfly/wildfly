@@ -221,7 +221,7 @@ class NewSharedWebMetaDataBuilder {
             initParams.add(createParameter("dumpSmap", "false"));
         }
         if (config.has(GENERATE_STRINGS_AS_CHAR_ARRAYS)) {
-            initParams.add(createParameter("genStringAsCharArray", config.get(GENERATE_STRINGS_AS_CHAR_ARRAYS).asString()));;
+            initParams.add(createParameter("genStringAsCharArray", config.get(GENERATE_STRINGS_AS_CHAR_ARRAYS).asString()));
         } else {
             initParams.add(createParameter("genStringAsCharArray", "false"));
         }

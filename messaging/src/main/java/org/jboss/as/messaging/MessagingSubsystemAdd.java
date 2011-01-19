@@ -58,7 +58,7 @@ import org.jboss.msc.service.ServiceTarget;
 public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsystemElement> {
 
     private static final long serialVersionUID = -1306547303259739030L;
-    private static final ServiceName PATH_BASE = MessagingSubsystemElement.JBOSS_MESSAGING.append("paths");
+    private static final ServiceName PATH_BASE = MessagingServices.JBOSS_MESSAGING.append("paths");
     private static final String PATH_RELATIVE_TO = "jboss.server.data.dir";
 
     private DirectoryElement bindingsDirectory;

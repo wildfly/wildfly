@@ -30,7 +30,7 @@ interface CommonAttributes {
     String ACCEPTOR ="acceptor";
     String ACCEPTORS ="acceptors";
     String ADDRESS ="address";
-    String ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME ="address-full-policy";
+    String ADDRESS_FULL_MESSAGE_POLICY ="address-full-policy";
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
     String ASYNC_CONNECTION_EXECUTION_ENABLED ="async-connection-execution-enabled";
@@ -51,12 +51,12 @@ interface CommonAttributes {
     String CREATE_BINDINGS_DIR ="create-bindings-dir";
     String CREATE_JOURNAL_DIR ="create-journal-dir";
     String CREATE_NON_DURABLE_QUEUE_NAME ="createNonDurableQueue";
-    String DEAD_LETTER_ADDRESS_NODE_NAME ="dead-letter-address";
+    String DEAD_LETTER_ADDRESS ="dead-letter-address";
     String DELETEDURABLEQUEUE_NAME ="deleteDurableQueue";
     String DELETETEMPQUEUE_NAME ="deleteTempQueue";
     String DELETE_NON_DURABLE_QUEUE_NAME ="deleteNonDurableQueue";
     String DURABLE ="durable";
-    String EXPIRY_ADDRESS_NODE_NAME ="expiry-address";
+    String EXPIRY_ADDRESS ="expiry-address";
     String FACTORY_CLASS ="factory-class";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
     String FILTER ="filter";
@@ -84,7 +84,7 @@ interface CommonAttributes {
     String LOCAL_BIND_ADDRESS ="local-bind-address";
     String LOCAL_BIND_PORT ="local-bind-port";
     String LOG_JOURNAL_WRITE_RATE ="log-journal-write-rate";
-    String LVQ_NODE_NAME ="last-value-queue";
+    String LVQ ="last-value-queue";
     String MANAGEMENT_ADDRESS ="management-address";
     String MANAGEMENT_NOTIFICATION_ADDRESS ="management-notification-address";
     String MANAGE_NAME ="manage";
@@ -94,7 +94,7 @@ interface CommonAttributes {
     String MEMORY_MEASURE_INTERVAL ="memory-measure-interval";
     String MEMORY_WARNING_THRESHOLD ="memory-warning-threshold";
     String MESSAGE_COUNTER_ENABLED ="message-counter-enabled";
-    String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME ="message-counter-history-day-limit";
+    String MESSAGE_COUNTER_HISTORY_DAY_LIMIT ="message-counter-history-day-limit";
     String MESSAGE_COUNTER_MAX_DAY_HISTORY ="message-counter-max-day-history";
     String MESSAGE_COUNTER_SAMPLE_PERIOD ="message-counter-sample-period";
     String MESSAGE_EXPIRY_SCAN_PERIOD ="message-expiry-scan-period";
@@ -111,10 +111,11 @@ interface CommonAttributes {
     String PERSISTENCE_ENABLED ="persistence-enabled";
     String PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY ="persist-delivery-count-before-delivery";
     String PERSIST_ID_CACHE ="persist-id-cache";
+    String ROLE = "role";
     String QUEUE ="queue";
     String QUEUES ="queues";
-    String REDELIVERY_DELAY_NODE_NAME ="redelivery-delay";
-    String REDISTRIBUTION_DELAY_NODE_NAME ="redistribution-delay";
+    String REDELIVERY_DELAY ="redelivery-delay";
+    String REDISTRIBUTION_DELAY ="redistribution-delay";
     String REFRESH_TIMEOUT ="refresh-timeout";
     String RELATIVE_TO ="relative-to";
     String REMOTING_INTERCEPTORS ="remoting-interceptors";
