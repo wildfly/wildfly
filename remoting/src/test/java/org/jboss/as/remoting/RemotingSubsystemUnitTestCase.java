@@ -68,6 +68,7 @@ public class RemotingSubsystemUnitTestCase {
         reg.registerOperationHandler("remove-connector", new NewConnectorRemove(), NewRemotingSubsystemProviders.CONNECTOR_REMOVE, false);
 
         try {
+            System.out.println(model);
 
             // Create the subsystem
             {
@@ -77,6 +78,7 @@ public class RemotingSubsystemUnitTestCase {
                 operation.get(REQUEST_PROPERTIES, "thread-pool").set("remoting-thread-pool");
                 final ModelNode response = c.execute(operation);
             }
+            System.out.println(model);
             // One
             {
                 final ModelNode operation = new ModelNode();
@@ -84,8 +86,10 @@ public class RemotingSubsystemUnitTestCase {
                 operation.get(OPERATION).set("add-connector");
                 operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-one");
                 operation.get(REQUEST_PROPERTIES, "sasl");
+                System.out.println(operation);
 
                 final ModelNode response = c.execute(operation);
+                System.out.println(model);
             }
             // Two
             {

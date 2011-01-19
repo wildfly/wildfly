@@ -257,6 +257,7 @@ public class GlobalOperationHandlers {
                 resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
+                e.printStackTrace();
                 resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
             }
             return Cancellable.NULL;

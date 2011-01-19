@@ -61,5 +61,11 @@
             <groupId>org.jboss.threads</groupId>
             <artifactId>jboss-threads</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

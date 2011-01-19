@@ -110,6 +110,7 @@ public class NewConnectorAdd implements RuntimeOperationHandler, ModelAddOperati
         // Apply to model
         applyToModel(context.getSubModel(), operation.require(REQUEST_PROPERTIES));
 
+
         resultHandler.handleResultComplete(compensating);
 
         return Cancellable.NULL;
