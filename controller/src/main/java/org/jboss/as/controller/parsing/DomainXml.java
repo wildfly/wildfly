@@ -133,7 +133,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list);
+            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -271,7 +271,7 @@ public class DomainXml extends CommonXml {
                                 break;
                             }
                             case SYSTEM_PROPERTIES: {
-                                parseSystemProperties(reader, address, list);
+                                list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
                                 break;
                             }
                             default:

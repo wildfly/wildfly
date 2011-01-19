@@ -25,6 +25,7 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
@@ -125,7 +126,7 @@ public class StandaloneXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseServerManagement(reader, address, list);
+            parseManagementSocket(reader, address, list);
             element = nextElement(reader);
         }
         // Single profile
@@ -146,7 +147,7 @@ public class StandaloneXml extends CommonXml {
         }
         // System properties
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list);
+            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -284,73 +285,8 @@ public class StandaloneXml extends CommonXml {
         }
     }
 
-    private void parseServerManagement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-        // Handle attributes
-        String interfaceName = null;
-        int port = 0;
-        int maxThreads = -1;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case INTERFACE: {
-                        interfaceName = value;
-                        break;
-                    }
-                    case PORT: {
-                        port = Integer.parseInt(value);
-                        if (port < 0) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
-                                    "' value " + port + " -- cannot be negative",
-                                    reader.getLocation());
-                        }
-                        break;
-                    }
-                    case MAX_THREADS: {
-                        maxThreads = Integer.parseInt(value);
-                        if (maxThreads < 1) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
-                                    "' value " + maxThreads + " -- must be greater than 0",
-                                    reader.getLocation());
-                        }
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (interfaceName == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
-        }
-        final ModelNode addServerMgmt = new ModelNode();
-        addServerMgmt.get(OP_ADDR).set(address);
-        addServerMgmt.get(OP).set("add-server-management");
-        addServerMgmt.get("interface-name").set(interfaceName);
-        addServerMgmt.get("port").set(port);
-        list.add(addServerMgmt);
-
-        if (maxThreads > 0) {
-            // TODO - this is non-optimal.
-            final ModelNode setSocketThreads = new ModelNode();
-            setSocketThreads.get(OP_ADDR).set(address);
-            setSocketThreads.get(OP).set("write-server-management-socket-threads");
-            setSocketThreads.get("max-threads").set(maxThreads);
-            list.add(setSocketThreads);
-        }
-        reader.discardRemainder();
-
-    }
-
     private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        final ModelNode update = new ModelNode();
-        update.get(OP_ADDR).set(address);
-        update.get(OP).set("write-server-name");
-        update.get("server-name").set(value);
+        final ModelNode update = getWriteAttributeOperation(address, NAME, value);
         operationList.add(update);
     }
 

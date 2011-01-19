@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
@@ -136,11 +137,11 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list);
+            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, list);
+            parseManagementSocket(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DOMAIN_CONTROLLER) {
@@ -183,10 +184,7 @@ public class HostXml extends CommonXml {
     }
 
     private void setHostName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        final ModelNode update = new ModelNode();
-        update.get(OP_ADDR).set(address);
-        update.get(OP).set("write-host-name");
-        update.get("host-name").set(value);
+        final ModelNode update = getWriteAttributeOperation(address, NAME, value);
         operationList.add(update);
     }
 
@@ -437,7 +435,7 @@ public class HostXml extends CommonXml {
                             if (sawSystemProperties) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            parseSystemProperties(reader, address, list);
+                            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
                             sawSystemProperties = true;
                             break;
                         }
@@ -450,10 +448,7 @@ public class HostXml extends CommonXml {
         }
 
         final boolean isStart = start == null ? true : start.booleanValue();
-        final ModelNode startUpdate = new ModelNode();
-        startUpdate.get(OP_ADDR).set(address);
-        startUpdate.get(OP).set("write-start");
-        startUpdate.get("start").set(isStart);
+        final ModelNode startUpdate = getWriteAttributeOperation(address, "start", isStart);
         list.add(startUpdate);
     }
 }
