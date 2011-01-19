@@ -42,7 +42,7 @@ import java.util.Properties;
 import java.util.logging.LogManager;
 
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.modules.JDKModuleLogger;
+import org.jboss.modules.log.JDKModuleLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;

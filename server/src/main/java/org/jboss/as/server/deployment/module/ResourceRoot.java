@@ -25,7 +25,7 @@ package org.jboss.as.server.deployment.module;
 import java.util.ArrayList;
 import java.util.List;
 import org.jboss.as.server.deployment.SimpleAttachable;
-import org.jboss.modules.PathFilter;
+import org.jboss.modules.filter.PathFilter;
 import org.jboss.vfs.VirtualFile;
 
 /**

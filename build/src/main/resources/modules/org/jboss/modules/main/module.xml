@@ -28,6 +28,8 @@
             <exports>
                 <include-set>
                     <path name="org/jboss/modules"/>
+                    <path name="org/jboss/modules/log"/>
+                    <path name="org/jboss/modules/filter"/>
                     <path name="org/jboss/modules/ref"/>
                     <path name="org/jboss/modules/management"/>
                 </include-set>

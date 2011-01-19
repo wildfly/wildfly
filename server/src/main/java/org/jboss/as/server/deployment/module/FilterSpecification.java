@@ -23,7 +23,7 @@
 package org.jboss.as.server.deployment.module;
 
 import java.io.Serializable;
-import org.jboss.modules.PathFilter;
+import org.jboss.modules.filter.PathFilter;
 
 /**
 * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

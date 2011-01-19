@@ -38,9 +38,10 @@ import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.modules.MultiplePathFilterBuilder;
-import org.jboss.modules.PathFilter;
-import org.jboss.modules.PathFilters;
+import org.jboss.modules.ResourceLoaderSpec;
+import org.jboss.modules.filter.MultiplePathFilterBuilder;
+import org.jboss.modules.filter.PathFilter;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Processor responsible for installing the module spec for this deployment into the deployment module loader.
@@ -142,7 +143,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource) throws DeploymentUnitProcessingException {
         try {
-            specBuilder.addResourceRoot(new VFSResourceLoader(resource.getRootName(), resource.getRoot()));
+            specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource.getRootName(), resource.getRoot())));
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName() + "]", e);
         }

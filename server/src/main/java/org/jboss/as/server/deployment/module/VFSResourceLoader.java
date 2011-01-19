@@ -24,8 +24,8 @@ package org.jboss.as.server.deployment.module;
 
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.PackageSpec;
-import org.jboss.modules.PathFilter;
-import org.jboss.modules.PathFilters;
+import org.jboss.modules.filter.PathFilter;
+import org.jboss.modules.filter.PathFilters;
 import org.jboss.modules.Resource;
 import org.jboss.modules.ResourceLoader;
 import org.jboss.vfs.VFS;
