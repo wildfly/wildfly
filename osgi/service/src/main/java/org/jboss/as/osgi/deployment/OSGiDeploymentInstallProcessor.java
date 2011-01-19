@@ -55,9 +55,13 @@ public class OSGiDeploymentInstallProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
 
+        String contextName = deploymentUnit.getName();
         ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-        String location = DeploymentHolderService.getLocation(serviceRegistry, deploymentUnit.getName());
+        Deployment holderDep = DeploymentHolderService.getDeployment(serviceRegistry, contextName);
         VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+
+        String location = holderDep != null ? holderDep.getLocation() : contextName;
+        boolean autoStart = holderDep != null ? holderDep.isAutoStart() : true;
 
         // Check for attached BundleInfo
         BundleInfo info = BundleInfoAttachment.getBundleInfo(deploymentUnit);
@@ -89,15 +93,11 @@ public class OSGiDeploymentInstallProcessor implements DeploymentUnitProcessor {
 
         // Create the {@link OSGiDeploymentService}
         if (deployment != null) {
-
             // Prevent garbage collection of the MountHandle which will close the file
             MountHandle mount = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();
             deployment.addAttachment(MountHandle.class, mount);
-
-            // Mark the bundle to start automatically
-            deployment.setAutoStart(true);
-
-            OSGiDeploymentService.addService(phaseContext);
+            deployment.setAutoStart(autoStart);
+            OSGiDeploymentService.addService(phaseContext, deployment);
         }
     }
 

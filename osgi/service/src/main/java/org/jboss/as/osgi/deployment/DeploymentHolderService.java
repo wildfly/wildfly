@@ -72,10 +72,9 @@ public class DeploymentHolderService extends AbstractService<Deployment> {
             controller.setMode(Mode.REMOVE);
     }
 
-    public static String getLocation(ServiceRegistry registry, String contextName) {
-        // If this service is registered use the location from the original deployemnt
+    public static Deployment getDeployment(ServiceRegistry registry, String contextName) {
         ServiceController<?> controller = registry.getService(getServiceName(contextName));
-        return controller != null ? ((Deployment) controller.getValue()).getLocation() : contextName;
+        return controller != null ? (Deployment) controller.getValue() : null;
     }
 
     /**

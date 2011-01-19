@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.vfs.VirtualFile;
@@ -60,8 +61,10 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
 
         // Construct and attach the {@link BundleInfo}
         try {
+            String contextName = deploymentUnit.getName();
             ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-            String location = DeploymentHolderService.getLocation(serviceRegistry, deploymentUnit.getName());
+            Deployment holderdep = DeploymentHolderService.getDeployment(serviceRegistry, contextName);
+            String location = holderdep != null ? holderdep.getLocation() : contextName;
             info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
             BundleInfoAttachment.attachBundleInfo(deploymentUnit, info);
         } catch (BundleException ex) {

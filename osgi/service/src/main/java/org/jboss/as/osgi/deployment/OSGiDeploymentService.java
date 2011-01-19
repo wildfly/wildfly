@@ -76,14 +76,13 @@ public class OSGiDeploymentService implements Service<Deployment> {
         this.deployment = deployment;
     }
 
-    public static void addService(DeploymentPhaseContext phaseContext) {
+    public static void addService(DeploymentPhaseContext phaseContext, Deployment deployment) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        final Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
-        final String contextName = deploymentUnit.getName();
-
         final OSGiDeploymentService service = new OSGiDeploymentService(deployment);
-        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
+        final String contextName = deploymentUnit.getName();
+        final ServiceName serviceName = getServiceName(contextName);
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT.append(contextName));
