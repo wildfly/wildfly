@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.services.net.SocketBindingManager;
@@ -112,9 +114,8 @@ final class ApplicationServerService implements Service<Void> {
         myController.addListener(bootstrapListener);
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         serviceTarget.addDependency(myController.getName());
-        serviceTarget
-                .addService(Services.JBOSS_SERVER_CONTROLLER, new ServerControllerService(configuration))
-                .install();
+        DeploymentModuleLoaderImpl.addService(serviceTarget, configuration);
+        ServerControllerService.addService(serviceTarget, configuration);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             public ServiceTarget getServiceTarget() {
                 return serviceTarget;

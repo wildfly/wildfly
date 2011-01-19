@@ -89,7 +89,7 @@ public class BundleContextService implements Service<BundleContext> {
 
         // Register a {@link BundleListener} that installs a {@link ServiceListener}
         // with every Non-OSGi {@link DeploymentService}
-        BundleListener uninstallListener = new BundleListener() {
+        BundleListener bundleListener = new BundleListener() {
 
             @Override
             public void bundleChanged(BundleEvent event) {
@@ -124,7 +124,7 @@ public class BundleContextService implements Service<BundleContext> {
                 }
             }
         };
-        sysContext.addBundleListener(uninstallListener);
+        sysContext.addBundleListener(bundleListener);
     }
 
     public synchronized void stop(StopContext context) {

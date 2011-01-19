@@ -153,9 +153,9 @@ public class OSGiDeploymentService implements Service<Deployment> {
         // [JBAS-8801] Undeployment leaks root deployment service
         // [TODO] remove this workaround
         ServiceName serviceName = Services.JBOSS_DEPLOYMENT.append(context.getController().getName().getSimpleName());
-        ServiceController<?> controller = context.getController().getServiceContainer().getService(serviceName);
-        if (controller != null) {
-            controller.setMode(Mode.REMOVE);
+        ServiceController<?> deploymentController = context.getController().getServiceContainer().getService(serviceName);
+        if (deploymentController != null) {
+            deploymentController.setMode(Mode.REMOVE);
         }
     }
 

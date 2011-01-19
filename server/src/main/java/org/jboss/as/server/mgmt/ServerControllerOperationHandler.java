@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.UpdateFailedException;
@@ -67,11 +69,7 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -345,8 +343,11 @@ public class ServerControllerOperationHandler extends AbstractMessageHandler imp
         protected void sendResponse(final OutputStream output) throws IOException {
             ServerDeploymentPlanResult result = null;
             try {
-                result = deploymentManager.execute(deploymentPlan).get();
+                result = deploymentManager.execute(deploymentPlan).get(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new ManagementException("Failed get deployment plan result.", e);
+            } catch (TimeoutException e) {
                 Thread.currentThread().interrupt();
                 throw new ManagementException("Failed get deployment plan result.", e);
             } catch (ExecutionException e) {

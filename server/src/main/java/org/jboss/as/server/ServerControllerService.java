@@ -46,13 +46,13 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.ServiceLoaderProcessor;
 import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
-import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.ExtensionIndexService;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
@@ -71,6 +71,7 @@ import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -80,6 +81,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.TrackingServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * The root service of the JBoss Application Server.  Stopping this
@@ -93,14 +95,21 @@ final class ServerControllerService implements Service<ServerController> {
 
     private final Bootstrap.Configuration configuration;
 
-    private DeploymentModuleLoader deploymentModuleLoader;
+    private final InjectedValue<DeploymentModuleLoader> injectedModuleLoader = new InjectedValue<DeploymentModuleLoader>();
 
     // mutable state
     private ServerController serverController;
     private Set<ServiceName> bootServices;
 
-    public ServerControllerService(final Bootstrap.Configuration configuration) {
+    private ServerControllerService(final Bootstrap.Configuration configuration) {
         this.configuration = configuration;
+    }
+
+    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
+        ServerControllerService service = new ServerControllerService(configuration);
+        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
+        serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_MODULE_LOADER, DeploymentModuleLoader.class, service.injectedModuleLoader);
+        serviceBuilder.install();
     }
 
     /** {@inheritDoc} */
@@ -186,10 +195,9 @@ final class ServerControllerService implements Service<ServerController> {
             .install();
 
         // Activate deployment module loader
-        deploymentModuleLoader = new DeploymentModuleLoaderImpl(configuration.getModuleLoader());
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_DEPLOYMENT_MODULE_LOADER, new DeploymentUnitProcessor() {
             public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-                phaseContext.getDeploymentUnit().putAttachment(Attachments.DEPLOYMENT_MODULE_LOADER, deploymentModuleLoader);
+                phaseContext.getDeploymentUnit().putAttachment(Attachments.DEPLOYMENT_MODULE_LOADER, injectedModuleLoader.getValue());
             }
 
             public void undeploy(DeploymentUnit context) {
@@ -205,13 +213,13 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));
+        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_SERVICE_LOADER_DEPLOYMENT, new ServiceLoaderProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_CLASS_PATH, new ModuleClassPathProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.MODULARIZE).add(new RegisteredProcessor(Phase.MODULARIZE_DEPLOYMENT, new ModuleDeploymentProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
 
         // All deployers are registered

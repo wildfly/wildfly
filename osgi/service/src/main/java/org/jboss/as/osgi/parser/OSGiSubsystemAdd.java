@@ -68,10 +68,10 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
 
         // TODO: Hack, which registers the framework module with the {@link ModularURLStreamHandlerFactory}
         // TODO - use an actually secure sys prop security action method
-        String value = System.getProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
+        String value = SecurityActions.getSystemProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
         if (!value.equals("org.jboss.osgi.framework"))
             value = value + "|org.jboss.osgi.framework";
-        System.setProperty("jboss.protocol.handler.modules", value);
+        SecurityActions.setSystemProperty("jboss.protocol.handler.modules", value);
 
         Activation policy = subsystemState.getActivationPolicy();
         ServiceTarget target = updateContext.getServiceTarget();

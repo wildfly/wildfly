@@ -22,27 +22,41 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.jboss.as.server.Bootstrap;
+import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  * Default deployment module loader.  Maintains a map of module specs that can be loaded at a later time.
  *
  * @author John E. Bailey
  */
-public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
+public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader implements Service<DeploymentModuleLoader> {
     private final ConcurrentMap<ModuleIdentifier, ModuleSpec> moduleSpecs = new ConcurrentHashMap<ModuleIdentifier, ModuleSpec>();
 
     private final ModuleLoader mainModuleLoader;
 
-    public DeploymentModuleLoaderImpl(final ModuleLoader mainModuleLoader) {
+    private DeploymentModuleLoaderImpl(final ModuleLoader mainModuleLoader) {
         this.mainModuleLoader = mainModuleLoader;
+    }
+
+    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
+        Service<DeploymentModuleLoader> service = new DeploymentModuleLoaderImpl(configuration.getModuleLoader());
+        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_DEPLOYMENT_MODULE_LOADER, service);
+        serviceBuilder.install();
     }
 
     @Override
@@ -83,6 +97,19 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
 
     public void relinkModule(Module module) throws ModuleLoadException {
         relink(module);
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+    }
+
+    @Override
+    public void stop(StopContext context) {
+    }
+
+    @Override
+    public DeploymentModuleLoader getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
     }
 
     public String toString() {

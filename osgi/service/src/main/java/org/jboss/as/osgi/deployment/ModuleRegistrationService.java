@@ -29,6 +29,8 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
@@ -83,6 +85,18 @@ public class ModuleRegistrationService extends AbstractService<Deployment> {
         try {
             BundleManager bundleManager = injectedBundleManager.getValue();
             bundleManager.uninstallBundle(deployment);
+
+            ServiceController<?> controller = context.getController();
+            ServiceContainer serviceContainer = controller.getServiceContainer();
+            controller.setMode(Mode.REMOVE);
+
+            // [JBAS-8801] Undeployment leaks root deployment service
+            // [TODO] remove this workaround
+            ServiceName serviceName = Services.JBOSS_DEPLOYMENT.append(controller.getName().getSimpleName());
+            ServiceController<?> deploymentController = serviceContainer.getService(serviceName);
+            if (deploymentController != null) {
+                deploymentController.setMode(Mode.REMOVE);
+            }
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);
         }

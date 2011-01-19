@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -43,6 +44,11 @@ public final class Services {
      * The service corresponding to the {@link ServerController} for this instance.
      */
     public static final ServiceName JBOSS_SERVER_CONTROLLER = JBOSS_AS.append("server-controller");
+
+    /**
+     * The service corresponding to the {@link DeploymentModuleLoader} for this instance.
+     */
+    public static final ServiceName JBOSS_DEPLOYMENT_MODULE_LOADER = JBOSS_AS.append("deployment-module-loader");
 
     /**
      * The internal deployer chains service used by all deployments.

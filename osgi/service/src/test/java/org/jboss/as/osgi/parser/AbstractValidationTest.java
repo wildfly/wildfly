@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URL;
 
+import org.jboss.logging.Logger;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -38,6 +39,8 @@ import org.xml.sax.SAXParseException;
  * @since 14-Oct-2010
  */
 public abstract class AbstractValidationTest {
+
+    private static final Logger log = Logger.getLogger(AbstractValidationTest.class);
 
     URL getXsdUrl(String xsdName) {
         return getResourceUrl("schema/" + xsdName);
@@ -66,7 +69,7 @@ public abstract class AbstractValidationTest {
 
         @Override
         public void warning(SAXParseException e) throws SAXException {
-            System.out.println(formatMessage(e));
+            log.error(formatMessage(e));
         }
 
         private String formatMessage(SAXParseException e) {
