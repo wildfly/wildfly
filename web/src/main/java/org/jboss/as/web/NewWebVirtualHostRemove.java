@@ -25,8 +25,6 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -60,9 +58,9 @@ class NewWebVirtualHostRemove implements ModelRemoveOperationHandler, RuntimeOpe
 
         final ModelNode subModel = context.getSubModel();
 
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.ALIAS).set(subModel.get(CommonAttributes.ALIAS));
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.ACCESS_LOG).set(subModel.get(CommonAttributes.ACCESS_LOG));
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.REWRITE).set(subModel.get(CommonAttributes.REWRITE));
+        compensatingOperation.get(CommonAttributes.ALIAS).set(subModel.get(CommonAttributes.ALIAS));
+        compensatingOperation.get(CommonAttributes.ACCESS_LOG).set(subModel.get(CommonAttributes.ACCESS_LOG));
+        compensatingOperation.get(CommonAttributes.REWRITE).set(subModel.get(CommonAttributes.REWRITE));
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

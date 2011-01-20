@@ -25,7 +25,6 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.web.CommonAttributes.*;
 
 import org.jboss.as.controller.Cancellable;
@@ -56,7 +55,7 @@ class NewWebConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHa
 
         final ModelNode address = operation.get(OP_ADDR);
         final String name = address.get(address.asInt() - 1).asString();
-        final String bindingRef = operation.get(REQUEST_PROPERTIES).require(SOCKET_BINDING).asString();
+        final String bindingRef = operation.require(SOCKET_BINDING).asString();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
@@ -65,15 +64,15 @@ class NewWebConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHa
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
 
-            final boolean enabled = operation.get(REQUEST_PROPERTIES).has(ENABLED) ? operation.get(REQUEST_PROPERTIES, ENABLED).asBoolean() : true;
-            final WebConnectorService service = new WebConnectorService(operation.get(REQUEST_PROPERTIES).require(PROTOCOL).asString(), operation.get(REQUEST_PROPERTIES, SCHEME).asString());
-            if(operation.get(REQUEST_PROPERTIES).has(SECURE)) service.setSecure(operation.get(REQUEST_PROPERTIES, SECURE).asBoolean());
-            if(operation.get(ENABLE_LOOKUPS).has(ENABLE_LOOKUPS)) service.setEnableLookups(operation.get(REQUEST_PROPERTIES, ENABLE_LOOKUPS).asBoolean());
-            if(operation.get(REQUEST_PROPERTIES).has(PROXY_NAME)) service.setProxyName(operation.get(REQUEST_PROPERTIES, PROXY_NAME).asString());
-            if(operation.get(REQUEST_PROPERTIES).has(PROXY_PORT)) service.setProxyPort(operation.get(REQUEST_PROPERTIES, PROXY_PORT).asInt());
-            if(operation.get(REQUEST_PROPERTIES).has(REDIRECT_PORT)) service.setRedirectPort(operation.get(REQUEST_PROPERTIES, REDIRECT_PORT).asInt());
-            if(operation.get(REQUEST_PROPERTIES).has(MAX_POST_SIZE)) service.setMaxPostSize(operation.get(REQUEST_PROPERTIES, MAX_POST_SIZE).asInt());
-            if(operation.get(REQUEST_PROPERTIES).has(MAX_SAVE_POST_SIZE)) service.setMaxSavePostSize(operation.get(REQUEST_PROPERTIES, MAX_SAVE_POST_SIZE).asInt());
+            final boolean enabled = operation.has(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
+            final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
+            if(operation.has(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
+            if(operation.has(ENABLE_LOOKUPS)) service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
+            if(operation.has(PROXY_NAME)) service.setProxyName(operation.get(PROXY_NAME).asString());
+            if(operation.has(PROXY_PORT)) service.setProxyPort(operation.get(PROXY_PORT).asInt());
+            if(operation.has(REDIRECT_PORT)) service.setRedirectPort(operation.get(REDIRECT_PORT).asInt());
+            if(operation.has(MAX_POST_SIZE)) service.setMaxPostSize(operation.get(MAX_POST_SIZE).asInt());
+            if(operation.has(MAX_SAVE_POST_SIZE)) service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
             runtimeContext.getServiceTarget().addService(WebSubsystemElement.JBOSS_WEB_CONNECTOR.append(name), service)
                 .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getServer())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
@@ -82,13 +81,13 @@ class NewWebConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHa
         }
 
         final ModelNode subModel = context.getSubModel();
-        if(operation.get(REQUEST_PROPERTIES).has(SECURE)) subModel.get(SECURE).set(operation.get(REQUEST_PROPERTIES, SECURE).asBoolean());
-        if(operation.get(ENABLE_LOOKUPS).has(ENABLE_LOOKUPS)) subModel.get(ENABLE_LOOKUPS).set(operation.get(REQUEST_PROPERTIES, ENABLE_LOOKUPS).asBoolean());
-        if(operation.get(REQUEST_PROPERTIES).has(PROXY_NAME)) subModel.get(PROXY_NAME).set(operation.get(REQUEST_PROPERTIES, PROXY_NAME).asString());
-        if(operation.get(REQUEST_PROPERTIES).has(PROXY_PORT)) subModel.get(PROXY_PORT).set(operation.get(REQUEST_PROPERTIES, PROXY_PORT).asInt());
-        if(operation.get(REQUEST_PROPERTIES).has(REDIRECT_PORT)) subModel.get(REDIRECT_PORT).set(operation.get(REQUEST_PROPERTIES, REDIRECT_PORT).asInt());
-        if(operation.get(REQUEST_PROPERTIES).has(MAX_POST_SIZE)) subModel.get(MAX_POST_SIZE).set(operation.get(REQUEST_PROPERTIES, MAX_POST_SIZE).asInt());
-        if(operation.get(REQUEST_PROPERTIES).has(MAX_SAVE_POST_SIZE)) subModel.get(MAX_SAVE_POST_SIZE).set(operation.get(REQUEST_PROPERTIES, MAX_SAVE_POST_SIZE).asInt());
+        if(operation.has(SECURE)) subModel.get(SECURE).set(operation.get(SECURE).asBoolean());
+        if(operation.has(ENABLE_LOOKUPS)) subModel.get(ENABLE_LOOKUPS).set(operation.get(ENABLE_LOOKUPS).asBoolean());
+        if(operation.has(PROXY_NAME)) subModel.get(PROXY_NAME).set(operation.get(PROXY_NAME).asString());
+        if(operation.has(PROXY_PORT)) subModel.get(PROXY_PORT).set(operation.get(PROXY_PORT).asInt());
+        if(operation.has(REDIRECT_PORT)) subModel.get(REDIRECT_PORT).set(operation.get(REDIRECT_PORT).asInt());
+        if(operation.has(MAX_POST_SIZE)) subModel.get(MAX_POST_SIZE).set(operation.get(MAX_POST_SIZE).asInt());
+        if(operation.has(MAX_SAVE_POST_SIZE)) subModel.get(MAX_SAVE_POST_SIZE).set(operation.get(MAX_SAVE_POST_SIZE).asInt());
 
         resultHandler.handleResultComplete(compensatingOperation);
 

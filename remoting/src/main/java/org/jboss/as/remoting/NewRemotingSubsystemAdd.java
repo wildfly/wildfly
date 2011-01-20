@@ -46,7 +46,7 @@ class NewRemotingSubsystemAdd implements ModelAddOperationHandler {
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        context.getSubModel().get(THREAD_POOL).set(operation.require(REQUEST_PROPERTIES).require(THREAD_POOL));
+        context.getSubModel().get(THREAD_POOL).set(operation.require(THREAD_POOL));
         // initialize the connectors
         context.getSubModel().get(CONNECTOR).setEmptyObject();
 

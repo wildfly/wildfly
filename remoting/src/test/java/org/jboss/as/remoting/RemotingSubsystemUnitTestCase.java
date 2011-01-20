@@ -24,8 +24,6 @@ package org.jboss.as.remoting;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicModelController;
@@ -75,7 +73,7 @@ public class RemotingSubsystemUnitTestCase {
                 final ModelNode operation = new ModelNode();
                 operation.get(ADDRESS).set(subsystemRoot.clone());
                 operation.get(OPERATION).set("add");
-                operation.get(REQUEST_PROPERTIES, "thread-pool").set("remoting-thread-pool");
+                operation.get("thread-pool").set("remoting-thread-pool");
                 final ModelNode response = c.execute(operation);
             }
             System.out.println(model);
@@ -84,9 +82,8 @@ public class RemotingSubsystemUnitTestCase {
                 final ModelNode operation = new ModelNode();
                 operation.get(ADDRESS).set(connectorRoot.clone().add("one"));
                 operation.get(OPERATION).set("add-connector");
-                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-one");
-                operation.get(REQUEST_PROPERTIES, "sasl");
-                System.out.println(operation);
+                operation.get("socket-binding").set("sb-one");
+                operation.get("sasl");
 
                 final ModelNode response = c.execute(operation);
                 System.out.println(model);
@@ -96,7 +93,7 @@ public class RemotingSubsystemUnitTestCase {
                 final ModelNode operation = new ModelNode();
                 operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
                 operation.get(OPERATION).set("add-connector");
-                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-two");
+                operation.get("socket-binding").set("sb-two");
 
                 final ModelNode response = c.execute(operation);
             }
@@ -105,8 +102,8 @@ public class RemotingSubsystemUnitTestCase {
                 final ModelNode operation = new ModelNode();
                 operation.get(ADDRESS).set(connectorRoot.clone().add("three"));
                 operation.get(OPERATION).set("add-connector");
-                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-three");
-                operation.get(REQUEST_PROPERTIES, "authentication-provider").set("test");
+                operation.get("socket-binding").set("sb-three");
+                operation.get("authentication-provider").set("test");
 
                 final ModelNode response = c.execute(operation);
             }
@@ -131,8 +128,8 @@ public class RemotingSubsystemUnitTestCase {
                 final ModelNode operation = new ModelNode();
                 operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
                 operation.get(OPERATION).set("add-connector");
-                operation.get(REQUEST_PROPERTIES, "socket-binding").set("sb-two");
-                operation.get(REQUEST_PROPERTIES, "sasl");
+                operation.get("socket-binding").set("sb-two");
+                operation.get("sasl");
 
                 final ModelNode response = c.execute(operation);
             }

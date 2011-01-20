@@ -25,7 +25,6 @@ package org.jboss.as.txn;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.txn.CommonAttributes.*;
 
 
@@ -100,22 +99,22 @@ public class NewTransactionExtension implements NewExtension {
                         switch (element) {
                             case RECOVERY_ENVIRONMENT: {
                                 final ModelNode model = parseRecoveryEnvironmentElement(reader);
-                                subsystem.get(REQUEST_PROPERTIES, CommonAttributes.RECOVERY_ENVIRONMENT).set(model) ;
+                                subsystem.get(CommonAttributes.RECOVERY_ENVIRONMENT).set(model) ;
                                 break;
                             }
                             case CORE_ENVIRONMENT: {
                                 final ModelNode model = parseCoreEnvironmentElement(reader);
-                                subsystem.get(REQUEST_PROPERTIES, CommonAttributes.CORE_ENVIRONMENT).set(model) ;
+                                subsystem.get(CommonAttributes.CORE_ENVIRONMENT).set(model) ;
                                 break;
                             }
                             case COORDINATOR_ENVIRONMENT: {
                                 final ModelNode model = parseCoordinatorEnvironmentElement(reader);
-                                subsystem.get(REQUEST_PROPERTIES, CommonAttributes.COORDINATOR_ENVIRONMENT).set(model) ;
+                                subsystem.get(CommonAttributes.COORDINATOR_ENVIRONMENT).set(model) ;
                                 break;
                             }
                             case OBJECT_STORE: {
                                 final ModelNode model = parseObjectStoreEnvironmentElement(reader);
-                                subsystem.get(REQUEST_PROPERTIES, CommonAttributes.OBJECT_STORE).set(model) ;
+                                subsystem.get(CommonAttributes.OBJECT_STORE).set(model) ;
                                 break;
                             }
                             default: {

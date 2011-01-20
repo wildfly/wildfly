@@ -25,8 +25,6 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -61,7 +59,7 @@ class NewWebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandl
 
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext updateContext, ModelNode operation, ResultHandler resultHandler) {
-        final ModelNode config = operation.get(REQUEST_PROPERTIES, CommonAttributes.CONTAINER_CONFIG);
+        final ModelNode config = operation.get(CommonAttributes.CONTAINER_CONFIG);
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
@@ -70,8 +68,8 @@ class NewWebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandl
         if(updateContext instanceof NewBootOperationContext) {
             final NewBootOperationContext ctx = (NewBootOperationContext) updateContext;
 
-            final String defaultHost = operation.get(REQUEST_PROPERTIES).has(CommonAttributes.DEFAULT_HOST) ?
-                    operation.get(REQUEST_PROPERTIES).get(CommonAttributes.DEFAULT_HOST).asString() : DEFAULT_HOST;
+            final String defaultHost = operation.has(CommonAttributes.DEFAULT_HOST) ?
+                    operation.get(CommonAttributes.DEFAULT_HOST).asString() : DEFAULT_HOST;
 
             final NewSharedWebMetaDataBuilder sharedWebBuilder = new NewSharedWebMetaDataBuilder(config.clone());
             final NewSharedTldsMetaDataBuilder sharedTldsBuilder = new NewSharedTldsMetaDataBuilder(config.clone());

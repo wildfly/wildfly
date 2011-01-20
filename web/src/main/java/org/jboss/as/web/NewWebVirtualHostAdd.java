@@ -27,8 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -74,23 +72,23 @@ public class NewWebVirtualHostAdd implements ModelAddOperationHandler, RuntimeOp
             final ServiceBuilder<?> serviceBuilder =  serviceTarget.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(name), service)
                 .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
                 .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getWebServer());
-            if(operation.get(REQUEST_PROPERTIES).has(CommonAttributes.ACCESS_LOG)) {
-                final ModelNode accessLog = operation.get(REQUEST_PROPERTIES, CommonAttributes.ACCESS_LOG);
+            if(operation.has(CommonAttributes.ACCESS_LOG)) {
+                final ModelNode accessLog = operation.get(CommonAttributes.ACCESS_LOG);
                 service.setAccessLog(accessLog.clone());
                 // Create the access log service
                 accessLogService(name, accessLog, serviceTarget);
                 serviceBuilder.addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(name, CommonAttributes.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
             }
-            if(operation.get(REQUEST_PROPERTIES).has(CommonAttributes.REWRITE)) {
-                service.setRewrite(operation.get(REQUEST_PROPERTIES, CommonAttributes.REWRITE).clone());
+            if(operation.has(CommonAttributes.REWRITE)) {
+                service.setRewrite(operation.get(CommonAttributes.REWRITE).clone());
             }
             serviceBuilder.install();
         }
 
         final ModelNode subModel = context.getSubModel();
-        subModel.get(CommonAttributes.ALIAS).set(operation.get(REQUEST_PROPERTIES, CommonAttributes.ALIAS));
-        subModel.get(CommonAttributes.ACCESS_LOG).set(operation.get(REQUEST_PROPERTIES, CommonAttributes.ACCESS_LOG));
-        subModel.get(CommonAttributes.REWRITE).set(operation.get(REQUEST_PROPERTIES, CommonAttributes.REWRITE));
+        subModel.get(CommonAttributes.ALIAS).set(operation.get(CommonAttributes.ALIAS));
+        subModel.get(CommonAttributes.ACCESS_LOG).set(operation.get(CommonAttributes.ACCESS_LOG));
+        subModel.get(CommonAttributes.REWRITE).set(operation.get(CommonAttributes.REWRITE));
 
         resultHandler.handleResultComplete(compensatingOperation);
 
@@ -98,8 +96,8 @@ public class NewWebVirtualHostAdd implements ModelAddOperationHandler, RuntimeOp
     }
 
     static String[] aliases(final ModelNode node) {
-        if(node.get(REQUEST_PROPERTIES).has(CommonAttributes.ALIAS)) {
-            final ModelNode aliases = node.get(REQUEST_PROPERTIES).require(CommonAttributes.ALIAS);
+        if(node.has(CommonAttributes.ALIAS)) {
+            final ModelNode aliases = node.require(CommonAttributes.ALIAS);
             final int size = aliases.asInt();
             final String[] array = new String[size];
             for(int i = 0; i < size; i ++) array[i] = aliases.get(i).asString();

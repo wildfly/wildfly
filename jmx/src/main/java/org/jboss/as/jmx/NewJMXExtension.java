@@ -25,8 +25,6 @@ package org.jboss.as.jmx;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -117,8 +115,8 @@ public class NewJMXExtension implements NewExtension {
             final ModelNode connector = new ModelNode();
             connector.get(OP).set("add-connector");
             connector.get(OP_ADDR).setEmptyObject();
-            connector.get(REQUEST_PROPERTIES, CommonAttributes.SERVER_BINDING).set(serverBinding);
-            connector.get(REQUEST_PROPERTIES, CommonAttributes.REGISTRY_BINDING).set(registryBinding);
+            connector.get(CommonAttributes.SERVER_BINDING).set(serverBinding);
+            connector.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
             list.add(connector);
         }
 

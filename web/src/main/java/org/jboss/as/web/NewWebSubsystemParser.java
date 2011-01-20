@@ -25,7 +25,6 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.web.CommonAttributes.*;
 import static org.jboss.as.web.CommonAttributes.ALIAS;
@@ -149,7 +148,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
                     switch (element) {
                         case CONTAINER_CONFIG: {
                             final ModelNode config = parseContainerConfig(reader);
-                            subsystem.get(REQUEST_PROPERTIES, CONTAINER_CONFIG).set(config);
+                            subsystem.get(CONTAINER_CONFIG).set(config);
                             break;
                         }
                         case CONNECTOR: {
@@ -430,18 +429,18 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
         connector.get(OP_ADDR).set(address.clone().add(name));
-        connector.get(REQUEST_PROPERTIES, PROTOCOL).set(protocol);
-        connector.get(REQUEST_PROPERTIES, SOCKET_BINDING).set(bindingRef);
-        connector.get(REQUEST_PROPERTIES, SCHEME).set(scheme);
-        connector.get(REQUEST_PROPERTIES, EXECUTOR).set(executorRef);
-        connector.get(REQUEST_PROPERTIES, ENABLED).set(enabled);
-        connector.get(REQUEST_PROPERTIES, ENABLE_LOOKUPS).set(enableLookups);
-        connector.get(REQUEST_PROPERTIES, PROXY_NAME).set(proxyName);
-        connector.get(REQUEST_PROPERTIES, PROXY_PORT).set(proxyPort);
-        connector.get(REQUEST_PROPERTIES, MAX_POST_SIZE).set(maxPostSize);
-        connector.get(REQUEST_PROPERTIES, MAX_SAVE_POST_SIZE).set(maxSavePostSize);
-        connector.get(REQUEST_PROPERTIES, SECURE).set(secure);
-        connector.get(REQUEST_PROPERTIES, REDIRECT_PORT).set(redirectPort);
+        connector.get(PROTOCOL).set(protocol);
+        connector.get(SOCKET_BINDING).set(bindingRef);
+        connector.get(SCHEME).set(scheme);
+        connector.get(EXECUTOR).set(executorRef);
+        connector.get(ENABLED).set(enabled);
+        connector.get(ENABLE_LOOKUPS).set(enableLookups);
+        connector.get(PROXY_NAME).set(proxyName);
+        connector.get(PROXY_PORT).set(proxyPort);
+        connector.get(MAX_POST_SIZE).set(maxPostSize);
+        connector.get(MAX_SAVE_POST_SIZE).set(maxSavePostSize);
+        connector.get(SECURE).set(secure);
+        connector.get(REDIRECT_PORT).set(redirectPort);
         list.add(connector);
     }
 

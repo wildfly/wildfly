@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -60,10 +58,10 @@ class NewDeploymentScannerRemove implements ModelRemoveOperationHandler, Runtime
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(ADD);
         compensatingOperation.get(OP_ADDR).set(address);
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.PATH).set(subModel.get(CommonAttributes.PATH));
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.SCAN_ENABLED).set(subModel.get(CommonAttributes.SCAN_ENABLED));
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.SCAN_INTERVAL).set(subModel.get(CommonAttributes.SCAN_INTERVAL));
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.RELATIVE_TO).set(subModel.get(CommonAttributes.RELATIVE_TO));
+        compensatingOperation.get(CommonAttributes.PATH).set(subModel.get(CommonAttributes.PATH));
+        compensatingOperation.get(CommonAttributes.SCAN_ENABLED).set(subModel.get(CommonAttributes.SCAN_ENABLED));
+        compensatingOperation.get(CommonAttributes.SCAN_INTERVAL).set(subModel.get(CommonAttributes.SCAN_INTERVAL));
+        compensatingOperation.get(CommonAttributes.RELATIVE_TO).set(subModel.get(CommonAttributes.RELATIVE_TO));
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

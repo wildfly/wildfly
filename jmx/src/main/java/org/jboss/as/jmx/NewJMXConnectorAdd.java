@@ -24,8 +24,6 @@ package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -49,8 +47,8 @@ class NewJMXConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHa
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final String serverBinding = operation.get(REQUEST_PROPERTIES).require(CommonAttributes.SERVER_BINDING).asString();
-        final String registryBinding = operation.get(REQUEST_PROPERTIES).require(CommonAttributes.REGISTRY_BINDING).asString();
+        final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
+        final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove-connector");

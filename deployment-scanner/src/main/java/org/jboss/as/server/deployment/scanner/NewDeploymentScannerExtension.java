@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.model.ParseUtils.requireNoAttributes;
 import static org.jboss.as.model.ParseUtils.requireNoContent;
 import static org.jboss.as.model.ParseUtils.unexpectedElement;
@@ -155,6 +154,9 @@ public class NewDeploymentScannerExtension implements NewExtension {
                     }
                 }
             }
+            if (name == null) {
+                ParseUtils.missingRequired(reader, Collections.singleton("name"));
+            }
             if (path == null) {
                 ParseUtils.missingRequired(reader, Collections.singleton("path"));
             }
@@ -163,10 +165,10 @@ public class NewDeploymentScannerExtension implements NewExtension {
             final ModelNode operation = new ModelNode();
             operation.get(OP).set("add-deployment-scanner");
             operation.get(OP_ADDR).add(name);
-            operation.get(REQUEST_PROPERTIES, CommonAttributes.PATH).set(path);
-            operation.get(REQUEST_PROPERTIES, CommonAttributes.SCAN_INTERVAL).set(interval);
-            operation.get(REQUEST_PROPERTIES, CommonAttributes.SCAN_ENABLED).set(enabled);
-            if(relativeTo != null) operation.get(REQUEST_PROPERTIES, CommonAttributes.RELATIVE_TO).set(relativeTo);
+            operation.get(CommonAttributes.PATH).set(path);
+            operation.get(CommonAttributes.SCAN_INTERVAL).set(interval);
+            operation.get(CommonAttributes.SCAN_ENABLED).set(enabled);
+            if(relativeTo != null) operation.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
             list.add(operation);
         }
 

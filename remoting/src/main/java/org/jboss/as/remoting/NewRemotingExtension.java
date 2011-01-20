@@ -23,7 +23,6 @@
 package org.jboss.as.remoting;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.model.ParseUtils.*;
 import static org.jboss.as.remoting.CommonAttributes.*;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
@@ -128,7 +127,7 @@ public class NewRemotingExtension implements NewExtension {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).set(new ModelNode());
-            subsystem.get(REQUEST_PROPERTIES, THREAD_POOL).set(threadPoolName);
+            subsystem.get(THREAD_POOL).set(threadPoolName);
             list.add(subsystem);
 
             final ModelNode connectorAddress = address.add(CONNECTOR);
@@ -191,10 +190,11 @@ public class NewRemotingExtension implements NewExtension {
             assert name != null;
             assert socketBinding != null;
 
-            // The operation request properties
-            final ModelNode requestProperties = new ModelNode();
+            final ModelNode connector = new ModelNode();
+            connector.get(OP).set(ADD_CONNECTOR);
+            connector.get(OP_ADDR).set(address.add(name));
             // requestProperties.get(NAME).set(name); // Name is part of the address
-            requestProperties.get(SOCKET_BINDING).set(socketBinding);
+            connector.get(SOCKET_BINDING).set(socketBinding);
 
             // Handle nested elements.
             final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
@@ -208,15 +208,15 @@ public class NewRemotingExtension implements NewExtension {
                         visited.add(element);
                         switch (element) {
                             case SASL: {
-                                requestProperties.get(SASL).set(parseSaslElement(reader));
+                                connector.get(SASL).set(parseSaslElement(reader));
                                 break;
                             }
                             case PROPERTIES: {
-                                parseProperties(reader, requestProperties.get(PROPERTIES));
+                                parseProperties(reader, connector.get(PROPERTIES));
                                 break;
                             }
                             case AUTHENTICATION_PROVIDER: {
-                                requestProperties.get(AUTHENTICATION_PROVIDER).set(readStringAttributeElement(reader, "name"));
+                                connector.get(AUTHENTICATION_PROVIDER).set(readStringAttributeElement(reader, "name"));
                                 break;
                             }
                             default: {
@@ -231,10 +231,6 @@ public class NewRemotingExtension implements NewExtension {
                 }
             }
 
-            final ModelNode connector = new ModelNode();
-            connector.get(OP).set(ADD_CONNECTOR);
-            connector.get(OP_ADDR).set(address.add(name));
-            connector.get(REQUEST_PROPERTIES).set(requestProperties);
             list.add(connector);
         }
 

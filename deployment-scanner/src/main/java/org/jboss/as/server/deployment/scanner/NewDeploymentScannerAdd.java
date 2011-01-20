@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.Cancellable;
@@ -55,10 +53,10 @@ class NewDeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperat
 
         final ModelNode address = operation.require(ADDRESS);
         final String name = address.get(address.asInt() - 1).asString();
-        final String path = operation.get(REQUEST_PROPERTIES).require(CommonAttributes.PATH).asString();
-        final boolean enabled = operation.get(REQUEST_PROPERTIES, CommonAttributes.SCAN_ENABLED).asBoolean(true);
-        final int interval = operation.get(REQUEST_PROPERTIES, CommonAttributes.SCAN_INTERVAL).asInt(5000);
-        final String relativeTo = operation.get(REQUEST_PROPERTIES, CommonAttributes.RELATIVE_TO).asString();
+        final String path = operation.require(CommonAttributes.PATH).asString();
+        final boolean enabled = operation.get(CommonAttributes.SCAN_ENABLED).asBoolean(true);
+        final int interval = operation.get(CommonAttributes.SCAN_INTERVAL).asInt(5000);
+        final String relativeTo = operation.get(CommonAttributes.RELATIVE_TO).asString();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);

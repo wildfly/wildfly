@@ -24,8 +24,6 @@ package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -54,8 +52,8 @@ class NewJMXConnectorRemove implements ModelRemoveOperationHandler, RuntimeOpera
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("add-connector");
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.SERVER_BINDING).set(subModel.require(CommonAttributes.SERVER_BINDING));
-        compensatingOperation.get(REQUEST_PROPERTIES, CommonAttributes.REGISTRY_BINDING).set(subModel.require(CommonAttributes.REGISTRY_BINDING));
+        compensatingOperation.get(CommonAttributes.SERVER_BINDING).set(subModel.require(CommonAttributes.SERVER_BINDING));
+        compensatingOperation.get(CommonAttributes.REGISTRY_BINDING).set(subModel.require(CommonAttributes.REGISTRY_BINDING));
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

@@ -25,7 +25,6 @@ package org.jboss.as.remoting;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
@@ -61,9 +60,9 @@ public class NewConnectorRemove implements RuntimeOperationHandler, ModelRemoveO
         compensating.get(OP_ADDR).set(address);
         compensating.get(OP).set(ADD);
         // compensating.get(REQUEST_PROPERTIES, NAME).set(connectorName);
-        compensating.get(REQUEST_PROPERTIES, SASL).set(connector.get(SASL));
-        compensating.get(REQUEST_PROPERTIES, AUTHENTICATION_PROVIDER).set(connector.get(AUTHENTICATION_PROVIDER));
-        compensating.get(REQUEST_PROPERTIES, PROPERTIES).set(connector.get(PROPERTIES));
+        compensating.get(SASL).set(connector.get(SASL));
+        compensating.get(AUTHENTICATION_PROVIDER).set(connector.get(AUTHENTICATION_PROVIDER));
+        compensating.get(PROPERTIES).set(connector.get(PROPERTIES));
 
         // connector.clear();
 

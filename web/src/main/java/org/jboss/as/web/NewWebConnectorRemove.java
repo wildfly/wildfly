@@ -25,7 +25,6 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.web.CommonAttributes.ENABLE_LOOKUPS;
 import static org.jboss.as.web.CommonAttributes.MAX_POST_SIZE;
 import static org.jboss.as.web.CommonAttributes.MAX_SAVE_POST_SIZE;
@@ -66,13 +65,13 @@ public class NewWebConnectorRemove implements ModelRemoveOperationHandler, Runti
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(ADD);
         compensatingOperation.get(OP_ADDR).set(address);
-        compensatingOperation.get(REQUEST_PROPERTIES, SECURE).set(subModel.get(SECURE).asBoolean());
-        compensatingOperation.get(REQUEST_PROPERTIES, ENABLE_LOOKUPS).set(subModel.get(ENABLE_LOOKUPS).asBoolean());
-        compensatingOperation.get(REQUEST_PROPERTIES, PROXY_NAME).set(subModel.get(PROXY_NAME).asString());
-        compensatingOperation.get(REQUEST_PROPERTIES, PROXY_PORT).set(subModel.get(PROXY_PORT).asInt());
-        compensatingOperation.get(REQUEST_PROPERTIES, REDIRECT_PORT).set(subModel.get(REDIRECT_PORT).asInt());
-        compensatingOperation.get(REQUEST_PROPERTIES, MAX_POST_SIZE).set(subModel.get(MAX_POST_SIZE).asInt());
-        compensatingOperation.get(REQUEST_PROPERTIES, MAX_SAVE_POST_SIZE).set(subModel.get(MAX_SAVE_POST_SIZE).asInt());
+        compensatingOperation.get(SECURE).set(subModel.get(SECURE).asBoolean());
+        compensatingOperation.get(ENABLE_LOOKUPS).set(subModel.get(ENABLE_LOOKUPS).asBoolean());
+        compensatingOperation.get(PROXY_NAME).set(subModel.get(PROXY_NAME).asString());
+        compensatingOperation.get(PROXY_PORT).set(subModel.get(PROXY_PORT).asInt());
+        compensatingOperation.get(REDIRECT_PORT).set(subModel.get(REDIRECT_PORT).asInt());
+        compensatingOperation.get(MAX_POST_SIZE).set(subModel.get(MAX_POST_SIZE).asInt());
+        compensatingOperation.get(MAX_SAVE_POST_SIZE).set(subModel.get(MAX_SAVE_POST_SIZE).asInt());
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

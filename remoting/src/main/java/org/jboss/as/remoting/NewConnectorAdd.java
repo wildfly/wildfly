@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
@@ -85,7 +84,7 @@ public class NewConnectorAdd implements RuntimeOperationHandler, ModelAddOperati
             final ServiceTarget target = runtimeContext.getServiceTarget();
 
             final ConnectorService connectorService = new ConnectorService();
-            connectorService.setOptionMap(createOptionMap(operation.get(REQUEST_PROPERTIES)));
+            connectorService.setOptionMap(createOptionMap(operation));
 
             // Register the service with the container and inject dependencies.
             final ServiceName connectorName = ConnectorElement.connectorName(name);
@@ -106,10 +105,10 @@ public class NewConnectorAdd implements RuntimeOperationHandler, ModelAddOperati
         final ModelNode compensating = new ModelNode();
         compensating.get(OP_ADDR).set(address);
         compensating.get(OP).set(REMOVE);
-        compensating.get(REQUEST_PROPERTIES, NAME).set(name);
+        compensating.get(NAME).set(name);
 
         // Apply to model
-        applyToModel(context.getSubModel(), operation.require(REQUEST_PROPERTIES));
+        applyToModel(context.getSubModel(), operation);
 
 
         resultHandler.handleResultComplete(compensating);

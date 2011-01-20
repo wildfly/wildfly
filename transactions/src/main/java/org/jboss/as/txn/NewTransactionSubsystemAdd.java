@@ -25,7 +25,6 @@ package org.jboss.as.txn;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.txn.CommonAttributes.*;
 
 import org.jboss.as.controller.Cancellable;
@@ -64,11 +63,11 @@ class NewTransactionSubsystemAdd implements ModelAddOperationHandler, RuntimeOpe
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        String bindingName = operation.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT).require(BINDING).asString();
-        String recoveryBindingName = operation.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT).require(BINDING).asString();
-        String recoveryStatusBindingName = operation.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
-        String nodeIdentifier = operation.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
-        boolean coordinatorEnableStatistics = operation.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean();
+        String bindingName = operation.get(CORE_ENVIRONMENT).require(BINDING).asString();
+        String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
+        String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
+        String nodeIdentifier = operation.get(CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
+        boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean();
         String objectStorePathRef = "jboss.server.data.dir";
         String objectStorePath = "tx-object-store";
         int maxPorts = 10;
@@ -100,11 +99,11 @@ class NewTransactionSubsystemAdd implements ModelAddOperationHandler, RuntimeOpe
         }
 
         final ModelNode subModel = context.getSubModel();
-        subModel.get(CORE_ENVIRONMENT, BINDING).set(operation.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT).require(BINDING));
-        subModel.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).set(operation.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, NODE_IDENTIFIER));
-        subModel.get(RECOVERY_ENVIRONMENT, BINDING).set(operation.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT).require(BINDING));
-        subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, STATUS_BINDING));
-        subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
+        subModel.get(CORE_ENVIRONMENT, BINDING).set(operation.get(CORE_ENVIRONMENT).require(BINDING));
+        subModel.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).set(operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER));
+        subModel.get(RECOVERY_ENVIRONMENT, BINDING).set(operation.get(RECOVERY_ENVIRONMENT).require(BINDING));
+        subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
+        subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
 
         resultHandler.handleResultComplete(compensatingOperation);
 
