@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -39,7 +38,7 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewDeploymentScannerEnable  implements ModelUpdateOperationHandler, RuntimeOperationHandler {
+class NewDeploymentScannerEnable  implements ModelUpdateOperationHandler, RuntimeOperationHandler {
 
     static final NewDeploymentScannerEnable INSTANCE = new NewDeploymentScannerEnable();
 
@@ -50,7 +49,7 @@ public class NewDeploymentScannerEnable  implements ModelUpdateOperationHandler,
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.require(ADDRESS);
+        final ModelNode address = operation.require(OP_ADDR);
         final String name = address.get(address.asInt() - 1).asString();
 
         final ModelNode compensatingOperation = new ModelNode();

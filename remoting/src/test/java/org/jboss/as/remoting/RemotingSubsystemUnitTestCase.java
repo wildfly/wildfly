@@ -22,8 +22,11 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicModelController;
@@ -60,10 +63,10 @@ public class RemotingSubsystemUnitTestCase {
 
         ModelNodeRegistration reg = c.getRegistry().registerSubModel(PathElement.pathElement("profile", "web"), NULL_PROVIDER);
         reg = reg.registerSubModel(PathElement.pathElement("subsystem", "remoting"), NewRemotingSubsystemProviders.SUBSYSTEM);
-        reg.registerOperationHandler("add", new NewRemotingSubsystemAdd(), NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
+        reg.registerOperationHandler(ADD, new NewRemotingSubsystemAdd(), NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
         reg = reg.registerSubModel(PathElement.pathElement("connector"), NULL_PROVIDER);
-        reg.registerOperationHandler("add-connector", new NewConnectorAdd(), NewRemotingSubsystemProviders.CONNECTOR_ADD, false);
-        reg.registerOperationHandler("remove-connector", new NewConnectorRemove(), NewRemotingSubsystemProviders.CONNECTOR_REMOVE, false);
+        reg.registerOperationHandler(ADD, new NewConnectorAdd(), NewRemotingSubsystemProviders.CONNECTOR_ADD, false);
+        reg.registerOperationHandler(REMOVE, new NewConnectorRemove(), NewRemotingSubsystemProviders.CONNECTOR_REMOVE, false);
 
         try {
             System.out.println(model);
@@ -71,8 +74,8 @@ public class RemotingSubsystemUnitTestCase {
             // Create the subsystem
             {
                 final ModelNode operation = new ModelNode();
-                operation.get(ADDRESS).set(subsystemRoot.clone());
-                operation.get(OPERATION).set("add");
+                operation.get(OP_ADDR).set(subsystemRoot.clone());
+                operation.get(OP).set(ADD);
                 operation.get("thread-pool").set("remoting-thread-pool");
                 final ModelNode response = c.execute(operation);
             }
@@ -80,8 +83,8 @@ public class RemotingSubsystemUnitTestCase {
             // One
             {
                 final ModelNode operation = new ModelNode();
-                operation.get(ADDRESS).set(connectorRoot.clone().add("one"));
-                operation.get(OPERATION).set("add-connector");
+                operation.get(OP_ADDR).set(connectorRoot.clone().add("one"));
+                operation.get(OP).set(ADD);
                 operation.get("socket-binding").set("sb-one");
                 operation.get("sasl");
 
@@ -91,8 +94,8 @@ public class RemotingSubsystemUnitTestCase {
             // Two
             {
                 final ModelNode operation = new ModelNode();
-                operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
-                operation.get(OPERATION).set("add-connector");
+                operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
+                operation.get(OP).set(ADD);
                 operation.get("socket-binding").set("sb-two");
 
                 final ModelNode response = c.execute(operation);
@@ -100,8 +103,8 @@ public class RemotingSubsystemUnitTestCase {
             // Three
             {
                 final ModelNode operation = new ModelNode();
-                operation.get(ADDRESS).set(connectorRoot.clone().add("three"));
-                operation.get(OPERATION).set("add-connector");
+                operation.get(OP_ADDR).set(connectorRoot.clone().add("three"));
+                operation.get(OP).set(ADD);
                 operation.get("socket-binding").set("sb-three");
                 operation.get("authentication-provider").set("test");
 
@@ -114,8 +117,8 @@ public class RemotingSubsystemUnitTestCase {
             // Remove two
             {
                 final ModelNode operation = new ModelNode();
-                operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
-                operation.get(OPERATION).set("remove-connector");
+                operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
+                operation.get(OP).set(REMOVE);
 
                 final ModelNode response = c.execute(operation);
             }
@@ -126,8 +129,8 @@ public class RemotingSubsystemUnitTestCase {
             // Add two
             {
                 final ModelNode operation = new ModelNode();
-                operation.get(ADDRESS).set(connectorRoot.clone().add("two"));
-                operation.get(OPERATION).set("add-connector");
+                operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
+                operation.get(OP).set(ADD);
                 operation.get("socket-binding").set("sb-two");
                 operation.get("sasl");
 

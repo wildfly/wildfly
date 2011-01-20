@@ -23,9 +23,9 @@
 package org.jboss.as.server.deployment.scanner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -50,7 +50,7 @@ class NewDeploymentScannerRemove implements ModelRemoveOperationHandler, Runtime
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.require(ADDRESS);
+        final ModelNode address = operation.require(OP_ADDR);
         final String name = address.get(address.asInt() - 1).asString();
 
         final ModelNode subModel = new ModelNode();
