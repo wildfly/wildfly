@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
@@ -75,8 +76,14 @@ public class HostRootDescription {
         root.get(DESCRIPTION).set(bundle.getString("host"));
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, NAMESPACES).set(CommonAttributes.getNamespacePrefixAttribute(null));
-        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonAttributes.getSchemaLocationAttribute(null));
+        root.get(ATTRIBUTES, NAMESPACES).set(CommonAttributes.getNamespacePrefixAttribute(locale));
+        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonAttributes.getSchemaLocationAttribute(locale));
+
+        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("host.name"));
+        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, NAME, REQUIRED).set(false);
+        root.get(ATTRIBUTES, NAME, NILLABLE).set(true);
+        root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
 
         root.get(ATTRIBUTES, MANAGEMENT, DESCRIPTION).set(bundle.getString("host.management"));
         root.get(ATTRIBUTES, MANAGEMENT, TYPE).set(ModelType.OBJECT);

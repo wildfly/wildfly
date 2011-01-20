@@ -77,6 +77,7 @@ public class ModelDescriptionConstants {
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String RECURSIVE = "recursive";
     public static final String REQUIRED = "required";
+    public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SERVER = "server";
     public static final String SERVER_GROUP = "server-group";

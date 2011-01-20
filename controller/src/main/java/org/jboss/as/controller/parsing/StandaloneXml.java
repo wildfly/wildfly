@@ -286,8 +286,10 @@ public class StandaloneXml extends CommonXml {
     }
 
     private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        final ModelNode update = getWriteAttributeOperation(address, NAME, value);
-        operationList.add(update);
+        if (value.length() > 0) {
+            final ModelNode update = getWriteAttributeOperation(address, NAME, value);
+            operationList.add(update);
+        }
     }
 
     @Override
