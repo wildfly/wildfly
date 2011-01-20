@@ -44,19 +44,19 @@ import org.jboss.dmr.ModelType;
  */
 public class AddNamespaceHandler implements ModelUpdateOperationHandler, DescriptionProvider {
 
-    public static final String ADD_NAMESPACE = "add-namespace";
+    public static final String OPERATION_NAME = "add-namespace";
 
     public static final AddNamespaceHandler INSTANCE = new AddNamespaceHandler();
 
-    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.PROPERTY);
-
     public static ModelNode getAddNamespaceOperation(ModelNode address, ModelNode namespace) {
         ModelNode op = new ModelNode();
-        op.get(OP).set(ADD_NAMESPACE);
+        op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
         op.get(NAMESPACE).set(namespace);
         return op;
     }
+
+    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.PROPERTY);
 
     /**
      * Create the AddNamespaceHandler

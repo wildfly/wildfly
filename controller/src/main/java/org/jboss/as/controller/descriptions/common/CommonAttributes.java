@@ -35,6 +35,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.operations.common.AddNamespaceHandler;
+import org.jboss.as.controller.operations.common.AddSchemaLocationHandler;
+import org.jboss.as.controller.operations.common.RemoveNamespaceHandler;
+import org.jboss.as.controller.operations.common.RemoveSchemaLocationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -44,11 +48,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry
  */
 public class CommonAttributes {
-
-    public static final String ADD_NAMESPACE = "add-namespace";
-    public static final String REMOVE_NAMESPACE = "remove-namespace";
-    public static final String ADD_SCHEMA_LOCATION = "add-schema-location";
-    public static final String REMOVE_SCHEMA_LOCATION = "remove-schema-location";
 
     private static final String RESOURCE_NAME = CommonAttributes.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -79,7 +78,7 @@ public class CommonAttributes {
     public static ModelNode getAddNamespaceOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ADD_NAMESPACE);
+        root.get(OPERATION_NAME).set(AddNamespaceHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("namespaces.add"));
         root.get(REQUEST_PROPERTIES, NAMESPACE, TYPE).set(ModelType.PROPERTY);
         root.get(REQUEST_PROPERTIES, NAMESPACE, VALUE_TYPE).set(ModelType.STRING);
@@ -93,7 +92,7 @@ public class CommonAttributes {
     public static ModelNode getRemoveNamespaceOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(REMOVE_NAMESPACE);
+        root.get(OPERATION_NAME).set(RemoveNamespaceHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("namespaces.remove"));
         root.get(REQUEST_PROPERTIES, NAMESPACE, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAMESPACE, DESCRIPTION).set(bundle.getString("namespaces.remove.namespace"));
@@ -105,7 +104,7 @@ public class CommonAttributes {
     public static ModelNode getAddSchemaLocationOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ADD_SCHEMA_LOCATION);
+        root.get(OPERATION_NAME).set(AddSchemaLocationHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("schema-locations.add"));
         root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, TYPE).set(ModelType.PROPERTY);
         root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, VALUE_TYPE).set(ModelType.STRING);
@@ -120,7 +119,7 @@ public class CommonAttributes {
     public static ModelNode getRemoveSchemaLocationOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(REMOVE_SCHEMA_LOCATION);
+        root.get(OPERATION_NAME).set(RemoveSchemaLocationHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("schema-locations.remove"));
         root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, DESCRIPTION).set(bundle.getString("schema-locations.remove.schema-location"));

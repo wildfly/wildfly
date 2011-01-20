@@ -59,11 +59,21 @@ public class BasicModelController implements ModelController {
     /**
      * Construct a new instance.
      *
+     * @param configurationPersister the configuration persister to use to store changes
+     * @param rootDescriptionProvider the description provider of the root element
+     */
+    protected BasicModelController(final NewConfigurationPersister configurationPersister, final DescriptionProvider rootDescriptionProvider) {
+        this(new ModelNode().setEmptyObject(), configurationPersister, rootDescriptionProvider);
+    }
+
+    /**
+     * Construct a new instance.
+     *
      * @param the model
      * @param configurationPersister the configuration persister to use to store changes
      * @param rootDescriptionProvider the description provider of the root element
      */
-    protected BasicModelController(ModelNode model, final NewConfigurationPersister configurationPersister, DescriptionProvider rootDescriptionProvider) {
+    protected BasicModelController(final ModelNode model, final NewConfigurationPersister configurationPersister, DescriptionProvider rootDescriptionProvider) {
         this.model = model;
         this.configurationPersister = configurationPersister;
         if (rootDescriptionProvider == null) {

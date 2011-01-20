@@ -16,32 +16,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.common;
+package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
 import org.jboss.as.controller.operations.common.AddNamespaceHandler;
+import org.jboss.as.controller.operations.common.AddSchemaLocationHandler;
 import org.jboss.as.controller.operations.common.RemoveNamespaceHandler;
+import org.jboss.as.controller.operations.common.RemoveSchemaLocationHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 
 /**
- * Records common operations with the model registry.
+ * Records core operations with the host controller model registry.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class CommonOperationsRegistrar {
+class CoreOperationsRegistrar {
 
     /**
      * Prevent instantiation
      */
-    private CommonOperationsRegistrar() {
+    private CoreOperationsRegistrar() {
     }
 
-    public static void registerCommonOperations(ModelNodeRegistration root) {
+    static void registerCoreOperations(ModelNodeRegistration root) {
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1));
-        root.registerOperationHandler(AddNamespaceHandler.ADD_NAMESPACE, AddNamespaceHandler.INSTANCE, AddNamespaceHandler.INSTANCE, false);
-        root.registerOperationHandler(RemoveNamespaceHandler.REMOVE_NAMESPACE, RemoveNamespaceHandler.INSTANCE, RemoveNamespaceHandler.INSTANCE, false);
+        root.registerOperationHandler(AddNamespaceHandler.OPERATION_NAME, AddNamespaceHandler.INSTANCE, AddNamespaceHandler.INSTANCE, false);
+        root.registerOperationHandler(RemoveNamespaceHandler.OPERATION_NAME, RemoveNamespaceHandler.INSTANCE, RemoveNamespaceHandler.INSTANCE, false);
+        root.registerOperationHandler(AddSchemaLocationHandler.OPERATION_NAME, AddSchemaLocationHandler.INSTANCE, AddSchemaLocationHandler.INSTANCE, false);
+        root.registerOperationHandler(RemoveSchemaLocationHandler.OPERATION_NAME, RemoveSchemaLocationHandler.INSTANCE, RemoveSchemaLocationHandler.INSTANCE, false);
     }
 
 }

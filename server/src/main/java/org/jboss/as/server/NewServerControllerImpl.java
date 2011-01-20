@@ -31,6 +31,8 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.server.controller.CoreOperationsRegistrar;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
@@ -48,19 +50,22 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final ServiceContainer container;
-    private final ServiceRegistry registry;
+    private final ServiceRegistry serviceRegistry;
     private final ServerEnvironment serverEnvironment;
     private volatile State state;
 
     NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment, final NewConfigurationPersister configurationPersister) {
-        super(configurationPersister);
+        super(configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
         this.container = container;
         this.serverEnvironment = serverEnvironment;
-        registry = new DelegatingServiceRegistry(container);
+        serviceRegistry = new DelegatingServiceRegistry(container);
     }
 
     void init() {
         state = State.STARTING;
+        // Build up the core model registry
+        ServerDescriptionProviders.registerServerProviders(getRegistry());
+        CoreOperationsRegistrar.registerCoreOperations(getRegistry());
     }
 
     void finishBoot() {
@@ -78,8 +83,9 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
      *
      * @return the container registry
      */
+    @Override
     public ServiceRegistry getServiceRegistry() {
-        return registry;
+        return serviceRegistry;
     }
 
     /**
@@ -87,6 +93,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
      *
      * @return the state
      */
+    @Override
     public State getState() {
         return state;
     }
@@ -112,15 +119,16 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     @Override
     protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
         if (context instanceof NewBootOperationContext) {
-            return ((BootOperationHandler)operationHandler).execute((NewBootOperationContext) context, operation, resultHandler);
+            return ((BootOperationHandler)operationHandler).execute(context, operation, resultHandler);
         } else if (context instanceof NewRuntimeOperationContext) {
-            return ((RuntimeOperationHandler)operationHandler).execute((NewRuntimeOperationContext) context, operation, resultHandler);
+            return ((RuntimeOperationHandler)operationHandler).execute(context, operation, resultHandler);
         } else {
             return super.doExecute(context, operation, operationHandler, resultHandler);
         }
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void persistConfiguration(final ModelNode model) {
         // do not persist during startup
         if (state != State.STARTING) {
@@ -134,6 +142,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
             super(NewServerControllerImpl.this, registry, subModel);
         }
 
+        @Override
         public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
         }
 
@@ -142,13 +151,15 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
             return (NewServerController) super.getController();
         }
 
+        @Override
         public ServiceTarget getServiceTarget() {
             // TODO: A tracking service listener which will somehow call complete when the operation is done
             return container;
         }
 
+        @Override
         public ServiceRegistry getServiceRegistry() {
-            return registry;
+            return serviceRegistry;
         }
     }
 
@@ -163,13 +174,15 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
             return (NewServerController) super.getController();
         }
 
+        @Override
         public ServiceTarget getServiceTarget() {
             // TODO: A tracking service listener which will somehow call complete when the operation is done
             return container;
         }
 
+        @Override
         public ServiceRegistry getServiceRegistry() {
-            return registry;
+            return serviceRegistry;
         }
     }
 }
