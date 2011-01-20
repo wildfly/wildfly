@@ -55,7 +55,7 @@ public class JMSQueueRemove extends AbstractJMSSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final ServiceController<?> service = context.getServiceRegistry().getService(JMSSubsystemElement.JMS_QUEUE_BASE.append(queueName));
+        final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_QUEUE_BASE.append(queueName));
         if(service == null) {
             handler.handleSuccess(null, param);
         } else {

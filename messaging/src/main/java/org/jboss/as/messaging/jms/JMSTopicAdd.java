@@ -69,9 +69,9 @@ public class JMSTopicAdd extends AbstractJMSSubsystemUpdate<Void> {
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
         final JMSTopicService service = new JMSTopicService(name, jndiBindings());
-        final ServiceName serviceName = JMSSubsystemElement.JMS_TOPIC_BASE.append(name);
+        final ServiceName serviceName = JMSServices.JMS_TOPIC_BASE.append(name);
         context.getServiceTarget().addService(serviceName, service)
-                .addDependency(JMSSubsystemElement.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))
                 .setInitialMode(Mode.ACTIVE)
                 .install();

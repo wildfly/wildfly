@@ -28,13 +28,11 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -45,12 +43,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class JMSSubsystemElement extends AbstractSubsystemElement<JMSSubsystemElement> {
 
     private static final long serialVersionUID = 3225118788089921849L;
-
-    public static final ServiceName JMS = MessagingSubsystemElement.JBOSS_MESSAGING.append("jms");
-    public static final ServiceName JMS_MANAGER = JMS.append("manager");
-    public static final ServiceName JMS_QUEUE_BASE = JMS.append("queue");
-    public static final ServiceName JMS_TOPIC_BASE = JMS.append("topic");
-    public static final ServiceName JMS_CF_BASE = JMS.append("connection-factory");
 
     private final NavigableMap<String, JMSQueueElement> queues = new TreeMap<String, JMSQueueElement>();
     private final NavigableMap<String, JMSTopicElement> topics = new TreeMap<String, JMSTopicElement>();
@@ -85,7 +77,7 @@ public class JMSSubsystemElement extends AbstractSubsystemElement<JMSSubsystemEl
 
     /** {@inheritDoc} */
     protected <P> void applyRemove(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = context.getServiceRegistry().getService(JMS_MANAGER);
+        final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_MANAGER);
         if(service == null) {
             resultHandler.handleSuccess(null, param);
         } else {

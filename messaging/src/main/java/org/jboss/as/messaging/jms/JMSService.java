@@ -51,7 +51,7 @@ public class JMSService implements Service<JMSServerManager> {
 
     public static void addService(final ServiceTarget target) {
         final JMSService service = new JMSService();
-        target.addService(JMSSubsystemElement.JMS_MANAGER, service)
+        target.addService(JMSServices.JMS_MANAGER, service)
             .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
             .addDependency(JavaContextService.SERVICE_NAME, Context.class, service.getContextInjector())
             .setInitialMode(Mode.ACTIVE)

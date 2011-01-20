@@ -31,9 +31,10 @@ import java.util.Map;
 enum Attribute {
     UNKNOWN(null),
 
-    NAME("name"),
-    CONNECTOR_NAME("connector-name"), CONNECTOR_BACKUP_NAME("backup-connector-name"),
-    DISCOVERY_GROUP_NAME("discovery-group-nam"),
+    NAME(CommonAttributes.NAME),
+    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
+    CONNECTOR_BACKUP_NAME(CommonAttributes.CONNECTOR_BACKUP_NAME),
+    DISCOVERY_GROUP_NAME(CommonAttributes.DISCOVERY_GROUP_NAME),
 
     ;
     private final String name;
@@ -67,8 +68,4 @@ enum Attribute {
        return element == null ? UNKNOWN : element;
     }
 
-    @Override
-    public String toString() {
-       return getLocalName();
-    }
 }
