@@ -111,8 +111,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         for (int i = 0; i < namespaceCount; i ++) {
             final ModelNode operation = new ModelNode();
             operation.get(OP_ADDR).set(address);
-            operation.get(OP).add("add-namespace");
-            operation.get("namespace").add(reader.getNamespacePrefix(i), reader.getNamespaceURI(i));
+            operation.get(OP).set("add-namespace");
+            String prefix = reader.getNamespacePrefix(i);
+            operation.get("namespace").set(prefix == null ? "" : prefix, reader.getNamespaceURI(i));
             nodes.add(operation);
         }
     }
@@ -134,12 +135,15 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
         final Iterator<String> it = values.iterator();
         while (it.hasNext()) {
-            final ModelNode update = new ModelNode();
-            update.get(OP_ADDR).set(address);
-            update.get(OP).set("add-schema-location");
-            update.get("namespace-uri").set(it.next());
-            update.get("location-uri").set(it.next());
-            updateList.add(update);
+            String key = it.next();
+            String val = it.next();
+            if (key.length() > 0 && val.length() > 0) {
+                final ModelNode update = new ModelNode();
+                update.get(OP_ADDR).set(address);
+                update.get(OP).set("add-schema-location");
+                update.get("schema-location").set(key, val);
+                updateList.add(update);
+            }
         }
     }
 
