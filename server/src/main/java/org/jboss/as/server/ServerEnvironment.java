@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * Encapsulates the runtime environment for a server.
@@ -40,6 +41,12 @@ public class ServerEnvironment implements Serializable {
     /////////////////////////////////////////////////////////////////////////
     //                   Configuration Value Identifiers                   //
     /////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constant that holds the name of the system property
+     * for specifying the JDK extension directory paths.
+     */
+    public static final String JAVA_EXT_DIRS = "java.ext.dirs";
 
     /**
      * Constant that holds the name of the environment property
@@ -144,6 +151,8 @@ public class ServerEnvironment implements Serializable {
     private final String serverName;
     private final String nodeName;
 
+    private final File[] javaExtDirs;
+
     private final File homeDir;
     private final File modulesDir;
     private final File serverBaseDir;
@@ -214,6 +223,9 @@ public class ServerEnvironment implements Serializable {
             nodeName = serverName;
         }
         this.nodeName = nodeName;
+
+        // Java system-wide extension dirs
+        javaExtDirs = getFilesFromProperty(JAVA_EXT_DIRS, props);
 
         // Must have HOME_DIR
         homeDir = getFileFromProperty(HOME_DIR, props);
@@ -324,6 +336,10 @@ public class ServerEnvironment implements Serializable {
         return nodeName;
     }
 
+    public File[] getJavaExtDirs() {
+        return javaExtDirs.clone();
+    }
+
     public File getHomeDir() {
         return homeDir;
     }
@@ -366,15 +382,38 @@ public class ServerEnvironment implements Serializable {
 
     /**
      * Get a File from configuration.
+     *
      * @return the CanonicalFile form for the given name.
      */
     private File getFileFromProperty(final String name, final Properties props) {
-       String value = props.getProperty(name, null);
-       if (value != null) {
-          File f = new File(value);
-          return f;
-       }
+        String value = props.getProperty(name, null);
+        if (value != null) {
+            File f = new File(value);
+            return f;
+        }
 
-       return null;
+        return null;
+    }
+
+    private static final File[] NO_FILES = new File[0];
+
+    /**
+     * Get a File path list from configuration.
+     *
+     * @return the CanonicalFile form for the given name.
+     */
+    private File[] getFilesFromProperty(final String name, final Properties props) {
+        String sep = props.getProperty("path.separator");
+        String value = props.getProperty(name, null);
+        if (value != null) {
+            final String[] paths = value.split(Pattern.quote(sep));
+            final int len = paths.length;
+            final File[] files = new File[len];
+            for (int i = 0; i < len; i ++) {
+                files[i] = new File(paths[i]);
+            }
+            return files;
+        }
+        return NO_FILES;
     }
 }

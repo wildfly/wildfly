@@ -72,7 +72,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
                 VFSUtils.safeClose(handle);
             }
         }
-        final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle, false);
+        final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle);
         ModuleRootMarker.markRoot(resourceRoot);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
 

@@ -129,7 +129,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         final List<ResourceRoot> entries = new ArrayList<ResourceRoot>();
         // WEB-INF classes
         final ResourceRoot webInfClassesRoot = new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
-                .getChild(WEB_INF_CLASSES), null, false);
+                .getChild(WEB_INF_CLASSES), null);
         markRoot(webInfClassesRoot);
         entries.add(webInfClassesRoot);
         // WEB-INF lib
@@ -151,7 +151,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             for(final VirtualFile archive : archives) {
                 try {
                     final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
-                    final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable), false);
+                    final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable));
                     markRoot(webInfArchiveRoot);
                     entries.add(webInfArchiveRoot);
                 } catch (IOException e) {

@@ -221,6 +221,8 @@ public enum Phase {
     public static final int DEPENDENCIES_SAR_MODULE                     = 0x500;
     public static final int DEPENDENCIES_WAR_MODULE                     = 0x600;
     public static final int DEPENDENCIES_ARQUILLIAN                     = 0x700;
+    public static final int DEPENDENCIES_CLASS_PATH                     = 0x800;
+    public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x900;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_WAR                        = 0x100;

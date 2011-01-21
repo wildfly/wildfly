@@ -57,4 +57,8 @@ final class DeploymentPhaseContextImpl extends SimpleAttachable implements Deplo
     public DeploymentUnit getDeploymentUnit() {
         return deploymentUnitContext;
     }
+
+    public Phase getPhase() {
+        return phase;
+    }
 }

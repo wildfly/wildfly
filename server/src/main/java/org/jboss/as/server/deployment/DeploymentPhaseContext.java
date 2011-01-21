@@ -66,4 +66,11 @@ public interface DeploymentPhaseContext extends Attachable {
      * @return the deployment unit context
      */
     DeploymentUnit getDeploymentUnit();
+
+    /**
+     * Get the phase that this processor applies to.
+     *
+     * @return the phase
+     */
+    Phase getPhase();
 }

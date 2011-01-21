@@ -37,18 +37,16 @@ public final class ResourceRoot extends SimpleAttachable {
     private final String rootName;
     private final VirtualFile root;
     private final MountHandle mountHandle;
-    private final boolean export;
     private final List<PathFilter> exportFilters = new ArrayList<PathFilter>();
 
-    public ResourceRoot(final VirtualFile root, final MountHandle mountHandle, final boolean export) {
-        this(root.getName(), root, mountHandle, export);
+    public ResourceRoot(final VirtualFile root, final MountHandle mountHandle) {
+        this(root.getName(), root, mountHandle);
     }
 
-    public ResourceRoot(final String rootName, final VirtualFile root, final MountHandle mountHandle, final boolean export) {
+    public ResourceRoot(final String rootName, final VirtualFile root, final MountHandle mountHandle) {
         this.rootName = rootName;
         this.root = root;
         this.mountHandle = mountHandle;
-        this.export = export;
     }
 
     public String getRootName() {
@@ -61,10 +59,6 @@ public final class ResourceRoot extends SimpleAttachable {
 
     public MountHandle getMountHandle() {
         return mountHandle;
-    }
-
-    public boolean isExport() {
-        return export;
     }
 
     public List<PathFilter> getExportFilters() {

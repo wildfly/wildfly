@@ -22,7 +22,9 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -52,11 +54,14 @@ import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
+import org.jboss.as.server.deployment.module.ExtensionIndexService;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ManifestClassPathProcessor;
 import org.jboss.as.server.deployment.module.ManifestExtensionListProcessor;
+import org.jboss.as.server.deployment.module.ModuleClassPathProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.server.deployment.module.ModuleExtensionListProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
@@ -171,6 +176,11 @@ final class ServerControllerService implements Service<ServerController> {
             update.applyUpdateBootAction(bootUpdateContext);
         }
 
+        final File[] extDirs = serverEnvironment.getJavaExtDirs();
+        final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
+        newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "ext/lib");
+        serviceTarget.addService(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX, new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+
         serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
             new ServerDeploymentRepositoryImpl(serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir()))
             .install();
@@ -197,6 +207,8 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_CLASS_PATH, new ModuleClassPathProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.MODULARIZE).add(new RegisteredProcessor(Phase.MODULARIZE_DEPLOYMENT, new ModuleDeploymentProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));

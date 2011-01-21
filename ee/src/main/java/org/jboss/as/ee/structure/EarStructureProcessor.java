@@ -118,7 +118,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             for (final VirtualFile child : childArchives) {
                 final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
                 final MountHandle mountHandle = new MountHandle(closable);
-                final ResourceRoot childResource = new ResourceRoot(child, mountHandle, false);
+                final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                 if(child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
                     ModuleRootMarker.markRoot(childResource);
                 } else {

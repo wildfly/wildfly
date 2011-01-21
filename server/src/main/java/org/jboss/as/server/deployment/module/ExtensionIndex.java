@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment;
-
-import org.jboss.msc.service.ServiceName;
+package org.jboss.as.server.deployment.module;
 
 /**
+ * An index of available extensions.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Services {
+public interface ExtensionIndex {
 
-    private Services() {}
-
-    public static final ServiceName JBOSS_DEPLOYMENT = ServiceName.JBOSS.append("deployment");
-    public static final ServiceName JBOSS_DEPLOYMENT_UNIT = JBOSS_DEPLOYMENT.append("unit");
-    public static final ServiceName JBOSS_DEPLOYMENT_CHAINS = JBOSS_DEPLOYMENT.append("chains");
-    public static final ServiceName JBOSS_DEPLOYMENT_EXTENSION_INDEX = JBOSS_DEPLOYMENT.append("extension-index");
-
+    /**
+     * Find an extension, returning {@code null} if no matching extension is available.
+     *
+     * @param name the extension name
+     * @param minSpecVersion the minimum spec version to match, or {@code null} to match any
+     * @param minImplVersion the minimum implementation version to match, or {@code null} to match any
+     * @param requiredVendorId the vendor ID to require, or {@code null} to match any
+     * @return the resource root of the first matched extension
+     */
+    ResourceRoot findExtension(String name, String minSpecVersion, String minImplVersion, String requiredVendorId);
 }

@@ -81,7 +81,7 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
             for (final VirtualFile child : childArchives) {
                 final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
                 final MountHandle mountHandle = new MountHandle(closable);
-                final ResourceRoot childResource = new ResourceRoot(child, mountHandle, false);
+                final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                 ModuleRootMarker.markRoot(childResource);
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
                 resourceRoot.addToAttachmentList(Attachments.INDEX_IGNORE_PATHS, child.getPathNameRelativeTo(deploymentRoot));
