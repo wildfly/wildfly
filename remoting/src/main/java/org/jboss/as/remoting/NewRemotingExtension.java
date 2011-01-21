@@ -22,9 +22,18 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.model.ParseUtils.*;
-import static org.jboss.as.remoting.CommonAttributes.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.model.ParseUtils.missingRequired;
+import static org.jboss.as.model.ParseUtils.readProperty;
+import static org.jboss.as.model.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.model.ParseUtils.unexpectedElement;
+import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
+import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
@@ -41,6 +50,7 @@ import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
+import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -70,9 +80,11 @@ import org.jboss.xnio.SaslStrength;
  */
 public class NewRemotingExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "remoting";
+
     public void initialize(NewExtensionContext context) {
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem("remoting");
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
 
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(NewRemotingSubsystemProviders.SUBSYSTEM);
@@ -100,7 +112,7 @@ public class NewRemotingExtension implements NewExtension {
 
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
-            final ModelNode address = new ModelNode();
+            final ModelNode address = new ModelNode().set(SUBSYSTEM, SUBSYSTEM_NAME);;
 
             String threadPoolName = null;
             final int count = reader.getAttributeCount();
@@ -126,11 +138,9 @@ public class NewRemotingExtension implements NewExtension {
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).set(new ModelNode());
+            subsystem.get(OP_ADDR).set(address);
             subsystem.get(THREAD_POOL).set(threadPoolName);
             list.add(subsystem);
-
-            final ModelNode connectorAddress = address.add(CONNECTOR);
 
             // Handle elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -140,7 +150,7 @@ public class NewRemotingExtension implements NewExtension {
                         switch (element) {
                             case CONNECTOR: {
                                 // Add connector updates
-                                parseConnector(reader, connectorAddress, list);
+                                parseConnector(reader, address, list);
                                 break;
                             }
                             default: {
@@ -192,7 +202,7 @@ public class NewRemotingExtension implements NewExtension {
 
             final ModelNode connector = new ModelNode();
             connector.get(OP).set(ADD_CONNECTOR);
-            connector.get(OP_ADDR).set(address.add(name));
+            connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
             // requestProperties.get(NAME).set(name); // Name is part of the address
             connector.get(SOCKET_BINDING).set(socketBinding);
 

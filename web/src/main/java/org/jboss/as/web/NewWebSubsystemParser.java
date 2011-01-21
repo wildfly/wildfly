@@ -25,10 +25,12 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
-import static org.jboss.as.web.CommonAttributes.*;
+import static org.jboss.as.web.CommonAttributes.ACCESS_LOG;
 import static org.jboss.as.web.CommonAttributes.ALIAS;
 import static org.jboss.as.web.CommonAttributes.CONNECTOR;
+import static org.jboss.as.web.CommonAttributes.CONTAINER_CONFIG;
 import static org.jboss.as.web.CommonAttributes.DEFAULT_HOST;
 import static org.jboss.as.web.CommonAttributes.DISABLED;
 import static org.jboss.as.web.CommonAttributes.ENABLED;
@@ -41,6 +43,7 @@ import static org.jboss.as.web.CommonAttributes.MAX_DEPTH;
 import static org.jboss.as.web.CommonAttributes.MAX_POST_SIZE;
 import static org.jboss.as.web.CommonAttributes.MAX_SAVE_POST_SIZE;
 import static org.jboss.as.web.CommonAttributes.MIME_MAPPING;
+import static org.jboss.as.web.CommonAttributes.NAME;
 import static org.jboss.as.web.CommonAttributes.PROTOCOL;
 import static org.jboss.as.web.CommonAttributes.PROXY_NAME;
 import static org.jboss.as.web.CommonAttributes.PROXY_PORT;
@@ -53,6 +56,7 @@ import static org.jboss.as.web.CommonAttributes.SECURE;
 import static org.jboss.as.web.CommonAttributes.SENDFILE;
 import static org.jboss.as.web.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.web.CommonAttributes.STATIC_RESOURCES;
+import static org.jboss.as.web.CommonAttributes.VIRTUAL_SERVER;
 import static org.jboss.as.web.CommonAttributes.WEBDAV;
 import static org.jboss.as.web.CommonAttributes.WELCOME_FILE;
 
@@ -135,9 +139,11 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
             throw ParseUtils.unexpectedAttribute(reader, 0);
         }
 
+        final ModelNode address = new ModelNode().set(SUBSYSTEM, NewWebExtension.SUBSYSTEM_NAME);
+
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).setEmptyObject();
+        subsystem.get(OP_ADDR).set(address);
         list.add(subsystem);
 
         // elements
@@ -152,11 +158,11 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
                             break;
                         }
                         case CONNECTOR: {
-                            parseConnector(reader, new ModelNode(), list);
+                            parseConnector(reader,address, list);
                             break;
                         }
                         case VIRTUAL_SERVER: {
-                            parseHost(reader, new ModelNode(), list);
+                            parseHost(reader, address, list);
                             break;
                         } default: {
                             throw ParseUtils.unexpectedElement(reader);
@@ -314,7 +320,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
 
         final ModelNode host = new ModelNode();
         host.get(OP).set(ADD);
-        host.get(OP_ADDR).set(address.clone().add(name));
+        host.get(OP_ADDR).set(address).add(VIRTUAL_SERVER, name);
         list.add(host);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -428,7 +434,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         }
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
-        connector.get(OP_ADDR).set(address.clone().add(name));
+        connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
         connector.get(PROTOCOL).set(protocol);
         connector.get(SOCKET_BINDING).set(bindingRef);
         connector.get(SCHEME).set(scheme);

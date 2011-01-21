@@ -25,6 +25,7 @@ package org.jboss.as.txn;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.txn.CommonAttributes.*;
 
 
@@ -52,11 +53,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class NewTransactionExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "transactions";
     private static final TransactionSubsystemParser parser = new TransactionSubsystemParser();
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("transactions");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(TransactionSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewTransactionSubsystemAdd.INSTANCE, TransactionSubsystemProviders.SUBSYSTEM_ADD, false);
     }
@@ -83,7 +85,7 @@ public class NewTransactionExtension implements NewExtension {
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).setEmptyObject();
+            subsystem.get(OP_ADDR).set(SUBSYSTEM, SUBSYSTEM_NAME);
 
             // elements
             final EnumSet<Element> required = EnumSet.of(Element.RECOVERY_ENVIRONMENT, Element.CORE_ENVIRONMENT);

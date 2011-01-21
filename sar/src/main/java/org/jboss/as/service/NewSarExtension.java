@@ -25,6 +25,7 @@ package org.jboss.as.service;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.List;
 
@@ -49,12 +50,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class NewSarExtension implements NewExtension {
 
     public static final String NAMESPACE = "urn:jboss:domain:sar:1.0";
-
+    public static final String SUBSYSTEM_NAME = "sar";
     static final SarSubsystemParser parser = new SarSubsystemParser();
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("sar");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewSarSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewSarSubsystemAdd.INSTANCE, NewSarSubsystemProviders.SUBSYSTEM_ADD, false);
     }
@@ -78,7 +79,7 @@ public class NewSarExtension implements NewExtension {
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).setEmptyObject();
+            subsystem.get(OP_ADDR).set(SUBSYSTEM, SUBSYSTEM_NAME);
             list.add(subsystem);
         }
 

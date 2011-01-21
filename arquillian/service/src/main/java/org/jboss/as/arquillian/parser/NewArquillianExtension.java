@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
@@ -49,11 +50,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class NewArquillianExtension implements NewExtension {
 
     public static final String NAMESPACE = "urn:jboss:domain:arquillian:1.0";
+    public static final String SUBSYSTEM_NAME = "arquillian";
     static final ArquillianSubsystemParser parser = new ArquillianSubsystemParser();
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("arquillian");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerDeploymentModel(NewArquillianProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewArquillianSubsystemAdd.INSTANCE, NewArquillianProviders.SUBSYSTEM_ADD, false);
     }
@@ -77,7 +79,7 @@ public class NewArquillianExtension implements NewExtension {
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).setEmptyObject();
+            subsystem.get(OP_ADDR).set(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
         }
     }
 }

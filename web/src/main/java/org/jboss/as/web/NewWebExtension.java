@@ -37,12 +37,13 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
  */
 public class NewWebExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "web";
     private static final PathElement connectorPath =  PathElement.pathElement(CommonAttributes.CONNECTOR);
     private static final PathElement hostPath = PathElement.pathElement(CommonAttributes.VIRTUAL_SERVER);
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("web");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewWebSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewWebSubsystemAdd.INSTANCE, NewWebSubsystemProviders.SUBSYSTEM_ADD, false);
         // connector

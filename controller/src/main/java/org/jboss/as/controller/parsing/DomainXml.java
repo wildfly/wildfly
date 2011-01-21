@@ -45,7 +45,10 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -240,7 +243,7 @@ public class DomainXml extends CommonXml {
 
             final ModelNode group = new ModelNode();
             group.get(OP).set(ADD);
-            group.get(OP_ADDR).set(address.clone().add("server-group", name));
+            group.get(OP_ADDR).set(address).add(ModelDescriptionConstants.SERVER_GROUP, name);
             group.get(REQUEST_PROPERTIES, PROFILE).set(profile);
             list.add(group);
             // list.add(new DomainServerGroupAdd(name, profile));
@@ -427,17 +430,19 @@ public class DomainXml extends CommonXml {
                     }
                 }
             }
-
             final ModelNode profile = new ModelNode();
             profile.get(OP).set(ADD);
-            profile.get(OP_ADDR).set(address).add(PROFILE, name);
+            profile.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PROFILE, name);
             profile.get(REQUEST_PROPERTIES, "includes").set(profileIncludes);
             list.add(profile);
 
             // Process subsystems
             for(final ModelNode update : subsystems) {
                 // Process relative subsystem path address
-                final ModelNode subsystemAddress = address.clone().add(name).add(update.require(OP_ADDR));
+                final ModelNode subsystemAddress = address.clone().set(address).set(ModelDescriptionConstants.PROFILE, name);
+                for(final Property path : update.get(OP_ADDR).asPropertyList()) {
+                    subsystemAddress.add(path.getName(), path.getValue().asString());
+                }
                 update.get(OP_ADDR).set(subsystemAddress);
                 list.add(update);
             }

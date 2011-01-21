@@ -37,6 +37,8 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
  */
 public class NewJMSExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "jms";
+
     private static final PathElement CFS_PATH = PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY);
     private static final PathElement QUEUE_PATH = PathElement.pathElement(CommonAttributes.QUEUE);
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.TOPIC);
@@ -45,7 +47,7 @@ public class NewJMSExtension implements NewExtension {
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("jms");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewJMSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewJMSSubsystemAdd.INSTANCE, NewJMSSubsystemProviders.SUBSYSTEM_ADD, false);
         // Connection factories

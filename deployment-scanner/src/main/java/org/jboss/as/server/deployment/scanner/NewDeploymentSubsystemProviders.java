@@ -47,6 +47,28 @@ public class NewDeploymentSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            // TODO
+            return node;
+        }
+    };
+
+    static final DescriptionProvider SCANNER = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            // TODO
+            return node;
+        }
+    };
+
     static final DescriptionProvider SCANNER_ADD = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {

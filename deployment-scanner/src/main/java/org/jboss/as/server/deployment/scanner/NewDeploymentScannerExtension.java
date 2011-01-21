@@ -36,9 +36,15 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
@@ -54,22 +60,46 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class NewDeploymentScannerExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "deployment-scanner";
+    private static final PathElement scannersPath = PathElement.pathElement("scanner");
     private static final DeploymentScannerParser parser = new DeploymentScannerParser();
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewDeploymentSubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, SubsystemAdd.INSTANCE, NewDeploymentSubsystemProviders.SUBSYSTEM_ADD, false);
         // Register operation handlers
-        registration.registerOperationHandler(ADD, NewDeploymentScannerAdd.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ADD, false);
-        registration.registerOperationHandler(REMOVE, NewDeploymentScannerRemove.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_REMOVE, false);
-        registration.registerOperationHandler("enable", NewDeploymentScannerEnable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ENABLE, false);
-        registration.registerOperationHandler("disable", NewDeploymentScannerDisable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_DISABLE, false);
+        final ModelNodeRegistration scanners = registration.registerSubModel(scannersPath, NewDeploymentSubsystemProviders.SCANNER);
+        scanners.registerOperationHandler(ADD, NewDeploymentScannerAdd.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ADD, false);
+        scanners.registerOperationHandler(REMOVE, NewDeploymentScannerRemove.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_REMOVE, false);
+        scanners.registerOperationHandler("enable", NewDeploymentScannerEnable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_ENABLE, false);
+        scanners.registerOperationHandler("disable", NewDeploymentScannerDisable.INSTANCE, NewDeploymentSubsystemProviders.SCANNER_DISABLE, false);
     }
 
     /** {@inheritDoc} */
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser, parser);
+    }
+
+    /**
+     * Add handler creating the subsystem
+     */
+    static class SubsystemAdd implements ModelAddOperationHandler {
+
+        static final SubsystemAdd INSTANCE = new SubsystemAdd();
+
+        /** {@inheritDoc} */
+        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+            final ModelNode compensatingOperation = new ModelNode();
+            compensatingOperation.set(OP).set(REMOVE);
+            compensatingOperation.set(OP_ADDR).set(operation.get(OP_ADDR));
+            // create the scanner root
+            context.getSubModel().get("scanner");
+
+            resultHandler.handleResultComplete(compensatingOperation);
+            return Cancellable.NULL;
+        }
     }
 
     static class DeploymentScannerParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
@@ -94,6 +124,12 @@ public class NewDeploymentScannerExtension implements NewExtension {
             // no attributes
             requireNoAttributes(reader);
 
+            final ModelNode address = new ModelNode().add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+
+            final ModelNode compensatingOperation = new ModelNode();
+            compensatingOperation.set(OP).set(ADD);
+            compensatingOperation.set(OP_ADDR).set(address);
+
             // elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -102,7 +138,7 @@ public class NewDeploymentScannerExtension implements NewExtension {
                         switch (element) {
                             case DEPLOYMENT_SCANNER: {
                                 //noinspection unchecked
-                                parseScanner(reader, list);
+                                parseScanner(reader, address, list);
                                 break;
                             }
                             default: throw unexpectedElement(reader);
@@ -114,7 +150,7 @@ public class NewDeploymentScannerExtension implements NewExtension {
             }
         }
 
-        void parseScanner(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+        void parseScanner(XMLExtendedStreamReader reader, final ModelNode address, List<ModelNode> list) throws XMLStreamException {
             // Handle attributes
             boolean enabled = true;
             int interval = 0;
@@ -163,8 +199,8 @@ public class NewDeploymentScannerExtension implements NewExtension {
             requireNoContent(reader);
 
             final ModelNode operation = new ModelNode();
-            operation.get(OP).set("add-deployment-scanner");
-            operation.get(OP_ADDR).add(name);
+            operation.get(OP).set(ADD);
+            operation.get(OP_ADDR).set(address).add("scanner", name);
             operation.get(CommonAttributes.PATH).set(path);
             operation.get(CommonAttributes.SCAN_INTERVAL).set(interval);
             operation.get(CommonAttributes.SCAN_ENABLED).set(enabled);

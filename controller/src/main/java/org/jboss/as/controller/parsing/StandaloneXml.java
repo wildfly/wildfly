@@ -36,6 +36,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -125,7 +127,7 @@ public class StandaloneXml extends CommonXml {
         }
         // Single profile
         if (element == Element.PROFILE) {
-            parseServerProfile(reader, list);
+            parseServerProfile(reader, address, list);
             element = nextElement(reader);
         }
         // Interfaces
@@ -257,7 +259,7 @@ public class StandaloneXml extends CommonXml {
         }
     }
 
-    private void parseServerProfile(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
+    private void parseServerProfile(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Attributes
         // FIXME -- either change this or remove "name" from the xsd
         requireNoAttributes(reader);
@@ -274,8 +276,19 @@ public class StandaloneXml extends CommonXml {
             if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
                 throw new XMLStreamException("Duplicate subsystem declaration", reader.getLocation());
             }
-            // parse content
-            reader.handleAny(list);
+            // parse subsystem
+            final List<ModelNode> subsystems = new ArrayList<ModelNode>();
+            reader.handleAny(subsystems);
+            // Process subsystems
+            for(final ModelNode update : subsystems) {
+                // Process relative subsystem path address
+                final ModelNode subsystemAddress = address.clone();
+                for(final Property path : update.get(OP_ADDR).asPropertyList()) {
+                    subsystemAddress.add(path.getName(), path.getValue().asString());
+                }
+                update.get(OP_ADDR).set(subsystemAddress);
+                list.add(update);
+            }
         }
     }
 

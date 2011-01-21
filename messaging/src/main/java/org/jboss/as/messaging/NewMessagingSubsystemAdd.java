@@ -145,6 +145,8 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
     static final String DEFAULT_LARGE_MESSSAGE_DIR = "largemessages";
     static final String DEFAULT_PAGING_DIR = "paging";
 
+    static final NewMessagingSubsystemAdd INSTANCE = new NewMessagingSubsystemAdd();
+
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 

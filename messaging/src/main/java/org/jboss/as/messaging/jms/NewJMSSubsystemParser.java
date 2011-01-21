@@ -25,6 +25,7 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.jms.CommonAttributes.*;
 
 import java.util.Collections;
@@ -62,6 +63,8 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
     /** {@inheritDoc} */
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> updates) throws XMLStreamException {
 
+        final ModelNode address = new ModelNode().set(SUBSYSTEM, NewJMSExtension.SUBSYSTEM_NAME);
+
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).setEmptyObject();
@@ -71,13 +74,13 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
             final Element element = Element.forName(reader.getLocalName());
             switch(element) {
                 case CONNECTION_FACTORY: {
-                    processConnectionFactory(reader, updates);
+                    processConnectionFactory(reader, address, updates);
                     break;
                 } case QUEUE: {
-                    processJMSQueue(reader, updates);
+                    processJMSQueue(reader, address, updates);
                     break;
                 } case TOPIC: {
-                    processJMSTopic(reader, updates);
+                    processJMSTopic(reader, address, updates);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -86,7 +89,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
         }
     }
 
-    static void processJMSTopic(final XMLExtendedStreamReader reader, final List<ModelNode> updates) throws XMLStreamException {
+    static void processJMSTopic(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
         final String name = reader.getAttributeValue(0);
         if(name == null) {
@@ -95,7 +98,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         final ModelNode topic = new ModelNode();
         topic.get(OP).set(ADD);
-        topic.get(OP_ADDR).add(TOPIC).add(name);
+        topic.get(OP_ADDR).set(address).add(TOPIC, name);
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -115,7 +118,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     }
 
-    static void processJMSQueue(final XMLExtendedStreamReader reader, final List<ModelNode> updates) throws XMLStreamException {
+    static void processJMSQueue(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         final String name = reader.getAttributeValue(0);
         if(name == null) {
             ParseUtils.missingRequired(reader, Collections.singleton("name"));
@@ -123,7 +126,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         final ModelNode queue = new ModelNode();
         queue.get(OP).set(ADD);
-        queue.get(OP_ADDR).add(QUEUE).add(name);
+        queue.get(OP_ADDR).set(address).set(QUEUE, name);
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -153,7 +156,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
         updates.add(queue);
     }
 
-    static void processConnectionFactory(final XMLExtendedStreamReader reader, final List<ModelNode> updates) throws XMLStreamException {
+    static void processConnectionFactory(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         final String name = reader.getAttributeValue(0);
         if(name == null) {
             ParseUtils.missingRequired(reader, Collections.singleton("name"));
@@ -161,7 +164,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         final ModelNode connectionFactory = new ModelNode();
         connectionFactory.get(OP).set(ADD);
-        connectionFactory.get(OP_ADDR).add(CONNECTION_FACTORY).add(name);
+        connectionFactory.get(OP_ADDR).set(address).add(CONNECTION_FACTORY, name);
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());

@@ -25,6 +25,8 @@ package org.jboss.as.jmx;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -50,11 +52,13 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class NewJMXExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "jmx";
+
     static final JMXSubsystemParser parsers = new JMXSubsystemParser();
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("jmx");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewJMXSubsystemProviders.SUBSYSTEM);
         // Subsystem operation handlers
         registration.registerOperationHandler(ADD, NewJMXSubsystemAdd.INSTANCE, NewJMXSubsystemProviders.SUBSYTEM_ADD, false);
@@ -114,7 +118,7 @@ public class NewJMXExtension implements NewExtension {
             }
             final ModelNode connector = new ModelNode();
             connector.get(OP).set("add-connector");
-            connector.get(OP_ADDR).setEmptyObject();
+            connector.get(OP_ADDR).set(SUBSYSTEM, SUBSYSTEM_NAME);
             connector.get(CommonAttributes.SERVER_BINDING).set(serverBinding);
             connector.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
             list.add(connector);

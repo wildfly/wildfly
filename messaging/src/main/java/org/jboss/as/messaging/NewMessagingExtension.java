@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -33,11 +35,13 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
  */
 public class NewMessagingExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "messaging";
+
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("messaging");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewMessagingSubsystemProviders.SUBSYSTEM);
-
+        registration.registerOperationHandler(ADD, NewMessagingSubsystemAdd.INSTANCE, NewMessagingSubsystemProviders.SUBSYSTEM_ADD, false);
     }
 
     /** {@inheritDoc} */

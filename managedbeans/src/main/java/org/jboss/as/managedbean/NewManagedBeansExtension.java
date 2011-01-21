@@ -25,6 +25,7 @@ package org.jboss.as.managedbean;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.List;
 import java.util.Locale;
@@ -51,6 +52,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class NewManagedBeansExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "managed-beans";
     public static final String NAMESPACE = "urn:jboss:domain:managedbeans:1.0";
 
     private static final ManagedBeanSubsystemElementParser parser = new ManagedBeanSubsystemElementParser();
@@ -63,7 +65,7 @@ public class NewManagedBeansExtension implements NewExtension {
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration registration = context.registerSubsystem("managed-beans");
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         nodeRegistration.registerOperationHandler(ADD, NewManagedBeansSubsystemAdd.INSTANCE, DESCRIPTION, false);
     }
@@ -81,7 +83,7 @@ public class NewManagedBeansExtension implements NewExtension {
             ParseUtils.requireNoContent(reader);
             final ModelNode update = new ModelNode();
             update.get(OP).set("add");
-            update.get(OP_ADDR).setEmptyObject();
+            update.get(OP_ADDR).set(SUBSYSTEM, SUBSYSTEM_NAME);
             list.add(update);
         }
 

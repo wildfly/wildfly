@@ -25,9 +25,7 @@ package org.jboss.as.remoting;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
-import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
+import static org.jboss.as.remoting.CommonAttributes.*;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;

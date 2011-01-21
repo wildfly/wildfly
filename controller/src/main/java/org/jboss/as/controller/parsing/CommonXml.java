@@ -292,8 +292,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoContent(reader);
         // TODO consider making "path" a resource and not an attribute
         final ModelNode update = new ModelNode();
-        update.get(OP_ADDR).set(address);
-        update.get(OP).set("add-path");
+        update.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PATH, name);
+        update.get(OP).set(ADD);
         update.get("name").set(name);
         update.get("path").set(path);
         if (relativeTo != null) update.get("relativeTo").set(relativeTo);
@@ -909,8 +909,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             final ModelNode interfaceAdd = new ModelNode();
             // TODO should this be a child instead of an attribute?
-            interfaceAdd.get(OP_ADDR).set(address);
-            interfaceAdd.get(OP).set("add-interface");
+            interfaceAdd.get(OP_ADDR).set(address).add(ModelDescriptionConstants.INTERFACE, name);
+            interfaceAdd.get(OP).set(ADD);
 
             final ModelNode criteriaNode = interfaceAdd.get("criteria");
             parseInterfaceCriteria(reader, criteriaNode);
@@ -932,7 +932,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final String defaultInterface = attrValues[1];
 
         final ModelNode bindingGroupUpdate = new ModelNode();
-        bindingGroupUpdate.get(OP_ADDR).set(address).add("socket-binding-group", name);
+        bindingGroupUpdate.get(OP_ADDR).set(address).add(ModelDescriptionConstants.SOCKET_BINDING_GROUP, name);
         bindingGroupUpdate.get(OP).set(ADD);
         final ModelNode bindings = bindingGroupUpdate.get("bindings");
         bindings.setEmptyList();

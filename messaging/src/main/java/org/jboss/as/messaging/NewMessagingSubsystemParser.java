@@ -68,11 +68,9 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
     /** {@inheritDoc} */
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
-        final ModelNode address = new ModelNode().setEmptyObject();
-
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(address);
+        operation.get(OP_ADDR).set(SUBSYSTEM, NewMessagingExtension.SUBSYSTEM_NAME);
         list.add(operation);
 
         // Handle elements

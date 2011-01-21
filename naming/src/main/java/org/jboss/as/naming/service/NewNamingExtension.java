@@ -25,6 +25,7 @@ package org.jboss.as.naming.service;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.List;
 
@@ -48,12 +49,13 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class NewNamingExtension implements NewExtension {
 
+    public static final String SUBSYSTEM_NAME = "naming";
     public static final String NAMESPACE = "urn:jboss:domain:naming:1.0";
     private static final NamingSubsystemParser parser = new NamingSubsystemParser();
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem("naming");
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewNamingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewNamingSubsystemAdd.INSTANCE, NewNamingSubsystemProviders.SUBSYSTEM_ADD, false);
     }
@@ -77,7 +79,7 @@ public class NewNamingExtension implements NewExtension {
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).setEmptyObject();
+            subsystem.get(OP_ADDR).set(SUBSYSTEM, SUBSYSTEM_NAME);
             list.add(subsystem);
         }
     }
