@@ -38,6 +38,7 @@
         <module name="org.jboss.arquillian.testenricher.cdi" />
         <module name="org.jboss.arquillian.testenricher.msc" />
         <module name="org.jboss.arquillian.testenricher.osgi" />
+        <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.domain" />
         <module name="org.jboss.as.ee" />
         <module name="org.jboss.as.naming" />
