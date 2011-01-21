@@ -183,12 +183,13 @@ public enum Phase {
     public static final int STRUCTURE_WAR                               = 0x0500;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0600;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0700;
-    public static final int STRUCTURE_EAR                               = 0x0800;
-    public static final int STRUCTURE_DEPLOYMENT_MODULE_LOADER          = 0x0900;
-    public static final int STRUCTURE_ANNOTATION_INDEX                  = 0x0A00;
-    public static final int STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK     = 0x0B00;
-    public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x0C00;
-    public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x0D00;
+    public static final int STRUCTURE_EAR_JBOSS_APP_XML_PARSE           = 0x0800;
+    public static final int STRUCTURE_EAR                               = 0x0900;
+    public static final int STRUCTURE_DEPLOYMENT_MODULE_LOADER          = 0x0A00;
+    public static final int STRUCTURE_ANNOTATION_INDEX                  = 0x0B00;
+    public static final int STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK     = 0x0C00;
+    public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x0D00;
+    public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x0E00;
 
     // PARSE
     public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0100;

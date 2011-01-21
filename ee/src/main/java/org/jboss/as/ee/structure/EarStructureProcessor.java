@@ -23,7 +23,6 @@
 package org.jboss.as.ee.structure;
 
 import java.util.ArrayList;
-import org.jboss.as.ee.config.EarConfig;
 import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
 import java.io.Closeable;
 import java.io.IOException;
@@ -40,7 +39,8 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
-import org.jboss.metadata.ear.spec.Ear6xMetaData;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.Ear5xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -57,12 +57,13 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     private static final String JAR_EXTENSION = ".jar";
     private static final String WAR_EXTENSION = ".war";
     private static final Set<String> CHILD_ARCHIVE_EXTENSIONS = new HashSet<String>();
+
     static {
         CHILD_ARCHIVE_EXTENSIONS.add(JAR_EXTENSION);
         CHILD_ARCHIVE_EXTENSIONS.add(WAR_EXTENSION);
     }
 
-    private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(CHILD_ARCHIVE_EXTENSIONS,  new VisitorAttributes() {
+    private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(CHILD_ARCHIVE_EXTENSIONS, new VisitorAttributes() {
         public boolean isLeavesOnly() {
             return false;
         }
@@ -78,7 +79,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(!isEarDeployment(deploymentUnit)) {
+        if (!isEarDeployment(deploymentUnit)) {
             return;
         }
 
@@ -94,13 +95,20 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
         String libDirName = DEFAULT_LIB_DIR;
 
-        final EarConfig earConfig = deploymentUnit.getAttachment(EarConfig.ATTACHMENT_KEY);
-        if(earConfig != null) {
-            final EarMetaData earMetaData = earConfig.getEarMetaData();
-            if(earMetaData instanceof Ear6xMetaData) {
-                final String xmlLibDirName = Ear6xMetaData.class.cast(earMetaData).getLibraryDirectory();
-                if(xmlLibDirName != null) {
-                    libDirName = xmlLibDirName;
+        final JBossAppMetaData appMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.JBOSS_APP_METADATA);
+        if (appMetaData != null) {
+            final String xmlLibDirName = appMetaData.getLibraryDirectory();
+            if (xmlLibDirName != null) {
+                libDirName = xmlLibDirName;
+            }
+        } else {
+            final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+            if (earMetaData != null) {
+                if (earMetaData instanceof Ear5xMetaData) {
+                    final String xmlLibDirName = Ear5xMetaData.class.cast(earMetaData).getLibraryDirectory();
+                    if (xmlLibDirName != null) {
+                        libDirName = xmlLibDirName;
+                    }
                 }
             }
         }
@@ -108,9 +116,9 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         // Process all the children
         try {
             final List<VirtualFile> childArchives = new ArrayList<VirtualFile>(virtualFile.getChildren(CHILD_ARCHIVE_FILTER));
-            if(!libDirName.isEmpty()) {
+            if (!libDirName.isEmpty()) {
                 final VirtualFile libDir = virtualFile.getChild(libDirName);
-                if(libDir.exists()) {
+                if (libDir.exists()) {
                     childArchives.addAll(libDir.getChildren(CHILD_ARCHIVE_FILTER));
                 }
             }
@@ -119,7 +127,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
                 final MountHandle mountHandle = new MountHandle(closable);
                 final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
-                if(child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
+                if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
                     ModuleRootMarker.markRoot(childResource);
                 } else {
                     childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
@@ -134,8 +142,8 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     public void undeploy(DeploymentUnit context) {
         final List<ResourceRoot> childRoots = context.removeAttachment(Attachments.RESOURCE_ROOTS);
-        if(childRoots != null) {
-            for(ResourceRoot childRoot : childRoots) {
+        if (childRoots != null) {
+            for (ResourceRoot childRoot : childRoots) {
                 VFSUtils.safeClose(childRoot.getMountHandle());
             }
         }

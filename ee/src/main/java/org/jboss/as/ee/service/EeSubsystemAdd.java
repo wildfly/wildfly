@@ -28,9 +28,10 @@ import org.jboss.as.ee.container.processor.LifecycleAnnotationParsingProcessor;
 import org.jboss.as.ee.container.processor.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
-import org.jboss.as.ee.structure.ApplicationXmlParsingProcessor;
+import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
 import org.jboss.as.ee.structure.EarInitializationProcessor;
 import org.jboss.as.ee.structure.EarStructureProcessor;
+import org.jboss.as.ee.structure.JBossAppMetaDataParsingProcessor;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
@@ -60,7 +61,8 @@ public final class EeSubsystemAdd extends AbstractSubsystemAdd<EeSubsystemElemen
     protected void applyUpdateBootAction(BootUpdateContext updateContext) {
         logger.info("Activating EE subsystem");
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new ApplicationXmlParsingProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new EarMetaDataParsingProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
 
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());

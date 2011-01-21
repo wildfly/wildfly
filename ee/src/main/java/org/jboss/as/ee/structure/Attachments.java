@@ -20,37 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.config.parser.application;
+package org.jboss.as.ee.structure;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.as.ee.naming.NamingContextConfig;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
 
 /**
+ * EE related attachments.
+ *
  * @author John Bailey
  */
-public enum Version {
-    UNKNOWN(null),
-    APP_1_3("http://java.sun.com/dtd/application_1_3.dtd"),
-    APP_1_4("http://java.sun.com/xml/ns/j2ee/application_1_4.xsd"),
-    APP_5_0("http://java.sun.com/xml/ns/javaee/application_5.xsd"),
-    APP_6_0("http://java.sun.com/xml/ns/javaee/application_6.xsd");
-
-    private static final Map<String, Version> bindings = new HashMap<String, Version>();
-
-    private final String location;
-
-    Version(String location) {
-        this.location = location;
-    }
-
-    static {
-        for (Version version : values()) {
-            bindings.put(version.location, version);
-        }
-    }
-
-    public static Version forLocation(final String location) {
-        final Version version = bindings.get(location);
-        return version != null ? version : UNKNOWN;
-    }
+public class Attachments {
+    public static final AttachmentKey<EarMetaData> EAR_METADATA = AttachmentKey.create(EarMetaData.class);
+    public static final AttachmentKey<JBossAppMetaData> JBOSS_APP_METADATA = AttachmentKey.create(JBossAppMetaData.class);
 }

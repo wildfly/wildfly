@@ -86,9 +86,9 @@
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.CR8</version.org.jboss.marshalling.jboss-marshalling-river>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta5</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.modules.jboss-modules>1.0.0.Beta13</version.org.jboss.modules.jboss-modules>
-        <version.org.jboss.metadata.common>7.0.0.Alpha2</version.org.jboss.metadata.common>
-        <version.org.jboss.metadata.web>7.0.0.Alpha2</version.org.jboss.metadata.web>
-        <version.org.jboss.metadata.ear>2.0.0.Alpha4</version.org.jboss.metadata.ear>
+        <version.org.jboss.metadata.common>7.0.0.Alpha3</version.org.jboss.metadata.common>
+        <version.org.jboss.metadata.web>7.0.0.Alpha3</version.org.jboss.metadata.web>
+        <version.org.jboss.metadata.ear>7.0.0.Alpha3</version.org.jboss.metadata.ear>
         <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.common>1.0.6</version.org.jboss.osgi.common>
         <version.org.jboss.osgi.deployment>1.0.9</version.org.jboss.osgi.deployment>
@@ -128,7 +128,7 @@
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
         <version.osgi>4.2.0</version.osgi>
-        
+
         <!-- Surefire args -->
         <surefire.jpda.args />
         <surefire.system.args>-da ${surefire.jpda.args}</surefire.system.args>
@@ -337,7 +337,7 @@
                 <artifactId>org.apache.aries.jmx</artifactId>
                 <version>${version.org.apache.aries.jmx}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.aries</groupId>
                 <artifactId>org.apache.aries.util</artifactId>
@@ -349,31 +349,31 @@
                 <artifactId>org.apache.felix.configadmin</artifactId>
                 <version>${version.org.apache.felix.configadmin}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.log</artifactId>
                 <version>${version.org.apache.felix.log}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-container-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-container-embedded</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-build</artifactId>
@@ -500,13 +500,13 @@
                 <artifactId>jboss-as-remoting</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-sar</artifactId>
@@ -546,13 +546,13 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-testsuite-protocol-base</artifactId>
-                <version>${project.version}</version>                
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-testsuite-protocol-modules</artifactId>
-                <version>${project.version}</version>                
+                <version>${project.version}</version>
             </dependency>
 
             <!-- External Dependencies -->
@@ -562,7 +562,7 @@
                 <artifactId>h2</artifactId>
                 <version>${version.com.h2database.h2}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>javassist</groupId>
                 <artifactId>javassist</artifactId>
@@ -735,19 +735,19 @@
               <artifactId>arquillian-protocol-jmx</artifactId>
                 <version>${version.org.jboss.arquillian}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.jboss.arquillian.protocol</groupId>
               <artifactId>arquillian-protocol-osgi</artifactId>
               <version>${version.org.jboss.arquillian}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-msc</artifactId>
                 <version>${version.org.jboss.arquillian}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-osgi</artifactId>
@@ -889,7 +889,7 @@
                 <artifactId>ironjacamar-deployers-common</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
             </dependency>
- 
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-spec-api</artifactId>
@@ -1458,6 +1458,10 @@
                     <exclusion>
                         <groupId>org.jboss</groupId>
                         <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                </exclusions>
             </dependency>
