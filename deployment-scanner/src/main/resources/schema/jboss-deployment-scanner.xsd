@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -19,13 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:threads:1.0"
-            xmlns="urn:jboss:domain:threads:1.0"
-            elementFormDefault="qualified"
-            attributeFormDefault="unqualified"
-            version="1.0">
+<xs:schema xmlns="urn:jboss:domain:deployment-scanner:1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:jboss:domain:deployment-scanner:1.0" version="1.0">
 
     <!-- The threads subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
@@ -38,8 +33,8 @@
                 ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="deployment-scanner" type="standalone-deployment-scanner-type" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:choice maxOccurs="unbounded" minOccurs="0">
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="deployment-scanner" type="standalone-deployment-scanner-type"/>
         </xs:choice>
     </xs:complexType>
 
@@ -49,7 +44,7 @@
                 content can be stored.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="name" type="xs:string" use="optional" default="default" />
+        <xs:attribute default="default" name="name" type="xs:string" use="optional"/>
         <xs:attribute name="relative-to" type="xs:string" use="optional">
            <xs:annotation>
                 <xs:documentation>Reference to a filesystem path defined in the "paths" section
@@ -65,7 +60,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="scan-interval" type="xs:int" use="optional" default="0">
+        <xs:attribute default="0" name="scan-interval" type="xs:int" use="optional">
             <xs:annotation>
                 <xs:documentation>Periodic interval, in milliseconds, at which the repository
                     should be scanned for changes. A value of less than 1 indicates the
@@ -73,7 +68,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="scan-enabled" type="xs:boolean" use="optional" default="true">
+        <xs:attribute default="true" name="scan-enabled" type="xs:boolean" use="optional">
             <xs:annotation>
                 <xs:documentation>
                     Flag indicating that all scanning (including initial scanning at startup)
