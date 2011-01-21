@@ -22,7 +22,14 @@
 
 package org.jboss.as.logging;
 
+import java.util.logging.Handler;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -55,4 +62,28 @@ public final class LogServices {
     public static ServiceName handlerName(final String name) {
         return HANDLER.append(name);
     }
+
+    static void installLoggerHandlers(final ServiceTarget serviceTarget, final String loggerName, final ModelNode handlers) {
+        // Install logger handler services
+        for(final ModelNode handler : handlers.asList()) {
+            final String handlerName = handler.asString();
+            final LoggerHandlerService service = new LoggerHandlerService(loggerName);
+            final Injector<Handler> injector = service.getHandlerInjector();
+            serviceTarget.addService(LogServices.loggerHandlerName(loggerName, handlerName), service)
+                .addDependency(LogServices.loggerName(loggerName))
+                .addDependency(LogServices.handlerName(handlerName), Handler.class, injector)
+                .install();
+        }
+    }
+
+    static void uninstallLoggerHandlers(final ServiceRegistry registry, final String loggerName, final ModelNode handlers) {
+        for(final ModelNode handler : handlers.asList()) {
+            final String handlerName = handler.asString();
+            final ServiceController<?> controller = registry.getService(LogServices.loggerHandlerName(loggerName, handlerName));
+            if(controller != null) {
+                controller.setMode(ServiceController.Mode.REMOVE);
+            }
+        }
+    }
+
 }

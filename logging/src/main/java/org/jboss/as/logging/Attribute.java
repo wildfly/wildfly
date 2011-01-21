@@ -32,29 +32,30 @@ public enum Attribute {
 
     UNKNOWN(null),
 
-    APPEND("append"),
-    AUTOFLUSH("autoflush"),
-    CATEGORY("category"),
-    FILE_NAME("file-name"),
-    MIN_INCLUSIVE("min-inclusive"),
-    MIN_LEVEL("min-level"),
-    MAX_BACKUP_INDEX("max-backup-index"),
-    MAX_INCLUSIVE("max-inclusive"),
-    MAX_LEVEL("max-level"),
-    NAME("name"),
-    NEW_LEVEL("new-level"),
-    OVERFLOW_ACTION("overflow-action"),
-    PATH("path"),
-    PATTERN("pattern"),
-    QUEUE_LENGTH("queue-length"),
-    RELATIVE_TO("relative-to"),
-    REPLACEMENT("replacement"),
-    REPLACE_ALL("replace-all"),
-    ROTATE_SIZE("rotate-size"),
-    SUFFIX("suffix"),
-    TARGET("target"),
-    USE_PARENT_HANDLERS("use-parent-handlers"),
-    VALUE("value"),;
+    APPEND(CommonAttributes.APPEND),
+    AUTOFLUSH(CommonAttributes.AUTOFLUSH),
+    CATEGORY(CommonAttributes.CATEGORY),
+    FILE_NAME(CommonAttributes.FILE_NAME),
+    MIN_INCLUSIVE(CommonAttributes.MIN_INCLUSIVE),
+    MIN_LEVEL(CommonAttributes.MIN_LEVEL),
+    MAX_BACKUP_INDEX(CommonAttributes.MAX_BACKUP_INDEX),
+    MAX_INCLUSIVE(CommonAttributes.MAX_INCLUSIVE),
+    MAX_LEVEL(CommonAttributes.MAX_LEVEL),
+    NAME(CommonAttributes.NAME),
+    NEW_LEVEL(CommonAttributes.NEW_LEVEL),
+    OVERFLOW_ACTION(CommonAttributes.OVERFLOW_ACTION),
+    PATH(CommonAttributes.PATH),
+    PATTERN(CommonAttributes.PATTERN),
+    QUEUE_LENGTH(CommonAttributes.QUEUE_LENGTH),
+    RELATIVE_TO(CommonAttributes.RELATIVE_TO),
+    REPLACEMENT(CommonAttributes.REPLACEMENT),
+    REPLACE_ALL(CommonAttributes.REPLACE_ALL),
+    ROTATE_SIZE(CommonAttributes.ROTATE_SIZE),
+    SUFFIX(CommonAttributes.SUFFIX),
+    TARGET(CommonAttributes.TARGET),
+    USE_PARENT_HANDLERS(CommonAttributes.USE_PARENT_HANDLERS),
+    VALUE(CommonAttributes.VALUE),
+    ;
 
     private final String name;
 
@@ -89,9 +90,5 @@ public enum Attribute {
 
     public static Map<String, Attribute> getMap() {
         return MAP;
-    }
-
-    public String toString() {
-        return getLocalName();
     }
 }

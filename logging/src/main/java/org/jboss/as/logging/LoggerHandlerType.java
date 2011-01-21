@@ -26,50 +26,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * @author Emanuel Muckenhuber
  */
-public enum Element {
+enum LoggerHandlerType {
 
     UNKNOWN(null),
 
-    ACCEPT(CommonAttributes.ACCEPT),
-    ALL(CommonAttributes.ALL),
-    ANY(CommonAttributes.ANY),
-    APPEND(CommonAttributes.APPEND),
     ASYNC_HANDLER(CommonAttributes.ASYNC_HANDLER),
-    CHANGE_LEVEL(CommonAttributes.CHANGE_LEVEL),
     CONSOLE_HANDLER(CommonAttributes.CONSOLE_HANDLER),
-    DENY(CommonAttributes.DENY),
-    ENCODING(CommonAttributes.ENCODING),
-    FILE(CommonAttributes.FILE),
     FILE_HANDLER(CommonAttributes.FILE_HANDLER),
-    FILTER(CommonAttributes.FILTER),
-    FORMATTER(CommonAttributes.FORMATTER),
     HANDLER(CommonAttributes.HANDLER),
-    HANDLERS(CommonAttributes.HANDLERS),
-    LEVEL(CommonAttributes.LEVEL),
-    LEVEL_RANGE(CommonAttributes.LEVEL_RANGE),
-    LOGGER(CommonAttributes.LOGGER),
-    MATCH(CommonAttributes.MATCH),
-    MAX_BACKUP_INDEX(CommonAttributes.MAX_BACKUP_INDEX),
-    NOT(CommonAttributes.NOT),
-    OVERFLOW_ACTION(CommonAttributes.OVERFLOW_ACTION),
-    PATTERN_FORMATTER(CommonAttributes.PATTERN_FORMATTER),
     PERIODIC_ROTATING_FILE_HANDLER(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER),
-    PROPERTIES(CommonAttributes.PROPERTIES),
-    QUEUE_LENGTH(CommonAttributes.QUEUE_LENGTH),
-    REPLACE(CommonAttributes.REPLACE),
-    ROOT_LOGGER(CommonAttributes.ROOT_LOGGER),
-    ROTATE_SIZE(CommonAttributes.ROTATE_SIZE),
     SIZE_ROTATING_FILE_HANDLER(CommonAttributes.SIZE_ROTATING_FILE_HANDLER),
-    SUBHANDLERS(CommonAttributes.SUBHANDLERS),
-    SUFFIX(CommonAttributes.SUFFIX),
-    TARGET(CommonAttributes.TARGET),
     ;
 
     private final String name;
 
-    Element(final String name) {
+    LoggerHandlerType(final String name) {
         this.name = name;
     }
 
@@ -78,23 +51,24 @@ public enum Element {
      *
      * @return the local name
      */
-    public String getLocalName() {
+    public String getName() {
         return name;
     }
 
-    private static final Map<String, Element> MAP;
+    private static final Map<String, LoggerHandlerType> MAP;
 
     static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
-            final String name = element.getLocalName();
+        final Map<String, LoggerHandlerType> map = new HashMap<String, LoggerHandlerType>();
+        for (LoggerHandlerType element : values()) {
+            final String name = element.getName();
             if (name != null) map.put(name, element);
         }
         MAP = map;
     }
 
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
+    public static LoggerHandlerType forName(String localName) {
+        final LoggerHandlerType element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
+
 }
