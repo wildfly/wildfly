@@ -34,6 +34,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -50,7 +51,7 @@ public class PathAddress implements Iterable<PathElement> {
     public static final PathAddress EMPTY_ADDRESS = new PathAddress(Collections.<PathElement>emptyList());
 
     /**
-     * Creates an UpdateIdentifier from the given ModelNode address.  The given node is expected
+     * Creates a PathAddress from the given ModelNode address.  The given node is expected
      * to be an address node.
      *
      * @param node the node (cannot be {@code null})
@@ -60,7 +61,29 @@ public class PathAddress implements Iterable<PathElement> {
     public static PathAddress pathAddress(final ModelNode node) {
         final Map<String, PathElement> pathMap;
         if (node.isDefined()) {
-            final List<Property> props = node.asPropertyList();
+
+//            final List<Property> props = node.asPropertyList();
+            // Following bit is crap TODO; uncomment above and delete below
+            // when bug is fixed
+            final List<Property> props = new ArrayList<Property>();
+            String key = null;
+            for (ModelNode element : node.asList()) {
+                Property prop = null;
+                if (element.getType() == ModelType.PROPERTY) {
+                    prop = element.asProperty();
+                }
+                else if (key == null) {
+                    key = element.asString();
+                }
+                else {
+                    prop = new Property(key, element);
+                }
+                if (prop != null) {
+                    props.add(prop);
+                    key = null;
+                }
+
+            }
             if (props.size() == 0) {
                 return EMPTY_ADDRESS;
             } else {
@@ -108,6 +131,30 @@ public class PathAddress implements Iterable<PathElement> {
     PathAddress(final List<PathElement> pathAddressList) {
         assert pathAddressList != null : "pathAddressList is null";
         this.pathAddressList = pathAddressList;
+    }
+
+    /**
+     * Gets the element at the given index.
+     *
+     * @param index the index
+     * @return the element
+     *
+     * @throws IndexOutOfBoundsException if the index is out of range
+     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     */
+    public PathElement getElement(int index) {
+        final List<PathElement> list = pathAddressList;
+        return list.get(index);
+    }
+
+    /**
+     * Gets the last element in the address.
+     *
+     * @return the element, or {@code null} if {@link #size()} is zero.
+     */
+    public PathElement getLastElement() {
+        final List<PathElement> list = pathAddressList;
+        return list.size() == 0 ? null : list.get(list.size() - 1);
     }
 
     /**
@@ -205,7 +252,7 @@ public class PathAddress implements Iterable<PathElement> {
      * @return the model node list of properties
      */
     public ModelNode toModelNode() {
-        final ModelNode node = new ModelNode();
+        final ModelNode node = new ModelNode().setEmptyList();
         for (PathElement element : pathAddressList) {
             node.add(element.getKey(), element.getValue());
         }
@@ -226,6 +273,7 @@ public class PathAddress implements Iterable<PathElement> {
      *
      * @return the iterator
      */
+    @Override
     public ListIterator<PathElement> iterator() {
         return pathAddressList.listIterator();
     }
@@ -254,5 +302,10 @@ public class PathAddress implements Iterable<PathElement> {
      */
     public boolean equals(PathAddress other) {
         return this == other || other != null && pathAddressList.equals(other.pathAddressList);
+    }
+
+    @Override
+    public String toString() {
+        return toModelNode().toString();
     }
 }
