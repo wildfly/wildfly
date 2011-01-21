@@ -221,6 +221,10 @@ public class BasicModelController implements ModelController {
         return registry;
     }
 
+    protected ModelNode getModel() {
+        return model;
+    }
+
     /** {@inheritDoc} */
     @Override
     public ModelNode execute(final ModelNode operation) throws OperationFailedException {

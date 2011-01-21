@@ -24,8 +24,16 @@ package org.jboss.as.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
@@ -78,6 +86,8 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
 
     void init() {
         state = State.STARTING;
+
+        createCoreModel();
         // Build up the core model registry
         ModelNodeRegistration root = getRegistry();
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1));
@@ -95,6 +105,22 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         extensions.registerOperationHandler(AddExtensionHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(RemoveExtensionHandler.OPERATION_NAME, RemoveExtensionHandler.INSTANCE, RemoveExtensionHandler.INSTANCE, false);
 
+    }
+
+    private void createCoreModel() {
+        ModelNode root = getModel();
+        root.get(NAMESPACE).setEmptyList();
+        root.get(SCHEMA_LOCATION).setEmptyList();
+        root.get(NAME);
+        root.get(MANAGEMENT);
+        root.get(PROFILE_NAME);
+        root.get(EXTENSION);
+        root.get(PATH);
+        root.get(SUBSYSTEM);
+        root.get(INTERFACE);
+        root.get(SOCKET_BINDING_GROUP);
+        root.get(SYSTEM_PROPERTY);
+        root.get(DEPLOYMENT);
     }
 
     void finishBoot() {
