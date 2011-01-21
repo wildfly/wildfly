@@ -21,10 +21,10 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
+
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,7 +49,12 @@ public final class ServerDescriptionProviders {
         }
     };
 
-    public static void registerServerProviders(ModelNodeRegistration root) {
-        // TODO fill in child elements
-    }
+    public static final DescriptionProvider DEPLOYMENT_PROVIDER = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            // FIXME
+            return null;
+        }
+    };
 }

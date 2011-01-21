@@ -22,19 +22,34 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewExtensionContextImpl;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewOperationContextImpl;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.AddNamespaceHandler;
+import org.jboss.as.controller.operations.common.AddSchemaLocationHandler;
+import org.jboss.as.controller.operations.common.RemoveNamespaceHandler;
+import org.jboss.as.controller.operations.common.RemoveSchemaLocationHandler;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.server.controller.CoreOperationsRegistrar;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.operations.AddExtensionHandler;
+import org.jboss.as.server.operations.RemoveExtensionHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
@@ -64,8 +79,22 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     void init() {
         state = State.STARTING;
         // Build up the core model registry
-        ServerDescriptionProviders.registerServerProviders(getRegistry());
-        CoreOperationsRegistrar.registerCoreOperations(getRegistry());
+        ModelNodeRegistration root = getRegistry();
+        root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1));
+        root.registerOperationHandler(AddNamespaceHandler.OPERATION_NAME, AddNamespaceHandler.INSTANCE, AddNamespaceHandler.INSTANCE, false);
+        root.registerOperationHandler(RemoveNamespaceHandler.OPERATION_NAME, RemoveNamespaceHandler.INSTANCE, RemoveNamespaceHandler.INSTANCE, false);
+        root.registerOperationHandler(AddSchemaLocationHandler.OPERATION_NAME, AddSchemaLocationHandler.INSTANCE, AddSchemaLocationHandler.INSTANCE, false);
+        root.registerOperationHandler(RemoveSchemaLocationHandler.OPERATION_NAME, RemoveSchemaLocationHandler.INSTANCE, RemoveSchemaLocationHandler.INSTANCE, false);
+
+        ModelNodeRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
+
+        ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
+        ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
+        NewExtensionContext extensionContext = new NewExtensionContextImpl(getRegistry(), deployments);
+        AddExtensionHandler addExtensionHandler = new AddExtensionHandler(extensionContext);
+        extensions.registerOperationHandler(AddExtensionHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
+        extensions.registerOperationHandler(RemoveExtensionHandler.OPERATION_NAME, RemoveExtensionHandler.INSTANCE, RemoveExtensionHandler.INSTANCE, false);
+
     }
 
     void finishBoot() {

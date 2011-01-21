@@ -24,7 +24,6 @@ package org.jboss.as.controller;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
  * A basic extension context implementation.
@@ -40,28 +39,26 @@ public final class NewExtensionContextImpl implements NewExtensionContext {
      *
      * @param profileRegistration the profile registration
      * @param deploymentOverrideRegistration the deployment override registration
-     * @param xmlMapper the XML mapper
      */
-    public NewExtensionContextImpl(final ModelNodeRegistration profileRegistration, final ModelNodeRegistration deploymentOverrideRegistration, final XMLMapper xmlMapper) {
+    public NewExtensionContextImpl(final ModelNodeRegistration profileRegistration, final ModelNodeRegistration deploymentOverrideRegistration) {
         if (profileRegistration == null) {
             throw new IllegalArgumentException("profileRegistration is null");
         }
         if (deploymentOverrideRegistration == null) {
             throw new IllegalArgumentException("deploymentOverrideRegistration is null");
         }
-        if (xmlMapper == null) {
-            throw new IllegalArgumentException("xmlMapper is null");
-        }
         this.profileRegistration = profileRegistration;
         this.deploymentOverrideRegistration = deploymentOverrideRegistration;
     }
 
     /** {@inheritDoc} */
+    @Override
     public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
         return new SubsystemRegistration() {
+            @Override
             public ModelNodeRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
@@ -69,6 +66,7 @@ public final class NewExtensionContextImpl implements NewExtensionContext {
                 return profileRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProvider);
             }
 
+            @Override
             public ModelNodeRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
