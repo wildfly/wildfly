@@ -57,7 +57,6 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
-import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -99,11 +98,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected final ModuleLoader moduleLoader;
-    protected final NewExtensionContext extensionContext;
 
-    protected CommonXml(final ModuleLoader loader, final NewExtensionContext context) {
+    protected CommonXml(final ModuleLoader loader) {
         moduleLoader = loader;
-        extensionContext = context;
     }
 
     protected void parseNamespaces(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> nodes) {
@@ -118,12 +115,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    @SuppressWarnings("unused")
     protected void readHeadComment(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> nodes) throws XMLStreamException {
         // TODO STXM-6
     }
 
-    @SuppressWarnings("unused")
     protected void readTailComment(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> nodes) throws XMLStreamException {
         // TODO STXM-6
     }

@@ -45,7 +45,6 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -58,8 +57,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class DomainXml extends CommonXml {
 
-    public DomainXml(final ModuleLoader loader, final NewExtensionContext context) {
-        super(loader, context);
+    public DomainXml(final ModuleLoader loader) {
+        super(loader);
     }
 
     @Override

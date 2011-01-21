@@ -43,7 +43,6 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -56,8 +55,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class StandaloneXml extends CommonXml {
 
-    public StandaloneXml(final ModuleLoader loader, final NewExtensionContext context) {
-        super(loader, context);
+    public StandaloneXml(final ModuleLoader loader) {
+        super(loader);
     }
 
     @Override
