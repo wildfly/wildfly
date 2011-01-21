@@ -24,16 +24,12 @@ package org.jboss.as.controller.persistence;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLMapper;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -41,12 +37,21 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLMapper;
+
 /**
  * A configuration persister which uses an XML file for backing storage.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class XmlConfigurationPersister implements NewConfigurationPersister {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
+
     private final File fileName;
     private final QName rootElement;
     private final XMLElementReader<List<ModelNode>> rootParser;
@@ -78,6 +83,7 @@ public class XmlConfigurationPersister implements NewConfigurationPersister {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void store(final ModelNode model) throws ConfigurationPersistenceException {
         final XMLMapper mapper = XMLMapper.Factory.create();
         try {
@@ -90,7 +96,7 @@ public class XmlConfigurationPersister implements NewConfigurationPersister {
                 output.close();
                 fos.close();
             } finally {
-                StreamUtils.safeClose(fos);
+                safeClose(fos);
             }
         } catch (Exception e) {
             throw new ConfigurationPersistenceException("Failed to store configuration", e);
@@ -98,6 +104,7 @@ public class XmlConfigurationPersister implements NewConfigurationPersister {
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<ModelNode> load() throws ConfigurationPersistenceException {
         final XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(rootElement, rootParser);
@@ -112,11 +119,19 @@ public class XmlConfigurationPersister implements NewConfigurationPersister {
                 input.close();
                 fis.close();
             } finally {
-                StreamUtils.safeClose(fis);
+                safeClose(fis);
             }
         } catch (Exception e) {
             throw new ConfigurationPersistenceException("Failed to parse configuration", e);
         }
         return updates;
+    }
+
+    private static void safeClose(final Closeable closeable) {
+        if (closeable != null) try {
+            closeable.close();
+        } catch (Throwable t) {
+            log.errorf(t, "Failed to close resource %s", closeable);
+        }
     }
 }
