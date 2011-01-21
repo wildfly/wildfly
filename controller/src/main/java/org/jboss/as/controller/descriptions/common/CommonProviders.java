@@ -38,6 +38,14 @@ public final class CommonProviders {
     // Prevent instantiation
     private CommonProviders() {}
 
+
+    public static final DescriptionProvider EXTENSION_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ExtensionDescription.getExtensionDescription(locale);
+        }
+    };
+
     /**
      * Provider for a sub-model that names a "path" but doesn't require
      * the actual path to be specified.
