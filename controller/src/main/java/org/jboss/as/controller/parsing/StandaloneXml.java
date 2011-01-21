@@ -23,7 +23,6 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -36,7 +35,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -65,9 +63,6 @@ public class StandaloneXml extends CommonXml {
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList) throws XMLStreamException {
         final ModelNode address = new ModelNode().setEmptyList();
-        if (reader.nextTag() != START_ELEMENT) {
-            throw unexpectedEndElement(reader);
-        }
         if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0 || Element.forName(reader.getLocalName()) != Element.SERVER) {
             throw unexpectedElement(reader);
         }
@@ -158,24 +153,24 @@ public class StandaloneXml extends CommonXml {
             throw unexpectedElement(reader);
         }
 
-        for (;;) {
-            switch (reader.nextTag()) {
-                case START_ELEMENT: {
-                    readHeadComment(reader, address, list);
-                    if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-                        throw unexpectedElement(reader);
-                    }
-                    switch (Element.forName(reader.getLocalName())) {
-                        default: throw unexpectedElement(reader);
-                    }
-                }
-                case END_ELEMENT: {
-                    readTailComment(reader, address, list);
-                    return;
-                }
-                default: throw new IllegalStateException();
-            }
-        }
+//        for (;;) {
+//            switch (reader.nextTag()) {
+//                case START_ELEMENT: {
+//                    readHeadComment(reader, address, list);
+//                    if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+//                        throw unexpectedElement(reader);
+//                    }
+//                    switch (Element.forName(reader.getLocalName())) {
+//                        default: throw unexpectedElement(reader);
+//                    }
+//                }
+//                case END_ELEMENT: {
+//                    readTailComment(reader, address, list);
+//                    return;
+//                }
+//                default: throw new IllegalStateException();
+//            }
+//        }
     }
 
     private void parseServerDeployments(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
