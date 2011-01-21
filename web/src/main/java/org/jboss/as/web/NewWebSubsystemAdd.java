@@ -87,7 +87,10 @@ class NewWebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandl
             ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultHost));
         }
 
-        updateContext.getSubModel().get(CommonAttributes.CONTAINER_CONFIG).set(config);
+        final ModelNode subModel = updateContext.getSubModel();
+        subModel.get(CommonAttributes.CONTAINER_CONFIG).set(config);
+        subModel.get(CommonAttributes.CONNECTOR).setEmptyList();
+        subModel.get(CommonAttributes.VIRTUAL_SERVER).setEmptyList();
 
         resultHandler.handleResultComplete(compensatingOperation);
 
