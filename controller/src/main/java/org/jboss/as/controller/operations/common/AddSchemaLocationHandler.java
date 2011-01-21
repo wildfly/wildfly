@@ -96,7 +96,7 @@ public class AddSchemaLocationHandler implements ModelUpdateOperationHandler, De
     private String validate(ModelNode param, ModelNode locations) {
         String failure = typeValidator.validateParameter(SCHEMA_LOCATION, param);
         String uri = param.asProperty().getName();
-        if (failure == null && !locations.isDefined()) {
+        if (failure == null && locations.isDefined()) {
             for (ModelNode node : locations.asList()) {
                 if (uri.equals(node.asProperty().getName())) {
                     failure = "Schema with URI " + uri + " already registered with location " + node.asProperty().getValue().asString();

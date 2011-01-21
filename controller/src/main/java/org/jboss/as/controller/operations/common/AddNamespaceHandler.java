@@ -96,7 +96,7 @@ public class AddNamespaceHandler implements ModelUpdateOperationHandler, Descrip
     private String validate(ModelNode param, ModelNode namespaces) {
         String failure = typeValidator.validateParameter(NAMESPACE, param);
         String name = param.asProperty().getName();
-        if (failure == null && !namespaces.isDefined()) {
+        if (failure == null && namespaces.isDefined()) {
             for (ModelNode node : namespaces.asList()) {
                 if (name.equals(node.asProperty().getName())) {
                     failure = "Namespace with prefix " + name + " already registered with schema URI " + node.asProperty().getValue().asString();
