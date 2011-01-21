@@ -24,7 +24,8 @@ package org.jboss.as.threads;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.threads.Constants.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.Constants.BLOCKING;
 import static org.jboss.as.threads.Constants.CORE_THREADS_COUNT;
@@ -81,8 +82,8 @@ public class NewBoundedQueueThreadPoolRemove implements RuntimeOperationHandler,
 
         // Compensating is add
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set(ADD);
+        compensating.get(OP_ADDR).set(operation.require(ADDRESS));
+        compensating.get(OP).set(ADD);
         compensating.get(NAME).set(name);
         if (model.has(THREAD_FACTORY)) {
             compensating.get(THREAD_FACTORY).set(model.get(THREAD_FACTORY));

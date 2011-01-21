@@ -23,7 +23,8 @@ package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_DURATION;
 import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_UNIT;
@@ -90,8 +91,8 @@ public class NewUnboundedQueueThreadPoolAdd implements RuntimeOperationHandler, 
 
         // Compensating is remove
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set(REMOVE);
+        compensating.get(OP_ADDR).set(operation.require(ADDRESS));
+        compensating.get(OP).set(REMOVE);
         resultHandler.handleResultComplete(compensating);
 
         return Cancellable.NULL;

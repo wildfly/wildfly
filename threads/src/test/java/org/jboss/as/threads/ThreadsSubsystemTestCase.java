@@ -26,7 +26,6 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -34,8 +33,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -768,13 +768,13 @@ public class ThreadsSubsystemTestCase {
 
     private ModelNode createOperation(String operationName, String...address) {
         ModelNode operation = new ModelNode();
-        operation.get(OPERATION_NAME).set(operationName);
+        operation.get(OP).set(operationName);
         if (address.length > 0) {
             for (String addr : address) {
-                operation.get(ADDRESS).add(addr);
+                operation.get(OP_ADDR).add(addr);
             }
         } else {
-            operation.get(ADDRESS).setEmptyList();
+            operation.get(OP_ADDR).setEmptyList();
         }
 
         return operation;
@@ -817,6 +817,7 @@ public class ThreadsSubsystemTestCase {
         @Override
         public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
             return new SubsystemRegistration() {
+                @Override
                 public ModelNodeRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
                     if (descriptionProvider == null) {
                         throw new IllegalArgumentException("descriptionProvider is null");
@@ -826,6 +827,7 @@ public class ThreadsSubsystemTestCase {
                     return createdRegistration;
                 }
 
+                @Override
                 public ModelNodeRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                     throw new IllegalStateException("Not implemented");
                 }

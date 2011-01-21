@@ -29,7 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
@@ -71,6 +71,7 @@ class NewRemotingSubsystemProviders {
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -92,11 +93,12 @@ class NewRemotingSubsystemProviders {
 
     static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION).set("add");
+            operation.get(OPERATION_NAME).set("add");
             operation.get(REQUEST_PROPERTIES, THREAD_POOL, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, THREAD_POOL, DESCRIPTION).set(bundle.getString("remoting.thread-pool"));
             operation.get(REQUEST_PROPERTIES, THREAD_POOL, REQUIRED).set(true);
@@ -107,11 +109,12 @@ class NewRemotingSubsystemProviders {
 
     static final DescriptionProvider CONNECTOR_ADD = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION).set("add-connector");
+            operation.get(OPERATION_NAME).set("add-connector");
 
             operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("remoting.connector.name"));
@@ -133,11 +136,12 @@ class NewRemotingSubsystemProviders {
 
     static final DescriptionProvider CONNECTOR_REMOVE = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION).set("remove-connector");
+            operation.get(OPERATION_NAME).set("remove-connector");
 
             operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("remoting.connector.name"));
@@ -149,6 +153,7 @@ class NewRemotingSubsystemProviders {
 
     static final DescriptionProvider CONNECTOR_SPEC = new DescriptionProvider( ) {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             return getConnectorDescription(bundle);

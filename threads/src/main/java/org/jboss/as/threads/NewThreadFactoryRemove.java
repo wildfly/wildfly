@@ -24,7 +24,8 @@ package org.jboss.as.threads;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.threads.Constants.GROUP_NAME;
 import static org.jboss.as.threads.Constants.PRIORITY;
 import static org.jboss.as.threads.Constants.PROPERTIES;
@@ -70,8 +71,8 @@ public class NewThreadFactoryRemove implements RuntimeOperationHandler, ModelRem
 
 
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set(ADD);
+        compensating.get(OP_ADDR).set(operation.require(ADDRESS));
+        compensating.get(OP).set(ADD);
         compensating.get(NAME).set(name);
         compensating.get(GROUP_NAME).set(threadFactory.get(GROUP_NAME));
         compensating.get(THREAD_NAME_PATTERN).set(threadFactory.get(THREAD_NAME_PATTERN));

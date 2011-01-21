@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -257,10 +256,11 @@ class NewThreadsSubsystemProviders {
     //Operations
     static final DescriptionProvider SUBSYSTEM_ADD_DESC = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION).set("add");
+            operation.get(OPERATION_NAME).set("add");
             operation.get(DESCRIPTION).set(bundle.getString("threads.add"));
             operation.get(REQUEST_PROPERTIES).setEmptyObject();
             operation.get(REPLY_PROPERTIES).setEmptyObject();

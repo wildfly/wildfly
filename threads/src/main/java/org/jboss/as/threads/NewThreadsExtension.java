@@ -23,7 +23,7 @@ package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.model.ParseUtils.invalidAttributeValue;
@@ -143,10 +143,12 @@ public class NewThreadsExtension implements NewExtension {
         static final NewThreadsSubsystemParser INSTANCE = new NewThreadsSubsystemParser();
 
         /** {@inheritDoc} */
+        @Override
         public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
 
         }
 
+        @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
             // FIXME this should come from somewhere
@@ -158,7 +160,7 @@ public class NewThreadsExtension implements NewExtension {
             address.protect();
 
             final ModelNode subsystem = new ModelNode();
-            subsystem.get(OPERATION_NAME).set(ADD);
+            subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).set(address);
             list.add(subsystem);
 
@@ -206,7 +208,7 @@ public class NewThreadsExtension implements NewExtension {
             final ModelNode op = new ModelNode();
             list.add(op);
 
-            op.get(OPERATION_NAME).set(ADD);
+            op.get(OP).set(ADD);
 
 
             String name = null;
@@ -281,7 +283,7 @@ public class NewThreadsExtension implements NewExtension {
         void parseBoundedQueueThreadPool(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
             final ModelNode op = new ModelNode();
             list.add(op);
-            op.get(OPERATION_NAME).set(ADD);
+            op.get(OP).set(ADD);
 
             String name = null;
             int count = reader.getAttributeCount();
@@ -391,7 +393,7 @@ public class NewThreadsExtension implements NewExtension {
         void parseUnboundedQueueThreadPool(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
             final ModelNode op = new ModelNode();
             list.add(op);
-            op.get(OPERATION_NAME).set(ADD);
+            op.get(OP).set(ADD);
 
             String name = null;
             int count = reader.getAttributeCount();
@@ -468,7 +470,7 @@ public class NewThreadsExtension implements NewExtension {
         void parseScheduledThreadPool(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
             final ModelNode op = new ModelNode();
             list.add(op);
-            op.get(OPERATION_NAME).set(ADD);
+            op.get(OP).set(ADD);
 
             String name = null;
             int count = reader.getAttributeCount();
@@ -545,7 +547,7 @@ public class NewThreadsExtension implements NewExtension {
         void parseQueuelessThreadPool(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
             final ModelNode op = new ModelNode();
             list.add(op);
-            op.get(OPERATION_NAME).set(ADD);
+            op.get(OP).set(ADD);
 
             String name = null;
             int count = reader.getAttributeCount();

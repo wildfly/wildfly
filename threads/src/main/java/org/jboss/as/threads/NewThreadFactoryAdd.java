@@ -23,7 +23,8 @@ package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.threads.Constants.GROUP_NAME;
 import static org.jboss.as.threads.Constants.PRIORITY;
@@ -112,8 +113,8 @@ public class NewThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOpe
 
         // Compensating is remove
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set(REMOVE);
+        compensating.get(OP_ADDR).set(operation.require(ADDRESS));
+        compensating.get(OP).set(REMOVE);
         compensating.get(NAME).set(name);
         resultHandler.handleResultComplete(compensating);
 

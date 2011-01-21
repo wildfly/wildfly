@@ -23,7 +23,8 @@
 package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.threads.Constants.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.Constants.QUEUELESS_THREAD_POOL;
 import static org.jboss.as.threads.Constants.SCHEDULED_THREAD_POOL;
@@ -47,6 +48,7 @@ class NewThreadsSubsystemAdd implements ModelAddOperationHandler {
     static final OperationHandler INSTANCE = new NewThreadsSubsystemAdd();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         context.getSubModel().get(BOUNDED_QUEUE_THREAD_POOL).setEmptyObject();
@@ -57,8 +59,8 @@ class NewThreadsSubsystemAdd implements ModelAddOperationHandler {
 
         // Compensating is remove
         final ModelNode compensating = new ModelNode();
-        compensating.get(ADDRESS).set(operation.require(ADDRESS));
-        compensating.get(OPERATION).set("remove");
+        compensating.get(OP_ADDR).set(operation.require(ADDRESS));
+        compensating.get(OP).set("remove");
 
         resultHandler.handleResultComplete(compensating);
 
