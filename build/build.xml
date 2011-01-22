@@ -126,6 +126,10 @@
             <maven-resource group="javax.mail" artifact="mail"/>
         </module-def>
 
+        <module-def name="javax.persistence.api">
+            <maven-resource group="org.hibernate.java-persistence" artifact="jpa-api"/>
+        </module-def>
+
         <module-def name="javax.resource.api">
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-spec-api"/>
         </module-def>
@@ -293,6 +297,10 @@
 
         <module-def name="org.jboss.as.jmx">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jpa">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa"/>
         </module-def>
 
         <module-def name="org.jboss.as.logging">

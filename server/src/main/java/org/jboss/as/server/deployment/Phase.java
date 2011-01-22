@@ -215,6 +215,7 @@ public enum Phase {
     public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1500;
     public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1600;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x1700;
+    public static final int PARSE_PERSISTENTUNIT                        = 0x1800;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
