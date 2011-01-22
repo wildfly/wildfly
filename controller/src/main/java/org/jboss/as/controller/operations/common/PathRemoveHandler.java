@@ -55,7 +55,7 @@ public class PathRemoveHandler implements ModelAddOperationHandler, DescriptionP
     public static final PathRemoveHandler INSTANCE = new PathRemoveHandler();
 
     /**
-     * Create the AbstractAddExtensionHandler
+     * Create the PathRemoveHandler
      */
     protected PathRemoveHandler() {
     }

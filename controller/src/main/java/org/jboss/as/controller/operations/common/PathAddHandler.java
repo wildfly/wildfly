@@ -71,7 +71,7 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
     private final ModelTypeValidator relativeToValidator = new ModelTypeValidator(ModelType.STRING, true);
 
     /**
-     * Create the AbstractAddExtensionHandler
+     * Create the PathAddHandler
      */
     protected PathAddHandler(boolean specified) {
         this.specified = specified;
@@ -113,7 +113,7 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return specified ? PathDescription.getSpecifiedPathDescription(locale) : PathDescription.getNamedPathAddOperation(locale);
+        return specified ? PathDescription.getSpecifiedPathAddOperation(locale) : PathDescription.getNamedPathAddOperation(locale);
     }
 
     protected void installPath(String name, String path, String relativeTo, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {

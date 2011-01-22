@@ -60,7 +60,7 @@ public class PathDescription {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("named_path"));
-        populatePath(root, bundle);
+        populatePath(root, bundle, false);
         return root;
     }
 
@@ -69,11 +69,11 @@ public class PathDescription {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("specified_path"));
-        populatePath(root, bundle);
+        populatePath(root, bundle, true);
         return root;
     }
 
-    private static void populatePath(ModelNode root, ResourceBundle bundle) {
+    private static void populatePath(ModelNode root, ResourceBundle bundle, boolean specified) {
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
@@ -83,7 +83,7 @@ public class PathDescription {
         root.get(ATTRIBUTES, NAME, TAIL_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, PATH, TYPE).set(ModelType.STRING);
         root.get(ATTRIBUTES, PATH, DESCRIPTION).set(bundle.getString("path.path"));
-        root.get(ATTRIBUTES, PATH, REQUIRED).set(false);
+        root.get(ATTRIBUTES, PATH, REQUIRED).set(specified);
         root.get(ATTRIBUTES, PATH, MIN_LENGTH).set(1);
         root.get(ATTRIBUTES, PATH, HEAD_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, PATH, TAIL_COMMENT_ALLOWED).set(false);
