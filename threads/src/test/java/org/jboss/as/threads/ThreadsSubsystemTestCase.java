@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -120,7 +121,7 @@ public class ThreadsSubsystemTestCase {
     public void setup() throws Exception {
         model = new ModelNode();
         controller = new TestController();
-        model.get("profile", "test", "subsystem", "threads");
+        model.get("profile", "test", "subsystem");
 
         final ModelNodeRegistration testProfileRegistration = controller.getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
@@ -270,7 +271,7 @@ public class ThreadsSubsystemTestCase {
         assertNotNull(compensating);
         handler.clear();
         controller.execute(compensating, handler);
-
+        assertNull(handler.failureDescription);
         checkFullTreadFactory();
     }
 

@@ -22,7 +22,10 @@
 
 package org.jboss.as.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -124,8 +127,12 @@ public class BasicModelController implements ModelController {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
             final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
+            if (operationHandler == null) {
+                throw new IllegalStateException("No handler for " + operationName + " at address " + address);
+            }
             final ModelNode subModel;
             if (operationHandler instanceof ModelAddOperationHandler) {
+                validateNewAddress(address);
                 subModel = new ModelNode();
             } else if (operationHandler instanceof ModelQueryOperationHandler) {
                 // or model update operation handler...
@@ -136,6 +143,7 @@ public class BasicModelController implements ModelController {
             } else {
                 subModel = null;
             }
+
             final NewOperationContext context = getOperationContext(subModel, operation, operationHandler);
             // TODO: do not persist during boot!
             final ResultHandler useHandler = (operationHandler instanceof ModelUpdateOperationHandler) ? new ResultHandler() {
@@ -285,6 +293,44 @@ public class BasicModelController implements ModelController {
             if (intr) {
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    /**
+     * Validates that it is valid to add a resource to the model at the given
+     * address. Confirms that:
+     *
+     * <ol>
+     * <li>No resource already exists at that address</li>
+     * <li>All ancestor resources do exist.</li>
+     * </ol>
+     *
+     * @param address the address. Cannot be {@code null}
+     *
+     * @throws IllegalStateException if the resource already exists or ancestor resources are missing
+     */
+    private void validateNewAddress(PathAddress address) {
+        if (address.size() == 0) {
+            throw new IllegalStateException("Resource at address " + address + " already exists");
+        }
+        ModelNode node = this.model;
+        List<PathElement> elements = new ArrayList<PathElement>();
+        for (PathElement element : address.subAddress(0, address.size() - 1)) {
+            try {
+                elements.add(element);
+                node = node.require(element.getKey()).require(element.getValue());
+            }
+            catch (NoSuchElementException nsee) {
+                PathAddress ancestor = PathAddress.pathAddress(elements);
+                throw new IllegalStateException("Cannot add resource at address " + address + " because ancestor resource " + ancestor + " does not exist");
+            }
+        }
+        PathElement last = address.getLastElement();
+        if (!node.has(last.getKey())) {
+            throw new IllegalStateException("Cannot add resource at address " + address + " because parent resource does not have child " + last.getKey());
+        }
+        else if (node.get(last.getKey()).has(last.getValue()) && node.get(last.getKey()).get(last.getValue()).isDefined()) {
+            throw new IllegalStateException("Resource at address " + address + " already exists");
         }
     }
 }
