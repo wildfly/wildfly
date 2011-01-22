@@ -144,10 +144,6 @@ public class DomainRootDescription {
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
         op = PathDescription.getPathRemoveOperation(null);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = PathDescription.getSetNamedPathOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = PathDescription.getSetRelativeToOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
         System.out.println(root);
     }
 

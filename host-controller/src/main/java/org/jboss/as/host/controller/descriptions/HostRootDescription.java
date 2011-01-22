@@ -210,10 +210,6 @@ public class HostRootDescription {
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
         op = PathDescription.getPathRemoveOperation(null);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = PathDescription.getSetSpecifiedPathOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = PathDescription.getSetRelativeToOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
         op = getStartServerOperation(null);
         root.get(OPERATIONS, op.get("operation-name").asString()).set(op);
         op = getRestartServerOperation(null);

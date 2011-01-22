@@ -60,4 +60,9 @@
         <extension module="org.jboss.as.web" />
         <!--<extension module="org.jboss.as.security"/>-->
     </extensions>
+    
+    <paths>
+       <path name="absolute" path="tmp"/>
+       <path name="relative" path="relative" relative-to="absolute"/>
+    </paths>
 </server>

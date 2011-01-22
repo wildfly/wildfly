@@ -51,7 +51,7 @@ import org.jboss.dmr.ModelType;
  */
 public class PathDescription {
 
-    private static final String RELATIVE_TO = "relative-to";
+    public static final String RELATIVE_TO = "relative-to";
 
     private static final String RESOURCE_NAME = PathDescription.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -60,6 +60,20 @@ public class PathDescription {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("named_path"));
+        populatePath(root, bundle);
+        return root;
+    }
+
+    public static ModelNode getSpecifiedPathDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("specified_path"));
+        populatePath(root, bundle);
+        return root;
+    }
+
+    private static void populatePath(ModelNode root, ResourceBundle bundle) {
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
@@ -79,48 +93,7 @@ public class PathDescription {
         root.get(ATTRIBUTES, RELATIVE_TO, HEAD_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, RELATIVE_TO, TAIL_COMMENT_ALLOWED).set(false);
         root.get(OPERATIONS).setEmptyObject();
-        return root;
-    }
 
-    public static ModelNode getSpecifiedPathDescription(final Locale locale) {
-        final ModelNode root = getNamedPathDescription(locale);
-        root.get(ATTRIBUTES, PATH, REQUIRED).set(true);
-        return root;
-    }
-
-    public static ModelNode getSetNamedPathOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set("setPath");
-        root.get(DESCRIPTION).set(bundle.getString("path.setPath"));
-        root.get(REQUEST_PROPERTIES, PATH, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, PATH, DESCRIPTION).set(bundle.getString("path.setPath.path"));
-        root.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, PATH, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, PATH, NILLABLE).set(true);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return root;
-    }
-
-    public static ModelNode getSetSpecifiedPathOperation(final Locale locale) {
-        final ModelNode root = getSetNamedPathOperation(locale);
-        root.get(REQUEST_PROPERTIES).get(PATH).get(NILLABLE).set(false);
-        return root;
-    }
-
-    public static ModelNode getSetRelativeToOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set("setRelativeTo");
-        root.get(DESCRIPTION).set(bundle.getString("path.setRelativeTo"));
-        root.get(REQUEST_PROPERTIES, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, RELATIVE_TO, DESCRIPTION).set(bundle.getString("path.setRelativeTo.relative-to"));
-        root.get(REQUEST_PROPERTIES, RELATIVE_TO, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, RELATIVE_TO, NILLABLE).set(true);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return root;
     }
 
     public static ModelNode getNamedPathAddOperation(final Locale locale) {
@@ -128,11 +101,6 @@ public class PathDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(ADD);
         root.get(DESCRIPTION).set(bundle.getString("path.add"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("path.add.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
         root.get(REQUEST_PROPERTIES, PATH, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, PATH, DESCRIPTION).set(bundle.getString("path.add.path"));
         root.get(REQUEST_PROPERTIES, PATH, REQUIRED).set(false);
@@ -158,11 +126,7 @@ public class PathDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(REMOVE);
         root.get(DESCRIPTION).set(bundle.getString("path.remove"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("path.remove.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
@@ -172,5 +136,16 @@ public class PathDescription {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+    }
+
+    public static void main(String[] args) {
+        ModelNode node = getNamedPathDescription(null);
+        node.get(OPERATIONS, ADD).set(getNamedPathAddOperation(null));
+        node.get(OPERATIONS, REMOVE).set(getPathRemoveOperation(null));
+        System.out.println(node);
+        node = getSpecifiedPathDescription(null);
+        node.get(OPERATIONS, ADD).set(getSpecifiedPathAddOperation(null));
+        node.get(OPERATIONS, REMOVE).set(getPathRemoveOperation(null));
+        System.out.println(node);
     }
 }
