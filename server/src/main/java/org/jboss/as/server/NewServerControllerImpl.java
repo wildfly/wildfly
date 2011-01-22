@@ -35,8 +35,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicStampedReference;
+
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.NewExtensionContextImpl;
@@ -46,9 +50,9 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
@@ -77,7 +81,8 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     private final ServiceContainer container;
     private final ServiceRegistry serviceRegistry;
     private final ServerEnvironment serverEnvironment;
-    private volatile State state;
+    private final AtomicInteger stamp = new AtomicInteger(0);
+    private final AtomicStampedReference<State> state = new AtomicStampedReference<State>(null, 0);
 
     NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment, final NewConfigurationPersister configurationPersister) {
         super(configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
@@ -87,7 +92,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     }
 
     void init() {
-        state = State.STARTING;
+        state.set(State.STARTING, stamp.incrementAndGet());
 
         createCoreModel();
         // Build up the core model registry
@@ -128,7 +133,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     }
 
     void finishBoot() {
-        state = State.RUNNING;
+        state.set(State.RUNNING, stamp.incrementAndGet());
     }
 
     /** {@inheritDoc} */
@@ -154,20 +159,20 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
      */
     @Override
     public State getState() {
-        return state;
+        return state.getReference();
     }
 
     /** {@inheritDoc} */
     @Override
     protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
         if (operationHandler instanceof BootOperationHandler) {
-            if (state == State.STARTING) {
+            if (getState() == State.STARTING) {
                 return new BootContextImpl(subModel, getRegistry());
             } else {
-                state = State.RESTART_REQUIRED;
+                state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
                 return super.getOperationContext(subModel, operation, operationHandler);
             }
-        } else if (operationHandler instanceof RuntimeOperationHandler && ! (state == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
+        } else if (operationHandler instanceof RuntimeOperationHandler && ! (getState() == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
             return new RuntimeContextImpl(subModel, getRegistry());
         } else {
             return super.getOperationContext(subModel, operation, operationHandler);
@@ -190,12 +195,65 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     @Override
     protected void persistConfiguration(final ModelNode model) {
         // do not persist during startup
-        if (state != State.STARTING) {
+        if (getState() != State.STARTING) {
             super.persistConfiguration(model);
         }
     }
 
-    private class BootContextImpl extends NewOperationContextImpl implements NewBootOperationContext {
+    private class ServerOperationContextImpl extends NewOperationContextImpl implements NewServerOperationContext {
+
+        // -1 as initial value ensures the CAS in revertRestartRequired()
+        // will never succeed unless restartRequired() is called
+        private int ourStamp = -1;
+
+        public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel) {
+            super(controller, registry, subModel);
+        }
+
+        @Override
+        public NewServerController getController() {
+            return (NewServerController) super.getController();
+        }
+
+        @Override
+        public ServiceTarget getServiceTarget() {
+            // TODO: A tracking service listener which will somehow call complete when the operation is done
+            return container;
+        }
+
+        @Override
+        public ServiceRegistry getServiceRegistry() {
+            return serviceRegistry;
+        }
+
+        @Override
+        public synchronized void restartRequired() {
+            AtomicStampedReference<State> stateRef = NewServerControllerImpl.this.state;
+            int newStamp = NewServerControllerImpl.this.stamp.incrementAndGet();
+            int[] receiver = new int[1];
+            // Keep trying until stateRef is RESTART_REQUIRED with our stamp
+            for (;;) {
+                State was = stateRef.get(receiver);
+                if (was == State.STARTING) {
+                    break;
+                }
+                if (stateRef.compareAndSet(was, State.RESTART_REQUIRED, receiver[0], newStamp)) {
+                    ourStamp = newStamp;
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public synchronized void revertRestartRequired() {
+            // If 'state' still has the state we last set in restartRequired(), change to RUNNING
+            NewServerControllerImpl.this.state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING,
+                        ourStamp, NewServerControllerImpl.this.stamp.incrementAndGet());
+        }
+
+    }
+
+    private class BootContextImpl extends ServerOperationContextImpl implements NewBootOperationContext {
 
         private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
             super(NewServerControllerImpl.this, registry, subModel);
@@ -204,44 +262,12 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         @Override
         public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
         }
-
-        @Override
-        public NewServerController getController() {
-            return (NewServerController) super.getController();
-        }
-
-        @Override
-        public ServiceTarget getServiceTarget() {
-            // TODO: A tracking service listener which will somehow call complete when the operation is done
-            return container;
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry() {
-            return serviceRegistry;
-        }
     }
 
-    private class RuntimeContextImpl extends NewOperationContextImpl implements NewRuntimeOperationContext {
+    private class RuntimeContextImpl extends ServerOperationContextImpl implements NewRuntimeOperationContext {
 
         private RuntimeContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
             super(NewServerControllerImpl.this, registry, subModel);
-        }
-
-        @Override
-        public NewServerController getController() {
-            return (NewServerController) super.getController();
-        }
-
-        @Override
-        public ServiceTarget getServiceTarget() {
-            // TODO: A tracking service listener which will somehow call complete when the operation is done
-            return container;
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry() {
-            return serviceRegistry;
         }
     }
 }
