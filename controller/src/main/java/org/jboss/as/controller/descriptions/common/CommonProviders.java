@@ -66,4 +66,55 @@ public final class CommonProviders {
             return PathDescription.getSpecifiedPathDescription(locale);
         }
     };
+
+    public static final DescriptionProvider READ_RESOURCE_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getReadResourceOperationDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider READ_ATTRIBUTE_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getReadAttributeOperationDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider WRITE_ATTRIBUTE_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getWriteAttributeOperationDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider READ_CHILDREN_NAMES_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getReadChildrenNamesOperationDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider READ_OPERATION_NAMES_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getReadOperationNamesOperation(locale);
+        }
+    };
+
+    public static final DescriptionProvider READ_OPERATION_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getReadOperationOperation(locale);
+        }
+    };
+
+    public static final DescriptionProvider READ_RESOURCE_DESCRIPTION_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getReadResourceDescriptionOperationDescription(locale);
+        }
+    };
+
+
 }
