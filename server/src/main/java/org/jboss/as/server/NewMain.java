@@ -27,15 +27,19 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -170,5 +174,20 @@ public final class NewMain {
         }
 
         return url;
+    }
+
+    /** Disables store() until marshallers are written */
+    private static class TempHackConfigurationPersister extends BackupXmlConfigurationPersister {
+
+        public TempHackConfigurationPersister(File fileName, QName rootElement,
+                XMLElementReader<List<ModelNode>> rootParser, XMLElementWriter<ModelNode> rootDeparser) {
+            super(fileName, rootElement, rootParser, rootDeparser);
+        }
+
+        @Override
+        public void store(ModelNode model) throws ConfigurationPersistenceException {
+            return;
+        }
+
     }
 }

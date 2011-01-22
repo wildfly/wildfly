@@ -43,10 +43,9 @@
                             urn:jboss:domain:security:1.0 jboss-security.xsd
                             urn:jboss:domain:webservices:1.0 jboss-webservices.xsd
                             urn:jboss:domain:weld:1.0 jboss-weld.xsd">
-
     <extensions>
         <extension module="org.jboss.as.arquillian.service"/>
-        <extension module="org.jboss.as.connector"/>
+        <!--<extension module="org.jboss.as.connector"/>-->
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
@@ -54,16 +53,15 @@
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
-        <extension module="org.jboss.as.naming"/>
-        <extension module="org.jboss.as.osgi"/>
+        <!--<extension module="org.jboss.as.naming"/>
+        <extension module="org.jboss.as.osgi"/>-->
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
-        <extension module="org.jboss.as.transactions"/>
+        <!--<extension module="org.jboss.as.transactions"/>-->
         <extension module="org.jboss.as.web" />
-        <extension module="org.jboss.as.webservices" />
-        <extension module="org.jboss.as.weld" />
+        <!--<extension module="org.jboss.as.security"/>-->
     </extensions>
     
     <paths>
