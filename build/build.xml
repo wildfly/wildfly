@@ -144,6 +144,10 @@
             <maven-resource group="javax.mail" artifact="mail"/>
         </module-def>
 
+        <module-def name="javax.persistence.api">
+            <maven-resource group="org.hibernate.java-persistence" artifact="jpa-api"/>
+        </module-def>
+
         <module-def name="javax.resource.api">
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-spec-api"/>
         </module-def>
@@ -279,8 +283,39 @@
 
         <module-def name="org.apache.commons.logging"/>
 
+        <module-def name="org.hibernate.hibernate">
+            <maven-resource group="org.hibernate" artifact="hibernate-core" />
+            <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
+            <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
+        </module-def>
+
+
         <module-def name="javax.persistence.api">
             <maven-resource group="org.hibernate.javax.persistence" artifact="hibernate-jpa-2.0-api" />
+        </module-def>
+
+        <module-def name="commons-collections.commons-collections">
+            <maven-resource group="commons-collections" artifact="commons-collections" />
+        </module-def>
+
+        <module-def name="antlr.antlr">
+            <maven-resource group="antlr" artifact="antlr" />
+        </module-def>
+
+        <module-def name="asm.asm">
+            <maven-resource group="asm" artifact="asm" />
+        </module-def>
+
+        <module-def name="cglib.cglib">
+            <maven-resource group="cglib" artifact="cglib" />
+        </module-def>
+
+        <module-def name="dom4j.dom4j">
+            <maven-resource group="dom4j" artifact="dom4j" />
+        </module-def>
+
+    	<module-def name="org.apache.ant">
+            <maven-resource group="org.apache.ant" artifact="ant"/>
         </module-def>
 
     	<module-def name="org.apache.ws.commons.xmlschema">
@@ -410,6 +445,10 @@
 
         <module-def name="org.jboss.as.jmx">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jpa">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa"/>
         </module-def>
 
         <module-def name="org.jboss.as.logging">
@@ -778,6 +817,10 @@
 
         <module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="picketbox"/>
+        </module-def>
+
+        <module-def name="org.slf4j.slf4j-api">
+            <maven-resource group="org.slf4j" artifact="slf4j-api"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">

@@ -224,6 +224,7 @@ public enum Phase {
     public static final int PARSE_WEBSERVICES_XML                       = 0x1900;
     public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x1A00;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x1B00;
+    public static final int PARSE_PERSISTENCE_UNIT                      = 0x1C00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -242,6 +243,7 @@ public enum Phase {
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0xE00;
     // Sets up appropriate module dependencies for EJB deployments
     public static final int DEPENDENCIES_EJB                            = 0xF00;
+    public static final int DEPENDENCIES_JPA                            = 0x1000;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_SPEC                       = 0x100;
@@ -271,6 +273,8 @@ public enum Phase {
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x1000;
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x1100;
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x1200;
+    public static final int POST_PERSISTENCE_ANNOTATION                 = 0x1F00; // TODO: move back to PARSE when
+                                                                                  // Stuart moves the other POST entries.
 
     // INSTALL
     public static final int INSTALL_EAR_AGGREGATE_COMPONENT_INDEX       = 0x0000;
@@ -296,6 +300,7 @@ public enum Phase {
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1400;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1500;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1600;
+    public static final int INSTALL_PERSISTENTUNIT                      = 0x1700;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;

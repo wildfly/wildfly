@@ -53,10 +53,16 @@
         <maven.min.version>3.0-beta-1</maven.min.version>
 
         <!-- Dependency versions. Please keep alphabetical -->
+
         <version.ch.qos.cal10n.cal10n-api>0.7.2</version.ch.qos.cal10n.cal10n-api>
+        <version.antlr>2.7.6-brew</version.antlr>
+        <version.asm>2.2.3</version.asm>
+        <version.cglib>2.1_3</version.cglib>
+        <version.commons-collections>3.1</version.commons-collections>
         <version.com.google.guava>r06</version.com.google.guava>
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
         <version.com.sun.httpserver>20100812-JBoss</version.com.sun.httpserver>
+        <version.dom4j>1.6.1</version.dom4j>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-api>2.0.4-b09</version.javax.faces.jsf-api>
@@ -71,6 +77,7 @@
         <version.junit>4.8.1</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
+        <version.org.apache.ant>1.7.1</version.org.apache.ant>
         <version.org.apache.cxf>2.3.1</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.3.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
@@ -78,6 +85,10 @@
         <version.org.apache.neethi>2.0.4</version.org.apache.neethi>
         <version.org.apache.xalan>2.7.1-1.jbossorg</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
+        <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
+        <version.org.hibernate.jpa-api>2.0-cr-1</version.org.hibernate.jpa-api>
+        <version.org.hibernate>3.6.1.Final</version.org.hibernate>
+        <version.org.hibernate.commons.annotations>3.2.0.Final</version.org.hibernate.commons.annotations>
         <version.org.apache.ws.commons.xmlschema>1.4.5</version.org.apache.ws.commons.xmlschema>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
@@ -182,6 +193,7 @@
         <module>host-controller</module>
         <module>jaxrs</module>
         <module>jmx</module>
+        <module>jpa</module>
         <module>logging</module>
         <module>managedbeans</module>
         <module>mc</module>
@@ -377,6 +389,36 @@
             <!-- Modules in this project -->
 
             <dependency>
+                <groupId>antlr</groupId>
+                <artifactId>antlr</artifactId>
+                <version>${version.antlr}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${version.asm}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>${version.cglib}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${version.commons-collections}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dom4j</groupId>
+                <artifactId>dom4j</artifactId>
+                <version>${version.dom4j}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.aries.jmx</groupId>
                 <artifactId>org.apache.aries.jmx</artifactId>
                 <version>${version.org.apache.aries.jmx}</version>
@@ -404,6 +446,19 @@
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
                 <version>${version.org.apache.xerces}</version>
+            </dependency>
+
+            <dependency>
+
+               <groupId>org.apache.ant</groupId>
+               <artifactId>ant</artifactId>
+               <version>${version.org.apache.ant}</version>
+           </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-security</artifactId>
+                <version>${version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>xml-apis</groupId>
@@ -2499,6 +2554,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.jbossts</groupId>
                 <artifactId>jbossjts</artifactId>
                 <version>${version.org.jboss.jbossts.jbossjts}</version>
@@ -3598,6 +3659,70 @@
                 <groupId>org.jboss.ws.projects</groupId>
                 <artifactId>jaxws-httpserver-httpspi</artifactId>
                 <version>${version.org.jboss.ws.jaxws-httpserver-httpspi}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.java-persistence</groupId>
+                <artifactId>jpa-api</artifactId>
+                <version>${version.org.hibernate.jpa-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${version.org.hibernate}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.transaction</groupId>
+                        <artifactId>jta</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+           <dependency>
+               <groupId>org.hibernate</groupId>
+               <artifactId>hibernate-commons-annotations</artifactId>
+               <version>${version.org.hibernate.commons.annotations}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.hibernate</groupId>
+              <artifactId>hibernate-entitymanager</artifactId>
+              <version>${version.org.hibernate}</version>
+	      <exclusions>
+        	<exclusion>
+	          <groupId>org.hibernate</groupId>
+                  <artifactId>ejb3-persistence</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate</artifactId>
+                </exclusion>
+              <exclusion>
+                <groupId>javax.transaction</groupId>
+                <artifactId>jta</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.hibernate.javax.persistence</groupId>
+                <artifactId>hibernate-jpa-2.0-api</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+              </exclusion>
+            </exclusions>
             </dependency>
 
             <dependency>
