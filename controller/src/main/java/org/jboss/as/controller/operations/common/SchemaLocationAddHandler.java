@@ -36,33 +36,32 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 
 /**
- * Handler for the root resource remove-schema-location operation.
+ * Handler for the root resource add-schema-location operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class RemoveSchemaLocationHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class SchemaLocationAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "remove-schema-location";
+    public static final String OPERATION_NAME = "add-schema-location";
 
-    public static final RemoveSchemaLocationHandler INSTANCE = new RemoveSchemaLocationHandler();
+    public static final SchemaLocationAddHandler INSTANCE = new SchemaLocationAddHandler();
 
-    public static ModelNode getRemoveSchemaLocationOperation(ModelNode address, String schemaURI) {
+    public static ModelNode getAddSchemaLocationOperation(ModelNode address, ModelNode schemaLocation) {
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
-        op.get(SCHEMA_LOCATION).set(schemaURI);
+        op.get(SCHEMA_LOCATION).set(schemaLocation);
         return op;
     }
 
-    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.STRING);
+    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.PROPERTY);
 
     /**
-     * Create the RemoveSchemaLocationHandler
+     * Create the AddSchemaLocationHandler
      */
-    private RemoveSchemaLocationHandler() {
+    private SchemaLocationAddHandler() {
     }
 
     /**
@@ -73,31 +72,13 @@ public class RemoveSchemaLocationHandler implements ModelUpdateOperationHandler,
         try {
             ModelNode param = operation.get(SCHEMA_LOCATION);
             ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
-            ModelNode toRemove = null;
-            String failure = typeValidator.validateParameter(SCHEMA_LOCATION, param);
+            String failure = validate(param, locations);
             if (failure == null) {
-                ModelNode newList = new ModelNode().setEmptyList();
-                String uri = param.asProperty().getName();
-                if (locations.isDefined()) {
-                    for (Property location : locations.asPropertyList()) {
-                        if (!uri.equals(location.getName())) {
-                            toRemove = newList.add(location.getName(), location.getValue());
-                            break;
-                        }
-                    }
-                }
-
-                if (toRemove != null) {
-                    locations.set(newList);
-                    ModelNode compensating = AddSchemaLocationHandler.getAddSchemaLocationOperation(operation.get(OP_ADDR), toRemove);
-                    resultHandler.handleResultComplete(compensating);
-                }
-                else {
-                    failure = "No schema location with URI " + uri + "found";
-                }
+                locations.add(param);
+                ModelNode compensating = SchemaLocationRemoveHandler.getRemoveSchemaLocationOperation(operation.get(OP_ADDR), param.asProperty().getName());
+                resultHandler.handleResultComplete(compensating);
             }
-
-            if (failure != null) {
+            else {
                 resultHandler.handleFailed(new ModelNode().set(failure));
             }
         }
@@ -109,7 +90,20 @@ public class RemoveSchemaLocationHandler implements ModelUpdateOperationHandler,
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return CommonAttributes.getRemoveSchemaLocationOperation(locale);
+        return CommonAttributes.getAddSchemaLocationOperation(locale);
+    }
+
+    private String validate(ModelNode param, ModelNode locations) {
+        String failure = typeValidator.validateParameter(SCHEMA_LOCATION, param);
+        String uri = param.asProperty().getName();
+        if (failure == null && locations.isDefined()) {
+            for (ModelNode node : locations.asList()) {
+                if (uri.equals(node.asProperty().getName())) {
+                    failure = "Schema with URI " + uri + " already registered with location " + node.asProperty().getValue().asString();
+                }
+            }
+        }
+        return failure;
     }
 
 }

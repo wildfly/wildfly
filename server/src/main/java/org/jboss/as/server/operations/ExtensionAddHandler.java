@@ -21,7 +21,7 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.operations.common.AbstractAddExtensionHandler;
+import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -33,11 +33,11 @@ import org.jboss.modules.ModuleLoadException;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 // TODO this could likely be folded into the superclass
-public class AddExtensionHandler extends AbstractAddExtensionHandler implements RuntimeOperationHandler {
+public class ExtensionAddHandler extends AbstractExtensionAddHandler implements RuntimeOperationHandler {
 
     private final NewExtensionContext extensionContext;
 
-    public AddExtensionHandler(final NewExtensionContext extensionContext) {
+    public ExtensionAddHandler(final NewExtensionContext extensionContext) {
         if (extensionContext == null) {
             throw new IllegalArgumentException("extensionContext is null");
         }

@@ -40,8 +40,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.AbstractAddExtensionHandler;
-import org.jboss.as.controller.operations.common.AbstractRemoveExtensionHandler;
+import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
+import org.jboss.as.controller.operations.common.AbstractExtensionRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -74,7 +74,7 @@ public class ExtensionDescription {
     public static ModelNode getExtensionAddOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(AbstractAddExtensionHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(AbstractExtensionAddHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("extension.add"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
@@ -84,7 +84,7 @@ public class ExtensionDescription {
     public static ModelNode getExtensionRemoveOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(AbstractRemoveExtensionHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(AbstractExtensionRemoveHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("extension.remove"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();

@@ -19,10 +19,10 @@
 package org.jboss.as.controller.operations.common;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 
 import java.util.Locale;
 
@@ -36,32 +36,33 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
- * Handler for the root resource add-schema-location operation.
+ * Handler for the root resource remove-namespace operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class AddSchemaLocationHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "add-schema-location";
+    public static final String OPERATION_NAME = "remove-namespace";
 
-    public static final AddSchemaLocationHandler INSTANCE = new AddSchemaLocationHandler();
+    public static final NamespaceRemoveHandler INSTANCE = new NamespaceRemoveHandler();
 
-    public static ModelNode getAddSchemaLocationOperation(ModelNode address, ModelNode schemaLocation) {
+    public static ModelNode getRemoveNamespaceOperation(ModelNode address, String prefix) {
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
-        op.get(SCHEMA_LOCATION).set(schemaLocation);
+        op.get(NAMESPACE).set(prefix);
         return op;
     }
 
-    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.PROPERTY);
+    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.STRING);
 
     /**
-     * Create the AddSchemaLocationHandler
+     * Create the RemoveNamespaceHandler
      */
-    private AddSchemaLocationHandler() {
+    private NamespaceRemoveHandler() {
     }
 
     /**
@@ -70,15 +71,33 @@ public class AddSchemaLocationHandler implements ModelUpdateOperationHandler, De
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
-            ModelNode param = operation.get(SCHEMA_LOCATION);
-            ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
-            String failure = validate(param, locations);
+            ModelNode param = operation.get(NAMESPACE);
+            ModelNode namespaces = context.getSubModel().get(NAMESPACES);
+            ModelNode toRemove = null;
+            String failure = typeValidator.validateParameter(NAMESPACE, param);
             if (failure == null) {
-                locations.add(param);
-                ModelNode compensating = RemoveSchemaLocationHandler.getRemoveSchemaLocationOperation(operation.get(OP_ADDR), param.asProperty().getName());
-                resultHandler.handleResultComplete(compensating);
+                ModelNode newList = new ModelNode().setEmptyList();
+                String prefix = param.asProperty().getName();
+                if (namespaces.isDefined()) {
+                    for (Property namespace : namespaces.asPropertyList()) {
+                        if (!prefix.equals(namespace.getName())) {
+                            toRemove = newList.add(namespace.getName(), namespace.getValue());
+                            break;
+                        }
+                    }
+                }
+
+                if (toRemove != null) {
+                    namespaces.set(newList);
+                    ModelNode compensating = NamespaceAddHandler.getAddNamespaceOperation(operation.get(OP_ADDR), toRemove);
+                    resultHandler.handleResultComplete(compensating);
+                }
+                else {
+                    failure = "No namespace with URI " + prefix + "found";
+                }
             }
-            else {
+
+            if (failure != null) {
                 resultHandler.handleFailed(new ModelNode().set(failure));
             }
         }
@@ -90,20 +109,7 @@ public class AddSchemaLocationHandler implements ModelUpdateOperationHandler, De
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return CommonAttributes.getAddSchemaLocationOperation(locale);
-    }
-
-    private String validate(ModelNode param, ModelNode locations) {
-        String failure = typeValidator.validateParameter(SCHEMA_LOCATION, param);
-        String uri = param.asProperty().getName();
-        if (failure == null && locations.isDefined()) {
-            for (ModelNode node : locations.asList()) {
-                if (uri.equals(node.asProperty().getName())) {
-                    failure = "Schema with URI " + uri + " already registered with location " + node.asProperty().getValue().asString();
-                }
-            }
-        }
-        return failure;
+        return CommonAttributes.getRemoveNamespaceOperation(locale);
     }
 
 }

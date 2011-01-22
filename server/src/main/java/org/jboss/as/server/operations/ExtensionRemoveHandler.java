@@ -19,7 +19,7 @@
 package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.operations.common.AbstractRemoveExtensionHandler;
+import org.jboss.as.controller.operations.common.AbstractExtensionRemoveHandler;
 import org.jboss.as.server.BootOperationHandler;
 
 /**
@@ -28,11 +28,11 @@ import org.jboss.as.server.BootOperationHandler;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
  */
-public class RemoveExtensionHandler extends AbstractRemoveExtensionHandler implements BootOperationHandler {
+public class ExtensionRemoveHandler extends AbstractExtensionRemoveHandler implements BootOperationHandler {
 
-    public static final RemoveExtensionHandler INSTANCE = new RemoveExtensionHandler();
+    public static final ExtensionRemoveHandler INSTANCE = new ExtensionRemoveHandler();
 
-    private RemoveExtensionHandler() {
+    private ExtensionRemoveHandler() {
     }
 
     /**

@@ -19,9 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
@@ -35,16 +35,15 @@ import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for the root resource add-namespace operation.
+ * Base handler for the extension resource remove operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-// TODO consider making this concrete and folding in subclass logic
-public abstract class AbstractAddExtensionHandler implements ModelAddOperationHandler, DescriptionProvider {
+public abstract class AbstractExtensionRemoveHandler implements ModelAddOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = ADD;
+    public static final String OPERATION_NAME = REMOVE;
 
-    public static ModelNode getAddExtensionOperation(ModelNode address) {
+    public static ModelNode getRemoveExtensionOperation(ModelNode address) {
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
@@ -54,7 +53,7 @@ public abstract class AbstractAddExtensionHandler implements ModelAddOperationHa
     /**
      * Create the AbstractAddExtensionHandler
      */
-    protected AbstractAddExtensionHandler() {
+    protected AbstractExtensionRemoveHandler() {
     }
 
     /**
@@ -65,10 +64,9 @@ public abstract class AbstractAddExtensionHandler implements ModelAddOperationHa
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String module = address.getLastElement().getValue();
-            context.getSubModel().get(ExtensionDescription.MODULE).set(module);
-            String failure = installExtension(module, context);
+            String failure = uninstallExtension(module, context);
             if (failure == null) {
-                ModelNode compensating = AbstractRemoveExtensionHandler.getRemoveExtensionOperation(operation.get(OP_ADDR));
+                ModelNode compensating = AbstractExtensionAddHandler.getAddExtensionOperation(operation.get(OP_ADDR));
                 resultHandler.handleResultComplete(compensating);
             }
             else {
@@ -76,7 +74,6 @@ public abstract class AbstractAddExtensionHandler implements ModelAddOperationHa
             }
         }
         catch (Exception e) {
-            e.printStackTrace(System.out);
             resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
         }
         return Cancellable.NULL;
@@ -84,9 +81,9 @@ public abstract class AbstractAddExtensionHandler implements ModelAddOperationHa
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return ExtensionDescription.getExtensionAddOperation(locale);
+        return ExtensionDescription.getExtensionRemoveOperation(locale);
     }
 
-    protected abstract String installExtension(String module, NewOperationContext context);
+    protected abstract String uninstallExtension(String module, NewOperationContext context);
 
 }

@@ -20,10 +20,10 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
-import org.jboss.as.controller.operations.common.AddNamespaceHandler;
-import org.jboss.as.controller.operations.common.AddSchemaLocationHandler;
-import org.jboss.as.controller.operations.common.RemoveNamespaceHandler;
-import org.jboss.as.controller.operations.common.RemoveSchemaLocationHandler;
+import org.jboss.as.controller.operations.common.NamespaceAddHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
+import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 
@@ -42,10 +42,10 @@ class CoreOperationsRegistrar {
 
     static void registerCoreOperations(ModelNodeRegistration root) {
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1));
-        root.registerOperationHandler(AddNamespaceHandler.OPERATION_NAME, AddNamespaceHandler.INSTANCE, AddNamespaceHandler.INSTANCE, false);
-        root.registerOperationHandler(RemoveNamespaceHandler.OPERATION_NAME, RemoveNamespaceHandler.INSTANCE, RemoveNamespaceHandler.INSTANCE, false);
-        root.registerOperationHandler(AddSchemaLocationHandler.OPERATION_NAME, AddSchemaLocationHandler.INSTANCE, AddSchemaLocationHandler.INSTANCE, false);
-        root.registerOperationHandler(RemoveSchemaLocationHandler.OPERATION_NAME, RemoveSchemaLocationHandler.INSTANCE, RemoveSchemaLocationHandler.INSTANCE, false);
+        root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
+        root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
+        root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
     }
 
 }
