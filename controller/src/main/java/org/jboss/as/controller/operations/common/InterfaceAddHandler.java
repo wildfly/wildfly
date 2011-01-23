@@ -335,6 +335,8 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
     }
 
     private static class ParsingException extends RuntimeException {
+        private static final long serialVersionUID = -5627251228393035383L;
+
         private final String msg;
 
         private ParsingException(String msg) {
