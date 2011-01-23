@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.jboss.as.model.socket;
+package org.jboss.as.controller.interfaces;
 
 import java.io.Serializable;
 import java.net.InetAddress;

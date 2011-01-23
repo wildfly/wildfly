@@ -1,14 +1,18 @@
 /**
  *
  */
-package org.jboss.as.model.socket;
+package org.jboss.as.controller.interfaces;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV4_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV6_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import org.jboss.as.model.Element;
 import org.jboss.logging.Logger;
 
 /**
@@ -19,7 +23,7 @@ import org.jboss.logging.Logger;
  */
 public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.model");
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private static final long serialVersionUID = 149404752878332750L;
 
@@ -65,10 +69,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
                     "against any specific address. Do not use the '%2$s' configuration element" +
                     "to specify that an interface should use a wildcard address; " +
                     "use '%3$s', '%4$s', or '%5$s'", this.address,
-                    Element.INET_ADDRESS.getLocalName(),
-                    Element.ANY_ADDRESS.getLocalName(),
-                    Element.ANY_IPV4_ADDRESS.getLocalName(),
-                    Element.ANY_IPV6_ADDRESS.getLocalName());
+                    INET_ADDRESS, ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS);
                 anyLocalLogged = true;
             }
 

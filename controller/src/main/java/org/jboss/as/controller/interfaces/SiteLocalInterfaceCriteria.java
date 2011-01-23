@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.jboss.as.model.socket;
+package org.jboss.as.controller.interfaces;
 
 import java.io.ObjectStreamException;
 import java.net.InetAddress;
@@ -14,13 +14,13 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class LinkLocalInterfaceCriteria implements InterfaceCriteria {
+public class SiteLocalInterfaceCriteria implements InterfaceCriteria {
 
-    private static final long serialVersionUID = 353271734087683239L;
+    private static final long serialVersionUID = 8701772756289369451L;
 
-    public static final LinkLocalInterfaceCriteria INSTANCE = new LinkLocalInterfaceCriteria();
+    public static final SiteLocalInterfaceCriteria INSTANCE = new SiteLocalInterfaceCriteria();
 
-    private LinkLocalInterfaceCriteria() {}
+    private SiteLocalInterfaceCriteria() {}
 
     /**
      * {@inheritDoc}
@@ -31,7 +31,7 @@ public class LinkLocalInterfaceCriteria implements InterfaceCriteria {
     @Override
     public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return address.isLinkLocalAddress();
+        return address.isSiteLocalAddress();
     }
 
     private Object readResolve() throws ObjectStreamException {

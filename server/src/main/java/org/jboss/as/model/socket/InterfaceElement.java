@@ -13,6 +13,7 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;

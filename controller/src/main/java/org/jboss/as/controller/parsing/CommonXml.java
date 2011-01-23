@@ -24,11 +24,18 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NETWORK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -59,6 +66,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -294,9 +302,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PATH, name);
         update.get(OP).set(ADD);
-        update.get("name").set(name);
-        update.get("path").set(path);
-        if (relativeTo != null) update.get("relativeTo").set(relativeTo);
+        update.get(NAME).set(name);
+        update.get(PATH).set(path);
+        if (relativeTo != null) update.get(RELATIVE_TO).set(relativeTo);
         list.add(update);
     }
 
@@ -790,7 +798,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
             throw unexpectedElement(reader);
         }
-        final Element element = Element.forName(reader.getLocalName());
+        Element element = Element.forName(reader.getLocalName());
         switch (element) {
             case ANY_ADDRESS:
             case ANY_IPV4_ADDRESS:
@@ -802,11 +810,17 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
         }
         do {
+            element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ANY: parseCompoundInterfaceCriterion(reader, criteria.add().set("any", new ModelNode()).get("any")); break;
-                case NOT: parseCompoundInterfaceCriterion(reader, criteria.add().set("not", new ModelNode()).get("not")); break;
+                case ANY:
+                    parseCompoundInterfaceCriterion(reader, criteria.add().set(ANY, new ModelNode()).get(ANY));
+                    break;
+                case NOT:
+                    parseCompoundInterfaceCriterion(reader, criteria.add().set(NOT, new ModelNode()).get(NOT));
+                    break;
                 default: {
-                    parseSimpleInterfaceCriterion(reader, criteria.add().set(element.getLocalName(), new ModelNode()).get(element.getLocalName()));
+//                    parseSimpleInterfaceCriterion(reader, criteria.add().set(element.getLocalName(), new ModelNode()).get(element.getLocalName()));
+                    parseSimpleInterfaceCriterion(reader, criteria.add());
                     break;
                 }
             }
@@ -837,7 +851,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate IP address
-                criteria.add(localName, value);
+                criteria.set(localName, value);
                 break;
             }
             case LINK_LOCAL_ADDRESS:
@@ -848,7 +862,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             case SITE_LOCAL_ADDRESS:
             case UP:
             case VIRTUAL: {
-                criteria.add(localName);
+                requireNoAttributes(reader);
+                requireNoContent(reader);
+                criteria.set(localName);
                 break;
             }
             case NIC: {
@@ -856,7 +872,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate NIC name
-                criteria.add(localName, value);
+                criteria.set(localName, value);
                 break;
             }
             case NIC_MATCH: {
@@ -864,7 +880,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate pattern
-                criteria.add(localName, value);
+                criteria.set(localName, value);
                 break;
             }
             case SUBNET_MATCH: {
@@ -881,9 +897,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     final InetAddress addr = InetAddress.getByName(split[1]);
                     final byte[] net = addr.getAddress();
                     final int mask = Integer.parseInt(split[1]);
-                    final ModelNode node = criteria.add().set(localName, new ModelNode()).get(localName);
-                    node.get("network").set(net);
-                    node.get("mask").set(mask);
+                    final ModelNode node = criteria.set(localName, new ModelNode()).get(localName);
+                    node.get(NETWORK).set(net);
+                    node.get(MASK).set(mask);
                     break;
                 }
                 catch (final NumberFormatException e) {
@@ -908,14 +924,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw new XMLStreamException("Duplicate interface declaration", reader.getLocation());
             }
             final ModelNode interfaceAdd = new ModelNode();
-            // TODO should this be a child instead of an attribute?
             interfaceAdd.get(OP_ADDR).set(address).add(ModelDescriptionConstants.INTERFACE, name);
             interfaceAdd.get(OP).set(ADD);
 
-            final ModelNode criteriaNode = interfaceAdd.get("criteria");
+            final ModelNode criteriaNode = interfaceAdd.get(CRITERIA);
             parseInterfaceCriteria(reader, criteriaNode);
 
-            if (criteriaNode.asInt() == 0 && checkSpecified) {
+            if (criteriaNode.getType() != ModelType.STRING && criteriaNode.asInt() == 0 && checkSpecified) {
                 throw unexpectedEndElement(reader);
             }
             list.add(interfaceAdd);

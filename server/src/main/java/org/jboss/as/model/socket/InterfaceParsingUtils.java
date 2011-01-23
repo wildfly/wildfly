@@ -18,6 +18,15 @@ import java.util.regex.PatternSyntaxException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.interfaces.InterfaceCriteria;
+import org.jboss.as.controller.interfaces.LinkLocalInterfaceCriteria;
+import org.jboss.as.controller.interfaces.LoopbackInterfaceCriteria;
+import org.jboss.as.controller.interfaces.PointToPointInterfaceCriteria;
+import org.jboss.as.controller.interfaces.PublicAddressInterfaceCriteria;
+import org.jboss.as.controller.interfaces.SiteLocalInterfaceCriteria;
+import org.jboss.as.controller.interfaces.SupportsMulticastInterfaceCriteria;
+import org.jboss.as.controller.interfaces.UpInterfaceCriteria;
+import org.jboss.as.controller.interfaces.VirtualInterfaceCriteria;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;

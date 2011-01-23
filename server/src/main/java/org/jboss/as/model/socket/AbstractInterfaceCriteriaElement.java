@@ -3,6 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
+import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Element;
 

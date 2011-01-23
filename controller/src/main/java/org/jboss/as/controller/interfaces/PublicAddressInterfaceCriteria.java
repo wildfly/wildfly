@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.jboss.as.model.socket;
+package org.jboss.as.controller.interfaces;
 
 import java.io.ObjectStreamException;
 import java.net.InetAddress;

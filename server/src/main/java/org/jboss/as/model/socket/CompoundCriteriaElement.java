@@ -7,6 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.interfaces.AnyInterfaceCriteria;
+import org.jboss.as.controller.interfaces.InterfaceCriteria;
+import org.jboss.as.controller.interfaces.NotInterfaceCriteria;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 

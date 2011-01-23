@@ -7,6 +7,7 @@ import java.net.NetworkInterface;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.interfaces.NicInterfaceCriteria;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;

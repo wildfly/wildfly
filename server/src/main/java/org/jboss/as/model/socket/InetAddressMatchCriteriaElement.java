@@ -28,6 +28,7 @@ package org.jboss.as.model.socket;
 import java.net.NetworkInterface;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.interfaces.InetAddressMatchInterfaceCriteria;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.ParseUtils;

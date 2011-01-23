@@ -5,6 +5,7 @@ package org.jboss.as.model.socket;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.interfaces.SubnetMatchInterfaceCriteria;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;

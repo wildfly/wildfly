@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.jboss.as.model.socket;
+package org.jboss.as.controller.interfaces;
 
 import java.io.ObjectStreamException;
 import java.net.InetAddress;
@@ -10,28 +10,28 @@ import java.net.SocketException;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given interface is a
- * {@link NetworkInterface#isPointToPoint() point-to-point interface}.
+ * {@link NetworkInterface#isLoopback() loopback interface}
  *
  * @author Brian Stansberry
  */
-public class PointToPointInterfaceCriteria implements InterfaceCriteria {
+public class LoopbackInterfaceCriteria implements InterfaceCriteria {
 
-    private static final long serialVersionUID = -3434237413172720854L;
+    private static final long serialVersionUID = 1922501758657303593L;
 
-    public static final PointToPointInterfaceCriteria INSTANCE = new PointToPointInterfaceCriteria();
+    public static final LoopbackInterfaceCriteria INSTANCE = new LoopbackInterfaceCriteria();
 
-    private PointToPointInterfaceCriteria() {}
+    private LoopbackInterfaceCriteria() {}
 
     /**
      * {@inheritDoc}
      *
      * @return <code>true</code> if <code>networkInterface</code> is a
-     *         {@link NetworkInterface#isPointToPoint() point-to-point interface}.
+     *         {@link NetworkInterface#isLoopback() loopback interface}.
      */
     @Override
     public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return networkInterface.isPointToPoint();
+        return networkInterface.isLoopback();
     }
 
     private Object readResolve() throws ObjectStreamException {

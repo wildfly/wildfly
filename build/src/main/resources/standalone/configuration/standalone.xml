@@ -65,4 +65,24 @@
        <path name="absolute" path="tmp"/>
        <path name="relative" path="relative" relative-to="absolute"/>
     </paths>
+
+    <interfaces>
+        <interface name="default">
+            <inet-address value="127.0.0.1"/>
+        </interface>
+		<interface name="any">
+		   <any-address/>
+		</interface>
+		<interface name="complex">
+		   <any>
+			  <subnet-match value="192.168.0.0/16"/>
+			  <public-address/>
+		   </any>
+		   <not>
+			 <site-local-address/>
+		   </not>
+		   <up/>
+		   <multicast/>
+		</interface>
+    </interfaces>
 </server>

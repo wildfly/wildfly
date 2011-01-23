@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 
-import org.jboss.as.model.socket.InterfaceCriteria;
+import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

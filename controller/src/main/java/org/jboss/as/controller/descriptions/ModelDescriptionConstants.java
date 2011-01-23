@@ -34,9 +34,14 @@ public class ModelDescriptionConstants {
     public static final String ADD = "add";
     public static final String ADD_OPERATION = "add-operation";
     public static final String ADDRESS = "address";
+    public static final String ANY = "any";
+    public static final String ANY_ADDRESS = "any-address";
+    public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
+    public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String ATTRIBUTES = "attributes";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    public static final String CRITERIA = "criteria";
     public static final String DEFAULT = "default";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
@@ -44,10 +49,12 @@ public class ModelDescriptionConstants {
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
     public static final String INCLUDE = "include";
+    public static final String INET_ADDRESS = "inet-address";
     public static final String INTERFACE = "interface";
     public static final String JVM = "jvm";
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT = "management";
+    public static final String MASK = "mask";
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MIN_LENGTH = "min-length";
@@ -56,7 +63,9 @@ public class ModelDescriptionConstants {
     public static final String NAME = "name";
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
+    public static final String NETWORK = "network";
     public static final String NILLABLE = "nillable";
+    public static final String NOT = "not";
     /** Use this as the standard operation name field in the operation *request* ModelNode */
     public static final String OP = "operation";
     /** Use this standard operation address field in the operation *request* ModelNode */
