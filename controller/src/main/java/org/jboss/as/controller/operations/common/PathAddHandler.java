@@ -89,15 +89,18 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
             ModelNode model = context.getSubModel();
             model.get(NAME).set(name);
 
-            ModelNode pathNode = model.get(PATH);
+            ModelNode pathNode = operation.get(PATH);
             String failure = pathValidator.validateParameter(PATH, pathNode);
             if (failure == null) {
-                String path = pathNode.isDefined() ? pathNode.asString() : null;
-                ModelNode relNode = model.get(RELATIVE_TO);
+                ModelNode relNode = operation.get(RELATIVE_TO);
                 failure = relativeToValidator.validateParameter(RELATIVE_TO, relNode);
                 if (failure == null) {
-                    String relativeTo = relNode.isDefined() ? pathNode.asString() : null;
+                    model.get(PATH).set(pathNode);
+                    model.get(RELATIVE_TO).set(relNode);
+
                     ModelNode compensating = PathRemoveHandler.getRemovePathOperation(operation.get(OP_ADDR));
+                    String path = pathNode.isDefined() ? pathNode.asString() : null;
+                    String relativeTo = relNode.isDefined() ? relNode.asString() : null;
                     installPath(name, path, relativeTo, context, resultHandler, compensating);
                 }
             }
