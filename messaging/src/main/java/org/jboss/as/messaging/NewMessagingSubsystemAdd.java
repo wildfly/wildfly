@@ -83,7 +83,6 @@ import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
@@ -280,8 +279,10 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = new HashMap<String, Object>();
-                for(final Property parameter : config.get(PARAM).asPropertyList()) {
-                    parameters.put(parameter.getName(), parameter.getValue().asString());
+                if(config.has(PARAM) && config.get(PARAM).getType() != ModelType.UNDEFINED) {
+                    for(final Property parameter : config.get(PARAM).asPropertyList()) {
+                        parameters.put(parameter.getName(), parameter.getValue().asString());
+                    }
                 }
                 final TransportConfigType type = TransportConfigType.valueOf(config.get(TYPE).asString());
                 final String clazz;
@@ -324,8 +325,10 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = new HashMap<String, Object>();
-                for(final Property parameter : config.get(PARAM).asPropertyList()) {
-                    parameters.put(parameter.getName(), parameter.getValue().asString());
+                if(config.has(PARAM) && config.get(PARAM).getType() != ModelType.UNDEFINED) {
+                    for(final Property parameter : config.get(PARAM).asPropertyList()) {
+                        parameters.put(parameter.getName(), parameter.getValue().asString());
+                    }
                 }
                 final TransportConfigType type = TransportConfigType.valueOf(config.get(TYPE).asString());
                 final String clazz;
@@ -417,16 +420,18 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
             for(final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
-                final Set<Role> roles = new HashSet<Role>();
-                for(final Property role : config.get(ROLE).asPropertyList()) {
-                    final String name = role.getName();
-                    final ModelNode value = role.getValue();
-                    roles.add(new Role(name, value.get(SEND_NAME).asBoolean(false),
-                            value.get(CONSUME_NAME).asBoolean(false), value.get(CREATEDURABLEQUEUE_NAME).asBoolean(false),
-                            value.get(DELETEDURABLEQUEUE_NAME).asBoolean(false), value.get(CREATE_NON_DURABLE_QUEUE_NAME).asBoolean(false),
-                            value.get(DELETE_NON_DURABLE_QUEUE_NAME).asBoolean(false), value.get(MANAGE_NAME).asBoolean(false)));
+                if(config.getType() != ModelType.UNDEFINED) {
+                    final Set<Role> roles = new HashSet<Role>();
+                    for(final Property role : config.asPropertyList()) {
+                        final String name = role.getName();
+                        final ModelNode value = role.getValue();
+                        roles.add(new Role(name, value.get(SEND_NAME).asBoolean(false),
+                                value.get(CONSUME_NAME).asBoolean(false), value.get(CREATEDURABLEQUEUE_NAME).asBoolean(false),
+                                value.get(DELETEDURABLEQUEUE_NAME).asBoolean(false), value.get(CREATE_NON_DURABLE_QUEUE_NAME).asBoolean(false),
+                                value.get(DELETE_NON_DURABLE_QUEUE_NAME).asBoolean(false), value.get(MANAGE_NAME).asBoolean(false)));
+                    }
+                    configuration.getSecurityRoles().put(match, roles);
                 }
-                configuration.getSecurityRoles().put(match, roles);
             }
         }
     }

@@ -56,7 +56,10 @@ class NewDeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperat
         final String path = operation.require(CommonAttributes.PATH).asString();
         final boolean enabled = operation.get(CommonAttributes.SCAN_ENABLED).asBoolean(true);
         final int interval = operation.get(CommonAttributes.SCAN_INTERVAL).asInt(5000);
-        final String relativeTo = operation.get(CommonAttributes.RELATIVE_TO).asString();
+        String relativeTo = null;
+        if(operation.has(CommonAttributes.RELATIVE_TO)) {
+            relativeTo = operation.get(CommonAttributes.RELATIVE_TO).asString();
+        }
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);

@@ -704,7 +704,7 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
                     break;
                 }
                 case PARAM: {
-                    params.set(key, value);
+                    params.add(key, value);
                     ParseUtils.requireNoContent(reader);
                     break;
                 } default: {
