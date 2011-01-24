@@ -26,7 +26,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -72,11 +71,10 @@ public final class ManifestExtensionListProcessor implements DeploymentUnitProce
             final String implementationVersion = mainAttributes.getValue(item + "-" + IMPLEMENTATION_VERSION);
             final String implementationVendorId = mainAttributes.getValue(item + "-" + IMPLEMENTATION_VENDOR_ID);
             final String implementationUrl = mainAttributes.getValue(item + "-" + IMPLEMENTATION_URL);
+            URI implementationUri = null;
             if (implementationUrl == null) {
                 log.debugf("Extension %s is missing the required manifest attribute %s-%s", item, item, IMPLEMENTATION_URL);
-            }
-            URI implementationUri = null;
-            try {
+            } else try {
                 implementationUri = new URI(implementationUrl);
             } catch (URISyntaxException e) {
                 log.warnf("Extension %s URI syntax is invalid: %s", item, e);
