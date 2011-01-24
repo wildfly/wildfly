@@ -178,7 +178,7 @@ final class ServerControllerService implements Service<ServerController> {
 
         final File[] extDirs = serverEnvironment.getJavaExtDirs();
         final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
-        newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "ext/lib");
+        newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "lib/ext");
         serviceTarget.addService(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX, new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND);
 
         serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
