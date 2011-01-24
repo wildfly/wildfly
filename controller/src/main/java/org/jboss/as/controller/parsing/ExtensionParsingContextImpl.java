@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.parsing;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +56,7 @@ final class ExtensionParsingContextImpl implements ExtensionParsingContext {
      * @param writer the element writer
      */
     public void setSubsystemXmlMapping(final String namespaceUri, final XMLElementReader<List<ModelNode>> reader, final XMLElementWriter<ModelNode> writer) {
-        xmlMapper.registerRootElement(new QName(namespaceUri), reader);
+        xmlMapper.registerRootElement(new QName(namespaceUri, SUBSYSTEM), reader);
         subsystemWriters.put(namespaceUri, writer);
     }
 

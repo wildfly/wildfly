@@ -207,7 +207,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         final ExtensionParsingContextImpl context = new ExtensionParsingContextImpl(reader.getXMLMapper());
 
-        while (reader.nextTag() != END_ELEMENT) {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             // Attribute && require no content
             final String moduleName = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
 
