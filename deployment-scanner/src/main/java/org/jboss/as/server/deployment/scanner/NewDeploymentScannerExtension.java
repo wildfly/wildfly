@@ -63,6 +63,7 @@ public class NewDeploymentScannerExtension implements NewExtension {
     public static final String SUBSYSTEM_NAME = "deployment-scanner";
     private static final PathElement scannersPath = PathElement.pathElement("scanner");
     private static final DeploymentScannerParser parser = new DeploymentScannerParser();
+    private static final String DEFAULT_SCANNER_NAME = "default"; // we actually need a scanner name to make it addressable
 
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
@@ -124,11 +125,14 @@ public class NewDeploymentScannerExtension implements NewExtension {
             // no attributes
             requireNoAttributes(reader);
 
-            final ModelNode address = new ModelNode().add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            final ModelNode address = new ModelNode();
+            address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            address.protect();
 
-            final ModelNode compensatingOperation = new ModelNode();
-            compensatingOperation.set(OP).set(ADD);
-            compensatingOperation.set(OP_ADDR).set(address);
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(address);
+            list.add(subsystem);
 
             // elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -155,7 +159,7 @@ public class NewDeploymentScannerExtension implements NewExtension {
             boolean enabled = true;
             int interval = 0;
             String path = null;
-            String name = null;
+            String name = DEFAULT_SCANNER_NAME;
             String relativeTo = null;
             final int attrCount = reader.getAttributeCount();
             for (int i = 0; i < attrCount; i++) {

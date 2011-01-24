@@ -52,6 +52,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -353,8 +354,8 @@ public class StandaloneXml extends CommonXml {
 
     private void parseServerProfile(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Attributes
-        // FIXME -- either change this or remove "name" from the xsd
-        requireNoAttributes(reader);
+        // FIXME The other parser actually allows a name - we just ignore it for now
+        // requireNoAttributes(reader);
 
         // Content
         final Set<String> configuredSubsystemTypes = new HashSet<String>();
@@ -373,6 +374,10 @@ public class StandaloneXml extends CommonXml {
             reader.handleAny(subsystems);
             // Process subsystems
             for(final ModelNode update : subsystems) {
+                // TODO remove logging
+                if(! update.has(OP_ADDR)) {
+                    Logger.getLogger("missing address").error(update);
+                }
                 // Process relative subsystem path address
                 final ModelNode subsystemAddress = address.clone();
                 for(final Property path : update.get(OP_ADDR).asPropertyList()) {

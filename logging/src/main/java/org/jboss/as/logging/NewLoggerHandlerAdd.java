@@ -54,7 +54,7 @@ class NewLoggerHandlerAdd implements ModelAddOperationHandler, RuntimeOperationH
             }case SIZE_ROTATING_FILE_HANDLER: {
                 return NewSizePeriodicFileHandlerAdd.INSTANCE.execute(context, operation, resultHandler);
             } default: {
-                resultHandler.handleFailed(new ModelNode());
+                resultHandler.handleFailed(new ModelNode().set("unknown log handler type"));
             }
         }
         return Cancellable.NULL;

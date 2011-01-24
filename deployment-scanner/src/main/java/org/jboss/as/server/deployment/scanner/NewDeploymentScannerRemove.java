@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -50,14 +51,14 @@ class NewDeploymentScannerRemove implements ModelRemoveOperationHandler, Runtime
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.require(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode subModel = new ModelNode();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(address);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensatingOperation.get(CommonAttributes.PATH).set(subModel.get(CommonAttributes.PATH));
         compensatingOperation.get(CommonAttributes.SCAN_ENABLED).set(subModel.get(CommonAttributes.SCAN_ENABLED));
         compensatingOperation.get(CommonAttributes.SCAN_INTERVAL).set(subModel.get(CommonAttributes.SCAN_INTERVAL));

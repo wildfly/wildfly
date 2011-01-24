@@ -20,55 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.logging;
+package org.jboss.as.mc;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.NewBootOperationContext;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class NewLoggerHandlerRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
+class NewMcSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    static final NewLoggerHandlerRemove INSTANCE = new NewLoggerHandlerRemove();
+    static final NewMcSubsystemAdd INSTANCE = new NewMcSubsystemAdd();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode subModel = context.getSubModel();
         final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set("set-root-logger");
-        for(final Property property : subModel.asPropertyList()) {
-            compensatingOperation.get(property.getName()).set(property.getValue());
-        }
+        compensatingOperation.set(OP).set(REMOVE);
+        compensatingOperation.set(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if(context instanceof NewRuntimeOperationContext) {
-            final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
-            final ServiceRegistry registry = runtimeContext.getServiceRegistry();
-            try {
-                final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
-                if(controller != null) {
-                    controller.setMode(ServiceController.Mode.REMOVE);
-                }
-            } catch (Throwable t) {
-                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
-            }
+        if(context instanceof NewBootOperationContext) {
+            final NewBootOperationContext bootContext = (NewBootOperationContext) context;
+            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MC_BEAN_DEPLOYMENT, new KernelDeploymentParsingProcessor());
+            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MC_BEAN_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
         }
 
         resultHandler.handleResultComplete(compensatingOperation);

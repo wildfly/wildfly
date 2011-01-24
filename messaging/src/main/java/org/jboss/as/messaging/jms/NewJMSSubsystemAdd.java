@@ -59,6 +59,11 @@ class NewJMSSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHa
             // serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
         }
 
+        final ModelNode node = context.getSubModel();
+        node.get(CommonAttributes.CONNECTION_FACTORY).setEmptyObject();
+        node.get(CommonAttributes.QUEUE).setEmptyObject();
+        node.get(CommonAttributes.TOPIC).setEmptyObject();
+
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;

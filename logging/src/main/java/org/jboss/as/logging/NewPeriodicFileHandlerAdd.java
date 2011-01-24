@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -61,8 +62,8 @@ class NewPeriodicFileHandlerAdd implements ModelAddOperationHandler, RuntimeOper
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
@@ -88,9 +89,9 @@ class NewPeriodicFileHandlerAdd implements ModelAddOperationHandler, RuntimeOper
                 service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                 final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
                 if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                service.setSuffix(operation.get(SUFFIX).asString());
-                service.setEncoding(operation.get(ENCODING).asString());
-                service.setFormatterSpec(createFormatterSpec(operation));
+                if (operation.has(SUFFIX)) service.setSuffix(operation.get(SUFFIX).asString());
+                if (operation.has(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.has(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
                 serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
                 serviceBuilder.install();
             } catch(Throwable t) {

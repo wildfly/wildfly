@@ -36,6 +36,7 @@ import static org.jboss.as.web.CommonAttributes.SECURE;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -57,14 +58,14 @@ public class NewWebConnectorRemove implements ModelRemoveOperationHandler, Runti
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode subModel = context.getSubModel();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(address);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensatingOperation.get(SECURE).set(subModel.get(SECURE).asBoolean());
         compensatingOperation.get(ENABLE_LOOKUPS).set(subModel.get(ENABLE_LOOKUPS).asBoolean());
         compensatingOperation.get(PROXY_NAME).set(subModel.get(PROXY_NAME).asString());

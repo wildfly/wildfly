@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,8 +54,22 @@ public class SubsystemParsingUnitTestCase extends TestCase {
 
         List<ModelNode> operations = parse("subsystem.xml");
         Assert.assertEquals(1, operations.size());
-        System.err.println(operations.get(0));
+        final ModelNode operation = operations.get(0);
+        System.err.println(operation);
 
+        operation.get(OP_ADDR).asPropertyList();
+
+        final ModelNode node = new ModelNode();
+        node.add("test", "test");
+
+        node.asPropertyList();
+
+        final ModelNode op = new ModelNode();
+        op.get("address").set(node);
+        op.get("address").asPropertyList();
+        final ModelNode op2 = new ModelNode();
+        op2.get("address").set(node).add("test", "test");
+        op2.get("address").asPropertyList();
     }
 
 

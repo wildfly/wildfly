@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -49,12 +50,12 @@ class NewWebVirtualHostRemove implements ModelRemoveOperationHandler, RuntimeOpe
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(address);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         final ModelNode subModel = context.getSubModel();
 

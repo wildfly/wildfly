@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -49,8 +50,8 @@ class NewDeploymentScannerDisable implements ModelUpdateOperationHandler, Runtim
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.require(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("enable");

@@ -31,7 +31,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.*;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
@@ -94,11 +94,13 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
             throw unexpectedAttribute(reader, 0);
         }
 
-        final ModelNode address = new ModelNode().set(SUBSYSTEM, NewLoggingExtension.SUBSYSTEM_NAME);
+        final ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, NewLoggingExtension.SUBSYSTEM_NAME);
+        address.protect();
 
         final ModelNode subsystem = new ModelNode();
-        subsystem.set(OP).set(ADD);
-        subsystem.set(OP_ADDR).set(address);
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).set(address);
         list.add(subsystem);
 
         // Elements
@@ -226,10 +228,10 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
 
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).set(LOGGER, name);
+        node.get(OP_ADDR).set(address).add(LOGGER, name);
         node.get(USE_PARENT_HANDLERS).set(useParentHandlers);
         node.get(LEVEL).set(level);
-        node.get(HANDLERS).set(handlers);
+        if(handlers != null) node.get(HANDLERS).set(handlers);
         list.add(node);
     }
 
@@ -297,9 +299,10 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).set(HANDLER, name);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.ASYNC_HANDLER.toString());
         node.get(LEVEL).set(levelName);
-        node.get(SUBHANDLERS).set(subhandlers);
+        if(subhandlers != null) node.get(SUBHANDLERS).set(subhandlers);
         node.get(AUTOFLUSH).set(Boolean.valueOf(autoflush));
         node.get(QUEUE_LENGTH).set(queueLength);
         node.get(OVERFLOW_ACTION).set(overflowAction.toString());
@@ -347,7 +350,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         node.get(OP).set("set-root-logger");
         node.get(OP_ADDR).set(address);
         node.get(LEVEL).set(level);
-        node.get(HANDLERS).set(handlers);
+        if(handlers != null) node.get(HANDLERS).set(handlers);
         list.add(node);
     }
 
@@ -422,11 +425,12 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).set(HANDLER, name);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.CONSOLE_HANDLER.toString());
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
-        node.get(FORMATTER).set(formatterSpec);
-        node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        if(encoding != null) node.get(ENCODING).set(encoding);
         list.add(node);
     }
 
@@ -509,12 +513,13 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).set(HANDLER, name);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.FILE_HANDLER.toString());
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
-        node.get(ENCODING).set(encoding);
-        node.get(FORMATTER).set(formatterSpec);
-        node.get(PATH).set(fileSpec);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
         list.add(node);
     }
@@ -603,14 +608,15 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).set(HANDLER, name);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.PERIODIC_ROTATING_FILE_HANDLER.toString());
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
-        node.get(ENCODING).set(encoding);
-        node.get(FORMATTER).set(formatterSpec);
-        node.get(PATH).set(fileSpec);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
-        node.get(SUFFIX).set(suffix);
+        if(suffix != null) node.get(SUFFIX).set(suffix);
         list.add(node);
     }
 
@@ -707,12 +713,13 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).set(HANDLER, name);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.SIZE_ROTATING_FILE_HANDLER.toString());
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
-        node.get(ENCODING).set(encoding);
-        node.get(FORMATTER).set(formatterSpec);
-        node.get(PATH).set(fileSpec);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
         if (rotateSize > 0L) {
             node.get(ROTATE_SIZE).set(rotateSize);
@@ -790,8 +797,8 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         }
         requireNoContent(reader);
         final ModelNode node = new ModelNode();
-        node.get(PATH).set(path);
-        node.get(RELATIVE_TO).set(relativeTo);
+        if(path != null) node.get(PATH).set(path);
+        if(relativeTo != null) node.get(RELATIVE_TO).set(relativeTo);
         return node;
     }
 

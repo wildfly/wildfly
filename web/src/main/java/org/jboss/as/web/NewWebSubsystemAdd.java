@@ -25,6 +25,9 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import javax.management.MBeanServer;
+
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -32,6 +35,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
@@ -44,6 +48,9 @@ import org.jboss.as.web.deployment.WarStructureDeploymentProcessor;
 import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -52,6 +59,7 @@ class NewWebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandl
 
     static final NewWebSubsystemAdd INSTANCE = new NewWebSubsystemAdd();
     private static final String DEFAULT_HOST = "localhost";
+    private static final String TEMP_DIR = "jboss.server.temp.dir";
 
     private NewWebSubsystemAdd() {
         //
@@ -71,6 +79,18 @@ class NewWebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandl
             final String defaultHost = operation.has(CommonAttributes.DEFAULT_HOST) ?
                     operation.get(CommonAttributes.DEFAULT_HOST).asString() : DEFAULT_HOST;
 
+            try {
+                final WebServerService service = new WebServerService(defaultHost);
+                ctx.getServiceTarget().addService(WebSubsystemElement.JBOSS_WEB, service)
+                    .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
+                    .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
+                    .setInitialMode(Mode.ON_DEMAND)
+                    .install();
+            } catch (Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
+
             final NewSharedWebMetaDataBuilder sharedWebBuilder = new NewSharedWebMetaDataBuilder(config.clone());
             final NewSharedTldsMetaDataBuilder sharedTldsBuilder = new NewSharedTldsMetaDataBuilder(config.clone());
 
@@ -89,8 +109,8 @@ class NewWebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandl
 
         final ModelNode subModel = updateContext.getSubModel();
         subModel.get(CommonAttributes.CONTAINER_CONFIG).set(config);
-        subModel.get(CommonAttributes.CONNECTOR).setEmptyList();
-        subModel.get(CommonAttributes.VIRTUAL_SERVER).setEmptyList();
+        subModel.get(CommonAttributes.CONNECTOR).setEmptyObject();
+        subModel.get(CommonAttributes.VIRTUAL_SERVER).setEmptyObject();
 
         resultHandler.handleResultComplete(compensatingOperation);
 

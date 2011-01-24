@@ -86,6 +86,10 @@ public class NewLoggingExtension implements NewExtension {
             compensatingOperation.get(OP).set(REMOVE);
             compensatingOperation.get(OP_ADDR).set(operation.get(OP_ADDR));
 
+            final ModelNode subModel = context.getSubModel();
+            subModel.get(CommonAttributes.LOGGER).setEmptyObject();
+            subModel.get(CommonAttributes.HANDLER).setEmptyObject();
+
             resultHandler.handleResultComplete(compensatingOperation);
 
             return Cancellable.NULL;

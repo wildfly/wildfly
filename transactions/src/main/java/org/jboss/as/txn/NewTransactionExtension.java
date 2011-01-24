@@ -85,7 +85,7 @@ public class NewTransactionExtension implements NewExtension {
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).set(SUBSYSTEM, SUBSYSTEM_NAME);
+            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
 
             // elements
             final EnumSet<Element> required = EnumSet.of(Element.RECOVERY_ENVIRONMENT, Element.CORE_ENVIRONMENT);
@@ -156,6 +156,8 @@ public class NewTransactionExtension implements NewExtension {
                     }
                 }
             }
+            // Handle elements
+            ParseUtils.requireNoContent(reader);
             return store;
         }
 
@@ -180,6 +182,8 @@ public class NewTransactionExtension implements NewExtension {
                     }
                 }
             }
+            // Handle elements
+            ParseUtils.requireNoContent(reader);
             return coordinator;
         }
 
@@ -241,6 +245,8 @@ public class NewTransactionExtension implements NewExtension {
             if(! env.has(BINDING)) {
                 ParseUtils.missingRequired(reader, Collections.singleton(Attribute.BINDING));
             }
+            // Handle elements
+            ParseUtils.requireNoContent(reader);
             return env;
         }
 

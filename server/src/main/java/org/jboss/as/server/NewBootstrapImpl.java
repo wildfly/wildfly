@@ -51,6 +51,9 @@ final class NewBootstrapImpl implements NewBootstrap {
         }
         final ModuleLoader moduleLoader = configuration.getModuleLoader();
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
+        if (serverEnvironment == null) {
+            throw new IllegalArgumentException("serverEnvironment is null");
+        }
         final String name = serverEnvironment.getServerName();
         final NewConfigurationPersister configurationPersister = configuration.getConfigurationPersister();
         if (moduleLoader == null) {
@@ -58,9 +61,6 @@ final class NewBootstrapImpl implements NewBootstrap {
         }
         if (name == null) {
             throw new IllegalArgumentException("name is null");
-        }
-        if (serverEnvironment == null) {
-            throw new IllegalArgumentException("serverEnvironment is null");
         }
         if (configurationPersister == null) {
             throw new IllegalArgumentException("configurationPersister is null");

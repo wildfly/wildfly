@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -178,6 +181,7 @@ public class BasicModelController implements ModelController {
             } : handler;
             return doExecute(context, operation, operationHandler, useHandler);
         } catch (final Throwable t) {
+            log.errorf(t, "operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
             handler.handleFailed(getFailureResult(t));
             return Cancellable.NULL;
         }

@@ -76,6 +76,12 @@ public class NewJMXExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            list.add(subsystem);
+
             while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 final Element element = Element.forName(reader.getLocalName());
                 switch(element){
@@ -118,7 +124,7 @@ public class NewJMXExtension implements NewExtension {
             }
             final ModelNode connector = new ModelNode();
             connector.get(OP).set("add-connector");
-            connector.get(OP_ADDR).set(SUBSYSTEM, SUBSYSTEM_NAME);
+            connector.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
             connector.get(CommonAttributes.SERVER_BINDING).set(serverBinding);
             connector.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
             list.add(connector);

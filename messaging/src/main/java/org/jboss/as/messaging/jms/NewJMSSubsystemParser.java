@@ -63,11 +63,13 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
     /** {@inheritDoc} */
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> updates) throws XMLStreamException {
 
-        final ModelNode address = new ModelNode().set(SUBSYSTEM, NewJMSExtension.SUBSYSTEM_NAME);
+        final ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, NewJMSExtension.SUBSYSTEM_NAME);
+        address.protect();
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).setEmptyObject();
+        operation.get(OP_ADDR).set(address);
         updates.add(operation);
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -126,7 +128,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         final ModelNode queue = new ModelNode();
         queue.get(OP).set(ADD);
-        queue.get(OP_ADDR).set(address).set(QUEUE, name);
+        queue.get(OP_ADDR).set(address).add(QUEUE, name);
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());

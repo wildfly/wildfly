@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -50,8 +51,8 @@ class NewDeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperat
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.require(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
         final String path = operation.require(CommonAttributes.PATH).asString();
         final boolean enabled = operation.get(CommonAttributes.SCAN_ENABLED).asBoolean(true);
         final int interval = operation.get(CommonAttributes.SCAN_INTERVAL).asInt(5000);
@@ -59,7 +60,7 @@ class NewDeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperat
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(address);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

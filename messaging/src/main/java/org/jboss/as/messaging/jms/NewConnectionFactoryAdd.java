@@ -38,6 +38,7 @@ import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -56,8 +57,8 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
@@ -66,7 +67,7 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
 
-            final ConnectionFactoryConfiguration configuration = createConfiguration(operation);
+            final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
             final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
             final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);
             runtimeContext.getServiceTarget().addService(serviceName, service)
@@ -87,11 +88,10 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
         return Cancellable.NULL;
     }
 
-    static ConnectionFactoryConfiguration createConfiguration(final ModelNode operation) {
-        final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl();
+    static ConnectionFactoryConfiguration createConfiguration(final String name, final ModelNode operation) {
+        final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl(name, jndiBindings(operation));
 
         config.setAutoGroup(operation.get(AUTO_GROUP).asBoolean(HornetQClient.DEFAULT_AUTO_GROUP));
-        config.setBindings(jndiBindings(operation));
         config.setBlockOnAcknowledge(operation.get(BLOCK_ON_ACK).asBoolean(HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE));
         config.setBlockOnDurableSend(operation.get(BLOCK_ON_DURABLE_SEND).asBoolean(HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND));
         config.setBlockOnNonDurableSend(operation.get(BLOCK_ON_NON_DURABLE_SEND).asBoolean(HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND));

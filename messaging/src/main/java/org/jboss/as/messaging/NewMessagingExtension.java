@@ -29,6 +29,7 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.messaging.jms.NewJMSExtension;
 
 /**
  * @author Emanuel Muckenhuber
@@ -37,16 +38,22 @@ public class NewMessagingExtension implements NewExtension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
 
+    private final NewJMSExtension JMS_EXTENSION = new NewJMSExtension();
+
     /** {@inheritDoc} */
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewMessagingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewMessagingSubsystemAdd.INSTANCE, NewMessagingSubsystemProviders.SUBSYSTEM_ADD, false);
+        // Also register JMS subsystem
+        JMS_EXTENSION.initialize(context);
     }
 
     /** {@inheritDoc} */
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.MESSAGING_1_0.getUriString(), NewMessagingSubsystemParser.getInstance(), NewMessagingSubsystemParser.getInstance());
+        // Also register JMS subsystem
+        JMS_EXTENSION.initializeParsers(context);
     }
 
 }

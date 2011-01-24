@@ -112,7 +112,9 @@ public class NewRemotingExtension implements NewExtension {
 
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
-            final ModelNode address = new ModelNode().set(SUBSYSTEM, SUBSYSTEM_NAME);
+            final ModelNode address = new ModelNode();
+            address.add(SUBSYSTEM, SUBSYSTEM_NAME);
+            address.protect();
 
             String threadPoolName = null;
             final int count = reader.getAttributeCount();

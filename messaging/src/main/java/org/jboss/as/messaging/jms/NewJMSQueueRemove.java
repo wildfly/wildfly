@@ -32,6 +32,7 @@ import static org.jboss.as.messaging.jms.CommonAttributes.SELECTOR;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -49,8 +50,8 @@ class NewJMSQueueRemove implements ModelRemoveOperationHandler, RuntimeOperation
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode subModel = context.getSubModel();
         final ModelNode compensatingOperation = new ModelNode();

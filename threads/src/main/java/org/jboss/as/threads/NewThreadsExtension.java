@@ -87,6 +87,7 @@ import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
@@ -153,10 +154,7 @@ public class NewThreadsExtension implements NewExtension {
 
             // FIXME this should come from somewhere
             final ModelNode address = new ModelNode();
-            address.add("profile");
-            address.add("test");
-            address.add("subsystem");
-            address.add("threads");
+            address.add(ModelDescriptionConstants.SUBSYSTEM, "threads");
             address.protect();
 
             final ModelNode subsystem = new ModelNode();
@@ -253,8 +251,7 @@ public class NewThreadsExtension implements NewExtension {
             }
 
             final ModelNode address = parentAddress.clone();
-            address.add(THREAD_FACTORY);
-            address.add(name);
+            address.add(THREAD_FACTORY, name);
             address.protect();
             op.get(ADDRESS).set(address);
 
@@ -318,8 +315,7 @@ public class NewThreadsExtension implements NewExtension {
             //FIXME Make relative and use this scheme to add the addresses
             //address.add("profile", "test).add("subsystem", "threads")
             final ModelNode address = parentAddress.clone();
-            address.add(BOUNDED_QUEUE_THREAD_POOL);
-            address.add(name);
+            address.add(BOUNDED_QUEUE_THREAD_POOL, name);
             address.protect();
             op.get(ADDRESS).set(address);
 
@@ -422,8 +418,7 @@ public class NewThreadsExtension implements NewExtension {
             //FIXME Make relative and use this scheme to add the addresses
             //address.add("profile", "test).add("subsystem", "threads")
             final ModelNode address = parentAddress.clone();
-            address.add(UNBOUNDED_QUEUE_THREAD_POOL);
-            address.add(name);
+            address.add(UNBOUNDED_QUEUE_THREAD_POOL, name);
             address.protect();
             op.get(ADDRESS).set(address);
 
@@ -499,8 +494,7 @@ public class NewThreadsExtension implements NewExtension {
             //FIXME Make relative and use this scheme to add the addresses
             //address.add("profile", "test).add("subsystem", "threads")
             final ModelNode address = parentAddress.clone();
-            address.add(SCHEDULED_THREAD_POOL);
-            address.add(name);
+            address.add(SCHEDULED_THREAD_POOL, name);
             address.protect();
             op.get(ADDRESS).set(address);
 
@@ -579,8 +573,7 @@ public class NewThreadsExtension implements NewExtension {
             //FIXME Make relative and use this scheme to add the addresses
             //address.add("profile", "test).add("subsystem", "threads")
             final ModelNode address = parentAddress.clone();
-            address.add(QUEUELESS_THREAD_POOL);
-            address.add(name);
+            address.add(QUEUELESS_THREAD_POOL, name);
             address.protect();
             op.get(ADDRESS).set(address);
 

@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -58,8 +59,8 @@ class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHa
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
@@ -84,7 +85,7 @@ class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHa
                     list.add(injectedValue);
                 }
                 service.addHandlers(list);
-                service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
+                if(operation.has(QUEUE_LENGTH)) service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
                 service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                 service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
                 serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);

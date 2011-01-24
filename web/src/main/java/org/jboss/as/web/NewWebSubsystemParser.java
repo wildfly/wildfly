@@ -139,7 +139,9 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
             throw ParseUtils.unexpectedAttribute(reader, 0);
         }
 
-        final ModelNode address = new ModelNode().set(SUBSYSTEM, NewWebExtension.SUBSYSTEM_NAME);
+        final ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, NewWebExtension.SUBSYSTEM_NAME);
+        address.protect();
 
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
@@ -432,21 +434,22 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         if (protocol == null) {
             ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PROTOCOL));
         }
+        ParseUtils.requireNoContent(reader);
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
         connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
         connector.get(PROTOCOL).set(protocol);
         connector.get(SOCKET_BINDING).set(bindingRef);
-        connector.get(SCHEME).set(scheme);
-        connector.get(EXECUTOR).set(executorRef);
-        connector.get(ENABLED).set(enabled);
-        connector.get(ENABLE_LOOKUPS).set(enableLookups);
-        connector.get(PROXY_NAME).set(proxyName);
-        connector.get(PROXY_PORT).set(proxyPort);
-        connector.get(MAX_POST_SIZE).set(maxPostSize);
-        connector.get(MAX_SAVE_POST_SIZE).set(maxSavePostSize);
-        connector.get(SECURE).set(secure);
-        connector.get(REDIRECT_PORT).set(redirectPort);
+        if(scheme != null) connector.get(SCHEME).set(scheme);
+        if(executorRef != null) connector.get(EXECUTOR).set(executorRef);
+        if(enabled != null) connector.get(ENABLED).set(enabled);
+        if(enableLookups != null) connector.get(ENABLE_LOOKUPS).set(enableLookups);
+        if(proxyName != null) connector.get(PROXY_NAME).set(proxyName);
+        if(proxyPort != null) connector.get(PROXY_PORT).set(proxyPort);
+        if(maxPostSize != null) connector.get(MAX_POST_SIZE).set(maxPostSize);
+        if(maxSavePostSize != null) connector.get(MAX_SAVE_POST_SIZE).set(maxSavePostSize);
+        if(secure != null) connector.get(SECURE).set(secure);
+        if(redirectPort != null) connector.get(REDIRECT_PORT).set(redirectPort);
         list.add(connector);
     }
 

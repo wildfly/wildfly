@@ -79,7 +79,7 @@ public class NewEeExtension implements NewExtension {
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).set(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
         }
     }
 

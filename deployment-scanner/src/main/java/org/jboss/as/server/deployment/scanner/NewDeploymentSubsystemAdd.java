@@ -46,7 +46,7 @@ public class NewDeploymentSubsystemAdd implements ModelAddOperationHandler {
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         // Initialize the scanner
-        context.getSubModel().get(CommonAttributes.DEPLOYMENT_SCANNER);
+        context.getSubModel().get(CommonAttributes.DEPLOYMENT_SCANNER).setEmptyObject();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");

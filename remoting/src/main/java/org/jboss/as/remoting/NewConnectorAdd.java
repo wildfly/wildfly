@@ -49,6 +49,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -75,8 +76,8 @@ public class NewConnectorAdd implements RuntimeOperationHandler, ModelAddOperati
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         // Create the service.
         if(context instanceof NewRuntimeOperationContext) {
@@ -103,7 +104,7 @@ public class NewConnectorAdd implements RuntimeOperationHandler, ModelAddOperati
 
         // Compensating is remove
         final ModelNode compensating = new ModelNode();
-        compensating.get(OP_ADDR).set(address);
+        compensating.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensating.get(OP).set(REMOVE);
         compensating.get(NAME).set(name);
 

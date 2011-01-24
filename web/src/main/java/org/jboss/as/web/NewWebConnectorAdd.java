@@ -30,6 +30,7 @@ import static org.jboss.as.web.CommonAttributes.*;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -53,13 +54,13 @@ class NewWebConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHa
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
         final String bindingRef = operation.require(SOCKET_BINDING).asString();
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(address);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
@@ -81,6 +82,9 @@ class NewWebConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHa
         }
 
         final ModelNode subModel = context.getSubModel();
+        subModel.get(PROTOCOL).set(operation.get(PROTOCOL));
+        subModel.get(SOCKET_BINDING).set(operation.get(SOCKET_BINDING));
+        if(operation.has(SCHEME)) subModel.get(SCHEME).set(operation.get(SCHEME));
         if(operation.has(SECURE)) subModel.get(SECURE).set(operation.get(SECURE).asBoolean());
         if(operation.has(ENABLE_LOOKUPS)) subModel.get(ENABLE_LOOKUPS).set(operation.get(ENABLE_LOOKUPS).asBoolean());
         if(operation.has(PROXY_NAME)) subModel.get(PROXY_NAME).set(operation.get(PROXY_NAME).asString());

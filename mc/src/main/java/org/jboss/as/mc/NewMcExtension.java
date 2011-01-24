@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean;
+package org.jboss.as.mc;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
@@ -46,50 +47,52 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Domain extension used to initialize the managed bean subsystem element handlers.
- *
  * @author Emanuel Muckenhuber
  */
-public class NewManagedBeansExtension implements NewExtension {
+public class NewMcExtension implements NewExtension {
 
-    public static final String SUBSYSTEM_NAME = "managed-beans";
-    public static final String NAMESPACE = "urn:jboss:domain:managedbeans:1.0";
+    public static final String SUBSYSTEM_NAME = "mc";
+    public static final String NAMESPACE = "urn:jboss:domain:mc:1.0";
 
-    private static final ManagedBeanSubsystemElementParser parser = new ManagedBeanSubsystemElementParser();
-    private static final DescriptionProvider DESCRIPTION = new DescriptionProvider() {
+    private static final MCSubsystemParser parser = new MCSubsystemParser();
+    private static final DescriptionProvider NULL_DESCRIPTION = new DescriptionProvider() {
+
         public ModelNode getModelDescription(Locale locale) {
             return new ModelNode();
         }
     };
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
-        nodeRegistration.registerOperationHandler(ADD, NewManagedBeansSubsystemAdd.INSTANCE, DESCRIPTION, false);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NULL_DESCRIPTION);
+        registration.registerOperationHandler(ADD, NewMcSubsystemAdd.INSTANCE, NULL_DESCRIPTION, false);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(NAMESPACE, parser, parser);
     }
 
-    static class ManagedBeanSubsystemElementParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
-
-        /** {@inheritDoc} */
-        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
-            final ModelNode update = new ModelNode();
-            update.get(OP).set(ADD);
-            update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(update);
-        }
+    static final class MCSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
 
         /** {@inheritDoc} */
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
             writer.writeEndElement();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
+            // Require no content
+            ParseUtils.requireNoContent(reader);
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            list.add(subsystem);
         }
 
     }

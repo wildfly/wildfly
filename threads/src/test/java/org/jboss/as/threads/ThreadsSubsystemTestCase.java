@@ -113,6 +113,11 @@ public class ThreadsSubsystemTestCase {
         }
     };
 
+    static ModelNode profileAddress = new ModelNode();
+    static {
+        profileAddress.add("profile", "test");
+    }
+
     private ModelNode model;
     //private ModelNode root = new ModelNode();
     private TestController controller;
@@ -851,6 +856,18 @@ public class ThreadsSubsystemTestCase {
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
         xmlMapper.parseDocument(updates, xmlReader);
+
+        // Process subsystems
+        for(final ModelNode update : updates) {
+            // Process relative subsystem path address
+            final ModelNode subsystemAddress = profileAddress.clone();
+            for(final Property path : update.get(OP_ADDR).asPropertyList()) {
+                subsystemAddress.add(path.getName(), path.getValue().asString());
+            }
+            update.get(OP_ADDR).set(subsystemAddress);
+            System.err.println(update.get(OP_ADDR));
+        }
+
         return updates;
     }
 

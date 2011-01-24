@@ -47,7 +47,7 @@ class NewLoggerRemove implements ModelRemoveOperationHandler, RuntimeOperationHa
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode address = operation.get(OP_ADDR);
-        final String name = address.get(address.asInt() - 1).asString();
+        final String name = address.get(address.asInt() - 1).asProperty().getValue().asString();
 
         final ModelNode subModel = context.getSubModel();
         final ModelNode compensatingOperation = new ModelNode();

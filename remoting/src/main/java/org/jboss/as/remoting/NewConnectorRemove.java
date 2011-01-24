@@ -33,6 +33,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -52,12 +53,12 @@ public class NewConnectorRemove implements RuntimeOperationHandler, ModelRemoveO
     @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode address = operation.get(OP_ADDR);
-        final String connectorName = address.get(address.asInt() - 1).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
         final ModelNode connector = context.getSubModel();
 
         final ModelNode compensating = new ModelNode();
-        compensating.get(OP_ADDR).set(address);
+        compensating.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensating.get(OP).set(ADD);
         // compensating.get(REQUEST_PROPERTIES, NAME).set(connectorName);
         compensating.get(SASL).set(connector.get(SASL));
@@ -67,7 +68,7 @@ public class NewConnectorRemove implements RuntimeOperationHandler, ModelRemoveO
         // connector.clear();
 
         if(context instanceof NewRuntimeOperationContext) {
-            final ServiceController<?> controller = ((NewRuntimeOperationContext)context).getServiceRegistry().getService(ConnectorElement.connectorName(connectorName));
+            final ServiceController<?> controller = ((NewRuntimeOperationContext)context).getServiceRegistry().getService(ConnectorElement.connectorName(name));
             if(controller != null) {
                 controller.addListener(new AbstractServiceListener<Object>() {
                     @Override

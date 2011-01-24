@@ -160,7 +160,7 @@ class NewSharedWebMetaDataBuilder {
      */
     void enableJsp(final WebMetaData metadata) {
         final ModelNode config = containerConfig.get(JSP_CONFIGURATION);
-        if (config.get(DISABLED).asBoolean()) {
+        if (config.get(DISABLED).asBoolean(false)) {
             return;
         }
         final ServletMetaData servlet = new ServletMetaData();

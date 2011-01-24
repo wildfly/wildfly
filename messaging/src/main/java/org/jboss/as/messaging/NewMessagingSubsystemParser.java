@@ -70,7 +70,7 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(SUBSYSTEM, NewMessagingExtension.SUBSYSTEM_NAME);
+        operation.get(OP_ADDR).add(SUBSYSTEM, NewMessagingExtension.SUBSYSTEM_NAME);
         list.add(operation);
 
         // Handle elements
@@ -399,6 +399,7 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
 
     static ModelNode parseQueues(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode queues = new ModelNode();
+        queues.setEmptyObject();
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
             int count = reader.getAttributeCount();

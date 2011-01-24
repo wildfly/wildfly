@@ -194,6 +194,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
 
         // Populate subModel
         final ModelNode subModel = context.getSubModel();
+        subModel.setEmptyObject();
         for(final String attribute : NewMessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
             if(operation.has(attribute)) {
                 subModel.get(attribute).set(operation.get(attribute));
@@ -360,15 +361,17 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param params the detyped operation parameters
      */
     static void processCoreQueues(final Configuration configuration, final ModelNode params) {
-        final List<CoreQueueConfiguration> queues = new ArrayList<CoreQueueConfiguration>();
-        for(final Property property : params.get(QUEUE).asPropertyList()) {
-            final String queueName = property.getName();
-            final ModelNode config = property.getValue();
-            final CoreQueueConfiguration queue = new CoreQueueConfiguration(config.get(CommonAttributes.ADDRESS).asString(), queueName,
-                    config.get(FILTER).asString(), config.get(DURABLE).asBoolean());
-            queues.add(queue);
+        if(params.has(QUEUE)) {
+            final List<CoreQueueConfiguration> queues = new ArrayList<CoreQueueConfiguration>();
+            for(final Property property : params.get(QUEUE).asPropertyList()) {
+                final String queueName = property.getName();
+                final ModelNode config = property.getValue();
+                final CoreQueueConfiguration queue = new CoreQueueConfiguration(config.get(CommonAttributes.ADDRESS).asString(), queueName,
+                        config.get(FILTER).asString(), config.get(DURABLE).asBoolean());
+                queues.add(queue);
+            }
+            configuration.setQueueConfigurations(queues);
         }
-        configuration.setQueueConfigurations(queues);
     }
 
     /**
@@ -378,26 +381,28 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param params the detyped operation parameters
      */
     static void processAddressSettings(final Configuration configuration, final ModelNode params) {
-        for(final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
-            final String match = property.getName();
-            final ModelNode config = property.getValue();
+        if(params.has(ADDRESS_SETTING)) {
+            for(final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
+                final String match = property.getName();
+                final ModelNode config = property.getValue();
 
-            final AddressSettings settings = new AddressSettings();
-            final AddressFullMessagePolicy addressPolicy = config.has(ADDRESS_FULL_MESSAGE_POLICY) ?
-                    AddressFullMessagePolicy.valueOf(config.get(ADDRESS_FULL_MESSAGE_POLICY).asString()) : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
-            settings.setAddressFullMessagePolicy(addressPolicy);
-            settings.setDeadLetterAddress(asSimpleString(config.get(DEAD_LETTER_ADDRESS), null));
-            settings.setLastValueQueue(config.get(LVQ).asBoolean(AddressSettings.DEFAULT_LAST_VALUE_QUEUE));
-            settings.setMaxDeliveryAttempts(config.get(MAX_DELIVERY_ATTEMPTS).asInt(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS));
-            settings.setMaxSizeBytes(config.get(MAX_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_MAX_SIZE_BYTES));
-            settings.setMessageCounterHistoryDayLimit(config.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT).asInt(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
-            settings.setExpiryAddress(asSimpleString(config.get(EXPIRY_ADDRESS), null));
-            settings.setRedeliveryDelay(config.get(REDELIVERY_DELAY).asInt((int) AddressSettings.DEFAULT_REDELIVER_DELAY));
-            settings.setRedistributionDelay(config.get(REDISTRIBUTION_DELAY).asInt((int) AddressSettings.DEFAULT_REDISTRIBUTION_DELAY));
-            settings.setPageSizeBytes(config.get(PAGE_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_PAGE_SIZE));
-            settings.setSendToDLAOnNoRoute(config.get(SEND_TO_DLA_ON_NO_ROUTE).asBoolean(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE));
+                final AddressSettings settings = new AddressSettings();
+                final AddressFullMessagePolicy addressPolicy = config.has(ADDRESS_FULL_MESSAGE_POLICY) ?
+                        AddressFullMessagePolicy.valueOf(config.get(ADDRESS_FULL_MESSAGE_POLICY).asString()) : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
+                settings.setAddressFullMessagePolicy(addressPolicy);
+                settings.setDeadLetterAddress(asSimpleString(config.get(DEAD_LETTER_ADDRESS), null));
+                settings.setLastValueQueue(config.get(LVQ).asBoolean(AddressSettings.DEFAULT_LAST_VALUE_QUEUE));
+                settings.setMaxDeliveryAttempts(config.get(MAX_DELIVERY_ATTEMPTS).asInt(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS));
+                settings.setMaxSizeBytes(config.get(MAX_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_MAX_SIZE_BYTES));
+                settings.setMessageCounterHistoryDayLimit(config.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT).asInt(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
+                settings.setExpiryAddress(asSimpleString(config.get(EXPIRY_ADDRESS), null));
+                settings.setRedeliveryDelay(config.get(REDELIVERY_DELAY).asInt((int) AddressSettings.DEFAULT_REDELIVER_DELAY));
+                settings.setRedistributionDelay(config.get(REDISTRIBUTION_DELAY).asInt((int) AddressSettings.DEFAULT_REDISTRIBUTION_DELAY));
+                settings.setPageSizeBytes(config.get(PAGE_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_PAGE_SIZE));
+                settings.setSendToDLAOnNoRoute(config.get(SEND_TO_DLA_ON_NO_ROUTE).asBoolean(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE));
 
-            configuration.getAddressesSettings().put(match, settings);
+                configuration.getAddressesSettings().put(match, settings);
+            }
         }
     }
 
@@ -408,19 +413,21 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param params the detyped operation parameters
      */
     static void processSecuritySettings(final Configuration configuration, final ModelNode params) {
-        for(final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
-            final String match = property.getName();
-            final ModelNode config = property.getValue();
-            final Set<Role> roles = new HashSet<Role>();
-            for(final Property role : config.get(ROLE).asPropertyList()) {
-                final String name = role.getName();
-                final ModelNode value = role.getValue();
-                roles.add(new Role(name, value.get(SEND_NAME).asBoolean(false),
-                        value.get(CONSUME_NAME).asBoolean(false), value.get(CREATEDURABLEQUEUE_NAME).asBoolean(false),
-                        value.get(DELETEDURABLEQUEUE_NAME).asBoolean(false), value.get(CREATE_NON_DURABLE_QUEUE_NAME).asBoolean(false),
-                        value.get(DELETE_NON_DURABLE_QUEUE_NAME).asBoolean(false), value.get(MANAGE_NAME).asBoolean(false)));
+        if(params.has(SECURITY_SETTING)) {
+            for(final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
+                final String match = property.getName();
+                final ModelNode config = property.getValue();
+                final Set<Role> roles = new HashSet<Role>();
+                for(final Property role : config.get(ROLE).asPropertyList()) {
+                    final String name = role.getName();
+                    final ModelNode value = role.getValue();
+                    roles.add(new Role(name, value.get(SEND_NAME).asBoolean(false),
+                            value.get(CONSUME_NAME).asBoolean(false), value.get(CREATEDURABLEQUEUE_NAME).asBoolean(false),
+                            value.get(DELETEDURABLEQUEUE_NAME).asBoolean(false), value.get(CREATE_NON_DURABLE_QUEUE_NAME).asBoolean(false),
+                            value.get(DELETE_NON_DURABLE_QUEUE_NAME).asBoolean(false), value.get(MANAGE_NAME).asBoolean(false)));
+                }
+                configuration.getSecurityRoles().put(match, roles);
             }
-            configuration.getSecurityRoles().put(match, roles);
         }
     }
 

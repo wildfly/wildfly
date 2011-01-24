@@ -142,9 +142,6 @@ public class RemotingSubsystemUnitTestCase {
             System.err.println(e.getFailureDescription());
         }
 
-        System.out.println(model);
-        System.out.println(" ---- ");
-
     }
 
     static class TestController extends BasicModelController {

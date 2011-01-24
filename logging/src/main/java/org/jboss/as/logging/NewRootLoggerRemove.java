@@ -64,6 +64,8 @@ class NewRootLoggerRemove implements ModelUpdateOperationHandler, RuntimeOperati
             }
         }
 
+        subModel.get(CommonAttributes.ROOT_LOGGER).clear();
+
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;
