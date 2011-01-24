@@ -44,6 +44,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -136,7 +137,7 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
@@ -183,7 +184,7 @@ public class HostXml extends CommonXml {
     }
 
     private void setHostName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        final ModelNode update = getWriteAttributeOperation(address, NAME, value);
+        final ModelNode update = Util.getWriteAttributeOperation(address, NAME, value);
         operationList.add(update);
     }
 
@@ -434,7 +435,7 @@ public class HostXml extends CommonXml {
                             if (sawSystemProperties) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+                            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
                             sawSystemProperties = true;
                             break;
                         }
@@ -447,7 +448,7 @@ public class HostXml extends CommonXml {
         }
 
         final boolean isStart = start == null ? true : start.booleanValue();
-        final ModelNode startUpdate = getWriteAttributeOperation(address, "start", isStart);
+        final ModelNode startUpdate = Util.getWriteAttributeOperation(address, "start", isStart);
         list.add(startUpdate);
     }
 }

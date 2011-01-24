@@ -20,7 +20,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:1.0"
+<server name="example"
+	    xmlns="urn:jboss:domain:1.0" 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
@@ -85,4 +86,19 @@
 		   <multicast/>
 		</interface>
     </interfaces>
+
+	    <socket-binding-group name="standard-sockets" default-interface="default">
+	       <socket-binding name="jndi" port="1099"/>
+	       <socket-binding name="jmx-connector-registry" port="1090"/>
+	       <socket-binding name="jmx-connector-server" port="1091"/>
+	       <socket-binding name="http" port="8080"/>
+	       <socket-binding name="https" port="8447"/>
+	       <socket-binding name="osgi-http" port="8090"/>
+	       <socket-binding name="remoting" port="4447"/>
+	       <socket-binding name="txn-recovery-environment" port="4712"/>
+	       <socket-binding name="txn-status-manager" port="4713"/>
+	       <socket-binding name="txn-socket-process-id" port="4714"/>
+	       <socket-binding name="netty" port="5445" />
+	       <socket-binding name="netty-throughput" port="5455"/>
+	    </socket-binding-group>
 </server>

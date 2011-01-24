@@ -24,6 +24,7 @@ package org.jboss.as.server.services.net;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -77,6 +78,13 @@ public interface SocketBindingManager {
      * @throws IOException
      */
     MulticastSocket createMulticastSocket(final SocketAddress address) throws IOException;
+
+    /**
+     * Return the resolved {@link InetAddress} for the default interface.
+     *
+     * @return the resolve address
+     */
+    InetAddress getDefaultInterfaceAddress();
 
     /**
      * Get the server port offset.

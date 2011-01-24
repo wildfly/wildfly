@@ -27,7 +27,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NETWORK;
@@ -35,10 +39,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
@@ -65,6 +69,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -371,7 +376,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode mgmtSocket = new ModelNode();
         mgmtSocket.get("interface-name").set(interfaceName);
         mgmtSocket.get("port").set(port);
-        final ModelNode addMgmt = getWriteAttributeOperation(address, "management-socket", mgmtSocket);
+        final ModelNode addMgmt = Util.getWriteAttributeOperation(address, "management-socket", mgmtSocket);
         list.add(addMgmt);
 
         if (maxThreads > 0) {
@@ -418,7 +423,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (home != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         home = value;
-                        final ModelNode update = getWriteAttributeOperation(null, "java-home", home);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, "java-home", home);
                         attrUpdates.add(update);
                         break;
                     }
@@ -436,7 +441,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (debugEnabled != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         debugEnabled = Boolean.valueOf(value);
-                        final ModelNode update = getWriteAttributeOperation(null, "debug-enabled", debugEnabled);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, "debug-enabled", debugEnabled);
                         attrUpdates.add(update);
                         break;
                     }
@@ -444,7 +449,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (debugOptions != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         debugOptions = value;
-                        final ModelNode update = getWriteAttributeOperation(null, "debug-options", debugOptions);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, "debug-options", debugOptions);
                         attrUpdates.add(update);
                         break;
                     }
@@ -452,7 +457,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (envClasspathIgnored != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         envClasspathIgnored = Boolean.valueOf(value);
-                        final ModelNode update = getWriteAttributeOperation(null, "env-classpath-ignored", envClasspathIgnored);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, "env-classpath-ignored", envClasspathIgnored);
                         attrUpdates.add(update);
                         break;
                     }
@@ -521,7 +526,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (hasEnvironmentVariables) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            updates.add(getWriteAttributeOperation(address, "environment-variables", parseProperties(reader)));
+                            updates.add(Util.getWriteAttributeOperation(address, "environment-variables", parseProperties(reader)));
                             hasEnvironmentVariables = true;
                             break;
                         }
@@ -529,7 +534,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (hasSystemProperties) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            updates.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+                            updates.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
                             hasSystemProperties = true;
                             break;
                         }
@@ -564,12 +569,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "heap-size", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "heap-size", value);
                         updates.add(update);
                         break;
                     }
                     case MAX_SIZE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "max-heap-size", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "max-heap-size", value);
                         updates.add(update);
                         break;
                     }
@@ -594,12 +599,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "permgen-size", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "permgen-size", value);
                         updates.add(update);
                         break;
                     }
                     case MAX_SIZE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "max-permgen-size", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "max-permgen-size", value);
                         updates.add(update);
                         break;
                     }
@@ -625,7 +630,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "stack-size", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "stack-size", value);
                         updates.add(update);
                         sizeSet = true;
                         break;
@@ -655,7 +660,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "agent-lib", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "agent-lib", value);
                         updates.add(update);
                         valueSet = true;
                         break;
@@ -685,7 +690,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "agent-path", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "agent-path", value);
                         updates.add(update);
                         valueSet = true;
                         break;
@@ -715,7 +720,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = getWriteAttributeOperation(address, "java-agent", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, "java-agent", value);
                         updates.add(update);
                         valueSet = true;
                         break;
@@ -937,59 +942,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final List<ModelNode> bindingUpdates, final boolean allowInclude) throws XMLStreamException {
-        final Set<String> includedGroups = new HashSet<String>();
-        final Set<String> socketBindings = new HashSet<String>();
-
-        // Handle attributes
-        final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
-        final String name = attrValues[0];
-        final String defaultInterface = attrValues[1];
-
-        final ModelNode bindingGroupUpdate = new ModelNode();
-        bindingGroupUpdate.get(OP_ADDR).set(address).add(ModelDescriptionConstants.SOCKET_BINDING_GROUP, name);
-        bindingGroupUpdate.get(OP).set(ADD);
-        final ModelNode bindings = bindingGroupUpdate.get("bindings");
-        bindings.setEmptyList();
-
-        // Handle elements
-        while (reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INCLUDE: {
-                            if(! allowInclude) {
-                                // no include in standalone
-                                throw unexpectedElement(reader);
-                            }
-                            final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
-                            if (includedGroups.contains(includedGroup)) {
-                                throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
-                            }
-                            includedGroups.add(includedGroup);
-                            break;
-                        }
-                        case SOCKET_BINDING: {
-                            final String bindingName = parseSocketBinding(reader, interfaces, bindings.add(), defaultInterface);
-                            if (socketBindings.contains(bindingName)) {
-                                throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
-                            }
-                            socketBindings.add(bindingName);
-                            break;
-                        }
-                        default:
-                            throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-        bindingUpdates.add(bindingGroupUpdate);
-    }
-
     protected void parseSocketBindingGroupRef(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         // Handle attributes
         String name = null;
@@ -1036,20 +988,24 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         // Handle elements
         ParseUtils.requireNoContent(reader);
 
-        ModelNode update = getWriteAttributeOperation(address, "socket-binding-group", name);
+        ModelNode update = Util.getWriteAttributeOperation(address, "socket-binding-group", name);
         updates.add(update);
 
         if (offset < 0) {
             offset = 0;
         }
-        update = getWriteAttributeOperation(address, "socket-binding-port-offset", offset);
+        update = Util.getWriteAttributeOperation(address, "socket-binding-port-offset", offset);
         updates.add(update);
     }
 
-    protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode binding, final String inheritedInterfaceName) throws XMLStreamException {
+    protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final String inheritedInterfaceName, final List<ModelNode> updates) throws XMLStreamException {
 
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PORT);
         String name = null;
+
+        final ModelNode binding = new ModelNode();
+        binding.get(OP_ADDR); // undefined until we parse name
+        binding.get(OP).set(ADD);
 
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -1062,7 +1018,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 required.remove(attribute);
                 switch (attribute) {
                     case NAME: {
-                        binding.get("name").set(name = value);
+                        name = value;
+                        binding.get(OP_ADDR).set(address).add(SOCKET_BINDING, name);
                         break;
                     }
                     case INTERFACE: {
@@ -1071,15 +1028,15 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                     " " + attribute.getLocalName() + " must be declared in element " +
                                     Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
-                        binding.get("interface").set(value);
+                        binding.get(INTERFACE).set(value);
                         break;
                     }
                     case PORT: {
-                        binding.get("port").set(parseBoundedIntegerAttribute(reader, i, 0, 65535));
+                        binding.get(PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535));
                         break;
                     }
                     case FIXED_PORT: {
-                        binding.get("fixed-port").set(Boolean.parseBoolean(value));
+                        binding.get(FIXED_PORT).set(Boolean.parseBoolean(value));
                         break;
                     }
                     case MULTICAST_ADDRESS: {
@@ -1090,7 +1047,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                         attribute.getLocalName() + " is not a valid multicast address",
                                         reader.getLocation());
                             }
-                            binding.get("multicast-address").set(mcastAddr.toString());
+                            binding.get(MULTICAST_ADDRESS).set(mcastAddr.toString());
                         } catch (final UnknownHostException e) {
                             throw new XMLStreamException("Value " + value + " for attribute " +
                                     attribute.getLocalName() + " is not a valid multicast address",
@@ -1098,7 +1055,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         }
                     }
                     case MULTICAST_PORT: {
-                        binding.get("multicast-port").set(parseBoundedIntegerAttribute(reader, i, 1, 65535));
+                        binding.get(MULTICAST_PORT).set(parseBoundedIntegerAttribute(reader, i, 1, 65535));
                         break;
                     }
                     default:
@@ -1106,37 +1063,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
-        if (! binding.has("interface")) {
-            binding.get("interface").set(inheritedInterfaceName);
-        }
+
         if (! required.isEmpty()) {
             throw missingRequired(reader, required);
         }
         // Handle elements
         requireNoContent(reader);
+
+        updates.add(binding);
         return name;
-    }
-
-    protected static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, String value) {
-        return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
-    }
-
-    protected static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, int value) {
-        return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
-    }
-
-    protected static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, boolean value) {
-        return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
-    }
-
-    protected static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, ModelNode value) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        if (address != null) {
-            op.get(OP_ADDR).set(address);
-        }
-        op.get(NAME).set(attributeName);
-        op.get(VALUE).set(value);
-        return op;
     }
 }

@@ -505,7 +505,16 @@
                     any sockets that do not explicitly declare one.
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>
+        </xs:attribute>	
+	    <xs:attribute name="port-offset" type="xs:int" use="optional" default="0">
+	        <xs:annotation>
+                <xs:documentation>
+	                    Increment to apply to the base port values defined in the
+	                    socket group to derive the values to use on this
+	                    server.
+	            </xs:documentation>
+	        </xs:annotation>
+	    </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="socket-bindingType">

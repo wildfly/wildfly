@@ -18,6 +18,8 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import java.util.EnumSet;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -27,22 +29,27 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ModelTypeValidator implements ParameterValidator {
-    protected final ModelType type;
+    protected final EnumSet<ModelType> validTypes;
     protected final boolean nullable;
-    protected final boolean allowExpressions;
 
     public ModelTypeValidator(final ModelType type) {
-        this(type, false, false);
+        this(false, false, type);
     }
 
     public ModelTypeValidator(final ModelType type, final boolean nullable) {
-        this(type, nullable, false);
+        this(nullable, false, type);
     }
 
     public ModelTypeValidator(final ModelType type, final boolean nullable, final boolean allowExpressions) {
-        this.type = type;
+        this(nullable, allowExpressions, type);
+    }
+
+    public ModelTypeValidator(final boolean nullable, final boolean allowExpressions, ModelType firstValidType, ModelType... otherValidTypes) {
+        this.validTypes = EnumSet.of(firstValidType, otherValidTypes);
         this.nullable = nullable;
-        this.allowExpressions = allowExpressions;
+        if (allowExpressions) {
+            this.validTypes.add(ModelType.EXPRESSION);
+        }
     }
 
     /**
@@ -55,8 +62,8 @@ public class ModelTypeValidator implements ParameterValidator {
                 return "Parameter " + parameterName + " may not be null "; //TODO i18n
             }
         } else {
-            if (value.getType() != type && (!allowExpressions || value.getType() != ModelType.EXPRESSION)) {
-                return "Wrong type for " + parameterName + ". Expected " + type + " but was " + value.getType(); //TODO i18n
+            if (!validTypes.contains(value.getType())) {
+                return "Wrong type for " + parameterName + ". Expected " + validTypes.toString() + " but was " + value.getType(); //TODO i18n
             }
         }
         return null;

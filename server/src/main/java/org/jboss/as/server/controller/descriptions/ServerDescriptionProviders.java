@@ -25,6 +25,7 @@ package org.jboss.as.server.controller.descriptions;
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,6 +47,14 @@ public final class ServerDescriptionProviders {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
             return ServerRootDescription.getDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider SOCKET_BINDING_GROUP_PROVIDER = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return SocketBindingGroupDescription.getServerSocketBindingGroupDescription(locale);
         }
     };
 

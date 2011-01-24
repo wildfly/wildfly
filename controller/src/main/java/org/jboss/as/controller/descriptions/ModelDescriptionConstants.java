@@ -43,9 +43,11 @@ public class ModelDescriptionConstants {
     public static final String CHILDREN = "children";
     public static final String CRITERIA = "criteria";
     public static final String DEFAULT = "default";
+    public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String EXTENSION = "extension";
+    public static final String FIXED_PORT = "fixed-port";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
     public static final String INCLUDE = "include";
@@ -55,11 +57,15 @@ public class ModelDescriptionConstants {
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT = "management";
     public static final String MASK = "mask";
+    public static final String MAX = "max";
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
+    public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
     public static final String MODEL_DESCRIPTION = "model-description";
+    public static final String MULTICAST_ADDRESS = "multicast-address";
+    public static final String MULTICAST_PORT = "multicast-port";
     public static final String NAME = "name";
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
@@ -75,6 +81,7 @@ public class ModelDescriptionConstants {
     public static final String OPERATION_NAME = "operation-name";
     public static final String PATH = "path";
     public static final String PORT = "port";
+    public static final String PORT_OFFSET = "port-offset";
     public static final String PROFILE = "profile";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
     public static final String READ_CHILDREN_NAMES_OPERATION = "read-children_names";
@@ -93,7 +100,9 @@ public class ModelDescriptionConstants {
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SERVER = "server";
     public static final String SERVER_GROUP = "server-group";
+    public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
+    public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";
     public static final String SUBSYSTEM = "subsystem";
     public static final String SYSTEM_PROPERTY = "system-property";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";

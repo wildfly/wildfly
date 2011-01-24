@@ -18,9 +18,12 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.dmr.ModelNode;
 
@@ -40,7 +43,13 @@ public class Util {
     public static ModelNode getEmptyOperation(String operationName, ModelNode address) {
         ModelNode op = new ModelNode();
         op.get(OP).set(operationName);
-        op.get(OP_ADDR).set(address);
+        if (address != null) {
+            op.get(OP_ADDR).set(address);
+        }
+        else {
+            // Just establish the standard structure; caller can fill in address later
+            op.get(OP_ADDR);
+        }
         return op;
     }
 
@@ -48,5 +57,26 @@ public class Util {
         return getEmptyOperation(REMOVE, address);
     }
 
+    public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, String value) {
+        return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
+    }
 
+    public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, int value) {
+        return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
+    }
+
+    public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, boolean value) {
+        return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
+    }
+
+    public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, ModelNode value) {
+        ModelNode op = getEmptyOperation(WRITE_ATTRIBUTE_OPERATION, address);
+        op.get(NAME).set(attributeName);
+        op.get(VALUE).set(value);
+        return op;
+    }
+
+    public static boolean isExpression(String value) {
+        return value != null && value.startsWith("${") && value.endsWith("}");
+    }
 }

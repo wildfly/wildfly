@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -70,6 +71,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
+import org.jboss.as.server.operations.ServerSocketBindingAddHandler;
+import org.jboss.as.server.operations.ServerSocketBindingRemoveHandler;
+import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
+import org.jboss.as.server.operations.SocketBindingGroupRemoveHandler;
 import org.jboss.as.server.operations.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.operations.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.operations.SpecifiedPathAddHandler;
@@ -132,6 +137,14 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         ModelNodeRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
         interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
+
+        // Sockets
+        ModelNodeRegistration socketGroup = root.registerSubModel(PathElement.pathElement(SOCKET_BINDING_GROUP), ServerDescriptionProviders.SOCKET_BINDING_GROUP_PROVIDER);
+        socketGroup.registerOperationHandler(SocketBindingGroupAddHandler.OPERATION_NAME, SocketBindingGroupAddHandler.INSTANCE, SocketBindingGroupAddHandler.INSTANCE, false);
+        socketGroup.registerOperationHandler(SocketBindingGroupRemoveHandler.OPERATION_NAME, SocketBindingGroupRemoveHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false);
+        ModelNodeRegistration socketBinding = socketGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), CommonProviders.SOCKET_BINDING_PROVIDER);
+        socketBinding.registerOperationHandler(ServerSocketBindingAddHandler.OPERATION_NAME, ServerSocketBindingAddHandler.INSTANCE, ServerSocketBindingAddHandler.INSTANCE, false);
+        socketBinding.registerOperationHandler(ServerSocketBindingRemoveHandler.OPERATION_NAME, ServerSocketBindingRemoveHandler.INSTANCE, ServerSocketBindingRemoveHandler.INSTANCE, false);
 
         // Deployments
         ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);

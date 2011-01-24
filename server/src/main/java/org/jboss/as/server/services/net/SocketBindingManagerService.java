@@ -45,12 +45,14 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Emanuel Muckenhuber
  */
 public class SocketBindingManagerService implements SocketBindingManager, Service<SocketBindingManager> {
 
+    private final InjectedValue<NetworkInterfaceBinding> defaultInterfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
     private final int portOffSet;
     private final SocketFactory socketFactory = new ManagedSocketFactory();
     private final ServerSocketFactory serverSocketFactory = new ManagedServerSocketFactory();
@@ -61,18 +63,35 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
         this.portOffSet = portOffSet;
     }
 
+    public InjectedValue<NetworkInterfaceBinding> getDefaultInterfaceBinding() {
+        return defaultInterfaceBinding;
+    }
+
+    /**
+     * Return the resolved {@link InetAddress} for the default interface.
+     *
+     * @return the resolve address
+     */
+    public InetAddress getDefaultInterfaceAddress() {
+        return defaultInterfaceBinding.getValue().getAddress();
+    }
+
+    @Override
     public void start(StartContext context) throws StartException {
         //
     }
 
+    @Override
     public void stop(StopContext context) {
 
     }
 
+    @Override
     public SocketBindingManager getValue() throws IllegalStateException {
         return this;
     }
 
+    @Override
     public int getPortOffset() {
         return portOffSet;
     }
@@ -82,6 +101,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
      *
      * @return the server socket factory
      */
+    @Override
     public ServerSocketFactory getServerSocketFactory() {
         return serverSocketFactory;
     }
@@ -91,6 +111,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
      *
      * @return the socket factory
      */
+    @Override
     public SocketFactory getSocketFactory() {
         return socketFactory;
     }
@@ -102,6 +123,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
      * @return the datagram socket
      * @throws SocketException
      */
+    @Override
     public DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException {
         return new ManagedDatagramSocketBinding(this, address);
     }
@@ -113,6 +135,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
      * @return the multicast socket
      * @throws IOException
      */
+    @Override
     public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException {
         return new ManagedMulticastSocketBinding(this, address);
     }
@@ -120,6 +143,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
     /**
      * @return the registered bindings
      */
+    @Override
     public Collection<ManagedBinding> listActiveBindings() {
         return managedBindings.values();
     }
@@ -130,26 +154,33 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
      * @param binding the managed binding
      * @param bindingName the binding name
      */
+    @Override
     public Closeable registerBinding(ManagedBinding binding) {
         managedBindings.put(binding.getBindAddress(), binding);
         return binding;
     }
 
+    @Override
     public Closeable registerSocket(DatagramSocket socket) {
         return registerBinding(new WrappedManagedDatagramSocket(socket));
     }
+    @Override
     public Closeable registerSocket(ServerSocket socket) {
         return registerBinding(new WrappedManagedServerSocket(socket));
     }
+    @Override
     public Closeable registerSocket(Socket socket) {
         return registerBinding(new WrappedManagedSocket(socket));
     }
+    @Override
     public Closeable registerChannel(DatagramChannel channel) {
         return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
     }
+    @Override
     public Closeable registerChannel(ServerSocketChannel channel) {
         return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
     }
+    @Override
     public Closeable registerChannel(SocketChannel channel) {
         return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
     }
@@ -159,25 +190,32 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
      *
      * @param binding the managed socket binding
      */
+    @Override
     public void unregisterBinding(ManagedBinding binding) {
         unregisterBinding(binding.getBindAddress());
     }
 
+    @Override
     public void unregisterSocket(DatagramSocket socket) {
         unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
     }
+    @Override
     public void unregisterSocket(ServerSocket socket) {
         unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
     }
+    @Override
     public void unregisterSocket(Socket socket) {
         unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
     }
+    @Override
     public void unregisterChannel(DatagramChannel channel) {
         unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
     }
+    @Override
     public void unregisterChannel(ServerSocketChannel channel) {
         unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
     }
+    @Override
     public void unregisterChannel(SocketChannel channel) {
         unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
     }
@@ -192,24 +230,29 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 
     class ManagedSocketFactory extends SocketFactory {
 
+        @Override
         public Socket createSocket() {
             return new ManagedSocketBinding(SocketBindingManagerService.this);
         }
 
+        @Override
         public Socket createSocket(final String host, final int port) throws IOException {
             return createSocket(InetAddress.getByName(host), port);
         }
 
+        @Override
         public Socket createSocket(final InetAddress host, final int port) throws IOException {
             final Socket socket = createSocket();
             socket.connect(new InetSocketAddress(host, port));
             return socket;
         }
 
+        @Override
         public Socket createSocket(final String host, final int port, final InetAddress localHost, final int localPort) throws IOException {
             return createSocket(InetAddress.getByName(host), port, localHost, localPort);
         }
 
+        @Override
         public Socket createSocket(final InetAddress address, final int port, final InetAddress localAddress, final int localPort) throws IOException {
             final Socket socket = createSocket();
             socket.bind(new InetSocketAddress(localAddress, localPort));
@@ -220,22 +263,26 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 
     class ManagedServerSocketFactory extends ServerSocketFactory {
 
+        @Override
         public ServerSocket createServerSocket() throws IOException {
             return new ManagedServerSocketBinding(SocketBindingManagerService.this);
         }
 
+        @Override
         public ServerSocket createServerSocket(final int port) throws IOException {
             final ServerSocket serverSocket = createServerSocket();
             serverSocket.bind(new InetSocketAddress(port));
             return serverSocket;
         }
 
+        @Override
         public ServerSocket createServerSocket(final int port, final int backlog) throws IOException {
             final ServerSocket serverSocket = createServerSocket();
             serverSocket.bind(new InetSocketAddress(port), backlog);
             return serverSocket;
         }
 
+        @Override
         public ServerSocket createServerSocket(final int port, final int backlog, final InetAddress ifAddress) throws IOException {
             final ServerSocket serverSocket = createServerSocket();
             serverSocket.bind(new InetSocketAddress(ifAddress, port), backlog);
@@ -250,9 +297,11 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
             this.address = address;
             this.closeable = closeable;
         }
+        @Override
         public InetSocketAddress getBindAddress() {
             return address;
         }
+        @Override
         public void close() throws IOException {
             try {
                 closeable.close();
@@ -267,9 +316,11 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
         public WrappedManagedDatagramSocket(final DatagramSocket socket) {
             this.socket = socket;
         }
+        @Override
         public InetSocketAddress getBindAddress() {
             return (InetSocketAddress) socket.getLocalSocketAddress();
         }
+        @Override
         public void close() throws IOException {
             try {
                 socket.close();
@@ -284,9 +335,11 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
         public WrappedManagedSocket(final Socket socket) {
             this.socket = socket;
         }
+        @Override
         public InetSocketAddress getBindAddress() {
             return (InetSocketAddress) socket.getLocalSocketAddress();
         }
+        @Override
         public void close() throws IOException {
             try {
                 socket.close();
@@ -301,9 +354,11 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
         public WrappedManagedServerSocket(final ServerSocket socket) {
             this.socket = socket;
         }
+        @Override
         public InetSocketAddress getBindAddress() {
             return (InetSocketAddress) socket.getLocalSocketAddress();
         }
+        @Override
         public void close() throws IOException {
             try {
                 socket.close();

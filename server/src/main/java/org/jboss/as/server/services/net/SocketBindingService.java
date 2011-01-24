@@ -49,7 +49,7 @@ public class SocketBindingService implements Service<SocketBinding> {
     private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<SocketBindingManager> socketBindings = new InjectedValue<SocketBindingManager>();
 
-    SocketBindingService(final String name, int port, boolean isFixedPort,
+    public SocketBindingService(final String name, int port, boolean isFixedPort,
                   InetAddress multicastAddress, int multicastPort) {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
@@ -61,16 +61,19 @@ public class SocketBindingService implements Service<SocketBinding> {
         this.multicastPort = multicastPort;
     }
 
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         this.binding = new SocketBinding(name, port, isFixedPort,
            multicastAddress, multicastPort,
-           interfaceBinding.getValue(), socketBindings.getValue());
+           interfaceBinding.getOptionalValue(), socketBindings.getValue());
     }
 
+    @Override
     public synchronized void stop(StopContext context) {
         this.binding = null;
     }
 
+    @Override
     public synchronized SocketBinding getValue() throws IllegalStateException {
         final SocketBinding binding = this.binding;
         if(binding == null) {
@@ -79,14 +82,15 @@ public class SocketBindingService implements Service<SocketBinding> {
         return binding;
     }
 
-    InjectedValue<SocketBindingManager> getSocketBindings() {
+    public InjectedValue<SocketBindingManager> getSocketBindings() {
         return socketBindings;
     }
 
-    InjectedValue<NetworkInterfaceBinding> getInterfaceBinding() {
+    public InjectedValue<NetworkInterfaceBinding> getInterfaceBinding() {
         return interfaceBinding;
     }
 
+    @Deprecated
     public static void addService(ServiceTarget serviceTarget, SocketBindingAdd add) {
         SocketBindingService service = new SocketBindingService(add.getName(), add.getPort(), add.isFixedPort(),
                    add.getMulticastAddress(), add.getMulticastPort());

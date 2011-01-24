@@ -25,13 +25,17 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
@@ -45,8 +49,8 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
@@ -135,7 +139,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -179,7 +183,7 @@ public class DomainXml extends CommonXml {
                     switch (element) {
                         case SOCKET_BINDING_GROUP: {
                             // parse binding-group
-                            parseSocketBindingGroup(reader, interfaces, address, list, true);
+                            parseSocketBindingGroup(reader, interfaces, address, list);
                             break;
                         } default: {
                             throw ParseUtils.unexpectedElement(reader);
@@ -191,6 +195,55 @@ public class DomainXml extends CommonXml {
                 }
             }
         }
+    }
+
+    void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+        final Set<String> includedGroups = new HashSet<String>();
+        final Set<String> socketBindings = new HashSet<String>();
+
+        // Handle attributes
+        final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
+        final String name = attrValues[0];
+        final String defaultInterface = attrValues[1];
+
+        final ModelNode bindingGroupUpdate = new ModelNode();
+        bindingGroupUpdate.get(OP_ADDR).set(address).add(SOCKET_BINDING_GROUP, name);
+        bindingGroupUpdate.get(OP).set(ADD);
+        bindingGroupUpdate.get(DEFAULT_INTERFACE).set(defaultInterface);
+        final ModelNode includes = bindingGroupUpdate.get(INCLUDE);
+        includes.setEmptyList();
+
+        // Handle elements
+        while (reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case INCLUDE: {
+                            final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
+                            if (!includedGroups.add(includedGroup)) {
+                                throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
+                            }
+                            includes.add(includedGroup);
+                            break;
+                        }
+                        case SOCKET_BINDING: {
+                            final String bindingName = parseSocketBinding(reader, interfaces, address, defaultInterface, updates);
+                            if (!socketBindings.add(bindingName)) {
+                                throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
+                            }
+                            break;
+                        }
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+        updates.add(bindingGroupUpdate);
     }
 
     void parseServerGroups(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
@@ -273,7 +326,7 @@ public class DomainXml extends CommonXml {
                                 break;
                             }
                             case SYSTEM_PROPERTIES: {
-                                list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+                                list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
                                 break;
                             }
                             default:

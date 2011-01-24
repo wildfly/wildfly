@@ -78,7 +78,7 @@ public class SocketBinding {
      * @return the resolve address
      */
     public InetAddress getAddress() {
-        return networkInterface.getAddress();
+        return networkInterface != null ? networkInterface.getAddress() : socketBindings.getDefaultInterfaceAddress();
     }
 
     /**
@@ -100,7 +100,7 @@ public class SocketBinding {
         if (port > 0 && isFixedPort == false) {
             port += socketBindings.getPortOffset();
         }
-        return new InetSocketAddress(networkInterface.getAddress(), port);
+        return new InetSocketAddress(getAddress(), port);
     }
 
     /**

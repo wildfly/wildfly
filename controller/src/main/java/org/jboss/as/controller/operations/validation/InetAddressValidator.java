@@ -18,30 +18,21 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Validates that the given parameter is a int in a given range.
+ * Validates that the given parameter is a string that can be converted into an InetAddress.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class IntRangeValidator extends ModelTypeValidator {
-    protected final int min;
-    protected final int max;
+public class InetAddressValidator extends ModelTypeValidator {
 
-    public IntRangeValidator(final int min) {
-        this(min, Integer.MAX_VALUE, false, false);
-    }
-
-    public IntRangeValidator(final int min, final boolean nullable) {
-        this(min, Integer.MAX_VALUE, nullable, false);
-    }
-
-    public IntRangeValidator(final int min, final int max, final boolean nullable, final boolean allowExpressions) {
-        super(nullable, allowExpressions, ModelType.INT, ModelType.BIG_DECIMAL, ModelType.BIG_INTEGER, ModelType.DOUBLE, ModelType.LONG, ModelType.STRING);
-        this.min = min;
-        this.max = max;
+    public InetAddressValidator(final boolean nullable, final boolean allowExpressions) {
+        super(ModelType.STRING, nullable, allowExpressions);
     }
 
     /**
@@ -51,17 +42,11 @@ public class IntRangeValidator extends ModelTypeValidator {
     public String validateParameter(String parameterName, ModelNode value) {
         String result = super.validateParameter(parameterName, value);
         if (result == null && value.isDefined() && value.getType() != ModelType.EXPRESSION) {
+            String str = value.asString();
             try {
-                int val = value.asInt();
-                if (val < min) {
-                    result = val + " is an invalid value for parameter " + parameterName + ". A minimum value of " + min + " is required";
-                }
-                else if (val > max) {
-                    result = val + " is an invalid value for parameter " + parameterName + ". A maximum value of " + max + " is required";
-            }
-            }
-            catch (Exception e) {
-                result = value + " is an invalid value for parameter " + parameterName + ". " + e.getLocalizedMessage();
+                InetAddress.getByName(str);
+            } catch (UnknownHostException e) {
+                result = e.getLocalizedMessage();
             }
         }
         return result;

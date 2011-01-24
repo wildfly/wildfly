@@ -23,10 +23,14 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.hexStringToByteArray;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -38,12 +42,14 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
@@ -138,12 +144,12 @@ public class StandaloneXml extends CommonXml {
         }
         // Single socket binding group
         if (element == Element.SOCKET_BINDING_GROUP) {
-            parseSocketBindingGroup(reader, interfaceNames, address, list, false);
+            parseSocketBindingGroup(reader, interfaceNames, address, list);
             element = nextElement(reader);
         }
         // System properties
         if (element == Element.SYSTEM_PROPERTIES) {
-            list.add(getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -172,6 +178,92 @@ public class StandaloneXml extends CommonXml {
 //                default: throw new IllegalStateException();
 //            }
 //        }
+    }
+
+    private void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+        final Set<String> socketBindings = new HashSet<String>();
+
+        // Handle attributes
+        String name = null;
+        String defaultInterface = null;
+        String portOffset = null;
+
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.DEFAULT_INTERFACE);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    required.remove(attribute);
+                    break;
+                }
+                case DEFAULT_INTERFACE: {
+                    defaultInterface = value;
+                    required.remove(attribute);
+                    break;
+                }
+                case PORT_OFFSET: {
+                    portOffset = value;
+                    try {
+                        int offset = Integer.parseInt(value);
+                        if (offset < 0) {
+                            throw new XMLStreamException(portOffset + " is not a valid " +
+                                    attribute.getLocalName() + " -- must be greater than zero",
+                                    reader.getLocation());
+                        }
+                    } catch (final NumberFormatException e) {
+                        if (!Util.isExpression(value)) {
+                            throw new XMLStreamException(portOffset + " is not a valid " +
+                                    attribute.getLocalName(), reader.getLocation(), e);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+        }
+
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+        ModelNode groupAddress = address.clone().add(SOCKET_BINDING_GROUP, name);
+        ModelNode op = Util.getEmptyOperation(ADD, groupAddress);
+        op.get(DEFAULT_INTERFACE).set(defaultInterface);
+        op.get(PORT_OFFSET).set(portOffset == null ? "0" : portOffset);
+
+        updates.add(op);
+
+        // Handle elements
+        while (reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SOCKET_BINDING: {
+                            // FIXME JBAS-8825
+                            final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, defaultInterface, updates);
+                            if (socketBindings.contains(bindingName)) {
+                                throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
+                            }
+                            socketBindings.add(bindingName);
+                            break;
+                        }
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
     }
 
     private void parseServerDeployments(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -294,7 +386,7 @@ public class StandaloneXml extends CommonXml {
 
     private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
         if (value.length() > 0) {
-            final ModelNode update = getWriteAttributeOperation(address, NAME, value);
+            final ModelNode update = Util.getWriteAttributeOperation(address, NAME, value);
             operationList.add(update);
         }
     }
