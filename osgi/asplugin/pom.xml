@@ -21,27 +21,49 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
-        <version>7.0.0.Alpha2-SNAPSHOT</version>
-    </parent>
-
+  <parent>
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-osgi</artifactId>
-    <packaging>pom</packaging>
+    <version>7.0.0.Alpha2-SNAPSHOT</version>
+  </parent>
 
-    <name>JBoss Application Server: OSGi</name>
+  <groupId>org.jboss.as</groupId>
+  <artifactId>jboss-as-osgi-plugin</artifactId>
+  
+  <name>JBoss Application Server: OSGi Integration Plugin</name>
 
-    <modules>
-        <module>configadmin</module>
-        <module>asplugin</module>
-        <module>service</module>
-    </modules>
+  <!-- Properties -->
+  <properties>
+  </properties>
+  
+  <!-- Dependencies -->
+  <dependencies>
+    <dependency>
+      <groupId>org.jboss.osgi.spi</groupId>
+      <artifactId>jbosgi-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.marshalling</groupId>
+      <artifactId>jboss-marshalling-river</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <!-- Build -->
+  <build>
+    <plugins>
+    </plugins>
+  </build>
+
 </project>
