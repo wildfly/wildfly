@@ -210,10 +210,10 @@
                <alias name="example.com" />
             </virtual-server>
         </subsystem>
-
+		<!-- Disabled until the service no longer uses the typed management API
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
-        </subsystem>
+        </subsystem>-->
     </profile>
 
     <interfaces>
