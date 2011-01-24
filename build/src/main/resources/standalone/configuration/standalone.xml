@@ -67,6 +67,8 @@
        <path name="relative" path="relative" relative-to="absolute"/>
     </paths>
     
+    <management interface="default" port="9999"/>
+    
     <profile name="ignore">
        <subsystem xmlns="urn:jboss:domain:logging:1.0">
             <console-handler name="CONSOLE">
@@ -223,6 +225,7 @@
 		<interface name="any">
 		   <any-address/>
 		</interface>
+		<!-- 
 		<interface name="complex">
 		   <any>
 			  <subnet-match value="192.168.0.0/16"/>
@@ -234,6 +237,7 @@
 		   <up/>
 		   <multicast/>
 		</interface>
+		 -->
     </interfaces>
 
 	    <socket-binding-group name="standard-sockets" default-interface="default">

@@ -151,7 +151,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
             try {
                 result = modelController.execute(operation);
             } catch (OperationFailedException e) {
-                throw new IOException(e);
+                result = new ModelNode().set(createErrorResult(e));
             }
             outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
             result.writeExternal(outputStream);
@@ -298,5 +298,17 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
         public void setException(IOException exception) {
             this.exception = exception;
         }
+    }
+
+    static ModelNode createErrorResult(Throwable t) {
+        final ModelNode node = new ModelNode();
+        // todo - define this structure
+        node.get("success").set(false);
+        do {
+            final String message = t.getLocalizedMessage();
+            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
+            t = t.getCause();
+        } while (t != null);
+        return node;
     }
 }

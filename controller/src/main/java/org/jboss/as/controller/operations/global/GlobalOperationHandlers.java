@@ -58,6 +58,22 @@ public class GlobalOperationHandlers {
 
     static final String[] NO_LOCATION = new String[0];
 
+    private GlobalOperationHandlers() {
+        //
+    }
+
+    static ModelNode createErrorResult(Throwable t) {
+        final ModelNode node = new ModelNode();
+        // todo - define this structure
+        node.get("success").set(false);
+        do {
+            final String message = t.getLocalizedMessage();
+            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
+            t = t.getCause();
+        } while (t != null);
+        return node;
+    }
+
     public static final ModelQueryOperationHandler READ_RESOURCE = new ModelQueryOperationHandler() {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -91,7 +107,7 @@ public class GlobalOperationHandlers {
                 resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                resultHandler.handleFailed(createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -118,7 +134,7 @@ public class GlobalOperationHandlers {
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                resultHandler.handleFailed(createErrorResult(e));
             }
             return cancellable;
         }
@@ -141,7 +157,7 @@ public class GlobalOperationHandlers {
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                resultHandler.handleFailed(createErrorResult(e));
             }
             return cancellable;
         }
@@ -185,7 +201,7 @@ public class GlobalOperationHandlers {
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                resultHandler.handleFailed(createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -211,7 +227,7 @@ public class GlobalOperationHandlers {
                 resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                resultHandler.handleFailed(createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -232,7 +248,7 @@ public class GlobalOperationHandlers {
                 resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                resultHandler.handleFailed(createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -257,8 +273,7 @@ public class GlobalOperationHandlers {
                 resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
-                e.printStackTrace();
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                resultHandler.handleFailed(createErrorResult(e));
             }
             return Cancellable.NULL;
         }

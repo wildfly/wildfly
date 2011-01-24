@@ -41,28 +41,36 @@ public class __ThrowawayClientTest {
             client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             System.out.println("Connected");
 
-            System.out.println("--- Synchronous simple operation");
-            ModelNode result = client.execute(createOperation(0));
-            System.out.println("Received synchronous result " + result);
+            ModelNode request = new ModelNode();
+            request.get("operation").set("read-resource");
+            request.get("address").setEmptyList();
+            // request.get("address").set("subsystem", "threads");
+            request.get("recursive").set(true);
+            ModelNode r = client.execute(request);
+            System.out.println(r);
 
-            System.out.println("--- Synchronous operation");
-            client.execute(createOperation(0), new TestResultHandler());
-
-
-            System.out.println("--- Asynchronous operation");
-            TestResultHandler handler = new TestResultHandler();
-            Cancellable operation = client.execute(createOperation(1000), handler);
-            System.out.println("Control returned to client");
-            handler.waitForFragment();
-            System.out.println("Fragment signalled");
-            handler.waitForComplete();
-
-            System.out.println("--- Asynchronous cancelled operation");
-            TestResultHandler handler2 = new TestResultHandler();
-            Cancellable operation2 = client.execute(createOperation(1000), handler2);
-            handler2.waitForFragment();
-            operation2.cancel();
-            handler2.waitForComplete();
+//            System.out.println("--- Synchronous simple operation");
+//            ModelNode result = client.execute(createOperation(0));
+//            System.out.println("Received synchronous result " + result);
+//
+//            System.out.println("--- Synchronous operation");
+//            client.execute(createOperation(0), new TestResultHandler());
+//
+//
+//            System.out.println("--- Asynchronous operation");
+//            TestResultHandler handler = new TestResultHandler();
+//            Cancellable operation = client.execute(createOperation(1000), handler);
+//            System.out.println("Control returned to client");
+//            handler.waitForFragment();
+//            System.out.println("Fragment signalled");
+//            handler.waitForComplete();
+//
+//            System.out.println("--- Asynchronous cancelled operation");
+//            TestResultHandler handler2 = new TestResultHandler();
+//            Cancellable operation2 = client.execute(createOperation(1000), handler2);
+//            handler2.waitForFragment();
+//            operation2.cancel();
+//            handler2.waitForComplete();
 
         } finally {
             StreamUtils.safeClose(client);
@@ -72,7 +80,8 @@ public class __ThrowawayClientTest {
 
     static ModelNode createOperation(long sleep) {
         ModelNode node = new ModelNode();
-        node.get("operation").set("echo");
+        node.get("operation").set("read-resource");
+        node.get("address").add("subsystem", "threads");
         if (sleep > 0) {
             node.get("sleep").set(sleep);
         }

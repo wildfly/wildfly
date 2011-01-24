@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
@@ -397,10 +398,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         final ModelNode mgmtSocket = new ModelNode();
-        mgmtSocket.get("interface-name").set(interfaceName);
-        mgmtSocket.get("port").set(port);
-        final ModelNode addMgmt = Util.getWriteAttributeOperation(address, "management-socket", mgmtSocket);
-        list.add(addMgmt);
+        if(maxThreads > 0) mgmtSocket.get("max-threads").set(maxThreads);
+        mgmtSocket.get(INTERFACE).set(interfaceName);
+        mgmtSocket.get(PORT).set(port);
+        mgmtSocket.get(OP).set(MANAGEMENT);
+        mgmtSocket.get(OP_ADDR).setEmptyList();
+        list.add(mgmtSocket);
+//        final ModelNode addMgmt = Util.getWriteAttributeOperation(address, MANAGEMENT, mgmtSocket);
+//        list.add(addMgmt);
 
         if (maxThreads > 0) {
             // TODO - this is non-optimal.
