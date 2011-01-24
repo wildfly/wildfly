@@ -137,7 +137,7 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+            parseSystemProperties(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
@@ -435,7 +435,7 @@ public class HostXml extends CommonXml {
                             if (sawSystemProperties) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+                            parseSystemProperties(reader, address, list);
                             sawSystemProperties = true;
                             break;
                         }

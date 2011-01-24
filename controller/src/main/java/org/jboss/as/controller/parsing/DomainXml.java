@@ -50,7 +50,6 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
@@ -139,7 +138,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+            parseSystemProperties(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -326,7 +325,7 @@ public class DomainXml extends CommonXml {
                                 break;
                             }
                             case SYSTEM_PROPERTIES: {
-                                list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+                                parseSystemProperties(reader, address, list);
                                 break;
                             }
                             default:

@@ -22,7 +22,10 @@
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -30,15 +33,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
+import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
+import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -128,6 +134,50 @@ public class CommonAttributes {
         return root;
     }
 
+    public static ModelNode getSystemPropertiesAttribute(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(TYPE).set(ModelType.OBJECT);
+        root.get(VALUE_TYPE).set(ModelType.STRING);
+        root.get(DESCRIPTION).set(bundle.getString("system-properties"));
+        root.get(REQUIRED).set(false);
+        root.get(HEAD_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(true);
+        return root;
+    }
+
+    public static ModelNode getAddSystemPropertyOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(SystemPropertyAddHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("system-properties.add"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("system-properties.add.name"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("system-properties.add.value"));
+        root.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
+    }
+
+    public static ModelNode getRemoveSystemPropertyOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(SystemPropertyRemoveHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("system-properties.remove"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("system-properties.remove.name"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
@@ -142,6 +192,9 @@ public class CommonAttributes {
         System.out.println(getRemoveNamespaceOperation(null));
         System.out.println(getAddSchemaLocationOperation(null));
         System.out.println(getRemoveSchemaLocationOperation(null));
+        System.out.println(getSystemPropertiesAttribute(null));
+        System.out.println(getAddSystemPropertyOperation(null));
+        System.out.println(getRemoveSystemPropertyOperation(null));
 
     }
 }

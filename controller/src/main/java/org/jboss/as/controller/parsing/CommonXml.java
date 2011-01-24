@@ -43,6 +43,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
@@ -69,6 +70,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -313,6 +315,26 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         list.add(update);
     }
 
+    protected void parseSystemProperties(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        while (reader.nextTag() != END_ELEMENT) {
+            if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+                throw unexpectedElement(reader);
+            }
+            if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
+                throw unexpectedElement(reader);
+            }
+
+            final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
+            requireNoContent(reader);
+
+            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, address);
+            op.get(NAME).set(array[0]);
+            op.get(VALUE).set(array[1]);
+            updates.add(op);
+        }
+    }
+
     protected ModelNode parseProperties(final XMLExtendedStreamReader reader) throws XMLStreamException {
 
         final ModelNode properties = new ModelNode();
@@ -324,6 +346,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw unexpectedElement(reader);
             }
             final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
+            requireNoContent(reader);
             properties.get(array[0]).set(array[1]);
         }
         return properties;
@@ -534,7 +557,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (hasSystemProperties) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            updates.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+                            parseSystemProperties(reader, address, updates);
                             hasSystemProperties = true;
                             break;
                         }

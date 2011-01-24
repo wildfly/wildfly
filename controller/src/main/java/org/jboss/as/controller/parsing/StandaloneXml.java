@@ -150,7 +150,7 @@ public class StandaloneXml extends CommonXml {
         }
         // System properties
         if (element == Element.SYSTEM_PROPERTIES) {
-            list.add(Util.getWriteAttributeOperation(address, "system-properties", parseProperties(reader)));
+            parseSystemProperties(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {

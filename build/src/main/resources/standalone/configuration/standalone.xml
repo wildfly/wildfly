@@ -250,4 +250,9 @@
 	       <socket-binding name="netty" port="5445" />
 	       <socket-binding name="netty-throughput" port="5455"/>
 	    </socket-binding-group>
+	
+	<system-properties>
+		<property name="foo" value="bar"/>
+	    <property name="key" value="value"/>
+	</system-properties>
 </server>

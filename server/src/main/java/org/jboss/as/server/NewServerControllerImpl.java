@@ -79,6 +79,8 @@ import org.jboss.as.server.operations.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.operations.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.operations.SpecifiedPathAddHandler;
 import org.jboss.as.server.operations.SpecifiedPathRemoveHandler;
+import org.jboss.as.server.operations.SystemPropertyAddHandler;
+import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
@@ -127,6 +129,8 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
+        root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
 
         // Paths
         ModelNodeRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
