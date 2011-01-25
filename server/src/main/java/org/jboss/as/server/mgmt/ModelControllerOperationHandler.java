@@ -77,15 +77,18 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
     }
 
     /** {@inheritDoc} */
+    @Override
     public void start(StartContext context) throws StartException {
         modelController = modelControllerValue.getValue();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void stop(StopContext context) {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ModelControllerOperationHandler getValue() throws IllegalStateException {
         return this;
     }
@@ -106,6 +109,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
     }
 
     /** {@inheritDoc} */
+    @Override
     public byte getIdentifier() {
         return ModelControllerClientProtocol.HANDLER_ID;
     }
@@ -207,6 +211,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
                     }
                 }
 
+                @Override
                 public void handleFailed(final ModelNode failureDescription) {
                     try {
                         asynchOperations.remove(asynchronousRequestId);
@@ -300,15 +305,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
         }
     }
 
-    static ModelNode createErrorResult(Throwable t) {
-        final ModelNode node = new ModelNode();
-        // todo - define this structure
-        node.get("success").set(false);
-        do {
-            final String message = t.getLocalizedMessage();
-            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
-            t = t.getCause();
-        } while (t != null);
-        return node;
+    static ModelNode createErrorResult(OperationFailedException e) {
+        return e.getFailureDescription();
     }
 }

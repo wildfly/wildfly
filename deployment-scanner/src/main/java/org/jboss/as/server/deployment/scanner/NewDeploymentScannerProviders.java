@@ -34,9 +34,12 @@ public class NewDeploymentScannerProviders {
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
-            // TODO Auto-generated method stub
-            return null;
+
+            final ModelNode node = new ModelNode();
+            // TODO
+            return node;
         }
     };
 
