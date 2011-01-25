@@ -195,7 +195,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
         for(final String attribute : NewMessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
-            if(operation.has(attribute)) {
+            if(operation.get(attribute).isDefined()) {
                 subModel.get(attribute).set(operation.get(attribute));
             }
         }
@@ -279,7 +279,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = new HashMap<String, Object>();
-                if(config.has(PARAM) && config.get(PARAM).getType() != ModelType.UNDEFINED) {
+                if(config.get(PARAM).isDefined()) {
                     for(final Property parameter : config.get(PARAM).asPropertyList()) {
                         parameters.put(parameter.getName(), parameter.getValue().asString());
                     }
@@ -325,7 +325,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = new HashMap<String, Object>();
-                if(config.has(PARAM) && config.get(PARAM).getType() != ModelType.UNDEFINED) {
+                if(config.get(PARAM).isDefined()) {
                     for(final Property parameter : config.get(PARAM).asPropertyList()) {
                         parameters.put(parameter.getName(), parameter.getValue().asString());
                     }
@@ -364,7 +364,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param params the detyped operation parameters
      */
     static void processCoreQueues(final Configuration configuration, final ModelNode params) {
-        if(params.has(QUEUE)) {
+        if(params.get(QUEUE).isDefined()) {
             final List<CoreQueueConfiguration> queues = new ArrayList<CoreQueueConfiguration>();
             for(final Property property : params.get(QUEUE).asPropertyList()) {
                 final String queueName = property.getName();
@@ -384,7 +384,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param params the detyped operation parameters
      */
     static void processAddressSettings(final Configuration configuration, final ModelNode params) {
-        if(params.has(ADDRESS_SETTING)) {
+        if(params.get(ADDRESS_SETTING).isDefined()) {
             for(final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
@@ -416,7 +416,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param params the detyped operation parameters
      */
     static void processSecuritySettings(final Configuration configuration, final ModelNode params) {
-        if(params.has(SECURITY_SETTING)) {
+        if(params.get(SECURITY_SETTING).isDefined()) {
             for(final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();

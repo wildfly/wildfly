@@ -33,6 +33,7 @@ import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
@@ -41,6 +42,7 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -52,7 +54,7 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler, DescriptionProvider {
 
     static final NewAsyncHandlerAdd INSTANCE = new NewAsyncHandlerAdd();
 
@@ -105,6 +107,12 @@ class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHa
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return NewLoggingSubsystemProviders.getAsyncModelDescription(locale);
     }
 
 }

@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @author John E. Bailey
  */
-public enum Namespace {
+enum Namespace {
     // must be first
     UNKNOWN(null),
 

@@ -63,7 +63,7 @@ public class NewLoggingExtension implements NewExtension {
         final ModelNodeRegistration handlers = registration.registerSubModel(handlersPath, NewLoggingSubsystemProviders.HANDLERS);
         handlers.registerOperationHandler(ADD, NewLoggerHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.HANDLER_ADD, false);
         handlers.registerOperationHandler(REMOVE, NewLoggerHandlerRemove.INSTANCE, NewLoggingSubsystemProviders.HANDLER_REMOVE, false);
-        handlers.registerOperationHandler("add-async-handler", NewAsyncHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.ASYNC_HANDLER_ADD, false);
+        handlers.registerOperationHandler("add-async-handler", NewAsyncHandlerAdd.INSTANCE, NewAsyncHandlerAdd.INSTANCE, false);
         handlers.registerOperationHandler("add-console-handler", NewConsoleHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.CONSOLE_HANDLER_ADD, false);
         handlers.registerOperationHandler("add-file-handler", NewFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.FILE_HANDLER_ADD, false);
         handlers.registerOperationHandler("add-periodic-handler", NewPeriodicFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.PERIODIC_HANDLER_ADD, false);

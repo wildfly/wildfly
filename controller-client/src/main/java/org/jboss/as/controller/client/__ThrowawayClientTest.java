@@ -41,13 +41,25 @@ public class __ThrowawayClientTest {
             client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             System.out.println("Connected");
 
-            ModelNode request = new ModelNode();
-            request.get("operation").set("read-resource");
-            request.get("address").setEmptyList();
-            // request.get("address").set("subsystem", "threads");
-            request.get("recursive").set(true);
-            ModelNode r = client.execute(request);
-            System.out.println(r);
+            {
+                ModelNode request = new ModelNode();
+                request.get("operation").set("read-resource");
+                request.get("address").setEmptyList();
+                // request.get("address").set("subsystem", "threads");
+                request.get("recursive").set(true);
+                ModelNode r = client.execute(request);
+                System.out.println(r);
+            }
+            {
+                ModelNode request = new ModelNode();
+                request.get("operation").set("read-operation-description");
+                request.get("address").setEmptyList();
+                request.get("address").set("subsystem", "logging");
+                request.get("recursive").set(true);
+                request.get("name").set("add");
+                ModelNode r = client.execute(request);
+                System.out.println(r);
+            }
 
 //            System.out.println("--- Synchronous simple operation");
 //            ModelNode result = client.execute(createOperation(0));

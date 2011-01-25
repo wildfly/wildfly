@@ -22,11 +22,28 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.logging.CommonAttributes.*;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
@@ -36,167 +53,201 @@ class NewLoggingSubsystemProviders {
     static final String RESOURCE_NAME = NewLoggingSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode subsystem = new ModelNode();
+            subsystem.get(DESCRIPTION).set(bundle.getString("logging"));
+            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
+            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
+            subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
+
+            subsystem.get(CHILDREN, CommonAttributes.ROOT_LOGGER, DESCRIPTION).set(bundle.getString("root.logger"));
+            subsystem.get(CHILDREN, CommonAttributes.HANDLER, DESCRIPTION).set(bundle.getString("handler"));
 
             return subsystem;
         }
     };
 
     static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
 
-            final ModelNode subsystem = new ModelNode();
+            operation.get(OPERATION_NAME).set(ADD);
+            operation.get(DESCRIPTION).set(bundle.getString("logging.add"));
+            operation.get(REQUEST_PROPERTIES).setEmptyObject();
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
 
-            return subsystem;
+            return operation;
         }
     };
 
     static final DescriptionProvider SET_ROOT_LOGGER = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set("set-root-logger");
+            node.get(DESCRIPTION).set(bundle.getString("root.logger.set"));
 
-            final ModelNode subsystem = new ModelNode();
+            node.get(REQUEST_PROPERTIES, LEVEL, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
+            node.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
 
-            return subsystem;
+            node.get(REQUEST_PROPERTIES, HANDLER, TYPE).set(ModelType.LIST);
+            node.get(REQUEST_PROPERTIES, HANDLER, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, HANDLER, DESCRIPTION).set(bundle.getString("logger.handler"));
+            node.get(REQUEST_PROPERTIES, HANDLER, REQUIRED).set(true);
+
+            node.get(REPLY_PROPERTIES).setEmptyObject();
+            return node;
         }
     };
 
     static final DescriptionProvider REMOVE_ROOT_LOGGER = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
+            final ModelNode operation = new ModelNode();
 
-            return subsystem;
+            operation.get(OPERATION_NAME).set("remove-root-logger");
+            operation.get(DESCRIPTION).set(bundle.getString("root.logger.remove"));
+            operation.get(REQUEST_PROPERTIES).setEmptyObject();
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return operation;
         }
     };
 
     static final DescriptionProvider LOGGER = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("logger"));
+            return node;
         }
     };
 
     static final DescriptionProvider LOGGER_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(ADD);
+            node.get(DESCRIPTION).set(bundle.getString("logger.add"));
 
-            return subsystem;
+            node.get(REQUEST_PROPERTIES, LEVEL, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
+            node.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
+
+            node.get(REQUEST_PROPERTIES, HANDLER, TYPE).set(ModelType.LIST);
+            node.get(REQUEST_PROPERTIES, HANDLER, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, HANDLER, DESCRIPTION).set(bundle.getString("logger.handler"));
+            node.get(REQUEST_PROPERTIES, HANDLER, REQUIRED).set(false);
+
+            node.get(REQUEST_PROPERTIES, ENCODING, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, ENCODING, DESCRIPTION).set(bundle.getString("logger.level"));
+            node.get(REQUEST_PROPERTIES, ENCODING, REQUIRED).set(true);
+
+            return node;
         }
     };
 
     static final DescriptionProvider LOGGER_REMOVE = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(REMOVE);
+            node.get(DESCRIPTION).set(bundle.getString("logger.remove"));
+            node.get(REQUEST_PROPERTIES).setEmptyObject();
+            node.get(REPLY_PROPERTIES).setEmptyObject();
+            return node;
         }
     };
 
     static final DescriptionProvider HANDLERS = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("handler"));
 
-            return subsystem;
+            node.get(ATTRIBUTES, LEVEL, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
+
+            node.get(ATTRIBUTES, HANDLER, TYPE).set(ModelType.LIST);
+            node.get(ATTRIBUTES, HANDLER, VALUE_TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, HANDLER, DESCRIPTION).set(bundle.getString("logger.handler"));
+
+            node.get(ATTRIBUTES, ENCODING, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ENCODING, DESCRIPTION).set(bundle.getString("logger.level"));
+
+            return node;
         }
     };
 
     static final DescriptionProvider HANDLER_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("handler.add"));
+            return node;
         }
     };
 
     static final DescriptionProvider HANDLER_REMOVE = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("handler.remove"));
+            return node;
         }
     };
 
-    static final DescriptionProvider ASYNC_HANDLER_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
-        }
-    };
+    static final ModelNode getAsyncModelDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("async.handler"));
+        return node;
+    }
 
     static final DescriptionProvider CONSOLE_HANDLER_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("console.handler"));
+            return node;
         }
     };
 
     static final DescriptionProvider FILE_HANDLER_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("file.handler"));
+            return node;
         }
     };
 
     static final DescriptionProvider PERIODIC_HANDLER_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("periodic.handler"));
+            return node;
         }
     };
 
     static final DescriptionProvider SIZE_PERIODIC_HANDLER_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-
-            return subsystem;
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("size.periodic.handler"));
+            return node;
         }
     };
 
