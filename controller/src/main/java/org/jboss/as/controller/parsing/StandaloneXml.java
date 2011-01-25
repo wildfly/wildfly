@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -44,7 +43,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
-import static org.jboss.as.controller.parsing.ParseUtils.hexStringToByteArray;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -62,6 +60,7 @@ import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -170,7 +169,7 @@ public class StandaloneXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseServerDeployments(reader, list);
+            parseServerDeployments(reader, address, list);
             element = nextElement(reader);
         }
         if (element != null) {
@@ -283,7 +282,7 @@ public class StandaloneXml extends CommonXml {
         }
     }
 
-    private void parseServerDeployments(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
+    private void parseServerDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
@@ -315,7 +314,7 @@ public class StandaloneXml extends CommonXml {
                         }
                         case SHA1: {
                             try {
-                                hash = hexStringToByteArray(value);
+                                hash = HashUtil.hexStringToByteArray(value);
                             }
                             catch (final Exception e) {
                                throw new XMLStreamException("Value " + value +
@@ -354,17 +353,16 @@ public class StandaloneXml extends CommonXml {
             // Handle elements
             requireNoContent(reader);
 
-            final ModelNode deploymentAdd = new ModelNode();
-            // TODO decide whether deployments are an attribute of list type or a child
-//            deploymentAdd.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
-//            deploymentAdd.get(OP).set(ADD);
-            deploymentAdd.get(OP_ADDR).setEmptyList();
-            deploymentAdd.get(OP).set("add-deployment");
-            deploymentAdd.get("unique-name").set(uniqueName);
-            deploymentAdd.get("runtime-name").set(runtimeName);
-            deploymentAdd.get("sha1").set(hash);
-            deploymentAdd.get("start").set(toStart);
+            final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);
+            final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
+            deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
+            deploymentAdd.get(HASH).set(hash);
             list.add(deploymentAdd);
+
+            if (toStart) {
+                final ModelNode deployDeployment = Util.getEmptyOperation("deploy", deploymentAddress);
+                list.add(deployDeployment);
+            }
         }
     }
 
@@ -484,7 +482,7 @@ public class StandaloneXml extends CommonXml {
         for (ModelNode deployment : modelNode.asList()) {
             String uniqueName = deployment.get(NAME).asString();
             String runtimeName = deployment.get(RUNTIME_NAME).asString();
-            String sha1 = deployment.get(HASH).asString();
+            String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
             boolean start = deployment.get(START).asBoolean();
             writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
             writeAttribute(writer, Attribute.NAME, uniqueName);

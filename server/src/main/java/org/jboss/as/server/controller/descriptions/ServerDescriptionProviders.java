@@ -62,9 +62,7 @@ public final class ServerDescriptionProviders {
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
-
-            // FIXME
-            return new ModelNode();
+            return DeploymentDescription.getDeploymentDescription(locale);
         }
     };
 }

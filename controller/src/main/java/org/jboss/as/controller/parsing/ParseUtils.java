@@ -22,16 +22,17 @@
 
 package org.jboss.as.controller.parsing;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+
 import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamException;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -294,25 +295,6 @@ public final class ParseUtils {
             result[i] = value;
         }
         return result;
-    }
-
-    /**
-     * Convert a hex string into a byte[].
-     *
-     * @param s the string
-     * @return the bytes
-     */
-    public static byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len >> 1];
-        for (int i = 0, j = 0; j < len; i++) {
-            int x = Character.digit(s.charAt(j), 16) << 4;
-            j++;
-            x = x | Character.digit(s.charAt(j), 16);
-            j++;
-            data[i] = (byte) (x & 0xFF);
-        }
-        return data;
     }
 
     public static int parseBoundedIntegerAttribute(final XMLExtendedStreamReader reader, final int index, final int minInclusive, final int maxInclusive) throws XMLStreamException {

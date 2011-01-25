@@ -43,4 +43,13 @@ public interface DeploymentRepository {
      * @throws IOException
      */
     byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException;
+
+    /**
+     * Gets whether content with the given hash is stored in the repository.
+     *
+     * @param hash the hash. Cannot be {@code null}
+     *
+     * @return {@code true} if the repository has content with the given hash
+     */
+    boolean hasDeploymentContent(byte[] hash);
 }

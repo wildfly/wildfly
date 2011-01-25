@@ -50,6 +50,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -385,7 +386,7 @@ public class DomainXml extends CommonXml {
                         }
                         case SHA1: {
                             try {
-                                hash = ParseUtils.hexStringToByteArray(value);
+                                hash = HashUtil.hexStringToByteArray(value);
                             }
                             catch (final Exception e) {
                                throw new XMLStreamException("Value " + value +

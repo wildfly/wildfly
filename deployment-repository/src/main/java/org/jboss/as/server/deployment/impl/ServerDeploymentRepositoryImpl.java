@@ -25,11 +25,12 @@ package org.jboss.as.server.deployment.impl;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-
 import java.util.concurrent.Executors;
+
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -49,6 +50,13 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
     private final File systemDeployDir;
     private TempFileProvider tempFileProvider;
 
+
+    public static void addService(final ServiceTarget serviceTarget, final File repoRoot, final File systemDeployDir) {
+        serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
+                new ServerDeploymentRepositoryImpl(repoRoot, systemDeployDir))
+                .install();
+    }
+
     /**
      * Creates a new ServerDeploymentRepositoryImpl.
      */
@@ -57,6 +65,7 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
         this.systemDeployDir = systemDeployDir;
     }
 
+    @Override
     public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
         // Internal deployments have no hash, and are unique by name
         if (deploymentHash == null) {
@@ -64,13 +73,7 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
             return VFS.mountZip(file, mountPoint, tempFileProvider);
         }
 
-        // TODO recognize exploded content stored in a hot-deploy dir
-        String sha1 = bytesToHexString(deploymentHash);
-        String partA = sha1.substring(0,2);
-        String partB = sha1.substring(2);
-        File base = new File(getRepoRoot(), partA);
-        File hashDir = new File(base, partB);
-        File content = new File(hashDir, CONTENT);
+        File content = getDeploymentContentFile(deploymentHash);
         // FIXME
         if(name.endsWith("war")) {
             return VFS.mountZipExpanded(content, mountPoint, tempFileProvider);

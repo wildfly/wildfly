@@ -42,6 +42,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String ATTRIBUTES = "attributes";
+    public static final String BYTES = "bytes";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
     public static final String CRITERIA = "criteria";
@@ -88,8 +89,6 @@ public class ModelDescriptionConstants {
     /** Use this standard operation address field in the operation *description* ModelNode */
     public static final String OPERATION_NAME = "operation-name";
     public static final String OUTCOME = "outcome";
-    public static final String RESULT = "result";
-    public static final String RUNTIME_NAME = "runtime-name";
     public static final String PATH = "path";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
@@ -109,6 +108,8 @@ public class ModelDescriptionConstants {
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String RECURSIVE = "recursive";
     public static final String REQUIRED = "required";
+    public static final String RESULT = "result";
+    public static final String RUNTIME_NAME = "runtime-name";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SERVER = "server";
@@ -124,7 +125,9 @@ public class ModelDescriptionConstants {
     public static final String SYSTEM_PROPERTY = "system-property";
     public static final String SYSTEM_PROPERTIES = "system-properties";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
+    public static final String TO_REPLACE = "to-replace";
     public static final String TYPE = "type";
+    public static final String URL = "url";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";

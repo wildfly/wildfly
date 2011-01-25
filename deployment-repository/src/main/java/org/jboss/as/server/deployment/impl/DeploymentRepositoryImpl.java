@@ -32,13 +32,15 @@ import java.io.InputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.logging.Logger;
 
 /**
  * Default implementation of {@link org.jboss.as.server.deployment.api.DeploymentRepository}.
  * @author John Bailey
  */
-public class DeploymentRepositoryImpl {
+public class DeploymentRepositoryImpl implements DeploymentRepository {
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
     protected static final String CONTENT = "content";
@@ -68,6 +70,7 @@ public class DeploymentRepositoryImpl {
         }
     }
 
+    @Override
     public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
 
         log.debugf("Adding content with name %s", name);
@@ -94,16 +97,7 @@ public class DeploymentRepositoryImpl {
             }
             sha1Bytes = messageDigest.digest();
         }
-        String sha1 = bytesToHexString(sha1Bytes);
-        String partA = sha1.substring(0, 2);
-        String partB = sha1.substring(2);
-        File base = new File(repoRoot, partA);
-        validateDir(base);
-        File realDir = new File(base, partB);
-        if (!realDir.exists() && !realDir.mkdirs()) {
-            throw new IllegalStateException("Cannot create directory " + realDir.getAbsolutePath());
-        }
-        File realFile = new File(realDir, CONTENT);
+        File realFile = getDeploymentContentFile(sha1Bytes, true);
         if (realFile.exists()) {
             // we've already got this content
             if (!tmp.delete()) {
@@ -118,8 +112,35 @@ public class DeploymentRepositoryImpl {
         return sha1Bytes;
     }
 
+    @Override
+    public boolean hasDeploymentContent(byte[] hash) {
+        return getDeploymentContentFile(hash).exists();
+    }
+
     protected File getRepoRoot() {
         return repoRoot;
+    }
+
+    protected File getDeploymentContentFile(byte[] deploymentHash) {
+        return getDeploymentContentFile(deploymentHash, false);
+    }
+
+    private File getDeploymentContentFile(byte[] deploymentHash, boolean validate) {
+        // TODO recognize exploded content stored in a hot-deploy dir
+        String sha1 = HashUtil.bytesToHexString(deploymentHash);
+        String partA = sha1.substring(0,2);
+        String partB = sha1.substring(2);
+        File base = new File(getRepoRoot(), partA);
+        if (validate) {
+            validateDir(base);
+        }
+        File hashDir = new File(base, partB);
+        if (validate && !hashDir.exists() && !hashDir.mkdirs()) {
+            throw new IllegalStateException("Cannot create directory " + hashDir.getAbsolutePath());
+        }
+        File content = new File(hashDir, CONTENT);
+        return content;
+
     }
 
     private void validateDir(File dir) {
@@ -176,25 +197,5 @@ public class DeploymentRepositoryImpl {
                 }
             }
         }
-    }
-
-    // TODO move this sha1 translation stuff to a general utility class
-    private static char[] table = {
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-    };
-
-    /**
-     * Convert a byte array into a hex string.
-     *
-     * @param bytes the bytes
-     * @return the string
-     */
-    protected static String bytesToHexString(final byte[] bytes) {
-        final StringBuilder builder = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            builder.append(table[b >> 4 & 0x0f]).append(table[b & 0x0f]);
-        }
-        return builder.toString();
     }
 }

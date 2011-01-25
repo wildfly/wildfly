@@ -68,8 +68,18 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.deployment.DeploymentAddHandler;
+import org.jboss.as.server.deployment.DeploymentDeployHandler;
+import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.server.deployment.DeploymentRedeployHandler;
+import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.as.server.deployment.DeploymentReplaceHandler;
+import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.ManagementSocketAddHandler;
@@ -105,12 +115,15 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     private final AtomicInteger stamp = new AtomicInteger(0);
     private final AtomicStampedReference<State> state = new AtomicStampedReference<State>(null, 0);
     private final ExtensibleConfigurationPersister extensibleConfigurationPersister;
+    private final DeploymentRepository deploymentRepository;
 
-    NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment, final ExtensibleConfigurationPersister configurationPersister) {
+    NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment,
+            final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository) {
         super(createCoreModel(), configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
         this.extensibleConfigurationPersister = configurationPersister;
         this.container = container;
         this.serverEnvironment = serverEnvironment;
+        this.deploymentRepository = deploymentRepository;
         serviceRegistry = new DelegatingServiceRegistry(container);
     }
 
@@ -137,6 +150,13 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
+        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(deploymentRepository);
+        root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh, false);
+        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(deploymentRepository);
+        root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
+        root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, DeploymentReplaceHandler.INSTANCE, DeploymentReplaceHandler.INSTANCE, false);
+        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepository);
+        root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
         root.registerOperationHandler(ServerCompositeOperationHandler.OPERATION_NAME, ServerCompositeOperationHandler.INSTANCE, ServerCompositeOperationHandler.INSTANCE, false);
 
         // Management socket
@@ -163,6 +183,12 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
 
         // Deployments
         ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
+        DeploymentAddHandler dah = new DeploymentAddHandler(deploymentRepository);
+        deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
+        deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE, false);
+        deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);
+        deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, DeploymentUndeployHandler.INSTANCE, DeploymentUndeployHandler.INSTANCE, false);
+        deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, DeploymentRedeployHandler.INSTANCE, DeploymentRedeployHandler.INSTANCE, false);
 
         // Extensions
         ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);

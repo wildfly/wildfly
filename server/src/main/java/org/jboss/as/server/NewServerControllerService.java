@@ -51,7 +51,6 @@ import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.ExtensionIndexService;
@@ -94,6 +93,7 @@ final class NewServerControllerService implements Service<NewServerController> {
     private final NewBootstrap.Configuration configuration;
 
     private final InjectedValue<DeploymentModuleLoader> injectedModuleLoader = new InjectedValue<DeploymentModuleLoader>();
+    private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
 
     // mutable state
     private NewServerController serverController;
@@ -107,6 +107,7 @@ final class NewServerControllerService implements Service<NewServerController> {
         NewServerControllerService service = new NewServerControllerService(configuration);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_MODULE_LOADER, DeploymentModuleLoader.class, service.injectedModuleLoader);
+        serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
         serviceBuilder.install();
     }
 
@@ -125,7 +126,7 @@ final class NewServerControllerService implements Service<NewServerController> {
 
         final ExtensibleConfigurationPersister persister = configuration.getConfigurationPersister();
 
-        final NewServerControllerImpl serverController = new NewServerControllerImpl(container, serverEnvironment, persister);
+        final NewServerControllerImpl serverController = new NewServerControllerImpl(container, serverEnvironment, persister, injectedDeploymentRepository.getValue());
         serverController.init();
 
         final List<ModelNode> updates;
@@ -182,10 +183,6 @@ final class NewServerControllerService implements Service<NewServerController> {
         final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
         newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "lib/ext");
         serviceTarget.addService(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX, new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-
-        serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
-            new ServerDeploymentRepositoryImpl(serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir()))
-            .install();
 
         // Activate deployment module loader
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_DEPLOYMENT_MODULE_LOADER, new DeploymentUnitProcessor() {
