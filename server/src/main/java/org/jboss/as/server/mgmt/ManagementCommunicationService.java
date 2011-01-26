@@ -78,7 +78,6 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
      * @throws StartException If any errors occur
      */
     public synchronized void start(StartContext context) throws StartException {
-        System.out.println("Installing 2");
         final ExecutorService executorService = executorServiceValue.getValue();
         final ThreadFactory threadFactory = threadFactoryValue.getValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
