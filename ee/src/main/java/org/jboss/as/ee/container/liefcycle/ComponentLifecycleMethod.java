@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.container.interceptor;
+package org.jboss.as.ee.container.liefcycle;
 
 import java.lang.reflect.Method;
 
@@ -29,10 +29,10 @@ import java.lang.reflect.Method;
  *
  * @author John Bailey
  */
-public class LifeCycleMethodInterceptor implements LifecycleInterceptor {
+public class ComponentLifecycleMethod implements ComponentLifecycle {
     private final Method method;
 
-    public LifeCycleMethodInterceptor(final Method method) {
+    public ComponentLifecycleMethod(final Method method) {
         this.method = method;
     }
 

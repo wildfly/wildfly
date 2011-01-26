@@ -25,18 +25,18 @@ package org.jboss.as.ee.container.service;
 import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
-import org.jboss.as.ee.container.BeanContainer;
+import org.jboss.as.ee.container.Component;
 import org.jboss.as.naming.ServiceReferenceObjectFactory;
 
 /**
- * Object factory used to retrieve instances of beans managed by a {@link BeanContainer}.
+ * Object factory used to retrieve instances of beans managed by a {@link org.jboss.as.ee.container.Component}.
  *
  * @author John Bailey
  */
-public class BeanContainerObjectFactory extends ServiceReferenceObjectFactory {
+public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
     @SuppressWarnings("unchecked")
     public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        final BeanContainer<Object> beanContainer = (BeanContainer<Object>)serviceValue;
-        return beanContainer.getInstance();
+        final Component<Object> component = (Component<Object>)serviceValue;
+        return component.createProxy();
     }
 }

@@ -148,6 +148,22 @@ public final class ClassReflectionIndex {
         return methods;
     }
 
+    /**
+     * Get a collection of methods declared on this object.
+     *
+     * @return the (possibly empty) collection of methods with the given name
+     */
+    public Collection<Method> getMethods() {
+        final Collection<Method> methods = new ArrayList<Method>();
+        for (Map.Entry<String, Map<ParamList, Map<Class<?>, Method>>> entry : this.methods.entrySet()) {
+            final Map<ParamList, Map<Class<?>, Method>> nameMap = entry.getValue();
+            for (Map<Class<?>, Method> map : nameMap.values()) {
+                methods.addAll(map.values());
+            }
+        }
+        return methods;
+    }
+
     private static final class ParamList {
         private final Class<?>[] types;
         private final int hashCode;

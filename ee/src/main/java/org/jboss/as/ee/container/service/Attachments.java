@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.container.service;
 
-import org.jboss.as.ee.container.BeanContainerConfiguration;
+import org.jboss.as.ee.container.ComponentConfiguration;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 
@@ -30,5 +30,5 @@ import org.jboss.as.server.deployment.AttachmentList;
  * @author John Bailey
  */
 public class Attachments {
-    public static final AttachmentKey<AttachmentList<BeanContainerConfiguration>> BEAN_CONTAINER_CONFIGS = AttachmentKey.createList(BeanContainerConfiguration.class);
+    public static final AttachmentKey<AttachmentList<ComponentConfiguration>> BEAN_CONTAINER_CONFIGS = AttachmentKey.createList(ComponentConfiguration.class);
 }

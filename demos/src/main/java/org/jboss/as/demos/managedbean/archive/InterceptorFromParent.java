@@ -20,26 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.demos.managedbean.archive;
 
-import org.jboss.as.ee.container.AbstractBeanContainer;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
-
-import java.util.List;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
+import org.jboss.logging.Logger;
 
 /**
- * Implementation of {@link org.jboss.as.ee.container.BeanContainer} used to managed instances of managed beans.
- *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanContainer<T> extends AbstractBeanContainer<T> {
-    public ManagedBeanContainer(final Class<T> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections,
-        final List<LifecycleInterceptor> postConstrucInterceptors, final List<LifecycleInterceptor> preDestroyInterceptors, final List<MethodInterceptor> methodInterceptors) {
+public class InterceptorFromParent {
 
-        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptors);
+    private final Logger log = Logger.getLogger(InterceptorBean.class);
+
+    @AroundInvoke
+    public Object intercept(InvocationContext context) throws Exception {
+        if (!context.getMethod().getName().equals("echo")) {
+            return context.proceed();
+        }
+        return "#InterceptorFromParent#" + context.proceed();
     }
+
 }

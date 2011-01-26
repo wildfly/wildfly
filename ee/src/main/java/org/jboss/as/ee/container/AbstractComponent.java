@@ -22,51 +22,53 @@
 
 package org.jboss.as.ee.container;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import javax.naming.Context;
 import static org.jboss.as.ee.container.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.container.SecurityActions.setContextClassLoader;
 import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.interceptor.InterceptingProxyHandler;
-import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
+import org.jboss.as.ee.container.interceptor.ComponentInstanceInterceptor;
+import org.jboss.as.ee.container.interceptor.ContextSelectorInterceptor;
+import org.jboss.as.ee.container.liefcycle.ComponentLifecycle;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorInvocationHandler;
+import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.proxy.ProxyFactory;
 
 /**
  * @author John Bailey
  */
-public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
+public abstract class AbstractComponent<T> implements Component<T> {
     private final Class<T> beanClass;
     private final ClassLoader beanClassLoader;
     private final List<ResourceInjection> resourceInjections;
-    private final List<LifecycleInterceptor> postConstrucInterceptors;
-    private final List<LifecycleInterceptor> preDestroyInterceptors;
-    private final List<MethodInterceptor> methodInterceptors;
+    private final List<ComponentLifecycle> postConstrucInterceptors;
+    private final List<ComponentLifecycle> preDestroyInterceptors;
+    private final Map<Method, InterceptorFactory> methodInterceptorFactories;
+    private final ProxyFactory<T> proxyFactory;
 
-    protected AbstractBeanContainer(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<LifecycleInterceptor> postConstrucInterceptors, List<LifecycleInterceptor> preDestroyInterceptors, List<MethodInterceptor> methodInterceptors) {
+    private Context applicationContext;
+    private Context moduleContext;
+    private Context componentContext;
+
+    protected AbstractComponent(final Class<T> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections, final List<ComponentLifecycle> postConstrucInterceptors, final List<ComponentLifecycle> preDestroyInterceptors, final Map<Method, InterceptorFactory> methodInterceptorFactories) {
         this.beanClass = beanClass;
         this.beanClassLoader = beanClassLoader;
         this.resourceInjections = resourceInjections;
         this.postConstrucInterceptors = postConstrucInterceptors;
         this.preDestroyInterceptors = preDestroyInterceptors;
-        this.methodInterceptors = methodInterceptors;
+        this.methodInterceptorFactories = methodInterceptorFactories;
+        this.proxyFactory = new ProxyFactory<T>(beanClass);
     }
 
     /**
      * {@inheritDoc}
      */
     public T getInstance() {
-        final T beanInstance = provideBeanInstance();
-        applyInjections(beanInstance);
-        performPostConstructLifecycle(beanInstance);
-        return createBeanProxy(beanInstance);
-    }
-
-    /**
-     * Provide a bean instance.  By default this will construct a new instance, but this could also be overridden to provide
-     * singleton access or to provide a pooled implementation.
-     *
-     * @return The instance
-     */
-    protected T provideBeanInstance() {
         final Class<T> beanClass = getBeanClass();
         T instance;
         try {
@@ -74,11 +76,25 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
         } catch (Throwable t) {
             throw new RuntimeException("Failed to instantiate instance of bean: " + beanClass);
         }
+        applyInjections(instance);
+        performPostConstructLifecycle(instance);
         return instance;
     }
 
     protected Class<T> getBeanClass() {
         return beanClass;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public T createProxy() {
+        final Interceptor defaultChain = Interceptors.getChainedInterceptor(getComponentLevelInterceptors());
+        try {
+            return proxyFactory.newInstance(new InterceptorInvocationHandler(defaultChain));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create proxy instance for bean container: " + beanClass, e);
+        }
     }
 
     /**
@@ -102,12 +118,12 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * @param instance The bean instance
      */
     protected void performPostConstructLifecycle(final T instance) {
-        final List<LifecycleInterceptor> postConstructMethods = postConstrucInterceptors;
+        final List<ComponentLifecycle> postConstructMethods = postConstrucInterceptors;
         if (postConstructMethods != null && !postConstructMethods.isEmpty()) {
             final ClassLoader contextCl = getContextClassLoader();
             setContextClassLoader(beanClassLoader);
             try {
-                for (LifecycleInterceptor postConstructMethod : postConstructMethods) {
+                for (ComponentLifecycle postConstructMethod : postConstructMethods) {
                     try {
                         postConstructMethod.invoke(instance);
                     } catch (Throwable t) {
@@ -120,18 +136,19 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
         }
     }
 
-    /**
-     * Create the bean proxy.
-     *
-     * @param instance The bean instance
-     * @return The proxy
-     */
-    protected T createBeanProxy(final T instance) {
-        return InterceptingProxyHandler.createProxy(getBeanClass(), instance, getMethodInterceptors());
+    protected Map<Method, InterceptorFactory> getMethodInterceptorFactories() {
+        return methodInterceptorFactories;
     }
 
-    protected List<MethodInterceptor> getMethodInterceptors() {
-        return methodInterceptors;
+    protected List<Interceptor> getComponentLevelInterceptors() {
+        final List<Interceptor> componentLevelInterceptors = new ArrayList<Interceptor>();
+        componentLevelInterceptors.add(new ContextSelectorInterceptor(this));
+
+        // TODO:  Figure out how to route the rest in.
+
+        // Add the instance interceptor last
+        componentLevelInterceptors.add(new ComponentInstanceInterceptor<T>(this, getMethodInterceptorFactories()));
+        return componentLevelInterceptors;
     }
 
     /**
@@ -154,7 +171,7 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * @param instance The bean instance
      */
     protected void performPreDestroyLifecycle(final T instance) {
-        final List<LifecycleInterceptor> preDestroyInterceptors = this.preDestroyInterceptors;
+        final List<ComponentLifecycle> preDestroyInterceptors = this.preDestroyInterceptors;
         if (preDestroyInterceptors == null || !preDestroyInterceptors.isEmpty()) {
             return;
         }
@@ -162,7 +179,7 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
         final ClassLoader contextCl = getContextClassLoader();
         setContextClassLoader(beanClassLoader);
         try {
-            for (LifecycleInterceptor preDestroyMethod : preDestroyInterceptors) {
+            for (ComponentLifecycle preDestroyMethod : preDestroyInterceptors) {
                 try {
                     preDestroyMethod.invoke(instance);
                 } catch (Throwable t) {
@@ -184,5 +201,38 @@ public abstract class AbstractBeanContainer<T> implements BeanContainer<T> {
      * {@inheritDoc}
      */
     public void stop() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Context getComponentContext() {
+        return componentContext;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Context getModuleContext() {
+        return moduleContext;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Context getApplicationContext() {
+        return applicationContext;
+    }
+
+    public void setApplicationContext(Context applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
+    public void setModuleContext(Context moduleContext) {
+        this.moduleContext = moduleContext;
+    }
+
+    public void setComponentContext(Context componentContext) {
+        this.componentContext = componentContext;
     }
 }

@@ -20,33 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.naming;
-
-import org.jboss.msc.service.ServiceName;
+package org.jboss.as.ee.container.liefcycle;
 
 /**
- * Configuration item which holds onto the jndi and service name for a module context instance.
+ * Interceptor configuration for a lifecycle method.
  *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class NamingContextConfig {
-    private final ServiceName contextServiceName;
+public class ComponentLifecycleConfiguration {
+    private final String methodName;
 
-    /**
-     * Create a new instance.
-     *
-     * @param contextServiceName The context service name
-     */
-    public NamingContextConfig(ServiceName contextServiceName) {
-        this.contextServiceName = contextServiceName;
+    public ComponentLifecycleConfiguration(String methodName) {
+        this.methodName = methodName;
     }
 
     /**
-     * Get the context service name.
+     * Get the lifecycle method name.
      *
-     * @return The service name
+     * @return The lifecycle method name
      */
-    public ServiceName getContextServiceName() {
-        return contextServiceName;
+    public String getMethodName() {
+        return methodName;
     }
 }

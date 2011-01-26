@@ -32,7 +32,6 @@ import org.jboss.as.ee.container.injection.ResourceInjectableConfiguration;
 public class MethodInterceptorConfiguration extends ResourceInjectableConfiguration {
     private final String interceptorClassName;
     private final String methodName;
-    private final boolean acceptsInvocationContext;
     private final MethodInterceptorFilter methodFilter;
 
     /**
@@ -40,13 +39,11 @@ public class MethodInterceptorConfiguration extends ResourceInjectableConfigurat
      *
      * @param interceptorClass         The interceptor class name
      * @param methodName               The interceptor method name
-     * @param acceptsInvocationContext Flag to determine if the method accepts an invocation context
      * @param methodFilter             The method filter
      */
-    public MethodInterceptorConfiguration(final String interceptorClass, final String methodName, final boolean acceptsInvocationContext, final MethodInterceptorFilter methodFilter) {
+    public MethodInterceptorConfiguration(final String interceptorClass, final String methodName, final MethodInterceptorFilter methodFilter) {
         this.interceptorClassName = interceptorClass;
         this.methodName = methodName;
-        this.acceptsInvocationContext = acceptsInvocationContext;
         this.methodFilter = methodFilter;
     }
 
@@ -70,14 +67,5 @@ public class MethodInterceptorConfiguration extends ResourceInjectableConfigurat
 
     public MethodInterceptorFilter getMethodFilter() {
         return methodFilter;
-    }
-
-    /**
-     * Determine whether the method takes an invocation context.
-     *
-     * @return {@code true} if the method accepts an invocation context
-     */
-    public boolean acceptsInvocationContext() {
-        return acceptsInvocationContext;
     }
 }

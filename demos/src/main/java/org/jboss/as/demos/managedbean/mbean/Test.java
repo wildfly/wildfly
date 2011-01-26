@@ -21,14 +21,11 @@
  */
 package org.jboss.as.demos.managedbean.mbean;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
-import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
+import org.jboss.as.demos.managedbean.archive.LookupService;
 import org.jboss.logging.Logger;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -39,17 +36,9 @@ public class Test implements TestMBean {
     @Override
     public String echo(String s) {
         log.info("-----> In test()");
-        try {
-            InitialContext ctx = new InitialContext();
-            log.info("-----> Looking up managed bean");
-            Object o = ctx.lookup("global/managedbean-example_jar/BeanWithSimpleInjected");
-            BeanWithSimpleInjected bean = (BeanWithSimpleInjected)o;
-            log.info("-----> Found BeanWithSimpleInjected, calling echo(\"Test\")");
-            s = bean.echo(s);
-            log.info("-----> echo returned " + s);
-            return s;
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
+        log.info("-----> Found BeanWithSimpleInjected, calling echo(\"Test\")");
+        s = LookupService.bean.echo(s);
+        log.info("-----> echo returned " + s);
+        return s;
     }
 }

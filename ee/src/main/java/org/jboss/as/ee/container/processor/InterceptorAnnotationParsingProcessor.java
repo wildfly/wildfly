@@ -23,17 +23,15 @@
 package org.jboss.as.ee.container.processor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
-import org.jboss.as.ee.container.BeanContainerConfiguration;
+import org.jboss.as.ee.container.ComponentConfiguration;
 import org.jboss.as.ee.container.interceptor.MethodInterceptorAllFilter;
 import org.jboss.as.ee.container.interceptor.MethodInterceptorConfiguration;
 import org.jboss.as.ee.container.interceptor.MethodInterceptorMatchFilter;
-import org.jboss.as.ee.container.interceptor.MethodInterceptorFilter;
 import org.jboss.as.ee.container.service.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,7 +47,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.BeanContainerConfiguration} instance to configure
+ * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.ComponentConfiguration} instance to configure
  * required method interceptors.
  *
  * @author John Bailey
@@ -60,7 +58,7 @@ public class InterceptorAnnotationParsingProcessor implements DeploymentUnitProc
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final List<BeanContainerConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
+        final List<ComponentConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
         if (containerConfigs == null || containerConfigs.isEmpty()) {
             return;
         }
@@ -70,7 +68,7 @@ public class InterceptorAnnotationParsingProcessor implements DeploymentUnitProc
             return;
         }
 
-        for (BeanContainerConfiguration containerConfig : containerConfigs) {
+        for (ComponentConfiguration containerConfig : containerConfigs) {
             final ClassInfo classInfo = index.getClassByName(DotName.createSimple(containerConfig.getBeanClass()));
             containerConfig.addMethodInterceptorConfigs(getInterceptorConfigs(classInfo, index));
         }
@@ -80,17 +78,30 @@ public class InterceptorAnnotationParsingProcessor implements DeploymentUnitProc
     }
 
     private List<MethodInterceptorConfiguration> getInterceptorConfigs(final ClassInfo classInfo, final CompositeIndex index) {
+        final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
+        final List<MethodInterceptorConfiguration> methodLevelInterceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
+        final List<MethodInterceptorConfiguration> componentDefinedInterceptors = new ArrayList<MethodInterceptorConfiguration>();
+        getInterceptorConfigs(classInfo, index, interceptorConfigurations, methodLevelInterceptorConfigurations, componentDefinedInterceptors);
+        interceptorConfigurations.addAll(methodLevelInterceptorConfigurations);
+        interceptorConfigurations.addAll(componentDefinedInterceptors);
+        return interceptorConfigurations;
+    }
+
+    private void getInterceptorConfigs(final ClassInfo classInfo, final CompositeIndex index, final List<MethodInterceptorConfiguration> classLevelInterceptorConfigurations, final List<MethodInterceptorConfiguration> methodLevelInterceptorConfigurations, final List<MethodInterceptorConfiguration> componentDefinedInterceptors) {
+        final ClassInfo superClassInfo = index.getClassByName(classInfo.superName());
+        if(superClassInfo != null) {
+            getInterceptorConfigs(superClassInfo, index, classLevelInterceptorConfigurations, methodLevelInterceptorConfigurations, componentDefinedInterceptors);
+        }
+
         final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
         if (classAnnotations == null) {
-            return Collections.emptyList();
+            return;
         }
 
         final List<AnnotationInstance> interceptorAnnotations = classAnnotations.get(INTERCEPTORS_ANNOTATION_NAME);
         if (interceptorAnnotations == null || interceptorAnnotations.isEmpty()) {
-            return Collections.emptyList();
+            return;
         }
-
-        final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>(interceptorAnnotations.size());
 
         for (AnnotationInstance annotationInstance : interceptorAnnotations) {
 
@@ -101,30 +112,28 @@ public class InterceptorAnnotationParsingProcessor implements DeploymentUnitProc
                     continue; // TODO: Process without index info
                 }
 
+                final MethodInfo aroundInvokeMethod = getAroundInvokeMethod(interceptorClassInfo);
+                validateArgumentType(classInfo, aroundInvokeMethod);
+
                 final AnnotationTarget target = annotationInstance.target();
-                final MethodInterceptorFilter methodFilter;
                 if (target instanceof MethodInfo) {
                     final MethodInfo methodInfo = MethodInfo.class.cast(target);
                     final List<String> argTypes = new ArrayList<String>(methodInfo.args().length);
                     for (Type argType : methodInfo.args()) {
                         argTypes.add(argType.name().toString());
                     }
-                    methodFilter = new MethodInterceptorMatchFilter(methodInfo.name(), argTypes.toArray(new String[argTypes.size()]));
+                    methodLevelInterceptorConfigurations.add(new MethodInterceptorConfiguration(interceptorClassInfo.name().toString(), aroundInvokeMethod.name(), new MethodInterceptorMatchFilter(methodInfo.name(), argTypes.toArray(new String[argTypes.size()]))));
                 } else {
-                    methodFilter = MethodInterceptorAllFilter.INSTANCE;
+                    classLevelInterceptorConfigurations.add(new MethodInterceptorConfiguration(interceptorClassInfo.name().toString(), aroundInvokeMethod.name(), MethodInterceptorAllFilter.INSTANCE));
                 }
-
-                final MethodInfo methodInfo = getAroundInvokeMethod(interceptorClassInfo);
-                interceptorConfigurations.add(new MethodInterceptorConfiguration(annotationInstance.name().toString(), methodInfo.name(), acceptsInvocationContext(interceptorClassInfo, methodInfo), methodFilter));
             }
         }
 
         //Look for any @AroundInvoke methods on bean class
         final MethodInfo methodInfo = getAroundInvokeMethod(classInfo);
         if (methodInfo != null) {
-            interceptorConfigurations.add(new MethodInterceptorConfiguration(classInfo.name().toString(), methodInfo.name(), acceptsInvocationContext(classInfo, methodInfo), MethodInterceptorAllFilter.INSTANCE));
+            componentDefinedInterceptors.add(new MethodInterceptorConfiguration(classInfo.name().toString(), methodInfo.name(), MethodInterceptorAllFilter.INSTANCE));
         }
-        return interceptorConfigurations;
     }
 
     private MethodInfo getAroundInvokeMethod(final ClassInfo classInfo) {
@@ -145,16 +154,16 @@ public class InterceptorAnnotationParsingProcessor implements DeploymentUnitProc
         return MethodInfo.class.cast(target);
     }
 
-    private boolean acceptsInvocationContext(final ClassInfo classInfo, final MethodInfo methodInfo) {
+    private void validateArgumentType(final ClassInfo classInfo, final MethodInfo methodInfo) {
         final Type[] args = methodInfo.args();
         switch (args.length) {
             case 0:
-                return false;
+                throw new IllegalArgumentException("Invalid argument signature.  Methods annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " must have a single InvocationContext argument.");
             case 1:
                 if (!InvocationContext.class.getName().equals(args[0].name().toString())) {
-                    throw new IllegalArgumentException("Invalid argument type.  Methods annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " must have either no parameter or a single InvocationContext argument.");
+                    throw new IllegalArgumentException("Invalid argument type.  Methods annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " must have a single InvocationContext argument.");
                 }
-                return true;
+                break;
             default:
                 throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " on class " + classInfo.name());
         }

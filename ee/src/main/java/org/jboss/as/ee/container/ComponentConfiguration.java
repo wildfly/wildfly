@@ -27,23 +27,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.jboss.as.ee.container.injection.ResourceInjectableConfiguration;
-import org.jboss.as.ee.container.interceptor.LifecycleInterceptorConfiguration;
+import org.jboss.as.ee.container.liefcycle.ComponentLifecycleConfiguration;
 import org.jboss.as.ee.container.interceptor.MethodInterceptorConfiguration;
 
 /**
- * The configuration for a {@link BeanContainer} use for constructing and installing a bean container instance.
+ * The configuration for a {@link Component} use for constructing and installing a bean container instance.
  *
  * @author John Bailey
  */
-public class BeanContainerConfiguration extends ResourceInjectableConfiguration {
+public class ComponentConfiguration extends ResourceInjectableConfiguration {
     private final String name;
     private final String beanClass;
-    private final BeanContainerFactory beanContainerFactory;
-    private final List<LifecycleInterceptorConfiguration> postConstructMethods = new ArrayList<LifecycleInterceptorConfiguration>();
-    private final List<LifecycleInterceptorConfiguration> preDestroyMethods = new ArrayList<LifecycleInterceptorConfiguration>();
+    private final ComponentFactory beanContainerFactory;
+    private final List<ComponentLifecycleConfiguration> postConstructMethods = new ArrayList<ComponentLifecycleConfiguration>();
+    private final List<ComponentLifecycleConfiguration> preDestroyMethods = new ArrayList<ComponentLifecycleConfiguration>();
     private final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
 
-    public BeanContainerConfiguration(final String name, final String beanClass, final BeanContainerFactory beanContainerFactory) {
+    public ComponentConfiguration(final String name, final String beanClass, final ComponentFactory beanContainerFactory) {
         if (name == null) throw new IllegalArgumentException("Bean name can not be null");
         this.name = name;
         if (beanClass == null) throw new IllegalArgumentException("Bean class can not be null");
@@ -75,7 +75,7 @@ public class BeanContainerConfiguration extends ResourceInjectableConfiguration 
      *
      * @return The post-construct life-cycle methods
      */
-    public List<LifecycleInterceptorConfiguration> getPostConstructLifecycles() {
+    public List<ComponentLifecycleConfiguration> getPostConstructLifecycles() {
         return Collections.unmodifiableList(postConstructMethods);
     }
 
@@ -84,7 +84,7 @@ public class BeanContainerConfiguration extends ResourceInjectableConfiguration 
      *
      * @param postMethod The post-construct method
      */
-    public void addPostConstructLifecycle(final LifecycleInterceptorConfiguration postMethod) {
+    public void addPostConstructLifecycle(final ComponentLifecycleConfiguration postMethod) {
         postConstructMethods.add(postMethod);
     }
 
@@ -93,7 +93,7 @@ public class BeanContainerConfiguration extends ResourceInjectableConfiguration 
      *
      * @return The pre-destroy life-cycle methods
      */
-    public List<LifecycleInterceptorConfiguration> getPreDestroyLifecycles() {
+    public List<ComponentLifecycleConfiguration> getPreDestroyLifecycles() {
         return Collections.unmodifiableList(preDestroyMethods);
     }
 
@@ -102,7 +102,7 @@ public class BeanContainerConfiguration extends ResourceInjectableConfiguration 
      *
      * @param preDestroy The pre-destry method
      */
-    public void addPreDestroyLifecycle(final LifecycleInterceptorConfiguration preDestroy) {
+    public void addPreDestroyLifecycle(final ComponentLifecycleConfiguration preDestroy) {
         preDestroyMethods.add(preDestroy);
     }
 
@@ -141,7 +141,7 @@ public class BeanContainerConfiguration extends ResourceInjectableConfiguration 
      * @param interceptorConfigurations The interceptor configurations
      */
     public void addMethodInterceptorConfigs(final Collection<MethodInterceptorConfiguration> interceptorConfigurations) {
-        interceptorConfigurations.addAll(interceptorConfigurations);
+        this.interceptorConfigurations.addAll(interceptorConfigurations);
     }
 
     /**
@@ -149,7 +149,7 @@ public class BeanContainerConfiguration extends ResourceInjectableConfiguration 
      *
      * @return The bean container factory
      */
-    public BeanContainerFactory getContainerFactory() {
+    public ComponentFactory getContainerFactory() {
         return beanContainerFactory;
     }
 }

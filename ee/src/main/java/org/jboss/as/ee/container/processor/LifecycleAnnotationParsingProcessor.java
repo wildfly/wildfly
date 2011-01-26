@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import org.jboss.as.ee.container.BeanContainerConfiguration;
-import org.jboss.as.ee.container.interceptor.LifecycleInterceptorConfiguration;
+import org.jboss.as.ee.container.ComponentConfiguration;
+import org.jboss.as.ee.container.liefcycle.ComponentLifecycleConfiguration;
 import org.jboss.as.ee.container.service.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,7 +42,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.BeanContainerConfiguration} instance to configure
+ * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.ComponentConfiguration} instance to configure
  * required life-cycle methods.
  *
  * @author John Bailey
@@ -54,7 +54,7 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final List<BeanContainerConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
+        final List<ComponentConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
         if (containerConfigs == null || containerConfigs.isEmpty()) {
             return;
         }
@@ -64,15 +64,15 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
             return;
         }
 
-        for (BeanContainerConfiguration containerConfig : containerConfigs) {
+        for (ComponentConfiguration containerConfig : containerConfigs) {
             DotName current = DotName.createSimple(containerConfig.getBeanClass());
             while (current != null && !Object.class.getName().equals(current.toString())) {
                 final ClassInfo classInfo = index.getClassByName(current);
-                final LifecycleInterceptorConfiguration postConstructMethod = getLifeCycle(classInfo, POST_CONSTRUCT_ANNOTATION);
+                final ComponentLifecycleConfiguration postConstructMethod = getLifeCycle(classInfo, POST_CONSTRUCT_ANNOTATION);
                 if (postConstructMethod != null) {
                     containerConfig.addPostConstructLifecycle(postConstructMethod);
                 }
-                final LifecycleInterceptorConfiguration preDestroyMethod = getLifeCycle(classInfo, PRE_DESTROY_ANNOTATION);
+                final ComponentLifecycleConfiguration preDestroyMethod = getLifeCycle(classInfo, PRE_DESTROY_ANNOTATION);
                 if (preDestroyMethod != null) {
                     containerConfig.addPreDestroyLifecycle(preDestroyMethod);
                 }
@@ -84,7 +84,7 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
     public void undeploy(DeploymentUnit context) {
     }
 
-    public static LifecycleInterceptorConfiguration getLifeCycle(final ClassInfo classInfo, final DotName annotationType) {
+    public static ComponentLifecycleConfiguration getLifeCycle(final ClassInfo classInfo, final DotName annotationType) {
         if (classInfo == null) {
             return null; // No index info
         }
@@ -109,7 +109,7 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final Type[] args = methodInfo.args();
         if (args.length == 0) {
-            return new LifecycleInterceptorConfiguration(methodInfo.name());
+            return new ComponentLifecycleConfiguration(methodInfo.name());
         } else {
             throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name());
         }

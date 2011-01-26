@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -21,26 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.ee">
-
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.invocation">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
-        <module name="javax.api"/>
         <module name="javax.interceptor.api"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.as.domain"/>
-        <module name="org.jboss.as.naming"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.invocation"/>
-        <module name="org.jboss.jandex"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
+        <module name="org.jboss.classfilewriter"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.metadata"/>
-        <module name="org.jboss.vfs"/>
+        <module name="org.jboss.marshalling"/>
     </dependencies>
 </module>

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.naming;
 
+import javax.naming.RefAddr;
+import org.jboss.as.naming.context.ModularReference;
 import static org.jboss.as.naming.util.NamingUtils.asReference;
 
 import java.util.Hashtable;
@@ -43,12 +45,11 @@ import org.jboss.msc.service.ServiceController.State;
 /**
  * Abstract object factory that allows for the creation of service references. Object factories that subclass
  * {@link ServiceReferenceObjectFactory} can get access to the value of the service described by the reference.
- * <p>
+ * <p/>
  * If the factory state is no {@link State#UP} then the factory will block. If the state is {@link State#START_FAILED} or
  * {@link State#REMOVED} (or the state transactions to one of these states while blocking) an exception is thrown.
  *
  * @author Stuart Douglas
- *
  */
 public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory {
 
@@ -56,11 +57,9 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
 
     /**
      * Create a reference to a sub class of {@link ServiceReferenceObjectFactory} that injects the value of the given service.
-     *
      */
     public static Reference createReference(final ServiceName service, Class<? extends ServiceReferenceObjectFactory> factory) {
-        return new Reference(Context.class.getName(), new StringRefAddr("srof", service.getCanonicalName()), factory.getName(),
-                null);
+        return ModularReference.create(Context.class, new ServiceNameRefAdr("srof", service), factory);
     }
 
     @Override
@@ -72,12 +71,11 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
     @Override
     public final Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         final Reference reference = asReference(obj);
-        final StringRefAddr nameAdr = (StringRefAddr) reference.get("srof");
+        final ServiceNameRefAdr nameAdr = (ServiceNameRefAdr) reference.get("srof");
         if (nameAdr == null) {
             throw new NamingException("Invalid context reference.  Not a 'srof' reference.");
         }
-        final String sname = (String) nameAdr.getContent();
-        final ServiceName serviceName = ServiceName.parse(sname);
+        final ServiceName serviceName = (ServiceName)nameAdr.getContent();
         final ServiceController<?> controller;
         try {
             controller = serviceRegistry.getRequiredService(serviceName);
@@ -118,13 +116,13 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
      * the first parameter.
      */
     public abstract Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx,
-            Hashtable<?, ?> environment) throws Exception;
+                                             Hashtable<?, ?> environment) throws Exception;
 
     /**
      * listener that notifies when the service changes state
      */
     @SuppressWarnings("unchecked")
-    private class ServiceReferenceListener extends AbstractServiceListener{
+    private class ServiceReferenceListener extends AbstractServiceListener {
 
         private State state;
         private boolean finished = false;
@@ -177,6 +175,21 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
 
         public boolean isFinished() {
             return finished;
+        }
+    }
+
+    private static final class ServiceNameRefAdr extends RefAddr {
+        private static final long serialVersionUID = 3677121114687908679L;
+
+        private final ServiceName serviceName;
+
+        private ServiceNameRefAdr(String s, ServiceName serviceName) {
+            super(s);
+            this.serviceName = serviceName;
+        }
+
+        public Object getContent() {
+            return serviceName;
         }
     }
 }

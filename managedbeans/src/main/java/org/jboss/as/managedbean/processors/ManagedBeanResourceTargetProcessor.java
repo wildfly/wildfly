@@ -24,7 +24,7 @@ package org.jboss.as.managedbean.processors;
 
 import java.util.List;
 import java.util.Map;
-import org.jboss.as.ee.container.BeanContainerConfiguration;
+import org.jboss.as.ee.container.ComponentConfiguration;
 import org.jboss.as.ee.container.injection.ResourceInjectionConfiguration;
 import org.jboss.as.ee.container.service.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -38,7 +38,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.BeanContainerConfiguration} instance and determining if
+ * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.ComponentConfiguration} instance and determining if
  * any of its resource injections target a managed bean.  If so it will set the correct lookup target on the resource
  * injection configuration.
  *
@@ -48,7 +48,7 @@ public class ManagedBeanResourceTargetProcessor implements DeploymentUnitProcess
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final List<BeanContainerConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
+        final List<ComponentConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
         if (containerConfigs == null || containerConfigs.isEmpty()) {
             return;
         }
@@ -58,7 +58,7 @@ public class ManagedBeanResourceTargetProcessor implements DeploymentUnitProcess
             return;
         }
 
-        for (BeanContainerConfiguration containerConfig : containerConfigs) {
+        for (ComponentConfiguration containerConfig : containerConfigs) {
             final List<ResourceInjectionConfiguration> resourceInjectionConfigurations = containerConfig.getResourceInjectionConfigs();
             for(ResourceInjectionConfiguration resourceConfig : resourceInjectionConfigurations) {
                 if(resourceConfig.getTargetContextName() != null) continue;
@@ -74,9 +74,9 @@ public class ManagedBeanResourceTargetProcessor implements DeploymentUnitProcess
 
                 final AnnotationInstance instance = managedBeanAnnotationInstances.get(0); // We only allow one @ManagedBean
 
-                final AnnotationValue declaredNameValue = instance.value("name");
+                final AnnotationValue declaredNameValue = instance.value();
                 final String declaredValue = declaredNameValue != null ? declaredNameValue.asString() : null;
-                final String targetName =  declaredValue != null && !declaredValue.isEmpty() ? declaredValue : resourceConfig.getName();
+                final String targetName =  declaredValue != null && !declaredValue.isEmpty() ? declaredValue : targetClass.name().toString();
                 resourceConfig.setTargetContextName(targetName);
             }
         }

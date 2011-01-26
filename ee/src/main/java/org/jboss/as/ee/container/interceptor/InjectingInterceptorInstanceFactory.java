@@ -22,17 +22,33 @@
 
 package org.jboss.as.ee.container.interceptor;
 
+import java.util.List;
+import org.jboss.as.ee.container.injection.ResourceInjection;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.InterceptorInstanceFactory;
+
 /**
- * Interceptor representing a lifecycle method.
+ * Interceptor instance factory that applies injections to the interceptor instance once the interceptors is created.
  *
  * @author John Bailey
  */
-public interface LifecycleInterceptor {
-    /**
-     * Invoke a method call.
-     *
-     * @param target The object being intercepted
-     * @throws Exception If any exceptions occur during interception
-     */
-    void invoke(final Object target) throws Exception;
+public class InjectingInterceptorInstanceFactory implements InterceptorInstanceFactory{
+
+    private final InterceptorInstanceFactory delegate;
+    private final List<ResourceInjection> interceptorInjections;
+
+    public InjectingInterceptorInstanceFactory(final InterceptorInstanceFactory delegate, final List<ResourceInjection> interceptorInjections) {
+        this.delegate = delegate;
+        this.interceptorInjections = interceptorInjections;
+    }
+
+    public Object createInstance(final InterceptorFactoryContext context) {
+        final Object instance = delegate.createInstance(context);
+
+        for(ResourceInjection injection : interceptorInjections) {
+            injection.inject(instance);
+        }
+
+        return instance;
+    }
 }

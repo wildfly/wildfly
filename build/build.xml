@@ -257,8 +257,8 @@
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-osgi"/>
         </module-def>
         
-    	<module-def name="org.jboss.as.aggregate" />
-    	
+        <module-def name="org.jboss.as.aggregate" />
+
         <module-def name="org.jboss.as.arquillian.service">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>
         </module-def>
@@ -371,10 +371,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
         </module-def>
 
-        <module-def name="org.jboss.metadata">
-            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
-            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-web"/>
-            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ear"/>
+        <module-def name="org.jboss.classfilewriter">
+            <maven-resource group="org.jboss.classfilewriter" artifact="jboss-classfilewriter"/>
         </module-def>
 
         <module-def name="org.jboss.common-core">
@@ -395,6 +393,10 @@
 
         <module-def name="org.jboss.interceptor.spi">
             <maven-resource group="org.jboss.interceptor" artifact="jboss-interceptor-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.invocation">
+            <maven-resource group="org.jboss.invocation" artifact="jboss-invocation"/>
         </module-def>
 
         <module-def name="org.jboss.ironjacamar.api">
@@ -441,6 +443,12 @@
 
         <module-def name="org.jboss.marshalling.river">
             <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river"/>
+        </module-def>
+
+        <module-def name="org.jboss.metadata">
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-web"/>
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ear"/>
         </module-def>
 
         <module-def name="org.jboss.modules"/>

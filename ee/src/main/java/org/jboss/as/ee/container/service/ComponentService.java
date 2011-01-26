@@ -23,48 +23,73 @@
 package org.jboss.as.ee.container.service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.jboss.as.ee.container.BeanContainer;
+import javax.naming.Context;
+import org.jboss.as.ee.container.AbstractComponent;
+import org.jboss.as.ee.container.Component;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service wrapper for a bean container.
  *
  * @author John Bailey
  */
-public class BeanContainerService implements Service<BeanContainer<?>> {
+public class ComponentService implements Service<Component<?>> {
 
     private final AtomicBoolean started = new AtomicBoolean();
 
-    private final BeanContainer<?> beanContainer;
+    private final InjectedValue<Context> compContext = new InjectedValue<Context>();
+    private final InjectedValue<Context> moduleContext = new InjectedValue<Context>();
+    private final InjectedValue<Context> appContext = new InjectedValue<Context>();
 
-    public BeanContainerService(final BeanContainer<?> beanContainer) {
-        this.beanContainer = beanContainer;
+    private final Component<?> component;
+
+    public ComponentService(final Component<?> component) {
+        this.component = component;
     }
 
     public void start(StartContext context) throws StartException {
-        if(!started.compareAndSet(false, true)) {
+        if (!started.compareAndSet(false, true)) {
             throw new StartException("Unable to start bean container.  Already started.");
         }
-        beanContainer.start();
+        if(component instanceof AbstractComponent) {
+            final AbstractComponent<?> abstractComponent = AbstractComponent.class.cast(component);
+            abstractComponent.setComponentContext(compContext.getValue());
+            abstractComponent.setModuleContext(moduleContext.getValue());
+            abstractComponent.setApplicationContext(appContext.getValue());
+        }
+        component.start();
     }
 
     public void stop(StopContext context) {
-        if(started.compareAndSet(true, false)) {
-            beanContainer.stop();
+        if (started.compareAndSet(true, false)) {
+            component.stop();
         } else {
             throw new IllegalStateException("Unable to stop bean container.  Already stopped.");
         }
     }
 
-    public BeanContainer<?> getValue() throws IllegalStateException, IllegalArgumentException {
-        if(!started.get() ) {
+    public Component<?> getValue() throws IllegalStateException, IllegalArgumentException {
+        if (!started.get()) {
             throw new IllegalStateException("Unable to retrieve bean container.  Service is stopped.");
         }
-        return beanContainer;
+        return component;
     }
 
 
+    public Injector<Context> getCompContextInjector() {
+        return compContext;
+    }
+
+    public Injector<Context> getModuleContextInjector() {
+        return moduleContext;
+    }
+
+    public Injector<Context> getAppContextInjector() {
+        return appContext;
+    }
 }

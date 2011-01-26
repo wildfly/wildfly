@@ -22,35 +22,36 @@
 
 package org.jboss.as.ee.container;
 
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.ee.container.injection.ResourceInjectionResolver;
-import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
-import org.jboss.as.ee.container.interceptor.InterceptorFactory;
+import org.jboss.as.ee.container.liefcycle.ComponentLifecycle;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Factory responsible for crating {@link BeanContainer} instances.
+ * Factory responsible for crating {@link Component} instances.
  *
  * @author John Bailey
  */
-public interface BeanContainerFactory {
+public interface ComponentFactory {
     /**
-     * Create the bean container instance.
+     * Create the component.
      *
-     * @param deploymentUnit          The current deployment unit
-     * @param beanName                The bean name
-     * @param beanClass               The bean class
-     * @param classLoader             The classloader
-     * @param injections              The containers resource injection instances
-     * @param postConstructLifecycles The post-constructor lifecycles
-     * @param preDestroyLifecycles    the pre-destroy lifecycles
-     * @param interceptors            The containers interceptor instances
+     * @param deploymentUnit             The current deployment unit
+     * @param componentName              The component name
+     * @param componentClass             The component class
+     * @param classLoader                The classloader
+     * @param injections                 The component's resource injection instances
+     * @param postConstructLifecycles    The post-constructor lifecycles
+     * @param preDestroyLifecycles       the pre-destroy lifecycles
+     * @param methodInterceptorFactories the method interceptor factories
      * @return A bean container service information
      */
-    ConstructedBeanContainer createBeanContainer(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<LifecycleInterceptor> postConstructLifecycles, final List<LifecycleInterceptor> preDestroyLifecycles, final List<MethodInterceptor> interceptors);
+    ConstructedComponent createComponent(final DeploymentUnit deploymentUnit, final String componentName, final Class<?> componentClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<ComponentLifecycle> postConstructLifecycles, final List<ComponentLifecycle> preDestroyLifecycles, final Map<Method, InterceptorFactory> methodInterceptorFactories);
 
     /**
      * Return the resource injection resolver for this bean container type.
@@ -60,30 +61,23 @@ public interface BeanContainerFactory {
     ResourceInjectionResolver getResourceInjectionResolver();
 
     /**
-     * Return the method interceptor factory for this bean container type.
-     *
-     * @return The interceptor factory
-     */
-    InterceptorFactory getMethodInterceptorFactory();
-
-    /**
      * Interface used to capture the results of creating a bean container.  Provides the bean container instance as well
      * as the information required to setup the services required to run the container.
      */
-    interface ConstructedBeanContainer {
+    interface ConstructedComponent {
         /**
          * Return the bean container instance.
          *
          * @return The container instance
          */
-        BeanContainer<?> getBeanContainer();
+        Component<?> getBeanContainer();
 
         /**
          * Return the container service name.
          *
          * @return The service name
          */
-        ServiceName getContainerServiceName();
+        ServiceName getComponentServiceName();
 
         /**
          * The service name of the naming context this container's reference will be bound.
@@ -105,5 +99,26 @@ public interface BeanContainerFactory {
          * @return The environment context service name
          */
         ServiceName getEnvContextServiceName();
+
+        /**
+         * The service name for the naming context for this component.
+         *
+         * @return The component naming context
+         */
+        ServiceName getCompContextServiceName();
+
+        /**
+         * The service name for the module context for this component.
+         *
+         * @return The module context name
+         */
+        ServiceName getModuleContextServiceName();
+
+        /**
+         * The service name for the app context for this component.
+         *
+         * @return The app context name
+         */
+         ServiceName getAppContextServiceName();
     }
 }

@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
-import org.jboss.as.ee.container.BeanContainerConfiguration;
+import org.jboss.as.ee.container.ComponentConfiguration;
 import org.jboss.as.ee.container.injection.ResourceInjectionConfiguration;
 import org.jboss.as.ee.container.interceptor.MethodInterceptorConfiguration;
 import org.jboss.as.ee.container.service.Attachments;
@@ -46,7 +46,7 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.BeanContainerConfiguration} instance to configure
+ * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.ComponentConfiguration} instance to configure
  * required resource injection configurations.
  *
  * @author John Bailey
@@ -57,7 +57,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final List<BeanContainerConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
+        final List<ComponentConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
         if (containerConfigs == null || containerConfigs.isEmpty()) {
             return;
         }
@@ -67,7 +67,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             return;
         }
 
-        for (BeanContainerConfiguration containerConfig : containerConfigs) {
+        for (ComponentConfiguration containerConfig : containerConfigs) {
             final ClassInfo classInfo = index.getClassByName(DotName.createSimple(containerConfig.getBeanClass()));
             containerConfig.addResourceInjectionConfigs(getResourceConfigurations(classInfo));
 

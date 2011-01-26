@@ -20,26 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.container.interceptor;
+package org.jboss.as.demos.managedbean.archive;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptors;
+import javax.interceptor.InvocationContext;
 
 /**
- * Interceptor configuration for a lifecycle method.
- *
  * @author John Bailey
  */
-public class LifecycleInterceptorConfiguration {
-    private final String methodName;
-
-    public LifecycleInterceptorConfiguration(String methodName) {
-        this.methodName = methodName;
-    }
-
-    /**
-     * Get the lifecycle method name.
-     *
-     * @return The lifecycle method name
-     */
-    public String getMethodName() {
-        return methodName;
+@Interceptors(InterceptorFromParent.class)
+public class BeanParent {
+    @AroundInvoke
+    public Object intercept(InvocationContext context) throws Exception {
+        if (!context.getMethod().getName().equals("echo")) {
+            return context.proceed();
+        }
+        return "#BeanParent#" + context.proceed();
     }
 }

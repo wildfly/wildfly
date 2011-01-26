@@ -41,7 +41,7 @@ import org.jboss.logging.Logger;
     @Resource(name="simple", type=SimpleManagedBean.class, mappedName="SimpleManagedBean")
 })
 @Interceptors(InterceptorBean.class)
-public class BeanWithSimpleInjected {
+public class BeanWithSimpleInjected extends BeanParent {
 
     private final Logger log = Logger.getLogger(BeanWithSimpleInjected.class);
 
@@ -53,6 +53,7 @@ public class BeanWithSimpleInjected {
         log.info("-----> Constructed BeanWithSimpleInjected, simple=" + simple);
     }
 
+    @Interceptors(OtherInterceptorBean.class)
     public String echo(String msg) {
         return msg;
     }

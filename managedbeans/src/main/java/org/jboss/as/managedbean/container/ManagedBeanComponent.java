@@ -20,33 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.naming;
+package org.jboss.as.managedbean.container;
 
-import org.jboss.msc.service.ServiceName;
+import java.lang.reflect.Method;
+import java.util.Map;
+import org.jboss.as.ee.container.AbstractComponent;
+import org.jboss.as.ee.container.injection.ResourceInjection;
+import org.jboss.as.ee.container.liefcycle.ComponentLifecycle;
+
+import java.util.List;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Configuration item which holds onto the jndi and service name for a module context instance.
+ * Implementation of {@link org.jboss.as.ee.container.Component} used to managed instances of managed beans.
+ *
+ * @param <T> The managed bean object type
  *
  * @author John E. Bailey
  */
-public class NamingContextConfig {
-    private final ServiceName contextServiceName;
-
-    /**
-     * Create a new instance.
-     *
-     * @param contextServiceName The context service name
-     */
-    public NamingContextConfig(ServiceName contextServiceName) {
-        this.contextServiceName = contextServiceName;
-    }
-
-    /**
-     * Get the context service name.
-     *
-     * @return The service name
-     */
-    public ServiceName getContextServiceName() {
-        return contextServiceName;
+public class ManagedBeanComponent<T> extends AbstractComponent<T> {
+    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, Map<Method, InterceptorFactory> methodInterceptorFactories) {
+        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
     }
 }

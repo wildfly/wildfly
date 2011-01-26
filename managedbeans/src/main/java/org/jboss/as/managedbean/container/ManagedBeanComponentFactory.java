@@ -22,44 +22,44 @@
 
 package org.jboss.as.managedbean.container;
 
+import java.lang.reflect.Method;
 import java.util.List;
-import org.jboss.as.ee.container.BeanContainer;
-import org.jboss.as.ee.container.BeanContainerFactory;
+import java.util.Map;
+import org.jboss.as.ee.container.Component;
+import org.jboss.as.ee.container.ComponentFactory;
 import org.jboss.as.ee.container.injection.ResourceInjection;
 import org.jboss.as.ee.container.injection.ResourceInjectionResolver;
-import org.jboss.as.ee.container.interceptor.DefaultMethodInterceptorFactory;
-import org.jboss.as.ee.container.interceptor.InterceptorFactory;
-import org.jboss.as.ee.container.interceptor.LifecycleInterceptor;
-import org.jboss.as.ee.container.interceptor.MethodInterceptor;
+import org.jboss.as.ee.container.liefcycle.ComponentLifecycle;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Manged-bean specific implementation of a {@link BeanContainerFactory}.
+ * Manged-bean specific implementation of a {@link org.jboss.as.ee.container.ComponentFactory}.
  *
  * @author John Bailey
  */
-public class ManagedBeanContainerFactory implements BeanContainerFactory {
+public class ManagedBeanComponentFactory implements ComponentFactory {
     private final ResourceInjectionResolver injectionResolver = new ManagedBeanResourceInjectionResolver();
-    private final InterceptorFactory interceptorFactory = new DefaultMethodInterceptorFactory();
 
-    public ConstructedBeanContainer createBeanContainer(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<LifecycleInterceptor> postConstructLifecycles, final List<LifecycleInterceptor> preDestroyLifecycles, final List<MethodInterceptor> interceptors) {
-        final ManagedBeanContainer<?> container = createContainer(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, interceptors);
-        final ServiceName containerServiceName = ServiceNames.MANAGED_BEAN.append(deploymentUnit.getName(), beanName);
+    public ConstructedComponent createComponent(final DeploymentUnit deploymentUnit, final String componentName, final Class<?> componentClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<ComponentLifecycle> postConstructLifecycles, final List<ComponentLifecycle> preDestroyLifecycles, final Map<Method, InterceptorFactory> methodInterceptorFactories) {
+        final ManagedBeanComponent<?> container = createContainer(componentClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, methodInterceptorFactories);
+        final ServiceName containerServiceName = ServiceNames.MANAGED_BEAN.append(deploymentUnit.getName(), componentName);
         final NamingContextConfig moduleContext = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG);
-        final JndiName bindName = ContextNames.MODULE_CONTEXT_NAME.append(beanName);
+        final NamingContextConfig appContext = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.APPLICATION_CONTEXT_CONFIG);
+        final JndiName bindName = ContextNames.MODULE_CONTEXT_NAME.append(componentName);
 
         final ServiceName envContextServiceName = moduleContext.getContextServiceName().append("env");
 
-        return new ConstructedBeanContainer() {
-            public BeanContainer<?> getBeanContainer() {
+        return new ConstructedComponent() {
+            public Component<?> getBeanContainer() {
                 return container;
             }
 
-            public ServiceName getContainerServiceName() {
+            public ServiceName getComponentServiceName() {
                 return containerServiceName;
             }
 
@@ -74,18 +74,26 @@ public class ManagedBeanContainerFactory implements BeanContainerFactory {
             public ServiceName getEnvContextServiceName() {
                 return envContextServiceName;
             }
+
+            public ServiceName getCompContextServiceName() {
+                return moduleContext.getContextServiceName();
+            }
+
+            public ServiceName getModuleContextServiceName() {
+                return moduleContext.getContextServiceName();
+            }
+
+            public ServiceName getAppContextServiceName() {
+                return appContext.getContextServiceName();
+            }
         };
     }
 
-    private <T> ManagedBeanContainer<T> createContainer(final Class<T> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<LifecycleInterceptor> postConstructLifecycles, final List<LifecycleInterceptor> preDestroyLifecycles, final List<MethodInterceptor> interceptors) {
-        return new ManagedBeanContainer<T>(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, interceptors);
+    private <T> ManagedBeanComponent<T> createContainer(final Class<T> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<ComponentLifecycle> postConstructLifecycles, final List<ComponentLifecycle> preDestroyLifecycles, final Map<Method, InterceptorFactory> methodInterceptorFactories) {
+        return new ManagedBeanComponent<T>(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, methodInterceptorFactories);
     }
 
     public ResourceInjectionResolver getResourceInjectionResolver() {
         return injectionResolver;
-    }
-
-    public InterceptorFactory getMethodInterceptorFactory() {
-        return interceptorFactory;
     }
 }

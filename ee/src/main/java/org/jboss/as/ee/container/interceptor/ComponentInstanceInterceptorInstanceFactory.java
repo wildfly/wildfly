@@ -20,33 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.naming;
+package org.jboss.as.ee.container.interceptor;
 
-import org.jboss.msc.service.ServiceName;
+import java.util.Map;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.InterceptorInstanceFactory;
 
 /**
- * Configuration item which holds onto the jndi and service name for a module context instance.
+ * Interceptor instance factory implementation that returns the actual component instance as the
+ * interceptor instance.
  *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class NamingContextConfig {
-    private final ServiceName contextServiceName;
+public class ComponentInstanceInterceptorInstanceFactory implements InterceptorInstanceFactory {
+    private final Class<?> instanceClass;
 
-    /**
-     * Create a new instance.
-     *
-     * @param contextServiceName The context service name
-     */
-    public NamingContextConfig(ServiceName contextServiceName) {
-        this.contextServiceName = contextServiceName;
+    public ComponentInstanceInterceptorInstanceFactory(Class<?> instanceClass) {
+        this.instanceClass = instanceClass;
     }
 
-    /**
-     * Get the context service name.
-     *
-     * @return The service name
-     */
-    public ServiceName getContextServiceName() {
-        return contextServiceName;
+    public Object createInstance(InterceptorFactoryContext context) {
+        final Map<Object, Object> contextData = context.getContextData();
+        final Object instance = contextData.get(instanceClass);
+        if(instance == null) {
+            throw new IllegalStateException("Component instance not found in interceptor factory context");
+        }
+        return instance;
     }
 }

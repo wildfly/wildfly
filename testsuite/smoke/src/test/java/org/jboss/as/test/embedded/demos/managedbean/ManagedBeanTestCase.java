@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.embedded.demos.managedbean;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
@@ -31,9 +30,9 @@ import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
+import org.jboss.as.demos.managedbean.archive.LookupService;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.modular.utils.PollingUtils.JndiLookupTask;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,16 +56,17 @@ public class ManagedBeanTestCase {
     @Test
     public void testManagedBean() throws Exception {
         try {
-            InitialContext ctx = new InitialContext();
-
-            JndiLookupTask task = new JndiLookupTask(ctx, "global/managedbean-example_jar/BeanWithSimpleInjected");
-            PollingUtils.retryWithTimeout(3000, task);
-            BeanWithSimpleInjected bean = task.getResult(BeanWithSimpleInjected.class);
+            PollingUtils.retryWithTimeout(3000, new PollingUtils.Task() {
+                public boolean execute() throws Exception {
+                    return LookupService.bean != null;
+                }
+            });
+            BeanWithSimpleInjected bean = LookupService.bean;
             Assert.assertNotNull(bean);
             Assert.assertNotNull(bean.getSimple());
             String s = bean.echo("Hello");
             Assert.assertNotNull(s);
-            Assert.assertEquals("#InterceptorBean##BeanWithSimpleInjected#Hello", s);
+            Assert.assertEquals("#InterceptorFromParent##InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello", s);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }

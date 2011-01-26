@@ -20,41 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.container;
+package org.jboss.as.ee.container.liefcycle;
 
 /**
- * Common contract for a bean container.  Implementations of this will be available as a service and can be used as the
- * backing for a JNDI ObjectFactory reference.
- *
- * @param <T> The bean type
+ * Interceptor representing a lifecycle method.
  *
  * @author John Bailey
  */
-public interface BeanContainer<T> {
-
+public interface ComponentLifecycle {
     /**
-     * Start operation called when the BeanContainer is available.
-     */
-    void start();
-
-    /**
-     * Stop operation called when the BeanContainer is no longer available.
-     */
-    void stop();
-
-    /**
-     * Return an instance of the bean managed by this container.  Implementations can use any mechanism to retrieve the
-     * bean including pooling, singleton or construction on every call to this method.
+     * Invoke a method call.
      *
-     * @return A bean instance
+     * @param target The object being intercepted
+     * @throws Exception If any exceptions occur during interception
      */
-    T getInstance();
-
-    /**
-     * Return an instance to the bean container.  This should be called whenever a consumer of the bean is no longer
-     * using the instance.  This can be used to run post-constructs, cleanup, or to return the instance to a pool.
-     *
-     * @param instance The bean instance
-     */
-    void returnInstance(T instance);
+    void invoke(final Object target) throws Exception;
 }
