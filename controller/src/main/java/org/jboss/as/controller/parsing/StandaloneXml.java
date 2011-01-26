@@ -25,12 +25,23 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.hexStringToByteArray;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -398,70 +409,52 @@ public class StandaloneXml extends CommonXml {
 
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+
+        writer.writeStartDocument();
+        writer.writeStartElement(Element.SERVER.getLocalName());
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
         writeExtensions(writer, modelNode.get(EXTENSION));
-        if (modelNode.has("server-name")) {
-            writeServerName(writer, modelNode.get("server-name"));
+        if (hasDefinedChild(modelNode, NAME)) {
+            writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
         }
-        if (modelNode.has("extension")) {
-            writeExtensions(writer, modelNode.get("extension"));
+        if (hasDefinedChild(modelNode, EXTENSION)) {
+            writeExtensions(writer, modelNode.get(EXTENSION));
         }
-        // writeServerProfile(writer, modelNode);
-        if(modelNode.has("path")) {
-            writePaths(writer, modelNode.get("path"));
+        if(hasDefinedChild(modelNode, PATH)) {
+            writePaths(writer, modelNode.get(PATH));
         }
-        if (modelNode.has("server-management")) {
-            writeServerManagement(writer, modelNode.get("server-management"));
+        if (hasDefinedChild(modelNode, MANAGEMENT)) {
+            writeServerManagement(writer, modelNode.get(MANAGEMENT));
         }
-        if (modelNode.has("socket-binding-group")) {
-            writeSocketBindingGroup(writer, modelNode.get("socket-binding-group"));
+        writeServerProfile(writer, modelNode);
+        if (hasDefinedChild(modelNode, INTERFACE)) {
+            writeInterfaces(writer, modelNode.get(INTERFACE));
         }
-        if (modelNode.has("system-properties")) {
-            writeProperties(writer, modelNode.get("system-properties"), Element.SYSTEM_PROPERTIES);
+        if (hasDefinedChild(modelNode, SOCKET_BINDING_GROUP)) {
+            writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP), true);
         }
-        if (modelNode.has("deployments")) {
-            writeServerDeployments(writer, modelNode.get("deployments"));
+        if (hasDefinedChild(modelNode, SYSTEM_PROPERTIES)) {
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
         }
-    }
+        if (hasDefinedChild(modelNode, DEPLOYMENT)) {
+            writeServerDeployments(writer, modelNode.get(DEPLOYMENT));
+        }
 
-    private void writeServerName(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        writeAttribute(writer, Attribute.NAME, modelNode.asString());
-    }
-
-    private void writeServerPaths(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-
-        writer.writeStartElement(Element.PATHS.getLocalName());
-        List<ModelNode> paths = modelNode.get("paths").asList();
-
-        for (ModelNode path : paths) {
-            writer.writeStartElement(Element.PATH.getLocalName());
-            String name = path.get("name").asString();
-            String realPath = path.get("path").asString();
-
-            writeAttribute(writer, Attribute.NAME, name);
-            writeAttribute(writer, Attribute.PATH, realPath);
-
-            ModelNode relativeNode = path.get("relativeTo");
-            if (relativeNode.isDefined()) {
-                writeAttribute(writer, Attribute.RELATIVE_TO, relativeNode.asString());
-            }
-            writer.writeEndElement();
-        }
         writer.writeEndElement();
+        writer.writeEndDocument();
     }
 
     private void writeServerManagement(final XMLExtendedStreamWriter writer, final ModelNode serverManagement)
             throws XMLStreamException {
-        String iface = serverManagement.get("interface-name").asString();
-        String port = serverManagement.get("port").asString();
-        ModelNode maxThreads = serverManagement.get("max-threads");
+        String iface = serverManagement.get(INTERFACE).asString();
+        String port = serverManagement.get(PORT).asString();
 
         writer.writeStartElement(Element.MANAGEMENT.getLocalName());
         writeAttribute(writer, Attribute.INTERFACE, iface);
         writeAttribute(writer, Attribute.PORT, port);
-        if (maxThreads.isDefined()) {
-            writeAttribute(writer, Attribute.MAX_THREADS, maxThreads.asString());
+        if (hasDefinedChild(serverManagement, MAX_THREADS)) {
+            writeAttribute(writer, Attribute.MAX_THREADS, serverManagement.get(MAX_THREADS).asString());
         }
         writer.writeEndElement();
     }
@@ -470,15 +463,17 @@ public class StandaloneXml extends CommonXml {
             throws XMLStreamException {
         writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
         for (ModelNode deployment : modelNode.asList()) {
-            String uniqueName = deployment.get("unique-name").asString();
-            String runtimeName = deployment.get("runtime-name").asString();
-            String sha1 = deployment.get("sha1").asString();
-            String start = deployment.get("start").asString();
+            String uniqueName = deployment.get(NAME).asString();
+            String runtimeName = deployment.get(RUNTIME_NAME).asString();
+            String sha1 = deployment.get(HASH).asString();
+            boolean start = deployment.get(START).asBoolean();
             writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
             writeAttribute(writer, Attribute.NAME, uniqueName);
             writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
             writeAttribute(writer, Attribute.SHA1, sha1);
-            writeAttribute(writer, Attribute.START, start);
+            if (!start) {
+                writeAttribute(writer, Attribute.START, "false");
+            }
             writer.writeEndElement();
 
         }
@@ -487,7 +482,9 @@ public class StandaloneXml extends CommonXml {
 
     private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         writer.writeStartElement(Element.PROFILE.getLocalName());
-        // TODO: delegate this to all the sub systems...
+        writer.writeAttribute(Attribute.PROFILE.getLocalName(), modelNode.get(PROFILE_NAME).asString());
+        // 1) get the namespace URI from the model TODO -- extensions need to pass subsystem name into extension parsing context
+        // 2) use extensionSubsystemWriters.get(namespaceURI) to get the XMLElementWriter
         writer.writeEndElement();
     }
 

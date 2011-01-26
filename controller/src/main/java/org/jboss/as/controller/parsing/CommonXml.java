@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -41,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
@@ -62,9 +64,11 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -114,6 +118,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected final ModuleLoader moduleLoader;
+    protected final Map<String, XMLElementWriter<ModelNode>> subsystemWriters = new HashMap<String, XMLElementWriter<ModelNode>>();
 
     protected CommonXml(final ModuleLoader loader) {
         moduleLoader = loader;
@@ -183,9 +188,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeExtensions(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        for(final ModelNode extension : modelNode.asList()) {
+        for(final String extension : modelNode.keys()) {
             writer.writeEmptyElement(Element.EXTENSION.getLocalName());
-            writer.writeAttribute(Attribute.MODULE.getLocalName(), extension.asString());
+            writer.writeAttribute(Attribute.MODULE.getLocalName(), extension);
         }
     }
 
@@ -196,9 +201,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final ModelNode value = path.getValue();
             writer.writeEmptyElement(Element.PATH.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), path.getName());
-            writer.writeAttribute(Attribute.PATH.getLocalName(), value.get("path").asString());
-            if(value.has("relativeTo")) {
-                writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), value.get("relativeTo").asString());
+            writer.writeAttribute(Attribute.PATH.getLocalName(), value.get(PATH).asString());
+            if(value.has(RELATIVE_TO) && value.get(RELATIVE_TO).isDefined()) {
+                writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), value.get(RELATIVE_TO).asString());
             }
         }
         writer.writeEndElement();
@@ -240,6 +245,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             } catch (final ModuleLoadException e) {
                 throw new XMLStreamException("Failed to load module", e);
             }
+            this.subsystemWriters.putAll(context.getSubsystemWriters());
         }
     }
 
@@ -1105,12 +1111,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void writeInterfaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         writer.writeStartElement(Element.INTERFACES.getLocalName());
-        List<ModelNode> interfaces = modelNode.get("interfaces").asList();
-        for (ModelNode iface : interfaces) {
+        Set<String> interfaces = modelNode.get(INTERFACE).keys();
+        for (String ifaceName : interfaces) {
+            ModelNode iface = modelNode.get(INTERFACE, ifaceName);
             writer.writeStartElement(Element.INTERFACE.getLocalName());
-            writeAttribute(writer, Attribute.NAME, iface.get("name").asString());
+            writeAttribute(writer, Attribute.NAME, ifaceName);
 
-            ModelNode criteria = iface.get("criteria");
+            ModelNode criteria = iface.get(CRITERIA);
             if (criteria.getType() == ModelType.STRING) {
                 String value = criteria.asString();
                 if (value.equals(Element.ANY_ADDRESS.getLocalName())) {
@@ -1140,32 +1147,36 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         for (ModelNode value : criteria) {
             // any and not elements are represented by properties
             if (value.getType() == ModelType.PROPERTY) {
-                Property property = value.asProperty();
-                if (property.getName().equals("any")) {
-                    writer.writeStartElement(Element.ANY.getLocalName());
-                    writeInterfaceCriteria(writer, property.getValue().get("any").asList());
-                    writer.writeEndElement();
-                } else if (property.getName().equals("not")) {
-                    writer.writeStartElement(Element.NOT.getLocalName());
-                    writeInterfaceCriteria(writer, property.getValue().get("not").asList());
-                    writer.writeEndElement();
-                } else {
-                    throw new RuntimeException("Unknown property in interface criteria list: " + property);
-                }
+                writePropertyInterfaceCriteria(writer, value);
             } else if (value.getType() == ModelType.LIST) {
                 List<ModelNode> values = value.asList();
                 for (ModelNode node : values) {
-                    writeSimpleInterfaceCriteria(writer, node);
+                    if (node.getType() == ModelType.PROPERTY) {
+                        writePropertyInterfaceCriteria(writer, node);
+                    }
+                    else {
+                        writeSimpleInterfaceCriteria(writer, node);
+                    }
                 }
             }
         }
     }
 
-    private void writeSimpleInterfaceCriteria(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+    private void writePropertyInterfaceCriteria(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
         Property property = node.asProperty();
         Element element = Element.forName(property.getName());
         writer.writeStartElement(element.getLocalName());
         switch (element) {
+            case ANY:
+                writer.writeStartElement(Element.ANY.getLocalName());
+                writeInterfaceCriteria(writer, property.getValue().get(ANY).asList());
+                writer.writeEndElement();
+                break;
+            case NOT:
+                writer.writeStartElement(Element.NOT.getLocalName());
+                writeInterfaceCriteria(writer, property.getValue().get(NOT).asList());
+                writer.writeEndElement();
+                break;
             case INET_ADDRESS:
                 writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
                 break;
@@ -1176,42 +1187,55 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writeAttribute(writer, Attribute.PATTERN, property.getValue().asString());
                 break;
             case SUBNET_MATCH:
-                String network = property.getValue().get("network").asString();
-                String mask = property.getValue().get("mask").asString();
+                String network = property.getValue().get(NETWORK).asString();
+                String mask = property.getValue().get(MASK).asString();
                 String subnet = network + "/" + mask;
                 writeAttribute(writer, Attribute.VALUE, subnet);
-            default:
                 break;
+            default:
+                throw new RuntimeException("Unknown property in interface criteria list: " + property);
         }
         writer.writeEndElement();
     }
 
-    protected void writeSocketBindingGroup(XMLExtendedStreamWriter writer, ModelNode bindingGroup) throws XMLStreamException {
-        // TODO: binding groups
+    private void writeSimpleInterfaceCriteria(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        Element element = Element.forName(node.asString());
+        writer.writeEmptyElement(element.getLocalName());
+    }
 
+    protected void writeSocketBindingGroup(XMLExtendedStreamWriter writer, ModelNode bindingGroup, boolean usePortOffset) throws XMLStreamException {
         writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-        List<ModelNode> bindings = bindingGroup.get("bindings").asList();
-        for (ModelNode binding : bindings) {
+        ModelNode attr = bindingGroup.get(NAME);
+        writeAttribute(writer, Attribute.NAME, attr.asString());
+
+        attr = bindingGroup.get(DEFAULT_INTERFACE);
+        writeAttribute(writer, Attribute.DEFAULT_INTERFACE, attr.asString());
+
+        if (usePortOffset && bindingGroup.has(PORT_OFFSET) && bindingGroup.get(PORT_OFFSET).asInt() != 0) {
+            attr = bindingGroup.get(PORT_OFFSET);
+            writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
+        }
+        ModelNode bindings = bindingGroup.get(SOCKET_BINDING);
+        for (String bindingName: bindings.keys()) {
+            ModelNode binding = bindings.get(bindingName);
             writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
-            String name = binding.get("name").asString();
-            writeAttribute(writer, Attribute.NAME, name);
-            ModelNode attr = binding.get("port");
-            if (attr.isDefined()) {
-                writeAttribute(writer, Attribute.PORT, attr.asString());
-            }
-            attr = binding.get("fixed-port");
-            if (attr.isDefined()) {
+            writeAttribute(writer, Attribute.NAME, bindingName);
+            attr = binding.get(PORT);
+            writeAttribute(writer, Attribute.PORT, attr.asString());
+
+            attr = binding.get(FIXED_PORT);
+            if (attr.isDefined() && attr.asBoolean()) {
                 writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
             }
-            attr = binding.get("interface");
+            attr = binding.get(INTERFACE);
             if (attr.isDefined()) {
                 writeAttribute(writer, Attribute.INTERFACE, attr.asString());
             }
-            attr = binding.get("multicast-address");
+            attr = binding.get(MULTICAST_ADDRESS);
             if (attr.isDefined()) {
                 writeAttribute(writer, Attribute.MULTICAST_ADDRESS, attr.asString());
             }
-            attr = binding.get("multicast-port");
+            attr = binding.get(MULTICAST_PORT);
             if (attr.isDefined()) {
                 writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
             }
@@ -1237,6 +1261,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected static void writeAttribute(XMLExtendedStreamWriter writer, Attribute attribute, String value)
             throws XMLStreamException {
         writeAttribute(writer, attribute, value);
+    }
+
+    protected static boolean hasDefinedChild(ModelNode node, String child) {
+        return node.has(child) && node.get(child).isDefined();
     }
 
 }

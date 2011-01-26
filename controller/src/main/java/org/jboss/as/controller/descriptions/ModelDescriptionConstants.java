@@ -48,6 +48,7 @@ public class ModelDescriptionConstants {
     public static final String DESCRIPTION = "description";
     public static final String EXTENSION = "extension";
     public static final String FIXED_PORT = "fixed-port";
+    public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
     public static final String INCLUDE = "include";
@@ -60,6 +61,7 @@ public class ModelDescriptionConstants {
     public static final String MAX = "max";
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
+    public static final String MAX_THREADS = "max-threads";
     public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
@@ -79,10 +81,12 @@ public class ModelDescriptionConstants {
     public static final String OPERATIONS = "operations";
     /** Use this standard operation address field in the operation *description* ModelNode */
     public static final String OPERATION_NAME = "operation-name";
+    public static final String RUNTIME_NAME = "runtime-name";
     public static final String PATH = "path";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
     public static final String PROFILE = "profile";
+    public static final String PROFILE_NAME = "profile-name";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
     public static final String READ_CHILDREN_NAMES_OPERATION = "read-children_names";
     public static final String READ_OPERATION_DESCRIPTION_OPERATION = "read-operation-description";
@@ -103,6 +107,7 @@ public class ModelDescriptionConstants {
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
     public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";
+    public static final String START = "start";
     public static final String SUBSYSTEM = "subsystem";
     public static final String SYSTEM_PROPERTY = "system-property";
     public static final String SYSTEM_PROPERTIES = "system-properties";

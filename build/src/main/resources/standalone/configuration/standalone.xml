@@ -66,9 +66,9 @@
        <path name="absolute" path="tmp"/>
        <path name="relative" path="relative" relative-to="absolute"/>
     </paths>
-    
-    <management interface="default" port="9999"/>
-    
+
+	<management interface="default" port="9999"/>
+	
     <profile name="ignore">
        <subsystem xmlns="urn:jboss:domain:logging:1.0">
             <console-handler name="CONSOLE">
