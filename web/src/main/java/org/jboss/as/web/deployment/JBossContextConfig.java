@@ -39,8 +39,11 @@ import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
+import org.apache.catalina.LifecycleListener;
+import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.Multipart;
@@ -54,6 +57,7 @@ import org.apache.catalina.deploy.jsp.TagVariableInfo;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
+import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.annotation.javaee.Icon;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
@@ -65,10 +69,12 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.metadata.merge.web.jboss.JBossWebMetaDataMerger;
+import org.jboss.metadata.web.jboss.ContainerListenerMetaData;
 import org.jboss.metadata.web.jboss.JBossAnnotationsMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.metadata.web.spec.AnnotationMetaData;
 import org.jboss.metadata.web.spec.AttributeMetaData;
 import org.jboss.metadata.web.spec.AuthConstraintMetaData;
@@ -149,6 +155,7 @@ public class JBossContextConfig extends ContextConfig {
 
     protected void applicationWebConfig() {
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        processJBossWebMetaData(warMetaData.getMergedJBossWebMetaData());
         processWebMetaData(warMetaData.getMergedJBossWebMetaData());
     }
 
@@ -157,7 +164,68 @@ public class JBossContextConfig extends ContextConfig {
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         // FIXME: Default jboss-web.xml config
         JBossWebMetaDataMerger.merge(sharedJBossWebMetaData, null, warMetaData.getSharedWebMetaData());
+        processJBossWebMetaData(sharedJBossWebMetaData);
         processWebMetaData(sharedJBossWebMetaData);
+    }
+
+    protected void processJBossWebMetaData(JBossWebMetaData metaData) {
+        // Valves
+        List<ValveMetaData> valves = metaData.getValves();
+        if (valves != null) {
+            for (ValveMetaData valve : valves) {
+                Valve valveInstance = (Valve) getInstance(valve.getValveClass(), valve.getParams());
+                if (ok) {
+                    context.getPipeline().addValve(valveInstance);
+                }
+            }
+        }
+        // Overlays
+        if (metaData.getOverlays() != null) {
+            overlays.addAll(metaData.getOverlays());
+        }
+        // Container listeners
+        List<ContainerListenerMetaData> listeners = metaData.getContainerListeners();
+        if (listeners != null) {
+            for (ContainerListenerMetaData listener : listeners) {
+                switch (listener.getListenerType()) {
+                    case CONTAINER:
+                        ContainerListener containerListener = (ContainerListener) getInstance(listener.getListenerClass(), listener.getParams());
+                        context.addContainerListener(containerListener);
+                        break;
+                    case LIFECYCLE:
+                        LifecycleListener lifecycleListener = (LifecycleListener) getInstance(listener.getListenerClass(), listener.getParams());
+                        if (context instanceof Lifecycle) {
+                            ((Lifecycle) context).addLifecycleListener(lifecycleListener);
+                        }
+                        break;
+                  /*case SERVLET_INSTANCE:
+                        context.addInstanceListener(listener.getListenerClass());
+                        break;*/
+                    case SERVLET_CONTAINER:
+                        context.addWrapperListener(listener.getListenerClass());
+                        break;
+                    case SERVLET_LIFECYCLE:
+                        context.addWrapperLifecycle(listener.getListenerClass());
+                        break;
+                }
+            }
+        }
+    }
+
+    protected Object getInstance(String className, List<ParamValueMetaData> params) {
+        try {
+            Object instance = JBossContextConfig.class.getClassLoader().loadClass(className).newInstance();
+            if (params != null) {
+                for (ParamValueMetaData param : params) {
+                    IntrospectionUtils.setProperty(instance, param.getParamName(), param.getParamValue());
+                }
+            }
+            return instance;
+        } catch (Throwable t) {
+            log.error("Error instantiating container component: " + className, t);
+            ok = false;
+        }
+        return null;
     }
 
     protected void processWebMetaData(JBossWebMetaData metaData) {
@@ -819,14 +887,6 @@ public class JBossContextConfig extends ContextConfig {
                 }
             }
         }
-
-        // FIXME: Add security association valve after the authorization valves
-        /*
-        if (!config.isStandalone()) {
-           SecurityAssociationValve securityAssociationValve = new SecurityAssociationValve(metaData, config.getSecurityManagerService());
-           securityAssociationValve.setSubjectAttributeName(config.getSubjectAttributeName());
-           context.addValve(securityAssociationValve);
-        }*/
 
         // Make our application unavailable if problems were encountered
         if (!ok) {

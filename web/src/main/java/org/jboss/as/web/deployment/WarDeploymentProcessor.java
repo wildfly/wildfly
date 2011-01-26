@@ -74,12 +74,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         if(hostNames == null || hostNames.isEmpty()) {
             hostNames = Collections.singleton(defaultHost);
         }
-        for(final String hostName : hostNames) {
-            if(hostName == null) {
-                throw new IllegalStateException("null host name");
-            }
-            processDeployment(hostName, metaData, deploymentUnit, phaseContext.getServiceTarget());
+        String hostName = hostNames.iterator().next();
+        // FIXME: Support automagic aliases ?
+        if (hostName == null) {
+            throw new IllegalStateException("null host name");
         }
+        processDeployment(hostName, metaData, deploymentUnit, phaseContext.getServiceTarget());
     }
 
     public void undeploy(final DeploymentUnit context) {
