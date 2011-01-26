@@ -25,6 +25,7 @@ package org.jboss.as.server;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
@@ -32,7 +33,6 @@ import org.jboss.as.server.client.impl.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.mgmt.ManagementCommunicationService;
 import org.jboss.as.server.mgmt.ManagementCommunicationServiceInjector;
-import org.jboss.as.server.mgmt.ModelControllerOperationHandler;
 import org.jboss.as.server.mgmt.ServerControllerOperationHandler;
 import org.jboss.as.server.mgmt.PrototypeServerModelController;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;

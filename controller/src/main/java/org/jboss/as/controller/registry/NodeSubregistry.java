@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -70,8 +71,8 @@ final class NodeSubregistry {
         }
     }
 
-    void registerProxySubModel(final String elementValue, final OperationHandler handler) {
-        final AbstractNodeRegistration newRegistry = new ProxyNodeRegistration(elementValue, this, handler);
+    void registerProxyController(final String elementValue, final ProxyController proxyController) {
+        final AbstractNodeRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
         final AbstractNodeRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (appearingRegistry != null) {
             throw new IllegalArgumentException("A node is already registered at '" + getLocationString() + elementValue + ")'");
@@ -194,5 +195,31 @@ final class NodeSubregistry {
             }
         }
         return childRegistry.getChildAddresses(iterator);
+    }
+
+    ProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
+        AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry == null) {
+            //Don't handle '*' for now
+            return null;
+        }
+        return childRegistry.getProxyController(iterator);
+    }
+
+    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<ProxyController> controllers) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
+        if (child != null) {
+            AbstractNodeRegistration childRegistry = snapshot.get(child);
+            if (childRegistry == null) {
+                //Don't handle '*' for now
+                return;
+            }
+            childRegistry.getProxyControllers(iterator, controllers);
+        } else {
+            for (AbstractNodeRegistration childRegistry : snapshot.values()) {
+                childRegistry.getProxyControllers(iterator, controllers);
+            }
+        }
     }
 }

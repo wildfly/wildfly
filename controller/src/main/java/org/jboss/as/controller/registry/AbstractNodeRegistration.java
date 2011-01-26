@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.util.Set;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -57,7 +59,7 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerProxySubModel(final PathElement address, final OperationHandler handler) throws IllegalArgumentException;
+    public abstract void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException;
 
     /**
      * Get a handler at a specific address.
@@ -129,6 +131,20 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     }
 
     abstract Set<PathElement> getChildAddresses(Iterator<PathElement> iterator);
+
+    public ProxyController getProxyController(final PathAddress address) {
+        return getProxyController(address.iterator());
+    }
+
+    abstract ProxyController getProxyController(Iterator<PathElement> iterator);
+
+    public Set<ProxyController> getProxyControllers(PathAddress address){
+        Set<ProxyController> controllers = new HashSet<ProxyController>();
+        getProxyControllers(address.iterator(), controllers);
+        return controllers;
+    }
+
+    abstract void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers);
 
     final String getLocationString() {
         if (parent == null) {

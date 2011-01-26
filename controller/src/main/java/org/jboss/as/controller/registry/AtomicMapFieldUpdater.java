@@ -141,6 +141,9 @@ final class AtomicMapFieldUpdater<C, K, V> {
                     newMap.put(key, value);
                 }
             } else {
+                if (oldMap.containsKey(key)) {
+                    return oldMap.get(key);
+                }
                 newMap = new FastCopyHashMap<K, V>(oldMap);
                 newMap.put(key, value);
             }

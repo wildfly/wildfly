@@ -221,11 +221,6 @@ public class GlobalOperationsTestCase {
         assertFalse(result.isDefined());
 
         operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileC", "subsystem", "subsystem5");
-        operation.get(NAME).set("value");
-        result = CONTROLLER.execute(operation);
-        assertNotNull(result);
-        assertFalse(result.isDefined());
-
         operation.get(NAME).set("name");
         result = CONTROLLER.execute(operation);
         assertNotNull(result);
@@ -707,19 +702,6 @@ public class GlobalOperationsTestCase {
         return result;
     }
 
-    private static ModelNode getProfileModelDescription() {
-        ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set("A named set of subsystem configs");
-        node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
-        node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-        node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-        node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
-        node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
-        node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
-        return node;
-    }
-
     private static class NullConfigurationPersister implements NewConfigurationPersister{
 
         @Override
@@ -761,7 +743,16 @@ public class GlobalOperationsTestCase {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
-                    return getProfileModelDescription();
+                    ModelNode node = new ModelNode();
+                    node.get(DESCRIPTION).set("A named set of subsystem configs");
+                    node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+                    node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
+                    node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+                    node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
+                    node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
+                    node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
+                    node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
+                    return node;
                 }
             });
 
@@ -988,11 +979,7 @@ public class GlobalOperationsTestCase {
                     node.get(DESCRIPTION).set("A subsystem");
                     node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
                     node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                    node.get(ATTRIBUTES, "name", REQUIRED).set(true);
-                    node.get(DESCRIPTION).set("A value");
-                    node.get(ATTRIBUTES, "value", TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "value", DESCRIPTION).set("The name of the thing");
-                    node.get(ATTRIBUTES, "value", REQUIRED).set(false);
+                    node.get(ATTRIBUTES, "name", REQUIRED).set(false);
                     node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
                     node.get(CHILDREN, "type1", MIN_OCCURS).set(0);
                     node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
@@ -1008,6 +995,7 @@ public class GlobalOperationsTestCase {
                     return Cancellable.NULL;
                 }
             });
+
 
             ModelNodeRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
 

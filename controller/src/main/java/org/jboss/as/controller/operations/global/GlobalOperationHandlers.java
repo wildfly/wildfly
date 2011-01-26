@@ -29,9 +29,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -40,8 +44,10 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -78,13 +84,16 @@ public class GlobalOperationHandlers {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
+                final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
                 final ModelNode result;
                 if (operation.require(RECURSIVE).asBoolean()) {
                     result = context.getSubModel().clone();
+                    addProxyNodes(address, result, context.getRegistry());
+
                 } else {
                     result = new ModelNode();
 
-                    final Set<String> childNames = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.require(ADDRESS)));
+                    final Set<String> childNames = context.getRegistry().getChildNames(address);
 
                     final ModelNode subModel = context.getSubModel().clone();
                     for (final String key : subModel.keys()) {
@@ -111,6 +120,31 @@ public class GlobalOperationHandlers {
             }
             return Cancellable.NULL;
         }
+
+        void addProxyNodes(final PathAddress address, final ModelNode result, final ModelNodeRegistration registry) throws Exception {
+            Set<ProxyController> proxyControllers = registry.getProxyControllers(address);
+            if (proxyControllers.size() > 0) {
+                final ModelNode operation = new ModelNode();
+                operation.get(OP).set(READ_RESOURCE_OPERATION);
+                operation.get(RECURSIVE).set(true);
+                operation.get(ADDRESS).set(new ModelNode());
+
+                for (ProxyController proxyController : proxyControllers) {
+                    final ModelNode proxyResult = proxyController.execute(operation);
+                    addProxyResultToMainResult(proxyController.getProxyNodeAddress(), result, proxyResult);
+                }
+            }
+        }
+
+        void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
+            ModelNode resultNode = mainResult;
+            for (Iterator<PathElement> it = address.iterator() ; it.hasNext() ; ) {
+                PathElement element = it.next();
+                resultNode = resultNode.require(element.getKey()).require(element.getValue());
+            }
+            resultNode.set(proxyResult.clone());
+        }
+
     };
 
     public static final ModelQueryOperationHandler READ_ATTRIBUTE = new ModelQueryOperationHandler() {
@@ -266,19 +300,53 @@ public class GlobalOperationHandlers {
                 final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
                 final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
                 final Locale locale = getLocale(operation);
-                final ModelNode result = descriptionProvider.getModelDescription(getLocale(operation));
+                final ModelNode result = descriptionProvider.getModelDescription(locale);
 
                 addDescription(result, recursive, operations, registry, address, locale);
+
+//                if (recursive) {
+//                    addProxyNodes(address, result, operations, locale, context.getRegistry());
+//                }
 
                 resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
+                e.printStackTrace();
                 resultHandler.handleFailed(createErrorResult(e));
             }
             return Cancellable.NULL;
         }
 
-        private void addDescription(final ModelNode result, final boolean recursive, final boolean operations, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) {
+//        void addProxyNodes(final PathAddress address, final ModelNode result, final boolean operations, final Locale locale, final ModelNodeRegistration registry) throws Exception {
+//            Set<ProxyController> proxyControllers = registry.getProxyControllers(address);
+//            if (proxyControllers.size() > 0) {
+//                final ModelNode operation = new ModelNode();
+//                operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+//                operation.get(RECURSIVE).set(true);
+//                operation.get(OPERATIONS).set(operations);
+//                if (locale != null) {
+//                    operation.get(OPERATIONS).set(locale.toString());
+//                }
+//                operation.get(ADDRESS).set(new ModelNode());
+//
+//                for (ProxyController proxyController : proxyControllers) {
+//                    final ModelNode proxyResult = proxyController.execute(operation);
+//                    addProxyResultToMainResult(proxyController.getProxyNodeAddress(), result, proxyResult);
+//                }
+//            }
+//        }
+//
+//        void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
+//            ModelNode resultNode = mainResult;
+//            for (Iterator<PathElement> it = address.iterator() ; it.hasNext() ; ) {
+//                PathElement element = it.next();
+//                resultNode = resultNode.require(CHILDREN).require(element.getKey()).require(MODEL_DESCRIPTION).get(element.getValue());
+//            }
+//            resultNode.set(proxyResult.clone());
+//        }
+
+
+        private void addDescription(final ModelNode result, final boolean recursive, final boolean operations, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
 
             if (operations) {
                 final Map<String, DescriptionProvider> ops = registry.getOperationDescriptions(address);
@@ -311,15 +379,35 @@ public class GlobalOperationHandlers {
             if (recursive && result.has(CHILDREN)) {
                 for (final PathElement element : registry.getChildAddresses(address)) {
                     final PathAddress childAddress = address.append(element);
-                    final ModelNode child = registry.getModelDescription(childAddress).getModelDescription(locale);
-                    addDescription(child, recursive, operations, registry, childAddress, locale);
+                    final DescriptionProvider provider = registry.getModelDescription(childAddress);
+                    final ModelNode child;
+                    if (provider == null) {
+                        //It is probably a proxy
+                        Set<ProxyController> proxyControllers = registry.getProxyControllers(childAddress);
+                        if (proxyControllers.size() != 1) {
+                            throw new IllegalStateException("No description provider found for " + childAddress +
+                                    ". Tried to search for proxies, expected to find 1 proxy controller, found: " + proxyControllers.size());
+                        }
+
+                        final ModelNode operation = new ModelNode();
+                        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+                        operation.get(ADDRESS).set(new ModelNode());
+                        operation.get(RECURSIVE).set(true);
+                        operation.get(OPERATIONS).set(operations);
+                        if (locale != null) {
+                            operation.get(OPERATIONS).set(locale.toString());
+                        }
+                        child = proxyControllers.iterator().next().execute(operation);
+
+                    } else {
+                        child = provider.getModelDescription(locale);
+                        addDescription(child, recursive, operations, registry, childAddress, locale);
+                    }
                     result.get(CHILDREN, element.getKey(),MODEL_DESCRIPTION, element.getValue()).set(child);
                 }
             }
         }
     };
-
-
 
     private static Locale getLocale(final ModelNode operation) {
         if (!operation.has(LOCALE)) {

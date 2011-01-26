@@ -28,6 +28,7 @@ import java.util.Set;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -94,12 +95,12 @@ public interface ModelNodeRegistration {
     void registerWriteOnlyAttribute(String attributeName, OperationHandler writeHandler);
 
     /**
-     * Register a proxy model node.  The operation handler should register operations to return the description
-     * of subnodes.  TODO: define those operations
+     * Register a proxy controller.
      *
-     * @param handler the handler to proxy all operations through for the subnode
+     * @param address the child of this registry that should be proxied
+     * @param proxyController the proxy controller
      */
-    void registerProxySubModel(PathElement address, OperationHandler handler);
+    void registerProxyController(PathElement address, ProxyController proxyController);
 
     /**
      * Get the operation handler at the given address, or {@code null} if none exists.
@@ -167,6 +168,28 @@ public interface ModelNodeRegistration {
      * @return the operation map
      */
     Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address);
+
+    /**
+     * If there is a proxy controller registered under any part of the registered address it will be returned.
+     * E.g. if the address passed in is <code>[a=b,c=d,e=f]</code> and there is a proxy registered under
+     * <code>[a=b,c=d]</code> that proxy will be returned.
+     *
+     * @param address the address to look for a proxy under
+     * @return the found proxy controller, or <code>null</code> if there is none
+     */
+    ProxyController getProxyController(final PathAddress address);
+
+    /**
+     * Finds all proxy controllers registered at the passed in address, or at lower levels.
+     * <p/>
+     * E.g. if the address passed in is <code>a=b</code> and there are proxies registered at
+     * <code>[a=b,c=d]</code>, <code>[a=b,e=f]</code> and <code>[g-h]</code>, the proxies for
+     * <code>[a=b,c=d]</code> and <code>[a=b,e=f]</code> will be returned.
+     *
+     * @param address the address to start looking for proxies under
+     * @return the found proxy controllers, or an empty set if there are none
+     */
+    Set<ProxyController> getProxyControllers(PathAddress address);
 
 
     /**

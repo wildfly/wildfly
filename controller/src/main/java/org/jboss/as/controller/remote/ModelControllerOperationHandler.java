@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.mgmt;
+package org.jboss.as.controller.remote;
 
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.StreamUtils.readByte;
@@ -202,8 +202,11 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
                         synchronized (outputStream) {
                             outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
                             outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                            compensatingOperation.writeExternal(outputStream);
-                            //outputStream.flush();
+                            if (compensatingOperation == null) {
+                                new ModelNode().writeExternal(outputStream);
+                            } else {
+                                compensatingOperation.writeExternal(outputStream);
+                            }
                         }
                         completeLatch.countDown();
                     } catch (IOException e) {

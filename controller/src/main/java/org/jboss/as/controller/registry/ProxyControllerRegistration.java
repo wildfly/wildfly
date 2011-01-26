@@ -30,28 +30,24 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ProxyNodeRegistration extends AbstractNodeRegistration {
+final class ProxyControllerRegistration extends AbstractNodeRegistration {
 
-    private final OperationHandler operationHandler;
+    private final ProxyController proxyController;
 
-    ProxyNodeRegistration(final String valueString, final NodeSubregistry parent, final OperationHandler operationHandler) {
+    ProxyControllerRegistration(final String valueString, final NodeSubregistry parent, final ProxyController proxyController) {
         super(valueString, parent);
-        this.operationHandler = operationHandler;
+        this.proxyController = proxyController;
     }
 
     @Override
     OperationHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
-        return operationHandler;
-    }
-
-    @Override
-    Map<String, DescriptionProvider> getOperationDescriptions(final ListIterator<PathElement> iterator) {
-        return Collections.emptyMap();
+        return null;
     }
 
     @Override
@@ -80,40 +76,54 @@ final class ProxyNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerProxySubModel(final PathElement address, final OperationHandler handler) throws IllegalArgumentException {
+    public void registerProxyController(final PathElement address, final ProxyController proxyController) throws IllegalArgumentException {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
+    Map<String, DescriptionProvider> getOperationDescriptions(final ListIterator<PathElement> iterator) {
+        return Collections.emptyMap();
+    }
+
+    @Override
     DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName) {
-        // todo
         return null;
     }
 
     @Override
     DescriptionProvider getModelDescription(final Iterator<PathElement> iterator) {
-        // todo
         return null;
     }
 
     @Override
     Set<String> getAttributeNames(final Iterator<PathElement> iterator) {
-        return null;
+        return Collections.emptySet();
     }
 
     @Override
     Set<String> getChildNames(final Iterator<PathElement> iterator) {
-        return null;
+        return Collections.emptySet();
     }
 
     @Override
     Set<PathElement> getChildAddresses(final Iterator<PathElement> iterator) {
-        return null;
+        return Collections.emptySet();
     }
 
     @Override
     AttributeAccess getAttributeAccess(final ListIterator<PathElement> address, final String attributeName) {
-        // todo
         return null;
+    }
+
+    @Override
+    ProxyController getProxyController(Iterator<PathElement> iterator) {
+        return proxyController;
+    }
+
+    @Override
+    void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
+        if (!iterator.hasNext()) {
+            controllers.add(proxyController);
+        }
     }
 }

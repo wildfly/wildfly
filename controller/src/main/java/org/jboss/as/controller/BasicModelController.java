@@ -53,6 +53,7 @@ public class BasicModelController implements ModelController {
     private final ModelNode model;
     private final NewConfigurationPersister configurationPersister;
 
+
     /**
      * Construct a new instance.
      *
@@ -128,6 +129,12 @@ public class BasicModelController implements ModelController {
     public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
         try {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+
+            final ProxyController proxyExecutor = registry.getProxyController(address);
+            if (proxyExecutor != null) {
+                return proxyExecutor.execute(operation, handler);
+            }
+
             final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
             final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
             if (operationHandler == null) {

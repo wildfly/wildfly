@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.dmr.ModelNode;
@@ -142,8 +143,8 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerProxySubModel(final PathElement address, final OperationHandler handler) throws IllegalArgumentException {
-        getOrCreateSubregistry(address.getKey()).registerProxySubModel(address.getValue(), handler);
+    public void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException {
+        getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
 
     NodeSubregistry getOrCreateSubregistry(final String key) {
@@ -166,13 +167,13 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
-    void registerProxySubModel(final ListIterator<PathElement> iterator, final OperationHandler handler) {
-        if (! iterator.hasNext()) {
-            throw new IllegalArgumentException("Handlers have already been registered at location '" + getLocationString() + "'");
-        }
-        final PathElement element = iterator.next();
-        getOrCreateSubregistry(element.getKey()).registerProxySubModel(element.getValue(), handler);
-    }
+//    void registerProxyController(final ListIterator<PathElement> iterator, final ProxyController controller) {
+//        if (! iterator.hasNext()) {
+//            throw new IllegalArgumentException("Handlers have already been registered at location '" + getLocationString() + "'");
+//        }
+//        final PathElement element = iterator.next();
+//        getOrCreateSubregistry(element.getKey()).registerProxyController(element.getValue(), controller);
+//    }
 
     @Override
     DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName) {
@@ -286,6 +287,37 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
                 return elements;
             }
             return Collections.emptySet();
+        }
+    }
+
+    @Override
+    ProxyController getProxyController(Iterator<PathElement> iterator) {
+        if (iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return null;
+            }
+            return subregistry.getProxyController(iterator, next.getValue());
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
+        if (iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return;
+            }
+            subregistry.getProxyControllers(iterator, next.getValue(), controllers);
+        } else {
+            final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
+            for (NodeSubregistry subregistry : snapshot.values()) {
+                subregistry.getProxyControllers(iterator, null, controllers);
+            }
         }
     }
 
