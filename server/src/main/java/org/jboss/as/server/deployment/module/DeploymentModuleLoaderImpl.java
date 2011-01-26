@@ -54,7 +54,11 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader implement
     }
 
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
-        Service<DeploymentModuleLoader> service = new DeploymentModuleLoaderImpl(configuration.getModuleLoader());
+        addService(serviceTarget, configuration.getModuleLoader());
+    }
+
+    public static void addService(final ServiceTarget serviceTarget, final ModuleLoader mainModuleLoader) {
+        Service<DeploymentModuleLoader> service = new DeploymentModuleLoaderImpl(mainModuleLoader);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_DEPLOYMENT_MODULE_LOADER, service);
         serviceBuilder.install();
     }
@@ -66,6 +70,7 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader implement
         }
     }
 
+    @Override
     public ModuleSpec removeModuleSpec(ModuleIdentifier moduleId) {
        return moduleSpecs.remove(moduleId);
    }
@@ -95,6 +100,7 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader implement
         else throw new IllegalStateException("Unknown module " + module);
     }
 
+    @Override
     public void relinkModule(Module module) throws ModuleLoadException {
         relink(module);
     }
@@ -112,6 +118,7 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader implement
         return this;
     }
 
+    @Override
     public String toString() {
         return "as-deployment";
     }

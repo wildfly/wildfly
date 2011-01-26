@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.services.path.AbsolutePathService;
@@ -112,9 +113,8 @@ final class NewApplicationServerService implements Service<Void> {
         myController.addListener(bootstrapListener);
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         serviceTarget.addDependency(myController.getName());
-        serviceTarget
-                .addService(Services.JBOSS_SERVER_CONTROLLER, new NewServerControllerService(configuration))
-                .install();
+        DeploymentModuleLoaderImpl.addService(serviceTarget, configuration.getModuleLoader());
+        NewServerControllerService.addService(serviceTarget, configuration);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {

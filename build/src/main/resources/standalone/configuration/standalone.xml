@@ -55,11 +55,11 @@
         <!-- <extension module="org.jboss.as.osgi"/>-->
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
-        <extension module="org.jboss.as.security"/>
+        <!--<extension module="org.jboss.as.security"/>-->
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web" />
-        <!--<extension module="org.jboss.as.security"/>-->
+        <!--<extension module="org.jboss.as.weld"/>-->
     </extensions>
     
     <paths>

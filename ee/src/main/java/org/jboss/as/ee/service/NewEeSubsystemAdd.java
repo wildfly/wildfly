@@ -30,11 +30,16 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.ee.container.processor.BeanContainerInstallProcessor;
+import org.jboss.as.ee.container.processor.InterceptorAnnotationParsingProcessor;
+import org.jboss.as.ee.container.processor.LifecycleAnnotationParsingProcessor;
+import org.jboss.as.ee.container.processor.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
-import org.jboss.as.ee.structure.ApplicationXmlParsingProcessor;
 import org.jboss.as.ee.structure.EarInitializationProcessor;
+import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
 import org.jboss.as.ee.structure.EarStructureProcessor;
+import org.jboss.as.ee.structure.JBossAppMetaDataParsingProcessor;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.deployment.Phase;
@@ -55,16 +60,24 @@ public class NewEeSubsystemAdd implements ModelAddOperationHandler, BootOperatio
     }
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         if(context instanceof NewBootOperationContext) {
-            final NewBootOperationContext bootContext = (NewBootOperationContext) context;
+            final NewBootOperationContext updateContext = (NewBootOperationContext) context;
             logger.info("Activating EE subsystem");
-            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
-            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new ApplicationXmlParsingProcessor());
-            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
-            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
-            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new EarMetaDataParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
+
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_INTERCEPTOR_ANNOTATION, new InterceptorAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
+
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_BEAN_CONTAINER, new BeanContainerInstallProcessor());
         }
 
         final ModelNode compensatingOperation = new ModelNode();

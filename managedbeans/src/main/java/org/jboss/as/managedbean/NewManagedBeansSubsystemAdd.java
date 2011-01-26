@@ -28,6 +28,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanDependencyProcessor;
+import org.jboss.as.managedbean.processors.ManagedBeanResourceTargetProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanSubDeploymentProcessor;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.server.BootOperationHandler;
@@ -48,13 +49,15 @@ class NewManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOpera
     }
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         if(context instanceof BootUpdateContext) {
-            final BootUpdateContext bootContext = (BootUpdateContext) context;
-            bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK, new ManagedBeanSubDeploymentProcessor());
-            bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new ManagedBeanDependencyProcessor());
-            bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_ANNOTATION_MANAGED_BEAN, new ManagedBeanAnnotationProcessor());
+            final BootUpdateContext updateContext = (BootUpdateContext) context;
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK, new ManagedBeanSubDeploymentProcessor());
+            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new ManagedBeanDependencyProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_RESOURCE_TARGET, new ManagedBeanResourceTargetProcessor());
         }
 
 
