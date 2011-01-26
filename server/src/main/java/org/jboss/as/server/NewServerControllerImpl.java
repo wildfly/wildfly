@@ -73,6 +73,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.ManagementSocketAddHandler;
+import org.jboss.as.server.operations.ReadConfigAsXmlHandler;
 import org.jboss.as.server.operations.ServerSocketBindingAddHandler;
 import org.jboss.as.server.operations.ServerSocketBindingRemoveHandler;
 import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
@@ -133,6 +134,8 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML, ReadConfigAsXmlHandler.INSTANCE, ReadConfigAsXmlHandler.INSTANCE, false);
+
         // Management socket
         root.registerOperationHandler(ModelDescriptionConstants.MANAGEMENT, ManagementSocketAddHandler.INSTANCE, ManagementSocketAddHandler.INSTANCE, false);
         // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);

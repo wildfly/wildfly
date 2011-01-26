@@ -35,8 +35,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -51,6 +54,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonAttributes;
+import org.jboss.as.server.operations.ReadConfigAsXmlHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -130,6 +134,17 @@ public class ServerRootDescription {
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION);
 
+        return root;
+    }
+
+    public static ModelNode getReadConfigAsXmlOperation(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML);
+        root.get(DESCRIPTION).set(bundle.getString(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML));
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML + ".result"));
         return root;
     }
 
