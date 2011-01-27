@@ -92,6 +92,8 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -142,12 +144,6 @@ public class NewThreadsExtension implements NewExtension {
     static final class NewThreadsSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
 
         static final NewThreadsSubsystemParser INSTANCE = new NewThreadsSubsystemParser();
-
-        /** {@inheritDoc} */
-        @Override
-        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-
-        }
 
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -793,5 +789,213 @@ public class NewThreadsExtension implements NewExtension {
             }
             return props;
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+
+            if (has(node, THREAD_FACTORY)) {
+                for (String name : node.get(THREAD_FACTORY).keys()) {
+                    final ModelNode child = node.get(THREAD_FACTORY, name);
+                    if (child.isDefined()) {
+                        writeThreadFactory(writer, child);
+                    }
+                }
+            }
+            if (has(node, BOUNDED_QUEUE_THREAD_POOL)) {
+                for (String name : node.get(BOUNDED_QUEUE_THREAD_POOL).keys()) {
+                    final ModelNode child = node.get(BOUNDED_QUEUE_THREAD_POOL, name);
+                    if (child.isDefined()) {
+                        writeBoundedQueueThreadPool(writer, child);
+                    }
+                }
+            }
+            if (has(node, QUEUELESS_THREAD_POOL)) {
+                for (String name : node.get(QUEUELESS_THREAD_POOL).keys()) {
+                    final ModelNode child = node.get(QUEUELESS_THREAD_POOL, name);
+                    if (child.isDefined()) {
+                        writeQueuelessThreadPool(writer, child);
+                    }
+                }
+            }
+            if (has(node, SCHEDULED_THREAD_POOL)) {
+                for (String name : node.get(SCHEDULED_THREAD_POOL).keys()) {
+                    final ModelNode child = node.get(SCHEDULED_THREAD_POOL, name);
+                    if (child.isDefined()) {
+                        writeScheduledQueueThreadPool(writer, child);
+                    }
+                }
+            }
+            if (has(node, UNBOUNDED_QUEUE_THREAD_POOL)) {
+                for (String name : node.get(UNBOUNDED_QUEUE_THREAD_POOL).keys()) {
+                    final ModelNode child = node.get(UNBOUNDED_QUEUE_THREAD_POOL, name);
+                    if (child.isDefined()) {
+                        writeUnboundedQueueThreadPool(writer, child);
+                    }
+                }
+            }
+
+            writer.writeEndElement();
+        }
+
+        private void writeThreadFactory(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.THREAD_FACTORY.getLocalName());
+            if (has(node, NAME)) {
+                writeAttribute(writer, Attribute.NAME, node.get(NAME));
+            }
+            if (has(node, GROUP_NAME)) {
+                writeAttribute(writer, Attribute.GROUP_NAME, node.get(GROUP_NAME));
+            }
+            if (has(node, THREAD_NAME_PATTERN)) {
+                writeAttribute(writer, Attribute.THREAD_NAME_PATTERN, node.get(THREAD_NAME_PATTERN));
+            }
+            if (has(node, PRIORITY)) {
+                writeAttribute(writer, Attribute.PRIORITY, node.get(PRIORITY));
+            }
+            if (has(node, PROPERTIES)) {
+                writeProperties(writer, node.get(PROPERTIES));
+            }
+
+            writer.writeEndElement();
+        }
+
+        private void writeBoundedQueueThreadPool(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.BOUNDED_QUEUE_THREAD_POOL.getLocalName());
+
+            if (has(node, NAME)) {
+                writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+            }
+            if (has(node, BLOCKING)) {
+                writeAttribute(writer, Attribute.BLOCKING, node.get(BLOCKING));
+            }
+            if (has(node, ALLOW_CORE_TIMEOUT)) {
+                writeAttribute(writer, Attribute.ALLOW_CORE_TIMEOUT, node.get(ALLOW_CORE_TIMEOUT));
+            }
+            writeRef(writer, node, Element.HANDOFF_EXECUTOR, HANDOFF_EXECUTOR);
+            writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
+            writeThreads(writer, node, Element.CORE_THREADS, CORE_THREADS_COUNT, CORE_THREADS_PER_CPU);
+            writeThreads(writer, node, Element.QUEUE_LENGTH, QUEUE_LENGTH_COUNT, QUEUE_LENGTH_PER_CPU);
+            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
+            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+
+            if (has(node, PROPERTIES)) {
+                writeProperties(writer, node.get(PROPERTIES));
+            }
+
+            writer.writeEndElement();
+        }
+
+        private void writeQueuelessThreadPool(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.QUEUELESS_THREAD_POOL.getLocalName());
+
+            if (has(node, NAME)) {
+                writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+            }
+            if (has(node, BLOCKING)) {
+                writeAttribute(writer, Attribute.BLOCKING, node.get(BLOCKING));
+            }
+            writeRef(writer, node, Element.HANDOFF_EXECUTOR, HANDOFF_EXECUTOR);
+            writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
+            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
+            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+
+            if (has(node, PROPERTIES)) {
+                writeProperties(writer, node.get(PROPERTIES));
+            }
+
+            writer.writeEndElement();
+        }
+
+
+        private void writeScheduledQueueThreadPool(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.SCHEDULED_THREAD_POOL.getLocalName());
+
+            if (has(node, NAME)) {
+                writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+            }
+
+            writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
+            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
+            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+
+            if (has(node, PROPERTIES)) {
+                writeProperties(writer, node.get(PROPERTIES));
+            }
+
+            writer.writeEndElement();
+        }
+
+
+        private void writeUnboundedQueueThreadPool(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.UNBOUNDED_QUEUE_THREAD_POOL.getLocalName());
+
+            if (has(node, NAME)) {
+                writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+            }
+
+            writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
+            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
+            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+
+            if (has(node, PROPERTIES)) {
+                writeProperties(writer, node.get(PROPERTIES));
+            }
+
+            writer.writeEndElement();
+        }
+
+        private void writeRef(final XMLExtendedStreamWriter writer, final ModelNode node, Element element, String name) throws XMLStreamException {
+            if (has(node, name)) {
+                writer.writeStartElement(element.getLocalName());
+                writeAttribute(writer, Attribute.NAME, node.get(name));
+                writer.writeEndElement();
+            }
+        }
+
+        private void writeThreads(final XMLExtendedStreamWriter writer, final ModelNode node, Element element, String count, String perCpu) throws XMLStreamException {
+            if (has(node, count) && has(node, perCpu)) {
+                writer.writeStartElement(element.getLocalName());
+                writeAttribute(writer, Attribute.COUNT, node.get(count));
+                writeAttribute(writer, Attribute.PER_CPU, node.get(perCpu));
+                writer.writeEndElement();
+            }
+        }
+
+        private void writeTime(final XMLExtendedStreamWriter writer, final ModelNode node, Element element, String time, String unit) throws XMLStreamException {
+            if (has(node, time) && has(node, unit)) {
+                writer.writeStartElement(element.getLocalName());
+                writeAttribute(writer, Attribute.TIME, node.get(time));
+                writeAttribute(writer, Attribute.UNIT, node.get(unit));
+                writer.writeEndElement();
+            }
+        }
+
+        private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.PROPERTIES.getLocalName());
+
+            if (node.getType() == ModelType.LIST) {
+                for (ModelNode prop : node.asList()) {
+                    if (prop.getType() == ModelType.PROPERTY) {
+                        writer.writeStartElement(Element.PROPERTY.getLocalName());
+
+                        final Property property = prop.asProperty();
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                        writeAttribute(writer, Attribute.VALUE, property.getValue());
+
+                        writer.writeEndElement();
+                    }
+                }
+            }
+            writer.writeEndElement();
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name) != null;
+        }
+
+        private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
+            writer.writeAttribute(attr.getLocalName(), value.asString());
+        }
+
     }
 }
