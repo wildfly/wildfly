@@ -225,7 +225,6 @@
 		<interface name="any">
 		   <any-address/>
 		</interface>
-		<!-- 
 		<interface name="complex">
 		   <any>
 			  <subnet-match value="192.168.0.0/16"/>
@@ -237,7 +236,6 @@
 		   <up/>
 		   <multicast/>
 		</interface>
-		 -->
     </interfaces>
 
 	    <socket-binding-group name="standard-sockets" default-interface="default">
