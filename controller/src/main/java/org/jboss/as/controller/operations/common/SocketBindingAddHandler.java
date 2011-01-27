@@ -96,13 +96,12 @@ public class SocketBindingAddHandler implements ModelAddOperationHandler, Descri
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            String name = address.getLastElement().getValue();
-            ModelNode model = context.getSubModel();
-            model.get(NAME).set(name);
-
             String failure = validator.validate(operation);
             if (failure == null) {
+                PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                String name = address.getLastElement().getValue();
+                ModelNode model = context.getSubModel();
+                model.get(NAME).set(name);
                 model.get(INTERFACE).set(operation.get(INTERFACE));
                 model.get(PORT).set(operation.get(PORT));
                 model.get(FIXED_PORT).set(operation.get(FIXED_PORT));

@@ -29,6 +29,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -230,18 +232,29 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
                 }
             }
             case SUBNET_MATCH: {
-                String key = "network";
-                ModelType type = ModelType.BYTES;
+                String value;
+                String[] split = null;
                 try {
-                    ModelNode value = prop.getValue();
-                    byte[] net = value.require(key).asBytes();
-                    key = "mask";
-                    type = ModelType.INT;
-                    int mask = value.require(key).asInt();
+                    value = prop.getValue().asString();
+                    split = value.split("/");
+                    if (split.length != 2) {
+                        throw new ParsingException(String.format("Invalid 'value' %s -- must be of the form address/mask", value));
+                    }
+                    // todo - possible DNS hit here
+                    final InetAddress addr = InetAddress.getByName(split[0]);
+                    // Validate both parts of the split
+                    final byte[] net = addr.getAddress();
+                    final int mask = Integer.parseInt(split[1]);
                     return new SubnetMatchInterfaceCriteria(net, mask);
                 }
-                catch (Exception e) {
-                    throw new ParsingException(String.format("Interface criteria %s must have field %s of type %s", element.getLocalName(), key, type));
+                catch (final ParsingException e) {
+                    throw e;
+                }
+                catch (final NumberFormatException e) {
+                    throw new ParsingException(String.format("Invalid mask %s (%s)", split[0], e.getLocalizedMessage()));
+                }
+                catch (final UnknownHostException e) {
+                    throw new ParsingException(String.format("Invalid address %s (%s)", split[1], e.getLocalizedMessage()));
                 }
             }
             default:

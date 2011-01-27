@@ -412,15 +412,19 @@ public class StandaloneXml extends CommonXml {
 
         writer.writeStartDocument();
         writer.writeStartElement(Element.SERVER.getLocalName());
-        writeNamespaces(writer, modelNode);
-        writeSchemaLocation(writer, modelNode);
-        writeExtensions(writer, modelNode.get(EXTENSION));
+
         if (hasDefinedChild(modelNode, NAME)) {
             writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
         }
+
+        writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
+        writeNamespaces(writer, modelNode);
+        writeSchemaLocation(writer, modelNode);
+
         if (hasDefinedChild(modelNode, EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
         }
+
         if(hasDefinedChild(modelNode, PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
@@ -431,12 +435,21 @@ public class StandaloneXml extends CommonXml {
         if (hasDefinedChild(modelNode, INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
         }
+
         if (hasDefinedChild(modelNode, SOCKET_BINDING_GROUP)) {
-            writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP), true);
+            Set<String> groups = modelNode.get(SOCKET_BINDING_GROUP).keys();
+            if (groups.size() > 1) {
+                throw new IllegalStateException(String.format("Model contains multiple %s nodes", SOCKET_BINDING_GROUP));
+            }
+            for (String group : groups) {
+                writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP, group), true);
+            }
         }
+
         if (hasDefinedChild(modelNode, SYSTEM_PROPERTIES)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
         }
+
         if (hasDefinedChild(modelNode, DEPLOYMENT)) {
             writeServerDeployments(writer, modelNode.get(DEPLOYMENT));
         }
