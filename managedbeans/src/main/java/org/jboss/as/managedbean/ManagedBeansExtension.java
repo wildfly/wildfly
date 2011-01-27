@@ -28,9 +28,12 @@ import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.as.server.Extension;
 import org.jboss.as.server.ExtensionContext;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Domain extension used to initialize the managed bean subsystem element handlers.
@@ -53,13 +56,18 @@ public class ManagedBeansExtension implements Extension {
     public void activate(final ServiceActivatorContext context) {
     }
 
-    static class ManagedBeanSubsystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<ManagedBeansSubsystemElement>>> {
+    static class ManagedBeanSubsystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<ManagedBeansSubsystemElement>>> , XMLElementWriter<ModelNode>{
 
         /** {@inheritDoc} */
         public void readElement(XMLExtendedStreamReader reader, ParseResult<ExtensionContext.SubsystemConfiguration<ManagedBeansSubsystemElement>> result) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
             result.setResult(new ExtensionContext.SubsystemConfiguration<ManagedBeansSubsystemElement>(new ManagedBeansSubsystemAdd()));
+        }
+
+        /** {@inheritDoc} */
+        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+            writer.writeEndElement();
         }
 
     }
