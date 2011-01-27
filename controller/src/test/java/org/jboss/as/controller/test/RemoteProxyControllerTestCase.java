@@ -21,8 +21,6 @@
 */
 package org.jboss.as.controller.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-
 import java.net.InetAddress;
 import java.util.concurrent.CancellationException;
 
@@ -32,7 +30,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
+import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
@@ -47,51 +45,51 @@ public class RemoteProxyControllerTestCase extends AbstractProxyControllerTest {
     private static final int PORT = 12345;
     RemoteModelControllerSetup server;
     ModelController proxyController;
-    ModelController remoteModelController;
+    PathAddress proxyNodeAddress;
+    DelegatingProxyController testController = new DelegatingProxyController();
 
     @Before
     public void start() throws Exception {
         server = new RemoteModelControllerSetup(proxyController, PORT);
         server.start();
-        remoteModelController = new ModelControllerClientToModelControllerAdapter(InetAddress.getByName("localhost"), PORT);
+        testController.setDelegate(RemoteProxyController.create(InetAddress.getByName("localhost"),PORT, proxyNodeAddress));
     }
 
     @After
     public void stop() {
         server.stop();
+        testController.setDelegate(null);
     }
 
     @Override
     protected ProxyController createProxyController(final ModelController targetController, final PathAddress proxyNodeAddress) {
         this.proxyController = targetController;
-        return new RemoteProxyController(proxyNodeAddress);
+        this.proxyNodeAddress = proxyNodeAddress;
+        return testController;
     }
 
-    private class RemoteProxyController implements ProxyController {
-        private final PathAddress proxyNodeAddress;
+    private static class DelegatingProxyController implements ProxyController {
 
-        public RemoteProxyController(final PathAddress proxyNodeAddress) {
-            super();
-            this.proxyNodeAddress = proxyNodeAddress;
+        ProxyController delegate;
+
+        void setDelegate(ProxyController delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Cancellable execute(ModelNode operation, ResultHandler handler) {
+            return delegate.execute(operation, handler);
+        }
+
+        @Override
+        public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+            return delegate.execute(operation);
         }
 
         @Override
         public PathAddress getProxyNodeAddress() {
-            return proxyNodeAddress;
+            return delegate.getProxyNodeAddress();
         }
 
-        @Override
-        public Cancellable execute(final ModelNode operation, final ResultHandler resultHandler) {
-            final ModelNode newOperation = operation.clone();
-            final ModelNode address = newOperation.require(ADDRESS);
-            PathAddress path = PathAddress.pathAddress(address);
-            newOperation.get(ADDRESS).set(path.subAddress(proxyNodeAddress.size()).toModelNode());
-            return remoteModelController.execute(newOperation, resultHandler);
-        }
-
-        @Override
-        public ModelNode execute(final ModelNode operation) throws CancellationException, OperationFailedException {
-            return remoteModelController.execute(operation);
-        }
     }
 }

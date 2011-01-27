@@ -21,8 +21,6 @@
 */
 package org.jboss.as.controller.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.Cancellable;
@@ -62,11 +60,7 @@ public class ProxyControllerTestCase extends AbstractProxyControllerTest {
 
         @Override
         public Cancellable execute(final ModelNode operation, final ResultHandler resultHandler) {
-            final ModelNode newOperation = operation.clone();
-            final ModelNode address = newOperation.require(ADDRESS);
-            PathAddress path = PathAddress.pathAddress(address);
-            newOperation.get(ADDRESS).set(path.subAddress(proxyNodeAddress.size()).toModelNode());
-            return targetController.execute(newOperation, resultHandler);
+            return targetController.execute(operation, resultHandler);
         }
 
         @Override

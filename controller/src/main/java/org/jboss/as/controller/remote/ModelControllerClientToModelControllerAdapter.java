@@ -33,16 +33,22 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
- *
+ * Adapter from the remote model controller client interfaces to the main model controller interfaces
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ModelControllerClientToModelControllerAdapter implements ModelController {
+class ModelControllerClientToModelControllerAdapter implements ModelController {
 
     final ModelControllerClient client;
 
-    public ModelControllerClientToModelControllerAdapter(final InetAddress address, final int port) {
+    /**
+     * Create a new model controller adapter
+     *
+     * @param address the address of the remote model controller to connect to
+     * @param port the port of the remote model controller to connect to
+     */
+    ModelControllerClientToModelControllerAdapter(final InetAddress address, final int port) {
         client = ModelControllerClient.Factory.create(address, port);
     }
 

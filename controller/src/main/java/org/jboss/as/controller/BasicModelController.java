@@ -132,7 +132,9 @@ public class BasicModelController implements ModelController {
 
             final ProxyController proxyExecutor = registry.getProxyController(address);
             if (proxyExecutor != null) {
-                return proxyExecutor.execute(operation, handler);
+                ModelNode newOperation = operation.clone();
+                newOperation.get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
+                return proxyExecutor.execute(newOperation, handler);
             }
 
             final String operationName = operation.require(ModelDescriptionConstants.OP).asString();

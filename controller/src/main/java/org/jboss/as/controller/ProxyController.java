@@ -40,7 +40,7 @@ package org.jboss.as.controller;
 public interface ProxyController extends ModelController {
 
     /**
-     * Get the address where this proxy controller applies
+     * Get the address where this proxy controller applies to in the host ModelController
      *
      * @return the address where this proxy contoller applies.
      */
