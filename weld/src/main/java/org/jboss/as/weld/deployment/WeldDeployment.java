@@ -56,12 +56,21 @@ public class WeldDeployment implements Deployment {
 
     public static final AttachmentKey<WeldDeployment> ATTACHMENT_KEY = AttachmentKey.create(WeldDeployment.class);
 
+    public static final String TOP_LEVEL_BDA_SUFFIX = ".topLevelBeanDeploymentArchive";
+
+    public static final String ADDITIONAL_CLASSES_BDA_SUFFIX = ".additionalClasses";
+
     private final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives;
 
     /**
      * The bean deployment archive used for classes added through the SPI that are not present in a existing bean archive
      */
     private final BeanDeploymentArchiveImpl additionalBeanDeploymentArchive;
+
+    /**
+     * This bean deployment archive does not expose any classes, however it has visibility to every BDA in the deployment
+     */
+    private final BeanDeploymentArchiveImpl topLevelBeanDeploymentArchive;
 
     private final Set<Metadata<Extension>> extensions;
 
@@ -77,7 +86,10 @@ public class WeldDeployment implements Deployment {
     public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Set<Metadata<Extension>> extensions,
             Module module) {
         this.additionalBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
-                BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ".additionalBeanDeploymentArchive");
+                BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ADDITIONAL_CLASSES_BDA_SUFFIX);
+
+        this.topLevelBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
+                BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + TOP_LEVEL_BDA_SUFFIX);
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
@@ -96,6 +108,8 @@ public class WeldDeployment implements Deployment {
             }
         }
         additionalBeanDeploymentArchive.addBeanDeploymentArchives(this.beanDeploymentArchives);
+        topLevelBeanDeploymentArchive.addBeanDeploymentArchives(this.beanDeploymentArchives);
+        this.beanDeploymentArchives.add(topLevelBeanDeploymentArchive);
     }
 
     /** {@inheritDoc} */
@@ -126,6 +140,10 @@ public class WeldDeployment implements Deployment {
 
     public BeanDeploymentArchiveImpl getAdditionalBeanDeploymentArchive() {
         return additionalBeanDeploymentArchive;
+    }
+
+    public BeanDeploymentArchiveImpl getTopLevelBeanDeploymentArchive() {
+        return topLevelBeanDeploymentArchive;
     }
 
 }

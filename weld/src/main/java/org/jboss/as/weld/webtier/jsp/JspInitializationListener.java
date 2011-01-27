@@ -26,7 +26,7 @@ import javax.el.ELContextListener;
 import javax.el.ExpressionFactory;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
-import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletRequestEvent;
 import javax.servlet.jsp.JspApplicationContext;
 import javax.servlet.jsp.JspFactory;
 
@@ -43,6 +43,8 @@ import org.jboss.weld.servlet.api.helpers.AbstractServletListener;
  *
  */
 public class JspInitializationListener extends AbstractServletListener {
+
+    private volatile boolean installed = false;
 
     private static class WeldJspApplicationContextImpl extends ForwardingJspApplicationContextImpl {
         private final JspApplicationContextImpl delegate;
@@ -69,26 +71,31 @@ public class JspInitializationListener extends AbstractServletListener {
     private BeanManager beanManager;
 
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
+    public void requestInitialized(ServletRequestEvent sre) {
+        if (!installed && beanManager != null && JspFactory.getDefaultFactory() != null) {
+            synchronized (this) {
+                if (!installed) {
+                    installed = true;
+                    // get JspApplicationContext.
+                    JspApplicationContext jspAppContext = JspFactory.getDefaultFactory().getJspApplicationContext(
+                            sre.getServletContext());
 
-        if (beanManager != null) {
+                    // register compositeELResolver with JSP
+                    jspAppContext.addELResolver(beanManager.getELResolver());
 
-            // get JspApplicationContext.
-            JspApplicationContext jspAppContext = JspFactory.getDefaultFactory().getJspApplicationContext(
-                    sce.getServletContext());
+                    jspAppContext.addELContextListener(Reflections.<ELContextListener> newInstance(
+                            "org.jboss.weld.el.WeldELContextListener", getClass().getClassLoader()));
 
-            // register compositeELResolver with JSP
-            jspAppContext.addELResolver(beanManager.getELResolver());
-
-            jspAppContext.addELContextListener(Reflections
-                    .<ELContextListener> newInstance("org.jboss.weld.el.WeldELContextListener", getClass().getClassLoader()));
-
-            // Hack into JBoss Web/Catalina to replace the ExpressionFactory
-            JspApplicationContextImpl wrappedJspApplicationContextImpl = new WeldJspApplicationContextImpl(
-                    JspApplicationContextImpl.getInstance(sce.getServletContext()), beanManager
-                            .wrapExpressionFactory(jspAppContext.getExpressionFactory()));
-            sce.getServletContext().setAttribute(JspApplicationContextImpl.class.getName(), wrappedJspApplicationContextImpl);
+                    // Hack into JBoss Web/Catalina to replace the ExpressionFactory
+                    JspApplicationContextImpl wrappedJspApplicationContextImpl = new WeldJspApplicationContextImpl(
+                            JspApplicationContextImpl.getInstance(sre.getServletContext()), beanManager
+                                    .wrapExpressionFactory(jspAppContext.getExpressionFactory()));
+                    sre.getServletContext().setAttribute(JspApplicationContextImpl.class.getName(),
+                            wrappedJspApplicationContextImpl);
+                }
+            }
         }
         // otherwise something went wrong starting Weld, so don't register with JSP
     }
+
 }

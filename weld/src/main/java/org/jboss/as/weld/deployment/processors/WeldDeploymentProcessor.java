@@ -131,7 +131,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         // add the BeanManager service
         final ServiceName beanManagerServiceName = deploymentUnit.getServiceName().append(BeanManagerService.NAME);
-        BeanManagerService beanManagerService = new BeanManagerService(deployment.getAdditionalBeanDeploymentArchive().getId());
+        BeanManagerService beanManagerService = new BeanManagerService(deployment.getTopLevelBeanDeploymentArchive().getId());
         serviceTarget.addService(beanManagerServiceName, beanManagerService).addDependency(weldServiceName,
                 WeldContainer.class, beanManagerService.getWeldContainer()).install();
 
