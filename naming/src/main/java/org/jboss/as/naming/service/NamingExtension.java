@@ -22,14 +22,18 @@
 
 package org.jboss.as.naming.service;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
+import org.jboss.as.server.Extension;
+import org.jboss.as.server.ExtensionContext;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import javax.xml.stream.XMLStreamException;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Domain extension used to initialize the naming subsystem element handlers.
@@ -55,7 +59,7 @@ public class NamingExtension implements Extension {
     public void activate(final ServiceActivatorContext context) {
     }
 
-    static class NamingSubSystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<NamingSubsystemElement>>> {
+    static class NamingSubSystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<NamingSubsystemElement>>>, XMLElementWriter<ModelNode> {
 
         /** {@inheritDoc} */
         public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<NamingSubsystemElement>> result) throws XMLStreamException {
@@ -63,6 +67,12 @@ public class NamingExtension implements Extension {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
             result.setResult(new ExtensionContext.SubsystemConfiguration<NamingSubsystemElement>(new NamingSubsystemAdd()));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+            writer.writeEndElement();
         }
     }
 

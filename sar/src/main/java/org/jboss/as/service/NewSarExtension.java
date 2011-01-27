@@ -69,7 +69,7 @@ public class NewSarExtension implements NewExtension {
 
         /** {@inheritDoc} */
         public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            //
+            writer.writeEndElement();
         }
 
         /** {@inheritDoc} */
