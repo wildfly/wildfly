@@ -144,7 +144,7 @@ public class ServerRootDescription {
         root.get(DESCRIPTION).set(bundle.getString(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
-        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML + ".result"));
+        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML + ".response"));
         return root;
     }
 
