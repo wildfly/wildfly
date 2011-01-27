@@ -17,6 +17,11 @@
 package org.jboss.as.arquillian.container.managed;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -24,8 +29,8 @@ import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
 
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
-import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
@@ -82,7 +87,7 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
             processBuilder.redirectErrorStream(true);
             process = processBuilder.start();
-
+            new Thread(new ConsoleConsumer()).start();
             long timeout = 5000;
             boolean testRunnerMBeanAvaialble = false;
             MBeanServerConnection mbeanServer = null;
@@ -127,4 +132,38 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
     protected ContainerMethodExecutor getContainerMethodExecutor() {
         return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.REMOTE);
    }
+
+    /**
+     * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
+     *
+     * @author Stuart Douglas
+     *
+     */
+    private class ConsoleConsumer implements Runnable {
+
+        @Override
+        public void run() {
+            final InputStream stream = process.getInputStream();
+            final InputStreamReader reader = new InputStreamReader(stream);
+            final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+
+                @Override
+                public Boolean run() {
+                    // this needs a better name
+                    String val = System.getProperty("org.jboss.as.writeconsole");
+                    return val != null && "true".equals(val);
+                }
+            });
+            final char[] data = new char[100];
+            try {
+                for (int read = 0; read != -1; read = reader.read(data)) {
+                    if (writeOutput) {
+                        System.out.print(data);
+                    }
+                }
+            } catch (IOException e) {
+            }
+        }
+
+    }
 }
