@@ -36,6 +36,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.PathDescription;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -67,15 +68,15 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
     public static final PathAddHandler SPECIFIED_INSTANCE = new PathAddHandler(true);
 
     private final boolean specified;
-    private final StringLengthValidator pathValidator;
-    private final ModelTypeValidator relativeToValidator = new ModelTypeValidator(ModelType.STRING, true);
+    private final ParametersValidator validator = new ParametersValidator();
 
     /**
      * Create the PathAddHandler
      */
     protected PathAddHandler(boolean specified) {
         this.specified = specified;
-        this.pathValidator = new StringLengthValidator(1, !specified);
+        this.validator.registerValidator(PATH, new StringLengthValidator(1, !specified));
+        this.validator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
     }
 
     /**
@@ -84,27 +85,23 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            String name = address.getLastElement().getValue();
-            ModelNode model = context.getSubModel();
-            model.get(NAME).set(name);
-
-            ModelNode pathNode = operation.get(PATH);
-            String failure = pathValidator.validateParameter(PATH, pathNode);
+            String failure = validator.validate(operation);
             if (failure == null) {
+                ModelNode model = context.getSubModel();
+                PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                String name = address.getLastElement().getValue();
+                ModelNode pathNode = operation.get(PATH);
                 ModelNode relNode = operation.get(RELATIVE_TO);
-                failure = relativeToValidator.validateParameter(RELATIVE_TO, relNode);
-                if (failure == null) {
-                    model.get(PATH).set(pathNode);
-                    model.get(RELATIVE_TO).set(relNode);
+                model.get(NAME).set(name);
+                model.get(PATH).set(pathNode);
+                model.get(RELATIVE_TO).set(relNode);
 
-                    ModelNode compensating = PathRemoveHandler.getRemovePathOperation(operation.get(OP_ADDR));
-                    String path = pathNode.isDefined() ? pathNode.asString() : null;
-                    String relativeTo = relNode.isDefined() ? relNode.asString() : null;
-                    installPath(name, path, relativeTo, context, resultHandler, compensating);
-                }
+                ModelNode compensating = PathRemoveHandler.getRemovePathOperation(operation.get(OP_ADDR));
+                String path = pathNode.isDefined() ? pathNode.asString() : null;
+                String relativeTo = relNode.isDefined() ? relNode.asString() : null;
+                installPath(name, path, relativeTo, context, resultHandler, compensating);
             }
-            if (failure != null) {
+            else {
                 resultHandler.handleFailed(new ModelNode().set(failure));
             }
         }
