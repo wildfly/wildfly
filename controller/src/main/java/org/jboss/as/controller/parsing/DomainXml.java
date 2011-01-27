@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -74,12 +75,21 @@ public class DomainXml extends CommonXml {
 
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writer.writeStartDocument();
+        writer.writeStartElement(Element.SERVER.getLocalName());
+
+        writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
-        writeExtensions(writer, modelNode.get(EXTENSION));
-        if(modelNode.has("path")) {
-            writePaths(writer, modelNode.get("path"));
+        if (hasDefinedChild(modelNode, EXTENSION)) {
+            writeExtensions(writer, modelNode.get(EXTENSION));
         }
+        if(hasDefinedChild(modelNode, PATH)) {
+            writePaths(writer, modelNode.get(PATH));
+        }
+
+        writer.writeEndElement();
+        writer.writeEndDocument();
     }
 
     void readDomainElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
