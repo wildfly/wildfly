@@ -26,8 +26,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.txn.CommonAttributes.*;
-
+import static org.jboss.as.txn.CommonAttributes.BINDING;
+import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.DEFAULT_TIMEOUT;
+import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
+import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
+import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
+import static org.jboss.as.txn.CommonAttributes.PATH;
+import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.txn.CommonAttributes.SOCKET_PROCESS_ID_MAX_PORTS;
+import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -69,12 +79,6 @@ public class NewTransactionExtension implements NewExtension {
     }
 
     static class TransactionSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
-
-        /** {@inheritDoc} */
-        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            // TODO Auto-generated method stub
-
-        }
 
         /** {@inheritDoc} */
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
@@ -250,6 +254,66 @@ public class NewTransactionExtension implements NewExtension {
             return env;
         }
 
-    }
+        /** {@inheritDoc} */
+        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+            if (has(node, CORE_ENVIRONMENT)) {
+                writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
+                final ModelNode core = node.get(CORE_ENVIRONMENT);
+                if (has(core, BINDING)) {
+                    writeAttribute(writer, Attribute.BINDING, core.get(BINDING));
+                }
+                if (has(core, NODE_IDENTIFIER)) {
+                    writeAttribute(writer, Attribute.NODE_IDENTIFIER, core.get(NODE_IDENTIFIER));
+                }
+                if (has(core, SOCKET_PROCESS_ID_MAX_PORTS)) {
+                    writeAttribute(writer, Attribute.SOCKET_PROCESS_ID_MAX_PORTS, core.get(SOCKET_PROCESS_ID_MAX_PORTS));
+                }
+                writer.writeEndElement();
+            }
+            if (has(node, RECOVERY_ENVIRONMENT)) {
+                writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
+                final ModelNode env = node.get(RECOVERY_ENVIRONMENT);
+                if (has(env, BINDING)) {
+                    writeAttribute(writer, Attribute.BINDING, env.get(BINDING));
+                }
+                if (has(env, STATUS_BINDING)) {
+                    writeAttribute(writer, Attribute.STATUS_BINDING, env.get(STATUS_BINDING));
 
+                }
+                writer.writeEndElement();
+            }
+            if (has(node, COORDINATOR_ENVIRONMENT)) {
+                writer.writeStartElement(Element.COORDINATOR_ENVIRONMENT.getLocalName());
+                final ModelNode env = node.get(COORDINATOR_ENVIRONMENT);
+                if (has(env, ENABLE_STATISTICS)) {
+                    writeAttribute(writer, Attribute.ENABLE_STATISTICS, env.get(ENABLE_STATISTICS));
+                }
+                if (has(env, DEFAULT_TIMEOUT)) {
+                    writeAttribute(writer, Attribute.DEFAULT_TIMEOUT, env.get(DEFAULT_TIMEOUT));
+                }
+                writer.writeEndElement();
+            }
+            if (has(node, OBJECT_STORE)) {
+                writer.writeStartElement(Element.OBJECT_STORE.getLocalName());
+                final ModelNode env = node.get(OBJECT_STORE);
+                if (has(env, RELATIVE_TO)) {
+                    writeAttribute(writer, Attribute.RELATIVE_TO, env.get(RELATIVE_TO));
+                }
+                if (has(env, PATH)) {
+                    writeAttribute(writer, Attribute.PATH, env.get(PATH));
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name) != null;
+        }
+
+        private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
+            writer.writeAttribute(attr.getLocalName(), value.asString());
+        }
+
+    }
 }
