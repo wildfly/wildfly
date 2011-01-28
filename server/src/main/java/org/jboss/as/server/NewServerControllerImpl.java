@@ -39,7 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
@@ -66,7 +66,6 @@ import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
@@ -180,12 +179,12 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.get(NAME);
         root.get(MANAGEMENT);
         root.get(PROFILE_NAME);
+        root.get(SYSTEM_PROPERTIES);
         root.get(EXTENSION);
         root.get(PATH);
         root.get(SUBSYSTEM);
         root.get(INTERFACE);
         root.get(SOCKET_BINDING_GROUP);
-        root.get(SYSTEM_PROPERTY);
         root.get(DEPLOYMENT);
         return root;
     }

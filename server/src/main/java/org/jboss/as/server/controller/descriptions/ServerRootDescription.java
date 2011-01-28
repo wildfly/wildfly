@@ -40,7 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -100,6 +100,8 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, PROFILE_NAME, HEAD_COMMENT_ALLOWED).set(true);
         root.get(ATTRIBUTES, PROFILE_NAME, TAIL_COMMENT_ALLOWED).set(true);
 
+        root.get(ATTRIBUTES, SYSTEM_PROPERTIES).set(CommonDescriptions.getSystemPropertiesAttribute(locale));
+
         root.get(OPERATIONS);
 
         root.get(CHILDREN, EXTENSION, DESCRIPTION).set(bundle.getString("server.extension"));
@@ -109,10 +111,6 @@ public class ServerRootDescription {
         root.get(CHILDREN, PATH, DESCRIPTION).set(bundle.getString("server.path"));
         root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION);
-
-        root.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set(bundle.getString("server.subsystem"));
-        root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
-        root.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
 
         root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("server.interface"));
         root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);
