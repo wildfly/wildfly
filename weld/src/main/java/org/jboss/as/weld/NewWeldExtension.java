@@ -38,9 +38,9 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -88,18 +88,23 @@ public class NewWeldExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(final XMLExtendedStreamWriter streamWriter, final SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(NewWeldExtension.NAMESPACE, true);
+            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewWeldExtension, true);
+            context.startSubsystemElement(NewWeldExtension.NAMESPACE, false);
+            streamWriter.writeEndElement();
         }
 
     }
 
     static final DescriptionProvider SUBSYSTEM_DESCRIPTION = new DescriptionProvider() {
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return NewWeldSubsystemProviders.getSubsystemDescription(locale);
         }
     };
 
     static final DescriptionProvider SUBSYSTEM_ADD_DESCRIPTION = new DescriptionProvider() {
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return NewWeldSubsystemProviders.getSubsystemAddDescription(locale);
         }
