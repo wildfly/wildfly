@@ -121,23 +121,22 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler,
-            final OperationHandler writeHandler) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, readHandler, writeHandler)) != null) {
+    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler, final OperationHandler writeHandler, AttributeAccess.Storage storage) {
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, readHandler, null)) != null) {
+    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler, AttributeAccess.Storage storage) {
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerWriteOnlyAttribute(final String attributeName, final OperationHandler writeHandler) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.WRITE_ONLY, null, writeHandler)) != null) {
+    public void registerMetric(String attributeName, OperationHandler metricHandler) {
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
@@ -241,7 +240,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
                 // in the valid attribute "foo" not being readable
                 final ModelNode desc = descriptionProvider.getModelDescription(null);
                 if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
-                    access = new AttributeAccess(AccessType.READ_ONLY, null, null);
+                    access = new AttributeAccess(AccessType.READ_ONLY, null, null, null);
                 }
             }
             return access;

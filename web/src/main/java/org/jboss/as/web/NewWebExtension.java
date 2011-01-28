@@ -52,6 +52,9 @@ public class NewWebExtension implements NewExtension {
         final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, NewWebSubsystemProviders.CONNECTOR);
         connectors.registerOperationHandler(ADD, NewWebConnectorAdd.INSTANCE, NewWebSubsystemProviders.CONNECTOR_ADD, false);
         connectors.registerOperationHandler(REMOVE, NewWebConnectorRemove.INSTANCE, NewWebSubsystemProviders.CONNECTOR_REMOVE, false);
+        for(final String attributeName : NewWebConnectorMetrics.ATTRIBUTES) {
+            connectors.registerMetric(attributeName, NewWebConnectorMetrics.INSTANCE);
+        }
         //hosts
         final ModelNodeRegistration hosts = registration.registerSubModel(hostPath, NewWebSubsystemProviders.HOST);
         hosts.registerOperationHandler(ADD, NewWebVirtualHostAdd.INSTANCE, NewWebSubsystemProviders.HOST_ADD, false);

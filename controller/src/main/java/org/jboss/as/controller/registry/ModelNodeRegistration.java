@@ -69,7 +69,7 @@ public interface ModelNodeRegistration {
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
      */
-    void registerReadWriteAttribute(String attributeName, OperationHandler readHandler, OperationHandler writeHandler);
+    void registerReadWriteAttribute(String attributeName, OperationHandler readHandler, OperationHandler writeHandler, AttributeAccess.Storage storage);
 
     /**
      * Records that the given attribute can be read from but not written to, and
@@ -81,18 +81,17 @@ public interface ModelNodeRegistration {
      *
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
      */
-    void registerReadOnlyAttribute(String attributeName, OperationHandler readHandler);
+    void registerReadOnlyAttribute(String attributeName, OperationHandler readHandler, AttributeAccess.Storage storage);
 
     /**
-     * Records that the given attribute can be written to but not read from, and
-     * provides an operation handler for the write.
+     * Records that the given attribute is a metric.
      *
      * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param writeHandler the handler for attribute writes. Cannot be {@code null}
+     * @param metricHandler the handler for attribute reads. Cannot be {@code null}
      *
-     * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
      */
-    void registerWriteOnlyAttribute(String attributeName, OperationHandler writeHandler);
+    void registerMetric(String attributeName, OperationHandler metricHandler);
 
     /**
      * Register a proxy controller.

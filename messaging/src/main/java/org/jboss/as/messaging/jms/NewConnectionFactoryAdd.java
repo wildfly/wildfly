@@ -78,7 +78,7 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
 
         final ModelNode subModel = context.getSubModel();
         for(final String attribute : JMSServices.CF_ATTRIBUTES) {
-            if(operation.has(attribute)) {
+            if(operation.get(attribute).isDefined()) {
                 subModel.get(attribute).set(operation.get(attribute));
             }
         }

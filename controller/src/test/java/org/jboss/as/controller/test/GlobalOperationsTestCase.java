@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
@@ -61,6 +62,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Set;
 
 import org.jboss.as.controller.BasicModelController;
@@ -76,6 +78,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -140,6 +143,15 @@ public class GlobalOperationsTestCase {
         ModelNode result = CONTROLLER.execute(operation);
         assertNotNull(result);
         checkRecursiveSubSystem1(result);
+        assertFalse(result.get("metric1").isDefined());
+
+        // Query runtime metrics
+        operation = createOperation(READ_RESOURCE_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        operation.get(INCLUDE_RUNTIME).set(true);
+        result = CONTROLLER.execute(operation);
+
+        assertTrue(result.get("metric1").isDefined());
+        assertTrue(result.get("metric2").isDefined());
     }
 
     @Test
@@ -226,6 +238,12 @@ public class GlobalOperationsTestCase {
         result = CONTROLLER.execute(operation);
         assertNotNull(result);
         assertEquals("Overridden by special read handler", result.asString());
+
+        operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        operation.get(NAME).set("metric1");
+        result = CONTROLLER.execute(operation);
+        assertNotNull(result);
+        assertEquals(ModelType.INT, result.getType());
     }
 
     @Test
@@ -615,10 +633,10 @@ public class GlobalOperationsTestCase {
         assertEquals("A r/o int", result.require(ATTRIBUTES).require("read-only").require(DESCRIPTION).asString());
         assertFalse(result.require(ATTRIBUTES).require("read-only").require(REQUIRED).asBoolean());
         assertEquals(AccessType.READ_ONLY.toString(), result.require(ATTRIBUTES).require("read-only").get(ACCESS_TYPE).asString());
-        assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("write-only").require(TYPE).asType());
-        assertEquals("A w/o int", result.require(ATTRIBUTES).require("write-only").require(DESCRIPTION).asString());
-        assertFalse(result.require(ATTRIBUTES).require("write-only").require(REQUIRED).asBoolean());
-        assertEquals(AccessType.WRITE_ONLY.toString(), result.require(ATTRIBUTES).require("write-only").get(ACCESS_TYPE).asString());
+        assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("metric1").require(TYPE).asType());
+        assertEquals("A random metric", result.require(ATTRIBUTES).require("metric1").require(DESCRIPTION).asString());
+        assertEquals(AccessType.METRIC.toString(), result.require(ATTRIBUTES).require("metric1").get(ACCESS_TYPE).asString());
+        assertEquals(AccessType.METRIC.toString(), result.require(ATTRIBUTES).require("metric2").get(ACCESS_TYPE).asString());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("read-write").require(TYPE).asType());
         assertEquals("A r/w int", result.require(ATTRIBUTES).require("read-write").require(DESCRIPTION).asString());
         assertFalse(result.require(ATTRIBUTES).require("read-write").require(REQUIRED).asBoolean());
@@ -774,10 +792,10 @@ public class GlobalOperationsTestCase {
                     node.get(ATTRIBUTES, "read-only", TYPE).set(ModelType.INT);
                     node.get(ATTRIBUTES, "read-only", DESCRIPTION).set("A r/o int");
                     node.get(ATTRIBUTES, "read-only", REQUIRED).set(false);
-                    node.get(ATTRIBUTES, "write-only", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "write-only", DESCRIPTION).set("A w/o int");
-                    node.get(ATTRIBUTES, "write-only", REQUIRED).set(false);
+                    node.get(ATTRIBUTES, "metric1", TYPE).set(ModelType.INT);
+                    node.get(ATTRIBUTES, "metric1", DESCRIPTION).set("A random metric");
                     node.get(ATTRIBUTES, "read-write", TYPE).set(ModelType.INT);
+                    node.get(ATTRIBUTES, "metric2", TYPE).set(ModelType.INT);
                     node.get(ATTRIBUTES, "read-write", DESCRIPTION).set("A r/w int");
                     node.get(ATTRIBUTES, "read-write", REQUIRED).set(false);
                     node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
@@ -790,9 +808,10 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            profileSub1Reg.registerReadOnlyAttribute("read-only", null);
-            profileSub1Reg.registerWriteOnlyAttribute("write-only", new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.INT));
-            profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.INT));
+            profileSub1Reg.registerReadOnlyAttribute("read-only", null, AttributeAccess.Storage.CONFIGURATION);
+            profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.INT), AttributeAccess.Storage.CONFIGURATION);
+            profileSub1Reg.registerMetric("metric1", TestMetricHandler.INSTANCE);
+            profileSub1Reg.registerMetric("metric2", TestMetricHandler.INSTANCE);
             //TODO Validation if we try to set a handler for an attribute that does not exist in model?
 
             DescriptionProvider thingProvider = new DescriptionProvider() {
@@ -882,7 +901,7 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.LONG, false));
+            profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.LONG, false), AttributeAccess.Storage.CONFIGURATION);
 
             ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 
@@ -999,7 +1018,7 @@ public class GlobalOperationsTestCase {
                     resultHandler.handleResultComplete(null);
                     return Cancellable.NULL;
                 }
-            });
+            }, AttributeAccess.Storage.CONFIGURATION);
 
 
             ModelNodeRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
@@ -1012,6 +1031,18 @@ public class GlobalOperationsTestCase {
                 }
             });
         }
+    }
+
+    static class TestMetricHandler implements OperationHandler {
+        static final TestMetricHandler INSTANCE = new TestMetricHandler();
+        private static final Random random = new Random();
+        @Override
+        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+            resultHandler.handleResultFragment(new String[0], new ModelNode().set(random.nextInt()));
+            resultHandler.handleResultComplete(null);
+            return Cancellable.NULL;
+        }
+
     }
 
 }

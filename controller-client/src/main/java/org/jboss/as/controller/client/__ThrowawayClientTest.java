@@ -60,6 +60,24 @@ public class __ThrowawayClientTest {
                 ModelNode r = client.execute(request);
                 System.out.println(r);
             }
+            {
+                // Read the resource including runtime stats
+                ModelNode request = new ModelNode();
+                request.get("operation").set("read-resource");
+                request.get("address").add("subsystem", "web").add("connector", "http");
+                request.get("include-runtime").set(true);
+                ModelNode r = client.execute(request);
+                System.out.println(r);
+            }
+            {
+                ModelNode request = new ModelNode();
+                request.get("operation").set("read-attribute");
+                request.get("address").setEmptyList();
+                request.get("address").add("subsystem", "web").add("connector", "http");
+                request.get("name").set("requestCount");
+                ModelNode r = client.execute(request);
+                System.out.println(r);
+            }
 
 //            System.out.println("--- Synchronous simple operation");
 //            ModelNode result = client.execute(createOperation(0));

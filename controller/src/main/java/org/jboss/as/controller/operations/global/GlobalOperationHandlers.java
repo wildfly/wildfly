@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -45,6 +46,7 @@ import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -58,9 +60,12 @@ import org.jboss.dmr.ModelNode;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class GlobalOperationHandlers {
+
+    public static final OperationHandler READ_RESOURCE = new ReadResourceHandler();
+    public static final OperationHandler READ_ATTRIBUTE = new ReadAttributeHandler();
+    public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
 
     static final String[] NO_LOCATION = new String[0];
 
@@ -80,13 +85,14 @@ public class GlobalOperationHandlers {
         return node;
     }
 
-    public static final ModelQueryOperationHandler READ_RESOURCE = new ModelQueryOperationHandler() {
+    public static class ReadResourceHandler implements ModelQueryOperationHandler {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
                 final ModelNode result;
-                if (operation.require(RECURSIVE).asBoolean()) {
+                if (operation.get(RECURSIVE).asBoolean(false)) {
+                    // FIXME security checks JBAS-8842
                     result = context.getSubModel().clone();
                     addProxyNodes(address, result, context.getRegistry());
 
@@ -111,8 +117,44 @@ public class GlobalOperationHandlers {
                             result.get(key).set(child);
                         }
                     }
+                    // Handle attributes
+                    final boolean queryRuntime = operation.get(INCLUDE_RUNTIME).asBoolean(false);
+                    final Set<String> attributeNames = context.getRegistry().getAttributeNames(address);
+                    for(final String attributeName : attributeNames) {
+                        final AttributeAccess access = context.getRegistry().getAttributeAccess(address, attributeName);
+                        if(access == null) {
+                            continue;
+                        } else {
+                            final AttributeAccess.Storage storage = access.getStorageType();
+                            if(! queryRuntime && storage != AttributeAccess.Storage.CONFIGURATION) {
+                                continue;
+                            }
+                            final AccessType type = access.getAccessType();
+                            final OperationHandler handler = access.getReadHandler();
+                            if(handler != null) {
+                                // Create the attribute operation
+                                final ModelNode attributeOperation = operation.clone();
+                                attributeOperation.get(NAME).set(attributeName);
+                                handler.execute(context, attributeOperation, new ResultHandler() {
+                                    public void handleResultFragment(final String[] location, final ModelNode attributeResult) {
+                                        result.get(attributeName).set(attributeResult);
+                                    }
+                                    public void handleResultComplete(final ModelNode compensatingOperation) {
+                                        // TODO
+                                    }
+                                    public void handleFailed(ModelNode failureDescription) {
+                                        if(type != AccessType.METRIC) {
+                                            resultHandler.handleFailed(failureDescription);
+                                        }
+                                    }
+                                    public void handleCancellation() {
+                                        resultHandler.handleCancellation();
+                                    }
+                                });
+                            }
+                        }
+                    }
                 }
-
                 resultHandler.handleResultFragment(NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
@@ -147,8 +189,7 @@ public class GlobalOperationHandlers {
 
     };
 
-    public static final ModelQueryOperationHandler READ_ATTRIBUTE = new ModelQueryOperationHandler() {
-
+    public static class ReadAttributeHandler implements ModelQueryOperationHandler {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
@@ -157,8 +198,6 @@ public class GlobalOperationHandlers {
                 final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
                 if (attributeAccess == null) {
                     resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
-                } else if (attributeAccess.getAccessType() == AccessType.WRITE_ONLY) {
-                    resultHandler.handleFailed(new ModelNode().set("Attribute " + attributeName + " is write-only")); // TODO i18n
                 } else if (attributeAccess.getReadHandler() == null) {
                     final ModelNode result = context.getSubModel().get(attributeName).clone();
                     resultHandler.handleResultFragment(NO_LOCATION, result);
@@ -174,8 +213,7 @@ public class GlobalOperationHandlers {
         }
     };
 
-    public static final ModelUpdateOperationHandler WRITE_ATTRIBUTE = new ModelUpdateOperationHandler() {
-
+    public static class WriteAttributeHandler implements ModelUpdateOperationHandler {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
@@ -184,8 +222,8 @@ public class GlobalOperationHandlers {
                 final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
                 if (attributeAccess == null) {
                     resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
-                } else if (attributeAccess.getAccessType() == AccessType.READ_ONLY) {
-                    resultHandler.handleFailed(new ModelNode().set("Attribute " + attributeName + " is read-only")); // TODO i18n
+                } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
+                    resultHandler.handleFailed(new ModelNode().set("Attribute " + attributeName + " is not writeable")); // TODO i18n
                 } else {
                     cancellable = attributeAccess.getWriteHandler().execute(context, operation, resultHandler);
                 }
@@ -198,7 +236,6 @@ public class GlobalOperationHandlers {
     };
 
     public static final ModelQueryOperationHandler READ_CHILDREN_NAMES = new ModelQueryOperationHandler() {
-
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
@@ -362,7 +399,6 @@ public class GlobalOperationHandlers {
             }
 
             if (result.has(ATTRIBUTES)) {
-
                 for (final String attr : result.require(ATTRIBUTES).keys()) {
                      final AttributeAccess access = registry.getAttributeAccess(address, attr);
                      // If there is metadata for an attribute but no AttributeAccess, assume RO. Can't
@@ -375,7 +411,6 @@ public class GlobalOperationHandlers {
                      result.get(ATTRIBUTES, attr, ACCESS_TYPE).set(accessType.toString()); //TODO i18n
                 }
             }
-
             if (recursive && result.has(CHILDREN)) {
                 for (final PathElement element : registry.getChildAddresses(address)) {
                     final PathAddress childAddress = address.append(element);

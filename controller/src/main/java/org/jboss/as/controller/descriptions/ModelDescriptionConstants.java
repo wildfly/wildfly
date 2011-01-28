@@ -52,6 +52,7 @@ public class ModelDescriptionConstants {
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
     public static final String INCLUDE = "include";
+    public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INET_ADDRESS = "inet-address";
     public static final String INTERFACE = "interface";
     public static final String JVM = "jvm";

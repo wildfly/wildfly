@@ -59,19 +59,19 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
+
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler,
-            final OperationHandler writeHandler) {
+    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler, final OperationHandler writeHandler, AttributeAccess.Storage storage) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler) {
+    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler, AttributeAccess.Storage storage) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerWriteOnlyAttribute(final String attributeName, final OperationHandler writeHandler) {
+    public void registerMetric(final String attributeName, final OperationHandler metricHandler) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 

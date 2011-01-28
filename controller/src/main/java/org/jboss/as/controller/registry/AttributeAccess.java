@@ -32,8 +32,8 @@ public class AttributeAccess {
 
     public static enum AccessType {
         READ_ONLY("read-only"),
-        WRITE_ONLY("write-only"),
-        READ_WRITE("read-write");
+        READ_WRITE("read-write"),
+        METRIC("metric");
 
         private final String label;
 
@@ -45,26 +45,48 @@ public class AttributeAccess {
         public String toString() {
             return label;
         }
+    }
 
+    public static enum Storage {
+
+        CONFIGURATION("configuration"),
+        RUNTIME("runtime");
+
+        private final String label;
+
+        private Storage(final String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
 
     }
 
     private final AccessType access;
+    private final Storage storage;
     private final OperationHandler readHandler;
     private final OperationHandler writeHandler;
 
-    public AttributeAccess(final AccessType access, final OperationHandler readHandler, final OperationHandler writeHandler) {
+    public AttributeAccess(final AccessType access, final Storage storage, final OperationHandler readHandler, final OperationHandler writeHandler) {
         assert access != null : "access is null";
         this.access = access;
         this.readHandler = readHandler;
         this.writeHandler = writeHandler;
-        if (access != AccessType.READ_ONLY && writeHandler == null) {
+        this.storage = storage;
+        if(access == AccessType.READ_WRITE && writeHandler == null) {
             throw new IllegalArgumentException("writeHandler is null");
         }
     }
 
     public AccessType getAccessType() {
         return access;
+    }
+
+    public Storage getStorageType() {
+        return storage;
     }
 
     public OperationHandler getReadHandler() {
@@ -74,4 +96,5 @@ public class AttributeAccess {
     public OperationHandler getWriteHandler() {
         return writeHandler;
     }
+
 }

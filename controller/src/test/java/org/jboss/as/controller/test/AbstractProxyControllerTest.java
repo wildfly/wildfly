@@ -25,7 +25,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -74,6 +73,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -211,12 +211,9 @@ public abstract class AbstractProxyControllerTest {
         ModelNode result = proxyController.execute(read);
         assertEquals("childName", result.asString());
 
-        try {
-            read.get(NAME).set("value");
-            proxyController.execute(read);
-            fail("Expected failure to read write-only attribute");
-        } catch (Exception expected) {
-        }
+        read.get(NAME).set("metric");
+        result = proxyController.execute(read);
+        assertEquals(ModelType.INT, result.getType());
     }
 
     @Test
@@ -553,7 +550,8 @@ public abstract class AbstractProxyControllerTest {
                     return node;
                 }
             });
-            hostChildReg.registerWriteOnlyAttribute("value", new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.STRING));
+            hostChildReg.registerReadWriteAttribute("value", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.STRING), AttributeAccess.Storage.CONFIGURATION);
+            hostChildReg.registerMetric("metric", GlobalOperationsTestCase.TestMetricHandler.INSTANCE);
 
             hostChildReg.registerOperationHandler("test-op",
                     new OperationHandler() {
