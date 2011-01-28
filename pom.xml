@@ -130,9 +130,9 @@
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.mockito>1.8.4</version.org.mockito>
         <version.org.picketbox>4.0.0.Alpha2</version.org.picketbox>
-        <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
-        <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
-        <version.org.slf4j.slf4j-ext>1.5.8</version.org.slf4j.slf4j-ext>
+        <version.org.slf4j.jcl-over-slf4j>1.5.10</version.org.slf4j.jcl-over-slf4j>
+        <version.org.slf4j.slf4j-api>1.5.10</version.org.slf4j.slf4j-api>
+        <version.org.slf4j.slf4j-ext>1.5.10</version.org.slf4j.slf4j-ext>
         <version.osgi>4.2.0</version.osgi>
         <version.ch.qos.cal10n.cal10n-api>0.7.2</version.ch.qos.cal10n.cal10n-api>
 
