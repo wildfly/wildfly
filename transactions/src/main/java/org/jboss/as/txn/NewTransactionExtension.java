@@ -95,6 +95,8 @@ public class NewTransactionExtension implements NewExtension {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            list.add(subsystem);
+
 
             // elements
             final EnumSet<Element> required = EnumSet.of(Element.RECOVERY_ENVIRONMENT, Element.CORE_ENVIRONMENT);

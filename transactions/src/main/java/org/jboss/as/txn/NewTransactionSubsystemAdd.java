@@ -25,7 +25,13 @@ package org.jboss.as.txn;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.txn.CommonAttributes.*;
+import static org.jboss.as.txn.CommonAttributes.BINDING;
+import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
+import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
+import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -67,7 +73,7 @@ class NewTransactionSubsystemAdd implements ModelAddOperationHandler, RuntimeOpe
         String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
         String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
         String nodeIdentifier = operation.get(CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
-        boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean();
+        boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean(false);
         String objectStorePathRef = "jboss.server.data.dir";
         String objectStorePath = "tx-object-store";
         int maxPorts = 10;
