@@ -107,6 +107,7 @@ class NewSizePeriodicFileHandlerAdd implements ModelAddOperationHandler, Runtime
         subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         subModel.get(ENCODING).set(operation.get(ENCODING));
         subModel.get(FORMATTER).set(operation.get(FORMATTER));
+        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(LEVEL).set(operation.get(LEVEL));
         subModel.get(FILE).set(operation.get(FILE));
         subModel.get(MAX_BACKUP_INDEX).set(operation.get(MAX_BACKUP_INDEX));

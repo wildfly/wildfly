@@ -32,12 +32,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
@@ -48,11 +45,9 @@ import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
-import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
@@ -74,6 +69,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -972,43 +968,38 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
-        if (has(node, CONSOLE_HANDLER)) {
-            for (String name : node.get(CONSOLE_HANDLER).keys()) {
-                final ModelNode child = node.get(CONSOLE_HANDLER, name);
-                if (child.isDefined()) {
-                    writeConsoleHandler(writer, child);
+        if (has(node, HANDLER)) {
+            final ModelNode handlers = node.get(HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (!handler.isDefined()) {
+                    continue;
                 }
-            }
-        }
-        if (has(node, PERIODIC_ROTATING_FILE_HANDLER)) {
-            for (String name : node.get(PERIODIC_ROTATING_FILE_HANDLER).keys()) {
-                final ModelNode child = node.get(PERIODIC_ROTATING_FILE_HANDLER, name);
-                if (child.isDefined()) {
-                    writePeriodicWritingFileHandler(writer, child);
+                final LoggerHandlerType type;
+                try {
+                    type = Enum.valueOf(LoggerHandlerType.class, handler.get(HANDLER_TYPE).asString());
+                } catch (IllegalArgumentException e) {
+                    continue;
                 }
-            }
-        }
-        if (has(node, ASYNC_HANDLER)) {
-            for (String name : node.get(ASYNC_HANDLER).keys()) {
-                final ModelNode child = node.get(ASYNC_HANDLER, name);
-                if (child.isDefined()) {
-                    writeAsynchWritingFileHandler(writer, child);
-                }
-            }
-        }
-        if (has(node, FILE_HANDLER)) {
-            for (String name : node.get(FILE_HANDLER).keys()) {
-                final ModelNode child = node.get(FILE_HANDLER, name);
-                if (child.isDefined()) {
-                    writeFileHandler(writer, child);
-                }
-            }
-        }
-        if (has(node, SIZE_ROTATING_FILE_HANDLER)) {
-            for (String name : node.get(SIZE_ROTATING_FILE_HANDLER).keys()) {
-                final ModelNode child = node.get(SIZE_ROTATING_FILE_HANDLER, name);
-                if (child.isDefined()) {
-                    writeSizeWritingFileHandler(writer, child);
+
+                switch (type) {
+                    case ASYNC_HANDLER:
+                        writeAsynchHandler(writer, handler, name);
+                        break;
+                    case CONSOLE_HANDLER:
+                        writeConsoleHandler(writer, handler, name);
+                        break;
+                    case FILE_HANDLER:
+                        writeFileHandler(writer, handler, name);
+                        break;
+                    case PERIODIC_ROTATING_FILE_HANDLER:
+                        writePeriodicWritingFileHandler(writer, handler, name);
+                        break;
+                    case SIZE_ROTATING_FILE_HANDLER:
+                        writeSizeWritingFileHandler(writer, handler, name);
+                        break;
                 }
             }
         }
@@ -1018,15 +1009,15 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
             }
         }
         if (has(node, ROOT_LOGGER)) {
-            writeRootLogger(writer, node);
+            writeRootLogger(writer, node.get(ROOT_LOGGER));
         }
         writer.writeEndElement();
     }
 
-    private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.CONSOLE_HANDLER.getLocalName());
         if (has(node, NAME)) {
-            writeAttribute(writer, Attribute.NAME, node.get(NAME));
+            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         }
         if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
@@ -1045,10 +1036,10 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         writer.writeEndElement();
     }
 
-    private void writeFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    private void writeFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.FILE_HANDLER.getLocalName());
         if (has(node, NAME)) {
-            writeAttribute(writer, Attribute.NAME, node.get(NAME));
+            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         }
         if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
@@ -1064,10 +1055,10 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         writer.writeEndElement();
     }
 
-    private void writePeriodicWritingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    private void writePeriodicWritingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
         if (has(node, NAME)) {
-            writeAttribute(writer, Attribute.NAME, node.get(NAME));
+            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         }
         if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
@@ -1088,12 +1079,12 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         writer.writeEndElement();
     }
 
-    private void writeSizeWritingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    private void writeSizeWritingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.SIZE_ROTATING_FILE_HANDLER.getLocalName());
         if (has(node, NAME)) {
-            writeAttribute(writer, Attribute.NAME, node.get(NAME));
+            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         }
-        if (node.has(AUTOFLUSH)) {
+        if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
         }
         writeLevel(writer, node);
@@ -1117,10 +1108,10 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         writer.writeEndElement();
     }
 
-    private void writeAsynchWritingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    private void writeAsynchHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.ASYNC_HANDLER.getLocalName());
         if (has(node, NAME)) {
-            writeAttribute(writer, Attribute.NAME, node.get(NAME));
+            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         }
         writeLevel(writer, node);
         writeFilter(writer, node);
@@ -1130,12 +1121,12 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
             writeAttribute(writer, Attribute.VALUE, node.get(QUEUE_LENGTH));
             writer.writeEndElement();
         }
-        if (node.has(OVERFLOW_ACTION)) {
+        if (has(node, OVERFLOW_ACTION)) {
             writer.writeStartElement(Element.OVERFLOW_ACTION.getLocalName());
             writeAttribute(writer, Attribute.VALUE, node.get(OVERFLOW_ACTION));
             writer.writeEndElement();
         }
-        if (node.has(SUBHANDLERS)) {
+        if (has(node, SUBHANDLERS)) {
             final ModelNode handlers = node.get(SUBHANDLERS);
             writeHandlersContent(writer, Element.SUBHANDLERS, handlers);
         }
@@ -1146,7 +1137,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
     private void writeLogger(final XMLExtendedStreamWriter writer, String name, final ModelNode node) throws XMLStreamException {
         writer.writeStartElement(Element.LOGGER.getLocalName());
         writer.writeAttribute(Attribute.CATEGORY.getLocalName(), name);
-        if (node.has(USE_PARENT_HANDLERS)) {
+        if (has(node, USE_PARENT_HANDLERS)) {
             writeAttribute(writer, Attribute.USE_PARENT_HANDLERS, node.get(USE_PARENT_HANDLERS));
         }
         writeLevel(writer, node);
@@ -1156,9 +1147,11 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
     }
 
     private void writeRootLogger(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        writer.writeStartElement(Element.ROOT_LOGGER.getLocalName());
         writeLevel(writer, node);
         writeFilter(writer, node);
         writeHandlers(writer, node);
+        writer.writeEndElement();
     }
 
     private void writeLevel(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
@@ -1202,7 +1195,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
     }
 
     private void writeEncoding(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.has(ENCODING)) {
+        if (has(node, ENCODING)) {
             writer.writeStartElement(Element.ENCODING.getLocalName());
             writeAttribute(writer, Attribute.VALUE, node.get(ENCODING));
             writer.writeEndElement();
@@ -1210,7 +1203,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
     }
 
     private void writeHandlers(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.has(HANDLERS)) {
+        if (has(node, HANDLERS)) {
             final ModelNode handlers = node.get(HANDLERS);
             writeHandlersContent(writer, Element.HANDLERS, handlers);
         }

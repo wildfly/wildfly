@@ -99,6 +99,7 @@ class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHa
         }
 
         final ModelNode subModel = context.getSubModel();
+        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
         subModel.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
         subModel.get(LEVEL).set(operation.get(LEVEL));

@@ -92,6 +92,7 @@ class NewConsoleHandlerAdd implements ModelAddOperationHandler, RuntimeOperation
         subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         subModel.get(ENCODING).set(operation.get(ENCODING));
         subModel.get(FORMATTER).set(operation.get(FORMATTER));
+        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(LEVEL).set(operation.get(LEVEL));
         subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
 
