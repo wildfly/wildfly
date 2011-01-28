@@ -65,6 +65,7 @@ import static org.jboss.as.threads.Constants.THREAD_FACTORY;
 import static org.jboss.as.threads.Constants.THREAD_NAME_PATTERN;
 import static org.jboss.as.threads.Constants.UNBOUNDED_QUEUE_THREAD_POOL;
 
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -88,12 +89,15 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.threads.NewThreadsExtension.NewThreadsSubsystemParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -790,7 +794,18 @@ public class ThreadsSubsystemTestCase {
     class TestController extends BasicModelController {
 
         protected TestController() {
-            super(model, new NullConfigurationPersister(), new DescriptionProvider() {
+            super(model, new NewConfigurationPersister() {
+                @Override
+                public void store(ModelNode model) throws ConfigurationPersistenceException {
+                }
+                @Override
+                public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
+                }
+                @Override
+                public List<ModelNode> load() throws ConfigurationPersistenceException {
+                    return null;
+                }
+            }, new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
                     ModelNode node = new ModelNode();
@@ -836,6 +851,11 @@ public class ThreadsSubsystemTestCase {
                 @Override
                 public ModelNodeRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                     throw new IllegalStateException("Not implemented");
+                }
+
+                @Override
+                public void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
+                    Assert.assertNotNull(writer);
                 }
             };
         }

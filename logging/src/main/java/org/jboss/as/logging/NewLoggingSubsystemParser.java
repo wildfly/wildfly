@@ -71,6 +71,7 @@ import java.util.regex.Pattern;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
@@ -81,7 +82,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final NewLoggingSubsystemParser INSTANCE = new NewLoggingSubsystemParser();
 
@@ -95,6 +96,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
 
 
     /** {@inheritDoc} */
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
         // No attributes
         if (reader.getAttributeCount() > 0) {
@@ -965,7 +967,11 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
     }
 
     /** {@inheritDoc} */
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    @Override
+    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+
+        ModelNode node = context.getModelNode();
         if (has(node, CONSOLE_HANDLER)) {
             for (String name : node.get(CONSOLE_HANDLER).keys()) {
                 final ModelNode child = node.get(CONSOLE_HANDLER, name);

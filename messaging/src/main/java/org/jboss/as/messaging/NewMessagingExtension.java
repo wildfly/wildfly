@@ -41,17 +41,20 @@ public class NewMessagingExtension implements NewExtension {
     private final NewJMSExtension JMS_EXTENSION = new NewJMSExtension();
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewMessagingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewMessagingSubsystemAdd.INSTANCE, NewMessagingSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerXMLElementWriter(NewMessagingSubsystemParser.getInstance());
         // Also register JMS subsystem
         JMS_EXTENSION.initialize(context);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.MESSAGING_1_0.getUriString(), NewMessagingSubsystemParser.getInstance(), NewMessagingSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.MESSAGING_1_0.getUriString(), NewMessagingSubsystemParser.getInstance());
         // Also register JMS subsystem
         JMS_EXTENSION.initializeParsers(context);
     }

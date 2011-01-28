@@ -22,7 +22,9 @@
 
 package org.jboss.as.controller.persistence;
 
+import java.io.OutputStream;
 import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,6 +40,15 @@ public interface NewConfigurationPersister {
      * @param model the model to persist
      */
     void store(ModelNode model) throws ConfigurationPersistenceException;
+
+    /**
+     * Marshals the given configuration model to XML, writing to the given stream.
+     *
+     * @param model  the model to persist
+     * @param output the stream
+     * @throws ConfigurationPersistenceException
+     */
+    void marshallAsXml(final ModelNode model, final OutputStream output) throws ConfigurationPersistenceException;
 
     /**
      * Load the configuration model, returning it as a list of updates to be

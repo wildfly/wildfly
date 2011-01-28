@@ -37,6 +37,7 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -57,26 +58,32 @@ public class NewManagedBeansExtension implements NewExtension {
 
     private static final ManagedBeanSubsystemElementParser parser = new ManagedBeanSubsystemElementParser();
     private static final DescriptionProvider DESCRIPTION = new DescriptionProvider() {
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return new ModelNode();
         }
     };
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         nodeRegistration.registerOperationHandler(ADD, NewManagedBeansSubsystemAdd.INSTANCE, DESCRIPTION, false);
+        registration.registerXMLElementWriter(parser);
+
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE, parser, parser);
+        context.setSubsystemXmlMapping(NAMESPACE, parser);
     }
 
-    static class ManagedBeanSubsystemElementParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static class ManagedBeanSubsystemElementParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
+        @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
@@ -88,8 +95,8 @@ public class NewManagedBeansExtension implements NewExtension {
 
         /** {@inheritDoc} */
         @Override
-        public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-            writer.writeEndElement();
+        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(NewManagedBeansExtension.NAMESPACE, true);
         }
 
     }

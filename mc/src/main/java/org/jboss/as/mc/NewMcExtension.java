@@ -38,6 +38,7 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -57,6 +58,7 @@ public class NewMcExtension implements NewExtension {
     private static final MCSubsystemParser parser = new MCSubsystemParser();
     private static final DescriptionProvider NULL_DESCRIPTION = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return new ModelNode();
         }
@@ -68,20 +70,21 @@ public class NewMcExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NULL_DESCRIPTION);
         registration.registerOperationHandler(ADD, NewMcSubsystemAdd.INSTANCE, NULL_DESCRIPTION, false);
+        subsystem.registerXMLElementWriter(parser);
     }
 
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE, parser, parser);
+        context.setSubsystemXmlMapping(NAMESPACE, parser);
     }
 
-    static final class MCSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static final class MCSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
         @Override
-        public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-            writer.writeEndElement();
+        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(NewMcExtension.NAMESPACE, true);
         }
 
         /** {@inheritDoc} */

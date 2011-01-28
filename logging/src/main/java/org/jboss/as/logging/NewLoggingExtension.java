@@ -49,12 +49,14 @@ public class NewLoggingExtension implements NewExtension {
     private static final PathElement handlersPath = PathElement.pathElement(CommonAttributes.HANDLER);
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewLoggingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, ADD_INSTANCE, NewLoggingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler("set-root-logger", NewRootLoggerAdd.INSTANCE, NewLoggingSubsystemProviders.SET_ROOT_LOGGER, false);
         registration.registerOperationHandler("remove-root-logger", NewRootLoggerRemove.INSTANCE, NewLoggingSubsystemProviders.SET_ROOT_LOGGER, false);
+        subsystem.registerXMLElementWriter(NewLoggingSubsystemParser.getInstance());
         // loggers
         final ModelNodeRegistration loggers = registration.registerSubModel(loggersPath, NewLoggingSubsystemProviders.LOGGER);
         loggers.registerOperationHandler(ADD, NewLoggerAdd.INSTANCE, NewLoggingSubsystemProviders.LOGGER_ADD, false);
@@ -71,8 +73,9 @@ public class NewLoggingExtension implements NewExtension {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewLoggingSubsystemParser.getInstance(), NewLoggingSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewLoggingSubsystemParser.getInstance());
     }
 
     private static final NewLoggingSubsystemAdd ADD_INSTANCE = new NewLoggingSubsystemAdd();
@@ -80,6 +83,7 @@ public class NewLoggingExtension implements NewExtension {
     static class NewLoggingSubsystemAdd implements ModelAddOperationHandler {
 
         /** {@inheritDoc} */
+        @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
             final ModelNode compensatingOperation = new ModelNode();

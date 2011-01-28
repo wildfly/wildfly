@@ -29,8 +29,10 @@ import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
+
+import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivator;
 
@@ -64,14 +66,17 @@ public final class NewServerStartTask implements ServerTask, Serializable, Objec
         providedEnvironment = new ServerEnvironment(properties, System.getenv(), false);
     }
 
+    @Override
     public void run(final List<ServiceActivator> runServices) {
         final NewBootstrap bootstrap = NewBootstrap.Factory.newInstance();
         final NewBootstrap.Configuration configuration = new NewBootstrap.Configuration();
         configuration.setServerEnvironment(providedEnvironment);
-        configuration.setConfigurationPersister(new NewConfigurationPersister() {
+        configuration.setConfigurationPersister(new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader())) {
+            @Override
             public void store(final ModelNode model) throws ConfigurationPersistenceException {
             }
 
+            @Override
             public List<ModelNode> load() throws ConfigurationPersistenceException {
                 return updates;
             }
@@ -80,6 +85,7 @@ public final class NewServerStartTask implements ServerTask, Serializable, Objec
         bootstrap.start(configuration, startServices);
     }
 
+    @Override
     public void validateObject() throws InvalidObjectException {
         if (serverName == null) {
             throw new InvalidObjectException("serverName is null");

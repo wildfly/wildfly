@@ -36,6 +36,7 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -54,25 +55,30 @@ public class NewEeExtension implements NewExtension {
     private static final EESubsystemParser parser = new EESubsystemParser();
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewEeSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewEeSubsystemAdd.INSTANCE, NewEeSubsystemProviders.SUBSYSTEM, false);
+        subsystem.registerXMLElementWriter(parser);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE, parser, parser);
+        context.setSubsystemXmlMapping(NAMESPACE, parser);
     }
 
-    static class EESubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static class EESubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
-        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            writer.writeEndElement();
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(NewEeExtension.NAMESPACE, true);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);

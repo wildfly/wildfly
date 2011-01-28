@@ -37,6 +37,7 @@ import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -57,6 +58,7 @@ public class NewJMXExtension implements NewExtension {
     static final JMXSubsystemParser parsers = new JMXSubsystemParser();
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewJMXSubsystemProviders.SUBSYSTEM);
@@ -64,14 +66,17 @@ public class NewJMXExtension implements NewExtension {
         registration.registerOperationHandler(ADD, NewJMXSubsystemAdd.INSTANCE, NewJMXSubsystemProviders.SUBSYTEM_ADD, false);
         registration.registerOperationHandler("add-connector", NewJMXConnectorAdd.INSTANCE, NewJMXSubsystemProviders.JMX_CONNECTOR_ADD, false);
         registration.registerOperationHandler("remove-connector", NewJMXConnectorRemove.INSTANCE, NewJMXSubsystemProviders.JMX_CONNECTOR_REMOVE, false);
+
+        subsystem.registerXMLElementWriter(parsers);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parsers, parsers);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parsers);
     }
 
-    static class JMXSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static class JMXSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
         @Override
@@ -132,11 +137,18 @@ public class NewJMXExtension implements NewExtension {
 
         /** {@inheritDoc} */
         @Override
-        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+
+            ModelNode node = context.getModelNode();
             if(node.has(CommonAttributes.JMX_CONNECTOR)) {
+                context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
                 writer.writeEmptyElement(Element.JMX_CONNECTOR.getLocalName());
                 writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
                 writer.writeAttribute(Attribute.REGISTRY_BINDING.getLocalName(), node.get(CommonAttributes.REGISTRY_BINDING).asString());
+                writer.writeEndElement();
+            }
+            else {
+                context.startSubsystemElement(Namespace.CURRENT.getUriString(), true);
             }
         }
     }

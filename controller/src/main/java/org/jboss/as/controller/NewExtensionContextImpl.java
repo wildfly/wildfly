@@ -23,7 +23,10 @@
 package org.jboss.as.controller;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  * A basic extension context implementation.
@@ -33,6 +36,7 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
 public final class NewExtensionContextImpl implements NewExtensionContext {
     private final ModelNodeRegistration profileRegistration;
     private final ModelNodeRegistration deploymentOverrideRegistration;
+    private final SubsystemXmlWriterRegistry writerRegistry;
 
     /**
      * Construct a new instance.
@@ -40,15 +44,21 @@ public final class NewExtensionContextImpl implements NewExtensionContext {
      * @param profileRegistration the profile registration
      * @param deploymentOverrideRegistration the deployment override registration
      */
-    public NewExtensionContextImpl(final ModelNodeRegistration profileRegistration, final ModelNodeRegistration deploymentOverrideRegistration) {
+    public NewExtensionContextImpl(final ModelNodeRegistration profileRegistration,
+            final ModelNodeRegistration deploymentOverrideRegistration,
+            final SubsystemXmlWriterRegistry writerRegistry) {
         if (profileRegistration == null) {
             throw new IllegalArgumentException("profileRegistration is null");
         }
         if (deploymentOverrideRegistration == null) {
             throw new IllegalArgumentException("deploymentOverrideRegistration is null");
         }
+        if (writerRegistry == null) {
+            throw new IllegalArgumentException("writerRegistry is null");
+        }
         this.profileRegistration = profileRegistration;
         this.deploymentOverrideRegistration = deploymentOverrideRegistration;
+        this.writerRegistry = writerRegistry;
     }
 
     /** {@inheritDoc} */
@@ -72,6 +82,11 @@ public final class NewExtensionContextImpl implements NewExtensionContext {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
                 return deploymentOverrideRegistration.registerSubModel(new PathElement("configuration", name), descriptionProvider);
+            }
+
+            @Override
+            public void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
+                writerRegistry.registerSubsystemWriter(name, writer);
             }
         };
     }

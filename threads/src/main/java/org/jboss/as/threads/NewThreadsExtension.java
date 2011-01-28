@@ -89,6 +89,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -110,7 +111,7 @@ public class NewThreadsExtension implements NewExtension {
     public void initialize(final NewExtensionContext context) {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(THREADS);
-
+        registration.registerXMLElementWriter(NewThreadsSubsystemParser.INSTANCE);
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler("add", NewThreadsSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
@@ -138,10 +139,10 @@ public class NewThreadsExtension implements NewExtension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewThreadsSubsystemParser.INSTANCE, NewThreadsSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewThreadsSubsystemParser.INSTANCE);
     }
 
-    static final class NewThreadsSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static final class NewThreadsSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         static final NewThreadsSubsystemParser INSTANCE = new NewThreadsSubsystemParser();
 
@@ -792,7 +793,11 @@ public class NewThreadsExtension implements NewExtension {
 
         /** {@inheritDoc} */
         @Override
-        public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+
+            ModelNode node = context.getModelNode();
 
             if (has(node, THREAD_FACTORY)) {
                 for (String name : node.get(THREAD_FACTORY).keys()) {

@@ -45,7 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAI
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.descriptions.common.CommonAttributes;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.PathDescription;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
@@ -66,8 +66,8 @@ public class DomainRootDescription {
         root.get(DESCRIPTION).set(bundle.getString("domain"));
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, NAMESPACES).set(CommonAttributes.getNamespacePrefixAttribute(locale));
-        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonAttributes.getSchemaLocationAttribute(locale));
+        root.get(ATTRIBUTES, NAMESPACES).set(CommonDescriptions.getNamespacePrefixAttribute(locale));
+        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonDescriptions.getSchemaLocationAttribute(locale));
 
         root.get(OPERATIONS).setEmptyObject();
 

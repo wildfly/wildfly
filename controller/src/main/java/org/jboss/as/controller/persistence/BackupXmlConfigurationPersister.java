@@ -27,12 +27,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+
+import javax.xml.namespace.QName;
+
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-
-import javax.xml.namespace.QName;
 
 /**
  * An XML configuration persister which backs up the old file before overwriting it.
@@ -49,11 +50,12 @@ public class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
      * @param rootParser the root model parser
      * @param rootDeparser the root model deparser
      */
-    public BackupXmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<List<ModelNode>> rootParser, final XMLElementWriter<ModelNode> rootDeparser) {
+    public BackupXmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<List<ModelNode>> rootParser, final XMLElementWriter<ModelMarshallingContext> rootDeparser) {
         super(fileName, rootElement, rootParser, rootDeparser);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void backup(final File fileName) throws ConfigurationPersistenceException {
         File backup = new File(fileName.getParent(), fileName.getName() + ".last-known-good");
         try {

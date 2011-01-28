@@ -55,6 +55,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -706,6 +707,10 @@ public class GlobalOperationsTestCase {
 
         @Override
         public void store(ModelNode model) throws ConfigurationPersistenceException {
+        }
+
+        @Override
+        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
         }
 
         @Override

@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -123,7 +123,7 @@ final class NewServerControllerService implements Service<NewServerController> {
         final ExecutorService executor = new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>());
         container.setExecutor(executor);
 
-        final NewConfigurationPersister persister = configuration.getConfigurationPersister();
+        final ExtensibleConfigurationPersister persister = configuration.getConfigurationPersister();
 
         final NewServerControllerImpl serverController = new NewServerControllerImpl(container, serverEnvironment, persister);
         serverController.init();

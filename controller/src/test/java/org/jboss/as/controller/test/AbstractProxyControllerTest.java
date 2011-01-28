@@ -54,6 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -436,6 +437,10 @@ public abstract class AbstractProxyControllerTest {
         }
 
         @Override
+        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
+        }
+
+        @Override
         public List<ModelNode> load() throws ConfigurationPersistenceException {
             return null;
         }
@@ -483,6 +488,7 @@ public abstract class AbstractProxyControllerTest {
 
         }
 
+        @Override
         public ModelNodeRegistration getRegistry() {
             return super.getRegistry();
         }

@@ -46,10 +46,12 @@ public class NewJMSExtension implements NewExtension {
     private static final NewJMSSubsystemParser parsers = NewJMSSubsystemParser.getInstance();
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewJMSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewJMSSubsystemAdd.INSTANCE, NewJMSSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerXMLElementWriter(parsers);
         // Connection factories
         final ModelNodeRegistration cfs = registration.registerSubModel(CFS_PATH, NewJMSSubsystemProviders.CF);
         cfs.registerOperationHandler(ADD, NewConnectionFactoryAdd.INSTANCE, NewJMSSubsystemProviders.CF_ADD, false);
@@ -65,8 +67,9 @@ public class NewJMSExtension implements NewExtension {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parsers, parsers);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parsers);
     }
 
 }

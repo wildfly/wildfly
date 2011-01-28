@@ -46,6 +46,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -75,7 +76,9 @@ public class HostXml extends CommonXml {
     }
 
     @Override
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+    public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
+
+        ModelNode modelNode = context.getModelNode();
 
         writer.writeStartDocument();
         writer.writeStartElement(Element.SERVER.getLocalName());

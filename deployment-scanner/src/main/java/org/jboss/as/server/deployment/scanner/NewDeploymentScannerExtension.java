@@ -46,6 +46,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -66,8 +67,10 @@ public class NewDeploymentScannerExtension implements NewExtension {
     private static final String DEFAULT_SCANNER_NAME = "default"; // we actually need a scanner name to make it addressable
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER);
+        subsystem.registerXMLElementWriter(parser);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewDeploymentSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, SubsystemAdd.INSTANCE, NewDeploymentSubsystemProviders.SUBSYSTEM_ADD, false);
         // Register operation handlers
@@ -79,8 +82,9 @@ public class NewDeploymentScannerExtension implements NewExtension {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser, parser);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
     }
 
     /**
@@ -91,6 +95,7 @@ public class NewDeploymentScannerExtension implements NewExtension {
         static final SubsystemAdd INSTANCE = new SubsystemAdd();
 
         /** {@inheritDoc} */
+        @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             final ModelNode compensatingOperation = new ModelNode();
             compensatingOperation.set(OP).set(REMOVE);
@@ -103,10 +108,13 @@ public class NewDeploymentScannerExtension implements NewExtension {
         }
     }
 
-    static class DeploymentScannerParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static class DeploymentScannerParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
-        public void writeContent(XMLExtendedStreamWriter writer, ModelNode scanners) throws XMLStreamException {
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+            ModelNode scanners = context.getModelNode();
             for(final Property scanner : scanners.asPropertyList()) {
                 final ModelNode node = scanner.getValue();
                 writer.writeEmptyElement(Element.DEPLOYMENT_SCANNER.getLocalName());
@@ -118,9 +126,11 @@ public class NewDeploymentScannerExtension implements NewExtension {
                     writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), node.get(CommonAttributes.RELATIVE_TO).asString());
                 }
             }
+            writer.writeEndElement();
         }
 
         /** {@inheritDoc} */
+        @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             // no attributes
             requireNoAttributes(reader);

@@ -64,11 +64,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -79,6 +77,7 @@ import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -94,7 +93,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
 
     /** The restricted path names. */
     protected static final Set<String> RESTRICTED_PATHS;
@@ -120,7 +119,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected final ModuleLoader moduleLoader;
-    protected final Map<String, XMLElementWriter<ModelNode>> subsystemWriters = new HashMap<String, XMLElementWriter<ModelNode>>();
 
     protected CommonXml(final ModuleLoader loader) {
         moduleLoader = loader;
@@ -256,7 +254,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             } catch (final ModuleLoadException e) {
                 throw new XMLStreamException("Failed to load module", e);
             }
-            this.subsystemWriters.putAll(context.getSubsystemWriters());
         }
     }
 
@@ -946,8 +943,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     // todo - possible DNS hit here
                     final InetAddress addr = InetAddress.getByName(split[0]);
                     // Validate both parts of the split
-                    final byte[] net = addr.getAddress();
-                    final int mask = Integer.parseInt(split[1]);
+                    addr.getAddress();
+                    Integer.parseInt(split[1]);
                     criteria.set(localName, value);
                     break;
                 }

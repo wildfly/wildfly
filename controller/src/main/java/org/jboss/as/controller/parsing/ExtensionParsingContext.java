@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -40,9 +39,8 @@ public interface ExtensionParsingContext {
      * populated.
      *
      * @param reader the element reader
-     * @param writer the element writer
      */
-    void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<List<ModelNode>> reader, XMLElementWriter<ModelNode> writer);
+    void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<List<ModelNode>> reader);
 
     /**
      * Set the parser for the per-deployment configuration for this element, if any.
@@ -50,8 +48,7 @@ public interface ExtensionParsingContext {
      * (TODO: round this out.)
      *
      * @param reader the element reader
-     * @param writer the element writer
      */
-    void setDeploymentXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader, XMLElementWriter<ModelNode> writer);
+    void setDeploymentXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader);
 
 }

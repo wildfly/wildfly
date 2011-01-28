@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.hexStringToByteArray;
@@ -58,13 +59,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -408,8 +413,9 @@ public class StandaloneXml extends CommonXml {
     }
 
     @Override
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+    public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
 
+        ModelNode modelNode = context.getModelNode();
         writer.writeStartDocument();
         writer.writeStartElement(Element.SERVER.getLocalName());
 
@@ -431,7 +437,7 @@ public class StandaloneXml extends CommonXml {
         if (hasDefinedChild(modelNode, MANAGEMENT)) {
             writeServerManagement(writer, modelNode.get(MANAGEMENT));
         }
-        writeServerProfile(writer, modelNode);
+        writeServerProfile(writer, context);
         if (hasDefinedChild(modelNode, INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
         }
@@ -493,11 +499,28 @@ public class StandaloneXml extends CommonXml {
         writer.writeEndElement();
     }
 
-    private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+    private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
+
+        ModelNode profileNode = context.getModelNode();
+
         writer.writeStartElement(Element.PROFILE.getLocalName());
-        writer.writeAttribute(Attribute.PROFILE.getLocalName(), modelNode.get(PROFILE_NAME).asString());
-        // 1) get the namespace URI from the model TODO -- extensions need to pass subsystem name into extension parsing context
-        // 2) use extensionSubsystemWriters.get(namespaceURI) to get the XMLElementWriter
+        writer.writeAttribute(Attribute.PROFILE.getLocalName(), profileNode.get(PROFILE_NAME).asString());
+        Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
+        if (subsystemNames.size() > 0) {
+            String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
+            for (String subsystemName : subsystemNames) {
+                try {
+                    ModelNode subsystem = profileNode.get(SUBSYSTEM, subsystemName);
+                    XMLElementWriter<SubsystemMarshallingContext> subsystemWriter = context.getSubsystemWriter(subsystemName);
+                    if (subsystemWriter != null) { // FIXME -- remove when extensions are doing the registration
+                        subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
+                    }
+                }
+                finally {
+                    writer.setDefaultNamespace(defaultNamespace);
+                }
+            }
+        }
         writer.writeEndElement();
     }
 

@@ -53,9 +53,9 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry
  */
-public class CommonAttributes {
+public class CommonDescriptions {
 
-    private static final String RESOURCE_NAME = CommonAttributes.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = CommonDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ModelNode getNamespacePrefixAttribute(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -178,6 +178,18 @@ public class CommonAttributes {
         return root;
     }
 
+    public static final String READ_CONFIG_AS_XML = "read-config-as-xml";
+    public static ModelNode getReadConfigAsXmlOperation(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(READ_CONFIG_AS_XML);
+        root.get(DESCRIPTION).set(bundle.getString(READ_CONFIG_AS_XML));
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(READ_CONFIG_AS_XML + ".response"));
+        return root;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
@@ -195,6 +207,6 @@ public class CommonAttributes {
         System.out.println(getSystemPropertiesAttribute(null));
         System.out.println(getAddSystemPropertyOperation(null));
         System.out.println(getRemoveSystemPropertyOperation(null));
-
+        System.out.println(getReadConfigAsXmlOperation(null));
     }
 }

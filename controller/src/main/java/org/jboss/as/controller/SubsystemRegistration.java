@@ -23,7 +23,9 @@
 package org.jboss.as.controller;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  * A subsystem registration.
@@ -46,4 +48,12 @@ public interface SubsystemRegistration {
      * @return the deployment-level model node registration
      */
     ModelNodeRegistration registerDeploymentModel(DescriptionProvider descriptionProvider);
+
+    /**
+     * Registers the {@link XMLElementWriter} that can handle marshalling
+     * the subsystem's configuration to XML.
+     *
+     * @param writer the writer
+     */
+    void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer);
 }

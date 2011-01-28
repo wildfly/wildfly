@@ -26,16 +26,47 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONSUME_NAME;
+import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
+import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_FILE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MIN_FILES;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.PARAM;
+import static org.jboss.as.messaging.CommonAttributes.PATH;
+import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
+import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
+import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
 import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.hornetq.core.server.JournalType;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -47,7 +78,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final NewMessagingSubsystemParser INSTANCE = new NewMessagingSubsystemParser();
 
@@ -60,12 +91,15 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
     }
 
     /** {@inheritDoc} */
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-
+    @Override
+    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+        // FIXME implement
         writer.writeEndElement();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
         final ModelNode operation = new ModelNode();

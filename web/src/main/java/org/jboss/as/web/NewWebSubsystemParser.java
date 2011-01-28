@@ -66,6 +66,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -79,7 +80,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Emanuel Muckenhuber
  */
-class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final NewWebSubsystemParser INSTANCE = new NewWebSubsystemParser();
 
@@ -88,7 +89,12 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
     }
 
     /** {@inheritDoc} */
-    public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+    @Override
+    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+
+        ModelNode node = context.getModelNode();
         if(node.has(DEFAULT_HOST)) {
             writer.writeAttribute(Attribute.DEFAULT_HOST.getLocalName(), node.get(DEFAULT_HOST).asString());
         }
@@ -133,6 +139,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
     }
 
     /** {@inheritDoc} */
+    @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         // no attributes
         if (reader.getAttributeCount() > 0) {

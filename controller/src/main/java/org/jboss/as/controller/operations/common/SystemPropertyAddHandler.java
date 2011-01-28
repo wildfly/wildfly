@@ -31,7 +31,7 @@ import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonAttributes;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
@@ -104,7 +104,7 @@ public class SystemPropertyAddHandler implements ModelUpdateOperationHandler, De
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return CommonAttributes.getAddSystemPropertyOperation(locale);
+        return CommonDescriptions.getAddSystemPropertyOperation(locale);
     }
 
 }

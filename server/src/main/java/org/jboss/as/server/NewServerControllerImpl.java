@@ -65,7 +65,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -73,7 +73,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.ManagementSocketAddHandler;
-import org.jboss.as.server.operations.ReadConfigAsXmlHandler;
 import org.jboss.as.server.operations.ServerSocketBindingAddHandler;
 import org.jboss.as.server.operations.ServerSocketBindingRemoveHandler;
 import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
@@ -103,9 +102,11 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     private final ServerEnvironment serverEnvironment;
     private final AtomicInteger stamp = new AtomicInteger(0);
     private final AtomicStampedReference<State> state = new AtomicStampedReference<State>(null, 0);
+    private final ExtensibleConfigurationPersister extensibleConfigurationPersister;
 
-    NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment, final NewConfigurationPersister configurationPersister) {
-        super(configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
+    NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment, final ExtensibleConfigurationPersister configurationPersister) {
+        super(createCoreModel(), configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
+        this.extensibleConfigurationPersister = configurationPersister;
         this.container = container;
         this.serverEnvironment = serverEnvironment;
         serviceRegistry = new DelegatingServiceRegistry(container);
@@ -114,7 +115,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     void init() {
         state.set(State.STARTING, stamp.incrementAndGet());
 
-        createCoreModel();
+        registerInternalOperations();
 
         // Build up the core model registry
         ModelNodeRegistration root = getRegistry();
@@ -134,7 +135,6 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        root.registerOperationHandler(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML, ReadConfigAsXmlHandler.INSTANCE, ReadConfigAsXmlHandler.INSTANCE, false);
 
         // Management socket
         root.registerOperationHandler(ModelDescriptionConstants.MANAGEMENT, ManagementSocketAddHandler.INSTANCE, ManagementSocketAddHandler.INSTANCE, false);
@@ -163,15 +163,15 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
 
         // Extensions
         ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        NewExtensionContext extensionContext = new NewExtensionContextImpl(getRegistry(), deployments);
+        NewExtensionContext extensionContext = new NewExtensionContextImpl(getRegistry(), deployments, extensibleConfigurationPersister);
         ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 
     }
 
-    private void createCoreModel() {
-        ModelNode root = getModel();
+    private static ModelNode createCoreModel() {
+        ModelNode root = new ModelNode();
         root.get(NAMESPACES).setEmptyList();
         root.get(SCHEMA_LOCATIONS).setEmptyList();
         root.get(NAME);
@@ -184,6 +184,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.get(SOCKET_BINDING_GROUP);
         root.get(SYSTEM_PROPERTY);
         root.get(DEPLOYMENT);
+        return root;
     }
 
     void finishBoot() {

@@ -24,15 +24,12 @@ package org.jboss.as.controller.parsing;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -40,8 +37,6 @@ import org.jboss.staxmapper.XMLMapper;
  */
 final class ExtensionParsingContextImpl implements ExtensionParsingContext {
     private final XMLMapper xmlMapper;
-    private final Map<String, XMLElementWriter<ModelNode>> subsystemWriters = new HashMap<String, XMLElementWriter<ModelNode>>();
-    private final Map<String, XMLElementWriter<ModelNode>> subsystemDeploymentWriters = new HashMap<String, XMLElementWriter<ModelNode>>();
 
     public ExtensionParsingContextImpl(final XMLMapper xmlMapper) {
         this.xmlMapper = xmlMapper;
@@ -53,11 +48,10 @@ final class ExtensionParsingContextImpl implements ExtensionParsingContext {
      * the address or operation name as that information will be automatically populated.
      *
      * @param reader the element reader
-     * @param writer the element writer
      */
-    public void setSubsystemXmlMapping(final String namespaceUri, final XMLElementReader<List<ModelNode>> reader, final XMLElementWriter<ModelNode> writer) {
+    @Override
+    public void setSubsystemXmlMapping(final String namespaceUri, final XMLElementReader<List<ModelNode>> reader) {
         xmlMapper.registerRootElement(new QName(namespaceUri, SUBSYSTEM), reader);
-        subsystemWriters.put(namespaceUri, writer);
     }
 
     /**
@@ -66,16 +60,8 @@ final class ExtensionParsingContextImpl implements ExtensionParsingContext {
      * (TODO: round this out.)
      *
      * @param reader the element reader
-     * @param writer the element writer
      */
-    public void setDeploymentXmlMapping(final String namespaceUri, final XMLElementReader<ModelNode> reader, final XMLElementWriter<ModelNode> writer) {
-    }
-
-    Map<String, XMLElementWriter<ModelNode>> getSubsystemWriters() {
-        return subsystemWriters;
-    }
-
-    Map<String, XMLElementWriter<ModelNode>> getSubsystemDeploymentWriters() {
-        return subsystemDeploymentWriters;
+    @Override
+    public void setDeploymentXmlMapping(final String namespaceUri, final XMLElementReader<ModelNode> reader) {
     }
 }

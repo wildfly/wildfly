@@ -42,10 +42,12 @@ public class NewWebExtension implements NewExtension {
     private static final PathElement hostPath = PathElement.pathElement(CommonAttributes.VIRTUAL_SERVER);
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewWebSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewWebSubsystemAdd.INSTANCE, NewWebSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerXMLElementWriter(NewWebSubsystemParser.getInstance());
         // connector
         final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, NewWebSubsystemProviders.CONNECTOR);
         connectors.registerOperationHandler(ADD, NewWebConnectorAdd.INSTANCE, NewWebSubsystemProviders.CONNECTOR_ADD, false);
@@ -57,8 +59,9 @@ public class NewWebExtension implements NewExtension {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewWebSubsystemParser.getInstance(), NewWebSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewWebSubsystemParser.getInstance());
     }
 
 }

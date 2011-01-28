@@ -27,13 +27,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
+import java.io.OutputStream;
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -147,7 +150,18 @@ public class RemotingSubsystemUnitTestCase {
     static class TestController extends BasicModelController {
 
         protected TestController() {
-            super(model, new NullConfigurationPersister(), null);
+            super(model, new NewConfigurationPersister() {
+                @Override
+                public void store(ModelNode model) throws ConfigurationPersistenceException {
+                }
+                @Override
+                public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
+                }
+                @Override
+                public List<ModelNode> load() throws ConfigurationPersistenceException {
+                    return null;
+                }
+            }, null);
         }
 
         /** {@inheritDoc} */

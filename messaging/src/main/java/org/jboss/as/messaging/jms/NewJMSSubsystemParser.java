@@ -26,13 +26,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.messaging.jms.CommonAttributes.*;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTION_FACTORY;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR_BACKUP_NAME;
+import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_GROUP_REF;
+import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.jms.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.jms.CommonAttributes.SELECTOR;
+import static org.jboss.as.messaging.jms.CommonAttributes.TOPIC;
 
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -43,7 +53,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final NewJMSSubsystemParser INSTANCE = new NewJMSSubsystemParser();
 
@@ -56,11 +66,15 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
     }
 
     /** {@inheritDoc} */
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    @Override
+    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+        // FIXME implement marshalling
         writer.writeEndElement();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> updates) throws XMLStreamException {
 
         final ModelNode address = new ModelNode();

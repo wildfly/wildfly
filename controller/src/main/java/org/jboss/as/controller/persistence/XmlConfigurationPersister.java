@@ -33,9 +33,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -48,14 +46,13 @@ import org.jboss.staxmapper.XMLMapper;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class XmlConfigurationPersister implements NewConfigurationPersister {
+public class XmlConfigurationPersister extends AbstractConfigurationPersister {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final File fileName;
     private final QName rootElement;
     private final XMLElementReader<List<ModelNode>> rootParser;
-    private final XMLElementWriter<ModelNode> rootDeparser;
 
     /**
      * Construct a new instance.
@@ -65,11 +62,11 @@ public class XmlConfigurationPersister implements NewConfigurationPersister {
      * @param rootParser the root model parser
      * @param rootDeparser the root model deparser
      */
-    public XmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<List<ModelNode>> rootParser, final XMLElementWriter<ModelNode> rootDeparser) {
+    public XmlConfigurationPersister(final File fileName, final QName rootElement, final XMLElementReader<List<ModelNode>> rootParser, final XMLElementWriter<ModelMarshallingContext> rootDeparser) {
+        super(rootDeparser);
         this.fileName = fileName;
         this.rootElement = rootElement;
         this.rootParser = rootParser;
-        this.rootDeparser = rootDeparser;
     }
 
     /**
@@ -85,14 +82,11 @@ public class XmlConfigurationPersister implements NewConfigurationPersister {
     /** {@inheritDoc} */
     @Override
     public void store(final ModelNode model) throws ConfigurationPersistenceException {
-        final XMLMapper mapper = XMLMapper.Factory.create();
         try {
             final FileOutputStream fos = new FileOutputStream(fileName);
             try {
                 BufferedOutputStream output = new BufferedOutputStream(fos);
-                final XMLStreamWriter streamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(output);
-                mapper.deparseDocument(rootDeparser, model, streamWriter);
-                streamWriter.close();
+                marshallAsXml(model, output);
                 output.close();
                 fos.close();
             } finally {

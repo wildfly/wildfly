@@ -64,6 +64,7 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.Property;
@@ -82,10 +83,11 @@ public class NewRemotingExtension implements NewExtension {
 
     public static final String SUBSYSTEM_NAME = "remoting";
 
+    @Override
     public void initialize(NewExtensionContext context) {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
-
+        registration.registerXMLElementWriter(NewRemotingSubsystemParser.INSTANCE);
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(NewRemotingSubsystemProviders.SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, NewRemotingSubsystemAdd.INSTANCE, NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
@@ -97,19 +99,24 @@ public class NewRemotingExtension implements NewExtension {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewRemotingSubsystemParser.INSTANCE, NewRemotingSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewRemotingSubsystemParser.INSTANCE);
     }
 
-    static final class NewRemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static final class NewRemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         private static final NewRemotingSubsystemParser INSTANCE = new NewRemotingSubsystemParser();
 
         /** {@inheritDoc} */
-        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+            // FIXME implement marshalling
+            writer.writeEndElement();
         }
 
+        @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
             final ModelNode address = new ModelNode();

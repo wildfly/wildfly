@@ -23,7 +23,9 @@
 package org.jboss.as.server;
 
 import java.util.List;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+
+import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
@@ -57,7 +59,7 @@ public interface NewBootstrap {
         private int portOffset;
         private ServerEnvironment serverEnvironment;
         private ModuleLoader moduleLoader = Module.getSystemModuleLoader();
-        private NewConfigurationPersister configurationPersister = new NullConfigurationPersister();
+        private ExtensibleConfigurationPersister configurationPersister = new NullConfigurationPersister(new StandaloneXml(moduleLoader));
         private long startTime = Module.getStartTime();
 
         /**
@@ -122,7 +124,7 @@ public interface NewBootstrap {
          *
          * @return the configuration persister
          */
-        public NewConfigurationPersister getConfigurationPersister() {
+        public ExtensibleConfigurationPersister getConfigurationPersister() {
             return configurationPersister;
         }
 
@@ -131,7 +133,7 @@ public interface NewBootstrap {
          *
          * @param configurationPersister the configuration persister
          */
-        public void setConfigurationPersister(final NewConfigurationPersister configurationPersister) {
+        public void setConfigurationPersister(final ExtensibleConfigurationPersister configurationPersister) {
             this.configurationPersister = configurationPersister;
         }
 

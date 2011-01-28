@@ -31,7 +31,7 @@ import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonAttributes;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
@@ -90,7 +90,7 @@ public class NamespaceAddHandler implements ModelUpdateOperationHandler, Descrip
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return CommonAttributes.getAddNamespaceOperation(locale);
+        return CommonDescriptions.getAddNamespaceOperation(locale);
     }
 
     private String validate(ModelNode param, ModelNode namespaces) {

@@ -50,6 +50,7 @@ import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -67,20 +68,24 @@ public class NewTransactionExtension implements NewExtension {
     private static final TransactionSubsystemParser parser = new TransactionSubsystemParser();
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(TransactionSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewTransactionSubsystemAdd.INSTANCE, TransactionSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerXMLElementWriter(parser);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser, parser);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
     }
 
-    static class TransactionSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelNode> {
+    static class TransactionSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
+        @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             // no attributes
             if (reader.getAttributeCount() > 0) {
@@ -255,7 +260,13 @@ public class NewTransactionExtension implements NewExtension {
         }
 
         /** {@inheritDoc} */
-        public void writeContent(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+
+            ModelNode node = context.getModelNode();
+
             if (has(node, CORE_ENVIRONMENT)) {
                 writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
                 final ModelNode core = node.get(CORE_ENVIRONMENT);

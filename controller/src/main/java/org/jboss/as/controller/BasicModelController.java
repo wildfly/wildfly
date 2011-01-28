@@ -25,6 +25,9 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -34,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -76,7 +80,7 @@ public class BasicModelController implements ModelController {
     /**
      * Construct a new instance.
      *
-     * @param the model
+     * @param model the model
      * @param configurationPersister the configuration persister to use to store changes
      * @param rootDescriptionProvider the description provider of the root element
      */
@@ -210,6 +214,23 @@ public class BasicModelController implements ModelController {
     }
 
     /**
+     * Registers {@link OperationHandler}s for operations that require
+     * access to controller internals not meant to be exposed via an
+     * {@link NewOperationContext}.
+     * <p>
+     * This default implementation registers a handler for the
+     * {@link CommonDescriptions#getReadConfigAsXmlOperation(Locale) read-config-as-xml}
+     * operation.
+     * </p>
+     */
+    protected void registerInternalOperations() {
+        // Ugly. We register a handler for reading the config as xml to avoid leaking internals
+        // via the ModelController or OperationContext interfaces.
+        XmlMarshallingHandler handler = new XmlMarshallingHandler();
+        this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, handler, handler, false);
+    }
+
+    /**
      * Get the operation context for the operation.  By default, this method creates a basic implementation of
      * {@link NewOperationContext}.
      *
@@ -218,7 +239,6 @@ public class BasicModelController implements ModelController {
      * @param operationHandler the operation handler which will run the operation
      * @return the operation context
      */
-    @SuppressWarnings("unused")
     protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
         return new NewOperationContextImpl(this, getRegistry(), subModel);
     }
@@ -345,5 +365,47 @@ public class BasicModelController implements ModelController {
         else if (node.get(last.getKey()).has(last.getValue()) && node.get(last.getKey()).get(last.getValue()).isDefined()) {
             throw new IllegalStateException("Resource at address " + address + " already exists");
         }
+    }
+
+    private class XmlMarshallingHandler implements ModelQueryOperationHandler, DescriptionProvider {
+
+        private final String[] EMPTY = new String[0];
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getReadConfigAsXmlOperation(locale);
+        }
+
+        @Override
+        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+            try {
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    BufferedOutputStream output = new BufferedOutputStream(baos);
+                    configurationPersister.marshallAsXml(model, output);
+                    output.close();
+                    baos.close();
+                } finally {
+                    safeClose(baos);
+                }
+                String xml = new String(baos.toByteArray());
+                ModelNode result = new ModelNode().set(xml);
+                resultHandler.handleResultFragment(EMPTY, result);
+                resultHandler.handleResultComplete(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+                resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            }
+            return Cancellable.NULL;
+        }
+
+        private void safeClose(final Closeable closeable) {
+            if (closeable != null) try {
+                closeable.close();
+            } catch (Throwable t) {
+                log.errorf(t, "Failed to close resource %s", closeable);
+            }
+        }
+
     }
 }

@@ -52,7 +52,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.descriptions.common.CommonAttributes;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.PathDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -76,8 +76,8 @@ public class HostRootDescription {
         root.get(DESCRIPTION).set(bundle.getString("host"));
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, NAMESPACES).set(CommonAttributes.getNamespacePrefixAttribute(locale));
-        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonAttributes.getSchemaLocationAttribute(locale));
+        root.get(ATTRIBUTES, NAMESPACES).set(CommonDescriptions.getNamespacePrefixAttribute(locale));
+        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonDescriptions.getSchemaLocationAttribute(locale));
 
         root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("host.name"));
         root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
