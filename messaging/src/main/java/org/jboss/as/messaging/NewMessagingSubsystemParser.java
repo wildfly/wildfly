@@ -685,6 +685,7 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
             localName = reader.getLocalName();
             final Element element = Element.forName(localName);
 
+            SWITCH:
             switch (element) {
                 case DEAD_LETTER_ADDRESS_NODE_NAME:
                 case EXPIRY_ADDRESS_NODE_NAME:
@@ -698,14 +699,12 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
                 case REDISTRIBUTION_DELAY_NODE_NAME:
                 case SEND_TO_DLA_ON_NO_ROUTE: {
                     handleElementText(reader, element, addressSettingsSpec);
-                    break;
+                    break SWITCH;
                 } default: {
                     break;
                 }
             }
-            reader.discardRemainder();
-        } while (!reader.getLocalName().equals(Element.ADDRESS_SETTING.getLocalName())
-                && reader.getEventType() != XMLExtendedStreamReader.END_ELEMENT);
+        } while (!reader.getLocalName().equals(Element.ADDRESS_SETTING.getLocalName()) && reader.getEventType() == XMLExtendedStreamReader.END_ELEMENT);
 
         return addressSettingsSpec;
     }
@@ -968,8 +967,8 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
         if (has(node, CommonAttributes.SECURITY_INVALIDATION_INTERVAL)) {
             //unhandled
         }
-        if (has(node, CommonAttributes.SECURITY_SETTINGS)) {
-            writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTINGS));
+        if (has(node, CommonAttributes.SECURITY_SETTING)) {
+            writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTING));
         }
         if (has(node, CommonAttributes.SERVER_DUMP_INTERVAL)) {
             //unhandled
@@ -1176,41 +1175,41 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
     private void writeAddressSettings(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         writer.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
         for (Property matchSetting : node.asPropertyList()) {
-            writer.writeStartElement(Element.SECURITY_SETTING.getLocalName());
+            writer.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
             writer.writeAttribute(Attribute.MATCH.getLocalName(), matchSetting.getName());
             final ModelNode setting = matchSetting.getValue();
             if (has(setting, CommonAttributes.DEAD_LETTER_ADDRESS)) {
-                writeSimpleElement(writer, Element.DEAD_LETTER_ADDRESS_NODE_NAME, setting.get(CommonAttributes.DEAD_LETTER_ADDRESS));
+                writeSimpleElement(writer, Element.DEAD_LETTER_ADDRESS_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.EXPIRY_ADDRESS)) {
-                writeSimpleElement(writer, Element.EXPIRY_ADDRESS_NODE_NAME, setting.get(CommonAttributes.EXPIRY_ADDRESS));
+                writeSimpleElement(writer, Element.EXPIRY_ADDRESS_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.REDELIVERY_DELAY)) {
-                writeSimpleElement(writer, Element.REDELIVERY_DELAY_NODE_NAME, setting.get(CommonAttributes.REDELIVERY_DELAY));
+                writeSimpleElement(writer, Element.REDELIVERY_DELAY_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.MAX_SIZE_BYTES_NODE_NAME)) {
-                writeSimpleElement(writer, Element.MAX_SIZE_BYTES_NODE_NAME, setting.get(CommonAttributes.MAX_SIZE_BYTES_NODE_NAME));
+                writeSimpleElement(writer, Element.MAX_SIZE_BYTES_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME)) {
-                writeSimpleElement(writer, Element.PAGE_SIZE_BYTES_NODE_NAME, setting.get(CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME));
+                writeSimpleElement(writer, Element.PAGE_SIZE_BYTES_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT)) {
-                writeSimpleElement(writer, Element.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME, setting.get(CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
+                writeSimpleElement(writer, Element.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY)) {
-                writeSimpleElement(writer, Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, setting.get(CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY));
+                writeSimpleElement(writer, Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.LVQ)) {
-                writeSimpleElement(writer, Element.LVQ_NODE_NAME, setting.get(CommonAttributes.LVQ));
+                writeSimpleElement(writer, Element.LVQ_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.MAX_DELIVERY_ATTEMPTS)) {
-                writeSimpleElement(writer, Element.MAX_DELIVERY_ATTEMPTS, setting.get(CommonAttributes.MAX_DELIVERY_ATTEMPTS));
+                writeSimpleElement(writer, Element.MAX_DELIVERY_ATTEMPTS, setting);
             }
             if (has(setting, CommonAttributes.REDISTRIBUTION_DELAY)) {
-                writeSimpleElement(writer, Element.REDISTRIBUTION_DELAY_NODE_NAME, setting.get(CommonAttributes.REDISTRIBUTION_DELAY));
+                writeSimpleElement(writer, Element.REDISTRIBUTION_DELAY_NODE_NAME, setting);
             }
             if (has(setting, CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE)) {
-                writeSimpleElement(writer, Element.SEND_TO_DLA_ON_NO_ROUTE, setting.get(CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE));
+                writeSimpleElement(writer, Element.SEND_TO_DLA_ON_NO_ROUTE, setting);
             }
             writer.writeEndElement();
         }
@@ -1224,15 +1223,15 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
             writer.writeAttribute(Attribute.NAME.getLocalName(), queueProp.getName());
             final ModelNode queue = queueProp.getValue();
             if (has(queue, ADDRESS)) {
-                writeSimpleElement(writer, Element.ADDRESS, node);
+                writeSimpleElement(writer, Element.ADDRESS, queue);
             }
             if (has(queue, FILTER)) {
                 writer.writeStartElement(Element.FILTER.getLocalName());
-                writeAttribute(writer, Attribute.STRING, queue.get(FILTER));
+                writeAttribute(writer, Attribute.STRING, queue);
                 writer.writeEndElement();
             }
             if (has(queue, DURABLE)) {
-                writeSimpleElement(writer, Element.DURABLE, queue.get(DURABLE));
+                writeSimpleElement(writer, Element.DURABLE, queue);
             }
 
             writer.writeEndElement();
