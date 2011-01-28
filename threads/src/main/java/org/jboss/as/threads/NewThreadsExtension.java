@@ -1001,6 +1001,5 @@ public class NewThreadsExtension implements NewExtension {
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
             writer.writeAttribute(attr.getLocalName(), value.asString());
         }
-
     }
 }
