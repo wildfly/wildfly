@@ -74,7 +74,10 @@ public class NewNamingExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
+            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
+            context.startSubsystemElement(NewNamingExtension.NAMESPACE, false);
+            writer.writeEndElement();
         }
 
         /** {@inheritDoc} */

@@ -142,13 +142,18 @@ public class NewJMXExtension implements NewExtension {
             ModelNode node = context.getModelNode();
             if(node.has(CommonAttributes.JMX_CONNECTOR)) {
                 context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-                writer.writeEmptyElement(Element.JMX_CONNECTOR.getLocalName());
+                writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
                 writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
                 writer.writeAttribute(Attribute.REGISTRY_BINDING.getLocalName(), node.get(CommonAttributes.REGISTRY_BINDING).asString());
                 writer.writeEndElement();
+                writer.writeEndElement();
             }
             else {
-                context.startSubsystemElement(Namespace.CURRENT.getUriString(), true);
+                //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+                //context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
+                context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+                writer.writeEndElement();
+
             }
         }
     }

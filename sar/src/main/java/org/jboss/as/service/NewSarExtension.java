@@ -74,8 +74,11 @@ public class NewSarExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(NewSarExtension.NAMESPACE, true);
-        }
+            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewSarExtension.NAMESPACE, true);
+            context.startSubsystemElement(NewSarExtension.NAMESPACE, false);
+            writer.writeEndElement();
+}
 
         /** {@inheritDoc} */
         @Override
