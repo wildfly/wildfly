@@ -56,7 +56,7 @@
         <!-- <extension module="org.jboss.as.osgi"/>-->
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
-        <!--<extension module="org.jboss.as.security"/>-->
+        <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web" />
@@ -127,6 +127,7 @@
         <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />        
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
+        <subsystem xmlns="urn:jboss:domain:security:1.0" />
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
