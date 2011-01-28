@@ -73,11 +73,11 @@ class NewSecuritySubsystemAdd implements ModelAddOperationHandler, RuntimeOperat
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        String authenticationManagerClassName = operation.has(AUTHENTICATION_MANAGER_CLASS_NAME) ? operation.get(
+        String authenticationManagerClassName = has(operation, AUTHENTICATION_MANAGER_CLASS_NAME) ? operation.get(
                 AUTHENTICATION_MANAGER_CLASS_NAME).asString() : DEFAULT_AUTHENTICATION_MANAGER;
-        boolean deepCopySubjectMode = operation.has(DEEP_COPY_SUBJECT_MODE) ? operation.get(DEEP_COPY_SUBJECT_MODE).asBoolean()
+        boolean deepCopySubjectMode = has(operation, DEEP_COPY_SUBJECT_MODE) ? operation.get(DEEP_COPY_SUBJECT_MODE).asBoolean()
                 : DEFAULT_DEEP_COPY_OPERATION_MODE;
-        String defaultCallbackHandlerClassName = operation.has(DEFAULT_CALLBACK_HANDLER_CLASS_NAME) ? operation.get(
+        String defaultCallbackHandlerClassName = has(operation, DEFAULT_CALLBACK_HANDLER_CLASS_NAME) ? operation.get(
                 DEFAULT_CALLBACK_HANDLER_CLASS_NAME).asString() : DEFAULT_CALLBACK_HANDLER;
 
         if (context instanceof NewRuntimeOperationContext) {
@@ -120,4 +120,7 @@ class NewSecuritySubsystemAdd implements ModelAddOperationHandler, RuntimeOperat
         return Cancellable.NULL;
     }
 
+    private static boolean has(ModelNode node, String name) {
+        return node.has(name) && node.get(name).isDefined();
+    }
 }
