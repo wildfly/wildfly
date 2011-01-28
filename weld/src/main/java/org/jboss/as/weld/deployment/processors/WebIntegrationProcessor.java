@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarDeploymentMarker;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.logging.Logger;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
@@ -48,6 +49,8 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     private final ListenerMetaData JIL;
     private final FilterMetaData CPF;
     private final FilterMappingMetaData CPFM;
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.weld");
 
     public WebIntegrationProcessor() {
 
@@ -77,8 +80,10 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         }
 
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        assert warMetaData != null;
-
+        if (warMetaData == null) {
+            log.info("Not installing Weld web tier integration as no war metadata found");
+            return;
+        }
         WebMetaData webMetaData = warMetaData.getWebMetaData();
 
         List<ListenerMetaData> listeners = webMetaData.getListeners();
