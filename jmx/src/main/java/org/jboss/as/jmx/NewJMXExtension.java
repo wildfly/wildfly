@@ -140,7 +140,7 @@ public class NewJMXExtension implements NewExtension {
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
 
             ModelNode node = context.getModelNode();
-            if(node.has(CommonAttributes.JMX_CONNECTOR)) {
+            if(node.has(CommonAttributes.SERVER_BINDING)) {
                 context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
                 writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
                 writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
