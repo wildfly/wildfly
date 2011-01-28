@@ -69,6 +69,7 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.Property;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -108,15 +109,6 @@ public class NewRemotingExtension implements NewExtension {
 
         private static final NewRemotingSubsystemParser INSTANCE = new NewRemotingSubsystemParser();
 
-        /** {@inheritDoc} */
-        @Override
-        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-            // FIXME implement marshalling
-            writer.writeEndElement();
-        }
-
-        @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
             final ModelNode address = new ModelNode();
@@ -288,6 +280,7 @@ public class NewRemotingExtension implements NewExtension {
                                 break;
                             }
                             case QOP: {
+                                //FIXME is this really an attribute?
                                 saslElement.get(QOP).set(ParseUtils.readArrayAttributeElement(reader, "value", SaslQop.class).toString());
                                 break;
                             }
@@ -300,6 +293,7 @@ public class NewRemotingExtension implements NewExtension {
                                 break;
                             }
                             case STRENGTH: {
+                                //FIXME is this really an xml attribute?
                                 saslElement.get(STRENGTH).set(ParseUtils.readArrayAttributeElement(reader, "value", SaslStrength.class).toString());
                                 break;
                             }
@@ -377,6 +371,129 @@ public class NewRemotingExtension implements NewExtension {
                 final Property property = readProperty(reader);
                 node.set(property.getName(), property.getValue());
             }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+            final ModelNode node = context.getModelNode();
+            if (has(node, THREAD_POOL)) {
+                writeAttribute(writer, Attribute.THREAD_POOL, node.get(THREAD_POOL));
+            }
+
+            if (has(node, CONNECTOR)) {
+                final ModelNode connector = node.get(CONNECTOR);
+                for (String name : connector.keys()) {
+                    if (has(connector, name)) {
+                        writeConnector(writer, node.get(name), name);
+                    }
+                }
+            }
+            writer.writeEndElement();
+
+        }
+
+        private void writeConnector(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
+            writer.writeStartElement(Element.CONNECTOR.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+            if (has(node, SOCKET_BINDING)) {
+                writeAttribute(writer, Attribute.SOCKET_BINDING, node.get(SOCKET_BINDING));
+            }
+            if (has(node, AUTHENTICATION_PROVIDER)) {
+                writeSimpleChild(writer, Element.AUTHENTICATION_PROVIDER, Attribute.NAME, node.get(AUTHENTICATION_PROVIDER));
+            }
+            if (has(node, PROPERTIES)) {
+                writeProperties(writer, node.get(PROPERTIES));
+            }
+            if (has(node, SASL)) {
+                writeSasl(writer, node.get(SASL));
+            }
+            writer.writeEndElement();
+        }
+
+        private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.PROPERTIES.getLocalName());
+            for (String name : node.keys()) {
+                if (has(node, name)) {
+                    final ModelNode prop = node.get(name);
+                    if (prop.getType() == ModelType.PROPERTY) {
+                        writer.writeStartElement(Element.PROPERTY.getLocalName());
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+                        writeAttribute(writer, Attribute.VALUE, prop.asProperty().getValue());
+                        writer.writeEndElement();
+                    }
+                }
+            }
+            writer.writeEndElement();
+        }
+
+        private void writeSasl(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.SASL.getLocalName());
+            if (has(node, INCLUDE_MECHANISMS)) {
+
+            }
+            if (has(node, QOP)) {
+                //FIXME is this really an xml attribute?
+                writeSimpleChild(writer, Element.QOP, Attribute.VALUE, node.get(QOP));
+            }
+            if (has(node, STRENGTH)) {
+                //FIXME is this really an xml attribute?
+                writeSimpleChild(writer, Element.STRENGTH, Attribute.VALUE, node.get(STRENGTH));
+            }
+            if (has(node, REUSE_SESSION)) {
+                writeSimpleChild(writer, Element.REUSE_SESSION, Attribute.VALUE, node.get(REUSE_SESSION));
+            }
+            if (has(node, SERVER_AUTH)) {
+                writeSimpleChild(writer, Element.SERVER_AUTH, Attribute.VALUE, node.get(SERVER_AUTH));
+            }
+            if (has(node, POLICY)) {
+                writePolicy(writer, node.get(POLICY));
+            }
+            if (has(node, PROPERTIES)) {
+                writeProperties(writer, node.get(PROPERTIES));
+            }
+
+            writer.writeEndElement();
+        }
+
+        private void writePolicy(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+            writer.writeStartElement(Element.POLICY.getLocalName());
+
+            if (has(node, FORWARD_SECRECY)) {
+                writeSimpleChild(writer, Element.FORWARD_SECRECY, Attribute.VALUE, node.get(FORWARD_SECRECY));
+            }
+            if (has(node, NO_ACTIVE)) {
+                writeSimpleChild(writer, Element.NO_ACTIVE, Attribute.VALUE, node.get(NO_ACTIVE));
+            }
+            if (has(node, NO_ANONYMOUS)) {
+                writeSimpleChild(writer, Element.NO_ANONYMOUS, Attribute.VALUE, node.get(NO_ANONYMOUS));
+            }
+            if (has(node, NO_DICTIONARY)) {
+                writeSimpleChild(writer, Element.NO_DICTIONARY, Attribute.VALUE, node.get(NO_DICTIONARY));
+            }
+            if (has(node, NO_PLAINTEXT)) {
+                writeSimpleChild(writer, Element.NO_PLAINTEXT, Attribute.VALUE, node.get(NO_PLAINTEXT));
+            }
+            if (has(node, PASS_CREDENTIALS)) {
+                writeSimpleChild(writer, Element.PASS_CREDENTIALS, Attribute.VALUE, node.get(PASS_CREDENTIALS));
+            }
+
+            writer.writeEndElement();
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name).isDefined();
+        }
+
+        private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
+            writer.writeAttribute(attr.getLocalName(), value.asString());
+        }
+
+        private void writeSimpleChild(final XMLExtendedStreamWriter writer, final Element element, final Attribute attr, final ModelNode value) throws XMLStreamException {
+            writer.writeStartElement(element.getLocalName());
+            writeAttribute(writer, attr, value);
+            writer.writeEndElement();
         }
 
     }

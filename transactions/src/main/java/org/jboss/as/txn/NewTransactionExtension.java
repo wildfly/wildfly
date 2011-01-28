@@ -319,7 +319,7 @@ public class NewTransactionExtension implements NewExtension {
         }
 
         private boolean has(ModelNode node, String name) {
-            return node.has(name) && node.get(name) != null;
+            return node.has(name) && node.get(name).isDefined();
         }
 
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
