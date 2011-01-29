@@ -76,6 +76,8 @@ public class WeldDeployment implements Deployment {
 
     private final ServiceRegistry serviceRegistry;
 
+    private final Module module;
+
     /**
      * Maps class names to bean archives.
      *
@@ -94,6 +96,7 @@ public class WeldDeployment implements Deployment {
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
         this.beanDeploymentsByClassName = new HashMap<String, BeanDeploymentArchiveImpl>();
+        this.module = module;
 
         // add static services
         this.serviceRegistry.add(ProxyServices.class, new ProxyServicesImpl(module));
@@ -144,6 +147,10 @@ public class WeldDeployment implements Deployment {
 
     public BeanDeploymentArchiveImpl getTopLevelBeanDeploymentArchive() {
         return topLevelBeanDeploymentArchive;
+    }
+
+    public Module getModule() {
+        return module;
     }
 
 }

@@ -63,7 +63,6 @@ public class WeldContainer {
         this.beanDeploymentArchives = Collections.unmodifiableMap(bdas);
     }
 
-
     /**
      * Starts the weld container
      *
@@ -73,12 +72,19 @@ public class WeldContainer {
         if (started) {
             throw new IllegalStateException("WeldContainer is already running");
         }
-        bootstrap.startContainer(environment, deployment);
-        bootstrap.startInitialization();
-        bootstrap.deployBeans();
-        bootstrap.validateBeans();
-        bootstrap.endInitialization();
-        started = true;
+        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
+            bootstrap.startContainer(environment, deployment);
+            bootstrap.startInitialization();
+            bootstrap.deployBeans();
+            bootstrap.validateBeans();
+            bootstrap.endInitialization();
+            started = true;
+        } finally {
+            SecurityActions.setContextClassLoader(oldTccl);
+        }
+
     }
 
     /**
@@ -90,7 +96,13 @@ public class WeldContainer {
         if (!started) {
             throw new IllegalStateException("WeldContainer is not started");
         }
-        bootstrap.shutdown();
+        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
+            bootstrap.shutdown();
+        } finally {
+            SecurityActions.setContextClassLoader(oldTccl);
+        }
         started = false;
     }
 
@@ -156,6 +168,5 @@ public class WeldContainer {
     public boolean isStarted() {
         return started;
     }
-
 
 }

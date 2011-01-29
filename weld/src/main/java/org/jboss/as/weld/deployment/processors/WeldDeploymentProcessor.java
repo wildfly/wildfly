@@ -93,6 +93,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final List<BeanDeploymentArchiveImpl> beanDeploymentArchives = deploymentUnit
                 .getAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
+        deploymentUnit.removeAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
 
         // all bean deployment archives are accessible to each other
         // TODO: add proper accessibility rules

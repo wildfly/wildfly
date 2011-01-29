@@ -32,6 +32,8 @@ import org.jboss.as.weld.deployment.processors.BeansXmlProcessor;
 import org.jboss.as.weld.deployment.processors.WebIntegrationProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDependencyProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDeploymentProcessor;
+import org.jboss.weld.bootstrap.api.SingletonProvider;
+import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
 
 /**
  * The weld subsystem add update
@@ -53,6 +55,7 @@ public class WeldSubsystemAdd extends AbstractSubsystemAdd<WeldSubsystemElement>
 
     /** {@inheritDoc} */
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
+        SingletonProvider.initialize(new TCCLSingletonProvider());
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());
         updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
