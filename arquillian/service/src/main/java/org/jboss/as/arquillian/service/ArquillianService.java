@@ -32,15 +32,17 @@ import javax.management.MBeanServer;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
 import org.jboss.arquillian.spi.TestEnricher;
+import org.jboss.arquillian.spi.TestResult;
 import org.jboss.arquillian.spi.util.ServiceLoader;
 import org.jboss.arquillian.testenricher.msc.ServiceContainerInjector;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.ee.naming.NamespaceSelectorService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.service.BundleContextService;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -97,6 +99,30 @@ public class ArquillianService implements Service<ArquillianService> {
 
         try {
             jmxTestRunner = new JMXTestRunner() {
+
+                @Override
+                public TestResult runTestMethod(String className, String methodName, Map<String, String> props) {
+                    NamespaceSelectorService namespaceSelectorService = null;
+                    try {
+                        // attempt to set up the JNDI contexts
+                        ArquillianConfig config = getConfig(className);
+                        if (config != null) {
+                            ServiceName NamespaceContextSelectorServiceName = config.getDeploymentUnitContext()
+                                    .getServiceName().append(NamespaceSelectorService.NAME);
+                            ServiceController<?> serviceController = serviceContainer
+                                    .getService(NamespaceContextSelectorServiceName);
+                            if (serviceController != null) {
+                                namespaceSelectorService = (NamespaceSelectorService) serviceController.getValue();
+                                namespaceSelectorService.activate();
+                            }
+                        }
+                        return super.runTestMethod(className, methodName, props);
+                    } finally {
+                        if (namespaceSelectorService != null) {
+                            namespaceSelectorService.deactivate();
+                        }
+                    }
+                }
 
                 @Override
                 protected TestClassLoader getTestClassLoader() {
