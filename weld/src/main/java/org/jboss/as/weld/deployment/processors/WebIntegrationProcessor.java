@@ -85,7 +85,10 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             return;
         }
         WebMetaData webMetaData = warMetaData.getWebMetaData();
-
+        if (webMetaData == null) {
+            log.info("Not installing Weld web tier integration as no web metadata found");
+            return;
+        }
         List<ListenerMetaData> listeners = webMetaData.getListeners();
         if (listeners == null) {
             listeners = new ArrayList<ListenerMetaData>();
