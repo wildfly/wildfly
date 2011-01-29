@@ -73,6 +73,7 @@
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP6</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian.testenricher.cdi>1.0.0.Alpha4.SP1</version.org.jboss.arquillian.testenricher.cdi>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
@@ -779,6 +780,12 @@
               <groupId>org.jboss.arquillian.protocol</groupId>
               <artifactId>arquillian-protocol-osgi</artifactId>
               <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-cdi</artifactId>
+                <version>${version.org.jboss.arquillian.testenricher.cdi}</version>
             </dependency>
 
             <dependency>

@@ -244,12 +244,16 @@
         <module-def name="org.jboss.arquillian.spi">
             <maven-resource group="org.jboss.arquillian" artifact="arquillian-spi"/>
         </module-def>
-        
+
+        <module-def name="org.jboss.arquillian.testenricher.cdi">
+            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/>
+        </module-def>
+
         <module-def name="org.jboss.arquillian.testenricher.msc">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-msc"/>
         </module-def>
 
-    	<module-def name="org.jboss.arquillian.testenricher.osgi">
+        <module-def name="org.jboss.arquillian.testenricher.osgi">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-osgi"/>
         </module-def>
         
