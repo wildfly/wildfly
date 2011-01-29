@@ -227,6 +227,7 @@ public enum Phase {
     public static final int DEPENDENCIES_CLASS_PATH                     = 0x800;
     public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x900;
     public static final int DEPENDENCIES_WELD                           = 0xA00;
+    public static final int DEPENDENCIES_NAMING                         = 0xB00;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_WAR                        = 0x100;

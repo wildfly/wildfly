@@ -27,12 +27,14 @@ import javax.naming.Context;
 import javax.naming.Reference;
 
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -90,6 +92,12 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
 
     protected NamingSubsystemElement createSubsystemElement() {
         return new NamingSubsystemElement();
+    }
+
+    @Override
+    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
+        updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
+        super.applyUpdateBootAction(updateContext);
     }
 
     private static void addContextFactory(final ServiceTarget target, final String contextName) {
