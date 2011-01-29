@@ -45,6 +45,7 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -54,6 +55,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
@@ -107,6 +109,18 @@ public class ArquillianService implements Service<ArquillianService> {
                         // attempt to set up the JNDI contexts
                         ArquillianConfig config = getConfig(className);
                         if (config != null) {
+
+                            final DeploymentUnit deployment = config.getDeploymentUnitContext();
+
+                            // TODO: Massive hack to enable weld deployments to work correctly.
+                            // this needs to go away when there is a proper way of determining when the deployment is complete
+                            ServiceController<?> weldService = deployment.getServiceRegistry().getService(
+                                    deployment.getServiceName().append("WeldService"));
+                            if (weldService != null) {
+                                DeploymentListener listener = new DeploymentListener();
+                                weldService.addListener(listener);
+                                listener.waitOnDeployment();
+                            }
                             ServiceName NamespaceContextSelectorServiceName = config.getDeploymentUnitContext()
                                     .getServiceName().append(NamespaceSelectorService.NAME);
                             ServiceController<?> serviceController = serviceContainer
@@ -204,6 +218,7 @@ public class ArquillianService implements Service<ArquillianService> {
         public Class<?> loadTestClass(String className) throws ClassNotFoundException {
             ArquillianConfig arqConfig = getConfig(className);
             if (arqConfig != null) {
+
                 if (arqConfig.getTestClasses().contains(className)) {
                     DeploymentUnit depunit = arqConfig.getDeploymentUnitContext();
                     Module module = depunit.getAttachment(Attachments.MODULE);
@@ -234,6 +249,69 @@ public class ArquillianService implements Service<ArquillianService> {
         private BundleContext getSystemBundleContext() {
             ServiceController<?> controller = serviceContainer.getService(BundleContextService.SERVICE_NAME);
             return (BundleContext) (controller != null ? controller.getValue() : null);
+        }
+    }
+
+    /**
+     * Listener that forces arquillian to wait for the deployment to be started before continuting
+     *
+     * @author Stuart Douglas
+     *
+     */
+    private class DeploymentListener extends AbstractServiceListener<Object> {
+
+        private volatile boolean proceed = false;
+
+        @Override
+        public synchronized void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
+            proceed();
+        }
+
+        @Override
+        public synchronized void dependencyFailed(ServiceController<? extends Object> controller) {
+            proceed();
+        }
+
+        @Override
+        public synchronized void listenerAdded(ServiceController<? extends Object> controller) {
+            if (controller.getState() == State.UP || controller.getState() == State.START_FAILED) {
+                proceed();
+            }
+        }
+
+        @Override
+        public synchronized void serviceRemoved(ServiceController<? extends Object> controller) {
+            proceed();
+        }
+
+        @Override
+        public synchronized void serviceStarted(ServiceController<? extends Object> controller) {
+            proceed();
+        }
+
+        @Override
+        public synchronized void serviceStopped(ServiceController<? extends Object> controller) {
+            proceed();
+        }
+
+        @Override
+        public synchronized void serviceStopping(ServiceController<? extends Object> controller) {
+            proceed();
+        }
+
+        private synchronized void waitOnDeployment() {
+            while (!proceed) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+
+                }
+            }
+        }
+
+        private void proceed() {
+            proceed = true;
+            notify();
         }
     }
 }
