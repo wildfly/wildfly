@@ -21,7 +21,6 @@
  */
 package org.jboss.as.weld;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -31,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.modules.Module;
 import org.jboss.weld.resources.spi.ResourceLoader;
+import org.jboss.weld.resources.spi.ResourceLoadingException;
 
 /**
  * A {@link ResourceLoader} that can load classes from a {@link Module}
@@ -61,13 +61,13 @@ public class WeldModuleResourceLoader implements ResourceLoader {
      */
     @Override
     public Class<?> classForName(String name) {
-        if (additionalClasses.containsKey(name)) {
-            return additionalClasses.get(name);
-        }
         try {
+            if (additionalClasses.containsKey(name)) {
+                return additionalClasses.get(name);
+            }
             return module.getClassLoader().loadClass(name);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new ResourceLoadingException(e);
         }
     }
 
@@ -80,7 +80,11 @@ public class WeldModuleResourceLoader implements ResourceLoader {
      */
     @Override
     public URL getResource(String name) {
-        return module.getClassLoader().getResource(name);
+        try {
+            return module.getClassLoader().getResource(name);
+        } catch (Exception e) {
+            throw new ResourceLoadingException(e);
+        }
     }
 
     /**
@@ -95,8 +99,8 @@ public class WeldModuleResourceLoader implements ResourceLoader {
                 resources.add(urls.nextElement());
             }
             return resources;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new ResourceLoadingException(e);
         }
 
     }
