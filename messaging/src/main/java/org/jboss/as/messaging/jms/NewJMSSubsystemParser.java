@@ -277,7 +277,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
                 throw ParseUtils.unexpectedElement(reader);
             }
             ParseUtils.requireNoContent(reader);
-            final ModelNode connector = connectors.get(name);
+            final ModelNode connector = connectors.get(name).setEmptyObject();
             if(backup != null) {
                 connector.get(CONNECTOR_BACKUP_NAME).set(backup);
             }

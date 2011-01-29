@@ -75,9 +75,15 @@ class NewJMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandle
         }
 
         final ModelNode subModel = context.getSubModel();
-        subModel.get(SELECTOR).set(operation.get(SELECTOR));
-        subModel.get(DURABLE).set(operation.get(DURABLE));
-        subModel.get(ENTRIES).set(operation.get(ENTRIES));
+        if (operation.get(SELECTOR).isDefined()) {
+            subModel.get(SELECTOR).set(operation.get(SELECTOR));
+        }
+        if (operation.get(DURABLE).isDefined()) {
+            subModel.get(DURABLE).set(operation.get(DURABLE));
+        }
+        if (operation.get(ENTRIES).isDefined()) {
+            subModel.get(ENTRIES).set(operation.get(ENTRIES));
+        }
 
         resultHandler.handleResultComplete(compensatingOperation);
 
