@@ -36,9 +36,13 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
 
         // Arquillian generates auxiliary archives that aren't bundles
         Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
-        auxArchives.clear();
+        // auxArchives.clear();
 
         Archive<?> appArchive = testDeployment.getApplicationArchive();
+        for (Archive<?> aux : auxArchives) {
+            appArchive.merge(aux);
+        }
+
         return appArchive;
     }
 }
