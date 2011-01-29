@@ -34,9 +34,11 @@
         <module name="org.jboss.arquillian.junit"/>
         <module name="org.jboss.arquillian.spi"/>
         <module name="org.jboss.arquillian.protocol.jmx" />
+        <module name="org.jboss.arquillian.testenricher.cdi" />
         <module name="org.jboss.arquillian.testenricher.msc" />
         <module name="org.jboss.arquillian.testenricher.osgi" />
         <module name="org.jboss.as.domain" />
+        <module name="org.jboss.as.ee" />
         <module name="org.jboss.as.server" />
         <module name="org.jboss.as.jmx" />
         <module name="org.jboss.as.osgi" />

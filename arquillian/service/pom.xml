@@ -55,13 +55,26 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
+            <artifactId>arquillian-testenricher-cdi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.arquillian</groupId>
+                    <artifactId>arquillian-spi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-msc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-osgi</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-ee</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-osgi-service</artifactId>
