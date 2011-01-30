@@ -92,6 +92,8 @@ public class NewNamingSubsystemAdd implements ModelAddOperationHandler, RuntimeO
                 .install();
         }
 
+        context.getSubModel().setEmptyObject();
+
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;

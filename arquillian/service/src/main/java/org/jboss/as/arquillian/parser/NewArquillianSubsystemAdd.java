@@ -63,6 +63,8 @@ class NewArquillianSubsystemAdd implements ModelAddOperationHandler, BootOperati
             bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
         }
 
+        context.getSubModel().setEmptyObject();
+
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;

@@ -84,6 +84,8 @@ public class NewEeSubsystemAdd implements ModelAddOperationHandler, BootOperatio
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
+        context.getSubModel().setEmptyObject();
+
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;

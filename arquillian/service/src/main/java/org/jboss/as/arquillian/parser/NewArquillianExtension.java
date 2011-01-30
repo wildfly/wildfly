@@ -58,7 +58,7 @@ public class NewArquillianExtension implements NewExtension {
     @Override
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerDeploymentModel(NewArquillianProviders.SUBSYSTEM);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewArquillianProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewArquillianSubsystemAdd.INSTANCE, NewArquillianProviders.SUBSYSTEM_ADD, false);
         subsystem.registerXMLElementWriter(parser);
     }
@@ -74,7 +74,10 @@ public class NewArquillianExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(NewArquillianExtension.NAMESPACE, true);
+            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewArquillianExtension.NAMESPACE, true);
+            context.startSubsystemElement(NewArquillianExtension.NAMESPACE, false);
+            writer.writeEndElement();
         }
 
         /** {@inheritDoc} */
@@ -86,6 +89,8 @@ public class NewArquillianExtension implements NewExtension {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+
+            list.add(subsystem);
         }
     }
 }

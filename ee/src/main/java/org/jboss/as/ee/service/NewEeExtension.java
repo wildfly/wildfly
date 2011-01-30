@@ -74,7 +74,11 @@ public class NewEeExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(NewEeExtension.NAMESPACE, true);
+            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewEeExtension.NAMESPACE, true);
+            context.startSubsystemElement(NewEeExtension.NAMESPACE, false);
+            writer.writeEndElement();
+
         }
 
         /** {@inheritDoc} */
@@ -86,6 +90,8 @@ public class NewEeExtension implements NewExtension {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+
+            list.add(subsystem);
         }
     }
 

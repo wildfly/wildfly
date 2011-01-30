@@ -96,7 +96,11 @@ public class NewManagedBeansExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(NewManagedBeansExtension.NAMESPACE, true);
+            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewManagedBeansExtension.NAMESPACE, true);
+            context.startSubsystemElement(NewManagedBeansExtension.NAMESPACE, false);
+            writer.writeEndElement();
+
         }
 
     }

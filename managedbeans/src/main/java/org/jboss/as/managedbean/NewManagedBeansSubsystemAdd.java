@@ -22,6 +22,10 @@
 
 package org.jboss.as.managedbean;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -59,6 +63,14 @@ class NewManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOpera
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_RESOURCE_TARGET, new ManagedBeanResourceTargetProcessor());
         }
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+
+        context.getSubModel().setEmptyObject();
+
+        resultHandler.handleResultComplete(compensatingOperation);
 
 
         return Cancellable.NULL;

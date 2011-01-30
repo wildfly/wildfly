@@ -54,6 +54,8 @@ public class NewDeploymentSubsystemAdd implements ModelAddOperationHandler {
 
         resultHandler.handleResultComplete(compensatingOperation);
 
+        context.getSubModel().setEmptyObject();
+
         return Cancellable.NULL;
     }
 
