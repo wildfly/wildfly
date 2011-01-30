@@ -63,12 +63,13 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            ModelNode opAddr = operation.get(OP_ADDR);
+            PathAddress address = PathAddress.pathAddress(opAddr);
             String module = address.getLastElement().getValue();
             context.getSubModel().get(ExtensionDescription.MODULE).set(module);
             String failure = installExtension(module, context);
             if (failure == null) {
-                ModelNode compensating = AbstractExtensionRemoveHandler.getRemoveExtensionOperation(operation.get(OP_ADDR));
+                ModelNode compensating = AbstractExtensionRemoveHandler.getRemoveExtensionOperation(opAddr);
                 resultHandler.handleResultComplete(compensating);
             }
             else {
