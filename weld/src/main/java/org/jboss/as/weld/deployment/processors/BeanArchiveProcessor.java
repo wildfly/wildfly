@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.weld.bootstrap.spi.BeansXml;
 
 /**
  * Deployment processor that builds bean archives and attaches them to the deployment
@@ -68,11 +70,21 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
 
         final Module module = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE);
-
+        boolean rootArchiveFound = false;
         for (BeanArchiveMetadata beanArchiveMetadata : cdiDeploymentMetadata.getBeanArchiveMetadata()) {
             BeanDeploymentArchiveImpl bda = createBeanDeploymentArchive(indexes.get(beanArchiveMetadata.getResourceRoot()),
                     beanArchiveMetadata, module);
             BeanDeploymentArchiveImpl.attachToDeployment(deploymentUnit, bda);
+            if (beanArchiveMetadata.isDeploymentRoot()) {
+                rootArchiveFound = true;
+                BeanDeploymentArchiveImpl.attachRootArchiveToDeployment(deploymentUnit, bda);
+            }
+        }
+        if (!rootArchiveFound) {
+            BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
+                    BeansXml.EMPTY_BEANS_XML, module, deploymentUnit.getName());
+            BeanDeploymentArchiveImpl.attachToDeployment(deploymentUnit, bda);
+            BeanDeploymentArchiveImpl.attachRootArchiveToDeployment(deploymentUnit, bda);
         }
     }
 

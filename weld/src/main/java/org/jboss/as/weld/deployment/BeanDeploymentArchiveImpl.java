@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.WeldModuleResourceLoader;
+import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
@@ -52,6 +53,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public static final AttachmentKey<AttachmentList<BeanDeploymentArchiveImpl>> ATTACHMENT_KEY = AttachmentKey
             .createList(BeanDeploymentArchiveImpl.class);
+
+    public static final AttachmentKey<BeanDeploymentArchiveImpl> ROOT_ARCHIVE_ATTACHMENT_KEY = AttachmentKey
+            .create(BeanDeploymentArchiveImpl.class);
 
     private final Set<String> beanClasses;
 
@@ -89,6 +93,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             parent = parent.getParent();
         }
         parent.addToAttachmentList(ATTACHMENT_KEY, archive);
+    }
+
+    /**
+     * Attaches the BDA for the root of the deployment to the deployment. This is the BDA that is bound to the
+     * {@link BeanManagerService} for this deployment
+     */
+    public static void attachRootArchiveToDeployment(final DeploymentUnit deploymentUnit,
+            final BeanDeploymentArchiveImpl archive) {
+        deploymentUnit.putAttachment(ROOT_ARCHIVE_ATTACHMENT_KEY, archive);
     }
 
     /**

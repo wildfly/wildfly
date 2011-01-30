@@ -95,6 +95,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 .getAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
         deploymentUnit.removeAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
 
+        BeanDeploymentArchiveImpl rootBda = deploymentUnit.getAttachment(BeanDeploymentArchiveImpl.ROOT_ARCHIVE_ATTACHMENT_KEY);
+
         // all bean deployment archives are accessible to each other
         // TODO: add proper accessibility rules
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
@@ -111,7 +113,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         final WeldDeployment deployment = new WeldDeployment(new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives),
-                extensions, module);
+                rootBda, extensions, module);
 
         final WeldContainer weldContainer = new WeldContainer(deployment, Environments.EE_INJECT);
 

@@ -56,8 +56,6 @@ public class WeldDeployment implements Deployment {
 
     public static final AttachmentKey<WeldDeployment> ATTACHMENT_KEY = AttachmentKey.create(WeldDeployment.class);
 
-    public static final String TOP_LEVEL_BDA_SUFFIX = ".topLevelBeanDeploymentArchive";
-
     public static final String ADDITIONAL_CLASSES_BDA_SUFFIX = ".additionalClasses";
 
     private final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives;
@@ -85,13 +83,13 @@ public class WeldDeployment implements Deployment {
      */
     private final Map<String, BeanDeploymentArchiveImpl> beanDeploymentsByClassName;
 
-    public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Set<Metadata<Extension>> extensions,
+    public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, BeanDeploymentArchiveImpl rootBda,
+            Set<Metadata<Extension>> extensions,
             Module module) {
         this.additionalBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
                 BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ADDITIONAL_CLASSES_BDA_SUFFIX);
 
-        this.topLevelBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
-                BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + TOP_LEVEL_BDA_SUFFIX);
+        this.topLevelBeanDeploymentArchive = rootBda;
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
