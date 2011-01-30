@@ -30,6 +30,8 @@
 
     <dependencies>
         <module name="com.google.guava" />
+        <module name="javax.interceptor.api" />
+        <module name="org.javassist"/>
         <module name="org.jboss.interceptor.spi" />
         <module name="org.slf4j" />
     </dependencies>

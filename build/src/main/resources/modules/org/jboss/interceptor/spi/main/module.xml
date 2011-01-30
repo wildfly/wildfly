@@ -29,6 +29,7 @@
     </resources>
 
     <dependencies>
-    
+        <module name="javax.interceptor.api" />
+        <module name="org.javassist"/>
     </dependencies>
 </module>
