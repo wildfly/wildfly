@@ -300,11 +300,15 @@ public class ArquillianService implements Service<ArquillianService> {
         }
 
         private synchronized void waitOnDeployment() {
+            long exitTime = System.currentTimeMillis() + 10000;
             while (!proceed) {
                 try {
-                    wait();
+                    wait(1000);
                 } catch (InterruptedException e) {
 
+                }
+                if (System.currentTimeMillis() > exitTime) {
+                    break;
                 }
             }
         }
