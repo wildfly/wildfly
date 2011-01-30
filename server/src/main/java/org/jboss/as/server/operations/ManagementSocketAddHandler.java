@@ -53,6 +53,8 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, RuntimeOperationHandler, DescriptionProvider {
 
+    public static final String OPERATION_NAME = "add-management-socket";
+
     public static final ManagementSocketAddHandler INSTANCE = new ManagementSocketAddHandler();
 
     /** {@inheritDoc} */
