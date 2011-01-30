@@ -152,7 +152,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
            metaDataSecurityDomain = metaDataSecurityDomain.trim();
         }
 
-        // Add the context service
         try {
             ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);

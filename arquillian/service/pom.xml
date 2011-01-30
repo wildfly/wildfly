@@ -43,7 +43,7 @@
     </modules-->
 
     <packaging>jar</packaging>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.arquillian</groupId>
@@ -83,7 +83,7 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jmx</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
@@ -92,7 +92,10 @@
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
-        
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
@@ -104,5 +107,5 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    
+
 </project>

@@ -29,6 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
+import org.jboss.arquillian.context.ContextManager;
+import org.jboss.arquillian.context.ContextManagerBuilder;
+import org.jboss.arquillian.context.JavaNamespaceSetup;
+import org.jboss.arquillian.context.WeldContextSetup;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
 import org.jboss.arquillian.spi.TestEnricher;
@@ -104,36 +108,55 @@ public class ArquillianService implements Service<ArquillianService> {
 
                 @Override
                 public TestResult runTestMethod(String className, String methodName, Map<String, String> props) {
-                    NamespaceSelectorService namespaceSelectorService = null;
-                    try {
-                        // attempt to set up the JNDI contexts
-                        ArquillianConfig config = getConfig(className);
-                        if (config != null) {
 
-                            final DeploymentUnit deployment = config.getDeploymentUnitContext();
+                    // TODO: The context setup actions should be attached to the deployment by the appropriate deployment
+                    // processors, rather than being hacked up here.
+                    final ContextManagerBuilder builder = new ContextManagerBuilder();
+                    ContextManager contextManager = null;
+                    ArquillianConfig config = getConfig(className);
+                    if (config != null) {
 
-                            // TODO: Massive hack to enable weld deployments to work correctly.
-                            // this needs to go away when there is a proper way of determining when the deployment is complete
-                            ServiceController<?> weldService = deployment.getServiceRegistry().getService(
-                                    deployment.getServiceName().append("WeldService"));
-                            if (weldService != null) {
-                                DeploymentListener listener = new DeploymentListener();
-                                weldService.addListener(listener);
-                                listener.waitOnDeployment();
-                            }
-                            ServiceName NamespaceContextSelectorServiceName = config.getDeploymentUnitContext()
-                                    .getServiceName().append(NamespaceSelectorService.NAME);
-                            ServiceController<?> serviceController = serviceContainer
-                                    .getService(NamespaceContextSelectorServiceName);
-                            if (serviceController != null) {
-                                namespaceSelectorService = (NamespaceSelectorService) serviceController.getValue();
-                                namespaceSelectorService.activate();
-                            }
+                        final DeploymentUnit deployment = config.getDeploymentUnitContext();
+                        final Module module = deployment.getAttachment(Attachments.MODULE);
+                        builder.add(new TCCLSetup(module.getClassLoader()));
+                        // TODO: Massive hack to enable weld deployments to work correctly.
+                        // as we have no reliable way of determining when a deployment is done, we wait on
+                        // the weld service to come up.
+                        // this needs to go away when there is a proper way of determining when the deployment is complete
+                        ServiceController<?> weldService = deployment.getServiceRegistry().getService(
+                                deployment.getServiceName().append("beanmanager"));
+                        if (weldService != null) {
+                            DeploymentListener listener = new DeploymentListener();
+                            weldService.addListener(listener);
+                            listener.waitOnDeployment();
                         }
+
+
+                        // try and get the service controller for the modules java: namespace
+                        ServiceName NamespaceContextSelectorServiceName = config.getDeploymentUnitContext().getServiceName()
+                                .append(NamespaceSelectorService.NAME);
+                        ServiceController<?> serviceController = serviceContainer
+                                .getService(NamespaceContextSelectorServiceName);
+                        if (serviceController != null) {
+                            // wait on the java: namespace to come up
+                            // this should allow non-weld deployments to work
+                            DeploymentListener listener = new DeploymentListener();
+                            serviceController.addListener(listener);
+                            listener.waitOnDeployment();
+                            builder.add(new JavaNamespaceSetup((NamespaceSelectorService) serviceController.getValue()));
+                        }
+                        if (weldService != null) {
+                            builder.add(new WeldContextSetup());
+                        }
+                    }
+                    contextManager = builder.build();
+                    contextManager.setup();
+                    try {
+                        // actually run the tests
                         return super.runTestMethod(className, methodName, props);
                     } finally {
-                        if (namespaceSelectorService != null) {
-                            namespaceSelectorService.deactivate();
+                        if (contextManager != null) {
+                            contextManager.teardown();
                         }
                     }
                 }
@@ -274,7 +297,8 @@ public class ArquillianService implements Service<ArquillianService> {
 
         @Override
         public synchronized void listenerAdded(ServiceController<? extends Object> controller) {
-            if (controller.getState() == State.UP || controller.getState() == State.START_FAILED) {
+            if (controller.getState() == State.UP || controller.getState() == State.START_FAILED
+                    || controller.getState() == State.STOPPING) {
                 proceed();
             }
         }
