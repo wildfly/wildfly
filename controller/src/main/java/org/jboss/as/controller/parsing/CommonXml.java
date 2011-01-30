@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -73,6 +72,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.ManagementSocketAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
@@ -415,7 +415,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if(maxThreads > 0) mgmtSocket.get("max-threads").set(maxThreads);
         mgmtSocket.get(INTERFACE).set(interfaceName);
         mgmtSocket.get(PORT).set(port);
-        mgmtSocket.get(OP).set(MANAGEMENT);
+        mgmtSocket.get(OP).set(ManagementSocketAddHandler.OPERATION_NAME);
         mgmtSocket.get(OP_ADDR).setEmptyList();
         list.add(mgmtSocket);
 //        final ModelNode addMgmt = Util.getWriteAttributeOperation(address, MANAGEMENT, mgmtSocket);

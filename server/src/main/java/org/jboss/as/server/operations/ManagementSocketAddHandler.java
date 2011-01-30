@@ -22,19 +22,11 @@
 
 package org.jboss.as.server.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -51,22 +43,18 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, RuntimeOperationHandler, DescriptionProvider {
-
-    public static final String OPERATION_NAME = "add-management-socket";
+public class ManagementSocketAddHandler
+    extends org.jboss.as.controller.operations.common.ManagementSocketAddHandler
+    implements RuntimeOperationHandler {
 
     public static final ManagementSocketAddHandler INSTANCE = new ManagementSocketAddHandler();
 
-    /** {@inheritDoc} */
+
+
     @Override
-    public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    protected void installManagementSocket(String interfaceName, int port, NewOperationContext context,
+            ResultHandler resultHandler, ModelNode compensatingOperation) {
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove-management-socket");
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
-        final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
@@ -93,21 +81,7 @@ public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, 
                     .install();
 
         }
-
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(ModelDescriptionConstants.MANAGEMENT, ModelDescriptionConstants.INTERFACE).set(interfaceName);
-        subModel.get(ModelDescriptionConstants.MANAGEMENT, ModelDescriptionConstants.PORT).set(port);
-
         resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // TODO Auto-generated method stub
-        return new ModelNode();
     }
 
 }
