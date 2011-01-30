@@ -78,7 +78,7 @@
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.ironjacamar>1.0.0.Beta3</version.org.jboss.ironjacamar>
-        <version.org.jboss.jandex>1.0.0.Beta3</version.org.jboss.jandex>
+        <version.org.jboss.jandex>1.0.0.Beta4</version.org.jboss.jandex>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.jboss-vfs>3.0.0.CR5</version.org.jboss.jboss-vfs>
         <version.org.jboss.jbossts.jbossjts>4.11.0.Final</version.org.jboss.jbossts.jbossjts>
