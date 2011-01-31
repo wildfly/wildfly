@@ -25,9 +25,14 @@
  */
 package org.jboss.as.host.controller;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -46,12 +51,18 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.SocketFactory;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.controller.parsing.HostXml;
-import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.NamespaceAddHandler;
+import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
@@ -61,6 +72,7 @@ import org.jboss.as.domain.controller.DomainControllerImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.mgmt.DomainControllerClientOperationHandler;
 import org.jboss.as.domain.controller.mgmt.DomainControllerOperationHandler;
+import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ManagementOperationHandlerService;
@@ -82,14 +94,15 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerState;
+import org.jboss.as.server.operations.ReadConfigAsXmlHandler;
+import org.jboss.as.server.operations.SystemPropertyAddHandler;
+import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
@@ -112,7 +125,7 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Kabir Khan
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class NewHostController {
+public class NewHostController extends BasicModelController {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
@@ -131,12 +144,16 @@ public class NewHostController {
     private ProcessControllerClient processControllerClient;
     private FallbackRepository remoteBackedRepository;
 
+    //New detyped fields
+    private final NewConfigurationPersister configurationPersister;
+
     /**
      * The auth code of the host controller itself.
      */
     private final byte[] authCode;
 
-    public NewHostController(final HostControllerEnvironment environment, final byte[] authCode) {
+    public NewHostController(final HostControllerEnvironment environment, final byte[] authCode, final NewConfigurationPersister configurationPersister) {
+        super(configurationPersister, HostDescriptionProviders.ROOT_PROVIDER);
         this.authCode = authCode;
         if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
@@ -145,6 +162,29 @@ public class NewHostController {
         extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
         modelManager = new ModelManager(environment, extensionRegistrar);
         fileRepository = new LocalFileRepository(environment);
+
+        this.configurationPersister = configurationPersister;
+
+        //TODO Register the operation handlers
+        ModelNodeRegistration root = getRegistry();
+        // Global operations
+        root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+        root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
+        root.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
+        root.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+        root.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
+        root.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+        root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+
+        // Other root resource operations
+        root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
+        root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
+        root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
+        root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML, ReadConfigAsXmlHandler.INSTANCE, ReadConfigAsXmlHandler.INSTANCE, false);
+
     }
 
     public String getName() {
@@ -224,8 +264,17 @@ public class NewHostController {
         modelManager.start();
 
         System.out.println("--- Parsing host.xml");
-        parseHostXml();
-        System.out.println("--- Parsed host.xml");
+        List<ModelNode> hostModelUpdates = parseHostXml();
+        System.out.println("--- Parsed host.xml ");
+        for (ModelNode update : hostModelUpdates) {
+            try {
+                System.out.println("update " + update);
+                execute(update);
+            } catch (OperationFailedException e) {
+                // AutoGenerated
+                throw new RuntimeException(e.getFailureDescription().asString());
+            }
+        }
 
         // TODO set up logging for this process based on config in Host
 
@@ -955,68 +1004,24 @@ public class NewHostController {
         return result;
     }
 
+
+
     private List<ModelNode> parseHostXml(){
-        QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
-        HostXml parser = new HostXml(Module.getSystemModuleLoader());
-        final XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(rootElement, parser);
-        List<ModelNode> updates = new ArrayList<ModelNode>();
-
         try {
-            //FIXME hook up with host configuration persister
-            final FileInputStream fis = new FileInputStream(new File(environment.getDomainConfigurationDir(), "host.xml"));
-            try {
-                BufferedInputStream input = new BufferedInputStream(fis);
-                XMLStreamReader streamReader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-                mapper.parseDocument(updates, streamReader);
-                streamReader.close();
-                input.close();
-                fis.close();
-
-                System.out.println("Parsed host updates " + updates);
-
-
-            } finally {
-                StreamUtils.safeClose(fis);
-            }
-        } catch (Exception e) {
-            //throw new ConfigurationPersistenceException("Failed to parse configuration", e);
+            return configurationPersister.load();
+        } catch (ConfigurationPersistenceException e) {
             throw new RuntimeException(e);
         }
-        return updates;
     }
 
     private List<ModelNode> parseDomainXml(){
-        QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
-        HostXml parser = new HostXml(Module.getSystemModuleLoader());
-        final XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(rootElement, parser);
-        List<ModelNode> updates = new ArrayList<ModelNode>();
-
         try {
-            //FIXME hook up with host configuration persister
-            final FileInputStream fis = new FileInputStream(new File(environment.getDomainConfigurationDir(), "domain.xml"));
-            try {
-                BufferedInputStream input = new BufferedInputStream(fis);
-                XMLStreamReader streamReader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-                mapper.parseDocument(updates, streamReader);
-                streamReader.close();
-                input.close();
-                fis.close();
-
-                System.out.println("Parsed domain updates " + updates);
-
-
-            } finally {
-                StreamUtils.safeClose(fis);
-            }
-        } catch (Exception e) {
-            //throw new ConfigurationPersistenceException("Failed to parse configuration", e);
+            //TODO store this or pass it in from somewhere
+            NewConfigurationPersister persister = NewConfigurationPersisterFactory.createDomainXmlConfigurationPersister(environment.getDomainConfigurationDir());
+            return persister.load();
+        } catch (ConfigurationPersistenceException e) {
             throw new RuntimeException(e);
         }
-
-
-        return updates;
     }
 
 }

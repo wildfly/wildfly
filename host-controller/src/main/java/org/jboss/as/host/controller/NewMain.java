@@ -47,6 +47,7 @@ import org.jboss.stdio.StdioContext;
  * The main-class entry point for the host controller process.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:kkhan@redhat.com">Kabir Khan</a>
  */
 public final class NewMain {
 
@@ -125,7 +126,7 @@ public final class NewMain {
                 abort(null);
                 return null;
             } else {
-                hc = new NewHostController(config, authCode);
+                hc = new NewHostController(config, authCode, NewConfigurationPersisterFactory.createHostXmlConfigurationPersister(config.getDomainConfigurationDir()));
                 hc.start();
             }
         } catch (Throwable t) {
