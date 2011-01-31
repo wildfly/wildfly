@@ -26,12 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_DURATION;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_UNIT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.PROPERTIES;
-import static org.jboss.as.threads.Constants.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -81,12 +79,10 @@ public class NewScheduledThreadPoolAdd implements RuntimeOperationHandler, Model
             model.get(PROPERTIES).set(params.getProperties());
         }
         if (params.getMaxThreads() != null) {
-            model.get(MAX_THREADS_COUNT).set(params.getMaxThreads().getCount());
-            model.get(MAX_THREADS_PER_CPU).set(params.getMaxThreads().getPerCpu());
+            model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
         }
         if (params.getKeepAliveTime() != null) {
-            model.get(KEEPALIVE_TIME_DURATION).set(params.getKeepAliveTime().getDuration());
-            model.get(KEEPALIVE_TIME_UNIT).set(params.getKeepAliveTime().getUnit().toString());
+            model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
         }
 
         // Compensating is remove

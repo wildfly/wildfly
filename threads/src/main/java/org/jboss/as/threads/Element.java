@@ -33,19 +33,19 @@ public enum Element {
     UNKNOWN(null),
 
     // Threads 1.0 elements in alpha order
-    BOUNDED_QUEUE_THREAD_POOL("bounded-queue-thread-pool"),
-    CORE_THREADS("core-threads"),
-    HANDOFF_EXECUTOR("handoff-executor"),
-    KEEPALIVE_TIME("keepalive-time"),
-    MAX_THREADS("max-threads"),
-    PROPERTIES("properties"),
-    PROPERTY("property"),
-    QUEUE_LENGTH("queue-length"),
-    QUEUELESS_THREAD_POOL("queueless-thread-pool"),
-    SCHEDULED_THREAD_POOL("scheduled-thread-pool"),
-    SUBSYSTEM("subsystem"),
-    THREAD_FACTORY("thread-factory"),
-    UNBOUNDED_QUEUE_THREAD_POOL("unbounded-queue-thread-pool"),
+    BOUNDED_QUEUE_THREAD_POOL(CommonAttributes.BOUNDED_QUEUE_THREAD_POOL),
+    CORE_THREADS(CommonAttributes.CORE_THREADS),
+    HANDOFF_EXECUTOR(CommonAttributes.HANDOFF_EXECUTOR),
+    KEEPALIVE_TIME(CommonAttributes.KEEPALIVE_TIME),
+    MAX_THREADS(CommonAttributes.MAX_THREADS),
+    PROPERTIES(CommonAttributes.PROPERTIES),
+    PROPERTY(CommonAttributes.PROPERTY),
+    QUEUE_LENGTH(CommonAttributes.QUEUE_LENGTH),
+    QUEUELESS_THREAD_POOL(CommonAttributes.QUEUELESS_THREAD_POOL),
+    SCHEDULED_THREAD_POOL(CommonAttributes.SCHEDULED_THREAD_POOL),
+    SUBSYSTEM(org.jboss.as.controller.parsing.Element.SUBSYSTEM.getLocalName()),
+    THREAD_FACTORY(CommonAttributes.THREAD_FACTORY),
+    UNBOUNDED_QUEUE_THREAD_POOL(CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL),
     ;
 
     private final String name;

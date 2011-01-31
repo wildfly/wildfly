@@ -25,11 +25,11 @@ package org.jboss.as.threads;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.Constants.BOUNDED_QUEUE_THREAD_POOL;
-import static org.jboss.as.threads.Constants.QUEUELESS_THREAD_POOL;
-import static org.jboss.as.threads.Constants.SCHEDULED_THREAD_POOL;
-import static org.jboss.as.threads.Constants.THREAD_FACTORY;
-import static org.jboss.as.threads.Constants.UNBOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;

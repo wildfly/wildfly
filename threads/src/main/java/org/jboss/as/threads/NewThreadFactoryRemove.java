@@ -26,10 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.Constants.GROUP_NAME;
-import static org.jboss.as.threads.Constants.PRIORITY;
-import static org.jboss.as.threads.Constants.PROPERTIES;
-import static org.jboss.as.threads.Constants.THREAD_NAME_PATTERN;
+import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
+import static org.jboss.as.threads.CommonAttributes.PRIORITY;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;

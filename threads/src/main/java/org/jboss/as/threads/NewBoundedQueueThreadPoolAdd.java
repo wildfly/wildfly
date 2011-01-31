@@ -26,19 +26,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.threads.Constants.ALLOW_CORE_TIMEOUT;
-import static org.jboss.as.threads.Constants.BLOCKING;
-import static org.jboss.as.threads.Constants.CORE_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.CORE_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.HANDOFF_EXECUTOR;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_DURATION;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_UNIT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.PROPERTIES;
-import static org.jboss.as.threads.Constants.QUEUE_LENGTH_COUNT;
-import static org.jboss.as.threads.Constants.QUEUE_LENGTH_PER_CPU;
-import static org.jboss.as.threads.Constants.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
+import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
 import java.util.concurrent.Executor;
 
@@ -97,26 +93,23 @@ public class NewBoundedQueueThreadPoolAdd implements RuntimeOperationHandler, Mo
             model.get(PROPERTIES).set(params.getProperties());
         }
         if (params.getMaxThreads() != null) {
-            model.get(MAX_THREADS_COUNT).set(params.getMaxThreads().getCount());
-            model.get(MAX_THREADS_PER_CPU).set(params.getMaxThreads().getPerCpu());
+            model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
         }
         if (params.getKeepAliveTime() != null) {
-            model.get(KEEPALIVE_TIME_DURATION).set(params.getKeepAliveTime().getDuration());
-            model.get(KEEPALIVE_TIME_UNIT).set(params.getKeepAliveTime().getUnit().toString());
+            model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
         }
+
         model.get(BLOCKING).set(params.isBlocking());
         if (params.getHandoffExecutor() != null) {
             model.get(HANDOFF_EXECUTOR).set(params.getHandoffExecutor());
         }
         model.get(ALLOW_CORE_TIMEOUT).set(params.isAllowCoreTimeout());
         if (params.getQueueLength() != null) {
-            model.get(QUEUE_LENGTH_COUNT).set(params.getQueueLength().getCount());
-            model.get(QUEUE_LENGTH_PER_CPU).set(params.getQueueLength().getPerCpu());
+            model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
         }
 
         if (params.getCoreThreads() != null) {
-            model.get(CORE_THREADS_COUNT).set(params.getCoreThreads().getCount());
-            model.get(CORE_THREADS_PER_CPU).set(params.getCoreThreads().getPerCpu());
+            model.get(CORE_THREADS).set(operation.get(CORE_THREADS));
         }
 
         // Compensating is remove

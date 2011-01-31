@@ -44,27 +44,28 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.threads.Constants.ALLOW_CORE_TIMEOUT;
-import static org.jboss.as.threads.Constants.BLOCKING;
-import static org.jboss.as.threads.Constants.BOUNDED_QUEUE_THREAD_POOL;
-import static org.jboss.as.threads.Constants.CORE_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.CORE_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.GROUP_NAME;
-import static org.jboss.as.threads.Constants.HANDOFF_EXECUTOR;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_DURATION;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_UNIT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.PRIORITY;
-import static org.jboss.as.threads.Constants.PROPERTIES;
-import static org.jboss.as.threads.Constants.QUEUELESS_THREAD_POOL;
-import static org.jboss.as.threads.Constants.QUEUE_LENGTH_COUNT;
-import static org.jboss.as.threads.Constants.QUEUE_LENGTH_PER_CPU;
-import static org.jboss.as.threads.Constants.SCHEDULED_THREAD_POOL;
-import static org.jboss.as.threads.Constants.THREADS;
-import static org.jboss.as.threads.Constants.THREAD_FACTORY;
-import static org.jboss.as.threads.Constants.THREAD_NAME_PATTERN;
-import static org.jboss.as.threads.Constants.UNBOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
+import static org.jboss.as.threads.CommonAttributes.COUNT;
+import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
+import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PER_CPU;
+import static org.jboss.as.threads.CommonAttributes.PRIORITY;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.THREADS;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
+import static org.jboss.as.threads.CommonAttributes.TIME;
+import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.UNIT;
 
 import java.io.OutputStream;
 import java.io.Reader;
@@ -158,7 +159,7 @@ public class ThreadsSubsystemTestCase {
     }
 
     @Test
-    public void testGetModeDescription() throws Exception {
+    public void testGetModelDescription() throws Exception {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "test");
         operation.get(RECURSIVE).set(true);
         operation.get(OPERATIONS).set(true);
@@ -178,14 +179,18 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE).asType());
         assertEquals(ModelType.LIST, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_COUNT).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_PER_CPU).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS_COUNT).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS_PER_CPU).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH_COUNT).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH_PER_CPU).require(TYPE).asType());
-        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_DURATION).require(TYPE).asType());
-        assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_UNIT).require(TYPE).asType());
+        assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU).require(TYPE).asType());
+        assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(VALUE_TYPE).require(COUNT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(VALUE_TYPE).require(PER_CPU).require(TYPE).asType());
+        assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(VALUE_TYPE).require(COUNT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(VALUE_TYPE).require(PER_CPU).require(TYPE).asType());
+        assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(TYPE).asType());
+        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(TIME).require(TYPE).asType());
+        assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT).require(TYPE).asType());
         assertEquals(ModelType.BOOLEAN, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(BLOCKING).require(TYPE).asType());
         assertEquals(ModelType.BOOLEAN, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(ALLOW_CORE_TIMEOUT).require(TYPE).asType());
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(HANDOFF_EXECUTOR).require(TYPE).asType());
@@ -194,10 +199,10 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE).asType());
         assertEquals(ModelType.LIST, queueLessThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, queueLessThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_COUNT).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, queueLessThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_PER_CPU).require(TYPE).asType());
-        assertEquals(ModelType.LONG, queueLessThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_DURATION).require(TYPE).asType());
-        assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_UNIT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU).require(TYPE).asType());
+        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(TIME).require(TYPE).asType());
+        assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT).require(TYPE).asType());
         assertEquals(ModelType.BOOLEAN, queueLessThreadPoolDesc.require(ATTRIBUTES).require(BLOCKING).require(TYPE).asType());
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(HANDOFF_EXECUTOR).require(TYPE).asType());
 
@@ -205,19 +210,19 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, scheduledThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, scheduledThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE).asType());
         assertEquals(ModelType.LIST, scheduledThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, scheduledThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_COUNT).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, scheduledThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_PER_CPU).require(TYPE).asType());
-        assertEquals(ModelType.LONG, scheduledThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_DURATION).require(TYPE).asType());
-        assertEquals(ModelType.STRING, scheduledThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_UNIT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU).require(TYPE).asType());
+        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(TIME).require(TYPE).asType());
+        assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT).require(TYPE).asType());
 
         ModelNode unboundedThreadPoolDesc = threadsDescription.get(CHILDREN, UNBOUNDED_QUEUE_THREAD_POOL, MODEL_DESCRIPTION, "*");
         assertEquals(ModelType.STRING, unboundedThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, unboundedThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE).asType());
         assertEquals(ModelType.LIST, unboundedThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, unboundedThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_COUNT).require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL, unboundedThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS_PER_CPU).require(TYPE).asType());
-        assertEquals(ModelType.LONG, unboundedThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_DURATION).require(TYPE).asType());
-        assertEquals(ModelType.STRING, unboundedThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME_UNIT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT).require(TYPE).asType());
+        assertEquals(ModelType.BIG_DECIMAL, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU).require(TYPE).asType());
+        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(TIME).require(TYPE).asType());
+        assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT).require(TYPE).asType());
 
     }
 
@@ -395,10 +400,10 @@ public class ThreadsSubsystemTestCase {
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require("max-threads-count").asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require("max-threads-per-cpu").asBigDecimal());
-        assertEquals(1000L, threadPool.require("test-pool").require("keepalive-time-duration").asLong());
-        assertEquals("MILLISECONDS", threadPool.require("test-pool").require("keepalive-time-unit").asString());
+        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
+        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
+        assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
 
         ModelNode props = threadPool.require("test-pool").require("properties");
         assertTrue(props.isDefined());
@@ -501,10 +506,10 @@ public class ThreadsSubsystemTestCase {
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require("max-threads-count").asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require("max-threads-per-cpu").asBigDecimal());
-        assertEquals(1000L, threadPool.require("test-pool").require("keepalive-time-duration").asLong());
-        assertEquals("MILLISECONDS", threadPool.require("test-pool").require("keepalive-time-unit").asString());
+        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
+        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).get(TIME).asLong());
+        assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).get(UNIT).asString());
 
         ModelNode props = threadPool.require("test-pool").require("properties");
         assertTrue(props.isDefined());
@@ -609,10 +614,10 @@ public class ThreadsSubsystemTestCase {
         assertEquals(1, threadPool.keys().size());
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertTrue(threadPool.require("test-pool").require("blocking").asBoolean());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require("max-threads-count").asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require("max-threads-per-cpu").asBigDecimal());
-        assertEquals(1000L, threadPool.require("test-pool").require("keepalive-time-duration").asLong());
-        assertEquals("MILLISECONDS", threadPool.require("test-pool").require("keepalive-time-unit").asString());
+        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
+        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
+        assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
         assertEquals("other", threadPool.require("test-pool").require("handoff-executor").asString());
 
         ModelNode props = threadPool.require("test-pool").require("properties");
@@ -724,14 +729,14 @@ public class ThreadsSubsystemTestCase {
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertTrue(threadPool.require("test-pool").require("blocking").asBoolean());
         assertTrue(threadPool.require("test-pool").require("allow-core-timeout").asBoolean());
-        assertEquals(new BigDecimal(200), threadPool.require("test-pool").require("core-threads-count").asBigDecimal());
-        assertEquals(new BigDecimal(15), threadPool.require("test-pool").require("core-threads-per-cpu").asBigDecimal());
-        assertEquals(new BigDecimal(300), threadPool.require("test-pool").require("queue-length-count").asBigDecimal());
-        assertEquals(new BigDecimal(25), threadPool.require("test-pool").require("queue-length-per-cpu").asBigDecimal());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require("max-threads-count").asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require("max-threads-per-cpu").asBigDecimal());
-        assertEquals(1000L, threadPool.require("test-pool").require("keepalive-time-duration").asLong());
-        assertEquals("MILLISECONDS", threadPool.require("test-pool").require("keepalive-time-unit").asString());
+        assertEquals(new BigDecimal(200), threadPool.require("test-pool").require(CORE_THREADS).require(COUNT).asBigDecimal());
+        assertEquals(new BigDecimal(15), threadPool.require("test-pool").require(CORE_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(new BigDecimal(300), threadPool.require("test-pool").require(QUEUE_LENGTH).require(COUNT).asBigDecimal());
+        assertEquals(new BigDecimal(25), threadPool.require("test-pool").require(QUEUE_LENGTH).require(PER_CPU).asBigDecimal());
+        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
+        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
+        assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
         assertEquals("other", threadPool.require("test-pool").require("handoff-executor").asString());
 
         ModelNode props = threadPool.require("test-pool").require("properties");
@@ -894,7 +899,6 @@ public class ThreadsSubsystemTestCase {
                 subsystemAddress.add(path.getName(), path.getValue().asString());
             }
             update.get(OP_ADDR).set(subsystemAddress);
-            System.err.println(update.get(OP_ADDR));
         }
 
         return updates;

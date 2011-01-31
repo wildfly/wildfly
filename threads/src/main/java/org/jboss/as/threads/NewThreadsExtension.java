@@ -54,6 +54,28 @@ import static org.jboss.as.threads.Constants.THREADS;
 import static org.jboss.as.threads.Constants.THREAD_FACTORY;
 import static org.jboss.as.threads.Constants.THREAD_NAME_PATTERN;
 import static org.jboss.as.threads.Constants.UNBOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
+import static org.jboss.as.threads.CommonAttributes.COUNT;
+import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
+import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.NAME;
+import static org.jboss.as.threads.CommonAttributes.PER_CPU;
+import static org.jboss.as.threads.CommonAttributes.PRIORITY;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.THREADS;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
+import static org.jboss.as.threads.CommonAttributes.TIME;
+import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.UNIT;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.ADD_BOUNDED_QUEUE_THREAD_POOL_DESC;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.ADD_QUEUELESS_THREAD_POOL_DESC;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.ADD_SCHEDULED_THREAD_POOL_DESC;
@@ -74,10 +96,8 @@ import static org.jboss.as.threads.NewThreadsSubsystemProviders.UNBOUNDED_QUEUE_
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -109,6 +129,8 @@ public class NewThreadsExtension implements NewExtension {
 
     @Override
     public void initialize(final NewExtensionContext context) {
+
+
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(THREADS);
         registration.registerXMLElementWriter(NewThreadsSubsystemParser.INSTANCE);
@@ -149,7 +171,6 @@ public class NewThreadsExtension implements NewExtension {
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
-            // FIXME this should come from somewhere
             final ModelNode address = new ModelNode();
             address.add(ModelDescriptionConstants.SUBSYSTEM, "threads");
             address.protect();
@@ -254,12 +275,9 @@ public class NewThreadsExtension implements NewExtension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Element.forName(reader.getLocalName())) {
                     case PROPERTIES: {
-                        Map<String, String> props = parseProperties(reader);
-                        if (props != null && props.size() > 0) {
-                            ModelNode properties = op.get(PROPERTIES);
-                            for (Map.Entry<String, String> prop : props.entrySet()) {
-                                properties.add(prop.getKey(), prop.getValue());
-                            }
+                        ModelNode props = parseProperties(reader);
+                        if (props.isDefined()) {
+                            op.get(PROPERTIES).set(props);
                         }
                         break;
                     }
@@ -303,8 +321,6 @@ public class NewThreadsExtension implements NewExtension {
                 throw missingRequired(reader, Collections.singleton(Attribute.NAME));
             }
 
-            //FIXME Make relative and use this scheme to add the addresses
-            //address.add("profile", "test).add("subsystem", "threads")
             final ModelNode address = parentAddress.clone();
             address.add(BOUNDED_QUEUE_THREAD_POOL, name);
             address.protect();
@@ -315,9 +331,7 @@ public class NewThreadsExtension implements NewExtension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Element.forName(reader.getLocalName())) {
                     case CORE_THREADS: {
-                        ScaledCount core = parseScaledCount(reader);
-                        op.get(CORE_THREADS_COUNT).set(core.getCount());
-                        op.get(CORE_THREADS_PER_CPU).set(core.getPerCpu());
+                        op.get(CORE_THREADS).set(parseScaledCount(reader));
                         break;
                     }
                     case HANDOFF_EXECUTOR: {
@@ -325,36 +339,27 @@ public class NewThreadsExtension implements NewExtension {
                         break;
                     }
                     case MAX_THREADS: {
-                        ScaledCount maxThreads = parseScaledCount(reader);
-                        op.get(MAX_THREADS_COUNT).set(maxThreads.getCount());
-                        op.get(MAX_THREADS_PER_CPU).set(maxThreads.getPerCpu());
+                        op.get(MAX_THREADS).set(parseScaledCount(reader));
                         foundMaxThreads = true;
                         break;
                     }
                     case KEEPALIVE_TIME: {
-                        TimeSpec keepAliveTime = parseTimeSpec(reader);
-                        op.get(KEEPALIVE_TIME_DURATION).set(keepAliveTime.getDuration());
-                        op.get(KEEPALIVE_TIME_UNIT).set(keepAliveTime.getUnit().toString());
+                        op.get(KEEPALIVE_TIME).set(parseTimeSpec(reader));
                         break;
                     }
                     case THREAD_FACTORY: {
-                        op.get(Constants.THREAD_FACTORY).set(parseRef(reader));
+                        op.get(CommonAttributes.THREAD_FACTORY).set(parseRef(reader));
                         break;
                     }
                     case PROPERTIES: {
-                        Map<String, String> props = parseProperties(reader);
-                        if (props != null && props.size() > 0) {
-                            ModelNode properties = op.get(PROPERTIES);
-                            for (Map.Entry<String, String> prop : props.entrySet()) {
-                                properties.add(prop.getKey(), prop.getValue());
-                            }
+                        ModelNode props = parseProperties(reader);
+                        if (props.isDefined()) {
+                            op.get(PROPERTIES).set(props);
                         }
                         break;
                     }
                     case QUEUE_LENGTH: {
-                        ScaledCount core = parseScaledCount(reader);
-                        op.get(QUEUE_LENGTH_COUNT).set(core.getCount());
-                        op.get(QUEUE_LENGTH_PER_CPU).set(core.getPerCpu());
+                        op.get(QUEUE_LENGTH).set(parseScaledCount(reader));
                         foundQueueLength = true;
                         break;
                     }
@@ -373,7 +378,6 @@ public class NewThreadsExtension implements NewExtension {
                 }
                 throw missingRequiredElement(reader, missing);
             }
-
         }
 
 
@@ -414,29 +418,22 @@ public class NewThreadsExtension implements NewExtension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Element.forName(reader.getLocalName())) {
                     case MAX_THREADS: {
-                        ScaledCount maxThreads = parseScaledCount(reader);
-                        op.get(MAX_THREADS_COUNT).set(maxThreads.getCount());
-                        op.get(MAX_THREADS_PER_CPU).set(maxThreads.getPerCpu());
+                        op.get(MAX_THREADS).set(parseScaledCount(reader));
                         foundMaxThreads = true;
                         break;
                     }
                     case KEEPALIVE_TIME: {
-                        TimeSpec keepAliveTime = parseTimeSpec(reader);
-                        op.get(KEEPALIVE_TIME_DURATION).set(keepAliveTime.getDuration());
-                        op.get(KEEPALIVE_TIME_UNIT).set(keepAliveTime.getUnit().toString());
+                        op.get(KEEPALIVE_TIME).set(parseTimeSpec(reader));
                         break;
                     }
                     case THREAD_FACTORY: {
-                        op.get(Constants.THREAD_FACTORY).set(parseRef(reader));
+                        op.get(CommonAttributes.THREAD_FACTORY).set(parseRef(reader));
                         break;
                     }
                     case PROPERTIES: {
-                        Map<String, String> props = parseProperties(reader);
-                        if (props != null && props.size() > 0) {
-                            ModelNode properties = op.get(PROPERTIES);
-                            for (Map.Entry<String, String> prop : props.entrySet()) {
-                                properties.add(prop.getKey(), prop.getValue());
-                            }
+                        ModelNode props = parseProperties(reader);
+                        if (props.isDefined()) {
+                            op.get(PROPERTIES).set(props);
                         }
                         break;
                     }
@@ -487,29 +484,22 @@ public class NewThreadsExtension implements NewExtension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Element.forName(reader.getLocalName())) {
                     case MAX_THREADS: {
-                        ScaledCount maxThreads = parseScaledCount(reader);
-                        op.get(MAX_THREADS_COUNT).set(maxThreads.getCount());
-                        op.get(MAX_THREADS_PER_CPU).set(maxThreads.getPerCpu());
+                        op.get(MAX_THREADS).set(parseScaledCount(reader));
                         foundMaxThreads = true;
                         break;
                     }
                     case KEEPALIVE_TIME: {
-                        TimeSpec keepAliveTime = parseTimeSpec(reader);
-                        op.get(KEEPALIVE_TIME_DURATION).set(keepAliveTime.getDuration());
-                        op.get(KEEPALIVE_TIME_UNIT).set(keepAliveTime.getUnit().toString());
+                        op.get(KEEPALIVE_TIME).set(parseTimeSpec(reader));
                         break;
                     }
                     case THREAD_FACTORY: {
-                        op.get(Constants.THREAD_FACTORY).set(parseRef(reader));
+                        op.get(CommonAttributes.THREAD_FACTORY).set(parseRef(reader));
                         break;
                     }
                     case PROPERTIES: {
-                        Map<String, String> props = parseProperties(reader);
-                        if (props != null && props.size() > 0) {
-                            ModelNode properties = op.get(PROPERTIES);
-                            for (Map.Entry<String, String> prop : props.entrySet()) {
-                                properties.add(prop.getKey(), prop.getValue());
-                            }
+                        ModelNode props = parseProperties(reader);
+                        if (props.isDefined()) {
+                            op.get(PROPERTIES).set(props);
                         }
                         break;
                     }
@@ -567,29 +557,22 @@ public class NewThreadsExtension implements NewExtension {
                         break;
                     }
                     case MAX_THREADS: {
-                        ScaledCount maxThreads = parseScaledCount(reader);
-                        op.get(MAX_THREADS_COUNT).set(maxThreads.getCount());
-                        op.get(MAX_THREADS_PER_CPU).set(maxThreads.getPerCpu());
+                        op.get(MAX_THREADS).set(parseScaledCount(reader));
                         foundMaxThreads = true;
                         break;
                     }
                     case KEEPALIVE_TIME: {
-                        TimeSpec keepAliveTime = parseTimeSpec(reader);
-                        op.get(KEEPALIVE_TIME_DURATION).set(keepAliveTime.getDuration());
-                        op.get(KEEPALIVE_TIME_UNIT).set(keepAliveTime.getUnit().toString());
+                        op.get(KEEPALIVE_TIME).set(parseTimeSpec(reader));
                         break;
                     }
                     case THREAD_FACTORY: {
-                        op.get(Constants.THREAD_FACTORY).set(parseRef(reader));
+                        op.get(CommonAttributes.THREAD_FACTORY).set(parseRef(reader));
                         break;
                     }
                     case PROPERTIES: {
-                        Map<String, String> props = parseProperties(reader);
-                        if (props != null && props.size() > 0) {
-                            ModelNode properties = op.get(PROPERTIES);
-                            for (Map.Entry<String, String> prop : props.entrySet()) {
-                                properties.add(prop.getKey(), prop.getValue());
-                            }
+                        ModelNode props = parseProperties(reader);
+                        if (props.isDefined()) {
+                            op.get(PROPERTIES).set(props);
                         }
                         break;
                     }
@@ -603,7 +586,7 @@ public class NewThreadsExtension implements NewExtension {
             }
         }
 
-        private ScaledCount parseScaledCount(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        private ModelNode parseScaledCount(final XMLExtendedStreamReader reader) throws XMLStreamException {
             final int attrCount = reader.getAttributeCount();
             BigDecimal count = null;
             BigDecimal perCpu = null;
@@ -648,11 +631,15 @@ public class NewThreadsExtension implements NewExtension {
                 throw unexpectedElement(reader);
             }
 
-            return new ScaledCount(count, perCpu);
+            ModelNode node = new ModelNode();
+            node.get(COUNT).set(count);
+            node.get(PER_CPU).set(perCpu);
+
+            return node;
         }
 
 
-        private TimeSpec parseTimeSpec(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        private ModelNode parseTimeSpec(final XMLExtendedStreamReader reader) throws XMLStreamException {
             final int attrCount = reader.getAttributeCount();
             TimeUnit unit = null;
             Long duration = null;
@@ -688,7 +675,10 @@ public class NewThreadsExtension implements NewExtension {
                 throw unexpectedElement(reader);
             }
 
-            return new TimeSpec(unit, duration);
+            ModelNode node = new ModelNode();
+            node.get(TIME).set(duration);
+            node.get(UNIT).set(unit.toString());
+            return node;
         }
 
         private String parseRef(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -718,8 +708,8 @@ public class NewThreadsExtension implements NewExtension {
             return refName;
         }
 
-        private Map<String, String> parseProperties(final XMLExtendedStreamReader reader) throws XMLStreamException {
-            final Map<String, String> props = new HashMap<String, String>();
+        private ModelNode parseProperties(final XMLExtendedStreamReader reader) throws XMLStreamException {
+            ModelNode node = new ModelNode();
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Element.forName(reader.getLocalName())) {
                     case PROPERTY: {
@@ -753,7 +743,7 @@ public class NewThreadsExtension implements NewExtension {
                             }
                             throw missingRequired(reader, missing);
                         }
-                        props.put(propName, propValue);
+                        node.add(propName, propValue);
 
                         if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                             throw unexpectedElement(reader);
@@ -761,7 +751,7 @@ public class NewThreadsExtension implements NewExtension {
                     }
                 }
             }
-            return props;
+            return node;
         }
 
         /** {@inheritDoc} */
@@ -851,10 +841,10 @@ public class NewThreadsExtension implements NewExtension {
             }
             writeRef(writer, node, Element.HANDOFF_EXECUTOR, HANDOFF_EXECUTOR);
             writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
-            writeThreads(writer, node, Element.CORE_THREADS, CORE_THREADS_COUNT, CORE_THREADS_PER_CPU);
-            writeThreads(writer, node, Element.QUEUE_LENGTH, QUEUE_LENGTH_COUNT, QUEUE_LENGTH_PER_CPU);
-            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
-            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+            writeThreads(writer, node, Element.CORE_THREADS);
+            writeThreads(writer, node, Element.QUEUE_LENGTH);
+            writeThreads(writer, node, Element.MAX_THREADS);
+            writeTime(writer, node, Element.KEEPALIVE_TIME);
 
             if (node.hasDefined(PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
@@ -874,8 +864,8 @@ public class NewThreadsExtension implements NewExtension {
             }
             writeRef(writer, node, Element.HANDOFF_EXECUTOR, HANDOFF_EXECUTOR);
             writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
-            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
-            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+            writeThreads(writer, node, Element.MAX_THREADS);
+            writeTime(writer, node, Element.KEEPALIVE_TIME);
 
             if (node.hasDefined(PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
@@ -893,8 +883,8 @@ public class NewThreadsExtension implements NewExtension {
             }
 
             writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
-            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
-            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+            writeThreads(writer, node, Element.MAX_THREADS);
+            writeTime(writer, node, Element.KEEPALIVE_TIME);
 
             if (node.hasDefined(PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
@@ -912,8 +902,8 @@ public class NewThreadsExtension implements NewExtension {
             }
 
             writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
-            writeThreads(writer, node, Element.MAX_THREADS, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
-            writeTime(writer, node, Element.KEEPALIVE_TIME, KEEPALIVE_TIME_DURATION, KEEPALIVE_TIME_UNIT);
+            writeThreads(writer, node, Element.MAX_THREADS);
+            writeTime(writer, node, Element.KEEPALIVE_TIME);
 
             if (node.hasDefined(PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
@@ -930,20 +920,30 @@ public class NewThreadsExtension implements NewExtension {
             }
         }
 
-        private void writeThreads(final XMLExtendedStreamWriter writer, final ModelNode node, Element element, String count, String perCpu) throws XMLStreamException {
-            if (node.hasDefined(count) && node.hasDefined(perCpu)) {
+        private void writeThreads(final XMLExtendedStreamWriter writer, final ModelNode node, Element element) throws XMLStreamException {
+            if (node.hasDefined(element.getLocalName())) {
                 writer.writeStartElement(element.getLocalName());
-                writeAttribute(writer, Attribute.COUNT, node.get(count));
-                writeAttribute(writer, Attribute.PER_CPU, node.get(perCpu));
+                ModelNode threads = node.get(element.getLocalName());
+                if (node.hasDefined(COUNT)) {
+                    writeAttribute(writer, Attribute.COUNT, threads.get(COUNT));
+                }
+                if (node.hasDefined(PER_CPU)) {
+                    writeAttribute(writer, Attribute.PER_CPU, threads.get(PER_CPU));
+                }
                 writer.writeEndElement();
             }
         }
 
-        private void writeTime(final XMLExtendedStreamWriter writer, final ModelNode node, Element element, String time, String unit) throws XMLStreamException {
-            if (node.hasDefined(time) && node.hasDefined(unit)) {
+        private void writeTime(final XMLExtendedStreamWriter writer, final ModelNode node, Element element) throws XMLStreamException {
+            if (node.hasDefined(element.getLocalName())) {
                 writer.writeStartElement(element.getLocalName());
-                writeAttribute(writer, Attribute.TIME, node.get(time));
-                writeAttribute(writer, Attribute.UNIT, node.get(unit));
+                ModelNode keepalive = node.get(element.getLocalName());
+                if (keepalive.hasDefined(TIME)) {
+                    writeAttribute(writer, Attribute.TIME, keepalive.get(TIME));
+                }
+                if (keepalive.hasDefined(UNIT)) {
+                    writeAttribute(writer, Attribute.UNIT, keepalive.get(UNIT));
+                }
                 writer.writeEndElement();
             }
         }

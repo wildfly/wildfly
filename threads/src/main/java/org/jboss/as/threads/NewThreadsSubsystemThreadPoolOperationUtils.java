@@ -22,21 +22,20 @@
 package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.threads.Constants.ALLOW_CORE_TIMEOUT;
-import static org.jboss.as.threads.Constants.BLOCKING;
-import static org.jboss.as.threads.Constants.CORE_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.CORE_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.HANDOFF_EXECUTOR;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_DURATION;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_UNIT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.PROPERTIES;
-import static org.jboss.as.threads.Constants.QUEUE_LENGTH_COUNT;
-import static org.jboss.as.threads.Constants.QUEUE_LENGTH_PER_CPU;
-import static org.jboss.as.threads.Constants.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
+import static org.jboss.as.threads.CommonAttributes.COUNT;
+import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PER_CPU;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.TIME;
+import static org.jboss.as.threads.CommonAttributes.UNIT;
 
-import java.math.BigDecimal;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -93,8 +92,8 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
         params.blocking = has(operation, BLOCKING) ? operation.get(BLOCKING).asBoolean() : false;
         params.allowCoreTimeout = has(operation, ALLOW_CORE_TIMEOUT) ? operation.get(ALLOW_CORE_TIMEOUT).asBoolean() : false;
         params.handoffExecutor = has(operation, HANDOFF_EXECUTOR) ? operation.get(HANDOFF_EXECUTOR).asString() : null;
-        params.coreThreads = getScaledCount(operation, CORE_THREADS_COUNT, CORE_THREADS_PER_CPU);
-        params.queueLength = getScaledCount(operation, QUEUE_LENGTH_COUNT, QUEUE_LENGTH_PER_CPU);
+        params.coreThreads = getScaledCount(operation, CORE_THREADS);
+        params.queueLength = getScaledCount(operation, QUEUE_LENGTH);
 
         return params;
     }
@@ -115,31 +114,37 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
                 }
             }
         }
-        params.maxThreads = getScaledCount(operation, MAX_THREADS_COUNT, MAX_THREADS_PER_CPU);
+        params.maxThreads = getScaledCount(operation, MAX_THREADS);
+        if (params.maxThreads == null) {
+            throw new IllegalArgumentException(MAX_THREADS + " was not defined");
+        }
 
-        final long duration = has(operation, KEEPALIVE_TIME_DURATION) ? operation.get(KEEPALIVE_TIME_DURATION).asLong() : -1;
-        final TimeUnit unit = has(operation, KEEPALIVE_TIME_UNIT) ? Enum.valueOf(TimeUnit.class, operation.get(KEEPALIVE_TIME_UNIT).asString()) : null;
-        if (duration == - 1 && unit != null) {
-            throw new IllegalArgumentException("Need " + KEEPALIVE_TIME_DURATION + " when " + KEEPALIVE_TIME_UNIT + " is set"); //TODO i18n
+        if (has(operation, KEEPALIVE_TIME)) {
+            ModelNode keepaliveTime = operation.get(KEEPALIVE_TIME);
+            if (!has(keepaliveTime, TIME)) {
+                throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
+            }
+            if (!has(keepaliveTime, UNIT)) {
+                throw new IllegalArgumentException("Missing '" + UNIT + "' for '" + KEEPALIVE_TIME + "'");
+            }
+            params.keepAliveTime = new TimeSpec(Enum.valueOf(TimeUnit.class, keepaliveTime.get(UNIT).asString()), keepaliveTime.get(TIME).asLong());
         }
-        if (duration != - 1 && unit == null) {
-            throw new IllegalArgumentException("Need " + KEEPALIVE_TIME_UNIT + " when " + KEEPALIVE_TIME_DURATION + " is set"); //TODO i18n
-        }
-        params.keepAliveTime = unit != null ? new TimeSpec(unit, duration) : null;
 
         return params;
     }
 
-    private static ScaledCount getScaledCount(ModelNode operation, String count, String perCpu) {
-        final BigDecimal maxThreadsCount = has(operation, count) ? operation.get(count).asBigDecimal() : null;
-        final BigDecimal maxThreadsPerCpu = has(operation, perCpu) ? operation.get(perCpu).asBigDecimal() : null;
-        if (maxThreadsCount != null && maxThreadsPerCpu == null) {
-            throw new IllegalArgumentException("Need " + perCpu + " when " + count + " is set"); //TODO i18n
+    private static ScaledCount getScaledCount(ModelNode operation, String paramName) {
+        if (has(operation, paramName)) {
+            ModelNode scaledCount = operation.get(paramName);
+            if (!has(scaledCount, COUNT)) {
+                throw new IllegalArgumentException("Missing '" + COUNT + "' for '" + paramName + "'");
+            }
+            if (!has(scaledCount, PER_CPU)) {
+                throw new IllegalArgumentException("Missing '" + PER_CPU + "' for '" + paramName + "'");
+            }
+            return new ScaledCount(scaledCount.get(COUNT).asBigDecimal(), scaledCount.get(PER_CPU).asBigDecimal());
         }
-        if (maxThreadsCount == null && maxThreadsPerCpu != null) {
-            throw new IllegalArgumentException("Need " + count + " when " + perCpu + " is set"); //TODO i18n
-        }
-        return maxThreadsCount != null ? new ScaledCount(maxThreadsCount, maxThreadsPerCpu) : null;
+        return null;
     }
 
     private static boolean has(ModelNode operation, String name) {

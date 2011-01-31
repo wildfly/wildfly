@@ -26,10 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.threads.Constants.GROUP_NAME;
-import static org.jboss.as.threads.Constants.PRIORITY;
-import static org.jboss.as.threads.Constants.PROPERTIES;
-import static org.jboss.as.threads.Constants.THREAD_NAME_PATTERN;
+import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
+import static org.jboss.as.threads.CommonAttributes.PRIORITY;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -39,7 +39,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
@@ -64,16 +63,6 @@ public class NewThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOpe
             throw new IllegalArgumentException(PRIORITY + " is out of range " + priority); //TODO i18n
         }
         final ModelNode properties = has(operation, PROPERTIES) ? operation.get(PROPERTIES) : null;
-        if (properties != null) {
-            if (properties.getType() != ModelType.LIST) {
-                throw new IllegalArgumentException(PROPERTIES + " must be a list of properties"); //TODO i18n
-            }
-            for (ModelNode property : properties.asList()) {
-                if (property.getType() != ModelType.PROPERTY) {
-                    throw new IllegalArgumentException(PROPERTIES + " must be a list of properties"); //TODO i18n
-                }
-            }
-        }
 
         if (context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

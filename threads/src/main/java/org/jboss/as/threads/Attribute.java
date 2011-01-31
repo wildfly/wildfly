@@ -31,17 +31,17 @@ import java.util.Map;
 public enum Attribute {
     UNKNOWN(null),
     /* Threads 1.0 attributes, in alpha order */
-    ALLOW_CORE_TIMEOUT("allow-core-timeout"),
-    BLOCKING("blocking"),
-    COUNT("count"),
-    GROUP_NAME("group-name"),
-    NAME("name"),
-    THREAD_NAME_PATTERN("thread-name-pattern"),
-    TIME("time"),
-    PER_CPU("per-cpu"),
-    PRIORITY("priority"),
-    UNIT("unit"),
-    VALUE("value"),
+    ALLOW_CORE_TIMEOUT(CommonAttributes.ALLOW_CORE_TIMEOUT),
+    BLOCKING(CommonAttributes.BLOCKING),
+    COUNT(CommonAttributes.COUNT),
+    GROUP_NAME(CommonAttributes.GROUP_NAME),
+    NAME(CommonAttributes.NAME),
+    THREAD_NAME_PATTERN(CommonAttributes.THREAD_NAME_PATTERN),
+    TIME(CommonAttributes.TIME),
+    PER_CPU(CommonAttributes.PER_CPU),
+    PRIORITY(CommonAttributes.PRIORITY),
+    UNIT(CommonAttributes.UNIT),
+    VALUE(CommonAttributes.VALUE),
     ;
     private final String name;
 

@@ -26,14 +26,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.Constants.BLOCKING;
-import static org.jboss.as.threads.Constants.HANDOFF_EXECUTOR;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_DURATION;
-import static org.jboss.as.threads.Constants.KEEPALIVE_TIME_UNIT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_COUNT;
-import static org.jboss.as.threads.Constants.MAX_THREADS_PER_CPU;
-import static org.jboss.as.threads.Constants.PROPERTIES;
-import static org.jboss.as.threads.Constants.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
@@ -86,17 +84,11 @@ public class NewQueuelessThreadPoolRemove implements RuntimeOperationHandler, Mo
         if (model.has(PROPERTIES)) {
             compensating.get(PROPERTIES).set(model.get(PROPERTIES));
         }
-        if (model.has(MAX_THREADS_COUNT)) {
-            compensating.get(MAX_THREADS_COUNT).set(model.get(MAX_THREADS_COUNT));
+        if (model.has(MAX_THREADS)) {
+            compensating.get(MAX_THREADS).set(model.get(MAX_THREADS));
         }
-        if (model.has(MAX_THREADS_PER_CPU)) {
-            compensating.get(MAX_THREADS_PER_CPU).set(model.get(MAX_THREADS_PER_CPU));
-        }
-        if (model.has(KEEPALIVE_TIME_DURATION)) {
-            compensating.get(KEEPALIVE_TIME_DURATION).set(model.get(KEEPALIVE_TIME_DURATION));
-        }
-        if (model.has(KEEPALIVE_TIME_UNIT)) {
-            compensating.get(KEEPALIVE_TIME_UNIT).set(model.get(KEEPALIVE_TIME_UNIT));
+        if (model.has(KEEPALIVE_TIME)) {
+            compensating.get(KEEPALIVE_TIME).set(model.get(KEEPALIVE_TIME));
         }
         if (model.has(BLOCKING)) {
             compensating.get(BLOCKING).set(model.get(BLOCKING));

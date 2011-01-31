@@ -27,28 +27,30 @@ package org.jboss.as.threads;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-class Constants {
+class CommonAttributes {
     static final String ALLOW_CORE_TIMEOUT = "allow-core-timeout";
     static final String BLOCKING = "blocking";
     static final String BOUNDED_QUEUE_THREAD_POOL = "bounded-queue-thread-pool";
-    static final String CORE_THREADS_COUNT = "core-threads-count";
-    static final String CORE_THREADS_PER_CPU = "core-threads-per-cpu";
+    static final String CORE_THREADS = "core-threads";
+    static final String COUNT = "count";
+    static final String PER_CPU = "per-cpu";
     static final String HANDOFF_EXECUTOR = "handoff-executor";
     static final String NAME = "name";
     static final String GROUP_NAME = "group-name";
-    static final String KEEPALIVE_TIME_DURATION = "keepalive-time-duration";
-    static final String KEEPALIVE_TIME_UNIT = "keepalive-time-unit";
-    static final String MAX_THREADS_COUNT = "max-threads-count";
-    static final String MAX_THREADS_PER_CPU = "max-threads-per-cpu";
+    static final String KEEPALIVE_TIME = "keepalive-time";
+    static final String MAX_THREADS = "max-threads";
     static final String PRIORITY = "priority";
     static final String PROPERTIES = "properties";
+    static final String PROPERTY = "property";
     static final String QUEUELESS_THREAD_POOL = "queueless-thread-pool";
-    static final String QUEUE_LENGTH_COUNT = "queue-length-count";
-    static final String QUEUE_LENGTH_PER_CPU = "queue-length-per-cpu";
+    static final String QUEUE_LENGTH = "queue-length";
     static final String SCHEDULED_THREAD_POOL = "scheduled-thread-pool";
     static final String THREADS = "threads";
+    static final String TIME = "time";
     static final String THREAD_FACTORY = "thread-factory";
     static final String THREAD_NAME_PATTERN = "thread-name-pattern";
     static final String THREAD_POOL = "thread-pool";
     static final String UNBOUNDED_QUEUE_THREAD_POOL = "unbounded-queue-thread-pool";
+    static final String UNIT = "unit";
+    static final String VALUE = "value";
 }
