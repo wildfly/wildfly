@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.0" name="javax.xml.bind.api">
     <dependencies>
         <module name="javax.activation.api" export="true"/>
-        <module name="com.sun.xml.bind" export="true" services="export"/>
+        <module name="com.sun.xml.bind"/>
         <module name="javax.api"/>
     </dependencies>
 

@@ -51,7 +51,7 @@ import org.jboss.modules.filter.PathFilters;
 public class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier APACHE_CXF = ModuleIdentifier.create("org.apache.cxf");
-    private static final ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
+    private static final ModuleIdentifier JAXB_IMPL = ModuleIdentifier.create("com.sun.xml.bind");
     private static final ModuleIdentifier JBOSS_WS_COMMON = ModuleIdentifier.create("org.jboss.ws.common");
     private static final ModuleIdentifier JBOSS_WS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
     private static final ModuleIdentifier JBOSS_WS_CXF_CLIENT = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-client");
@@ -66,7 +66,7 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
             final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
 
             // FIXME see if/how we can or should avoid (or at least limit) exposing the whole server stack code
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAXB_API, false, false, true));
+            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAXB_IMPL, false, false, true));
             deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_SPI, false, false, true));
             deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_COMMON, false, false, true));
             deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_CXF_CLIENT, false, false, true));
