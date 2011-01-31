@@ -30,6 +30,16 @@ import org.jboss.as.controller.OperationHandler;
  */
 public class AttributeAccess {
 
+    /**
+     * The {@link AttributeAccess.AccessType}.
+     *
+     * <ul>
+     *   <li>{@code READ_ONLY} defines a read-only attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME}.</li>
+     *   <li>{@code READ_WRITE} defines a read-write attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME}.</li>
+     *   <li>{@code METRIC} implies a read-only {@code Storage.RUNTIME} attribute.</li>
+     * </ul>
+     *
+     */
     public static enum AccessType {
         READ_ONLY("read-only"),
         READ_WRITE("read-write"),
@@ -47,6 +57,10 @@ public class AttributeAccess {
         }
     }
 
+    /**
+     * The {@link AttributeAccess.Storage} indicates whether the attribute is
+     * derived from the configuration or is a runtime attribute.
+     */
     public static enum Storage {
 
         CONFIGURATION("configuration"),
@@ -72,6 +86,7 @@ public class AttributeAccess {
 
     public AttributeAccess(final AccessType access, final Storage storage, final OperationHandler readHandler, final OperationHandler writeHandler) {
         assert access != null : "access is null";
+        assert storage != null : "storage is null";
         this.access = access;
         this.readHandler = readHandler;
         this.writeHandler = writeHandler;
@@ -81,18 +96,38 @@ public class AttributeAccess {
         }
     }
 
+    /**
+     * Get the access type.
+     *
+     * @return the access type
+     */
     public AccessType getAccessType() {
         return access;
     }
 
+    /**
+     * Get the storage type.
+     *
+     * @return the storage type
+     */
     public Storage getStorageType() {
         return storage;
     }
 
+    /**
+     * Get the read handler.
+     *
+     * @return the read handler, <code>null</code> if not undefined
+     */
     public OperationHandler getReadHandler() {
         return readHandler;
     }
 
+    /**
+     * Get the write handler.
+     *
+     * @return the write handler, <code>null</code> if not undefined.
+     */
     public OperationHandler getWriteHandler() {
         return writeHandler;
     }

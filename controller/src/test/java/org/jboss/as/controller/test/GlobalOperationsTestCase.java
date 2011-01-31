@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -1031,6 +1032,14 @@ public class GlobalOperationsTestCase {
                 }
             });
         }
+
+        /**
+         * Override to get the actual result from the response.
+         */
+        public ModelNode execute(ModelNode operation) throws OperationFailedException {
+            return super.execute(operation).get(RESULT);
+        }
+
     }
 
     static class TestMetricHandler implements OperationHandler {

@@ -38,6 +38,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.dmr.ModelNode;
 
 final class ConcreteNodeRegistration extends AbstractNodeRegistration {
@@ -240,7 +241,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
                 // in the valid attribute "foo" not being readable
                 final ModelNode desc = descriptionProvider.getModelDescription(null);
                 if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
-                    access = new AttributeAccess(AccessType.READ_ONLY, null, null, null);
+                    access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null);
                 }
             }
             return access;

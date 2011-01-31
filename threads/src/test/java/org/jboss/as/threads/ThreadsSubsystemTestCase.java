@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.threads.Constants.ALLOW_CORE_TIMEOUT;
@@ -824,6 +825,14 @@ public class ThreadsSubsystemTestCase {
         @Override
         protected ModelNodeRegistration getRegistry() {
             return super.getRegistry();
+        }
+
+        /**
+         * Override to get the actual result from the response.
+         */
+        @Override
+        public ModelNode execute(ModelNode operation) throws OperationFailedException {
+            return super.execute(operation).get(RESULT);
         }
     }
 

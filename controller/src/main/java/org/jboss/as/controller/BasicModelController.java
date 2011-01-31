@@ -22,8 +22,12 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -275,7 +279,7 @@ public class BasicModelController implements ModelController {
             @Override
             public void handleResultFragment(final String[] location, final ModelNode result) {
                 synchronized (finalResult) {
-                    finalResult.get(location).set(result);
+                    finalResult.get(RESULT).get(location).set(result);
                 }
             }
 
@@ -283,6 +287,9 @@ public class BasicModelController implements ModelController {
             public void handleResultComplete(final ModelNode compensatingOperation) {
                 synchronized (finalResult) {
                     status.set(1);
+                    if(compensatingOperation != null) {
+                        finalResult.get(COMPENSATING_OPERATION).set(compensatingOperation);
+                    }
                     finalResult.notify();
                 }
             }
@@ -291,7 +298,7 @@ public class BasicModelController implements ModelController {
             public void handleFailed(final ModelNode failureDescription) {
                 synchronized (finalResult) {
                     status.set(3);
-                    finalResult.set(failureDescription);
+                    finalResult.get(FAILURE_DESCRIPTION).set(failureDescription);
                     finalResult.notify();
                 }
             }
@@ -311,9 +318,12 @@ public class BasicModelController implements ModelController {
                     try {
                         final int s = status.get();
                         switch (s) {
-                            case 1: return finalResult;
-                            case 2: throw new CancellationException();
-                            case 3: throw new OperationFailedException(finalResult);
+                            case 1: finalResult.get(OUTCOME).set("success");
+                                return finalResult;
+                            case 2: finalResult.get(OUTCOME).set("cancelled");
+                                throw new CancellationException();
+                            case 3: finalResult.get(OUTCOME) .set("failed");
+                                throw new OperationFailedException(finalResult);
                         }
                         finalResult.wait();
                     } catch (final InterruptedException e) {

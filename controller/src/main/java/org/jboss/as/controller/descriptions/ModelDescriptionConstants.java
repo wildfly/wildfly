@@ -21,6 +21,8 @@
  */
 package org.jboss.as.controller.descriptions;
 
+import org.jboss.as.controller.registry.AttributeAccess;
+
 /**
  * String constants frequently used in model descriptions.
  *
@@ -30,6 +32,7 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
+    /** The key for {@link AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADD_OPERATION = "add-operation";
@@ -42,11 +45,13 @@ public class ModelDescriptionConstants {
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
     public static final String CRITERIA = "criteria";
+    public static final String COMPENSATING_OPERATION = "compensating-operation";
     public static final String DEFAULT = "default";
     public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String EXTENSION = "extension";
+    public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FIXED_PORT = "fixed-port";
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
@@ -82,6 +87,8 @@ public class ModelDescriptionConstants {
     public static final String OPERATIONS = "operations";
     /** Use this standard operation address field in the operation *description* ModelNode */
     public static final String OPERATION_NAME = "operation-name";
+    public static final String OUTCOME = "outcome";
+    public static final String RESULT = "result";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String PATH = "path";
     public static final String PORT = "port";
@@ -93,6 +100,7 @@ public class ModelDescriptionConstants {
     public static final String READ_OPERATION_DESCRIPTION_OPERATION = "read-operation-description";
     public static final String READ_OPERATION_NAMES_OPERATION = "read-operation-names";
     public static final String READ_RESOURCE_DESCRIPTION_OPERATION = "read-resource-description";
+    public static final String READ_RESOURCE_METRICS = "read-resource-metrics";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String RELATIVE_TO = "relative-to";
     public static final String REMOVE = "remove";
@@ -109,7 +117,10 @@ public class ModelDescriptionConstants {
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
     public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";
     public static final String START = "start";
+    /** The key for {@link AttributeAccess.Storage} fields. */
+    public static final String STORAGE = "storage";
     public static final String SUBSYSTEM = "subsystem";
+    public static final String SUCCESS = "success";
     public static final String SYSTEM_PROPERTY = "system-property";
     public static final String SYSTEM_PROPERTIES = "system-properties";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";

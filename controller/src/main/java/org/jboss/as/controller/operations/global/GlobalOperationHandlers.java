@@ -35,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 
 import java.util.Iterator;
 import java.util.Locale;
@@ -54,10 +56,12 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Global {@code OperationHanlder}s.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -85,6 +89,12 @@ public class GlobalOperationHandlers {
         return node;
     }
 
+    /**
+     * {@link OperationHandler} reading a part of the model. The result will only contain the current attributes of a node by default,
+     * excluding all addressable children and runtime attributes. Setting the request parameter "recursive" to "true" will recursively include
+     * all children and configuration attributes. Non-recursive queries can include runtime attributes by setting the request parameter
+     * "include-runtime" to "true".
+     */
     public static class ReadResourceHandler implements ModelQueryOperationHandler {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -184,11 +194,14 @@ public class GlobalOperationHandlers {
                 PathElement element = it.next();
                 resultNode = resultNode.require(element.getKey()).require(element.getValue());
             }
-            resultNode.set(proxyResult.clone());
+            resultNode.set(proxyResult.get(RESULT).clone());
         }
 
     };
 
+    /**
+     * {@link OperationHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
+     */
     public static class ReadAttributeHandler implements ModelQueryOperationHandler {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -213,6 +226,9 @@ public class GlobalOperationHandlers {
         }
     };
 
+    /**
+     * {@link OperationHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
+     */
     public static class WriteAttributeHandler implements ModelUpdateOperationHandler {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -235,6 +251,9 @@ public class GlobalOperationHandlers {
         }
     };
 
+    /**
+     * {@link OperationHandler} querying the children names of a given "child-type".
+     */
     public static final ModelQueryOperationHandler READ_CHILDREN_NAMES = new ModelQueryOperationHandler() {
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -278,6 +297,9 @@ public class GlobalOperationHandlers {
         }
     };
 
+    /**
+     * {@link OperationHandler} returning the names of the defined operations at a given model address.
+     */
     public static final ModelQueryOperationHandler READ_OPERATION_NAMES = new ModelQueryOperationHandler() {
 
         @Override
@@ -304,6 +326,9 @@ public class GlobalOperationHandlers {
         }
     };
 
+    /**
+     * {@link OperationHandler} returning the type description of a single operation description.
+     */
     public static final ModelQueryOperationHandler READ_OPERATION_DESCRIPTION = new ModelQueryOperationHandler() {
 
         @Override
@@ -325,6 +350,9 @@ public class GlobalOperationHandlers {
         }
     };
 
+    /**
+     * {@link OperationHandler} querying the complete type description of a given model node.
+     */
     public static final ModelQueryOperationHandler READ_RESOURCE_DESCRIPTION = new ModelQueryOperationHandler() {
 
         @Override
@@ -408,7 +436,9 @@ public class GlobalOperationHandlers {
                      // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
                      // in the valid attribute "foo" not being readable
                      final AccessType accessType = access == null ? AccessType.READ_ONLY : access.getAccessType();
+                     final Storage storage = access == null ? Storage.CONFIGURATION : access.getStorageType();
                      result.get(ATTRIBUTES, attr, ACCESS_TYPE).set(accessType.toString()); //TODO i18n
+                     result.get(ATTRIBUTES, attr, STORAGE).set(storage.toString());
                 }
             }
             if (recursive && result.has(CHILDREN)) {
@@ -432,7 +462,7 @@ public class GlobalOperationHandlers {
                         if (locale != null) {
                             operation.get(OPERATIONS).set(locale.toString());
                         }
-                        child = proxyControllers.iterator().next().execute(operation);
+                        child = proxyControllers.iterator().next().execute(operation).get(RESULT);
 
                     } else {
                         child = provider.getModelDescription(locale);
