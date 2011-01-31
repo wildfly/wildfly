@@ -33,8 +33,7 @@
         <module name="javax.annotation.api" />
         <module name="javax.jws.api" />
         <module name="javax.servlet.api" />
-        <module name="javax.xml.bind.api" />
-        <module name="com.sun.xml.bind" services="import"/>
+        <module name="javax.xml.bind.api" services="import"/>
         <module name="javax.xml.soap.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />

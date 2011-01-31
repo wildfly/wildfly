@@ -42,7 +42,8 @@
         <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="import"/>
         <module name="org.apache.cxf" services="import">
           <imports>
-            <include path="**/*"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF/spring.*"/>
           </imports>
         </module>
         <module name="org.jboss.common-core" />
