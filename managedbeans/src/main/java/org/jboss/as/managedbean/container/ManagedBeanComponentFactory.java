@@ -25,11 +25,11 @@ package org.jboss.as.managedbean.container;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import org.jboss.as.ee.container.Component;
-import org.jboss.as.ee.container.ComponentFactory;
-import org.jboss.as.ee.container.injection.ResourceInjection;
-import org.jboss.as.ee.container.injection.ResourceInjectionResolver;
-import org.jboss.as.ee.container.liefcycle.ComponentLifecycle;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentFactory;
+import org.jboss.as.ee.component.injection.ResourceInjection;
+import org.jboss.as.ee.component.injection.ResourceInjectionResolver;
+import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.naming.deployment.JndiName;
@@ -38,7 +38,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Manged-bean specific implementation of a {@link org.jboss.as.ee.container.ComponentFactory}.
+ * Manged-bean specific implementation of a {@link org.jboss.as.ee.component.ComponentFactory}.
  *
  * @author John Bailey
  */
@@ -55,7 +55,7 @@ public class ManagedBeanComponentFactory implements ComponentFactory {
         final ServiceName envContextServiceName = moduleContext.getContextServiceName().append("env");
 
         return new ConstructedComponent() {
-            public Component<?> getBeanContainer() {
+            public Component<?> getComponent() {
                 return container;
             }
 

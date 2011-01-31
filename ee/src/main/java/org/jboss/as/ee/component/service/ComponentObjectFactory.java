@@ -20,26 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.component.service;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
-
-import java.util.List;
-import org.jboss.invocation.InterceptorFactory;
+import java.util.Hashtable;
+import javax.naming.Context;
+import javax.naming.Name;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.naming.ServiceReferenceObjectFactory;
 
 /**
- * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
+ * Object factory used to retrieve instances of beans managed by a {@link org.jboss.as.ee.component.Component}.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanComponent<T> extends AbstractComponent<T> {
-    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, Map<Method, InterceptorFactory> methodInterceptorFactories) {
-        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
+    @SuppressWarnings("unchecked")
+    public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
+        final Component<Object> component = (Component<Object>)serviceValue;
+        return component.createProxy();
     }
 }

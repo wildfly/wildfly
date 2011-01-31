@@ -20,26 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
-
-import java.lang.reflect.Method;
-import java.util.Map;
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
-
-import java.util.List;
-import org.jboss.invocation.InterceptorFactory;
+package org.jboss.as.ee.component.liefcycle;
 
 /**
- * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
+ * Interceptor configuration for a lifecycle method.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanComponent<T> extends AbstractComponent<T> {
-    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, Map<Method, InterceptorFactory> methodInterceptorFactories) {
-        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+public class ComponentLifecycleConfiguration {
+    private final String methodName;
+
+    public ComponentLifecycleConfiguration(String methodName) {
+        this.methodName = methodName;
+    }
+
+    /**
+     * Get the lifecycle method name.
+     *
+     * @return The lifecycle method name
+     */
+    public String getMethodName() {
+        return methodName;
     }
 }

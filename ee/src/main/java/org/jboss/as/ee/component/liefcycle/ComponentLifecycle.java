@@ -20,26 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
-
-import java.lang.reflect.Method;
-import java.util.Map;
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
-
-import java.util.List;
-import org.jboss.invocation.InterceptorFactory;
+package org.jboss.as.ee.component.liefcycle;
 
 /**
- * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
+ * Interceptor representing a lifecycle method.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanComponent<T> extends AbstractComponent<T> {
-    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, Map<Method, InterceptorFactory> methodInterceptorFactories) {
-        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
-    }
+public interface ComponentLifecycle {
+    /**
+     * Invoke a method call.
+     *
+     * @param target The object being intercepted
+     * @throws Exception If any exceptions occur during interception
+     */
+    void invoke(final Object target) throws Exception;
 }

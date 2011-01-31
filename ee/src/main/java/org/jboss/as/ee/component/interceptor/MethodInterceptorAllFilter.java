@@ -20,26 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.component.interceptor;
 
 import java.lang.reflect.Method;
-import java.util.Map;
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
-
-import java.util.List;
-import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
+ * Method filter that will accept all methods.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanComponent<T> extends AbstractComponent<T> {
-    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, Map<Method, InterceptorFactory> methodInterceptorFactories) {
-        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+public class MethodInterceptorAllFilter implements MethodInterceptorFilter {
+    public static MethodInterceptorAllFilter INSTANCE = new MethodInterceptorAllFilter();
+
+    /**
+     * {@inheritDoc} *
+     */
+    public boolean intercepts(Method method) {
+        return true;
     }
 }

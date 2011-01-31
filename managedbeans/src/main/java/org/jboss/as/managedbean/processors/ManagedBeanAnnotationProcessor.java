@@ -26,7 +26,7 @@ import java.util.List;
 
 import javax.annotation.ManagedBean;
 
-import org.jboss.as.ee.container.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.managedbean.container.ManagedBeanComponentFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -82,7 +82,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
             final ComponentConfiguration containerConfig = new ComponentConfiguration(beanName, beanClassName, new ManagedBeanComponentFactory());
-            deploymentUnit.addToAttachmentList(org.jboss.as.ee.container.service.Attachments.BEAN_CONTAINER_CONFIGS, containerConfig);
+            deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.service.Attachments.COMPONENT_CONFIGS, containerConfig);
         }
     }
 

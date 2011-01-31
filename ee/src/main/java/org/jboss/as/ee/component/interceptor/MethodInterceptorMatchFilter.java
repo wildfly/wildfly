@@ -20,26 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.ee.component.interceptor;
 
 import java.lang.reflect.Method;
-import java.util.Map;
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
-
-import java.util.List;
-import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
+ * Method filter that will match only a specific method.
  *
- * @param <T> The managed bean object type
- *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class ManagedBeanComponent<T> extends AbstractComponent<T> {
-    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, Map<Method, InterceptorFactory> methodInterceptorFactories) {
-        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+public class MethodInterceptorMatchFilter implements MethodInterceptorFilter {
+    private final String methodName;
+    private final String[] paramTypes;
+
+    public MethodInterceptorMatchFilter(String methodName, String[] paramTypes) {
+        this.methodName = methodName;
+        this.paramTypes = paramTypes;
+    }
+
+    /**
+     * {@inheritDoc} *
+     */
+    public boolean intercepts(Method method) {
+        if (!method.getName().equals(methodName)) {
+            return false;
+        }
+        final Class<?>[] methodParamTypes = method.getParameterTypes();
+        if (methodParamTypes.length != paramTypes.length) {
+            return false;
+        }
+        for (int i = 0; i < methodParamTypes.length; i++) {
+            final Class<?> paramClass = methodParamTypes[i];
+            if (!paramClass.getName().equals(paramTypes[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

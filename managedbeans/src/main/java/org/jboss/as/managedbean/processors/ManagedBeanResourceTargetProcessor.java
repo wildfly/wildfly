@@ -24,9 +24,9 @@ package org.jboss.as.managedbean.processors;
 
 import java.util.List;
 import java.util.Map;
-import org.jboss.as.ee.container.ComponentConfiguration;
-import org.jboss.as.ee.container.injection.ResourceInjectionConfiguration;
-import org.jboss.as.ee.container.service.Attachments;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
+import org.jboss.as.ee.component.service.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -38,7 +38,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.container.ComponentConfiguration} instance and determining if
+ * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentConfiguration} instance and determining if
  * any of its resource injections target a managed bean.  If so it will set the correct lookup target on the resource
  * injection configuration.
  *
@@ -48,7 +48,7 @@ public class ManagedBeanResourceTargetProcessor implements DeploymentUnitProcess
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final List<ComponentConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.BEAN_CONTAINER_CONFIGS);
+        final List<ComponentConfiguration> containerConfigs = deploymentUnit.getAttachment(Attachments.COMPONENT_CONFIGS);
         if (containerConfigs == null || containerConfigs.isEmpty()) {
             return;
         }

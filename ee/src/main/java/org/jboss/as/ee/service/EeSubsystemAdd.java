@@ -22,10 +22,10 @@
 
 package org.jboss.as.ee.service;
 
-import org.jboss.as.ee.container.processor.ComponentInstallProcessor;
-import org.jboss.as.ee.container.processor.InterceptorAnnotationParsingProcessor;
-import org.jboss.as.ee.container.processor.LifecycleAnnotationParsingProcessor;
-import org.jboss.as.ee.container.processor.ResourceInjectionAnnotationParsingProcessor;
+import org.jboss.as.ee.component.processor.ComponentInstallProcessor;
+import org.jboss.as.ee.component.processor.InterceptorAnnotationParsingProcessor;
+import org.jboss.as.ee.component.processor.LifecycleAnnotationParsingProcessor;
+import org.jboss.as.ee.component.processor.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
 import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
@@ -71,7 +71,7 @@ public final class EeSubsystemAdd extends AbstractSubsystemAdd<EeSubsystemElemen
 
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_BEAN_CONTAINER, new ComponentInstallProcessor());
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
     }
 
     @Override
