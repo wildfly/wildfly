@@ -54,7 +54,7 @@
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
-        <!-- <extension module="org.jboss.as.osgi"/>-->
+        <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
@@ -140,6 +140,51 @@
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment socket-binding="txn-socket-process-id"/>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+            <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
+                <property name="manager.root">jboss-osgi</property>
+            </configuration>        
+            <properties>
+                <property name="org.jboss.osgi.system.modules">
+                org.apache.log4j,
+                org.jboss.arquillian.api,
+                org.jboss.arquillian.junit,
+                org.jboss.arquillian.protocol.osgi,
+                org.jboss.arquillian.spi,
+                org.jboss.as.osgi,
+                org.jboss.shrinkwrap.api,
+                javax.inject.api,
+                junit.junit
+                </property>
+                <property name="org.osgi.framework.system.packages.extra">
+                javax.transaction;version=1.1,
+                org.apache.log4j;version=1.2,
+                org.jboss.as.osgi.service;version=7.0,
+                org.jboss.logging;version=3.0,
+                org.jboss.osgi.deployment.deployer;version=1.0,
+                org.jboss.osgi.deployment.interceptor;version=1.0,
+                org.jboss.osgi.spi;version=1.0,
+                org.jboss.osgi.spi.capability;version=1.0,
+                org.jboss.osgi.spi.util;version=1.0,
+                org.jboss.osgi.testing;version=1.0,
+                org.jboss.osgi.vfs;version=1.0,
+
+                org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.osgi,
+                org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
+                org.jboss.shrinkwrap.impl.base,
+                org.junit, org.junit.runner, javax.inject
+                </property> 
+            </properties>
+            <modules>
+                <module identifier="org.osgi.compendium"/>
+                <module identifier="org.apache.aries.util"/>
+                <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
+                <module identifier="org.apache.felix.configadmin" start="true"/>
+                <module identifier="org.jboss.osgi.common" start="true"/>
+                <module identifier="org.apache.aries.jmx" start="true"/>
+                <module identifier="org.jboss.osgi.jmx" start="true"/>
+            </modules> 
+        </subsystem>               
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
             <journal-file-size>102400</journal-file-size> 
