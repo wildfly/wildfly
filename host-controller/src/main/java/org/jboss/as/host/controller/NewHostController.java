@@ -25,6 +25,9 @@
  */
 package org.jboss.as.host.controller;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -43,7 +46,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.SocketFactory;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.parsing.HostXml;
+import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
@@ -53,11 +61,11 @@ import org.jboss.as.domain.controller.DomainControllerImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.mgmt.DomainControllerClientOperationHandler;
 import org.jboss.as.domain.controller.mgmt.DomainControllerOperationHandler;
-import org.jboss.as.host.controller.mgmt.HostControllerOperationHandler;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ManagementOperationHandlerService;
-import org.jboss.as.host.controller.mgmt.ServerToHostControllerOperationHandler;
+import org.jboss.as.host.controller.mgmt.NewHostControllerOperationHandler;
+import org.jboss.as.host.controller.mgmt.NewServerToHostControllerOperationHandler;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -74,12 +82,14 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerState;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
@@ -102,7 +112,7 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Kabir Khan
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class HostController {
+public class NewHostController {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
@@ -126,7 +136,7 @@ public class HostController {
      */
     private final byte[] authCode;
 
-    public HostController(final HostControllerEnvironment environment, final byte[] authCode) {
+    public NewHostController(final HostControllerEnvironment environment, final byte[] authCode) {
         this.authCode = authCode;
         if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
@@ -210,7 +220,12 @@ public class HostController {
      * this process manageable by remote clients.
      */
     public void start() throws IOException {
+
         modelManager.start();
+
+        System.out.println("--- Parsing host.xml");
+        parseHostXml();
+        System.out.println("--- Parsed host.xml");
 
         // TODO set up logging for this process based on config in Host
 
@@ -242,7 +257,7 @@ public class HostController {
 
         // Last but not least the host controller service
         final ManagementElement managementElement = getHostModel().getManagementElement();
-        final HostControllerService hostControllerService = new HostControllerService(this);
+        final NewHostControllerService hostControllerService = new NewHostControllerService(this);
 
         batchBuilder.addService(SERVICE_NAME_BASE, hostControllerService)
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, hostControllerService.getManagementInterfaceInjector())
@@ -536,6 +551,7 @@ public class HostController {
 
     private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
         try {
+            System.out.println("---- Starting local DC");
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
             final XMLMapper mapper = XMLMapper.Factory.create();
@@ -565,7 +581,7 @@ public class HostController {
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerClientOperationHandler))
                 .install();
 
-            serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, new LocalDomainControllerConnection(HostController.this, domainController, fileRepository))
+            serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, new NewLocalDomainControllerConnection(NewHostController.this, domainController, fileRepository))
                 .addDependency(DomainController.SERVICE_NAME)
                 .install();
 
@@ -577,7 +593,7 @@ public class HostController {
     private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
-        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 10L);
+        final NewDomainControllerConnectionService domainControllerClientService = new NewDomainControllerConnectionService(this, fileRepository, 10L);
 
         final HostModel hostConfig = getHostModel();
         final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainControllerElement();
@@ -666,15 +682,15 @@ public class HostController {
             .install();
 
         //  Add the DC to host controller operation handler
-        final ManagementOperationHandlerService<HostControllerOperationHandler> operationHandlerService
-                = new ManagementOperationHandlerService<HostControllerOperationHandler>(new HostControllerOperationHandler(this));
+        final ManagementOperationHandlerService<NewHostControllerOperationHandler> operationHandlerService
+                = new ManagementOperationHandlerService<NewHostControllerOperationHandler>(new NewHostControllerOperationHandler(this));
         serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("host", "controller"), operationHandlerService)
             .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService))
             .install();
 
         //  Add the server to host controller operation handler
-        final ManagementOperationHandlerService<ServerToHostControllerOperationHandler> serverOperationHandlerService
-                = new ManagementOperationHandlerService<ServerToHostControllerOperationHandler>(new ServerToHostControllerOperationHandler(this));
+        final ManagementOperationHandlerService<NewServerToHostControllerOperationHandler> serverOperationHandlerService
+                = new ManagementOperationHandlerService<NewServerToHostControllerOperationHandler>(new NewServerToHostControllerOperationHandler(this));
         serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "to", "host", "controller"), serverOperationHandlerService)
             .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverOperationHandlerService))
             .install();
@@ -938,4 +954,69 @@ public class HostController {
         }
         return result;
     }
+
+    private List<ModelNode> parseHostXml(){
+        QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
+        HostXml parser = new HostXml(Module.getSystemModuleLoader());
+        final XMLMapper mapper = XMLMapper.Factory.create();
+        mapper.registerRootElement(rootElement, parser);
+        List<ModelNode> updates = new ArrayList<ModelNode>();
+
+        try {
+            //FIXME hook up with host configuration persister
+            final FileInputStream fis = new FileInputStream(new File(environment.getDomainConfigurationDir(), "host.xml"));
+            try {
+                BufferedInputStream input = new BufferedInputStream(fis);
+                XMLStreamReader streamReader = XMLInputFactory.newInstance().createXMLStreamReader(input);
+                mapper.parseDocument(updates, streamReader);
+                streamReader.close();
+                input.close();
+                fis.close();
+
+                System.out.println("Parsed host updates " + updates);
+
+
+            } finally {
+                StreamUtils.safeClose(fis);
+            }
+        } catch (Exception e) {
+            //throw new ConfigurationPersistenceException("Failed to parse configuration", e);
+            throw new RuntimeException(e);
+        }
+        return updates;
+    }
+
+    private List<ModelNode> parseDomainXml(){
+        QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
+        HostXml parser = new HostXml(Module.getSystemModuleLoader());
+        final XMLMapper mapper = XMLMapper.Factory.create();
+        mapper.registerRootElement(rootElement, parser);
+        List<ModelNode> updates = new ArrayList<ModelNode>();
+
+        try {
+            //FIXME hook up with host configuration persister
+            final FileInputStream fis = new FileInputStream(new File(environment.getDomainConfigurationDir(), "domain.xml"));
+            try {
+                BufferedInputStream input = new BufferedInputStream(fis);
+                XMLStreamReader streamReader = XMLInputFactory.newInstance().createXMLStreamReader(input);
+                mapper.parseDocument(updates, streamReader);
+                streamReader.close();
+                input.close();
+                fis.close();
+
+                System.out.println("Parsed domain updates " + updates);
+
+
+            } finally {
+                StreamUtils.safeClose(fis);
+            }
+        } catch (Exception e) {
+            //throw new ConfigurationPersistenceException("Failed to parse configuration", e);
+            throw new RuntimeException(e);
+        }
+
+
+        return updates;
+    }
+
 }

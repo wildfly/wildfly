@@ -89,6 +89,7 @@ public class StandaloneXml extends CommonXml {
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList) throws XMLStreamException {
         final ModelNode address = new ModelNode().setEmptyList();
+        System.out.println(reader.getLocalName());
         if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0 || Element.forName(reader.getLocalName()) != Element.SERVER) {
             throw unexpectedElement(reader);
         }
