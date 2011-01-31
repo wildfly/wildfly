@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.injection.ResourceInjectionResolver;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;

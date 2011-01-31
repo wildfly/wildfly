@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 
 import java.util.List;
 import org.jboss.invocation.InterceptorFactory;

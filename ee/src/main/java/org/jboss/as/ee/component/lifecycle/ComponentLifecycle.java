@@ -20,26 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component.liefcycle;
+package org.jboss.as.ee.component.lifecycle;
 
 /**
- * Interceptor configuration for a lifecycle method.
+ * Interceptor representing a lifecycle method.
  *
  * @author John Bailey
  */
-public class ComponentLifecycleConfiguration {
-    private final String methodName;
-
-    public ComponentLifecycleConfiguration(String methodName) {
-        this.methodName = methodName;
-    }
-
+public interface ComponentLifecycle {
     /**
-     * Get the lifecycle method name.
+     * Invoke a method call.
      *
-     * @return The lifecycle method name
+     * @param target The object being intercepted
+     * @throws Exception If any exceptions occur during interception
      */
-    public String getMethodName() {
-        return methodName;
-    }
+    void invoke(final Object target) throws Exception;
 }

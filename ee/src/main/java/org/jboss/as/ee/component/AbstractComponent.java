@@ -32,7 +32,7 @@ import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.interceptor.ComponentInstanceInterceptor;
 import org.jboss.as.ee.component.interceptor.ContextSelectorInterceptor;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorInvocationHandler;

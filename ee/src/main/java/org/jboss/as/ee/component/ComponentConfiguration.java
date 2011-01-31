@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.jboss.as.ee.component.injection.ResourceInjectableConfiguration;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycleConfiguration;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycleConfiguration;
 import org.jboss.as.ee.component.interceptor.MethodInterceptorConfiguration;
 
 /**

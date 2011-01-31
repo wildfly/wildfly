@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,7 +29,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.injection.ResourceInjectionResolver;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycle;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.naming.deployment.JndiName;

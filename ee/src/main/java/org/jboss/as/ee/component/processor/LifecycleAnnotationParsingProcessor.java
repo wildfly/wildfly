@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.liefcycle.ComponentLifecycleConfiguration;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycleConfiguration;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
