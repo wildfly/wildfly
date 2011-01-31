@@ -262,10 +262,9 @@
             </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
-		<!-- Disabled until the service no longer uses the typed management API
-        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
+		<subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
-        </subsystem>-->
+        </subsystem>
     </profile>
 
     <interfaces>

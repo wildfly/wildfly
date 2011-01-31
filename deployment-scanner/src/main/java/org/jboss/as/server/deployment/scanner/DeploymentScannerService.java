@@ -27,8 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.server.ServerController;
+import org.jboss.as.server.NewServerController;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
@@ -59,8 +58,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private DeploymentScanner scanner;
 
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
-    private final InjectedValue<ServerModel> serverModelValue = new InjectedValue<ServerModel>();
-    private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
+    private final InjectedValue<NewServerController> serverControllerValue = new InjectedValue<NewServerController>();
     private final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<DeploymentRepository>();
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<ScheduledExecutorService>();
 
@@ -94,8 +92,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
         serviceTarget.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
-            .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, service.serverModelValue)
-            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.serverControllerValue)
+            .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewServerController.class, service.serverControllerValue)
             .addDependency(ServerDeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.deploymentRepositoryValue)
             .addInjection(service.scheduledExecutorValue, scheduledExecutorService)
             .setInitialMode(Mode.ACTIVE)
@@ -110,11 +107,12 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         try {
             final String pathName = pathValue.getValue();
 
-            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(new File(pathName), unit.toMillis(interval), serverModelValue.getValue(), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue());
+            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(new File(pathName), unit.toMillis(interval), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue());
 
             if(enabled) {
                 scanner.startScanner();
@@ -126,6 +124,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(StopContext context) {
         final DeploymentScanner scanner = this.scanner;
         this.scanner = null;
@@ -133,6 +132,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized DeploymentScanner getValue() throws IllegalStateException {
         final DeploymentScanner scanner = this.scanner;
         if(scanner == null) {

@@ -44,6 +44,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
+import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentRedeployHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.deployment.DeploymentReplaceHandler;
@@ -210,7 +211,7 @@ public class DeploymentDescription {
     public static final ModelNode getFullReplaceDeploymentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set("full-replace-deployment");
+        root.get(OPERATION_NAME).set(DeploymentFullReplaceHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("deployment.full-replace"));
         root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));

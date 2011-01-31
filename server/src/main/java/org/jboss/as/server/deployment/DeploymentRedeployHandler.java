@@ -53,7 +53,7 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, Ru
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getDeployDeploymentOperation(locale);
+        return DeploymentDescription.getRedeployDeploymentOperation(locale);
     }
 
     /**

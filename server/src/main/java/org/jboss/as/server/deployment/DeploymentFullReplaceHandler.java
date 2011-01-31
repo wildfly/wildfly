@@ -23,7 +23,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 
 import java.util.Locale;
 
@@ -65,12 +64,11 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
-        this.validator.registerValidator(TO_REPLACE, new StringLengthValidator(1));
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getDeployDeploymentOperation(locale);
+        return DeploymentDescription.getFullReplaceDeploymentOperation(locale);
     }
 
     /**
@@ -91,14 +89,10 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
                 ModelNode rootModel = context.getSubModel();
                 ModelNode deployments = rootModel.get(DEPLOYMENT);
                 String name = operation.require(NAME).asString();
-                String toReplace = operation.require(TO_REPLACE).asString();
 
-                ModelNode replaceNode = has(deployments, toReplace) ? deployments.get(toReplace) : null;
-                if (has(deployments, name)) {
-                    failure = String.format("Deployment with name %s already exists", name);
-                }
-                else if (replaceNode == null) {
-                    failure = String.format("No deployment with name %s found", toReplace);
+                ModelNode replaceNode = has(deployments, name) ? deployments.get(name) : null;
+                if (replaceNode == null) {
+                    failure = String.format("No deployment with name %s found", name);
                 }
                 if (failure == null) {
                     boolean start = replaceNode.get(START).asBoolean();
@@ -110,17 +104,13 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
                     deployNode.get(START).set(start);
 
                     deployments.get(name).set(deployNode);
-                    deployments.remove(toReplace);
 
                     ModelNode compensatingOp = operation.clone();
-                    compensatingOp.get(NAME).set(toReplace);
-                    compensatingOp.get(RUNTIME_NAME).set(replaceNode.get(RUNTIME_NAME));
                     compensatingOp.get(HASH).set(replaceNode.get(HASH));
                     compensatingOp.get(START).set(start);
-                    compensatingOp.get(TO_REPLACE).set(name);
 
                     if (start) {
-                        DeploymentHandlerUtil.replace(deployNode, toReplace, context, resultHandler, compensatingOp);
+                        DeploymentHandlerUtil.replace(deployNode, name, context, resultHandler, compensatingOp);
                     }
                     else {
                         resultHandler.handleResultComplete(compensatingOp);

@@ -58,7 +58,7 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, R
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getDeployDeploymentOperation(locale);
+        return DeploymentDescription.getUndeployDeploymentOperation(locale);
     }
 
     /**
