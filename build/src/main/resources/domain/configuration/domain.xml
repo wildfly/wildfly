@@ -41,7 +41,9 @@
 
     <extensions>
         <extension module="org.jboss.as.connector"/>
+        <!--  ejb3 extension is disabled until activation works
         <extension module="org.jboss.as.ejb3"/>
+        -->
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
@@ -59,9 +61,11 @@
     </extensions>
 
     <profiles>
+        <!--  ejb3 subsystem is disabled until activation works
         <profile name="ejb3">
             <subsystem xmlns="urn:jboss:domain:ejb3:1.0"/>
         </profile>
+        -->
         
         <profile name="osgi">
             <subsystem xmlns="urn:jboss:domain:osgi:1.0">
@@ -173,7 +177,9 @@
              </subsystem>
         </profile>
         <profile name="default">
+            <!--  ejb3 subsystem is disabled until activation works
             <include profile="ejb3"/>
+            -->
             <include profile="messaging"/>
             <include profile="osgi"/>
             <include profile="web"/>
