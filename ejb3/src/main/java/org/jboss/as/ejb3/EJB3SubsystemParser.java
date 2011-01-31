@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3;
 
-import org.jboss.as.ExtensionContext;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
+import org.jboss.as.server.ExtensionContext;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
