@@ -21,8 +21,12 @@ package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
 import java.util.Locale;
 
@@ -70,6 +74,7 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
             final ModelNode model = context.getSubModel();
+            createCoreModel(model);
             model.get(NAME).set(name);
             model.get(GROUP).set(operation.require(GROUP));
             final ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
@@ -79,6 +84,13 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
             resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
         }
         return Cancellable.NULL;
+    }
+
+    private void createCoreModel(ModelNode root) {
+        root.get(PATH);
+        root.get(SYSTEM_PROPERTY);
+        root.get(INTERFACE);
+        root.get(JVM);
     }
 
     @Override
