@@ -27,24 +27,25 @@
     </resources>
 
     <dependencies>
-        <!-- pick up a random assortment of dependencies, else you'll run into
-             java.util.ServiceConfigurationError: org.jboss.as.server.Extension: Provider org.jboss.as.ejb3.EJB3Extension not found -->
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.interceptor.api"/>
+        <!--
         <module name="org.javassist"/>
         <module name="org.jboss.jandex"/>
+        -->
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.domain"/>
-        <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server"/>
-        <!-- the EE metadata -->
-        <module name="org.jboss.metadata"/>
+        <!--
+        <module name="org.jboss.as.naming"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
+        -->
         <module name="org.jboss.logging"/>
+        <!-- the EE metadata -->
+        <module name="org.jboss.metadata"/>
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>
     </dependencies>
