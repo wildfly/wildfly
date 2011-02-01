@@ -35,7 +35,7 @@ import org.jboss.invocation.Interceptor;
  * @author John Bailey
  */
 public class ContextSelectorInterceptor implements Interceptor {
-    private final Component<?> component;
+    private final Component component;
 
     private final NamespaceContextSelector selector = new NamespaceContextSelector() {
         public Context getContext(String identifier) {
@@ -50,7 +50,7 @@ public class ContextSelectorInterceptor implements Interceptor {
         }
     };
 
-    public ContextSelectorInterceptor(final Component<?> component) {
+    public ContextSelectorInterceptor(final Component component) {
         this.component = component;
     }
 

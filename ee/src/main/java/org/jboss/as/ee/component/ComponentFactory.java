@@ -50,7 +50,7 @@ public interface ComponentFactory {
          *
          * @return The component instance
          */
-        Component<?> getComponent();
+        Component getComponent();
 
         /**
          * Return the component service name.

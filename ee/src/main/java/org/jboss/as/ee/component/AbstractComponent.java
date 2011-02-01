@@ -40,35 +40,39 @@ import org.jboss.invocation.proxy.ProxyFactory;
 /**
  * @author John Bailey
  */
-public abstract class AbstractComponent<T> implements Component<T> {
-    private final Class<T> beanClass;
+public abstract class AbstractComponent implements Component {
+    private final Class<?> beanClass;
     private final ClassLoader beanClassLoader;
     private final List<ResourceInjection> resourceInjections;
     private final List<ComponentLifecycle> postConstrucInterceptors;
     private final List<ComponentLifecycle> preDestroyInterceptors;
     private final ComponentInterceptorFactories methodInterceptorFactories;
-    private final ProxyFactory<T> proxyFactory;
+    private final ProxyFactory<?> proxyFactory;
 
     private Context applicationContext;
     private Context moduleContext;
     private Context componentContext;
 
-    protected AbstractComponent(final Class<T> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections, final List<ComponentLifecycle> postConstrucInterceptors, final List<ComponentLifecycle> preDestroyInterceptors, final ComponentInterceptorFactories methodInterceptorFactories) {
+    protected AbstractComponent(final Class<?> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections, final List<ComponentLifecycle> postConstrucInterceptors, final List<ComponentLifecycle> preDestroyInterceptors, final ComponentInterceptorFactories methodInterceptorFactories) {
         this.beanClass = beanClass;
         this.beanClassLoader = beanClassLoader;
         this.resourceInjections = resourceInjections;
         this.postConstrucInterceptors = postConstrucInterceptors;
         this.preDestroyInterceptors = preDestroyInterceptors;
         this.methodInterceptorFactories = methodInterceptorFactories;
-        this.proxyFactory = new ProxyFactory<T>(beanClass);
+        this.proxyFactory = createProxyFactory(beanClass);
+    }
+
+    private static <T> ProxyFactory<T> createProxyFactory(Class<T> type) {
+        return new ProxyFactory<T>(type);
     }
 
     /**
      * {@inheritDoc}
      */
-    public T getInstance() {
-        final Class<T> beanClass = getBeanClass();
-        T instance;
+    public Object getInstance() {
+        final Class<?> beanClass = getBeanClass();
+        Object instance;
         try {
             instance = beanClass.newInstance();
         } catch (Throwable t) {
@@ -79,14 +83,14 @@ public abstract class AbstractComponent<T> implements Component<T> {
         return instance;
     }
 
-    protected Class<T> getBeanClass() {
+    protected Class<?> getBeanClass() {
         return beanClass;
     }
 
     /**
      * {@inheritDoc}
      */
-    public T createProxy() {
+    public Object createProxy() {
         final Interceptor defaultChain = Interceptors.getChainedInterceptor(getComponentLevelInterceptors());
         try {
             return proxyFactory.newInstance(new InterceptorInvocationHandler(defaultChain));
@@ -100,7 +104,7 @@ public abstract class AbstractComponent<T> implements Component<T> {
      *
      * @param instance The bean instance
      */
-    protected void applyInjections(final T instance) {
+    protected void applyInjections(final Object instance) {
         final List<ResourceInjection> resourceInjections = getResourceInjections();
         if(resourceInjections != null) {
             for (ResourceInjection resourceInjection : resourceInjections) {
@@ -118,7 +122,7 @@ public abstract class AbstractComponent<T> implements Component<T> {
      *
      * @param instance The bean instance
      */
-    protected void performPostConstructLifecycle(final T instance) {
+    protected void performPostConstructLifecycle(final Object instance) {
         final List<ComponentLifecycle> postConstructMethods = postConstrucInterceptors;
         if (postConstructMethods != null && !postConstructMethods.isEmpty()) {
             final ClassLoader contextCl = getContextClassLoader();
@@ -148,19 +152,19 @@ public abstract class AbstractComponent<T> implements Component<T> {
         // TODO:  Figure out how to route the rest in.
 
         // Add the instance interceptor last
-        componentLevelInterceptors.add(new ComponentInstanceInterceptor<T>(this, getMethodInterceptorFactories()));
+        componentLevelInterceptors.add(new ComponentInstanceInterceptor(this, getMethodInterceptorFactories()));
         return componentLevelInterceptors;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void returnInstance(final T instance) {
+    public void returnInstance(final Object instance) {
         performPreDestroyLifecycle(instance);
         applyUninjections(instance);
     }
 
-    protected void applyUninjections(final T instance) {
+    protected void applyUninjections(final Object instance) {
         for (ResourceInjection resourceInjection : getResourceInjections()) {
             resourceInjection.uninject(instance);
         }
@@ -171,7 +175,7 @@ public abstract class AbstractComponent<T> implements Component<T> {
      *
      * @param instance The bean instance
      */
-    protected void performPreDestroyLifecycle(final T instance) {
+    protected void performPreDestroyLifecycle(final Object instance) {
         final List<ComponentLifecycle> preDestroyInterceptors = this.preDestroyInterceptors;
         if (preDestroyInterceptors == null || !preDestroyInterceptors.isEmpty()) {
             return;

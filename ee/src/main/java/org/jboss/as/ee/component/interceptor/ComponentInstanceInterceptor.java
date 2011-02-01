@@ -34,13 +34,13 @@ import org.jboss.invocation.SimpleInvocationContext;
 /**
  * @author John Bailey
  */
-public class ComponentInstanceInterceptor<T> implements Interceptor {
-    private final Component<T> component;
+public class ComponentInstanceInterceptor implements Interceptor {
+    private final Component component;
     private final ComponentInterceptorFactories methodInterceptorFactories;
-    private T instance;
+    private Object instance;
     private Map<Method, Interceptor> methodInterceptors;
 
-    public ComponentInstanceInterceptor(final Component<T> component, final ComponentInterceptorFactories methodInterceptorFactories) {
+    public ComponentInstanceInterceptor(final Component component, final ComponentInterceptorFactories methodInterceptorFactories) {
         this.component = component;
         this.methodInterceptorFactories = methodInterceptorFactories;
     }
@@ -50,7 +50,7 @@ public class ComponentInstanceInterceptor<T> implements Interceptor {
         final Method method = context.getMethod();
         final Object[] params = context.getParameters();
 
-        final T instance = getInstance();
+        final Object instance = getInstance();
         final Map<Method, Interceptor> methodInterceptors = getMethodInterceptor(instance);
 
         final Interceptor methodInterceptor = methodInterceptors.get(method);
@@ -60,7 +60,7 @@ public class ComponentInstanceInterceptor<T> implements Interceptor {
         return methodInterceptor.processInvocation(new SimpleInvocationContext(instance, method, params, context.getContextData(), null));
     }
 
-    private synchronized Map<Method, Interceptor> getMethodInterceptor(final T componentInstance) {
+    private synchronized Map<Method, Interceptor> getMethodInterceptor(final Object componentInstance) {
         if (methodInterceptors == null) {
             final ComponentInterceptorFactories methodInterceptorFactories = this.methodInterceptorFactories;
             final InterceptorFactoryContext interceptorFactoryContext = new SimpleInterceptorFactoryContext();
@@ -70,7 +70,7 @@ public class ComponentInstanceInterceptor<T> implements Interceptor {
         return methodInterceptors;
     }
 
-    public synchronized T getInstance() {
+    public synchronized Object getInstance() {
         if (instance == null) {
             instance = component.getInstance();
         }

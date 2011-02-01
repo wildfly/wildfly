@@ -38,7 +38,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John Bailey
  */
-public class ComponentService implements Service<Component<?>> {
+public class ComponentService implements Service<Component> {
 
     private final AtomicBoolean started = new AtomicBoolean();
 
@@ -46,9 +46,9 @@ public class ComponentService implements Service<Component<?>> {
     private final InjectedValue<Context> moduleContext = new InjectedValue<Context>();
     private final InjectedValue<Context> appContext = new InjectedValue<Context>();
 
-    private final Component<?> component;
+    private final Component component;
 
-    public ComponentService(final Component<?> component) {
+    public ComponentService(final Component component) {
         this.component = component;
     }
 
@@ -57,7 +57,7 @@ public class ComponentService implements Service<Component<?>> {
             throw new StartException("Unable to start component.  Already started.");
         }
         if(component instanceof AbstractComponent) {
-            final AbstractComponent<?> abstractComponent = AbstractComponent.class.cast(component);
+            final AbstractComponent abstractComponent = AbstractComponent.class.cast(component);
             abstractComponent.setComponentContext(compContext.getValue());
             abstractComponent.setModuleContext(moduleContext.getValue());
             abstractComponent.setApplicationContext(appContext.getValue());
@@ -73,7 +73,7 @@ public class ComponentService implements Service<Component<?>> {
         }
     }
 
-    public Component<?> getValue() throws IllegalStateException, IllegalArgumentException {
+    public Component getValue() throws IllegalStateException, IllegalArgumentException {
         if (!started.get()) {
             throw new IllegalStateException("Unable to retrieve component.  Service is stopped.");
         }

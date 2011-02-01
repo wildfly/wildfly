@@ -28,10 +28,9 @@ import javax.naming.Context;
  * Common contract for an EE component.  Implementations of this will be available as a service and can be used as the
  * backing for a JNDI ObjectFactory reference.
  *
- * @param <T> The bean type
  * @author John Bailey
  */
-public interface Component<T> {
+public interface Component {
 
     /**
      * Start operation called when the Component is available.
@@ -48,7 +47,7 @@ public interface Component<T> {
      *
      * @return The proxy
      */
-    T createProxy();
+    Object createProxy();
 
     /**
      * Return an instance of this component.  Implementations can use any mechanism to retrieve the
@@ -56,7 +55,7 @@ public interface Component<T> {
      *
      * @return A bean instance
      */
-    T getInstance();
+    Object getInstance();
 
     /**
      * Return an instance to the component.  This should be called whenever a consumer of the bean is no longer
@@ -64,7 +63,7 @@ public interface Component<T> {
      *
      * @param instance The bean instance
      */
-    void returnInstance(T instance);
+    void returnInstance(Object instance);
 
     /**
      * Return the naming context for this components java:comp context.

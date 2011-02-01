@@ -36,7 +36,7 @@ import org.jboss.as.naming.ServiceReferenceObjectFactory;
 public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
     @SuppressWarnings("unchecked")
     public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        final Component<Object> component = (Component<Object>)serviceValue;
+        final Component component = (Component)serviceValue;
         return component.createProxy();
     }
 }
