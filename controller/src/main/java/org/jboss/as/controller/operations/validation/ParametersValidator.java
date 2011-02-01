@@ -46,7 +46,9 @@ public class ParametersValidator {
 
     public String validate(ModelNode operation) {
         for (Map.Entry<String, ParameterValidator> entry : validators.entrySet()) {
-            String failure = entry.getValue().validateParameter(entry.getKey(), operation.get(entry.getKey()));
+            String paramName = entry.getKey();
+            ModelNode paramVal = operation.has(paramName) ? operation.get(paramName) : new ModelNode();
+            String failure = entry.getValue().validateParameter(paramName, paramVal);
             if (failure != null) {
                 return failure;
             }
