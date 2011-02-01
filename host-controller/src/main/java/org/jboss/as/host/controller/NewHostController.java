@@ -171,7 +171,7 @@ public class NewHostController extends BasicModelController {
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
     private final AtomicBoolean stopping = new AtomicBoolean();
-    private final Map<String, ManagedServer> servers = new HashMap<String, ManagedServer>();
+    private final Map<String, NewManagedServer> servers = new HashMap<String, NewManagedServer>();
 
     private DomainControllerConnection domainControllerConnection;
     private InetSocketAddress managementSocketAddress;
@@ -288,7 +288,7 @@ public class NewHostController extends BasicModelController {
             status = ServerStatus.DOES_NOT_EXIST;
         }
         else {
-            final ManagedServer client = servers.get(ManagedServer.getServerProcessName(server.require(NAME).asString()));
+            final NewManagedServer client = servers.get(NewManagedServer.getServerProcessName(server.require(NAME).asString()));
             if (client == null) {
                 status = server.require(START).asBoolean() ? ServerStatus.STOPPED : ServerStatus.DISABLED;
             }
@@ -321,7 +321,7 @@ public class NewHostController extends BasicModelController {
     }
 
     public ServerModel getServerModel(final String serverName) {
-        final ManagedServer client = servers.get(ManagedServer.getServerProcessName(serverName));
+        final NewManagedServer client = servers.get(NewManagedServer.getServerProcessName(serverName));
         if (client == null) {
             log.debugf("Received getServerModel request for unknown server %s", serverName);
             return null;
@@ -406,7 +406,7 @@ public class NewHostController extends BasicModelController {
         if (stopping.get())
             return;
 
-        final ManagedServer server = servers.get(processName);
+        final NewManagedServer server = servers.get(processName);
 
         if (server == null) {
             log.errorf("No server called %s with a closed connection", processName);
@@ -436,7 +436,7 @@ public class NewHostController extends BasicModelController {
 
     public List<UpdateResultHandlerResponse<?>> applyUpdatesToServer(final ServerIdentity server, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
 
-        final ManagedServer client = servers.get(ManagedServer.getServerProcessName(server.getServerName()));
+        final NewManagedServer client = servers.get(ManagedServer.getServerProcessName(server.getServerName()));
         List<UpdateResultHandlerResponse<?>> responses;
         if (client == null) {
             // TODO better handle disappearance of server
@@ -454,7 +454,7 @@ public class NewHostController extends BasicModelController {
 
     public List<UpdateResultHandlerResponse<?>> applyServerUpdates(final String serverName, final List<AbstractServerModelUpdate<?>> updates,
             final boolean allowOverallRollback) {
-        final ManagedServer server = servers.get(ManagedServer.getServerProcessName(serverName));
+        final NewManagedServer server = servers.get(ManagedServer.getServerProcessName(serverName));
         if(server == null) {
             log.debugf("Cannot apply updates to unknown server %s", serverName);
             final UpdateResultHandlerResponse<?> urhr = UpdateResultHandlerResponse.createFailureResponse(new UpdateFailedException("No server available with name " + serverName));
@@ -475,7 +475,7 @@ public class NewHostController extends BasicModelController {
      */
     void availableServer(final String serverName) {
         try {
-            final ManagedServer server = servers.get(serverName);
+            final NewManagedServer server = servers.get(serverName);
             if (server == null) {
                 log.errorf("No server called %s available", serverName);
                 return;
@@ -518,7 +518,7 @@ public class NewHostController extends BasicModelController {
         if (stopping.get())
             return;
 
-        final ManagedServer server = servers.get(serverName);
+        final NewManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for stop", serverName);
             return;
@@ -549,7 +549,7 @@ public class NewHostController extends BasicModelController {
      * @param serverName the name of the server
      */
     void startedServer(final String serverName) {
-        final ManagedServer server = servers.get(serverName);
+        final NewManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for start", serverName);
             return;
@@ -566,7 +566,7 @@ public class NewHostController extends BasicModelController {
      * @param serverName the name of the server
      */
     void failedStartServer(final String serverName) {
-        final ManagedServer server = servers.get(serverName);
+        final NewManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists", serverName);
             return;
@@ -584,7 +584,7 @@ public class NewHostController extends BasicModelController {
      * @param state the server's state
      */
     void reconnectedServer(final String serverName, final ServerState state) {
-        final ManagedServer server = servers.get(serverName);
+        final NewManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server found for reconnected server %s", serverName);
             return;
@@ -608,7 +608,7 @@ public class NewHostController extends BasicModelController {
      * @param downServerName the process name of the server.
      */
     public void downServer(final String downServerName) {
-        final ManagedServer server = servers.get(downServerName);
+        final NewManagedServer server = servers.get(downServerName);
         if (server == null) {
             log.errorf("No server called %s exists", downServerName);
             return;
@@ -869,18 +869,18 @@ public class NewHostController extends BasicModelController {
         modelManager.setDomainModel(domain);
     }
 
-    public ManagedServer getServer(final String name) {
+    public NewManagedServer getServer(final String name) {
         return servers.get(name);
     }
 
-    private void checkState(final ManagedServer server, final ServerState expected) {
+    private void checkState(final NewManagedServer server, final ServerState expected) {
         final ServerState state = server.getState();
         if (state != expected) {
             log.warnf("Server %s is not in the expected %s state: %s" , server.getServerProcessName(), expected, state);
         }
     }
 
-    public Map<String, ManagedServer> getServers() {
+    public Map<String, NewManagedServer> getServers() {
         synchronized (servers) {
             return Collections.unmodifiableMap(servers);
         }
@@ -929,8 +929,8 @@ public class NewHostController extends BasicModelController {
 
     public ServerStatus startServer(final String serverName) {
         try {
-            final String processName = ManagedServer.getServerProcessName(serverName);
-            final ManagedServer server = servers.get(processName);
+            final String processName = NewManagedServer.getServerProcessName(serverName);
+            final NewManagedServer server = servers.get(processName);
             boolean canStart = true;
             if (server != null) {
                 if (server.getState() != ServerState.STOPPED) {
@@ -973,7 +973,7 @@ public class NewHostController extends BasicModelController {
     public ServerStatus stopServer(final String serverName, final long gracefulTimeout) {
         try {
             final String processName = ManagedServer.getServerProcessName(serverName);
-            final ManagedServer server = servers.get(processName);
+            final NewManagedServer server = servers.get(processName);
             if (server != null) {
                 if (gracefulTimeout > -1) {
                     // FIXME implement gracefulShutdown
@@ -1007,7 +1007,7 @@ public class NewHostController extends BasicModelController {
     }
 
     private void startServer(final String serverName, final InetSocketAddress managementSocket) throws IOException {
-        final ManagedServer server = new ManagedServer(serverName, getDomainModel(), getOldHostModel(), environment, processControllerClient, managementSocket);
+        final NewManagedServer server = new NewManagedServer(serverName, getDomainModel(), getOldHostModel(), null, getHostModel(), environment, processControllerClient, managementSocket);
         servers.put(server.getServerProcessName(), server);
         server.addServerProcess();
         server.startServerProcess();

@@ -30,6 +30,7 @@ import java.io.InputStream;
 
 import org.jboss.as.host.controller.ManagedServer;
 import org.jboss.as.host.controller.NewHostController;
+import org.jboss.as.host.controller.NewManagedServer;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
@@ -99,7 +100,7 @@ public class NewServerToHostControllerOperationHandler extends AbstractMessageHa
             log.infof("Server [%s] registered using connection [%s]", serverName, connection);
             final NewHostController hostController = NewServerToHostControllerOperationHandler.this.hostController;
             String processName = ManagedServer.getServerProcessName(serverName);
-            final ManagedServer managedServer = hostController.getServer(processName);
+            final NewManagedServer managedServer = hostController.getServer(processName);
             if (managedServer == null) {
                 log.errorf("Invalid server name [%s] registered", serverName);
                 return;
