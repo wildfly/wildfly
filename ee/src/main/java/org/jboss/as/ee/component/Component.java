@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import javax.naming.Context;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 
 /**
  * Common contract for an EE component.  Implementations of this will be available as a service and can be used as the
@@ -43,46 +43,25 @@ public interface Component {
     void stop();
 
     /**
-     * Create a proxy instance for this component.
-     *
-     * @return The proxy
-     */
-    Object createProxy();
-
-    /**
-     * Return an instance of this component.  Implementations can use any mechanism to retrieve the
+     * Get an instance of this component.  Implementations can use any mechanism to retrieve the
      * bean including pooling, singleton or construction on every call to this method.
      *
-     * @return A bean instance
+     * @return the component instance
      */
-    Object getInstance();
+    ComponentInstance getInstance();
 
     /**
      * Return an instance to the component.  This should be called whenever a consumer of the bean is no longer
      * using the instance.  This can be used to run post-constructs, cleanup, or to return the instance to a pool.
      *
-     * @param instance The bean instance
+     * @param instance the instance to return
      */
-    void returnInstance(Object instance);
+    void returnInstance(ComponentInstance instance);
 
     /**
-     * Return the naming context for this components java:comp context.
+     * Get the naming context selector for this component.
      *
-     * @return The java:comp naming context
+     * @return the selector
      */
-    Context getComponentContext();
-
-    /**
-     * Return the naming context for this components java:module context.
-     *
-     * @return The java:module naming context
-     */
-    Context getModuleContext();
-
-    /**
-     * Return the naming context for this components java:app context.
-     *
-     * @return The java:app naming context
-     */
-    Context getApplicationContext();
+    NamespaceContextSelector getNamespaceContextSelector();
 }

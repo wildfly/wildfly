@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component.service;
+package org.jboss.as.managedbean.component;
 
-import java.util.Hashtable;
-import javax.naming.Context;
-import javax.naming.Name;
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.naming.ServiceReferenceObjectFactory;
+import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.invocation.Interceptor;
 
 /**
- * Object factory used to retrieve instances of beans managed by a {@link org.jboss.as.ee.component.Component}.
- *
- * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
-    @SuppressWarnings("unchecked")
-    public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        final Component component = (Component)serviceValue;
-        return component.getInstance().createLocalClientProxy();
+public final class ManagedBeanComponentInstance extends AbstractComponentInstance {
+
+    private static final long serialVersionUID = -6175038319331057073L;
+
+    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Interceptor interceptor, final Object instance) {
+        super(component, interceptor, instance);
     }
 }

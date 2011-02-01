@@ -25,7 +25,7 @@ package org.jboss.as.ee.component.interceptor;
 import java.lang.reflect.Method;
 import java.util.Map;
 import javax.interceptor.InvocationContext;
-import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
@@ -35,13 +35,13 @@ import org.jboss.invocation.SimpleInvocationContext;
  * @author John Bailey
  */
 public class ComponentInstanceInterceptor implements Interceptor {
-    private final Component component;
+    private final ComponentInstance componentInstance;
     private final ComponentInterceptorFactories methodInterceptorFactories;
     private Object instance;
     private Map<Method, Interceptor> methodInterceptors;
 
-    public ComponentInstanceInterceptor(final Component component, final ComponentInterceptorFactories methodInterceptorFactories) {
-        this.component = component;
+    public ComponentInstanceInterceptor(final ComponentInstance componentInstance, final ComponentInterceptorFactories methodInterceptorFactories) {
+        this.componentInstance = componentInstance;
         this.methodInterceptorFactories = methodInterceptorFactories;
     }
 
@@ -72,7 +72,7 @@ public class ComponentInstanceInterceptor implements Interceptor {
 
     public synchronized Object getInstance() {
         if (instance == null) {
-            instance = component.getInstance();
+            instance = componentInstance.getInstance();
         }
         return instance;
     }

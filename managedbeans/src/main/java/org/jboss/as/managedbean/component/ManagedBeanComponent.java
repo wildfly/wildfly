@@ -23,6 +23,7 @@
 package org.jboss.as.managedbean.component;
 
 import org.jboss.as.ee.component.AbstractComponent;
+import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
@@ -35,7 +36,11 @@ import java.util.List;
  *ManagedBeanComponentFactory.java @author John E. Bailey
  */
 public class ManagedBeanComponent extends AbstractComponent {
-    public ManagedBeanComponent(Class<?> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, ComponentInterceptorFactories methodInterceptorFactories) {
-        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+    public ManagedBeanComponent(Class<?> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstructInterceptors, List<ComponentLifecycle> preDestroyInterceptors, ComponentInterceptorFactories methodInterceptorFactories) {
+        super(beanClass, beanClassLoader, resourceInjections, postConstructInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+    }
+
+    protected AbstractComponentInstance createComponentInstance(final Object instance) {
+        return new ManagedBeanComponentInstance(this, null, instance);
     }
 }

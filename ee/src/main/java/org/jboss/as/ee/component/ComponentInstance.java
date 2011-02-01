@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,35 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component.interceptor;
+package org.jboss.as.ee.component;
 
-import javax.interceptor.InvocationContext;
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.naming.context.NamespaceContextSelector;
+import java.io.Serializable;
 import org.jboss.invocation.Interceptor;
 
 /**
- * Naming context selector interceptor used for an EE component.  This will setup the correct namespace selector for the
- * component.
+ * An instance of a Java EE component.
  *
- * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ContextSelectorInterceptor implements Interceptor {
-    private final Component component;
-
-    public ContextSelectorInterceptor(final Component component) {
-        this.component = component;
-    }
+public interface ComponentInstance extends Serializable {
 
     /**
-     * {@inheritDoc}
+     * Get the component associated with this instance.
+     *
+     * @return the component
      */
-    public Object processInvocation(final InvocationContext invocationContext) throws Exception {
-        NamespaceContextSelector.pushCurrentSelector(component.getNamespaceContextSelector());
-        try {
-            return invocationContext.proceed();
-        } finally {
-            NamespaceContextSelector.getCurrentSelector();
-        }
-    }
+    Component getComponent();
+
+    /**
+     * Get the interceptor entry point for this instance.  This interceptor will be wired with the interceptor instances
+     * associated with this component instance.
+     *
+     * @return the interceptor entry point
+     */
+    Interceptor getInterceptor();
+
+    /**
+     * Get the actual object instance.  The object instance has all injections filled.
+     *
+     * @return the instance
+     */
+    Object getInstance();
+
+    /**
+     * Create a new local client proxy for this component instance.
+     *
+     * @return the proxy instance
+     */
+    Object createLocalClientProxy();
 }

@@ -58,7 +58,7 @@ public class NamingLookupValue<T> implements Value<T> {
         try {
             return (T)context.lookup(contextName);
         } catch (NamingException e) {
-            throw new IllegalStateException("Jndi entry '" + contextName + "' is not yet registered in context '" + context + "'");
+            throw new IllegalStateException("Jndi entry '" + contextName + "' is not yet registered in context '" + context + "'", e);
         }
     }
 

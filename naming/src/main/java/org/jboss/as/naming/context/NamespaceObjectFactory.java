@@ -47,7 +47,7 @@ public class NamespaceObjectFactory implements ObjectFactory {
      * @return The reference
      */
     public static Reference createReference(final String contextIdentifier) {
-        return new Reference(Context.class.getName(), new StringRefAddr("nns", contextIdentifier), NamespaceObjectFactory.class.getName(), null);
+        return ModularReference.create(Context.class, new StringRefAddr("nns", contextIdentifier), NamespaceObjectFactory.class);
     }
 
     /**

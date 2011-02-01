@@ -31,7 +31,6 @@ import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.msc.service.AbstractServiceListener;
@@ -86,12 +85,12 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
         ServiceReferenceListener listener = new ServiceReferenceListener();
         controller.addListener(listener);
         synchronized (listener) {
-            // if we are interupted just let the exception propegate for now
+            // if we are interrupted just let the exception propagate for now
             while (!listener.finished) {
                 try {
                     listener.wait();
                 } catch (InterruptedException e) {
-                    throw new NamingException("Thread interupted while retrieving service reference for service " + serviceName);
+                    throw new NamingException("Thread interrupted while retrieving service reference for service " + serviceName);
                 }
             }
         }
