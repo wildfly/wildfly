@@ -27,7 +27,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.validation.InetAddressValidator;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ListValdidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -37,7 +44,20 @@ import org.jboss.dmr.ModelType;
  * @version $Revision: 1.1 $
  */
 public class WriteAttributeHandlers {
-    public abstract static class AbstractWriteAttributeOperationHandler implements ModelUpdateOperationHandler {
+
+    public static class WriteAttributeOperationHandler implements ModelUpdateOperationHandler {
+        public static OperationHandler INSTANCE = new WriteAttributeOperationHandler();
+
+        final ParameterValidator validator;
+
+        private WriteAttributeOperationHandler() {
+            this(null);
+        }
+
+        protected WriteAttributeOperationHandler(ParameterValidator validator) {
+            this.validator = validator;
+        }
+
 
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -63,46 +83,34 @@ public class WriteAttributeHandlers {
             return cancellable;
         }
 
-        protected abstract String validateValue(String name, ModelNode value);
-    }
-
-    public static class ValidatingWriteAttributeOperationHandler extends AbstractWriteAttributeOperationHandler implements ModelUpdateOperationHandler {
-        protected final ModelType type;
-        protected final boolean nullable;
-        protected final boolean allowExpressions;
-
-        public ValidatingWriteAttributeOperationHandler(ModelType type) {
-            this(type, false, true);
-        }
-
-        public ValidatingWriteAttributeOperationHandler(ModelType type, boolean nullable) {
-            this(type, nullable, true);
-        }
-
-        public ValidatingWriteAttributeOperationHandler(ModelType type, boolean nullable, boolean allowExpressions) {
-            this.type = type;
-            this.nullable = nullable;
-            this.allowExpressions = allowExpressions;
-        }
-
-        @Override
-        protected String validateValue(final String name, final ModelNode value) {
-            if (!value.isDefined()) {
-                if (!nullable) {
-                    return "Attribute " + name + " may not be null "; //TODO i18n
-                }
-            } else {
-                if (value.getType() != type && (!allowExpressions || value.getType() != ModelType.EXPRESSION)) {
-                    return "Wrong type for " + name + ". Expected " + type + " but was " + value.getType(); //TODO i18n
-                }
+        protected String validateValue(String name, ModelNode value) {
+            if (validator != null) {
+                return validator.validateParameter(name, value);
             }
             return null;
         }
     }
 
-    public static class StringLengthValidatingHandler extends ValidatingWriteAttributeOperationHandler {
-        protected final int min;
-        protected final int max;
+    public static class ModelTypeValidatingHandler extends WriteAttributeOperationHandler {
+
+        public ModelTypeValidatingHandler(final ModelType type) {
+            this(false, false, type);
+        }
+
+        public ModelTypeValidatingHandler(final ModelType type, final boolean nullable) {
+            this(nullable, false, type);
+        }
+
+        public ModelTypeValidatingHandler(final ModelType type, final boolean nullable, final boolean allowExpressions) {
+            this(nullable, allowExpressions, type);
+        }
+
+        public ModelTypeValidatingHandler(final boolean nullable, final boolean allowExpressions, ModelType firstValidType, ModelType... otherValidTypes) {
+            super(new ModelTypeValidator(nullable, allowExpressions, firstValidType, otherValidTypes));
+        }
+    }
+
+    public static class StringLengthValidatingHandler extends WriteAttributeOperationHandler {
 
         public StringLengthValidatingHandler(final int min) {
             this(min, Integer.MAX_VALUE, false, true);
@@ -113,30 +121,11 @@ public class WriteAttributeHandlers {
         }
 
         public StringLengthValidatingHandler(final int min, final int max, final boolean nullable, final boolean allowExpressions) {
-            super(ModelType.STRING, nullable, allowExpressions);
-            this.min = min;
-            this.max = max;
-        }
-
-        @Override
-        protected String validateValue(String name, ModelNode value) {
-            String result = super.validateValue(name, value);
-            if (result == null && value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-                String str = value.asString();
-                if (str.length() < min) {
-                    result = "\"" + str + "\" is an invalid value for attribute " + name + ". Values must have a minimum length of " + min + " characters";
-                }
-                else if (str.length() > max) {
-                    result = "\"" + str + "\" is an invalid value for attribute " + name + ". Values must have a maximum length of " + max + " characters";
-                }
-            }
-            return result;
+            super(new StringLengthValidator(min, max, nullable, allowExpressions));
         }
     }
 
-    public static class IntRangeValidatingHandler extends ValidatingWriteAttributeOperationHandler {
-        protected final int min;
-        protected final int max;
+    public static class IntRangeValidatingHandler extends WriteAttributeOperationHandler {
 
         public IntRangeValidatingHandler(final int min) {
             this(min, Integer.MAX_VALUE, false, true);
@@ -147,27 +136,30 @@ public class WriteAttributeHandlers {
         }
 
         public IntRangeValidatingHandler(final int min, final int max, final boolean nullable, final boolean allowExpressions) {
-            super(ModelType.INT, nullable, allowExpressions);
-            this.min = min;
-            this.max = max;
+            super(new IntRangeValidator(min, max, nullable, allowExpressions));
         }
-
-        @Override
-        protected String validateValue(String name, ModelNode value) {
-            String result = super.validateValue(name, value);
-            if (result == null && value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-                int val = value.asInt();
-                if (val < min) {
-                    result = val + " is an invalid value for attribute " + name + ". A minimum value of " + min + " is required";
-                }
-                else if (val > max) {
-                    result = val + " is an invalid value for attribute " + name + ". A maximum length of " + max + " is required";
-                }
-            }
-            return result;
-        }
-
-
     }
+
+    public static class InetAddressValidatingHandler extends WriteAttributeOperationHandler {
+        public InetAddressValidatingHandler(final boolean nullable, final boolean allowExpressions) {
+            super(new InetAddressValidator(nullable, allowExpressions));
+        }
+    }
+
+    public static class ListValidatatingHandler extends WriteAttributeOperationHandler {
+
+        public ListValidatatingHandler(ParameterValidator elementValidator) {
+            this(elementValidator, false, 1, Integer.MAX_VALUE);
+        }
+
+        public ListValidatatingHandler(ParameterValidator elementValidator, boolean nullable) {
+            this(elementValidator, nullable, 1, Integer.MAX_VALUE);
+        }
+
+        public ListValidatatingHandler(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
+            super(new ListValdidator(elementValidator, nullable, minSize, maxSize));
+        }
+    }
+
 
 }

@@ -810,7 +810,7 @@ public class GlobalOperationsTestCase {
             });
 
             profileSub1Reg.registerReadOnlyAttribute("read-only", null, AttributeAccess.Storage.CONFIGURATION);
-            profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.INT), AttributeAccess.Storage.CONFIGURATION);
+            profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.INT), AttributeAccess.Storage.CONFIGURATION);
             profileSub1Reg.registerMetric("metric1", TestMetricHandler.INSTANCE);
             profileSub1Reg.registerMetric("metric2", TestMetricHandler.INSTANCE);
             //TODO Validation if we try to set a handler for an attribute that does not exist in model?
@@ -902,7 +902,7 @@ public class GlobalOperationsTestCase {
                 }
             });
 
-            profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.LONG, false), AttributeAccess.Storage.CONFIGURATION);
+            profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false), AttributeAccess.Storage.CONFIGURATION);
 
             ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 

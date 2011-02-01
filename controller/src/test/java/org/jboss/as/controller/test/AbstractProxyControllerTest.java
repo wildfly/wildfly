@@ -551,7 +551,7 @@ public abstract class AbstractProxyControllerTest {
                     return node;
                 }
             });
-            hostChildReg.registerReadWriteAttribute("value", null, new WriteAttributeHandlers.ValidatingWriteAttributeOperationHandler(ModelType.STRING), AttributeAccess.Storage.CONFIGURATION);
+            hostChildReg.registerReadWriteAttribute("value", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.STRING), AttributeAccess.Storage.CONFIGURATION);
             hostChildReg.registerMetric("metric", GlobalOperationsTestCase.TestMetricHandler.INSTANCE);
 
             hostChildReg.registerOperationHandler("test-op",
