@@ -61,7 +61,7 @@
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web" />
-        <!--<extension module="org.jboss.as.webservices" />-->
+        <extension module="org.jboss.as.webservices" />
         <extension module="org.jboss.as.weld"/>
     </extensions>
     
@@ -265,6 +265,14 @@
 		<subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:webservices:1.0">
+           <configuration>
+              <webServiceHost>localhost</webServiceHost>
+              <modifySOAPAddress>true</modifySOAPAddress>
+              <!-- <webServiceSecurePort>8443</webServiceSecurePort>
+                 <webServicePort>8080</webServicePort> -->
+           </configuration>
+       </subsystem>
     </profile>
 
     <interfaces>
