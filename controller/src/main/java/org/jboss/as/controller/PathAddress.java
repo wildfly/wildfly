@@ -238,9 +238,7 @@ public class PathAddress implements Iterable<PathElement> {
                 model = model.require(element.getKey()).require(element.getValue());
             } else {
                 final ModelNode parent = model.require(element.getKey());
-                // TODO: remove()
-                model = parent.get(element.getValue()).clone();
-                parent.get(element.getValue()).clear();
+                model = parent.remove(element.getValue()).clone();
             }
         }
         return model;

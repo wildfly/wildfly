@@ -275,7 +275,7 @@ public class ThreadsSubsystemTestCase {
         handler.clear();
         controller.execute(compensating, handler);
 
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("thread-factory").require("test-factory").isDefined());
+        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("thread-factory").has("test-factory"));
 
         compensating = handler.getCompensatingOperation();
         assertNotNull(compensating);
@@ -380,7 +380,7 @@ public class ThreadsSubsystemTestCase {
         handler.clear();
         controller.execute(compensating, handler);
 
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("unbounded-queue-thread-pool").require("test-pool").isDefined());
+        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("unbounded-queue-thread-pool").has("test-pool"));
 
         compensating = handler.getCompensatingOperation();
         assertNotNull(compensating);
@@ -486,7 +486,7 @@ public class ThreadsSubsystemTestCase {
         handler.clear();
         controller.execute(compensating, handler);
 
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("scheduled-thread-pool").require("test-pool").isDefined());
+        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("scheduled-thread-pool").has("test-pool"));
 
         compensating = handler.getCompensatingOperation();
         assertNotNull(compensating);
@@ -593,7 +593,7 @@ public class ThreadsSubsystemTestCase {
         handler.clear();
         controller.execute(compensating, handler);
 
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("queueless-thread-pool").require("test-pool").isDefined());
+        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("queueless-thread-pool").has("test-pool"));
 
         compensating = handler.getCompensatingOperation();
         assertNotNull(compensating);
@@ -707,7 +707,7 @@ public class ThreadsSubsystemTestCase {
         handler.clear();
         controller.execute(compensating, handler);
 
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("bounded-queue-thread-pool").require("test-pool").isDefined());
+        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("bounded-queue-thread-pool").has("test-pool"));
 
         compensating = handler.getCompensatingOperation();
         assertNotNull(compensating);
