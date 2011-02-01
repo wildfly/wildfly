@@ -30,10 +30,10 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.ee.container.processor.BeanContainerInstallProcessor;
-import org.jboss.as.ee.container.processor.InterceptorAnnotationParsingProcessor;
-import org.jboss.as.ee.container.processor.LifecycleAnnotationParsingProcessor;
-import org.jboss.as.ee.container.processor.ResourceInjectionAnnotationParsingProcessor;
+import org.jboss.as.ee.component.processor.ComponentInstallProcessor;
+import org.jboss.as.ee.component.processor.InterceptorAnnotationParsingProcessor;
+import org.jboss.as.ee.component.processor.LifecycleAnnotationParsingProcessor;
+import org.jboss.as.ee.component.processor.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
 import org.jboss.as.ee.structure.EarInitializationProcessor;
@@ -77,7 +77,7 @@ public class NewEeSubsystemAdd implements ModelAddOperationHandler, BootOperatio
 
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
-            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_BEAN_CONTAINER, new BeanContainerInstallProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
         }
 
         final ModelNode compensatingOperation = new ModelNode();
