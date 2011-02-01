@@ -25,12 +25,26 @@
  */
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.IOException;
@@ -54,14 +68,20 @@ import javax.net.SocketFactory;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.InterfaceAddHandler;
+import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
+import org.jboss.as.controller.operations.common.ManagementSocketAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
@@ -78,6 +98,10 @@ import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ManagementOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.NewHostControllerOperationHandler;
 import org.jboss.as.host.controller.mgmt.NewServerToHostControllerOperationHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
+import org.jboss.as.host.controller.operations.ServerAddHandler;
+import org.jboss.as.host.controller.operations.ServerRemoveHandler;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -95,13 +119,13 @@ import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.server.ServerState;
-import org.jboss.as.server.operations.ReadConfigAsXmlHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
@@ -165,7 +189,9 @@ public class NewHostController extends BasicModelController {
 
         this.configurationPersister = configurationPersister;
 
-        //TODO Register the operation handlers
+        createCoreModel();
+
+        // Register the operation handlers
         ModelNodeRegistration root = getRegistry();
         // Global operations
         root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
@@ -183,9 +209,46 @@ public class NewHostController extends BasicModelController {
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        root.registerOperationHandler(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML, ReadConfigAsXmlHandler.INSTANCE, ReadConfigAsXmlHandler.INSTANCE, false);
+        root.registerOperationHandler(ManagementSocketAddHandler.OPERATION_NAME, ManagementSocketAddHandler.INSTANCE, ManagementSocketAddHandler.INSTANCE, false);
+        //root.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, LocalDomainControllerAddHandler.INSTANCE, LocalDomainControllerAddHandler.INSTANCE, false);
+        root.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
+        //root.registerOperationHandler(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML, ReadConfigAsXmlHandler.INSTANCE, ReadConfigAsXmlHandler.INSTANCE, false);
+
+        //TODO register the rest of the root operations
+
+        //interface operations
+        ModelNodeRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), HostDescriptionProviders.INTERFACE_PROVIDER);
+        interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, InterfaceAddHandler.SPECIFIED_INSTANCE, InterfaceAddHandler.SPECIFIED_INSTANCE, false);
+        interfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, InterfaceRemoveHandler.INSTANCE, InterfaceRemoveHandler.INSTANCE, false);
+
+        //server operations
+        ModelNodeRegistration servers = root.registerSubModel(PathElement.pathElement(SERVER), HostDescriptionProviders.SERVER_PROVIDER);
+        servers.registerOperationHandler(ServerAddHandler.OPERATION_NAME, ServerAddHandler.INSTANCE, ServerAddHandler.INSTANCE, false);
+        servers.registerOperationHandler(ServerRemoveHandler.OPERATION_NAME, ServerRemoveHandler.INSTANCE, ServerRemoveHandler.INSTANCE, false);
+        servers.registerReadWriteAttribute(START, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        servers.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
+        servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+
+        //TODO register the rest of the server values
 
     }
+
+    private void createCoreModel() {
+        ModelNode root = getModel();
+        root.get(NAMESPACES).setEmptyList();
+        root.get(SCHEMA_LOCATIONS).setEmptyList();
+        root.get(EXTENSION);
+        root.get(PATH);
+        root.get(SYSTEM_PROPERTY);
+        root.get(MANAGEMENT);
+        root.get(SERVER);
+        root.get(DOMAIN_CONTROLLER);
+        root.get(INTERFACE);
+        root.get(JVM);
+        root.get(DEPLOYMENT);
+    }
+
 
     public String getName() {
         return getHostModel().getName();
@@ -263,18 +326,19 @@ public class NewHostController extends BasicModelController {
 
         modelManager.start();
 
-        System.out.println("--- Parsing host.xml");
         List<ModelNode> hostModelUpdates = parseHostXml();
-        System.out.println("--- Parsed host.xml ");
         for (ModelNode update : hostModelUpdates) {
             try {
                 System.out.println("update " + update);
+
                 execute(update);
             } catch (OperationFailedException e) {
-                // AutoGenerated
                 throw new RuntimeException(e.getFailureDescription().asString());
             }
         }
+
+        System.out.println("=== Parsed model \n " + getModel());
+
 
         // TODO set up logging for this process based on config in Host
 

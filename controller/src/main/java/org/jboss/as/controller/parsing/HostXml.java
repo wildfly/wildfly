@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -407,8 +408,8 @@ public class HostXml extends CommonXml {
         final ModelNode addUpdate = new ModelNode();
         addUpdate.get(OP_ADDR).set(address);
         addUpdate.get(OP).set(ADD);
-        addUpdate.get("name").set(name);
-        addUpdate.get("group").set(group);
+        addUpdate.get(NAME).set(name);
+        addUpdate.get(GROUP).set(group);
         list.add(addUpdate);
 
         // Handle elements

@@ -72,7 +72,7 @@ public class WriteAttributeHandlers {
                 if (error != null) {
                     resultHandler.handleFailed(new ModelNode().set(error));
                 } else {
-                    context.getSubModel().require(name).set(value);
+                    context.getSubModel().get(name).set(value);
                     // FIXME there should be a compensating operation generated
                     resultHandler.handleResultComplete(null);
                 }

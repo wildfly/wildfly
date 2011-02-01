@@ -31,6 +31,7 @@ import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
@@ -80,7 +81,7 @@ public class NewConfigurationPersisterFactory {
     private static class TempHackConfigurationPersister extends BackupXmlConfigurationPersister {
 
         public TempHackConfigurationPersister(final File fileName, final QName rootElement,
-                XMLElementReader<List<ModelNode>> rootParser, XMLElementWriter<ModelNode> rootDeparser) {
+                XMLElementReader<List<ModelNode>> rootParser, XMLElementWriter<ModelMarshallingContext> rootDeparser) {
             super(fileName, rootElement, rootParser, rootDeparser);
         }
 

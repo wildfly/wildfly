@@ -29,14 +29,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
-import org.jboss.as.protocol.ProtocolServer;
-import org.jboss.logging.MDC;
-import org.jboss.logmanager.handlers.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
 import javax.net.ServerSocketFactory;
 
-import java.util.logging.Handler;
-import java.util.logging.Logger;
+import org.jboss.as.protocol.ProtocolServer;
+import org.jboss.logging.MDC;
+import org.jboss.logmanager.handlers.ConsoleHandler;
 
 /**
  * The main entry point for the process controller.
@@ -141,6 +141,10 @@ public final class Main {
         final List<String> initialCommand = new ArrayList<String>();
         initialCommand.add(jvmName);
         initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
+
+        //Hardcode the debugger for now
+        initialCommand.add("-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n");
+
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);

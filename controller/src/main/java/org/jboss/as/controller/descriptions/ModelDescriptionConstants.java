@@ -51,9 +51,11 @@ public class ModelDescriptionConstants {
     public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
+    public static final String DOMAIN_CONTROLLER = "domain-controller";
     public static final String EXTENSION = "extension";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FIXED_PORT = "fixed-port";
+    public static final String GROUP = "group";
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HTTP_API = "http-api";
@@ -63,6 +65,7 @@ public class ModelDescriptionConstants {
     public static final String INET_ADDRESS = "inet-address";
     public static final String INTERFACE = "interface";
     public static final String JVM = "jvm";
+    public static final String LOCAL = "local";
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT = "management";
     public static final String MASK = "mask";
@@ -119,6 +122,7 @@ public class ModelDescriptionConstants {
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
     public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";
+    public static final String SOCKET_BINDING_PORT_OFFSET = "socket-binding-port-offset";
     public static final String START = "start";
     /** The key for {@link AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";
