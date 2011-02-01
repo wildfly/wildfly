@@ -198,9 +198,9 @@ public class JBossContextConfig extends ContextConfig {
                             ((Lifecycle) context).addLifecycleListener(lifecycleListener);
                         }
                         break;
-                  /*case SERVLET_INSTANCE:
+                   case SERVLET_INSTANCE:
                         context.addInstanceListener(listener.getListenerClass());
-                        break;*/
+                        break;
                     case SERVLET_CONTAINER:
                         context.addWrapperListener(listener.getListenerClass());
                         break;
