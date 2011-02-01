@@ -1535,15 +1535,15 @@
             </dependency>
 
             <dependency>
-               <groupId>org.jboss</groupId>
-               <artifactId>jboss-dmr</artifactId>
-               <version>${version.org.jboss.jboss-dmr}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.classfilewriter</groupId>
                 <artifactId>jboss-classfilewriter</artifactId>
                 <version>${version.org.jboss.classfilewriter}</version>
+            </dependency>	
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-dmr</artifactId>
+                <version>${version.org.jboss.jboss-dmr}</version>
             </dependency>
 
             <dependency>
