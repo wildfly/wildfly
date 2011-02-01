@@ -53,7 +53,7 @@ public class ManagedBeanComponentFactory implements ComponentFactory {
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final ClassLoader classLoader = module.getClassLoader();
 
-        final ManagedBeanComponent<?> container = createComponent(componentClass, classLoader,
+        final ManagedBeanComponent container = createComponent(componentClass, classLoader,
                 componentConfiguration.getAttachment(Attachments.RESOURCE_INJECTIONS),
                 componentConfiguration.getAttachment(Attachments.POST_CONSTRUCTS),
                 componentConfiguration.getAttachment(Attachments.PRE_DESTROYS),
@@ -67,7 +67,7 @@ public class ManagedBeanComponentFactory implements ComponentFactory {
         final ServiceName envContextServiceName = moduleContext.getContextServiceName().append("env");
 
         return new ConstructedComponent() {
-            public Component<?> getComponent() {
+            public Component getComponent() {
                 return container;
             }
 
@@ -101,7 +101,7 @@ public class ManagedBeanComponentFactory implements ComponentFactory {
         };
     }
 
-    private <T> ManagedBeanComponent<T> createComponent(final Class<T> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<ComponentLifecycle> postConstructLifecycles, final List<ComponentLifecycle> preDestroyLifecycles, final ComponentInterceptorFactories methodInterceptorFactories) {
-        return new ManagedBeanComponent<T>(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, methodInterceptorFactories);
+    private ManagedBeanComponent createComponent(final Class<?> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<ComponentLifecycle> postConstructLifecycles, final List<ComponentLifecycle> preDestroyLifecycles, final ComponentInterceptorFactories methodInterceptorFactories) {
+        return new ManagedBeanComponent(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, methodInterceptorFactories);
     }
 }

@@ -32,12 +32,10 @@ import java.util.List;
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
  *
- * @param <T> The managed bean object type
- *
  * @author John E. Bailey
  */
-public class ManagedBeanComponent<T> extends AbstractComponent<T> {
-    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, ComponentInterceptorFactories methodInterceptorFactories) {
+public class ManagedBeanComponent extends AbstractComponent {
+    public ManagedBeanComponent(Class<?> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, ComponentInterceptorFactories methodInterceptorFactories) {
         super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
     }
 }
