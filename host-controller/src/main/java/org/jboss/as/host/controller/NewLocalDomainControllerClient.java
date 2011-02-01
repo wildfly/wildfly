@@ -78,7 +78,7 @@ public class NewLocalDomainControllerClient implements HostControllerClient {
 
     @Override
     public HostModel getHostModel() {
-        return hostController.getHostModel();
+        return hostController.getOldHostModel();
     }
 
     /** {@inheritDoc} */

@@ -30,9 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
@@ -251,12 +253,12 @@ public class NewHostController extends BasicModelController {
 
 
     public String getName() {
-        return getHostModel().getName();
+        return getOldHostModel().getName();
     }
 
     public Map<ServerIdentity, ServerStatus> getServerStatuses() {
         final Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
-        for (final ServerElement se : getHostModel().getServers()) {
+        for (final ServerElement se : getOldHostModel().getServers()) {
             final ServerIdentity id = new ServerIdentity(getName(), se.getServerGroup(), se.getName());
             final ServerStatus status = determineServerStatus(se);
             result.put(id, status);
@@ -265,7 +267,7 @@ public class NewHostController extends BasicModelController {
     }
 
     private ServerStatus determineServerStatus(final String serverName) {
-        return determineServerStatus(getHostModel().getServer(serverName));
+        return determineServerStatus(getOldHostModel().getServer(serverName));
     }
 
     private ServerStatus determineServerStatus(final ServerElement se) {
@@ -359,25 +361,35 @@ public class NewHostController extends BasicModelController {
 
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder, serviceContainer);
 
-        // Always activate the management port
-        activateManagementCommunication(serviceActivatorContext);
-
-        if (getHostModel().getLocalDomainControllerElement() != null) {
-            activateLocalDomainController(serviceActivatorContext);
-        } else {
-            activateRemoteDomainControllerConnection(serviceActivatorContext);
+        try {
+            //TODO delete this, just here to help attaching a debugger
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
+        // Always activate the management port
+        activateManagementCommunication(serviceActivatorContext);
+        activateDomainControllerConnection(serviceActivatorContext);
+
         // Last but not least the host controller service
-        final ManagementElement managementElement = getHostModel().getManagementElement();
         final NewHostControllerService hostControllerService = new NewHostControllerService(this);
 
         batchBuilder.addService(SERVICE_NAME_BASE, hostControllerService)
-            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, hostControllerService.getManagementInterfaceInjector())
-            .addInjection(hostControllerService.getManagementPortInjector(), managementElement.getPort())
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getHostModel().get(MANAGEMENT, INTERFACE).asString()), NetworkInterfaceBinding.class, hostControllerService.getManagementInterfaceInjector())
+            .addInjection(hostControllerService.getManagementPortInjector(), getHostModel().get(MANAGEMENT, PORT).asInt())
             .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hostControllerService.getDomainControllerConnectionInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
+//      final ManagementElement managementElement = getOldHostModel().getManagementElement();
+//      final NewHostControllerService hostControllerService = new NewHostControllerService(this);
+//
+//      batchBuilder.addService(SERVICE_NAME_BASE, hostControllerService)
+//          .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, hostControllerService.getManagementInterfaceInjector())
+//          .addInjection(hostControllerService.getManagementPortInjector(), managementElement.getPort())
+//          .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hostControllerService.getDomainControllerConnectionInjector())
+//          .setInitialMode(ServiceController.Mode.ACTIVE)
+//          .install();
 
         batchBuilder.install();
     }
@@ -662,6 +674,20 @@ public class NewHostController extends BasicModelController {
         processControllerClient.requestProcessInventory();
     }
 
+    private void activateDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
+//      if (getOldHostModel().getLocalDomainControllerElement() != null) {
+//          activateLocalDomainController(serviceActivatorContext);
+//      } else {
+//          activateRemoteDomainControllerConnection(serviceActivatorContext);
+//      }
+        if (getHostModel().get(DOMAIN_CONTROLLER, LOCAL).isDefined()) {
+            activateLocalDomainController(serviceActivatorContext);
+        } else {
+            activateRemoteDomainControllerConnection(serviceActivatorContext);
+        }
+    }
+
+
     private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
         try {
             System.out.println("---- Starting local DC");
@@ -708,7 +734,7 @@ public class NewHostController extends BasicModelController {
 
         final NewDomainControllerConnectionService domainControllerClientService = new NewDomainControllerConnectionService(this, fileRepository, 10L);
 
-        final HostModel hostConfig = getHostModel();
+        final HostModel hostConfig = getOldHostModel();
         final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainControllerElement();
         final InetAddress hostAddress;
         try {
@@ -739,7 +765,7 @@ public class NewHostController extends BasicModelController {
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
-        final HostModel hostConfig = getHostModel();
+        final HostModel hostConfig = getOldHostModel();
         final ManagementElement managementElement = hostConfig.getManagementElement();
         if(managementElement == null) {
             throw new IllegalStateException("null management configuration");
@@ -830,8 +856,12 @@ public class NewHostController extends BasicModelController {
         return modelManager.getDomainModel();
     }
 
-    protected HostModel getHostModel() {
+    protected HostModel getOldHostModel() {
         return modelManager.getHostModel();
+    }
+
+    protected ModelNode getHostModel() {
+        return super.getModel();
     }
 
     /**
@@ -864,7 +894,7 @@ public class NewHostController extends BasicModelController {
     private void synchronizeDeployments() {
         final DomainModel domainConfig = getDomainModel();
         final Set<String> serverGroupNames = domainConfig.getServerGroupNames();
-        for (final ServerElement server : getHostModel().getServers()) {
+        for (final ServerElement server : getOldHostModel().getServers()) {
             final String serverGroupName = server.getServerGroup();
             if (serverGroupNames.remove(serverGroupName)) {
                 for (final ServerGroupDeploymentElement deployment : domainConfig.getServerGroup(serverGroupName).getDeployments()) {
@@ -879,7 +909,7 @@ public class NewHostController extends BasicModelController {
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
                 synchronizeDeployments();
-                final HostModel hostConfig = getHostModel();
+                final HostModel hostConfig = getOldHostModel();
                 for (final ServerElement serverEl : hostConfig.getServers()) {
                     // TODO take command line input on what servers to start
                     if (serverEl.isStart()) {
@@ -982,7 +1012,7 @@ public class NewHostController extends BasicModelController {
     }
 
     private void startServer(final String serverName, final InetSocketAddress managementSocket) throws IOException {
-        final ManagedServer server = new ManagedServer(serverName, getDomainModel(), getHostModel(), environment, processControllerClient, managementSocket);
+        final ManagedServer server = new ManagedServer(serverName, getDomainModel(), getOldHostModel(), environment, processControllerClient, managementSocket);
         servers.put(server.getServerProcessName(), server);
         server.addServerProcess();
         server.startServerProcess();
