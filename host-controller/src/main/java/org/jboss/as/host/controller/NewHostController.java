@@ -28,10 +28,12 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -69,7 +71,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.SocketFactory;
 
 import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewOperationContextImpl;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -104,18 +110,18 @@ import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
+import org.jboss.as.host.controller.operations.SpecifiedInterfaceAddHandler;
+import org.jboss.as.host.controller.operations.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.RemoteDomainControllerElement;
-import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandlerResponse;
-import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
@@ -128,6 +134,7 @@ import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
@@ -137,6 +144,7 @@ import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -221,8 +229,8 @@ public class NewHostController extends BasicModelController {
 
         //interface operations
         ModelNodeRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), HostDescriptionProviders.INTERFACE_PROVIDER);
-        interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, InterfaceAddHandler.SPECIFIED_INSTANCE, InterfaceAddHandler.SPECIFIED_INSTANCE, false);
-        interfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, InterfaceRemoveHandler.INSTANCE, InterfaceRemoveHandler.INSTANCE, false);
+        interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
+        interfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
 
         //server operations
         ModelNodeRegistration servers = root.registerSubModel(PathElement.pathElement(SERVER), HostDescriptionProviders.SERVER_PROVIDER);
@@ -258,27 +266,31 @@ public class NewHostController extends BasicModelController {
 
     public Map<ServerIdentity, ServerStatus> getServerStatuses() {
         final Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
-        for (final ServerElement se : getOldHostModel().getServers()) {
-            final ServerIdentity id = new ServerIdentity(getName(), se.getServerGroup(), se.getName());
-            final ServerStatus status = determineServerStatus(se);
+        //TODO find other place for hostName
+        final String hostName = getOldHostModel().getName();
+        for (final Property svr : getHostModel().get(SERVER).asPropertyList()) {
+            final ModelNode server = svr.getValue();
+            final String serverName = server.require(NAME).asString();
+            final ServerIdentity id = new ServerIdentity(hostName, server.require(GROUP).asString(), server.require(NAME).asString());
+            final ServerStatus status = determineServerStatus(server);
             result.put(id, status);
         }
         return result;
     }
 
     private ServerStatus determineServerStatus(final String serverName) {
-        return determineServerStatus(getOldHostModel().getServer(serverName));
+        return determineServerStatus(getHostModel().get(SERVER, serverName));
     }
 
-    private ServerStatus determineServerStatus(final ServerElement se) {
+    private ServerStatus determineServerStatus(final ModelNode server) {
         ServerStatus status;
-        if (se == null) {
+        if (!server.isDefined()) {
             status = ServerStatus.DOES_NOT_EXIST;
         }
         else {
-            final ManagedServer client = servers.get(ManagedServer.getServerProcessName(se.getName()));
+            final ManagedServer client = servers.get(ManagedServer.getServerProcessName(server.require(NAME).asString()));
             if (client == null) {
-                status = se.isStart() ? ServerStatus.STOPPED : ServerStatus.DISABLED;
+                status = server.require(START).asBoolean() ? ServerStatus.STOPPED : ServerStatus.DISABLED;
             }
             else {
                 switch (client.getState()) {
@@ -326,6 +338,14 @@ public class NewHostController extends BasicModelController {
      */
     public void start() throws IOException {
 
+        try {
+            //TODO delete this, just here to help attaching a debugger
+            System.out.println("Hardcoded 1s sleep...");
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         modelManager.start();
 
         List<ModelNode> hostModelUpdates = parseHostXml();
@@ -361,12 +381,6 @@ public class NewHostController extends BasicModelController {
 
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder, serviceContainer);
 
-        try {
-            //TODO delete this, just here to help attaching a debugger
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
         // Always activate the management port
         activateManagementCommunication(serviceActivatorContext);
@@ -381,15 +395,6 @@ public class NewHostController extends BasicModelController {
             .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hostControllerService.getDomainControllerConnectionInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
-//      final ManagementElement managementElement = getOldHostModel().getManagementElement();
-//      final NewHostControllerService hostControllerService = new NewHostControllerService(this);
-//
-//      batchBuilder.addService(SERVICE_NAME_BASE, hostControllerService)
-//          .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, hostControllerService.getManagementInterfaceInjector())
-//          .addInjection(hostControllerService.getManagementPortInjector(), managementElement.getPort())
-//          .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hostControllerService.getDomainControllerConnectionInjector())
-//          .setInitialMode(ServiceController.Mode.ACTIVE)
-//          .install();
 
         batchBuilder.install();
     }
@@ -675,11 +680,6 @@ public class NewHostController extends BasicModelController {
     }
 
     private void activateDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
-//      if (getOldHostModel().getLocalDomainControllerElement() != null) {
-//          activateLocalDomainController(serviceActivatorContext);
-//      } else {
-//          activateRemoteDomainControllerConnection(serviceActivatorContext);
-//      }
         if (getHostModel().get(DOMAIN_CONTROLLER, LOCAL).isDefined()) {
             activateLocalDomainController(serviceActivatorContext);
         } else {
@@ -690,7 +690,6 @@ public class NewHostController extends BasicModelController {
 
     private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
         try {
-            System.out.println("---- Starting local DC");
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
             final XMLMapper mapper = XMLMapper.Factory.create();
@@ -730,6 +729,11 @@ public class NewHostController extends BasicModelController {
     }
 
     private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
+
+        if (true) {
+            throw new RuntimeException("Not ported to detyped yet");
+        }
+
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
         final NewDomainControllerConnectionService domainControllerClientService = new NewDomainControllerConnectionService(this, fileRepository, 10L);
@@ -764,21 +768,9 @@ public class NewHostController extends BasicModelController {
 
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
-
-        final HostModel hostConfig = getOldHostModel();
-        final ManagementElement managementElement = hostConfig.getManagementElement();
-        if(managementElement == null) {
-            throw new IllegalStateException("null management configuration");
-        }
-        final Set<InterfaceElement> hostInterfaces = hostConfig.getInterfaces();
-        if(hostInterfaces != null) {
-            for(final InterfaceElement interfaceElement : hostInterfaces) {
-                if(interfaceElement.getName().equals(managementElement.getInterfaceName())) {
-                    interfaceElement.activate(serviceActivatorContext);
-                    break;
-                }
-            }
-        }
+        final ModelNode managementResource = getHostModel().get(MANAGEMENT);
+        final String managementInterface = managementResource.require(INTERFACE).asString();
+        final int managementPort = managementResource.require(PORT).asInt();
 
         // Add the executor
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
@@ -813,8 +805,10 @@ public class NewHostController extends BasicModelController {
         //  Add the management communication service
         final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
         serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
-            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
-            .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
+//            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
+//            .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementInterface), NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
+            .addInjection(managementCommunicationService.getPortInjector(), managementPort)
             .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
             .addDependency(threadFactoryServiceName, ThreadFactory.class, managementCommunicationService.getThreadFactoryInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -856,6 +850,7 @@ public class NewHostController extends BasicModelController {
         return modelManager.getDomainModel();
     }
 
+    @Deprecated
     protected HostModel getOldHostModel() {
         return modelManager.getHostModel();
     }
@@ -894,8 +889,8 @@ public class NewHostController extends BasicModelController {
     private void synchronizeDeployments() {
         final DomainModel domainConfig = getDomainModel();
         final Set<String> serverGroupNames = domainConfig.getServerGroupNames();
-        for (final ServerElement server : getOldHostModel().getServers()) {
-            final String serverGroupName = server.getServerGroup();
+        for (final Property svr : getHostModel().get(SERVER).asPropertyList()) {
+            final String serverGroupName = svr.getValue().require(GROUP).asString();
             if (serverGroupNames.remove(serverGroupName)) {
                 for (final ServerGroupDeploymentElement deployment : domainConfig.getServerGroup(serverGroupName).getDeployments()) {
                     // Force a sync
@@ -909,11 +904,11 @@ public class NewHostController extends BasicModelController {
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
                 synchronizeDeployments();
-                final HostModel hostConfig = getOldHostModel();
-                for (final ServerElement serverEl : hostConfig.getServers()) {
+                for (final Property svr : getHostModel().get(SERVER).asPropertyList()) {
+                    final ModelNode server = svr.getValue();
+                    final String serverName = server.require(NAME).asString();
                     // TODO take command line input on what servers to start
-                    if (serverEl.isStart()) {
-                        final String serverName = serverEl.getName();
+                    if (server.get(START).asBoolean()) {
                         log.info("Starting server " + serverName);
                         try {
                             startServer(serverName, managementSocketAddress);
@@ -922,7 +917,7 @@ public class NewHostController extends BasicModelController {
                             log.error("Failed to start server " + serverName, e);
                         }
                     }
-                    else log.info("Server " + serverEl.getName() + " is configured to not be started");
+                    else log.info("Server " + serverName + " is configured to not be started");
                 }
             } else {
                 // FIXME -- this got dropped in the move to an update-based boot
@@ -1118,4 +1113,32 @@ public class NewHostController extends BasicModelController {
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
+        return new NewHostOperationContextImpl(this, getRegistry(), subModel);
+    }
+
+    final class NewHostOperationContextImpl extends NewOperationContextImpl implements NewHostOperationContext {
+
+        public NewHostOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel) {
+            super(controller, registry, subModel);
+        }
+
+        @Override
+        public NewHostController getController() {
+            return (NewHostController) super.getController();
+        }
+
+        @Override
+        public ServiceTarget getServiceTarget() {
+            // TODO: A tracking service listener which will somehow call complete when the operation is done
+            return serviceContainer;
+        }
+
+        @Override
+        public ServiceRegistry getServiceRegistry() {
+            return serviceContainer;
+        }
+    }
 }
