@@ -35,7 +35,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.modules.DependencySpec;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.ResourceLoaderSpec;
@@ -88,12 +87,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        // Add external resource roots
-        // TODO: Class-Path items
-        // TODO: Extension-List items
-
-        // Add all module dependencies
-        // TODO: read this from config
         final boolean childFirst = false;
         if (childFirst) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
@@ -134,11 +127,8 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         if (!childFirst) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         }
-
         final ModuleSpec moduleSpec = specBuilder.create();
-
         deploymentModuleLoader.addModuleSpec(moduleSpec);
-
     }
 
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource) throws DeploymentUnitProcessingException {
@@ -154,9 +144,9 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         if (deploymentModuleLoader == null) {
             return;
         }
-        final Module module = context.getAttachment(Attachments.MODULE);
-        if (module != null) {
-            deploymentModuleLoader.removeModuleSpec(module.getIdentifier());
+        final ModuleIdentifier identifier = context.getAttachment(Attachments.MODULE_IDENTIFIER);
+        if (identifier != null) {
+            deploymentModuleLoader.removeModuleSpec(identifier);
         }
     }
 }
