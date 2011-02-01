@@ -20,13 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.container;
+package org.jboss.as.managedbean.component;
 
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.ee.component.AbstractComponent;
+import org.jboss.as.ee.component.injection.ResourceInjection;
+import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
+
+import java.util.List;
 
 /**
- * @author John Bailey
+ * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
+ *
+ *ManagedBeanComponentFactory.java @author John E. Bailey
  */
-public class ServiceNames {
-    public static final ServiceName MANAGED_BEAN = ServiceName.JBOSS.append("managed", "bean");
+public class ManagedBeanComponent extends AbstractComponent {
+    public ManagedBeanComponent(Class<?> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, ComponentInterceptorFactories methodInterceptorFactories) {
+        super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+    }
 }

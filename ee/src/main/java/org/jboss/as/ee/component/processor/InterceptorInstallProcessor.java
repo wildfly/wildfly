@@ -24,20 +24,19 @@ package org.jboss.as.ee.component.processor;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.interceptor.InvocationContext;
-import org.jboss.as.ee.component.Attachments;
+import javax.naming.Context;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
-import org.jboss.as.ee.component.injection.ResourceInjectionResolver;
+import org.jboss.as.ee.component.injection.ResourceInjectionDependency;
 import org.jboss.as.ee.component.interceptor.ComponentInstanceInterceptorInstanceFactory;
 import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.interceptor.InjectingInterceptorInstanceFactory;
 import org.jboss.as.ee.component.interceptor.MethodInterceptorConfiguration;
 import org.jboss.as.ee.component.interceptor.MethodInterceptorFilter;
+import org.jboss.as.naming.deployment.NamingLookupValue;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -49,6 +48,7 @@ import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.MethodInterceptorFactory;
 import org.jboss.invocation.SimpleInterceptorInstanceFactory;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey
@@ -61,19 +61,15 @@ public class InterceptorInstallProcessor extends AbstractComponentConfigProcesso
 
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
-        final Class<?> componentClass = componentConfiguration.getAttachment(Attachments.COMPONENT_CLASS);
-
-        final ResourceInjectionResolver resolver = componentConfiguration.getAttachment(Attachments.RESOURCE_INJECTION_RESOLVER);
+        final Class<?> componentClass = componentConfiguration.getComponentClass();
 
         // Process the component's interceptors
-        final Map<Method, InterceptorFactory> methodInterceptorFactories = processInterceptors(deploymentUnit, componentConfiguration, classLoader, componentClass, resolver, deploymentReflectionIndex);
+        processInterceptors(componentConfiguration, classLoader, componentClass, deploymentReflectionIndex);
 
-        componentConfiguration.putAttachment(Attachments.COMPONENT_INTERCEPTOR_FACTORIES, new ComponentInterceptorFactories(methodInterceptorFactories));
     }
 
-    private Map<Method, InterceptorFactory> processInterceptors(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration, final ClassLoader classLoader, final Class<?> componentClass, final ResourceInjectionResolver resolver, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        final Map<Method, List<InterceptorFactory>> methodInterceptorFactories = new HashMap<Method, List<InterceptorFactory>>();
-
+    private void processInterceptors(final ComponentConfiguration componentConfiguration, final ClassLoader classLoader, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        final ComponentInterceptorFactories interceptorFactories = componentConfiguration.getComponentInterceptorFactories();
         final List<Method> allMethods = new ArrayList<Method>();
         Class<?> current = componentClass;
         while (current != null) {
@@ -105,39 +101,28 @@ public class InterceptorInstallProcessor extends AbstractComponentConfigProcesso
                 interceptorInstanceFactory = new ComponentInstanceInterceptorInstanceFactory(componentClass);
             } else {
                 final List<ResourceInjection> interceptorInjections = new ArrayList<ResourceInjection>(interceptorConfiguration.getResourceInjectionConfigs().size());
+                final ServiceName envContextServiceName = componentConfiguration.getEnvContextServiceName();
                 for (ResourceInjectionConfiguration resourceConfiguration : interceptorConfiguration.getResourceInjectionConfigs()) {
-                    final ResourceInjectionResolver.ResolverResult result = resolver.resolve(deploymentUnit, componentConfiguration.getName(), componentClass, resourceConfiguration);
-                    if(result.getInjection() != null) {
-                        interceptorInjections.add(result.getInjection());
+                    final NamingLookupValue<Object> lookupValue = new NamingLookupValue<Object>(resourceConfiguration.getLocalContextName());
+                    final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, interceptorClass, lookupValue);
+                    if (injection != null) {
+                        interceptorInjections.add(injection);
                     }
-                    componentConfiguration.addToAttachmentList(Attachments.RESOLVED_RESOURCES, result);
+                    componentConfiguration.addDependency(new ResourceInjectionDependency<Context>(envContextServiceName, Context.class, lookupValue.getContextInjector()));
                 }
                 interceptorInstanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass), interceptorInjections);
             }
             final InterceptorFactory interceptorFactory = new MethodInterceptorFactory(interceptorInstanceFactory, interceptorMethod);
             for (Method method : allMethods) {
                 if (methodFilter.intercepts(method)) {
-                    List<InterceptorFactory> methodFactories = methodInterceptorFactories.get(method);
-                    if (methodFactories == null) {
-                        methodFactories = new ArrayList<InterceptorFactory>();
-                        methodInterceptorFactories.put(method, methodFactories);
-                    }
-                    methodFactories.add(interceptorFactory);
+                    interceptorFactories.addInterceptorFactory(method, interceptorFactory);
                 }
             }
         }
 
-        final Map<Method, InterceptorFactory> result = new HashMap<Method, InterceptorFactory>();
         for (Method method : allMethods) {
-            final List<InterceptorFactory> interceptorFactories = methodInterceptorFactories.get(method);
-            if (interceptorFactories != null) {
-                interceptorFactories.add(Interceptors.getInvokingInterceptorFactory());
-                result.put(method, Interceptors.getChainedInterceptorFactory(interceptorFactories));
-            } else {
-                result.put(method, Interceptors.getInvokingInterceptorFactory());
-            }
+            interceptorFactories.addInterceptorFactory(method, Interceptors.getInvokingInterceptorFactory());
 
         }
-        return result;
     }
 }

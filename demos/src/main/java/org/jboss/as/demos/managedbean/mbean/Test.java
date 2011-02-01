@@ -22,6 +22,7 @@
 package org.jboss.as.demos.managedbean.mbean;
 
 
+import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
 import org.jboss.as.demos.managedbean.archive.LookupService;
 import org.jboss.logging.Logger;
 
@@ -37,7 +38,11 @@ public class Test implements TestMBean {
     public String echo(String s) {
         log.info("-----> In test()");
         log.info("-----> Found BeanWithSimpleInjected, calling echo(\"Test\")");
-        s = LookupService.bean.echo(s);
+        final BeanWithSimpleInjected bean = LookupService.bean;
+        s = bean.echo(s);
+        if(bean.getSimple() == null) {
+            throw new RuntimeException("Injection not complete");
+        }
         log.info("-----> echo returned " + s);
         return s;
     }

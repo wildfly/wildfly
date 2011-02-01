@@ -34,7 +34,8 @@ import org.jboss.as.server.deployment.SimpleAttachable;
  * @author John Bailey
  */
 public class ResourceInjectableConfiguration extends SimpleAttachable {
-    private final List<ResourceInjectionConfiguration> resourceInjections = new ArrayList<ResourceInjectionConfiguration>();
+    private final List<ResourceInjectionConfiguration> resourceInjectionConfigs = new ArrayList<ResourceInjectionConfiguration>();
+    private final List<ResourceInjection> resourceInjections = new ArrayList<ResourceInjection>();
 
     /**
      * The configurations for any resource injections for this bean type.
@@ -42,7 +43,7 @@ public class ResourceInjectableConfiguration extends SimpleAttachable {
      * @return The resource injection configurations
      */
     public List<ResourceInjectionConfiguration> getResourceInjectionConfigs() {
-        return Collections.unmodifiableList(resourceInjections);
+        return Collections.unmodifiableList(resourceInjectionConfigs);
     }
 
     /**
@@ -51,7 +52,7 @@ public class ResourceInjectableConfiguration extends SimpleAttachable {
      * @param injectionConfiguration The injection configuration
      */
     public void addResourceInjectionConfig(final ResourceInjectionConfiguration injectionConfiguration) {
-        resourceInjections.add(injectionConfiguration);
+        resourceInjectionConfigs.add(injectionConfiguration);
     }
 
     /**
@@ -71,6 +72,46 @@ public class ResourceInjectableConfiguration extends SimpleAttachable {
      * @param injectionConfigurations The injection configurations
      */
     public void addResourceInjectionConfigs(final Collection<ResourceInjectionConfiguration> injectionConfigurations) {
-        resourceInjections.addAll(injectionConfigurations);
+        resourceInjectionConfigs.addAll(injectionConfigurations);
+    }
+
+
+
+    /**
+     * The configurations for any resource injections for this bean type.
+     *
+     * @return The resource injections
+     */
+    public List<ResourceInjection> getResourceInjections() {
+        return Collections.unmodifiableList(resourceInjections);
+    }
+
+    /**
+     * Add a resource injection configuration.
+     *
+     * @param injection The injection configuration
+     */
+    public void addResourceInjection(final ResourceInjection injection) {
+        resourceInjections.add(injection);
+    }
+
+    /**
+     * Add resource injection configurations.
+     *
+     * @param injections The injection configurations
+     */
+    public void addResourceInjectionConfigs(final ResourceInjection... injections) {
+        for (ResourceInjection injection : injections) {
+            addResourceInjection(injection);
+        }
+    }
+
+    /**
+     * Add resource injection configurations.
+     *
+     * @param injections The injection
+     */
+    public void addResourceInjections(final Collection<ResourceInjection> injections) {
+        resourceInjections.addAll(injections);
     }
 }

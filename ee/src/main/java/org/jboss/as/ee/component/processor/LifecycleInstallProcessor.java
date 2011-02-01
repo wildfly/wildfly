@@ -23,7 +23,6 @@
 package org.jboss.as.ee.component.processor;
 
 import java.lang.reflect.Method;
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycleConfiguration;
@@ -42,18 +41,18 @@ public class LifecycleInstallProcessor extends AbstractComponentConfigProcessor 
         final ClassLoader classLoader = module.getClassLoader();
 
         // Process the component's PostConstruct methods
-        for (ComponentLifecycleConfiguration lifecycleConfiguration : componentConfiguration.getPostConstructLifecycles()) {
+        for (ComponentLifecycleConfiguration lifecycleConfiguration : componentConfiguration.getPostConstructLifecycleConfigurations()) {
             try {
-                componentConfiguration.addToAttachmentList(Attachments.POST_CONSTRUCTS, createLifecycleInterceptor(classLoader, componentConfiguration, lifecycleConfiguration));
+                componentConfiguration.addPostConstructLifecycle(createLifecycleInterceptor(classLoader, componentConfiguration, lifecycleConfiguration));
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Failed to create lifecycle interceptor instance: " + lifecycleConfiguration.getMethodName(), e);
             }
         }
 
         // Process the component's PreDestroy methods
-        for (ComponentLifecycleConfiguration lifecycleConfiguration : componentConfiguration.getPreDestroyLifecycles()) {
+        for (ComponentLifecycleConfiguration lifecycleConfiguration : componentConfiguration.getPreDestroyLifecycleConfigurations()) {
             try {
-                componentConfiguration.addToAttachmentList(Attachments.PRE_DESTROYS, createLifecycleInterceptor(classLoader, componentConfiguration, lifecycleConfiguration));
+                componentConfiguration.addPreDestroyLifecycel(createLifecycleInterceptor(classLoader, componentConfiguration, lifecycleConfiguration));
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Failed to create lifecycle interceptor instance: " + lifecycleConfiguration.getMethodName(), e);
             }
@@ -61,7 +60,7 @@ public class LifecycleInstallProcessor extends AbstractComponentConfigProcessor 
     }
 
     private ComponentLifecycle createLifecycleInterceptor(final ClassLoader classLoader, final ComponentConfiguration componentConfiguration, final ComponentLifecycleConfiguration lifecycleConfiguration) throws NoSuchMethodException, ClassNotFoundException {
-        final Class<?> interceptorClass = classLoader.loadClass(componentConfiguration.getBeanClass());
+        final Class<?> interceptorClass = classLoader.loadClass(componentConfiguration.getComponentClassName());
         final Method lifecycleMethod = interceptorClass.getMethod(lifecycleConfiguration.getMethodName());
         return new ComponentLifecycleMethod(lifecycleMethod);
     }

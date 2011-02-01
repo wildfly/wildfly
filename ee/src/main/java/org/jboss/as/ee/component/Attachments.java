@@ -22,10 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.injection.ResourceInjectionResolver;
-import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
-import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 
@@ -34,22 +30,4 @@ import org.jboss.as.server.deployment.AttachmentList;
  */
 public class Attachments {
     public static final AttachmentKey<AttachmentList<ComponentConfiguration>> COMPONENT_CONFIGS = AttachmentKey.createList(ComponentConfiguration.class);
-
-    public static final AttachmentKey<ComponentFactory> COMPONENT_FACTORY = AttachmentKey.create(ComponentFactory.class);
-
-    public static final AttachmentKey<ResourceInjectionResolver> RESOURCE_INJECTION_RESOLVER = AttachmentKey.create(ResourceInjectionResolver.class);
-
-    @SuppressWarnings({"RawUseOfParameterizedType"})
-    public static final AttachmentKey<Class> COMPONENT_CLASS = AttachmentKey.create(Class.class);
-
-    public static final AttachmentKey<AttachmentList<ComponentLifecycle>> POST_CONSTRUCTS = AttachmentKey.createList(ComponentLifecycle.class);
-
-    public static final AttachmentKey<AttachmentList<ComponentLifecycle>> PRE_DESTROYS = AttachmentKey.createList(ComponentLifecycle.class);
-
-    public static final AttachmentKey<AttachmentList<ResourceInjectionResolver.ResolverResult>> RESOLVED_RESOURCES = AttachmentKey.createList(ResourceInjectionResolver.ResolverResult.class);
-
-    public static final AttachmentKey<ComponentInterceptorFactories> COMPONENT_INTERCEPTOR_FACTORIES = AttachmentKey.create(ComponentInterceptorFactories.class);
-
-    public static final AttachmentKey<AttachmentList<ResourceInjection>> RESOURCE_INJECTIONS = AttachmentKey.createList(ResourceInjection.class);
-
 }

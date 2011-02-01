@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component.processor;
 
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -41,11 +40,10 @@ public class ComponentClassLoadingProcessor extends AbstractComponentConfigProce
 
         final Class<?> componentClass;
         try {
-            componentClass = classLoader.loadClass(componentConfiguration.getBeanClass());
+            componentClass = classLoader.loadClass(componentConfiguration.getComponentClassName());
         } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException("Failed to load component class", e);
         }
-
-        componentConfiguration.putAttachment(Attachments.COMPONENT_CLASS, componentClass);
+        componentConfiguration.setComponentClass(componentClass);
     }
 }

@@ -23,27 +23,35 @@
 package org.jboss.as.ee.component.interceptor;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
 
 /**
  * @author John Bailey
  */
 public class ComponentInterceptorFactories {
-    private final Map<Method, InterceptorFactory> methodInterceptorFactories;
-
-    public ComponentInterceptorFactories(Map<Method, InterceptorFactory> methodInterceptorFactories) {
-        this.methodInterceptorFactories = methodInterceptorFactories;
-    }
+    private final Map<Method, List<InterceptorFactory>> methodInterceptorFactories = new HashMap<Method, List<InterceptorFactory>>();
 
     public Map<Method, Interceptor> createInstance(final InterceptorFactoryContext interceptorFactoryContext) {
         final Map<Method, Interceptor> methodInterceptors = new HashMap<Method, Interceptor>();
-        for (Map.Entry<Method, InterceptorFactory> entry : methodInterceptorFactories.entrySet()) {
-            methodInterceptors.put(entry.getKey(), entry.getValue().create(interceptorFactoryContext));
+        for (Map.Entry<Method, List<InterceptorFactory>> entry : methodInterceptorFactories.entrySet()) {
+            methodInterceptors.put(entry.getKey(), Interceptors.getChainedInterceptorFactory(entry.getValue()).create(interceptorFactoryContext));
         }
         return methodInterceptors;
+    }
+
+    public void addInterceptorFactory(final Method method, final InterceptorFactory interceptorFactory) {
+        List<InterceptorFactory> methodFactories = methodInterceptorFactories.get(method);
+        if (methodFactories == null) {
+            methodFactories = new ArrayList<InterceptorFactory>();
+            methodInterceptorFactories.put(method, methodFactories);
+        }
+        methodFactories.add(interceptorFactory);
     }
 }

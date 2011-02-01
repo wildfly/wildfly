@@ -23,7 +23,9 @@
 package org.jboss.as.ee.component.injection;
 
 import java.io.Serializable;
+import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.server.deployment.SimpleAttachable;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Configuration object used to store information for an @Resource injection for a managed bean.
@@ -46,7 +48,6 @@ public class ResourceInjectionConfiguration extends SimpleAttachable implements 
     private final String localContextName;
     private String targetContextName;
 
-
     /**
      * Construct an instance.
      *
@@ -68,10 +69,10 @@ public class ResourceInjectionConfiguration extends SimpleAttachable implements 
     /**
      * Construct an instance.
      *
-     * @param name              The name of the target
-     * @param targetType        The type of target (field or method)
-     * @param injectedType      The type of object to be injected
-     * @param localContextName  The name to use in the local context
+     * @param name             The name of the target
+     * @param targetType       The type of target (field or method)
+     * @param injectedType     The type of object to be injected
+     * @param localContextName The name to use in the local context
      */
     public ResourceInjectionConfiguration(final String name, final TargetType targetType, final String injectedType, final String localContextName) {
         this.name = name;
@@ -132,5 +133,23 @@ public class ResourceInjectionConfiguration extends SimpleAttachable implements 
      */
     public void setTargetContextName(String targetContextName) {
         this.targetContextName = targetContextName;
+    }
+
+    /**
+     * The local name to use when binding the resource
+     *
+     * @return The local bind name
+     */
+    public String getBindName() {
+        return localContextName;
+    }
+
+    /**
+     * The target name representing the value of the injection.
+     *
+     * @return The target name
+     */
+    public String getBindTargetName() {
+        return targetContextName.startsWith("java") ? targetContextName : ContextNames.COMPONENT_CONTEXT_NAME.append(targetContextName).getAbsoluteName();
     }
 }

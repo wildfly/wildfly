@@ -36,14 +36,14 @@ import javax.naming.NamingException;
  */
 public class NamingLookupValue<T> implements Value<T> {
     private final InjectedValue<Context> contextValue = new InjectedValue<Context>();
-    private final JndiName contextName;
+    private final String contextName;
 
     /**
      * Create a new instance.
      *
      * @param contextName The context name to lookup if the value is not injected
      */
-    public NamingLookupValue(final JndiName contextName) {
+    public NamingLookupValue(final String contextName) {
         this.contextName = contextName;
     }
 
@@ -56,7 +56,7 @@ public class NamingLookupValue<T> implements Value<T> {
     public T getValue() throws IllegalStateException {
         final Context context = contextValue.getValue();
         try {
-            return (T)context.lookup(contextName.getLocalName());
+            return (T)context.lookup(contextName);
         } catch (NamingException e) {
             throw new IllegalStateException("Jndi entry '" + contextName + "' is not yet registered in context '" + context + "'");
         }

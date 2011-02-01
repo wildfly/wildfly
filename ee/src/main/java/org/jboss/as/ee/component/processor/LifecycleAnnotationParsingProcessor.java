@@ -50,16 +50,16 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
 
     /** {@inheritDoc} **/
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentConfiguration componentConfiguration) {
-        DotName current = DotName.createSimple(componentConfiguration.getBeanClass());
+        DotName current = DotName.createSimple(componentConfiguration.getComponentClassName());
         while (current != null && !Object.class.getName().equals(current.toString())) {
             final ClassInfo classInfo = index.getClassByName(current);
             final ComponentLifecycleConfiguration postConstructMethod = getLifeCycle(classInfo, POST_CONSTRUCT_ANNOTATION);
             if (postConstructMethod != null) {
-                componentConfiguration.addPostConstructLifecycle(postConstructMethod);
+                componentConfiguration.addPostConstructLifecycleConfiguration(postConstructMethod);
             }
             final ComponentLifecycleConfiguration preDestroyMethod = getLifeCycle(classInfo, PRE_DESTROY_ANNOTATION);
             if (preDestroyMethod != null) {
-                componentConfiguration.addPreDestroyLifecycle(preDestroyMethod);
+                componentConfiguration.addPreDestroyLifecycleConfiguration(preDestroyMethod);
             }
             current = classInfo.superName();
         }

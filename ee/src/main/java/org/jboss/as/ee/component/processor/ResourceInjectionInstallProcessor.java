@@ -22,13 +22,20 @@
 
 package org.jboss.as.ee.component.processor;
 
-import org.jboss.as.ee.component.Attachments;
+import javax.naming.Context;
+import javax.naming.LinkRef;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
-import org.jboss.as.ee.component.injection.ResourceInjectionResolver;
+import org.jboss.as.ee.component.injection.ResourceInjectionDependency;
+import org.jboss.as.naming.deployment.NamingLookupValue;
+import org.jboss.as.naming.deployment.ResourceBinder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.Values;
 
 /**
  * @author John Bailey
@@ -36,16 +43,32 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 public class ResourceInjectionInstallProcessor extends AbstractComponentConfigProcessor {
 
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
-        final Class<?> componentClass = componentConfiguration.getAttachment(Attachments.COMPONENT_CLASS);
-        final ResourceInjectionResolver resolver = componentConfiguration.getAttachment(Attachments.RESOURCE_INJECTION_RESOLVER);
+        final Class<?> componentClass = componentConfiguration.getComponentClass();
+
+        final ServiceName envContextServiceName = componentConfiguration.getEnvContextServiceName();
 
         // Process the component's injections
         for (ResourceInjectionConfiguration resourceConfiguration : componentConfiguration.getResourceInjectionConfigs()) {
-            final ResourceInjectionResolver.ResolverResult result = resolver.resolve(deploymentUnit, componentConfiguration.getName(), componentClass, resourceConfiguration);
-            if (result.getInjection() != null) {
-                componentConfiguration.addToAttachmentList(Attachments.RESOURCE_INJECTIONS, result.getInjection());
+            final NamingLookupValue<Object> lookupValue = new NamingLookupValue<Object>(resourceConfiguration.getLocalContextName());
+            final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, componentClass, lookupValue);
+            if (injection != null) {
+                componentConfiguration.addResourceInjection(injection);
+                componentConfiguration.addDependency(bindResource(phaseContext.getServiceTarget(), componentConfiguration, resourceConfiguration));
             }
-            componentConfiguration.addToAttachmentList(Attachments.RESOLVED_RESOURCES, result);
+            componentConfiguration.addDependency(new ResourceInjectionDependency<Context>(envContextServiceName, Context.class, lookupValue.getContextInjector()));
         }
+    }
+
+    private ResourceInjectionDependency<?> bindResource(final ServiceTarget serviceTarget, final ComponentConfiguration componentConfiguration, final ResourceInjectionConfiguration resourceConfiguration) throws DeploymentUnitProcessingException {
+        final ServiceName binderName = componentConfiguration.getEnvContextServiceName().append(resourceConfiguration.getBindName());
+
+        final LinkRef linkRef = new LinkRef(resourceConfiguration.getBindTargetName());
+        final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(resourceConfiguration.getBindName(), Values.immediateValue(linkRef));
+
+        serviceTarget.addService(binderName, resourceBinder)
+                .addDependency(componentConfiguration.getEnvContextServiceName(), Context.class, resourceBinder.getContextInjector())
+                .install();
+
+        return new ResourceInjectionDependency<Void>(binderName);
     }
 }

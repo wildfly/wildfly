@@ -20,22 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.managedbean.component;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
+import org.jboss.as.ee.naming.ContextNames;
 
 /**
- * Factory responsible for crating {@link Component} instances.
- *
  * @author John Bailey
  */
-public interface ComponentFactory {
+public class ManagedBeanResourceInjectionConfig extends ResourceInjectionConfiguration {
+    public ManagedBeanResourceInjectionConfig(String name, TargetType targetType, String injectedType, String localContextName, String targetContextName) {
+        super(name, targetType, injectedType, localContextName, targetContextName);
+    }
+
+    public ManagedBeanResourceInjectionConfig(String name, TargetType targetType, String injectedType, String localContextName) {
+        super(name, targetType, injectedType, localContextName);
+    }
+
     /**
-     * Create the component.
+     * The target name representing the value of the injection.
      *
-     * @param deploymentUnit         The current deployment unit
-     * @param componentConfiguration The component configuration
-     * @return Component service information
+     * @return The target name
      */
-    Component createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration);
+    public String getBindTargetName() {
+        final String targetContextName = getTargetContextName();
+        return targetContextName.startsWith("java") ? targetContextName : ContextNames.MODULE_CONTEXT_NAME.append(targetContextName).getAbsoluteName();
+    }
 }
