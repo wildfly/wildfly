@@ -49,7 +49,7 @@ public class ExampleRunner {
             request.get("operation").set("read-config-as-xml");
             request.get("address").setEmptyList();
             ModelNode r = client.execute(request);
-            System.out.println(r.asString());
+            System.out.println(r.get("result").asString());
 
         } finally {
             StreamUtils.safeClose(client);
