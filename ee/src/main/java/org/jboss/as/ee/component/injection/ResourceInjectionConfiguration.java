@@ -23,13 +23,14 @@
 package org.jboss.as.ee.component.injection;
 
 import java.io.Serializable;
+import org.jboss.as.server.deployment.SimpleAttachable;
 
 /**
  * Configuration object used to store information for an @Resource injection for a managed bean.
  *
  * @author John E. Bailey
  */
-public class ResourceInjectionConfiguration implements Serializable {
+public class ResourceInjectionConfiguration extends SimpleAttachable implements Serializable {
     private static final long serialVersionUID = 3405348115132260519L;
 
     /**

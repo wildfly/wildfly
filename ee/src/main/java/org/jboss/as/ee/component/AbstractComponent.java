@@ -22,19 +22,17 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.naming.Context;
 import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.interceptor.ComponentInstanceInterceptor;
+import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.interceptor.ContextSelectorInterceptor;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorInvocationHandler;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -48,14 +46,14 @@ public abstract class AbstractComponent<T> implements Component<T> {
     private final List<ResourceInjection> resourceInjections;
     private final List<ComponentLifecycle> postConstrucInterceptors;
     private final List<ComponentLifecycle> preDestroyInterceptors;
-    private final Map<Method, InterceptorFactory> methodInterceptorFactories;
+    private final ComponentInterceptorFactories methodInterceptorFactories;
     private final ProxyFactory<T> proxyFactory;
 
     private Context applicationContext;
     private Context moduleContext;
     private Context componentContext;
 
-    protected AbstractComponent(final Class<T> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections, final List<ComponentLifecycle> postConstrucInterceptors, final List<ComponentLifecycle> preDestroyInterceptors, final Map<Method, InterceptorFactory> methodInterceptorFactories) {
+    protected AbstractComponent(final Class<T> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections, final List<ComponentLifecycle> postConstrucInterceptors, final List<ComponentLifecycle> preDestroyInterceptors, final ComponentInterceptorFactories methodInterceptorFactories) {
         this.beanClass = beanClass;
         this.beanClassLoader = beanClassLoader;
         this.resourceInjections = resourceInjections;
@@ -103,8 +101,11 @@ public abstract class AbstractComponent<T> implements Component<T> {
      * @param instance The bean instance
      */
     protected void applyInjections(final T instance) {
-        for (ResourceInjection resourceInjection : getResourceInjections()) {
-            resourceInjection.inject(instance);
+        final List<ResourceInjection> resourceInjections = getResourceInjections();
+        if(resourceInjections != null) {
+            for (ResourceInjection resourceInjection : resourceInjections) {
+                resourceInjection.inject(instance);
+            }
         }
     }
 
@@ -136,7 +137,7 @@ public abstract class AbstractComponent<T> implements Component<T> {
         }
     }
 
-    protected Map<Method, InterceptorFactory> getMethodInterceptorFactories() {
+    protected ComponentInterceptorFactories getMethodInterceptorFactories() {
         return methodInterceptorFactories;
     }
 

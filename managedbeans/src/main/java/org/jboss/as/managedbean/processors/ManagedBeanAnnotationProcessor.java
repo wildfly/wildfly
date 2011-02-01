@@ -28,6 +28,7 @@ import javax.annotation.ManagedBean;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.managedbean.container.ManagedBeanComponentFactory;
+import org.jboss.as.managedbean.container.ManagedBeanResourceInjectionResolver;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -81,8 +82,10 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ComponentConfiguration containerConfig = new ComponentConfiguration(beanName, beanClassName, new ManagedBeanComponentFactory());
-            deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.service.Attachments.COMPONENT_CONFIGS, containerConfig);
+            final ComponentConfiguration componentConfiguration = new ComponentConfiguration(beanName, beanClassName);
+            componentConfiguration.putAttachment(org.jboss.as.ee.component.Attachments.COMPONENT_FACTORY, ManagedBeanComponentFactory.INSTANCE);
+            componentConfiguration.putAttachment(org.jboss.as.ee.component.Attachments.RESOURCE_INJECTION_RESOLVER, ManagedBeanResourceInjectionResolver.INSTANCE);
+            deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.COMPONENT_CONFIGS, componentConfiguration);
         }
     }
 

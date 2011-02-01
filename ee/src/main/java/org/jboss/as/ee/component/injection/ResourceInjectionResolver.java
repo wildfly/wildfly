@@ -38,16 +38,16 @@ public interface ResourceInjectionResolver {
     /**
      * Resolve the injection and the service dependencies for this resource.
      *
-     * @param deploymentUnit  The current deployment unit
-     * @param beanName The bean name
-     * @param beanClass The bean class
-     * @param configuration   The resource configuration
+     * @param deploymentUnit The current deployment unit
+     * @param beanName       The bean name
+     * @param beanClass      The bean class
+     * @param configuration  The resource configuration
      * @return The resolved results
      */
     ResolverResult resolve(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ResourceInjectionConfiguration configuration);
 
     /**
-     * Container object for all the information necessary to properly setup a component injection.
+     * Container object for all the information necessary to properly setup a bean container injection.
      */
     interface ResolverResult {
         /**
@@ -121,4 +121,15 @@ public interface ResourceInjectionResolver {
         Class<T> getInjectorType();
     }
 
+    class ResolverDependencyHolder {
+        private final ResolverDependency dependency;
+
+        public ResolverDependencyHolder(ResolverDependency dependency) {
+            this.dependency = dependency;
+        }
+
+        public ResolverDependency getDependency() {
+            return dependency;
+        }
+    }
 }

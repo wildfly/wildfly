@@ -23,8 +23,8 @@
 package org.jboss.as.ee.component.processor;
 
 import java.util.List;
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.service.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

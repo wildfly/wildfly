@@ -40,8 +40,12 @@ import org.jboss.msc.service.ServiceName;
  * @author John Bailey
  */
 public class ManagedBeanResourceInjectionResolver implements ResourceInjectionResolver {
-    public ResolverResult resolve(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ResourceInjectionConfiguration configuration) {
+    public static final ManagedBeanResourceInjectionResolver INSTANCE = new ManagedBeanResourceInjectionResolver();
 
+    private ManagedBeanResourceInjectionResolver() {
+    }
+
+    public ResolverResult resolve(final DeploymentUnit deploymentUnit, final String beanName, final Class<?> beanClass, final ResourceInjectionConfiguration configuration) {
         final JndiName managedBeanContextJndiName = ContextNames.MODULE_CONTEXT_NAME.append("env").append(beanName);
         final JndiName localContextName = managedBeanContextJndiName.append(configuration.getLocalContextName());
 

@@ -22,14 +22,12 @@
 
 package org.jboss.as.managedbean.container;
 
-import java.lang.reflect.Method;
-import java.util.Map;
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.injection.ResourceInjection;
+import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 
 import java.util.List;
-import org.jboss.invocation.InterceptorFactory;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
@@ -39,7 +37,7 @@ import org.jboss.invocation.InterceptorFactory;
  * @author John E. Bailey
  */
 public class ManagedBeanComponent<T> extends AbstractComponent<T> {
-    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, Map<Method, InterceptorFactory> methodInterceptorFactories) {
+    public ManagedBeanComponent(Class<T> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstrucInterceptors, List<ComponentLifecycle> preDestroyInterceptors, ComponentInterceptorFactories methodInterceptorFactories) {
         super(beanClass, beanClassLoader, resourceInjections, postConstrucInterceptors, preDestroyInterceptors, methodInterceptorFactories);
     }
 }

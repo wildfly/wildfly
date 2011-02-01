@@ -22,14 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.injection.ResourceInjectionResolver;
-import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -41,24 +34,11 @@ public interface ComponentFactory {
     /**
      * Create the component.
      *
-     * @param deploymentUnit             The current deployment unit
-     * @param componentName              The component name
-     * @param componentClass             The component class
-     * @param classLoader                The classloader
-     * @param injections                 The component's resource injection instances
-     * @param postConstructLifecycles    The post-constructor lifecycles
-     * @param preDestroyLifecycles       the pre-destroy lifecycles
-     * @param methodInterceptorFactories the method interceptor factories
+     * @param deploymentUnit         The current deployment unit
+     * @param componentConfiguration The component configuration
      * @return Component service information
      */
-    ConstructedComponent createComponent(final DeploymentUnit deploymentUnit, final String componentName, final Class<?> componentClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<ComponentLifecycle> postConstructLifecycles, final List<ComponentLifecycle> preDestroyLifecycles, final Map<Method, InterceptorFactory> methodInterceptorFactories);
-
-    /**
-     * Return the resource injection resolver for this component type.
-     *
-     * @return The resolver
-     */
-    ResourceInjectionResolver getResourceInjectionResolver();
+    ConstructedComponent createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration);
 
     /**
      * Interface used to capture the results of creating a component.  Provides the component instance as well
@@ -119,6 +99,6 @@ public interface ComponentFactory {
          *
          * @return The app context name
          */
-         ServiceName getAppContextServiceName();
+        ServiceName getAppContextServiceName();
     }
 }

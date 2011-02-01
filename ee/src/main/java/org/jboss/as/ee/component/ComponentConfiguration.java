@@ -38,18 +38,15 @@ import org.jboss.as.ee.component.interceptor.MethodInterceptorConfiguration;
 public class ComponentConfiguration extends ResourceInjectableConfiguration {
     private final String name;
     private final String beanClass;
-    private final ComponentFactory componentFactory;
     private final List<ComponentLifecycleConfiguration> postConstructMethods = new ArrayList<ComponentLifecycleConfiguration>();
     private final List<ComponentLifecycleConfiguration> preDestroyMethods = new ArrayList<ComponentLifecycleConfiguration>();
     private final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
 
-    public ComponentConfiguration(final String name, final String beanClass, final ComponentFactory componentFactory) {
+    public ComponentConfiguration(final String name, final String beanClass) {
         if (name == null) throw new IllegalArgumentException("Bean name can not be null");
         this.name = name;
         if (beanClass == null) throw new IllegalArgumentException("Bean class can not be null");
         this.beanClass = beanClass;
-        if (componentFactory == null) throw new IllegalArgumentException("Component factory can not be null");
-        this.componentFactory = componentFactory;
     }
 
     /**
@@ -142,14 +139,5 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
      */
     public void addMethodInterceptorConfigs(final Collection<MethodInterceptorConfiguration> interceptorConfigurations) {
         this.interceptorConfigurations.addAll(interceptorConfigurations);
-    }
-
-    /**
-     * The component factory for this bean type.
-     *
-     * @return The bean component factory
-     */
-    public ComponentFactory getComponentFactory() {
-        return componentFactory;
     }
 }

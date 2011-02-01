@@ -20,15 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component.service;
+package org.jboss.as.ee.component.interceptor;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * @author John Bailey
  */
-public class Attachments {
-    public static final AttachmentKey<AttachmentList<ComponentConfiguration>> COMPONENT_CONFIGS = AttachmentKey.createList(ComponentConfiguration.class);
+public class ComponentInterceptorFactories {
+    private final Map<Method, InterceptorFactory> methodInterceptorFactories;
+
+    public ComponentInterceptorFactories(Map<Method, InterceptorFactory> methodInterceptorFactories) {
+        this.methodInterceptorFactories = methodInterceptorFactories;
+    }
+
+    public Map<Method, Interceptor> createInstance(final InterceptorFactoryContext interceptorFactoryContext) {
+        final Map<Method, Interceptor> methodInterceptors = new HashMap<Method, Interceptor>();
+        for (Map.Entry<Method, InterceptorFactory> entry : methodInterceptorFactories.entrySet()) {
+            methodInterceptors.put(entry.getKey(), entry.getValue().create(interceptorFactoryContext));
+        }
+        return methodInterceptors;
+    }
 }

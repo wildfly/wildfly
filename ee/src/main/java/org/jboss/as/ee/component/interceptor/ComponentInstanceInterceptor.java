@@ -23,12 +23,10 @@
 package org.jboss.as.ee.component.interceptor;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import javax.interceptor.InvocationContext;
 import org.jboss.as.ee.component.Component;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.invocation.SimpleInvocationContext;
@@ -38,11 +36,11 @@ import org.jboss.invocation.SimpleInvocationContext;
  */
 public class ComponentInstanceInterceptor<T> implements Interceptor {
     private final Component<T> component;
-    private final Map<Method, InterceptorFactory> methodInterceptorFactories;
+    private final ComponentInterceptorFactories methodInterceptorFactories;
     private T instance;
     private Map<Method, Interceptor> methodInterceptors;
 
-    public ComponentInstanceInterceptor(final Component<T> component, final Map<Method, InterceptorFactory> methodInterceptorFactories) {
+    public ComponentInstanceInterceptor(final Component<T> component, final ComponentInterceptorFactories methodInterceptorFactories) {
         this.component = component;
         this.methodInterceptorFactories = methodInterceptorFactories;
     }
@@ -53,7 +51,7 @@ public class ComponentInstanceInterceptor<T> implements Interceptor {
         final Object[] params = context.getParameters();
 
         final T instance = getInstance();
-        final Map<Method, Interceptor> methodInterceptors = getMethodInterceptors(instance);
+        final Map<Method, Interceptor> methodInterceptors = getMethodInterceptor(instance);
 
         final Interceptor methodInterceptor = methodInterceptors.get(method);
         if (methodInterceptor == null) {
@@ -62,21 +60,18 @@ public class ComponentInstanceInterceptor<T> implements Interceptor {
         return methodInterceptor.processInvocation(new SimpleInvocationContext(instance, method, params, context.getContextData(), null));
     }
 
-    private synchronized Map<Method, Interceptor> getMethodInterceptors(final T componentInstance) {
-        if(methodInterceptors == null) {
-            methodInterceptors = new HashMap<Method, Interceptor>(methodInterceptorFactories.size());
-            final Map<Method, InterceptorFactory> methodInterceptorFactories = this.methodInterceptorFactories;
+    private synchronized Map<Method, Interceptor> getMethodInterceptor(final T componentInstance) {
+        if (methodInterceptors == null) {
+            final ComponentInterceptorFactories methodInterceptorFactories = this.methodInterceptorFactories;
             final InterceptorFactoryContext interceptorFactoryContext = new SimpleInterceptorFactoryContext();
             interceptorFactoryContext.getContextData().put(componentInstance.getClass(), componentInstance);
-            for(Map.Entry<Method, InterceptorFactory> entry : methodInterceptorFactories.entrySet()) {
-                methodInterceptors.put(entry.getKey(), entry.getValue().create(interceptorFactoryContext));
-            }
+            methodInterceptors = methodInterceptorFactories.createInstance(interceptorFactoryContext);
         }
         return methodInterceptors;
     }
 
     public synchronized T getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = component.getInstance();
         }
         return instance;

@@ -24,9 +24,9 @@ package org.jboss.as.managedbean.processors;
 
 import java.util.List;
 import java.util.Map;
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
-import org.jboss.as.ee.component.service.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

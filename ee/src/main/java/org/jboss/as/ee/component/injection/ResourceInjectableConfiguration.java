@@ -26,13 +26,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.jboss.as.server.deployment.SimpleAttachable;
 
 /**
  * Abstract class used to allow sub-classes uniform access to allow for resource injection.
  *
  * @author John Bailey
  */
-public class ResourceInjectableConfiguration {
+public class ResourceInjectableConfiguration extends SimpleAttachable {
     private final List<ResourceInjectionConfiguration> resourceInjections = new ArrayList<ResourceInjectionConfiguration>();
 
     /**
