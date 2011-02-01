@@ -82,6 +82,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
     /** {@inheritDoc} */
     @Override
     public void store(final ModelNode model) throws ConfigurationPersistenceException {
+        backup(fileName);
         try {
             final FileOutputStream fos = new FileOutputStream(fileName);
             try {

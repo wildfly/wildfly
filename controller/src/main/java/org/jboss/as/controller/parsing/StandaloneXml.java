@@ -479,8 +479,9 @@ public class StandaloneXml extends CommonXml {
     private void writeServerDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
             throws XMLStreamException {
         writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
-        for (ModelNode deployment : modelNode.asList()) {
-            String uniqueName = deployment.get(NAME).asString();
+        Set<String> deploymentNames = modelNode.keys();
+        for (String uniqueName : deploymentNames) {
+            ModelNode deployment = modelNode.get(uniqueName);
             String runtimeName = deployment.get(RUNTIME_NAME).asString();
             String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
             boolean start = deployment.get(START).asBoolean();
