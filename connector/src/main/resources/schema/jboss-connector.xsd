@@ -79,7 +79,7 @@
         <xs:attribute name="fail-on-warn" type="xs:boolean" default="false" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    Should an archive validation warning report fail the deployment. Default: true
+                    Should an archive validation warning report fail the deployment. Default: false
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
