@@ -21,19 +21,40 @@
  */
 package org.jboss.as.host.controller.descriptions;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  *
@@ -44,12 +65,69 @@ public class HostServerDescription {
 
     private static final String RESOURCE_NAME = InterfaceDescription.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static ModelNode getServerDescription(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+    public static ModelNode getDescription(final Locale locale) {
 
+        final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("named_interface"));
-        populateServer(root, bundle, false);
+        root.get(DESCRIPTION).set(bundle.getString("server"));
+        root.get(HEAD_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(true);
+
+        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("server.name"));
+        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+        root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, GROUP, DESCRIPTION).set(bundle.getString("server.group"));
+        root.get(ATTRIBUTES, GROUP, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, GROUP, REQUIRED).set(true);
+        root.get(ATTRIBUTES, GROUP, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, START, DESCRIPTION).set(bundle.getString("server.start"));
+        root.get(ATTRIBUTES, START, TYPE).set(ModelType.BOOLEAN);
+        root.get(ATTRIBUTES, START, REQUIRED).set(true);
+
+        root.get(ATTRIBUTES, PRIORITY, DESCRIPTION).set(bundle.getString("server.priority"));
+        root.get(ATTRIBUTES, PRIORITY, TYPE).set(ModelType.INT);
+        root.get(ATTRIBUTES, PRIORITY, REQUIRED).set(false);
+        root.get(ATTRIBUTES, PRIORITY, MIN_VALUE).set(0);
+
+        root.get(ATTRIBUTES, CPU_AFFINITY, DESCRIPTION).set(bundle.getString("server.cpu-affinity"));
+        root.get(ATTRIBUTES, CPU_AFFINITY, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, CPU_AFFINITY, REQUIRED).set(false);
+        root.get(ATTRIBUTES, CPU_AFFINITY, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, SOCKET_BINDING_GROUP, DESCRIPTION).set(bundle.getString("server.socket-binding-group"));
+        root.get(ATTRIBUTES, SOCKET_BINDING_GROUP, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, SOCKET_BINDING_GROUP, REQUIRED).set(true);
+
+        root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, DESCRIPTION).set(bundle.getString("server.socket-binding-port-offset"));
+        root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, TYPE).set(ModelType.INT);
+        root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, REQUIRED).set(false);
+
+
+        root.get(OPERATIONS).setEmptyObject();
+
+        root.get(CHILDREN, PATH, DESCRIPTION).set(bundle.getString("server.path"));
+        root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
+        root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("server.interface"));
+        root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);
+        root.get(CHILDREN, INTERFACE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("server.system-property"));
+        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, JVM, DESCRIPTION).set(bundle.getString("server.jvm"));
+        root.get(CHILDREN, JVM, MIN_OCCURS).set(0);
+        root.get(CHILDREN, JVM, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, JVM, MODEL_DESCRIPTION).setEmptyObject();
+
         return root;
     }
 

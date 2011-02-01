@@ -31,8 +31,8 @@ import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.staxmapper.XMLElementReader;
@@ -47,12 +47,12 @@ public class NewConfigurationPersisterFactory {
 
     private static final String HOST_XML = "host.xml";
 
-    static NewConfigurationPersister createHostXmlConfigurationPersister(final File configDir) {
+    static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir) {
         HostXml hostXml = new HostXml(Module.getSystemModuleLoader());
         return new TempHackConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
     }
 
-    static NewConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
+    static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
         DomainXml domainXml = new DomainXml(Module.getSystemModuleLoader());
         return new TempHackConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }

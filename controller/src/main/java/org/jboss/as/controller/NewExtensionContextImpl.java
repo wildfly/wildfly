@@ -50,9 +50,9 @@ public final class NewExtensionContextImpl implements NewExtensionContext {
         if (profileRegistration == null) {
             throw new IllegalArgumentException("profileRegistration is null");
         }
-        if (deploymentOverrideRegistration == null) {
-            throw new IllegalArgumentException("deploymentOverrideRegistration is null");
-        }
+//        if (deploymentOverrideRegistration == null) {
+//            throw new IllegalArgumentException("deploymentOverrideRegistration is null");
+//        }
         if (writerRegistry == null) {
             throw new IllegalArgumentException("writerRegistry is null");
         }

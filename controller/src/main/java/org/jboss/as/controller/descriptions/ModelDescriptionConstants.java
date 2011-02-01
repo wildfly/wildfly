@@ -45,6 +45,7 @@ public class ModelDescriptionConstants {
     public static final String BYTES = "bytes";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
     public static final String COMPENSATING_OPERATION = "compensating-operation";
     public static final String DEFAULT = "default";
@@ -76,6 +77,7 @@ public class ModelDescriptionConstants {
     public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
+    public static final String MIN_VALUE = "min-value";
     public static final String MODEL_DESCRIPTION = "model-description";
     public static final String MULTICAST_ADDRESS = "multicast-address";
     public static final String MULTICAST_PORT = "multicast-port";
@@ -97,6 +99,7 @@ public class ModelDescriptionConstants {
     public static final String PATH = "path";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
+    public static final String PRIORITY = "priority";
     public static final String PROFILE = "profile";
     public static final String PROFILE_NAME = "profile-name";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
