@@ -9,7 +9,11 @@ public interface Cancellable {
 
     /**
      * Attempt to cancel this operation.
+     *
+     * @return <tt>false</tt> if the task could not be cancelled;
+     * <tt>true</tt> otherwise
+     *
      * @throws IOException if an error happened talking to the remote host
      */
-    void cancel() throws IOException;
+    boolean cancel() throws IOException;
 }

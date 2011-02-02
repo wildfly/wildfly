@@ -248,7 +248,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
         }
     }
 
-    private class CancelAsynchronousOperationRequest extends ModelControllerRequest<Void> {
+    private class CancelAsynchronousOperationRequest extends ModelControllerRequest<Boolean> {
 
         private final int asynchronousId;
 
@@ -272,6 +272,13 @@ class ModelControllerClientImpl implements ModelControllerClient {
             output.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
             StreamUtils.writeInt(output, asynchronousId);
         }
+
+
+        /** {@inheritDoc} */
+        @Override
+        protected Boolean receiveResponse(InputStream input) throws IOException {
+            return StreamUtils.readBoolean(input);
+        }
     }
 
 
@@ -280,12 +287,13 @@ class ModelControllerClientImpl implements ModelControllerClient {
         SimpleFuture<Integer> asynchronousId = new SimpleFuture<Integer>();
 
         @Override
-        public void cancel() throws IOException {
+        public boolean cancel() throws IOException {
             try {
                 int i = asynchronousId.get().intValue();
                 if (i >= 0) {
-                    new CancelAsynchronousOperationRequest(i).executeForResult(getConnectionStrategy());
+                    return new CancelAsynchronousOperationRequest(i).executeForResult(getConnectionStrategy());
                 }
+                else return false;
             } catch (IOException e) {
                 throw e;
             } catch (Exception e) {

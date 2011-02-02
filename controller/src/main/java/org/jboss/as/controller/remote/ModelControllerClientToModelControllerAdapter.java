@@ -74,9 +74,9 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
         }
 
         @Override
-        public void cancel() {
+        public boolean cancel() {
             try {
-                delegate.cancel();
+                return delegate.cancel();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

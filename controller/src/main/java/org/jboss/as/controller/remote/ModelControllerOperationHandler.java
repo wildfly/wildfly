@@ -278,6 +278,8 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
     }
 
     private class CancelAsynchronousOperation extends ManagementResponse {
+    	
+    	private boolean cancelled;
         @Override
         protected final byte getResponseCode() {
             return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_RESPONSE;
@@ -290,9 +292,12 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
             int operationId = StreamUtils.readInt(inputStream);
 
             Cancellable operation = asynchOperations.get(Integer.valueOf(operationId));
-            if (operation != null) {
-                operation.cancel();
-            }
+            cancelled = operation!= null && operation.cancel();
+        }
+
+        @Override
+        protected void sendResponse(final OutputStream outputStream) throws IOException {
+            StreamUtils.writeBoolean(outputStream, cancelled);
         }
     }
 
