@@ -48,9 +48,7 @@ import org.jboss.modules.ModuleLoader;
 public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
-    private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
     private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
-    private static ModuleIdentifier JBOSS_LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
 
     /**
      * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
@@ -74,8 +72,6 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
 
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
         deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, false));
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_LOGGING_ID, false, false, false));
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVASSIST_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

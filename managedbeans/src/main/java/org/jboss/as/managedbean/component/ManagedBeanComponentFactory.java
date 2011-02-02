@@ -22,40 +22,34 @@
 
 package org.jboss.as.managedbean.component;
 
-import java.util.List;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
-import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.modules.Module;
 
 /**
  * Manged-bean specific implementation of a {@link org.jboss.as.ee.component.ComponentFactory}.
  *
  * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class ManagedBeanComponentFactory implements ComponentFactory {
+
+    /**
+     * The singleton instance.
+     */
     public static final ManagedBeanComponentFactory INSTANCE = new ManagedBeanComponentFactory();
 
     private ManagedBeanComponentFactory() {
     }
 
-    public Component createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration) {
-        final Class<?> componentClass = componentConfiguration.getComponentClass();
+    public Component createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        componentConfiguration.addViewClassName(componentConfiguration.getComponentClassName());
         final ClassLoader classLoader = module.getClassLoader();
-
-        return createComponent(componentClass, classLoader,
-                componentConfiguration.getResourceInjections(),
-                componentConfiguration.getPostConstructLifecycles(),
-                componentConfiguration.getPreDestroyLifecycles(),
-                componentConfiguration.getComponentInterceptorFactories());
-    }
-
-    private <T> ManagedBeanComponent createComponent(final Class<T> beanClass, final ClassLoader classLoader, final List<ResourceInjection> injections, final List<ComponentLifecycle> postConstructLifecycles, final List<ComponentLifecycle> preDestroyLifecycles, final ComponentInterceptorFactories methodInterceptorFactories) {
-        return new ManagedBeanComponent(beanClass, classLoader, injections, postConstructLifecycles, preDestroyLifecycles, methodInterceptorFactories);
+        return new ManagedBeanComponent(componentConfiguration, classLoader, deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX));
     }
 }

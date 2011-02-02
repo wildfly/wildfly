@@ -20,26 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.component;
+package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
- * A managed bean component instance.
+ * An invocation handler for a component.  Used to send method invocations to a component.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ManagedBeanComponentInstance extends AbstractComponentInstance {
-
-    private static final long serialVersionUID = -6175038319331057073L;
+public interface ComponentInvocationHandler extends InvocationHandler {
 
     /**
-     * Construct a new instance.
+     * Get the component associated with this invocation handler.
      *
-     * @param component the component
-     * @param instance the object instance
+     * @return the component
      */
-    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance) {
-        super(component, instance);
-    }
+    Component getComponent();
+
+    /**
+     * Get the view class for this invocation handler.
+     *
+     * @return the view class
+     */
+    Class<?> getViewClass();
+
+    /**
+     * Get the list of allowed methods for this invocation handler.  The handler will only accept invocations on
+     * these exact {@code Method} objects.
+     *
+     * @return the list of methods
+     */
+    Collection<Method> allowedMethods();
+
+    /**
+     * Destroy this handler.  This method should be called when the client proxy is no longer
+     * in use; this may destroy the instance, or do nothing at all.
+     */
+    void destroy();
 }

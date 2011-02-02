@@ -22,37 +22,80 @@
 
 package org.jboss.as.ee.component;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
-import javax.naming.Context;
+
 import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
+
+import java.util.Map;
 import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.interceptor.ComponentInstanceInterceptor;
-import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
-import org.jboss.as.ee.component.interceptor.ContextSelectorInterceptor;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.CannotProceedException;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.InterceptorInstanceFactory;
+import org.jboss.invocation.InterceptorInvocationHandler;
+import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.MethodInvokingInterceptorFactory;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 
 /**
+ * The parent of all component classes.
+ *
  * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractComponent implements Component {
-    private final Class<?> beanClass;
-    private final ClassLoader beanClassLoader;
+
+    static final Object INSTANCE_KEY = new Object();
+
+    private static final InterceptorInstanceFactory INSTANCE_FACTORY = new InterceptorInstanceFactory() {
+        public Object createInstance(final InterceptorFactoryContext context) {
+            return context.getContextData().get(INSTANCE_KEY);
+        }
+    };
+    private static final Interceptor DISPATCHER = new Interceptor() {
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            // Get the appropriate method from the previously associated instance
+            final ComponentInstance instance = context.getPrivateData(ComponentInstance.class);
+            if (instance == null) {
+                throw new CannotProceedException("No instance is associated with this component class");
+            }
+            context.setTarget(instance.getInstance());
+            final Interceptor interceptor = instance.getInterceptor(context.getMethod());
+            return interceptor.processInvocation(context);
+        }
+    };
+
+    private final Class<?> componentClass;
     private final List<ResourceInjection> resourceInjections;
     private final List<ComponentLifecycle> postConstructInterceptors;
     private final List<ComponentLifecycle> preDestroyInterceptors;
-    private final ComponentInterceptorFactories methodInterceptorFactories;
-    private final ProxyFactory<?> proxyFactory;
-    private Context applicationContext;
-    private Context moduleContext;
-    private Context componentContext;
+    private final Map<Class<?>, InvocationHandler> views;
+    private final Map<Method, InterceptorFactory> interceptorFactoryMap;
+    private final Interceptor componentInterceptor;
+
+    // initialized later
+    private javax.naming.Context applicationContext;
+    private javax.naming.Context moduleContext;
+    private javax.naming.Context componentContext;
 
     private final NamespaceContextSelector selector = new NamespaceContextSelector() {
-        public Context getContext(String identifier) {
+        public javax.naming.Context getContext(String identifier) {
             if (identifier.equals("comp")) {
                 return componentContext;
             } else if (identifier.equals("module")) {
@@ -64,33 +107,98 @@ public abstract class AbstractComponent implements Component {
         }
     };
 
-
-    protected AbstractComponent(final Class<?> beanClass, final ClassLoader beanClassLoader, final List<ResourceInjection> resourceInjections, final List<ComponentLifecycle> postConstructInterceptors, final List<ComponentLifecycle> preDestroyInterceptors, final ComponentInterceptorFactories methodInterceptorFactories) {
-        this.beanClass = beanClass;
-        this.beanClassLoader = beanClassLoader;
-        this.resourceInjections = resourceInjections;
-        this.postConstructInterceptors = postConstructInterceptors;
-        this.preDestroyInterceptors = preDestroyInterceptors;
-        this.methodInterceptorFactories = methodInterceptorFactories;
-        this.proxyFactory = createProxyFactory(beanClass);
-    }
-
-    private static <T> ProxyFactory<T> createProxyFactory(Class<T> type) {
-        return new ProxyFactory<T>(type);
-    }
-
     /**
-     * Get the instance.  If the component implementation wishes to apply a pooling policy or something similar,
-     * then override this method to return the pooled instance; if a new instance is then desired, call up to this
-     * method implementation to get a new instance which has injections and lifecycle methods applied to it.
+     * Construct a new instance.
+     *
+     * @param configuration the component configuration
+     * @param deploymentClassLoader the class loader of the deployment
+     * @param index the deployment reflection index
      */
-    public ComponentInstance getInstance() {
+    protected AbstractComponent(final ComponentConfiguration configuration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index) {
+        componentClass = configuration.getComponentClass();
+        resourceInjections = configuration.getResourceInjections();
+        postConstructInterceptors = configuration.getPostConstructLifecycles();
+        preDestroyInterceptors = configuration.getPreDestroyLifecycles();
+        // First, system interceptors (one of which should associate)
+        final ArrayList<Interceptor> rootInterceptors = new ArrayList<Interceptor>();
+        final SimpleInterceptorFactoryContext interceptorFactoryContext = new SimpleInterceptorFactoryContext();
+        for (InterceptorFactory factory : configuration.getComponentSystemInterceptorFactories()) {
+            rootInterceptors.add(factory.create(interceptorFactoryContext));
+        }
+        rootInterceptors.add(DISPATCHER);
+        componentInterceptor = Interceptors.getChainedInterceptor(rootInterceptors);
+        // Create the table of component class methods
+        final Map<MethodIdentifier, Method> componentMethods = new HashMap<MethodIdentifier, Method>();
+        final Map<Method, InterceptorFactory> componentToInterceptorFactory = new IdentityHashMap<Method, InterceptorFactory>();
+        Class<?> currentClass = componentClass;
+        do {
+            final ClassReflectionIndex classIndex = index.getClassIndex(currentClass);
+            // Mapping of method identifiers to component (target) methods
+            // Mapping of component methods to corresponding instance interceptor factories
+            for (Method method : classIndex.getMethods()) {
+                int modifiers = method.getModifiers();
+                if (! Modifier.isStatic(modifiers) && ! Modifier.isFinal(modifiers)) {
+                    componentMethods.put(MethodIdentifier.getIdentifierForMethod(method), method);
+                    // assemble the final set of interceptor factories for this method.
+                    final List<InterceptorFactory> finalFactories = new ArrayList<InterceptorFactory>();
+                    // TODO: default-level interceptors if applicable
+                    // TODO: class-level interceptors if applicable
+                    // TODO: method-level interceptors if applicable
+                    // The final interceptor invokes the method on the associated instance
+                    finalFactories.add(new MethodInvokingInterceptorFactory(INSTANCE_FACTORY, method));
+                    componentToInterceptorFactory.put(method, Interceptors.getChainedInterceptorFactory(finalFactories));
+                }
+            }
+            currentClass = currentClass.getSuperclass();
+        } while (currentClass != null);
+        // Now create the views
+        final Map<Class<?>, InvocationHandler> views = new HashMap<Class<?>, InvocationHandler>();
+        // Mapping of view methods to corresponding instance interceptor factories
+        final Map<Method, InterceptorFactory> viewToInterceptorFactory = new IdentityHashMap<Method, InterceptorFactory>();
+        for (String viewClassName : configuration.getViewClassNames()) {
+            final Class<?> viewClass;
+            try {
+                viewClass = Class.forName(viewClassName, false, deploymentClassLoader);
+            } catch (ClassNotFoundException e) {
+                NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
+                error.setStackTrace(e.getStackTrace());
+                throw error;
+            }
+            ProxyFactory<?> factory = getProxyFactory(viewClass);
+            // acquire the complete list of possible invoked methods for this view
+            final List<Method> methods = new ArrayList<Method>();
+            for (Method viewMethod : factory.getCachedMethods()) {
+                methods.add(viewMethod);
+                Method componentMethod = componentMethods.get(MethodIdentifier.getIdentifierForMethod(viewMethod));
+                // todo - it's probably an error if the view has more methods than the component
+                if (componentMethod != null) {
+                    // Create the mapping of this view method to the interceptor factory for the target method
+                    viewToInterceptorFactory.put(viewMethod, componentToInterceptorFactory.get(componentMethod));
+                }
+            }
+            views.put(viewClass, new InvocationHandler(viewClass, factory, Collections.unmodifiableCollection(methods)));
+        }
+        this.views = views;
+        interceptorFactoryMap = viewToInterceptorFactory;
+    }
+
+    private static <T> ProxyFactory<?> getProxyFactory(Class<T> type) {
+        // TODO: Create this proxy into the right class loader.
+        if (type.isInterface()) {
+            return new ProxyFactory<Object>(Object.class, type);
+        } else {
+            return new ProxyFactory<T>(type);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public ComponentInstance createInstance() {
         NamespaceContextSelector.pushCurrentSelector(selector);
         try {
             Object objectInstance = createObjectInstance();
             applyInjections(objectInstance);
             performPostConstructLifecycle(objectInstance);
-            return createComponentInstance(objectInstance);
+            return constructComponentInstance(objectInstance);
         } finally {
             NamespaceContextSelector.popCurrentSelector();
         }
@@ -104,7 +212,7 @@ public abstract class AbstractComponent implements Component {
     protected Object createObjectInstance() {
         // TODO: provide a plug point for CDI instantiator
         try {
-            return beanClass.newInstance();
+            return componentClass.newInstance();
         } catch (InstantiationException e) {
             InstantiationError error = new InstantiationError(e.getMessage());
             error.setStackTrace(e.getStackTrace());
@@ -117,20 +225,21 @@ public abstract class AbstractComponent implements Component {
     }
 
     /**
-     * Construct the component instance.
+     * Construct the component instance.  After the instance is constructed, injections and lifecycle methods will
+     * be called upon it.
      *
      * @param instance the object instance to wrap
      * @return the component instance
      */
-    protected abstract AbstractComponentInstance createComponentInstance(Object instance);
+    protected abstract AbstractComponentInstance constructComponentInstance(Object instance);
 
     /**
      * Get the class of this bean component.
      *
      * @return the class
      */
-    protected Class<?> getBeanClass() {
-        return beanClass;
+    public Class<?> getComponentClass() {
+        return componentClass;
     }
 
     /**
@@ -139,16 +248,12 @@ public abstract class AbstractComponent implements Component {
      * @param instance The bean instance
      */
     protected void applyInjections(final Object instance) {
-        final List<ResourceInjection> resourceInjections = getResourceInjections();
+        final List<ResourceInjection> resourceInjections = this.resourceInjections;
         if(resourceInjections != null) {
             for (ResourceInjection resourceInjection : resourceInjections) {
                 resourceInjection.inject(instance);
             }
         }
-    }
-
-    protected List<ResourceInjection> getResourceInjections() {
-        return resourceInjections;
     }
 
     /**
@@ -160,13 +265,13 @@ public abstract class AbstractComponent implements Component {
         final List<ComponentLifecycle> postConstructMethods = postConstructInterceptors;
         if (postConstructMethods != null && !postConstructMethods.isEmpty()) {
             final ClassLoader contextCl = getContextClassLoader();
-            setContextClassLoader(beanClassLoader);
+            setContextClassLoader(componentClass.getClassLoader());
             try {
                 for (ComponentLifecycle postConstructMethod : postConstructMethods) {
                     try {
                         postConstructMethod.invoke(instance);
                     } catch (Throwable t) {
-                        throw new RuntimeException("Failed to invoke post construct method for class " + getBeanClass(), t);
+                        throw new RuntimeException("Failed to invoke post construct method for class " + getComponentClass(), t);
                     }
                 }
             } finally {
@@ -175,32 +280,55 @@ public abstract class AbstractComponent implements Component {
         }
     }
 
-    protected ComponentInterceptorFactories getMethodInterceptorFactories() {
-        return methodInterceptorFactories;
-    }
-
-    protected List<Interceptor> getComponentLevelInterceptors() {
-        final List<Interceptor> componentLevelInterceptors = new ArrayList<Interceptor>();
-        componentLevelInterceptors.add(new ContextSelectorInterceptor(this));
-
-        // TODO:  Figure out how to route the rest in.
-        return componentLevelInterceptors;
-    }
-
     /**
      * {@inheritDoc}
      */
-    public void returnInstance(final ComponentInstance instance) {
+    public void destroyInstance(final ComponentInstance instance) {
         performPreDestroyLifecycle(instance);
         applyUninjections(instance);
+    }
+
+    /** {@inheritDoc} */
+    public ComponentInvocationHandler createClient(final Class<?> viewClass) {
+        final InvocationHandler handler = views.get(viewClass);
+        if (handler == null) {
+            throw new IllegalArgumentException("No view for " + viewClass);
+        }
+        return handler;
+    }
+
+    /**
+     * Create a new client-side interceptor for a local proxy.  A new interceptor is created for every client
+     * instance.
+     *
+     * @param viewClass the view class in use
+     * @return the client-side interceptor
+     */
+    protected abstract Interceptor createClientInterceptor(final Class<?> viewClass);
+
+    public <T> T createLocalProxy(final Class<T> viewClass) {
+        final Interceptor clientInterceptor = createClientInterceptor(viewClass);
+        final InterceptorInvocationHandler handler = new InterceptorInvocationHandler(Interceptors.getChainedInterceptor(clientInterceptor, componentInterceptor));
+        try {
+            return viewClass.cast(views.get(viewClass).proxyFactory.newInstance(handler));
+        } catch (InstantiationException e) {
+            throw new InstantiationError(e.getMessage());
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessError(e.getMessage());
+        }
     }
 
     public NamespaceContextSelector getNamespaceContextSelector() {
         return selector;
     }
 
+    /**
+     * Remove all injections.
+     *
+     * @param instance the instance to uninject
+     */
     protected void applyUninjections(final Object instance) {
-        for (ResourceInjection resourceInjection : getResourceInjections()) {
+        for (ResourceInjection resourceInjection : resourceInjections) {
             resourceInjection.uninject(instance);
         }
     }
@@ -217,13 +345,13 @@ public abstract class AbstractComponent implements Component {
         }
         // Execute the post construct life-cycle
         final ClassLoader contextCl = getContextClassLoader();
-        setContextClassLoader(beanClassLoader);
+        setContextClassLoader(componentClass.getClassLoader());
         try {
             for (ComponentLifecycle preDestroyMethod : preDestroyInterceptors) {
                 try {
                     preDestroyMethod.invoke(instance);
                 } catch (Throwable t) {
-                    throw new RuntimeException("Failed to invoke pre destroy method for class " + getBeanClass(), t);
+                    throw new RuntimeException("Failed to invoke pre destroy method for class " + getComponentClass(), t);
                 }
             }
         } finally {
@@ -243,19 +371,80 @@ public abstract class AbstractComponent implements Component {
     public void stop() {
     }
 
-    public void setApplicationContext(Context applicationContext) {
+    Map<Method, InterceptorFactory> getInterceptorFactoryMap() {
+        return interceptorFactoryMap;
+    }
+
+    /**
+     * Set the application naming context.
+     *
+     * @param applicationContext the application naming context
+     */
+    public void setApplicationContext(javax.naming.Context applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    public void setModuleContext(Context moduleContext) {
+    /**
+     * Set the module naming context.
+     *
+     * @param moduleContext the module naming context
+     */
+    public void setModuleContext(javax.naming.Context moduleContext) {
         this.moduleContext = moduleContext;
     }
 
-    public void setComponentContext(Context componentContext) {
+    /**
+     * Set the component naming context.
+     *
+     * @param componentContext the component naming context
+     */
+    public void setComponentContext(javax.naming.Context componentContext) {
         this.componentContext = componentContext;
     }
 
-    protected ProxyFactory<?> getProxyFactory() {
-        return proxyFactory;
+    /** {@inheritDoc} */
+    public Object createRemoteProxy(final Class<?> view, final ClassLoader targetClassLoader) {
+        throw new UnsupportedOperationException("One thing at a time!");
+    }
+
+    class InvocationHandler implements ComponentInvocationHandler {
+        private final Class<?> viewClass;
+        private final ProxyFactory<?> proxyFactory;
+        private final Collection<Method> allowedMethods;
+
+        InvocationHandler(final Class<?> viewClass, final ProxyFactory<?> proxyFactory, final Collection<Method> allowedMethods) {
+            this.viewClass = viewClass;
+            this.proxyFactory = proxyFactory;
+            this.allowedMethods = allowedMethods;
+        }
+
+        /** {@inheritDoc} */
+        public Component getComponent() {
+            return AbstractComponent.this;
+        }
+
+        /** {@inheritDoc} */
+        public Class<?> getViewClass() {
+            return viewClass;
+        }
+
+        /** {@inheritDoc} */
+        public Collection<Method> allowedMethods() {
+            return allowedMethods;
+        }
+
+        /** {@inheritDoc} */
+        public void destroy() {
+            // no op by default
+        }
+
+        /** {@inheritDoc} */
+        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+            InterceptorContext context = new InterceptorContext();
+            context.setMethod(method);
+            context.setParameters(args);
+            context.setTarget(proxy);
+            return componentInterceptor.processInvocation(context);
+        }
     }
 }

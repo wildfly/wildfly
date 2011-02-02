@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycleConfiguration;
 import org.jboss.as.ee.component.interceptor.MethodInterceptorConfiguration;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -52,6 +53,8 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
     private final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
     private final Set<ResourceInjectionDependency<?>> dependencies = new HashSet<ResourceInjectionDependency<?>>();
     private final ComponentInterceptorFactories componentInterceptorFactories = new ComponentInterceptorFactories();
+    private final List<String> viewClassNames = new ArrayList<String>();
+    private final List<InterceptorFactory> componentSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
 
     private Class<?> componentClass;
     private ServiceName bindContextServiceName;
@@ -60,6 +63,13 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
     private ServiceName moduleContextServiceName;
     private ServiceName appContextServiceName;
 
+    /**
+     * Construct a new instance.
+     *
+     * @param name the EE component name
+     * @param componentClassName the class name for the component
+     * @param componentFactory the component factory to use to create the actual component
+     */
     public ComponentConfiguration(final String name, final String componentClassName, final ComponentFactory componentFactory) {
         if (name == null) throw new IllegalArgumentException("Component name can not be null");
         this.name = name;
@@ -144,7 +154,7 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
     /**
      * Add a pre-destroy method to the configuration.
      *
-     * @param preDestroy The pre-destry method
+     * @param preDestroy The pre-destroy method
      */
     public void addPreDestroyLifecycleConfiguration(final ComponentLifecycleConfiguration preDestroy) {
         preDestroyConfigurations.add(preDestroy);
@@ -186,6 +196,24 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
      */
     public void addMethodInterceptorConfigs(final Collection<MethodInterceptorConfiguration> interceptorConfigurations) {
         this.interceptorConfigurations.addAll(interceptorConfigurations);
+    }
+
+    /**
+     * Get the list of view class names.
+     *
+     * @return the list of view class names
+     */
+    public List<String> getViewClassNames() {
+        return Collections.unmodifiableList(viewClassNames);
+    }
+
+    /**
+     * Add a view class or interface.
+     *
+     * @param className the view class name
+     */
+    public void addViewClassName(final String className) {
+        viewClassNames.add(className);
     }
 
     /**
@@ -294,5 +322,23 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
 
     public ComponentInterceptorFactories getComponentInterceptorFactories() {
         return componentInterceptorFactories;
+    }
+
+    /**
+     * Get the list of system interceptor factories for component-level interceptors.
+     *
+     * @return the system interceptor factory list
+     */
+    public List<InterceptorFactory> getComponentSystemInterceptorFactories() {
+        return Collections.unmodifiableList(componentSystemInterceptorFactories);
+    }
+
+    /**
+     * Add a system interceptor factory for component-level interceptors.
+     *
+     * @param factory the interceptor factory
+     */
+    public void addComponentSystemInterceptorFactory(InterceptorFactory factory) {
+        componentSystemInterceptorFactories.add(factory);
     }
 }

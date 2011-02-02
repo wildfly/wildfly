@@ -22,10 +22,10 @@
 
 package org.jboss.as.ee.component.interceptor;
 
-import javax.interceptor.InvocationContext;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * Naming context selector interceptor used for an EE component.  This will setup the correct namespace selector for the
@@ -43,7 +43,7 @@ public class ContextSelectorInterceptor implements Interceptor {
     /**
      * {@inheritDoc}
      */
-    public Object processInvocation(final InvocationContext invocationContext) throws Exception {
+    public Object processInvocation(final InterceptorContext invocationContext) throws Exception {
         NamespaceContextSelector.pushCurrentSelector(component.getNamespaceContextSelector());
         try {
             return invocationContext.proceed();

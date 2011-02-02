@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 /**
  * Factory responsible for crating {@link Component} instances.
@@ -36,6 +37,7 @@ public interface ComponentFactory {
      * @param deploymentUnit         The current deployment unit
      * @param componentConfiguration The component configuration
      * @return Component service information
+     * @throws DeploymentUnitProcessingException if the component could not be created
      */
-    Component createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration);
+    Component createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException;
 }

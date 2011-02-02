@@ -37,6 +37,7 @@ public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
     @SuppressWarnings("unchecked")
     public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         final Component component = (Component)serviceValue;
-        return component.getInstance().createLocalClientProxy();
+        // TODO - temp hack until the factory has the view on it
+        return component.createLocalProxy(component.getComponentClass());
     }
 }

@@ -22,12 +22,12 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.List;
-import org.jboss.as.ee.component.interceptor.ComponentInstanceInterceptor;
+import java.lang.reflect.Method;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorInvocationHandler;
-import org.jboss.invocation.Interceptors;
-import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
 /**
  * An abstract base component instance.
@@ -39,45 +39,49 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
     private static final long serialVersionUID = -8099216228976950066L;
 
     private final AbstractComponent component;
-    private final Interceptor interceptor;
     private final Object instance;
+
+    /**
+     * This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
+     * match - specifically, they must equal the objects provided to the proxy.
+     */
+    private final Map<Method, Interceptor> methodMap;
 
     /**
      * Construct a new instance.
      *
      * @param component the component
-     * @param interceptor the interceptor for all invocations
      * @param instance the object instance
      */
-    protected AbstractComponentInstance(final AbstractComponent component, final Interceptor interceptor, final Object instance) {
+    protected AbstractComponentInstance(final AbstractComponent component, final Object instance) {
         this.component = component;
-        this.interceptor = interceptor;
         this.instance = instance;
+        final Map<Method, InterceptorFactory> factoryMap = component.getInterceptorFactoryMap();
+        final Map<Method, Interceptor> methodMap = new IdentityHashMap<Method, Interceptor>(factoryMap.size());
+        final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
+        factoryContext.getContextData().put(AbstractComponent.INSTANCE_KEY, instance);
+        for (Map.Entry<Method, InterceptorFactory> entry : factoryMap.entrySet()) {
+            methodMap.put(entry.getKey(), entry.getValue().create(factoryContext));
+        }
+        this.methodMap = methodMap;
     }
 
+    /** {@inheritDoc} */
     public Component getComponent() {
         return component;
     }
 
-    public Interceptor getInterceptor() {
-        return interceptor;
-    }
-
+    /** {@inheritDoc} */
     public Object getInstance() {
         return instance;
     }
 
-    public Object createLocalClientProxy() {
-        ProxyFactory<?> proxyFactory = component.getProxyFactory();
-        List<Interceptor> list = component.getComponentLevelInterceptors();
-
-        // Add the instance interceptor last
-        list.add(new ComponentInstanceInterceptor(this, component.getMethodInterceptorFactories()));
-        final Interceptor defaultChain = Interceptors.getChainedInterceptor(list);
-        try {
-            return proxyFactory.newInstance(new InterceptorInvocationHandler(defaultChain));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create proxy instance for bean component: " + component.getBeanClass(), e);
+    /** {@inheritDoc} */
+    public Interceptor getInterceptor(final Method method) throws IllegalStateException {
+        Interceptor interceptor = methodMap.get(method);
+        if (interceptor == null) {
+            throw new IllegalStateException("Method does not exist");
         }
+        return interceptor;
     }
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import org.jboss.invocation.Interceptor;
 
 /**
@@ -40,14 +41,6 @@ public interface ComponentInstance extends Serializable {
     Component getComponent();
 
     /**
-     * Get the interceptor entry point for this instance.  This interceptor will be wired with the interceptor instances
-     * associated with this component instance.
-     *
-     * @return the interceptor entry point
-     */
-    Interceptor getInterceptor();
-
-    /**
      * Get the actual object instance.  The object instance has all injections filled.
      *
      * @return the instance
@@ -55,9 +48,11 @@ public interface ComponentInstance extends Serializable {
     Object getInstance();
 
     /**
-     * Create a new local client proxy for this component instance.
+     * Get the interceptor for the given method.
      *
-     * @return the proxy instance
+     * @param method the method
+     * @return the interceptor
+     * @throws IllegalStateException if the method does not exist
      */
-    Object createLocalClientProxy();
+    Interceptor getInterceptor(Method method) throws IllegalStateException;
 }

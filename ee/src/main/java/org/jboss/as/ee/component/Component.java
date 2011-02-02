@@ -43,20 +43,55 @@ public interface Component {
     void stop();
 
     /**
-     * Get an instance of this component.  Implementations can use any mechanism to retrieve the
-     * bean including pooling, singleton or construction on every call to this method.
+     * Get the component's actual implementation class.
+     *
+     * @return the component class
+     */
+    Class<?> getComponentClass();
+
+    /**
+     * Create a new instance of this component.
      *
      * @return the component instance
      */
-    ComponentInstance getInstance();
+    ComponentInstance createInstance();
 
     /**
-     * Return an instance to the component.  This should be called whenever a consumer of the bean is no longer
-     * using the instance.  This can be used to run post-constructs, cleanup, or to return the instance to a pool.
+     * Destroy an instance of the component.
      *
-     * @param instance the instance to return
+     * @param instance the instance to destroy
      */
-    void returnInstance(ComponentInstance instance);
+    void destroyInstance(ComponentInstance instance);
+
+    /**
+     * Create a new client entry point for this component.  The returned entry point will contain the necessary logic to
+     * locate the appropriate instance, perform security checks, etc. as well as perform the final invocation.  The
+     * returned handler may or may not be shared; generally shared handlers will ignore their {@code destroy()} method.
+     * <p>
+     * The given view type must be one of the registered view types for this component.
+     *
+     * @param view the view type
+     * @return the client entry point
+     */
+    ComponentInvocationHandler createClient(Class<?> view);
+
+    /**
+     * Create a local client proxy for this component.
+     *
+     * @param view the view type class
+     * @param <T> the view type
+     * @return the proxy
+     */
+    <T> T createLocalProxy(Class<T> view);
+
+    /**
+     * Create a remote client proxy for this component.
+     *
+     * @param view the view type class
+     * @param targetClassLoader the target class loader for the proxy
+     * @return the proxy instance
+     */
+    Object createRemoteProxy(Class<?> view, ClassLoader targetClassLoader);
 
     /**
      * Get the naming context selector for this component.

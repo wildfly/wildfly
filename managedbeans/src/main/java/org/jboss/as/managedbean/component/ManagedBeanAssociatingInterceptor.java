@@ -22,24 +22,38 @@
 
 package org.jboss.as.managedbean.component;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
- * A managed bean component instance.
+ * The interceptor which performs association for managed bean components.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ManagedBeanComponentInstance extends AbstractComponentInstance {
-
-    private static final long serialVersionUID = -6175038319331057073L;
+public final class ManagedBeanAssociatingInterceptor implements Interceptor {
 
     /**
-     * Construct a new instance.
-     *
-     * @param component the component
-     * @param instance the object instance
+     * The instance.
      */
-    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance) {
-        super(component, instance);
+    public static final Interceptor INSTANCE = new ManagedBeanAssociatingInterceptor();
+    /**
+     * The singleton factory which yields this instance.
+     */
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(INSTANCE);
+
+    ManagedBeanAssociatingInterceptor() {
+    }
+
+    /** {@inheritDoc} */
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        context.setTarget(context.getPrivateData(ComponentInstance.class).getInstance());
+        try {
+            return context.proceed();
+        } finally {
+            context.setTarget(null);
+        }
     }
 }

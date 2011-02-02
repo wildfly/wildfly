@@ -24,23 +24,53 @@ package org.jboss.as.managedbean.component;
 
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
-import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
+import org.jboss.as.ee.component.ComponentConfiguration;
 
-import java.util.List;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
  *
- *ManagedBeanComponentFactory.java @author John E. Bailey
+ * @author John E. Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class ManagedBeanComponent extends AbstractComponent {
-    public ManagedBeanComponent(Class<?> beanClass, ClassLoader beanClassLoader, List<ResourceInjection> resourceInjections, List<ComponentLifecycle> postConstructInterceptors, List<ComponentLifecycle> preDestroyInterceptors, ComponentInterceptorFactories methodInterceptorFactories) {
-        super(beanClass, beanClassLoader, resourceInjections, postConstructInterceptors, preDestroyInterceptors, methodInterceptorFactories);
+
+    /**
+     * Construct a new instance.
+     *
+     * @param configuration the component configuration
+     * @param deploymentClassLoader the deployment class loader
+     * @param index the deployment reflection index
+     * @throws DeploymentUnitProcessingException if an error occurs
+     */
+    public ManagedBeanComponent(final ComponentConfiguration configuration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index) throws DeploymentUnitProcessingException {
+        super(configuration, deploymentClassLoader, index);
     }
 
-    protected AbstractComponentInstance createComponentInstance(final Object instance) {
-        return new ManagedBeanComponentInstance(this, null, instance);
+    /** {@inheritDoc} */
+    protected AbstractComponentInstance constructComponentInstance(final Object instance) {
+        return new ManagedBeanComponentInstance(this, instance);
+    }
+
+    /** {@inheritDoc} */
+    protected Interceptor createClientInterceptor(final Class<?> viewClass) {
+        // One instance per client interface.
+        final ComponentInstance instance = createInstance();
+        return new Interceptor() {
+            public Object processInvocation(final InterceptorContext context) throws Exception {
+                context.putPrivateData(ComponentInstance.class, instance);
+                return context.proceed();
+            }
+
+            protected void finalize() throws Throwable {
+                // TODO - need a better lifecycle strategy than this, perhaps related to injection
+                destroyInstance(instance);
+            }
+        };
     }
 }
