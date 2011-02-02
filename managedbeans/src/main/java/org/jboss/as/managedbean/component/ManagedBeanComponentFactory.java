@@ -22,13 +22,27 @@
 
 package org.jboss.as.managedbean.component;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.naming.LinkRef;
+import javax.naming.Reference;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentBinding;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.ee.component.injection.ResourceInjection;
+import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
+import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
+import org.jboss.as.ee.component.service.ComponentObjectFactory;
+import org.jboss.as.ee.naming.Attachments;
+import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Manged-bean specific implementation of a {@link org.jboss.as.ee.component.ComponentFactory}.
@@ -51,5 +65,16 @@ public class ManagedBeanComponentFactory implements ComponentFactory {
         componentConfiguration.addViewClassName(componentConfiguration.getComponentClassName());
         final ClassLoader classLoader = module.getClassLoader();
         return new ManagedBeanComponent(componentConfiguration, classLoader, deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX));
+    }
+
+
+    public Collection<ComponentBinding> getComponentBindings(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration, final ServiceName componentServiceName) {
+        final NamingContextConfig appNamespaceConfig = deploymentUnit.getAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
+        final NamingContextConfig moduleNamespaceConfig = deploymentUnit.getAttachment(Attachments.MODULE_CONTEXT_CONFIG);
+
+        return Arrays.asList(
+                new ComponentBinding(moduleNamespaceConfig.getContextServiceName(), componentConfiguration.getName(), ComponentObjectFactory.createReference(componentServiceName, componentConfiguration.getComponentClass())),
+                new ComponentBinding(appNamespaceConfig.getContextServiceName().append(deploymentUnit.getName()), componentConfiguration.getName(), new LinkRef(ContextNames.MODULE_CONTEXT_NAME.append(componentConfiguration.getName()).getAbsoluteName()))
+        );
     }
 }

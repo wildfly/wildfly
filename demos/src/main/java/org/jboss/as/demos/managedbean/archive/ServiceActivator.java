@@ -40,7 +40,6 @@ public class ServiceActivator implements org.jboss.msc.service.ServiceActivator 
 
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
-
         final LookupService rebindService = new LookupService("BeanWithSimpleInjected");
 
         serviceTarget.addService(ServiceName.JBOSS.append("BeanWithSimpleInjected", "rebind"), rebindService)

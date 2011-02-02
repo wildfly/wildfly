@@ -25,8 +25,12 @@ package org.jboss.as.ee.component.service;
 import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.Reference;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.naming.ServiceReferenceObjectFactory;
+import static org.jboss.as.naming.util.NamingUtils.asReference;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Object factory used to retrieve instances of beans managed by a {@link org.jboss.as.ee.component.Component}.
@@ -34,10 +38,22 @@ import org.jboss.as.naming.ServiceReferenceObjectFactory;
  * @author John Bailey
  */
 public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
+
+    public static Reference createReference(final ServiceName componentServiceName, final Class<?> viewClass) {
+        final Reference componentFactoryReference = ServiceReferenceObjectFactory.createReference(componentServiceName, ComponentObjectFactory.class);
+        componentFactoryReference.add(new ClassRefAddr("view-class", viewClass));
+        return componentFactoryReference;
+    }
+
     @SuppressWarnings("unchecked")
     public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        final Component component = (Component)serviceValue;
-        // TODO - temp hack until the factory has the view on it
-        return component.createLocalProxy(component.getComponentClass());
+        final Reference reference = asReference(obj);
+        final ClassRefAddr viewClassAddr = (ClassRefAddr) reference.get("view-class");
+        if (viewClassAddr == null) {
+            throw new NamingException("Invalid context reference.  No 'view-class' reference.");
+        }
+        final Class<?> viewClass = (Class<?>) viewClassAddr.getContent();
+        final Component component = (Component) serviceValue;
+        return component.getInstance().createLocalClientProxy(viewClass);
     }
 }

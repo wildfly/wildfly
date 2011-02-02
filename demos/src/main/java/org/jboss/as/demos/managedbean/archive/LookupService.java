@@ -24,7 +24,6 @@ package org.jboss.as.demos.managedbean.archive;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import org.jboss.as.demos.managedbean.mbean.Test;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
