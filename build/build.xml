@@ -497,6 +497,12 @@
             <maven-resource group="org.jboss" artifact="jboss-dmr"/>
         </module-def>
 
+        <module-def name="org.jboss.ejb3">
+            <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-api"/>
+            <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-common"/>
+            <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-int2"/>
+        </module-def>
+
         <module-def name="org.jboss.integration.jboss-jca-spi">
             <maven-resource group="org.jboss.integration" artifact="jboss-jca-spi"/>
         </module-def>
