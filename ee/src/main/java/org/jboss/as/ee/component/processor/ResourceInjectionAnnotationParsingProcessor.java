@@ -64,7 +64,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         }
     }
 
-    public static List<ResourceInjectionConfiguration> getResourceConfigurations(final ClassInfo classInfo) {
+    public List<ResourceInjectionConfiguration> getResourceConfigurations(final ClassInfo classInfo) {
         final List<ResourceInjectionConfiguration> configurations = new ArrayList<ResourceInjectionConfiguration>();
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
@@ -73,14 +73,13 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
             if (resourceAnnotations != null) for (AnnotationInstance annotation : resourceAnnotations) {
                 configurations.add(getResourceConfiguration(classInfo, annotation));
             }
-
             configurations.addAll(processClassResources(classInfo, classAnnotations));
         }
 
         return configurations;
     }
 
-    public static ResourceInjectionConfiguration getResourceConfiguration(final ClassInfo classInfo, final AnnotationInstance annotation) {
+    public ResourceInjectionConfiguration getResourceConfiguration(final ClassInfo classInfo, final AnnotationInstance annotation) {
         final AnnotationTarget annotationTarget = annotation.target();
         final ResourceInjectionConfiguration resourceConfiguration;
         if (annotationTarget instanceof FieldInfo) {
@@ -95,7 +94,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return resourceConfiguration;
     }
 
-    private static ResourceInjectionConfiguration processFieldResource(final AnnotationInstance annotation, final FieldInfo fieldInfo) {
+    private ResourceInjectionConfiguration processFieldResource(final AnnotationInstance annotation, final FieldInfo fieldInfo) {
         final String fieldName = fieldInfo.name();
         final AnnotationValue declaredNameValue = annotation.value("name");
         final String declaredName = declaredNameValue != null ? declaredNameValue.asString() : null;
@@ -107,7 +106,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return new ResourceInjectionConfiguration(fieldName, ResourceInjectionConfiguration.TargetType.FIELD, injectionType.toString(), localContextName, getTargetContextName(annotation, fieldName, injectionType.toString()));
     }
 
-    private static ResourceInjectionConfiguration processMethodResource(final AnnotationInstance annotation, final MethodInfo methodInfo) {
+    private ResourceInjectionConfiguration processMethodResource(final AnnotationInstance annotation, final MethodInfo methodInfo) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -125,7 +124,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return new ResourceInjectionConfiguration(methodName, ResourceInjectionConfiguration.TargetType.METHOD, injectionType.toString(), localContextName, getTargetContextName(annotation, contextNameSuffix, injectionType.toString()));
     }
 
-    private static ResourceInjectionConfiguration processClassResource(final AnnotationInstance annotation, final ClassInfo classInfo) {
+    private ResourceInjectionConfiguration processClassResource(final AnnotationInstance annotation, final ClassInfo classInfo) {
         final AnnotationValue nameValue = annotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
@@ -146,7 +145,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return new ResourceInjectionConfiguration(classInfo.name().toString(), ResourceInjectionConfiguration.TargetType.CLASS, type, name, mappedName);
     }
 
-    private static List<ResourceInjectionConfiguration> processClassResources(final ClassInfo classInfo, final Map<DotName, List<AnnotationInstance>> classAnnotations) {
+    private List<ResourceInjectionConfiguration> processClassResources(final ClassInfo classInfo, final Map<DotName, List<AnnotationInstance>> classAnnotations) {
         final List<AnnotationInstance> resourcesAnnotations = classAnnotations.get(RESOURCES_ANNOTATION_NAME);
         if (resourcesAnnotations == null || resourcesAnnotations.isEmpty()) {
             return Collections.emptyList();
@@ -162,7 +161,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return resourceConfigurations;
     }
 
-    private static String getTargetContextName(final AnnotationInstance resource, final String contextNameSuffix, final String injectionType) {
+    private String getTargetContextName(final AnnotationInstance resource, final String contextNameSuffix, final String injectionType) {
         final AnnotationValue mappedNameValue = resource.value("mappedName");
         String mappedName = mappedNameValue != null ? mappedNameValue.asString() : null;
         if (mappedName != null && !mappedName.isEmpty()) {

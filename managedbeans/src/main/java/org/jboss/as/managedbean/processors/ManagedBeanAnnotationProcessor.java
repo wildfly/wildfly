@@ -28,6 +28,7 @@ import javax.annotation.ManagedBean;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.naming.ContextServiceNameBuilder;
+import org.jboss.as.managedbean.component.ManagedBeanComponentConfiguration;
 import org.jboss.as.managedbean.component.ManagedBeanComponentFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -83,7 +84,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ComponentConfiguration componentConfiguration = new ComponentConfiguration(beanName, beanClassName, ManagedBeanComponentFactory.INSTANCE);
+            final ComponentConfiguration componentConfiguration = new ManagedBeanComponentConfiguration(beanName, beanClassName, ManagedBeanComponentFactory.INSTANCE);
 
             componentConfiguration.setAppContextServiceName(ContextServiceNameBuilder.app(deploymentUnit));
 

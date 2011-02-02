@@ -134,22 +134,4 @@ public class ResourceInjectionConfiguration extends SimpleAttachable implements 
     public void setTargetContextName(String targetContextName) {
         this.targetContextName = targetContextName;
     }
-
-    /**
-     * The local name to use when binding the resource
-     *
-     * @return The local bind name
-     */
-    public String getBindName() {
-        return localContextName;
-    }
-
-    /**
-     * The target name representing the value of the injection.
-     *
-     * @return The target name
-     */
-    public String getBindTargetName() {
-        return targetContextName.startsWith("java") ? targetContextName : ContextNames.COMPONENT_CONTEXT_NAME.append(targetContextName).getAbsoluteName();
-    }
 }

@@ -29,12 +29,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.jboss.as.ee.component.injection.ResourceInjectableConfiguration;
+import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
 import org.jboss.as.ee.component.injection.ResourceInjectionDependency;
 import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycleConfiguration;
 import org.jboss.as.ee.component.interceptor.MethodInterceptorConfiguration;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -249,6 +252,10 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
 
     public void setEnvContextServiceName(ServiceName envContextServiceName) {
         this.envContextServiceName = envContextServiceName;
+    }
+
+    public JndiName getBindContextName() {
+        return ContextNames.COMPONENT_CONTEXT_NAME;
     }
 
     /**

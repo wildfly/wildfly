@@ -22,28 +22,20 @@
 
 package org.jboss.as.managedbean.component;
 
-import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.JndiName;
 
 /**
  * @author John Bailey
  */
-public class ManagedBeanResourceInjectionConfig extends ResourceInjectionConfiguration {
-    public ManagedBeanResourceInjectionConfig(String name, TargetType targetType, String injectedType, String localContextName, String targetContextName) {
-        super(name, targetType, injectedType, localContextName, targetContextName);
+public class ManagedBeanComponentConfiguration extends ComponentConfiguration {
+    public ManagedBeanComponentConfiguration(String name, String componentClassName, ComponentFactory componentFactory) {
+        super(name, componentClassName, componentFactory);
     }
 
-    public ManagedBeanResourceInjectionConfig(String name, TargetType targetType, String injectedType, String localContextName) {
-        super(name, targetType, injectedType, localContextName);
-    }
-
-    /**
-     * The target name representing the value of the injection.
-     *
-     * @return The target name
-     */
-    public String getBindTargetName() {
-        final String targetContextName = getTargetContextName();
-        return targetContextName.startsWith("java") ? targetContextName : ContextNames.MODULE_CONTEXT_NAME.append(targetContextName).getAbsoluteName();
+    public JndiName getBindContextName() {
+        return ContextNames.MODULE_CONTEXT_NAME;
     }
 }

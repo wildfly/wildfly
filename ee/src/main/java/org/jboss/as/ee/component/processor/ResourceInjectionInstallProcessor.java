@@ -60,10 +60,13 @@ public class ResourceInjectionInstallProcessor extends AbstractComponentConfigPr
     }
 
     private ResourceInjectionDependency<?> bindResource(final ServiceTarget serviceTarget, final ComponentConfiguration componentConfiguration, final ResourceInjectionConfiguration resourceConfiguration) throws DeploymentUnitProcessingException {
-        final ServiceName binderName = componentConfiguration.getEnvContextServiceName().append(resourceConfiguration.getBindName());
+        final ServiceName binderName = componentConfiguration.getEnvContextServiceName().append(resourceConfiguration.getLocalContextName());
 
-        final LinkRef linkRef = new LinkRef(resourceConfiguration.getBindTargetName());
-        final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(resourceConfiguration.getBindName(), Values.immediateValue(linkRef));
+        final String targetContextName = resourceConfiguration.getTargetContextName();
+        final String targetName = targetContextName.startsWith("java") ? targetContextName : componentConfiguration.getBindContextName().append(targetContextName).getAbsoluteName();
+
+        final LinkRef linkRef = new LinkRef(targetName);
+        final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(resourceConfiguration.getLocalContextName(), Values.immediateValue(linkRef));
 
         serviceTarget.addService(binderName, resourceBinder)
                 .addDependency(componentConfiguration.getEnvContextServiceName(), Context.class, resourceBinder.getContextInjector())
