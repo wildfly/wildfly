@@ -61,7 +61,8 @@ public class StatelessEJBComponent extends AbstractComponent {
 
     @Override
     protected AbstractComponentInstance constructComponentInstance(Object instance) {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.StatelessEJBComponent.constructComponentInstance");
+        // TODO: Implement this!
+        return null;
     }
 
     @Override
