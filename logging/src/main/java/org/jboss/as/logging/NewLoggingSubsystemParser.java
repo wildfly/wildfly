@@ -302,6 +302,10 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
                 }
             }
         }
+
+        // TODO - Only values set in the XML should be set on the model otherwise defaults end up being written when
+        // marshalling.
+
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(HANDLER, name);
@@ -1014,11 +1018,10 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         writer.writeEndElement();
     }
 
-    private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
+    private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
+            throws XMLStreamException {
         writer.writeStartElement(Element.CONSOLE_HANDLER.getLocalName());
-        if (has(node, NAME)) {
-            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        }
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
         }
@@ -1038,9 +1041,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
 
     private void writeFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.FILE_HANDLER.getLocalName());
-        if (has(node, NAME)) {
-            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        }
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
         }
@@ -1057,9 +1058,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
 
     private void writePeriodicWritingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
-        if (has(node, NAME)) {
-            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        }
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
         }
@@ -1081,9 +1080,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
 
     private void writeSizeWritingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.SIZE_ROTATING_FILE_HANDLER.getLocalName());
-        if (has(node, NAME)) {
-            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        }
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         if (has(node, AUTOFLUSH)) {
             writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
         }
@@ -1110,9 +1107,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
 
     private void writeAsynchHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.ASYNC_HANDLER.getLocalName());
-        if (has(node, NAME)) {
-            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        }
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         writeLevel(writer, node);
         writeFilter(writer, node);
         writeProperties(writer, node);

@@ -868,7 +868,7 @@ public class NewThreadsExtension implements NewExtension {
             writer.writeStartElement(Element.BOUNDED_QUEUE_THREAD_POOL.getLocalName());
 
             if (has(node, NAME)) {
-                writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+                writeAttribute(writer, Attribute.NAME, node.get(NAME));
             }
             if (has(node, BLOCKING)) {
                 writeAttribute(writer, Attribute.BLOCKING, node.get(BLOCKING));
@@ -916,7 +916,7 @@ public class NewThreadsExtension implements NewExtension {
             writer.writeStartElement(Element.SCHEDULED_THREAD_POOL.getLocalName());
 
             if (has(node, NAME)) {
-                writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+                writeAttribute(writer, Attribute.NAME, node.get(NAME));
             }
 
             writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);

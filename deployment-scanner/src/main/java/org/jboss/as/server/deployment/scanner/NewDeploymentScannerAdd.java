@@ -72,7 +72,7 @@ class NewDeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperat
             DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
         }
 
-        final ModelNode subModel = new ModelNode();
+        final ModelNode subModel = context.getSubModel();
         subModel.get(CommonAttributes.PATH).set(path);
         subModel.get(CommonAttributes.SCAN_ENABLED).set(enabled);
         subModel.get(CommonAttributes.SCAN_INTERVAL).set(interval);

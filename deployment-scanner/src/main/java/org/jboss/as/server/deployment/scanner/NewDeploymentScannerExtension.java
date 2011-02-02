@@ -115,18 +115,37 @@ public class NewDeploymentScannerExtension implements NewExtension {
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             ModelNode scanners = context.getModelNode();
-            for(final Property scanner : scanners.asPropertyList()) {
-                final ModelNode node = scanner.getValue();
-                writer.writeEmptyElement(Element.DEPLOYMENT_SCANNER.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), scanner.getName());
-                writer.writeAttribute(Attribute.PATH.getLocalName(), node.get(CommonAttributes.PATH).asString());
-                writer.writeAttribute(Attribute.SCAN_ENABLED.getLocalName(), node.get(CommonAttributes.SCAN_ENABLED).asString());
-                writer.writeAttribute(Attribute.SCAN_INTERVAL.getLocalName(), node.get(CommonAttributes.SCAN_INTERVAL).asString());
-                if(node.has(CommonAttributes.RELATIVE_TO)) {
-                    writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), node.get(CommonAttributes.RELATIVE_TO).asString());
+            for (final Property list : scanners.asPropertyList()) {
+                final ModelNode node = list.getValue();
+
+                for (final Property scanner : node.asPropertyList()) {
+
+                    writer.writeEmptyElement(Element.DEPLOYMENT_SCANNER.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), scanner.getName());
+                    ModelNode configuration = scanner.getValue();
+                    if (has(configuration, CommonAttributes.PATH)) {
+                        writer.writeAttribute(Attribute.PATH.getLocalName(), configuration.get(CommonAttributes.PATH)
+                                .asString());
+                    }
+                    if (has(configuration, CommonAttributes.SCAN_ENABLED)) {
+                        writer.writeAttribute(Attribute.SCAN_ENABLED.getLocalName(),
+                                configuration.get(CommonAttributes.SCAN_ENABLED).asString());
+                    }
+                    if (has(configuration, CommonAttributes.SCAN_INTERVAL)) {
+                        writer.writeAttribute(Attribute.SCAN_INTERVAL.getLocalName(),
+                                configuration.get(CommonAttributes.SCAN_INTERVAL).asString());
+                    }
+                    if (configuration.has(CommonAttributes.RELATIVE_TO)) {
+                        writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(),
+                                configuration.get(CommonAttributes.RELATIVE_TO).asString());
+                    }
                 }
-            }
-            writer.writeEndElement();
+                writer.writeEndElement();
+  }
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name).isDefined();
         }
 
         /** {@inheritDoc} */

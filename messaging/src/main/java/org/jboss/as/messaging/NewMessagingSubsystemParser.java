@@ -1094,7 +1094,7 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
             for(final Property parameter : value.get(PARAM).asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
                 writer.writeAttribute(Attribute.KEY.getLocalName(), parameter.getName());
-                writeAttribute(writer, Attribute.NAME, parameter.getValue());
+                writeAttribute(writer, Attribute.VALUE, parameter.getValue());
                 writer.writeEndElement();
             }
         }
