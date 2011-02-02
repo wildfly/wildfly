@@ -25,9 +25,12 @@ package org.jboss.as.server.client.api.deployment;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.concurrent.Future;
 
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.server.client.impl.ModelControllerClientServerDeploymentManager;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -39,6 +42,36 @@ public interface ServerDeploymentManager {
 
     ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("deployment-manager").append("server");
     ServiceName SERVICE_NAME_LOCAL = SERVICE_NAME_BASE.append("local");
+
+
+
+    /**
+     * Factory used to create an {@link ServerDeploymentManager} instance.
+     */
+    class Factory {
+
+        /**
+         * Create an {@link ServerDeploymentManager} instance for a remote address and port.
+         *
+         * @param address The remote address to connect to
+         * @param port The remote port
+         * @return A domain client
+         */
+        public static ServerDeploymentManager create(final InetAddress address, int port) {
+            return create(ModelControllerClient.Factory.create(address, port));
+        }
+
+        /**
+         * Create an {@link ServerDeploymentManager} instance using the given {@link ModelControllerClient}.
+         *
+         * @param address The remote address to connect to
+         * @param port The remote port
+         * @return A domain client
+         */
+        public static ServerDeploymentManager create(final ModelControllerClient client) {
+            return new ModelControllerClientServerDeploymentManager(client);
+        }
+    }
 
     /**
      * Indicates the content of the specified file should be added to the default content

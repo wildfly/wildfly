@@ -123,10 +123,9 @@ public class BasicModelController implements ModelController {
     protected ModelNode getFailureResult(Throwable t) {
         final ModelNode node = new ModelNode();
         // todo - define this structure
-        node.get("success").set(false);
         do {
             final String message = t.getLocalizedMessage();
-            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
+            node.add(t.getClass().getName(), message != null ? message : "");
             t = t.getCause();
         } while (t != null);
         return node;
@@ -213,7 +212,7 @@ public class BasicModelController implements ModelController {
         try {
             configurationPersister.store(model);
         } catch (final ConfigurationPersistenceException e) {
-            log.warnf("Failed to persist configuration change: %s", e);
+            log.warnf(e, "Failed to persist configuration change: %s", e);
         }
     }
 
@@ -275,20 +274,25 @@ public class BasicModelController implements ModelController {
     public ModelNode execute(final ModelNode operation) throws OperationFailedException {
         final AtomicInteger status = new AtomicInteger();
         final ModelNode finalResult = new ModelNode();
+        // Ensure there is a "result" child even if we receive no fragments
+        finalResult.get(RESULT);
         final Cancellable handle = execute(operation, new ResultHandler() {
             @Override
-            public void handleResultFragment(final String[] location, final ModelNode result) {
+            public void handleResultFragment(final String[] location, final ModelNode fragment) {
                 synchronized (finalResult) {
-                    finalResult.get(RESULT).get(location).set(result);
+                    if (status.get() == 0) {
+                        finalResult.get(RESULT).get(location).set(fragment);
+                    }
                 }
             }
 
             @Override
             public void handleResultComplete(final ModelNode compensatingOperation) {
                 synchronized (finalResult) {
-                    status.set(1);
-                    if(compensatingOperation != null) {
-                        finalResult.get(COMPENSATING_OPERATION).set(compensatingOperation);
+                    if (status.compareAndSet(0, 1)) {
+                        if(compensatingOperation != null) {
+                            finalResult.get(COMPENSATING_OPERATION).set(compensatingOperation);
+                        }
                     }
                     finalResult.notify();
                 }
@@ -297,8 +301,10 @@ public class BasicModelController implements ModelController {
             @Override
             public void handleFailed(final ModelNode failureDescription) {
                 synchronized (finalResult) {
-                    status.set(3);
-                    finalResult.get(FAILURE_DESCRIPTION).set(failureDescription);
+                    if (status.compareAndSet(0, 3)) {
+                        finalResult.remove(RESULT);
+                        finalResult.get(FAILURE_DESCRIPTION).set(failureDescription);
+                    }
                     finalResult.notify();
                 }
             }
@@ -306,7 +312,9 @@ public class BasicModelController implements ModelController {
             @Override
             public void handleCancellation() {
                 synchronized (finalResult) {
-                    status.set(2);
+                    if (status.compareAndSet(0, 2)) {
+                        finalResult.remove(RESULT);
+                    }
                     finalResult.notify();
                 }
             }
@@ -322,7 +330,7 @@ public class BasicModelController implements ModelController {
                                 return finalResult;
                             case 2: finalResult.get(OUTCOME).set("cancelled");
                                 throw new CancellationException();
-                            case 3: finalResult.get(OUTCOME) .set("failed");
+                            case 3: finalResult.get(OUTCOME).set("failed");
                                 throw new OperationFailedException(finalResult);
                         }
                         finalResult.wait();

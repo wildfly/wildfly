@@ -72,6 +72,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
 
         final AsynchronousOperation result = new AsynchronousOperation();
         executorService.execute (new Runnable() {
+            @Override
             public void run() {
                 try {
                     Future<Void> f = new ExecuteAsynchronousRequest(result, operation, handler).execute(getConnectionStrategy());
@@ -89,7 +90,6 @@ class ModelControllerClientImpl implements ModelControllerClient {
                     }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
                     throw new RuntimeException("Failed to execute operation ", e);
                 }
             }
@@ -117,6 +117,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
         }
     }
 
+    @Override
     public void close() throws IOException {
         executorService.shutdown();
     }
@@ -224,6 +225,13 @@ class ModelControllerClientImpl implements ModelControllerClient {
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION:{
                             handler.handleCancellation();
+                            break LOOP;
+                        }
+                        case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED:{
+                            expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+                            ModelNode node = readNode(input);
+                            // FIXME need some sort of translation
+                            handler.handleException(new RuntimeException(node.toString()));
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:{

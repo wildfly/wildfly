@@ -177,7 +177,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
             final IOExceptionHolder holder = new IOExceptionHolder();
             Cancellable result = modelController.execute(operation, new ResultHandler() {
                 @Override
-                public void handleResultFragment(String[] location, ModelNode result) {
+                public void handleResultFragment(String[] location, ModelNode fragment) {
                     try {
                         synchronized (outputStream) {
                             outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT);
@@ -187,7 +187,7 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
                                 StreamUtils.writeUTFZBytes(outputStream, loc);
                             }
                             outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                            result.writeExternal(outputStream);
+                            fragment.writeExternal(outputStream);
                             outputStream.flush();
                         }
                     } catch (IOException e) {
@@ -278,8 +278,8 @@ public class ModelControllerOperationHandler extends AbstractMessageHandler impl
     }
 
     private class CancelAsynchronousOperation extends ManagementResponse {
-    	
-    	private boolean cancelled;
+
+        private boolean cancelled;
         @Override
         protected final byte getResponseCode() {
             return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_RESPONSE;
