@@ -33,6 +33,8 @@ import org.jboss.as.naming.deployment.ResourceBinder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
@@ -45,12 +47,15 @@ public class ResourceInjectionInstallProcessor extends AbstractComponentConfigPr
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
         final Class<?> componentClass = componentConfiguration.getComponentClass();
 
+        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(componentClass);
+
         final ServiceName envContextServiceName = componentConfiguration.getEnvContextServiceName();
 
         // Process the component's injections
         for (ResourceInjectionConfiguration resourceConfiguration : componentConfiguration.getResourceInjectionConfigs()) {
             final NamingLookupValue<Object> lookupValue = new NamingLookupValue<Object>(resourceConfiguration.getLocalContextName());
-            final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, componentClass, lookupValue);
+            final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, componentClass, classReflectionIndex, lookupValue);
             if (injection != null) {
                 componentConfiguration.addResourceInjection(injection);
                 componentConfiguration.addDependency(bindResource(phaseContext.getServiceTarget(), componentConfiguration, resourceConfiguration));

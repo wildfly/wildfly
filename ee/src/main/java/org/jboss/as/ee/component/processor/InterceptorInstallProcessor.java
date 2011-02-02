@@ -87,10 +87,10 @@ public class InterceptorInstallProcessor extends AbstractComponentConfigProcesso
                 throw new DeploymentUnitProcessingException("Failed to load interceptors class " + interceptorConfiguration.getInterceptorClassName(), e);
             }
 
-            final Method interceptorMethod;
-            try {
-                interceptorMethod = interceptorClass.getMethod(interceptorConfiguration.getMethodName(), InvocationContext.class);
-            } catch (NoSuchMethodException e) {
+            final ClassReflectionIndex interceptorReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
+
+            final Method interceptorMethod = interceptorReflectionIndex.getMethod(Object.class, interceptorConfiguration.getMethodName(), InvocationContext.class);
+            if(interceptorMethod == null) {
                 throw new DeploymentUnitProcessingException("Unable to find interceptor method [" + interceptorConfiguration.getMethodName() + "] on interceptor class [" + interceptorClass + "]");
             }
 
@@ -104,7 +104,7 @@ public class InterceptorInstallProcessor extends AbstractComponentConfigProcesso
                 final ServiceName envContextServiceName = componentConfiguration.getEnvContextServiceName();
                 for (ResourceInjectionConfiguration resourceConfiguration : interceptorConfiguration.getResourceInjectionConfigs()) {
                     final NamingLookupValue<Object> lookupValue = new NamingLookupValue<Object>(resourceConfiguration.getLocalContextName());
-                    final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, interceptorClass, lookupValue);
+                    final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, interceptorClass, interceptorReflectionIndex, lookupValue);
                     if (injection != null) {
                         interceptorInjections.add(injection);
                     }

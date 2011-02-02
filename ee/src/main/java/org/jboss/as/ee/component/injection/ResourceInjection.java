@@ -24,6 +24,7 @@ package org.jboss.as.ee.component.injection;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
@@ -57,11 +58,12 @@ public interface ResourceInjection {
          *
          * @param resourceConfiguration The resource injection configuration
          * @param beanClass The bean class to injection should run against.
+         * @param reflectionIndex The class reflection index
          * @param value The value for injection
          * @param <V> The value type
          * @return The injection instance
          */
-        public static <V> ResourceInjection create(final ResourceInjectionConfiguration resourceConfiguration, final Class<?> beanClass, Value<V> value) {
+        public static <V> ResourceInjection create(final ResourceInjectionConfiguration resourceConfiguration, final Class<?> beanClass, final ClassReflectionIndex reflectionIndex, final Value<V> value) {
             final Class<?> argClass;
             try {
                 argClass = beanClass.getClassLoader().loadClass(resourceConfiguration.getInjectedType());
@@ -70,27 +72,16 @@ public interface ResourceInjection {
             }
             switch(resourceConfiguration.getTargetType()) {
                 case FIELD: {
-                    final Field field;
-                    try {
-                        field = beanClass.getDeclaredField(resourceConfiguration.getName());
-                        field.setAccessible(true);
-                    } catch (NoSuchFieldException e) {
-                        throw new IllegalArgumentException("Invalid resource injection configuration.  Field is not found on target class.", e);
-                    }
+                    final Field field = reflectionIndex.getField(resourceConfiguration.getName());
                     return new FieldResourceInjection<V>(Values.immediateValue(field), value, argClass.isPrimitive());
                 }
                 case METHOD: {
-                    final Method method;
-                    try {
-                        method = beanClass.getDeclaredMethod(resourceConfiguration.getName(), argClass);
-                        method.setAccessible(true);
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException("Invalid resource injection configuration.  Method could not be retrieved from target class", e);
-                    }
+                    final Method method = reflectionIndex.getMethod(Void.class, resourceConfiguration.getName(), argClass);
                     return new MethodResourceInjection<V>(Values.immediateValue(method), value, argClass.isPrimitive());
                 }
-                default:
+                default: {
                     return null;
+                }
             }
         }
     }
