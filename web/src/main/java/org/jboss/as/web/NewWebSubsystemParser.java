@@ -438,7 +438,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
         connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
-        connector.get(PROTOCOL).set(protocol);
+        if(protocol != null) connector.get(PROTOCOL).set(protocol);
         connector.get(SOCKET_BINDING).set(bindingRef);
         if(scheme != null) connector.get(SCHEME).set(scheme);
         if(executorRef != null) connector.get(EXECUTOR).set(executorRef);

@@ -51,10 +51,8 @@
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.naming"/>
-        <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
-        <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web"/>
@@ -193,7 +191,6 @@
             <include profile="ejb3"/>
             -->
             <include profile="messaging"/>
-            <include profile="osgi"/>
             <include profile="web"/>
             <include profile="webservices"/>
 
@@ -242,15 +239,6 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security:1.0">
-        		<jaas>
-        			<application-policy name="other">
-        				<authentication>
-        					<login-module code="UsersRoles" flag="required"/>
-        				</authentication>
-        			</application-policy>
-        		</jaas>
-        	</subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>
@@ -262,33 +250,6 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
-
-            <subsystem xmlns="urn:jboss:domain:connector:1.0">
-                <archive-validation enabled="true"/>
-                <bean-validation enabled="true"/>
-                <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
-            </subsystem>
-            <subsystem xmlns="urn:jboss:domain:datasources:1.0">
-              <!-- Uncomment to add an in-memory datasource
-              <datasources>
-                <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
-                  <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
-                  <driver-class>org.h2.Driver</driver-class>
-                  <module>com.h2database.h2</module>
-                  <pool></pool>
-                  <security>
-                    <user-name>sa</user-name>
-                    <password>sa</password>
-                  </security>
-                  <validation></validation>
-                  <time-out></time-out>
-                  <statement></statement>
-                </datasource>
-              </datasources>
-              -->
-            </subsystem>
-            <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
         </profile>
     </profiles>
 
@@ -329,18 +290,20 @@
     <server-groups>
         <server-group name="main-server-group" profile="default">
             <socket-binding-group ref="standard-sockets"/>
-
+<!-- 
             <jvm name="default">
                <heap size="64m" max-size="512m"/>
             </jvm>
+             -->
         </server-group>
 
         <server-group name="other-server-group" profile="default">
             <socket-binding-group ref="standard-sockets"/>
-
+<!-- 
             <jvm name="default">
                <heap size="64m" max-size="512m"/>
             </jvm>
+             -->
         </server-group>
     </server-groups>
 

@@ -23,7 +23,6 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -168,24 +167,24 @@ public class DomainXml extends CommonXml {
             throw unexpectedElement(reader);
         }
 
-        for (;;) {
-            switch (reader.nextTag()) {
-                case START_ELEMENT: {
-                    readHeadComment(reader, address, list);
-                    if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-                        throw unexpectedElement(reader);
-                    }
-                    switch (Element.forName(reader.getLocalName())) {
-                        default: throw unexpectedElement(reader);
-                    }
-                }
-                case END_ELEMENT: {
-                    readTailComment(reader, address, list);
-                    return;
-                }
-                default: throw new IllegalStateException();
-            }
-        }
+//        for (;;) {
+//            switch (reader.nextTag()) {
+//                case START_ELEMENT: {
+//                    readHeadComment(reader, address, list);
+//                    if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+//                        throw unexpectedElement(reader);
+//                    }
+//                    switch (Element.forName(reader.getLocalName())) {
+//                        default: throw unexpectedElement(reader);
+//                    }
+//                }
+//                case END_ELEMENT: {
+//                    readTailComment(reader, address, list);
+//                    return;
+//                }
+//                default: throw new IllegalStateException();
+//            }
+//        }
 
     }
 
@@ -220,12 +219,16 @@ public class DomainXml extends CommonXml {
         final String name = attrValues[0];
         final String defaultInterface = attrValues[1];
 
+        final ModelNode groupAddress = new ModelNode().set(address);
+        groupAddress.add(SOCKET_BINDING_GROUP, name);
+
         final ModelNode bindingGroupUpdate = new ModelNode();
-        bindingGroupUpdate.get(OP_ADDR).set(address).add(SOCKET_BINDING_GROUP, name);
+        bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
         bindingGroupUpdate.get(OP).set(ADD);
         bindingGroupUpdate.get(DEFAULT_INTERFACE).set(defaultInterface);
         final ModelNode includes = bindingGroupUpdate.get(INCLUDE);
         includes.setEmptyList();
+        updates.add(bindingGroupUpdate);
 
         // Handle elements
         while (reader.nextTag() != END_ELEMENT) {
@@ -242,7 +245,7 @@ public class DomainXml extends CommonXml {
                             break;
                         }
                         case SOCKET_BINDING: {
-                            final String bindingName = parseSocketBinding(reader, interfaces, address, defaultInterface, updates);
+                            final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, defaultInterface, updates);
                             if (!socketBindings.add(bindingName)) {
                                 throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
                             }
@@ -257,7 +260,6 @@ public class DomainXml extends CommonXml {
                     throw unexpectedElement(reader);
             }
         }
-        updates.add(bindingGroupUpdate);
     }
 
     void parseServerGroups(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
@@ -309,12 +311,14 @@ public class DomainXml extends CommonXml {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PROFILE));
             }
 
+            final ModelNode groupAddress = new ModelNode().set(address);
+            groupAddress.add(ModelDescriptionConstants.SERVER_GROUP, name);
+
             final ModelNode group = new ModelNode();
             group.get(OP).set(ADD);
-            group.get(OP_ADDR).set(address).add(ModelDescriptionConstants.SERVER_GROUP, name);
+            group.get(OP_ADDR).set(groupAddress);
             group.get(REQUEST_PROPERTIES, PROFILE).set(profile);
             list.add(group);
-            // list.add(new DomainServerGroupAdd(name, profile));
 
             // Handle elements
 
@@ -325,11 +329,11 @@ public class DomainXml extends CommonXml {
                         final Element element = Element.forName(reader.getLocalName());
                         switch (element) {
                             case JVM: {
-                                parseJvm(reader, address, list, new HashSet<String>());
+                                parseJvm(reader, groupAddress, list, new HashSet<String>());
                                 break;
                             }
                             case SOCKET_BINDING_GROUP: {
-                                parseSocketBindingGroupRef(reader, address, list);
+                                parseSocketBindingGroupRef(reader, groupAddress, list);
                                 break;
                             }
                             case DEPLOYMENTS: {
@@ -337,11 +341,11 @@ public class DomainXml extends CommonXml {
                                     throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
                                 }
                                 sawDeployments = true;
-                                parseDeployments(reader, address, list);
+                                parseDeployments(reader, groupAddress, list);
                                 break;
                             }
                             case SYSTEM_PROPERTIES: {
-                                parseSystemProperties(reader, address, list);
+                                parseSystemProperties(reader, groupAddress, list);
                                 break;
                             }
                             default:
@@ -507,7 +511,7 @@ public class DomainXml extends CommonXml {
             // Process subsystems
             for(final ModelNode update : subsystems) {
                 // Process relative subsystem path address
-                final ModelNode subsystemAddress = address.clone().set(address).set(ModelDescriptionConstants.PROFILE, name);
+                final ModelNode subsystemAddress = address.clone().set(address).add(ModelDescriptionConstants.PROFILE, name);
                 for(final Property path : update.get(OP_ADDR).asPropertyList()) {
                     subsystemAddress.add(path.getName(), path.getValue().asString());
                 }
