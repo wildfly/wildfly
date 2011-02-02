@@ -46,21 +46,22 @@ import org.jboss.staxmapper.XMLElementWriter;
 public class NewConfigurationPersisterFactory {
 
     private static final String HOST_XML = "host.xml";
+    private static final String DOMAIN_XML = "domain.xml";
 
-    static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir) {
+    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir) {
         HostXml hostXml = new HostXml(Module.getSystemModuleLoader());
         return new TempHackConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
     }
 
-    static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
+    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
         DomainXml domainXml = new DomainXml(Module.getSystemModuleLoader());
-        return new TempHackConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        return new TempHackConfigurationPersister(getFile(configDir, DOMAIN_XML), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }
 
     private static File getFile(final File configDir, final String file) {
         if (configDir == null)
             throw new IllegalArgumentException("Domain configuration directory is null");
-        File configFile = new File(configDir, HOST_XML);
+        File configFile = new File(configDir, file);
         if (configFile.exists()) {
             if (configFile.isDirectory()) {
                 throw new IllegalArgumentException(configFile.getAbsolutePath() + " is a directory");
@@ -74,8 +75,6 @@ public class NewConfigurationPersisterFactory {
         return configFile;
 
     }
-
-
 
     /** Disables store() until marshallers are written */
     private static class TempHackConfigurationPersister extends BackupXmlConfigurationPersister {
