@@ -18,14 +18,9 @@
  */
 package org.jboss.as.server.operations;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Set;
-
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.interfaces.InterfaceCriteria;
+import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -72,26 +67,8 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler implements
      * @return the interface service
      */
     Service<NetworkInterfaceBinding> createInterfaceService(String name, ParsedInterfaceCriteria criteria) {
-        return new NetworkInterfaceService(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(), new OverallInterfaceCriteria(criteria.getCriteria()));
+        return NetworkInterfaceService.create(name, criteria);
     }
 
-    /** Overall interface criteria. */
-    static final class OverallInterfaceCriteria implements InterfaceCriteria {
-        private static final long serialVersionUID = -5417786897309925997L;
-        private final Set<InterfaceCriteria> interfaceCriteria;
 
-        public OverallInterfaceCriteria(Set<InterfaceCriteria> criteria) {
-            interfaceCriteria = criteria;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-            for (InterfaceCriteria criteria : interfaceCriteria) {
-                if (! criteria.isAcceptable(networkInterface, address))
-                    return false;
-            }
-            return true;
-        }
-    }
 }

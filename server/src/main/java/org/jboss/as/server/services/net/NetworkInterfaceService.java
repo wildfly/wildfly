@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Set;
 
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
+import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -64,6 +66,10 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     private final boolean anyLocalV6;
     private final boolean anyLocal;
     private final InterfaceCriteria criteria;
+
+    public static Service<NetworkInterfaceBinding> create(String name, ParsedInterfaceCriteria criteria) {
+        return new NetworkInterfaceService(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(), new OverallInterfaceCriteria(criteria.getCriteria()));
+    }
 
     public NetworkInterfaceService(final String name, final boolean anyLocalV4, final boolean anyLocalV6,
             final boolean anyLocal, final InterfaceCriteria criteria) {
@@ -136,6 +142,26 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             interfaces.add(networkInterfaces.nextElement());
         }
         return new NetworkInterfaceBinding(interfaces, address);
+    }
+
+    /** Overall interface criteria. */
+    static final class OverallInterfaceCriteria implements InterfaceCriteria {
+        private static final long serialVersionUID = -5417786897309925997L;
+        private final Set<InterfaceCriteria> interfaceCriteria;
+
+        public OverallInterfaceCriteria(Set<InterfaceCriteria> criteria) {
+            interfaceCriteria = criteria;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+            for (InterfaceCriteria criteria : interfaceCriteria) {
+                if (! criteria.isAcceptable(networkInterface, address))
+                    return false;
+            }
+            return true;
+        }
     }
 
 }

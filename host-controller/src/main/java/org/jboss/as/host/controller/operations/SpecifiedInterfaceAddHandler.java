@@ -26,6 +26,7 @@ import java.util.Set;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
+import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.host.controller.NewHostOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
