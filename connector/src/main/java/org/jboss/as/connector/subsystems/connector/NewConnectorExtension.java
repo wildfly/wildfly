@@ -21,29 +21,19 @@
  */
 package org.jboss.as.connector.subsystems.connector;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION;
-import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
+import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.connector.Constants.CONNECTOR;
-import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER;
-import static org.jboss.as.connector.subsystems.connector.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.connector.Constants.FAIL_ON_ERROR;
-import static org.jboss.as.connector.subsystems.connector.Constants.FAIL_ON_WARN;
-import static org.jboss.as.connector.subsystems.connector.Constants.LONG_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.connector.Constants.SHORT_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.ADD_ARCHIVE_VALIDATION_DESC;
-import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.ADD_DEFAULT_WORKMANAGED_DESC;
-import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.ARCHIVE_VALIDATION_DESC;
-import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.BEAN_VALIDATION_DESC;
-import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.DEFAULT_WORKMANAGER_DESC;
-import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.REMOVE_ARCHIVE_VALIDATION_DESC;
-import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.REMOVE_DEFAULT_WORKMANAGED_DESC;
+import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.model.ParseUtils.missingRequired;
 import static org.jboss.as.model.ParseUtils.missingRequiredElement;
 import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
@@ -57,7 +47,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -86,21 +75,7 @@ public class NewConnectorExtension implements NewExtension {
         // Connector subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler("add", NewConnectorSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-
-        final ModelNodeRegistration archiveValidation = subsystem.registerSubModel(PathElement.pathElement(ARCHIVE_VALIDATION),
-                ARCHIVE_VALIDATION_DESC);
-        archiveValidation.registerOperationHandler(ADD, NewArchiveValidationAdd.INSTANCE, ADD_ARCHIVE_VALIDATION_DESC, false);
-        archiveValidation.registerOperationHandler(REMOVE, NewArchiveValidationRemove.INSTANCE, REMOVE_ARCHIVE_VALIDATION_DESC,
-                false);
-
-        final ModelNodeRegistration beanValidation = subsystem.registerSubModel(PathElement.pathElement(BEAN_VALIDATION),
-                BEAN_VALIDATION_DESC);
-
-        final ModelNodeRegistration defaulWorkManager = subsystem.registerSubModel(
-                PathElement.pathElement(DEFAULT_WORKMANAGER), DEFAULT_WORKMANAGER_DESC);
-        defaulWorkManager.registerOperationHandler(ADD, NewDefaultWorkManagerAdd.INSTANCE, ADD_DEFAULT_WORKMANAGED_DESC, false);
-        defaulWorkManager.registerOperationHandler(REMOVE, NewDefaultWorkManagerRemove.INSTANCE,
-                REMOVE_DEFAULT_WORKMANAGED_DESC, false);
+        subsystem.registerOperationHandler("remove", NewConnectorSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
 
     }
 
@@ -150,15 +125,15 @@ public class NewConnectorExtension implements NewExtension {
 
                         switch (element) {
                             case ARCHIVE_VALIDATION: {
-                                parseArchiveValidation(reader, subsystem, list);
+                                parseArchiveValidation(reader, subsystem);
                                 break;
                             }
                             case BEAN_VALIDATION: {
-                                parseBeanValidation(reader, subsystem, list);
+                                parseBeanValidation(reader, subsystem);
                                 break;
                             }
                             case DEFAULT_WORKMANAGER: {
-                                parseDefaultWorkManager(reader, subsystem, list);
+                                parseDefaultWorkManager(reader, subsystem);
                                 requiredElement.remove(Element.DEFAULT_WORKMANAGER);
                                 break;
 
@@ -177,27 +152,24 @@ public class NewConnectorExtension implements NewExtension {
             }
         }
 
-        private void parseArchiveValidation(final XMLExtendedStreamReader reader, final ModelNode parentNode,
-                final List<ModelNode> list) throws XMLStreamException {
-            final ModelNode op = new ModelNode();
-            list.add(op);
-            op.get(OP).set(ADD);
+        private void parseArchiveValidation(final XMLExtendedStreamReader reader, final ModelNode node)
+                throws XMLStreamException {
 
             final int cnt = reader.getAttributeCount();
             for (int i = 0; i < cnt; i++) {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLED: {
-                        op.get(ENABLED).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
+                        node.get(ARCHIVE_VALIDATION_ENABLED).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
                         break;
                     }
                     case FAIL_ON_ERROR: {
-                        op.get(FAIL_ON_ERROR).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
+                        node.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
 
                         break;
                     }
                     case FAIL_ON_WARN: {
-                        op.get(FAIL_ON_WARN).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
+                        node.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
                         break;
                     }
                     default: {
@@ -205,19 +177,11 @@ public class NewConnectorExtension implements NewExtension {
                     }
                 }
             }
-            // FIXME Make relative and use this scheme to add the addresses
-            // address.add("profile", "test).add("subsystem", "threads")
-            final ModelNode address = parentNode.clone();
-            address.add(ARCHIVE_VALIDATION);
-            address.protect();
-            op.get(ADDRESS).set(address);
+
         }
 
-        private void parseDefaultWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentNode,
-                final List<ModelNode> list) throws XMLStreamException {
-            final ModelNode op = new ModelNode();
-            list.add(op);
-            op.get(OP).set(ADD);
+        private void parseDefaultWorkManager(final XMLExtendedStreamReader reader, final ModelNode node)
+                throws XMLStreamException {
 
             final EnumSet<Attribute> required = EnumSet.of(Attribute.SHORT_RUNNING_THREAD_POOL,
                     Attribute.LONG_RUNNING_THREAD_POOL);
@@ -226,12 +190,12 @@ public class NewConnectorExtension implements NewExtension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SHORT_RUNNING_THREAD_POOL: {
-                        op.get(SHORT_RUNNING_THREAD_POOL).set(reader.getAttributeValue(i));
+                        node.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(reader.getAttributeValue(i));
                         required.remove(Attribute.SHORT_RUNNING_THREAD_POOL);
                         break;
                     }
                     case LONG_RUNNING_THREAD_POOL: {
-                        op.get(LONG_RUNNING_THREAD_POOL).set(reader.getAttributeValue(i));
+                        node.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(reader.getAttributeValue(i));
                         required.remove(Attribute.LONG_RUNNING_THREAD_POOL);
                         break;
                     }
@@ -240,29 +204,14 @@ public class NewConnectorExtension implements NewExtension {
             if (!required.isEmpty()) {
                 missingRequired(reader, required);
             }
-            // FIXME Make relative and use this scheme to add the addresses
-            // address.add("profile", "test).add("subsystem", "threads")
-            final ModelNode address = parentNode.clone();
-            address.add(DEFAULT_WORKMANAGER);
-            address.protect();
-            op.get(ADDRESS).set(address);
+
         }
 
-        private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode parentNode,
-                final List<ModelNode> list) throws XMLStreamException {
-            final ModelNode op = new ModelNode();
-            list.add(op);
-            op.get(OP).set(ADD);
+        private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
 
             final boolean enabled = ParseUtils.readBooleanAttributeElement(reader, Attribute.ENABLED.getLocalName());
-            op.get(ENABLED).set(enabled);
+            node.get(BEAN_VALIDATION_ENABLED).set(enabled);
 
-            // FIXME Make relative and use this scheme to add the addresses
-            // address.add("profile", "test).add("subsystem", "threads")
-            final ModelNode address = parentNode.clone();
-            address.add(BEAN_VALIDATION);
-            address.protect();
-            op.get(ADDRESS).set(address);
         }
     }
 }

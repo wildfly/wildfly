@@ -21,12 +21,17 @@
  */
 package org.jboss.as.connector.subsystems.connector;
 
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
+import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.connector.subsystems.connector.Constants.*;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.Cancellable;
@@ -44,9 +49,9 @@ import org.jboss.msc.service.ServiceController.Mode;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class NewArchiveValidationRemove implements RuntimeOperationHandler, ModelRemoveOperationHandler {
+public class NewConnectorSubSystemRemove implements RuntimeOperationHandler, ModelRemoveOperationHandler {
 
-    static final OperationHandler INSTANCE = new NewArchiveValidationRemove();
+    static final OperationHandler INSTANCE = new NewConnectorSubSystemRemove();
 
     @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -75,14 +80,25 @@ public class NewArchiveValidationRemove implements RuntimeOperationHandler, Mode
         compensating.get(OP_ADDR).set(operation.require(ADDRESS));
         compensating.get(OP).set(ADD);
         compensating.get(NAME).set(name);
-        if (model.has(ENABLED)) {
-            compensating.get(ENABLED).set(model.get(ENABLED));
+        if (model.has(ARCHIVE_VALIDATION_ENABLED)) {
+            compensating.get(ARCHIVE_VALIDATION_ENABLED).set(model.get(ARCHIVE_VALIDATION_ENABLED));
         }
-        if (model.has(FAIL_ON_ERROR)) {
-            compensating.get(FAIL_ON_ERROR).set(model.get(FAIL_ON_ERROR));
+        if (model.has(ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
+            compensating.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR));
         }
-        if (model.has(FAIL_ON_WARN)) {
-            compensating.get(FAIL_ON_WARN).set(model.get(FAIL_ON_WARN));
+        if (model.has(ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
+            compensating.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN));
+        }
+        if (model.has(BEAN_VALIDATION_ENABLED)) {
+            compensating.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
+        }
+        if (model.has(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
+            compensating.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(
+                    model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL));
+        }
+        if (model.has(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL)) {
+            compensating.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(
+                    model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
         }
 
         resultHandler.handleResultComplete(compensating);

@@ -27,13 +27,11 @@ package org.jboss.as.connector.subsystems.connector;
  */
 class Constants {
     static final String CONNECTOR = "connector";
-    static final String ARCHIVE_VALIDATION = "archive-validation";
-    static final String ENABLED = "enabled";
-    static final String FAIL_ON_ERROR = "fail-on-error";
-    static final String FAIL_ON_WARN = "fail-on-warn";
-    static final String BEAN_VALIDATION = "bean-validation";
-    static final String DEFAULT_WORKMANAGER = "default-workmanager";
-    static final String SHORT_RUNNING_THREAD_POOL = "short-running-thread-pool";
-    static final String LONG_RUNNING_THREAD_POOL = "long-running-thread-pool";
+    static final String ARCHIVE_VALIDATION_ENABLED = "archive-validation-enabled";
+    static final String ARCHIVE_VALIDATION_FAIL_ON_ERROR = "archive-validation-fail-on-error";
+    static final String ARCHIVE_VALIDATION_FAIL_ON_WARN = "archive-validation-fail-on-warn";
+    static final String BEAN_VALIDATION_ENABLED = "bean-validation-enabled";
+    static final String DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL = "default-workmanager-short-running-thread-pool";
+    static final String DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL = "default-workmanager-long-running-thread-pool";
 
 }
