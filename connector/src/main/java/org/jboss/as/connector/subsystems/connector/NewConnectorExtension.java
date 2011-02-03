@@ -60,8 +60,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class NewConnectorExtension implements NewExtension {
 
@@ -94,8 +94,64 @@ public class NewConnectorExtension implements NewExtension {
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             ModelNode node = context.getModelNode();
-
+            writeArchiveValidation(writer, node);
+            writeBeanValidation(writer, node);
+            writeDefaultWorkManager(writer, node);
             writer.writeEndElement();
+        }
+
+        private void writeArchiveValidation(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+            if (hasAnyOf(node, ARCHIVE_VALIDATION_ENABLED, ARCHIVE_VALIDATION_FAIL_ON_ERROR, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
+                writer.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
+                if (has(node, ARCHIVE_VALIDATION_ENABLED)) {
+                    writeAttribute(writer, Attribute.ENABLED, node.require(ARCHIVE_VALIDATION_ENABLED));
+                }
+                if (has(node, ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
+                    writeAttribute(writer, Attribute.FAIL_ON_ERROR, node.require(ARCHIVE_VALIDATION_FAIL_ON_ERROR));
+                }
+                if (has(node, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
+                    writeAttribute(writer, Attribute.FAIL_ON_WARN, node.require(ARCHIVE_VALIDATION_FAIL_ON_WARN));
+                }
+            }
+        }
+
+        private void writeBeanValidation(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+            if (has(node, BEAN_VALIDATION_ENABLED)) {
+                writer.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
+                writeAttribute(writer, Attribute.ENABLED, node.require(BEAN_VALIDATION_ENABLED));
+            }
+        }
+
+        private void writeDefaultWorkManager(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+            if (hasAnyOf(node, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
+                writer.writeEmptyElement(Element.DEFAULT_WORKMANAGER.getLocalName());
+                if (has(node, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL)) {
+                    writeAttribute(writer, Attribute.SHORT_RUNNING_THREAD_POOL,
+                            node.require(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
+                }
+                if (has(node, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
+                    writeAttribute(writer, Attribute.LONG_RUNNING_THREAD_POOL,
+                            node.require(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL));
+                }
+            }
+        }
+
+        private boolean hasAnyOf(ModelNode node, String... names) {
+            for (String current : names) {
+                if (has(node, current)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name).isDefined();
+        }
+
+        private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value)
+                throws XMLStreamException {
+            writer.writeAttribute(attr.getLocalName(), value.asString());
         }
 
         @Override
