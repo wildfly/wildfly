@@ -32,6 +32,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import org.jboss.as.host.controller.other.NewHostControllerBootstrap;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.version.Version;
@@ -113,20 +114,20 @@ public final class NewMain {
     private NewMain() {
     }
 
-    private static NewHostController create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+    private static NewHostControllerBootstrap create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
         NewMain main = new NewMain();
         return main.boot(args, stdin, stdout, stderr, authCode);
     }
 
-    private NewHostController boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
-        NewHostController hc = null;
+    private NewHostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+        NewHostControllerBootstrap hc = null;
         try {
             HostControllerEnvironment config = determineEnvironment(args, props, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return null;
             } else {
-                hc = new NewHostController(config, authCode, NewConfigurationPersisterFactory.createHostXmlConfigurationPersister(config.getDomainConfigurationDir()));
+                hc = new NewHostControllerBootstrap(config, authCode);
                 hc.start();
             }
         } catch (Throwable t) {
