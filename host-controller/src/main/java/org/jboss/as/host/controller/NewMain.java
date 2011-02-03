@@ -32,6 +32,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import org.jboss.as.host.controller.other.NewHostControllerBootstrap;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.version.Version;
