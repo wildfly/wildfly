@@ -24,6 +24,7 @@ package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -39,6 +40,8 @@ import org.jboss.msc.service.ServiceController;
 class NewJMXConnectorRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
     static final NewJMXConnectorRemove INSTANCE = new NewJMXConnectorRemove();
+
+    static final String OPERATION_NAME = "remove-connector";
 
     private NewJMXConnectorRemove() {
         //

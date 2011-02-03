@@ -24,6 +24,7 @@ package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -39,6 +40,8 @@ import org.jboss.msc.service.ServiceTarget;
 class NewJMXConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHandler{
 
     static final NewJMXConnectorAdd INSTANCE = new NewJMXConnectorAdd();
+
+    static final String OPERATION_NAME = "add-connector";
 
     private NewJMXConnectorAdd() {
         //
