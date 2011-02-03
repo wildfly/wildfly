@@ -66,10 +66,8 @@ class NewConnectorSubsystemAdd implements ModelAddOperationHandler {
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        String shortRunningThreadPool = NewParamsUtils.parseStringParameter(operation,
-                DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL);
-        String longRunningThreadPool = NewParamsUtils.parseStringParameter(operation,
-                DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL);
+        String shortRunningThreadPool =  operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
+        String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
         boolean beanValidationEnabled = NewParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
         boolean archiveValidationEnabled = NewParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
         boolean failOnError = NewParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);

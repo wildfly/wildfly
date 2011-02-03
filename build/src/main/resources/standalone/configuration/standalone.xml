@@ -46,7 +46,7 @@
 
     <extensions>
         <extension module="org.jboss.as.arquillian.service"/>
-        <!--<extension module="org.jboss.as.connector"/>-->
+        <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.jmx"/>
@@ -140,6 +140,11 @@
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment socket-binding="txn-socket-process-id"/>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:connector:1.0">
+            <archive-validation enabled="true" />
+            <bean-validation enabled="false" />
+            <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
+        </subsystem>        
         <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>

@@ -22,5 +22,5 @@
 
 org.jboss.as.connector.subsystems.connector.NewConnectorExtension
 org.jboss.as.connector.subsystems.datasources.NewDataSourcesExtension
-org.jboss.as.connector.subsystems.resourceadapters.NewResourceAdaptersExtension
+#org.jboss.as.connector.subsystems.resourceadapters.NewResourceAdaptersExtension
 

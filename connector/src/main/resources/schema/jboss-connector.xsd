@@ -50,7 +50,7 @@
                 </xs:annotation>
             </xs:element>
             
-            <xs:element name="default-workmanager" type="default-workmanagerType" minOccurs="0">
+            <xs:element name="default-workmanager" type="default-workmanagerType" minOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         Configurations for thread pools used by default workmanager

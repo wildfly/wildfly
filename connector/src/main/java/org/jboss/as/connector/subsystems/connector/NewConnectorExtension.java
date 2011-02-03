@@ -94,7 +94,7 @@ public class NewConnectorExtension implements NewExtension {
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             ModelNode node = context.getModelNode();
-            // FIXME write out the details
+
             writer.writeEndElement();
         }
 
@@ -112,6 +112,7 @@ public class NewConnectorExtension implements NewExtension {
 
             // Handle elements
             final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+            final EnumSet<Element> requiredElement = EnumSet.of(Element.DEFAULT_WORKMANAGER);
 
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
@@ -121,7 +122,6 @@ public class NewConnectorExtension implements NewExtension {
                         if (!visited.add(element)) {
                             throw unexpectedElement(reader);
                         }
-                        final EnumSet<Element> requiredElement = EnumSet.of(Element.DEFAULT_WORKMANAGER);
 
                         switch (element) {
                             case ARCHIVE_VALIDATION: {
@@ -141,14 +141,14 @@ public class NewConnectorExtension implements NewExtension {
                             default:
                                 throw unexpectedElement(reader);
                         }
-                        if (!requiredElement.isEmpty()) {
-                            missingRequiredElement(reader, requiredElement);
-                        }
                         break;
                     }
                     default:
                         throw unexpectedElement(reader);
                 }
+            }
+            if (!requiredElement.isEmpty()) {
+                throw missingRequiredElement(reader, requiredElement);
             }
         }
 
@@ -177,6 +177,8 @@ public class NewConnectorExtension implements NewExtension {
                     }
                 }
             }
+            // Handle elements
+            ParseUtils.requireNoContent(reader);
 
         }
 
@@ -204,14 +206,15 @@ public class NewConnectorExtension implements NewExtension {
             if (!required.isEmpty()) {
                 missingRequired(reader, required);
             }
+            // Handle elements
+            ParseUtils.requireNoContent(reader);
 
         }
 
         private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
-
             final boolean enabled = ParseUtils.readBooleanAttributeElement(reader, Attribute.ENABLED.getLocalName());
             node.get(BEAN_VALIDATION_ENABLED).set(enabled);
-
+            // Don't add a requireNoContent here as readBooleanAttributeElement already performs that check.
         }
     }
 }
