@@ -23,6 +23,7 @@
 package org.jboss.as.managedbean;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -32,10 +33,16 @@ import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -70,6 +77,7 @@ public class NewManagedBeansExtension implements NewExtension {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         nodeRegistration.registerOperationHandler(ADD, NewManagedBeansSubsystemAdd.INSTANCE, DESCRIPTION, false);
+        nodeRegistration.registerOperationHandler(DESCRIBE, ManagedBeansDescribeHandler.INSTANCE, ManagedBeansDescribeHandler.INSTANCE, false);
         registration.registerXMLElementWriter(parser);
 
     }
@@ -78,6 +86,13 @@ public class NewManagedBeansExtension implements NewExtension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(NAMESPACE, parser);
+    }
+
+    private static ModelNode createAddOperation() {
+        final ModelNode update = new ModelNode();
+        update.get(OP).set(ADD);
+        update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+        return update;
     }
 
     static class ManagedBeanSubsystemElementParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
@@ -90,7 +105,7 @@ public class NewManagedBeansExtension implements NewExtension {
             final ModelNode update = new ModelNode();
             update.get(OP).set(ADD);
             update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(update);
+            list.add(createAddOperation());
         }
 
         /** {@inheritDoc} */
@@ -102,7 +117,24 @@ public class NewManagedBeansExtension implements NewExtension {
             writer.writeEndElement();
 
         }
+    }
 
+    private static class ManagedBeansDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final ManagedBeansDescribeHandler INSTANCE = new ManagedBeansDescribeHandler();
+        @Override
+        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+            ModelNode node = new ModelNode();
+            node.add(createAddOperation());
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
     }
 
 }

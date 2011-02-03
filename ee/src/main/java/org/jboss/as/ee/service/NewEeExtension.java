@@ -23,18 +23,27 @@
 package org.jboss.as.ee.service;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -60,6 +69,7 @@ public class NewEeExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewEeSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewEeSubsystemAdd.INSTANCE, NewEeSubsystemProviders.SUBSYSTEM, false);
+        registration.registerOperationHandler(DESCRIBE, EESubsystemDescribeHandler.INSTANCE, EESubsystemDescribeHandler.INSTANCE, false);
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -67,6 +77,13 @@ public class NewEeExtension implements NewExtension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(NAMESPACE, parser);
+    }
+
+    static ModelNode createAddOperation() {
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        return subsystem;
     }
 
     static class EESubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
@@ -87,11 +104,25 @@ public class NewEeExtension implements NewExtension {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
 
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            list.add(createAddOperation());
+        }
+    }
 
-            list.add(subsystem);
+    private static class EESubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final EESubsystemDescribeHandler INSTANCE = new EESubsystemDescribeHandler();
+        @Override
+        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+            ModelNode node = new ModelNode();
+            node.add(createAddOperation());
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     }
 
