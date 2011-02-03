@@ -135,6 +135,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.PATHS) {
+            System.out.println("Found paths");
             parsePaths(reader, address, list, true);
             element = nextElement(reader);
         }
@@ -317,7 +318,7 @@ public class DomainXml extends CommonXml {
             final ModelNode group = new ModelNode();
             group.get(OP).set(ADD);
             group.get(OP_ADDR).set(groupAddress);
-            group.get(REQUEST_PROPERTIES, PROFILE).set(profile);
+            group.get(PROFILE).set(profile);
             list.add(group);
 
             // Handle elements

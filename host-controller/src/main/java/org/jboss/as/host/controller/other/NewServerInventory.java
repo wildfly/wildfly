@@ -56,6 +56,11 @@ class NewServerInventory {
 
     ServerStatus startServer(final String serverName, final ModelNode hostModel, final ModelNode domainModel) {
         log.info("starting server " + serverName);
+
+        ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel);
+
+        System.out.println(combiner.createUpdates());
+
         return ServerStatus.UNKNOWN;
     }
 
