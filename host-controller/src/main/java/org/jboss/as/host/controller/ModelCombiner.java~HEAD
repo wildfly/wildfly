@@ -16,11 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.host.controller.other;
+package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
@@ -32,8 +34,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -49,7 +54,9 @@ import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.host.controller.NewManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -59,7 +66,7 @@ import org.jboss.dmr.Property;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-class ModelCombiner {
+class ModelCombiner implements ManagedServerBootConfiguration {
 
     private static final ModelNode EMPTY = new ModelNode();
     static {
@@ -67,32 +74,36 @@ class ModelCombiner {
         EMPTY.protect();
     }
 
-    final NewDomainControllerConnection domainControllerConnection;
+    final int portOffSet;
     final String serverName;
     final ModelNode domainModel;
     final ModelNode hostModel;
     final ModelNode serverModel;
     final String profileName;
+    final HostControllerEnvironment environment;
+    final NewDomainControllerConnection domainControllerConnection;
 
-    ModelCombiner(final NewDomainControllerConnection domainControllerConnection, final String serverName, final ModelNode domainModel, final ModelNode hostModel) {
-        this.domainControllerConnection = domainControllerConnection;
+    ModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final NewDomainControllerConnection domainControllerConnection) {
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;
         this.serverModel = hostModel.require(SERVER).require(serverName);
+        this.domainControllerConnection = domainControllerConnection;
+        this.environment = environment;
 
         String serverGroupName = serverModel.require(GROUP).asString();
         this.profileName = domainModel.require(SERVER_GROUP).require(serverGroupName).require(PROFILE).asString();
-
-
+        this.portOffSet = serverModel.get(SOCKET_BINDING_PORT_OFFSET).asInt();
     }
 
-    List<ModelNode> getBootUpdates(){
+    public List<ModelNode> getBootUpdates() {
 
         System.out.println("DOMAIN");
         System.out.println(domainModel);
         //System.out.println("HOST");
         //System.out.println(hostModel);
+
+        final String socketBindingRef = serverModel.get(SOCKET_BINDING_GROUP).asString();
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
         addNamespaces(updates);
@@ -101,7 +112,7 @@ class ModelCombiner {
         addExtensions(updates);
         addPaths(updates);
         addInterfaces(updates);
-        addSocketBindings(updates);
+        addSocketBindings(updates, socketBindingRef);
         //TODO I think it is ok to not do
         //  management
         //  domain-controller
@@ -112,6 +123,42 @@ class ModelCombiner {
         System.out.println(updates);
 
         return updates;
+    }
+
+    /** {@inheritDoc} */
+    public HostControllerEnvironment getHostControllerEnvironment() {
+        return environment;
+    }
+
+    /** {@inheritDoc} */
+    public int getPortOffSet() {
+        return portOffSet;
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getServerLaunchCommand() {
+        final List<String> command = new ArrayList<String>();
+
+        command.add(environment.getDefaultJVM().toString());
+        command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/log/boot.log");
+        // TODO: make this better
+        command.add("-Dlogging.configuration=file:" + new File("").getAbsolutePath() + "/domain/configuration/logging.properties");
+        command.add("-jar");
+        command.add("jboss-modules.jar");
+        command.add("-mp");
+        command.add("modules");
+        command.add("-logmodule");
+        command.add("org.jboss.logmanager");
+        command.add("org.jboss.as.server");
+
+        return command;
+    }
+
+    /** {@inheritDoc} */
+    public Map<String, String> getServerLaunchEnvironment() {
+        final Map<String, String> env = new HashMap<String, String>();
+        addStandardProperties(serverName, environment, env);
+        return env;
     }
 
     private void addNamespaces(List<ModelNode> updates) {
@@ -206,31 +253,48 @@ class ModelCombiner {
         }
     }
 
-    private void addSocketBindings(List<ModelNode> updates) {
-        final Map<String, ModelNode> bindings = new LinkedHashMap<String, ModelNode>();
-        addSocketBindings(bindings, domainModel.get(SOCKET_BINDING_GROUP));
-        addSocketBindings(bindings, hostModel.get(SOCKET_BINDING_GROUP));
+    static final String SOCKET_BINDING_GROUP_NAME = "default";
 
-        for (Entry<String, ModelNode> entry : bindings.entrySet()) {
-            updates.add(SocketBindingGroupAddHandler.getOperation(pathAddress(PathElement.pathElement(INTERFACE, entry.getKey())), entry.getValue()));
-            final ModelNode binding = entry.getValue().get(SOCKET_BINDING);
-            if (binding.isDefined()) {
-                for (Property bindingEntry : binding.asPropertyList()) {
-                    updates.add(SocketBindingAddHandler.getOperation(
-                            pathAddress(PathElement.pathElement(INTERFACE, entry.getKey()),
-                                    PathElement.pathElement(SOCKET_BINDING, bindingEntry.getName())),
-                            bindingEntry.getValue()));
-                }
+    private void addSocketBindings(List<ModelNode> updates, String bindingRef) {
+        final Map<String, ModelNode> bindings = new LinkedHashMap<String, ModelNode>();
+        addSocketBindingGroups(bindings, domainModel.get(SOCKET_BINDING_GROUP));
+
+        final ModelNode group = bindings.get(bindingRef);
+        final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME));
+        updates.add(SocketBindingGroupAddHandler.getOperation(groupAddress, group));
+
+        addSocketBindings(updates, group, group.get(DEFAULT_INTERFACE));
+        if(group.has(INCLUDE) && group.get(INCLUDE).isDefined()) {
+            for(final ModelNode include : group.get(INCLUDE).asList()) {
+                final ModelNode includedGroup = bindings.get(include.asString());
+                addSocketBindings(updates, includedGroup, includedGroup.get(DEFAULT_INTERFACE));
             }
         }
     }
 
-    private void addSocketBindings(Map<String, ModelNode> map, ModelNode binding) {
+    private void addSocketBindingGroups(Map<String, ModelNode> map, ModelNode binding) {
         if (binding.isDefined()) {
             for (Property prop : binding.asPropertyList()) {
                 //TODO merge rather than replace existing?
                 map.put(prop.getName(), prop.getValue());
             }
+        }
+    }
+
+    private void addSocketBindings(List<ModelNode> updates, ModelNode group, ModelNode defaultInterface) {
+        for(final Property socketBinding : group.get(SOCKET_BINDING).asPropertyList()) {
+            final String name = socketBinding.getName();
+            final ModelNode binding = socketBinding.getValue();
+            if(! binding.isDefined()) {
+                continue;
+            }
+            if(!binding.get(DEFAULT_INTERFACE).isDefined()) {
+                binding.get(DEFAULT_INTERFACE).set(defaultInterface);
+            }
+            updates.add(SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME),
+                    PathElement.pathElement(SOCKET_BINDING, name)), binding));
+
+
         }
     }
 
@@ -241,5 +305,42 @@ class ModelCombiner {
 
     private ModelNode pathAddress(PathElement...elements) {
         return PathAddress.pathAddress(elements).toModelNode();
+    }
+
+
+    /**
+     * Equivalent to default JAVA_OPTS in < AS 7 run.conf file
+     *
+     * TODO externalize this somewhere if doing this at all is the right thing
+     *
+     * @param sysProps
+     */
+    static void addStandardProperties(final String serverName, final HostControllerEnvironment environment, Map<String, String> sysProps) {
+        //
+        if (!sysProps.containsKey("sun.rmi.dgc.client.gcInterval")) {
+            sysProps.put("sun.rmi.dgc.client.gcInterval","3600000");
+        }
+        if (!sysProps.containsKey("sun.rmi.dgc.server.gcInterval")) {
+            sysProps.put("sun.rmi.dgc.server.gcInterval","3600000");
+        }
+
+        sysProps.put(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath());
+        String key = ServerEnvironment.SERVER_BASE_DIR;
+        if (sysProps.get(key) == null) {
+            File serverBaseDir = new File(environment.getDomainServersDir(), serverName);
+            sysProps.put(key, serverBaseDir.getAbsolutePath());
+        }
+        // Servers should use the host controller's deployment content repo
+        key = ServerEnvironment.SERVER_DEPLOY_DIR;
+        if (sysProps.get(key) == null) {
+            File serverDeploymentDir = environment.getDomainDeploymentDir();
+            sysProps.put(key, serverDeploymentDir.getAbsolutePath());
+        }
+
+        key = ServerEnvironment.SERVER_SYSTEM_DEPLOY_DIR;
+        if (sysProps.get(key) == null) {
+            File serverDeploymentDir = environment.getDomainSystemDeploymentDir();
+            sysProps.put(key, serverDeploymentDir.getAbsolutePath());
+        }
     }
 }

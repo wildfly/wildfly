@@ -20,48 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller.other;
+package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.domain.client.api.ServerStatus;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.protocol.Connection;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface NewHostController extends ModelController {
+public interface NewManagedServerLifecycleCallback {
 
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
-
-    /**
-     * Get the host name.
-     *
-     * @return the host name
-     */
-    String getName();
-
-    /**
-     * Start a local server.
-     *
-     * @param serverName the server name to start
-     * @return the server state
-     */
-    ServerStatus startServer(final String serverName);
-
-    /**
-     * Restart a local server.
-     *
-     * @param serverName the server name
-     * @return the server state
-     */
-    ServerStatus restartServer(final String serverName);
-
-    /**
-     * Stop a local server.
-     *
-     * @param serverName the server name to stop
-     * @return the server state
-     */
-    ServerStatus stopServer(final String serverName);
+    void serverRegistered(String serverName, Connection connection);
+    void serverDown(String serverName);
+    void serverStarted(String serverName);
+    void serverStartFailed(String serverName);
+    void serverStopped(String serverName);
 
 }

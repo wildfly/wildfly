@@ -20,11 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller.other;
+package org.jboss.as.host.controller;
 
 import java.net.InetSocketAddress;
 
-import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -42,6 +42,7 @@ class NewServerInventoryService implements Service<NewServerInventory> {
 
     private final InjectedValue<NetworkInterfaceBinding> iFace = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<NewDomainControllerConnection> domainControllerConnection = new InjectedValue<NewDomainControllerConnection>();
+    private final InjectedValue<ProcessControllerClient> client = new InjectedValue<ProcessControllerClient>();
     private final HostControllerEnvironment environment;
     private final int port;
 
@@ -58,8 +59,9 @@ class NewServerInventoryService implements Service<NewServerInventory> {
         final NewServerInventory serverInventory;
         try {
             final NetworkInterfaceBinding interfaceBinding = iFace.getValue();
+            final ProcessControllerClient client = this.client.getValue();
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getAddress(), port);
-            serverInventory = new NewServerInventory(environment, binding, domainControllerConnection.getValue());
+            serverInventory = new NewServerInventory(environment, binding, client, domainControllerConnection.getValue());
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -88,6 +90,10 @@ class NewServerInventoryService implements Service<NewServerInventory> {
 
     InjectedValue<NewDomainControllerConnection> getDomainControllerConnection() {
         return domainControllerConnection;
+    }
+
+    InjectedValue<ProcessControllerClient> getClient() {
+        return client;
     }
 
 }

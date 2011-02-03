@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller.other;
+package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -44,10 +44,10 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainControllerService;
-import org.jboss.as.host.controller.HostControllerEnvironment;
-import org.jboss.as.host.controller.LocalFileRepository;
-import org.jboss.as.host.controller.NewConfigurationPersisterFactory;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
+import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
+import org.jboss.as.host.controller.mgmt.NewServerToHostOperationHandler;
+import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
@@ -151,6 +151,7 @@ public class NewHostControllerBootstrap {
         //
         final NewServerInventoryService inventory = new NewServerInventoryService(environment, mgmtPort);
         batch.addService(NewServerInventoryService.SERVICE_NAME, inventory)
+            .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
             .addDependency(NewDomainControllerConnection.SERVICE_NAME, NewDomainControllerConnection.class, inventory.getDomainControllerConnection())
             .install();
@@ -161,6 +162,7 @@ public class NewHostControllerBootstrap {
         batch.addService(NewHostController.SERVICE_NAME, hc)
             .addDependency(NewDomainControllerConnection.SERVICE_NAME, NewDomainControllerConnection.class, hc.getConnection())
             .addDependency(NewServerInventoryService.SERVICE_NAME, NewServerInventory.class, hc.getServerInventory())
+            .addDependency(NewServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
             .setInitialMode(Mode.ACTIVE)
             .install();
 
@@ -181,7 +183,14 @@ public class NewHostControllerBootstrap {
             .addInjection(managementCommunicationService.getPortInjector(), mgmtPort)
             .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
             .addDependency(threadFactoryServiceName, ThreadFactory.class, managementCommunicationService.getThreadFactoryInjector())
-            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .setInitialMode(Mode.ACTIVE)
+            .install();
+
+        // Add the server to host operation handler
+        final NewServerToHostOperationHandler serverToHost = new NewServerToHostOperationHandler();
+        batch.addService(NewServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+            .addDependency(NewServerInventoryService.SERVICE_NAME, NewManagedServerLifecycleCallback.class, serverToHost.getCallback())
+            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverToHost))
             .install();
 
         batch.install();
