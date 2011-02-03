@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.connector.subsystems.datasources.Constants.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,37 +85,63 @@ class NewDataSourcesSubsystemAdd implements ModelAddOperationHandler, RuntimeOpe
             final NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
             final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
-            DataSources datasources = buildDataSourcesObject(operation);
-            serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
-                    .setInitialMode(Mode.ACTIVE).install();
+            try {
+                DataSources datasources = buildDataSourcesObject(operation);
+                serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
+                        .setInitialMode(Mode.ACTIVE).install();
+            } catch (Exception e) {
+                // e.printStackTrace();
+            }
         }
 
         // Populate subModel
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
 
-        for (ModelNode dataSourceNode : operation.get(DATASOURCES).asList()) {
-            Map<String, String> connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES)
-                    .asList().size());
-            for (ModelNode property : dataSourceNode.get(CONNECTION_PROPERTIES).asList()) {
-                subModel.get(CONNECTION_PROPERTIES, property.asProperty().getName()).set(property.asString());
+        // Workaround to populate domain model.
+
+        boolean workaround = true;
+
+        if (workaround) {
+            if (operation.has(DATASOURCES)) {
+                ModelNode datasources = operation.get(DATASOURCES);
+                subModel.get(DATASOURCES).set(datasources);
             }
-            for (final String attribute : NewDataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
-                if (operation.get(attribute).isDefined()) {
-                    subModel.get(attribute).set(operation.get(attribute));
+        } else {
+
+            if (operation.has(DATASOURCES)) {
+                for (ModelNode dataSourceNode : operation.get(DATASOURCES).asList()) {
+                    if (dataSourceNode.has(CONNECTION_PROPERTIES)) {
+                        for (ModelNode property : dataSourceNode.get(CONNECTION_PROPERTIES).asList()) {
+                            subModel.get(CONNECTION_PROPERTIES, property.asProperty().getName()).set(property.asString());
+                        }
+                    }
+                    for (final String attribute : NewDataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
+                        if (operation.get(attribute).isDefined()) {
+                            subModel.get(attribute).set(operation.get(attribute));
+                        }
+                    }
                 }
             }
-        }
 
-        for (ModelNode dataSourceNode : operation.get(XA_DATASOURCES).asList()) {
-            Map<String, String> connectionProperties = new HashMap<String, String>(dataSourceNode.get(XADATASOURCEPROPERTIES)
-                    .asList().size());
-            for (ModelNode property : dataSourceNode.get(XADATASOURCEPROPERTIES).asList()) {
-                subModel.get(XADATASOURCEPROPERTIES, property.asProperty().getName()).set(property.asString());
-            }
-            for (final String attribute : NewDataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
-                if (operation.get(attribute).isDefined()) {
-                    subModel.get(attribute).set(operation.get(attribute));
+            if (operation.has(XA_DATASOURCES)) {
+                for (ModelNode dataSourceNode : operation.get(XA_DATASOURCES).asList()) {
+                    Map<String, String> connectionProperties;
+                    if (dataSourceNode.has(XADATASOURCEPROPERTIES)) {
+                        connectionProperties = new HashMap<String, String>(dataSourceNode.get(XADATASOURCEPROPERTIES).asList()
+                                .size());
+                        for (ModelNode property : dataSourceNode.get(XADATASOURCEPROPERTIES).asList()) {
+                            subModel.get(XADATASOURCEPROPERTIES, property.asProperty().getName()).set(property.asString());
+                        }
+                    } else {
+                        connectionProperties = Collections.emptyMap();
+                    }
+
+                    for (final String attribute : NewDataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
+                        if (operation.get(attribute).isDefined()) {
+                            subModel.get(attribute).set(operation.get(attribute));
+                        }
+                    }
                 }
             }
         }
@@ -129,10 +156,14 @@ class NewDataSourcesSubsystemAdd implements ModelAddOperationHandler, RuntimeOpe
         List<XaDataSource> xadatasourceList = new ArrayList<XaDataSource>();
 
         for (ModelNode dataSourceNode : operation.get(DATASOURCES).asList()) {
-            Map<String, String> connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES)
-                    .asList().size());
-            for (ModelNode property : dataSourceNode.get(CONNECTION_PROPERTIES).asList()) {
-                connectionProperties.put(property.asProperty().getName(), property.asString());
+            Map<String, String> connectionProperties;
+            if (dataSourceNode.has(CONNECTION_PROPERTIES)) {
+                connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES).asList().size());
+                for (ModelNode property : dataSourceNode.get(CONNECTION_PROPERTIES).asList()) {
+                    connectionProperties.put(property.asProperty().getName(), property.asString());
+                }
+            } else {
+                connectionProperties = Collections.EMPTY_MAP;
             }
             String connectionUrl = dataSourceNode.get(CONNECTION_URL).asString();
             String driverClass = dataSourceNode.get(DRIVER_CLASS).asString();

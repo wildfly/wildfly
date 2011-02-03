@@ -84,11 +84,18 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.jca.common.api.metadata.ds.Statement;
+import org.jboss.jca.common.api.metadata.ds.TimeOut;
+import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.metadata.ds.DsParser;
 import org.jboss.logging.Logger;
@@ -98,8 +105,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class NewDataSourcesExtension implements NewExtension {
 
@@ -108,7 +115,7 @@ public class NewDataSourcesExtension implements NewExtension {
     @Override
     public void initialize(final NewExtensionContext context) {
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(DATASOURCES_SUBSYTEM);
+        final SubsystemRegistration registration = context.registerSubsystem(DATASOURCES);
 
         registration.registerXMLElementWriter(NewConnectorSubsystemParser.INSTANCE);
 
@@ -162,6 +169,10 @@ public class NewDataSourcesExtension implements NewExtension {
                             case SUBSYSTEM: {
                                 DsParser parser = new DsParser();
                                 dataSources = parser.parse(reader);
+
+                                // Ensure the final end tag of the subsystem has been read.
+                                ParseUtils.requireNoContent(reader);
+
                                 break;
                             }
                         }
@@ -177,50 +188,60 @@ public class NewDataSourcesExtension implements NewExtension {
                 for (Entry<String, String> entry : ds.getConnectionProperties().entrySet()) {
                     dsModel.get(CONNECTION_PROPERTIES, entry.getKey()).set(entry.getValue());
                 }
-                dsModel.get(CONNECTION_URL).set(ds.getConnectionUrl());
-                dsModel.get(DRIVER_CLASS).set(ds.getDriverClass());
-                dsModel.get(JNDINAME).set(ds.getJndiName());
-                dsModel.get(MODULE).set(ds.getModule());
-                dsModel.get(NEW_CONNECTION_SQL).set(ds.getNewConnectionSql());
-                dsModel.get(POOLNAME).set(ds.getPoolName());
-                dsModel.get(URL_DELIMITER).set(ds.getUrlDelimiter());
-                dsModel.get(URL_SELECTOR_STRATEGY_CLASS_NAME).set(ds.getUrlSelectorStrategyClassName());
-                dsModel.get(USE_JAVA_CONTEXT).set(ds.isUseJavaContext());
-                dsModel.get(ENABLED).set(ds.isEnabled());
-                if (ds.getPool() != null) {
-                    dsModel.get(MAX_POOL_SIZE).set(ds.getPool().getMaxPoolSize());
-                    dsModel.get(MIN_POOL_SIZE).set(ds.getPool().getMinPoolSize());
-                    dsModel.get(POOL_PREFILL).set(ds.getPool().isPrefill());
-                    dsModel.get(POOL_USE_STRICT_MIN).set(ds.getPool().isUseStrictMin());
+                setIfNotNull(dsModel, CONNECTION_URL, ds.getConnectionUrl());
+                setIfNotNull(dsModel, DRIVER_CLASS, ds.getDriverClass());
+                setIfNotNull(dsModel, JNDINAME, ds.getJndiName());
+                setIfNotNull(dsModel, MODULE, ds.getModule());
+                setIfNotNull(dsModel, NEW_CONNECTION_SQL, ds.getNewConnectionSql());
+                setIfNotNull(dsModel, POOLNAME, ds.getPoolName());
+                setIfNotNull(dsModel, URL_DELIMITER, ds.getUrlDelimiter());
+                setIfNotNull(dsModel, URL_SELECTOR_STRATEGY_CLASS_NAME, ds.getUrlSelectorStrategyClassName());
+                setIfNotNull(dsModel, USE_JAVA_CONTEXT, ds.isUseJavaContext());
+                setIfNotNull(dsModel, ENABLED, ds.isEnabled());
+
+                CommonPool pool = ds.getPool();
+                if (pool != null) {
+                    setIfNotNull(dsModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
+                    setIfNotNull(dsModel, MIN_POOL_SIZE, pool.getMinPoolSize());
+                    setIfNotNull(dsModel, POOL_PREFILL, pool.isPrefill());
+                    setIfNotNull(dsModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
                 }
-                if (ds.getSecurity() != null) {
-                    dsModel.get(USERNAME).set(ds.getSecurity().getUserName());
-                    dsModel.get(PASSWORD).set(ds.getSecurity().getPassword());
+                CommonSecurity security = ds.getSecurity();
+                if (security != null) {
+                    setIfNotNull(dsModel, USERNAME, security.getUserName());
+                    setIfNotNull(dsModel, PASSWORD, security.getPassword());
                 }
-                if (ds.getStatement() != null) {
-                    dsModel.get(PREPAREDSTATEMENTSCACHESIZE).set(ds.getStatement().getPreparedStatementsCacheSize());
-                    dsModel.get(SHAREPREPAREDSTATEMENTS).set(ds.getStatement().isSharePreparedStatements());
-                    dsModel.get(TRACKSTATEMENTS).set(ds.getStatement().getTrackStatements().name());
+                Statement statement = ds.getStatement();
+                if (statement != null) {
+                    setIfNotNull(dsModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
+                    setIfNotNull(dsModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
+                    if (statement.getTrackStatements() != null) {
+                        setIfNotNull(dsModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
+                    }
                 }
-                if (ds.getTimeOut() != null) {
-                    dsModel.get(ALLOCATION_RETRY).set(ds.getTimeOut().getAllocationRetry());
-                    dsModel.get(ALLOCATION_RETRY_WAIT_MILLIS).set(ds.getTimeOut().getAllocationRetryWaitMillis());
-                    dsModel.get(BLOCKING_TIMEOUT_WAIT_MILLIS).set(ds.getTimeOut().getBlockingTimeoutMillis());
-                    dsModel.get(IDLETIMEOUTMINUTES).set(ds.getTimeOut().getIdleTimeoutMinutes());
-                    dsModel.get(QUERYTIMEOUT).set(ds.getTimeOut().getQueryTimeout());
-                    dsModel.get(USETRYLOCK).set(ds.getTimeOut().getUseTryLock());
-                    dsModel.get(SETTXQUERTTIMEOUT).set(ds.getTimeOut().isSetTxQueryTimeout());
+                TimeOut timeout = ds.getTimeOut();
+                if (timeout != null) {
+                    setIfNotNull(dsModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
+                    setIfNotNull(dsModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
+                    setIfNotNull(dsModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
+                    setIfNotNull(dsModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
+                    setIfNotNull(dsModel, QUERYTIMEOUT, timeout.getQueryTimeout());
+                    setIfNotNull(dsModel, USETRYLOCK, timeout.getUseTryLock());
+                    setIfNotNull(dsModel, SETTXQUERTTIMEOUT, timeout.isSetTxQueryTimeout());
                 }
-                dsModel.get(TRANSACTION_ISOLOATION).set(ds.getTransactionIsolation().name());
-                if (ds.getValidation() != null) {
-                    dsModel.get(CHECKVALIDCONNECTIONSQL).set(ds.getValidation().getCheckValidConnectionSql());
-                    dsModel.get(EXCEPTIONSORTERCLASSNAME).set(ds.getValidation().getExceptionSorterClassName());
-                    dsModel.get(STALECONNECTIONCHECKERCLASSNAME).set(ds.getValidation().getStaleConnectionCheckerClassName());
-                    dsModel.get(VALIDCONNECTIONCHECKERCLASSNAME).set(ds.getValidation().getValidConnectionCheckerClassName());
-                    dsModel.get(BACKGROUNDVALIDATIONMINUTES).set(ds.getValidation().getBackgroundValidationMinutes());
-                    dsModel.get(BACKGROUNDVALIDATION).set(ds.getValidation().isBackgroundValidation());
-                    dsModel.get(USE_FAST_FAIL).set(ds.getValidation().isUseFastFail());
-                    dsModel.get(VALIDATEONMATCH).set(ds.getValidation().isValidateOnMatch());
+                if (ds.getTransactionIsolation() != null) {
+                    setIfNotNull(dsModel, TRANSACTION_ISOLOATION, ds.getTransactionIsolation().name());
+                }
+                Validation validation = ds.getValidation();
+                if (validation != null) {
+                    setIfNotNull(dsModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
+                    setIfNotNull(dsModel, EXCEPTIONSORTERCLASSNAME, validation.getExceptionSorterClassName());
+                    setIfNotNull(dsModel, STALECONNECTIONCHECKERCLASSNAME, validation.getStaleConnectionCheckerClassName());
+                    setIfNotNull(dsModel, VALIDCONNECTIONCHECKERCLASSNAME, validation.getValidConnectionCheckerClassName());
+                    setIfNotNull(dsModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
+                    setIfNotNull(dsModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
+                    setIfNotNull(dsModel, USE_FAST_FAIL, validation.isUseFastFail());
+                    setIfNotNull(dsModel, VALIDATEONMATCH, validation.isValidateOnMatch());
                 }
 
                 datasourcesNode.add(dsModel);
@@ -232,61 +253,93 @@ public class NewDataSourcesExtension implements NewExtension {
                 for (Entry<String, String> entry : xads.getXaDataSourceProperty().entrySet()) {
                     xadsModel.get(XADATASOURCEPROPERTIES, entry.getKey()).set(entry.getValue());
                 }
-                xadsModel.get(XADATASOURCECLASS).set(xads.getXaDataSourceClass());
-                xadsModel.get(JNDINAME).set(xads.getJndiName());
-                xadsModel.get(MODULE).set(xads.getModule());
-                xadsModel.get(NEW_CONNECTION_SQL).set(xads.getNewConnectionSql());
-                xadsModel.get(POOLNAME).set(xads.getPoolName());
-                xadsModel.get(URL_DELIMITER).set(xads.getUrlDelimiter());
-                xadsModel.get(URL_SELECTOR_STRATEGY_CLASS_NAME).set(xads.getUrlSelectorStrategyClassName());
-                xadsModel.get(USE_JAVA_CONTEXT).set(xads.isUseJavaContext());
-                xadsModel.get(ENABLED).set(xads.isEnabled());
-                if (xads.getXaPool() != null) {
-                    xadsModel.get(MAX_POOL_SIZE).set(xads.getXaPool().getMaxPoolSize());
-                    xadsModel.get(MIN_POOL_SIZE).set(xads.getXaPool().getMinPoolSize());
-                    xadsModel.get(POOL_PREFILL).set(xads.getXaPool().isPrefill());
-                    xadsModel.get(POOL_USE_STRICT_MIN).set(xads.getXaPool().isUseStrictMin());
-                    xadsModel.get(INTERLIVING).set(xads.getXaPool().isInterleaving());
-                    xadsModel.get(NOTXSEPARATEPOOL).set(xads.getXaPool().isNoTxSeparatePool());
-                    xadsModel.get(PAD_XID).set(xads.getXaPool().isPadXid());
-                    xadsModel.get(SAME_RM_OVERRIDE).set(xads.getXaPool().isSameRmOverride());
-                    xadsModel.get(WRAP_XA_DATASOURCE).set(xads.getXaPool().isWrapXaDataSource());
+                setIfNotNull(xadsModel, XADATASOURCECLASS, xads.getXaDataSourceClass());
+                setIfNotNull(xadsModel, JNDINAME, xads.getJndiName());
+                setIfNotNull(xadsModel, MODULE, xads.getModule());
+                setIfNotNull(xadsModel, NEW_CONNECTION_SQL, xads.getNewConnectionSql());
+                setIfNotNull(xadsModel, POOLNAME, xads.getPoolName());
+                setIfNotNull(xadsModel, URL_DELIMITER, xads.getUrlDelimiter());
+                setIfNotNull(xadsModel, URL_SELECTOR_STRATEGY_CLASS_NAME, xads.getUrlSelectorStrategyClassName());
+                setIfNotNull(xadsModel, USE_JAVA_CONTEXT, xads.isUseJavaContext());
+                setIfNotNull(xadsModel, ENABLED, xads.isEnabled());
+                CommonXaPool pool = xads.getXaPool();
+                if (pool != null) {
+                    setIfNotNull(xadsModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
+                    setIfNotNull(xadsModel, MIN_POOL_SIZE, pool.getMinPoolSize());
+                    setIfNotNull(xadsModel, POOL_PREFILL, pool.isPrefill());
+                    setIfNotNull(xadsModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
+                    setIfNotNull(xadsModel, INTERLIVING, pool.isInterleaving());
+                    setIfNotNull(xadsModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
+                    setIfNotNull(xadsModel, PAD_XID, pool.isPadXid());
+                    setIfNotNull(xadsModel, SAME_RM_OVERRIDE, pool.isSameRmOverride());
+                    setIfNotNull(xadsModel, WRAP_XA_DATASOURCE, pool.isWrapXaDataSource());
                 }
-                if (xads.getSecurity() != null) {
-                    xadsModel.get(USERNAME).set(xads.getSecurity().getUserName());
-                    xadsModel.get(PASSWORD).set(xads.getSecurity().getPassword());
+                CommonSecurity security = xads.getSecurity();
+                if (security != null) {
+                    setIfNotNull(xadsModel, USERNAME, security.getUserName());
+                    setIfNotNull(xadsModel, PASSWORD, security.getPassword());
                 }
-                if (xads.getStatement() != null) {
-                    xadsModel.get(PREPAREDSTATEMENTSCACHESIZE).set(xads.getStatement().getPreparedStatementsCacheSize());
-                    xadsModel.get(SHAREPREPAREDSTATEMENTS).set(xads.getStatement().isSharePreparedStatements());
-                    xadsModel.get(TRACKSTATEMENTS).set(xads.getStatement().getTrackStatements().name());
+                Statement statement = xads.getStatement();
+                if (statement != null) {
+                    setIfNotNull(xadsModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
+                    setIfNotNull(xadsModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
+                    if (statement.getTrackStatements() != null) {
+                        setIfNotNull(xadsModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
+                    }
                 }
-                if (xads.getTimeOut() != null) {
-                    xadsModel.get(ALLOCATION_RETRY).set(xads.getTimeOut().getAllocationRetry());
-                    xadsModel.get(ALLOCATION_RETRY_WAIT_MILLIS).set(xads.getTimeOut().getAllocationRetryWaitMillis());
-                    xadsModel.get(BLOCKING_TIMEOUT_WAIT_MILLIS).set(xads.getTimeOut().getBlockingTimeoutMillis());
-                    xadsModel.get(IDLETIMEOUTMINUTES).set(xads.getTimeOut().getIdleTimeoutMinutes());
-                    xadsModel.get(QUERYTIMEOUT).set(xads.getTimeOut().getQueryTimeout());
-                    xadsModel.get(USETRYLOCK).set(xads.getTimeOut().getUseTryLock());
-                    xadsModel.get(SETTXQUERTTIMEOUT).set(xads.getTimeOut().isSetTxQueryTimeout());
-                    xadsModel.get(XA_RESOURCE_TIMEOUT).set(xads.getTimeOut().getXaResourceTimeout());
+                TimeOut timeout = xads.getTimeOut();
+                if (timeout != null) {
+                    setIfNotNull(xadsModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
+                    setIfNotNull(xadsModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
+                    setIfNotNull(xadsModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
+                    setIfNotNull(xadsModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
+                    setIfNotNull(xadsModel, QUERYTIMEOUT, timeout.getQueryTimeout());
+                    setIfNotNull(xadsModel, USETRYLOCK, timeout.getUseTryLock());
+                    setIfNotNull(xadsModel, SETTXQUERTTIMEOUT, timeout.isSetTxQueryTimeout());
+                    setIfNotNull(xadsModel, XA_RESOURCE_TIMEOUT, timeout.getXaResourceTimeout());
                 }
-                xadsModel.get(TRANSACTION_ISOLOATION).set(xads.getTransactionIsolation().name());
+                if (xads.getTransactionIsolation() != null) {
+                    setIfNotNull(xadsModel, TRANSACTION_ISOLOATION, xads.getTransactionIsolation().name());
+                }
+                Validation validation = xads.getValidation();
                 if (xads.getValidation() != null) {
-                    xadsModel.get(CHECKVALIDCONNECTIONSQL).set(xads.getValidation().getCheckValidConnectionSql());
-                    xadsModel.get(EXCEPTIONSORTERCLASSNAME).set(xads.getValidation().getExceptionSorterClassName());
-                    xadsModel.get(STALECONNECTIONCHECKERCLASSNAME).set(
-                            xads.getValidation().getStaleConnectionCheckerClassName());
-                    xadsModel.get(VALIDCONNECTIONCHECKERCLASSNAME).set(
-                            xads.getValidation().getValidConnectionCheckerClassName());
-                    xadsModel.get(BACKGROUNDVALIDATIONMINUTES).set(xads.getValidation().getBackgroundValidationMinutes());
-                    xadsModel.get(BACKGROUNDVALIDATION).set(xads.getValidation().isBackgroundValidation());
-                    xadsModel.get(USE_FAST_FAIL).set(xads.getValidation().isUseFastFail());
-                    xadsModel.get(VALIDATEONMATCH).set(xads.getValidation().isValidateOnMatch());
+                    setIfNotNull(xadsModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
+                    setIfNotNull(xadsModel, EXCEPTIONSORTERCLASSNAME, validation.getExceptionSorterClassName());
+                    setIfNotNull(xadsModel, STALECONNECTIONCHECKERCLASSNAME, validation.getStaleConnectionCheckerClassName());
+                    setIfNotNull(xadsModel, VALIDCONNECTIONCHECKERCLASSNAME, validation.getValidConnectionCheckerClassName());
+                    setIfNotNull(xadsModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
+                    setIfNotNull(xadsModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
+                    setIfNotNull(xadsModel, USE_FAST_FAIL, validation.isUseFastFail());
+                    setIfNotNull(xadsModel, VALIDATEONMATCH, validation.isValidateOnMatch());
                 }
 
                 XAdatasourcesNode.add(xadsModel);
             }
         }
+
+        private void setIfNotNull(ModelNode node, String identifier, Boolean value) {
+            if (value != null) {
+                node.get(identifier).set(value);
+            }
+        }
+
+        private void setIfNotNull(ModelNode node, String identifier, Integer value) {
+            if (value != null) {
+                node.get(identifier).set(value);
+            }
+        }
+
+        private void setIfNotNull(ModelNode node, String identifier, Long value) {
+            if (value != null) {
+                node.get(identifier).set(value);
+            }
+        }
+
+        private void setIfNotNull(ModelNode node, String identifier, String value) {
+            if (value != null) {
+                node.get(identifier).set(value);
+            }
+        }
+
     }
 }
