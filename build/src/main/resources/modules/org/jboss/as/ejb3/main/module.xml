@@ -44,6 +44,8 @@
         <module name="org.jboss.as.naming"/>
         -->
         <module name="org.jboss.ejb3"/>
+        <!-- For Interceptor -->
+        <module name="org.jboss.invocation"/>
         <!--
         <module name="org.jboss.msc"/>
         -->
@@ -52,6 +54,8 @@
         <module name="org.jboss.metadata"/>
         <!-- Access to the ModuleClassLoader -->
         <module name="org.jboss.modules"/>
+        <!-- Access to ServiceName -->
+        <module name="org.jboss.msc"/>
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>
     </dependencies>
