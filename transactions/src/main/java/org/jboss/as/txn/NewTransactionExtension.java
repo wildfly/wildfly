@@ -355,7 +355,11 @@ public class NewTransactionExtension implements NewExtension {
                 add.get(RECOVERY_ENVIRONMENT).set(model.get(RECOVERY_ENVIRONMENT));
             }
             if (has(model, COORDINATOR_ENVIRONMENT)) {
-                add.get(RECOVERY_ENVIRONMENT).set(model.get(COORDINATOR_ENVIRONMENT));
+                add.get(COORDINATOR_ENVIRONMENT).set(model.get(COORDINATOR_ENVIRONMENT));
+            }
+
+            if (has(model, OBJECT_STORE)) {
+                add.get(OBJECT_STORE).set(model.get(OBJECT_STORE));
             }
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
