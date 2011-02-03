@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,6 +30,10 @@ import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.invocation.Interceptor;
 
 import javax.annotation.Resource;
+import javax.annotation.Resources;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans
@@ -37,7 +41,7 @@ import javax.annotation.Resource;
  * <p/>
  * Author : Jaikiran Pai
  */
-public class StatelessEJBComponent extends AbstractComponent {
+public class StatelessSessionComponent extends AbstractComponent {
 
 
     // TODO: Need to use the right "name" for the @Resource
@@ -55,7 +59,7 @@ public class StatelessEJBComponent extends AbstractComponent {
      * @param deploymentClassLoader the class loader of the deployment
      * @param index                 the deployment reflection index
      */
-    protected StatelessEJBComponent(final ComponentConfiguration configuration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index) {
+    protected StatelessSessionComponent(final ComponentConfiguration configuration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index) {
         super(configuration, deploymentClassLoader, index);
     }
 
