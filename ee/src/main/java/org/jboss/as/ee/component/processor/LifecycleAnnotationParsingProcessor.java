@@ -48,24 +48,35 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
     private static final DotName POST_CONSTRUCT_ANNOTATION = DotName.createSimple(PostConstruct.class.getName());
     private static final DotName PRE_DESTROY_ANNOTATION = DotName.createSimple(PreDestroy.class.getName());
 
-    /** {@inheritDoc} **/
+    /**
+     * {@inheritDoc} *
+     */
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentConfiguration componentConfiguration) {
-        DotName current = DotName.createSimple(componentConfiguration.getComponentClassName());
-        while (current != null && !Object.class.getName().equals(current.toString())) {
-            final ClassInfo classInfo = index.getClassByName(current);
-            final ComponentLifecycleConfiguration postConstructMethod = getLifeCycle(classInfo, POST_CONSTRUCT_ANNOTATION);
-            if (postConstructMethod != null) {
-                componentConfiguration.addPostConstructLifecycleConfiguration(postConstructMethod);
-            }
-            final ComponentLifecycleConfiguration preDestroyMethod = getLifeCycle(classInfo, PRE_DESTROY_ANNOTATION);
-            if (preDestroyMethod != null) {
-                componentConfiguration.addPreDestroyLifecycleConfiguration(preDestroyMethod);
-            }
-            current = classInfo.superName();
+        processClass(index, componentConfiguration, DotName.createSimple(componentConfiguration.getComponentClassName()));
+    }
+
+    private void processClass(final CompositeIndex index, final ComponentConfiguration componentConfiguration, final DotName className) {
+        final ClassInfo classInfo = index.getClassByName(className);
+        if(classInfo == null) {
+            return;
+        }
+
+        final DotName superName = classInfo.superName();
+        if(superName != null) {
+            processClass(index, componentConfiguration, superName);
+        }
+
+        final ComponentLifecycleConfiguration postConstructMethod = getLifeCycle(classInfo, POST_CONSTRUCT_ANNOTATION);
+        if (postConstructMethod != null) {
+            componentConfiguration.addPostConstructLifecycleConfiguration(postConstructMethod);
+        }
+        final ComponentLifecycleConfiguration preDestroyMethod = getLifeCycle(classInfo, PRE_DESTROY_ANNOTATION);
+        if (preDestroyMethod != null) {
+            componentConfiguration.addPreDestroyLifecycleConfiguration(preDestroyMethod);
         }
     }
 
-    public static ComponentLifecycleConfiguration getLifeCycle(final ClassInfo classInfo, final DotName annotationType) {
+    private ComponentLifecycleConfiguration getLifeCycle(final ClassInfo classInfo, final DotName annotationType) {
         if (classInfo == null) {
             return null; // No index info
         }

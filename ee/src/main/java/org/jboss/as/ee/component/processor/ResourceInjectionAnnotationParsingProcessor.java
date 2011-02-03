@@ -55,11 +55,17 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
     /** {@inheritDoc} **/
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentConfiguration componentConfiguration) {
         final ClassInfo classInfo = index.getClassByName(DotName.createSimple(componentConfiguration.getComponentClassName()));
+        if(classInfo == null) {
+            return; // We can't continue without the annotation index info.
+        }
         componentConfiguration.addResourceInjectionConfigs(getResourceConfigurations(classInfo));
 
         final List<MethodInterceptorConfiguration> interceptorConfigurations = componentConfiguration.getMethodInterceptorConfigs();
         for (MethodInterceptorConfiguration interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
+            if(interceptorClassInfo == null) {
+                continue;
+            }
             interceptorConfiguration.addResourceInjectionConfigs(getResourceConfigurations(interceptorClassInfo));
         }
     }

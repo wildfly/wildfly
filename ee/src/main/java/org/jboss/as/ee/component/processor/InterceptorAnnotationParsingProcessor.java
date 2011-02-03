@@ -56,6 +56,9 @@ public class InterceptorAnnotationParsingProcessor extends AbstractComponentConf
     /** {@inheritDoc} **/
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentConfiguration componentConfiguration) {
         final ClassInfo classInfo = index.getClassByName(DotName.createSimple(componentConfiguration.getComponentClassName()));
+        if(classInfo == null) {
+            return; // We can't continue without the annotation index info.
+        }
         componentConfiguration.addMethodInterceptorConfigs(getInterceptorConfigs(classInfo, index));
     }
 
