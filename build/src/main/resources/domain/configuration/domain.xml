@@ -29,7 +29,6 @@
     </extensions>
 
     <profiles>
-
         <profile name="default">
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
         </profile>

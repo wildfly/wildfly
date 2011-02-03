@@ -41,6 +41,7 @@ class NewServerInventoryService implements Service<NewServerInventory> {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
     private final InjectedValue<NetworkInterfaceBinding> iFace = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<NewDomainControllerConnection> domainControllerConnection = new InjectedValue<NewDomainControllerConnection>();
     private final HostControllerEnvironment environment;
     private final int port;
 
@@ -58,7 +59,7 @@ class NewServerInventoryService implements Service<NewServerInventory> {
         try {
             final NetworkInterfaceBinding interfaceBinding = iFace.getValue();
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getAddress(), port);
-            serverInventory = new NewServerInventory(environment, binding);
+            serverInventory = new NewServerInventory(environment, binding, domainControllerConnection.getValue());
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -83,6 +84,10 @@ class NewServerInventoryService implements Service<NewServerInventory> {
 
     InjectedValue<NetworkInterfaceBinding> getInterface() {
         return iFace;
+    }
+
+    InjectedValue<NewDomainControllerConnection> getDomainControllerConnection() {
+        return domainControllerConnection;
     }
 
 }

@@ -67,13 +67,15 @@ class ModelCombiner {
         EMPTY.protect();
     }
 
+    final NewDomainControllerConnection domainControllerConnection;
     final String serverName;
     final ModelNode domainModel;
     final ModelNode hostModel;
     final ModelNode serverModel;
     final String profileName;
 
-    ModelCombiner(String serverName, ModelNode domainModel, ModelNode hostModel) {
+    ModelCombiner(final NewDomainControllerConnection domainControllerConnection, final String serverName, final ModelNode domainModel, final ModelNode hostModel) {
+        this.domainControllerConnection = domainControllerConnection;
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;
@@ -85,13 +87,12 @@ class ModelCombiner {
 
     }
 
-    List<ModelNode> createUpdates(){
+    List<ModelNode> getBootUpdates(){
 
-        System.out.println("DOMAIN");
-        System.out.println(domainModel);
-        System.out.println("HOST");
-        System.out.println(hostModel);
-
+        //System.out.println("DOMAIN");
+        //System.out.println(domainModel);
+        //System.out.println("HOST");
+        //System.out.println(hostModel);
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
         addNamespaces(updates);
@@ -105,7 +106,10 @@ class ModelCombiner {
         //  management
         //  domain-controller
 
+        addSubsystems(updates);
         //TODO deployments
+
+        //System.out.println(combiner.createUpdates());
 
         return updates;
     }
@@ -228,6 +232,11 @@ class ModelCombiner {
                 map.put(prop.getName(), prop.getValue());
             }
         }
+    }
+
+    private void addSubsystems(List<ModelNode> updates) {
+        ModelNode node = domainControllerConnection.getProfileOperations(profileName);
+        updates.addAll(node.asList());
     }
 
     private ModelNode pathAddress(PathElement...elements) {

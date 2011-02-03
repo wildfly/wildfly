@@ -152,6 +152,7 @@ public class NewHostControllerBootstrap {
         final NewServerInventoryService inventory = new NewServerInventoryService(environment, mgmtPort);
         batch.addService(NewServerInventoryService.SERVICE_NAME, inventory)
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
+            .addDependency(NewDomainControllerConnection.SERVICE_NAME, NewDomainControllerConnection.class, inventory.getDomainControllerConnection())
             .install();
 
         final String name = rawModel.get(NAME).asString();

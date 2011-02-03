@@ -46,6 +46,12 @@ public interface NewDomainControllerConnection {
     ModelNode register(final NewHostController hostController) throws IOException;
 
     /**
+     * Get the operations required to create the subsystems that make up the profile
+     */
+    ModelNode getProfileOperations(String profileName);
+
+
+    /**
      * Unregister from the domain controller.
      */
     void unregister();

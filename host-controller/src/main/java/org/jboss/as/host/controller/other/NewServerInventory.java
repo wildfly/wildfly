@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.other;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.domain.client.api.ServerStatus;
@@ -44,10 +45,12 @@ class NewServerInventory {
 
     private final HostControllerEnvironment environment;
     private final InetSocketAddress managementAddress;
+    private final NewDomainControllerConnection domainControllerConnection;
 
-    NewServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress) {
+    NewServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final NewDomainControllerConnection domainControllerConnection) {
         this.environment = environment;
         this.managementAddress = managementAddress;
+        this.domainControllerConnection = domainControllerConnection;
     }
 
     ServerStatus determineServerStatus(final String serverName) {
@@ -57,9 +60,9 @@ class NewServerInventory {
     ServerStatus startServer(final String serverName, final ModelNode hostModel, final ModelNode domainModel) {
         log.info("starting server " + serverName);
 
-        ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel);
+        ModelCombiner combiner = new ModelCombiner(domainControllerConnection, serverName, domainModel, hostModel);
 
-        System.out.println(combiner.createUpdates());
+        List<ModelNode> operations = combiner.getBootUpdates();
 
         return ServerStatus.UNKNOWN;
     }
