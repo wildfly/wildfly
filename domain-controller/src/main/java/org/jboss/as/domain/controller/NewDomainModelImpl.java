@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -59,6 +60,7 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
+import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
@@ -127,6 +129,7 @@ class NewDomainModelImpl extends BasicModelController implements NewDomainModel 
         final ModelNodeRegistration profile = root.registerSubModel(PathElement.pathElement(PROFILE), DomainDescriptionProviders.PROFILE);
         profile.registerOperationHandler(ADD, ProfileAddHandler.INSTANCE, DomainDescriptionProviders.PROFILE_ADD, false);
         profile.registerOperationHandler(REMOVE, ProfileRemoveHandler.INSTANCE, DomainDescriptionProviders.PROFILE_REMOVE, false);
+        profile.registerOperationHandler(DESCRIBE, ProfileDescribeHandler.INSTANCE, DomainDescriptionProviders.PROFILE_DESCRIBE, false);
 
         final ModelNodeRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), DomainDescriptionProviders.PATH_DESCRIPTION);
         paths.registerOperationHandler(ADD, PathAddHandler.NAMED_INSTANCE, DomainDescriptionProviders.PATH_ADD, false);
@@ -158,5 +161,4 @@ class NewDomainModelImpl extends BasicModelController implements NewDomainModel 
     protected ModelNodeRegistration getRegistry() {
         return super.getRegistry();
     }
-
 }

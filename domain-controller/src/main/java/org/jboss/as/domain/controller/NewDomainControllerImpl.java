@@ -69,5 +69,4 @@ class NewDomainControllerImpl implements NewDomainController {
     public ModelNode getModel() {
         return domainModel.getModel();
     }
-
 }

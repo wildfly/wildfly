@@ -36,6 +36,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class Util {
 
+    public static final String[] NO_LOCATION = new String[0];
+
     /**
      * Prevent instantiation
      */
@@ -100,5 +102,17 @@ public class Util {
             op.get(key).set(params.get(key));
         }
         return op;
+    }
+
+    public static ModelNode createErrorResult(Throwable t) {
+        final ModelNode node = new ModelNode();
+        // todo - define this structure
+        node.get("success").set(false);
+        do {
+            final String message = t.getLocalizedMessage();
+            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
+            t = t.getCause();
+        } while (t != null);
+        return node;
     }
 }

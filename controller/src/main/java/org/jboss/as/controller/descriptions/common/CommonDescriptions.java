@@ -20,6 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.controller.descriptions.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
@@ -187,6 +188,16 @@ public class CommonDescriptions {
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(READ_CONFIG_AS_XML + ".response"));
+        return root;
+    }
+
+    public static ModelNode getSubsystemDescribeOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ADD);
+        root.get(DESCRIPTION).set(bundle.getString("subsystem.describe"));
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        root.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
         return root;
     }
 

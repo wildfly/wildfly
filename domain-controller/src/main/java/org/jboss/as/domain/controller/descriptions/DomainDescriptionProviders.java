@@ -69,6 +69,12 @@ public final class DomainDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider PROFILE_DESCRIBE = new DescriptionProvider() {
+        public ModelNode getModelDescription(Locale locale) {
+            return ProfileDescription.getProfileDescribeOperation(locale);
+        }
+    };
+
     public static final DescriptionProvider SOCKET_BINDING_GROUP = new DescriptionProvider() {
         public ModelNode getModelDescription(Locale locale) {
             return SocketBindingGroupDescription.getDomainSocketBindingGroupDescription(locale);

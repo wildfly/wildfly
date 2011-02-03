@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -44,10 +45,14 @@ public class ProfileAddHandler implements ModelAddOperationHandler {
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
+
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
+        if (operation.has(INCLUDES)) {
+            context.getSubModel().get(INCLUDES).set(operation.get(INCLUDES));
+        }
         context.getSubModel().get(SUBSYSTEM).setEmptyObject(); // initialize the subsystems
 
         resultHandler.handleResultComplete(compensatingOperation);

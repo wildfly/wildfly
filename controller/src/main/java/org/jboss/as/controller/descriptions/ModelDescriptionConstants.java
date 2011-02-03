@@ -49,6 +49,7 @@ public class ModelDescriptionConstants {
     public static final String CRITERIA = "criteria";
     public static final String COMPENSATING_OPERATION = "compensating-operation";
     public static final String DEFAULT = "default";
+    public static final String DESCRIBE = "describe";
     public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
@@ -62,6 +63,7 @@ public class ModelDescriptionConstants {
     public static final String HTTP_API = "http-api";
     public static final String HOST = "host";
     public static final String INCLUDE = "include";
+    public static final String INCLUDES = "includes";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INET_ADDRESS = "inet-address";
     public static final String INTERFACE = "interface";

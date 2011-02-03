@@ -130,6 +130,16 @@ public class ProfileDescription {
         return root;
     }
 
+    public static ModelNode getProfileDescribeOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ADD);
+        root.get(DESCRIPTION).set(bundle.getString("profile.describe"));
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        root.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
+        return root;
+    }
+
     public static ModelNode getProfileRemoveOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();

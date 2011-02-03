@@ -158,5 +158,13 @@ public final class CommonProviders {
         }
     };
 
+    public static final DescriptionProvider SUBSYSTEM_DESCRIBE_PROVIDER = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+    };
+
 
 }

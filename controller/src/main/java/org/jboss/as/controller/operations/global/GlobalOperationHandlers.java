@@ -54,6 +54,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -71,22 +72,8 @@ public class GlobalOperationHandlers {
     public static final OperationHandler READ_ATTRIBUTE = new ReadAttributeHandler();
     public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
 
-    static final String[] NO_LOCATION = new String[0];
-
     private GlobalOperationHandlers() {
         //
-    }
-
-    static ModelNode createErrorResult(Throwable t) {
-        final ModelNode node = new ModelNode();
-        // todo - define this structure
-        node.get("success").set(false);
-        do {
-            final String message = t.getLocalizedMessage();
-            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
-            t = t.getCause();
-        } while (t != null);
-        return node;
     }
 
     /**
@@ -165,10 +152,10 @@ public class GlobalOperationHandlers {
                         }
                     }
                 }
-                resultHandler.handleResultFragment(NO_LOCATION, result);
+                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
-                resultHandler.handleFailed(createErrorResult(e));
+                resultHandler.handleFailed(Util.createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -213,14 +200,14 @@ public class GlobalOperationHandlers {
                     resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
                 } else if (attributeAccess.getReadHandler() == null) {
                     final ModelNode result = context.getSubModel().get(attributeName).clone();
-                    resultHandler.handleResultFragment(NO_LOCATION, result);
+                    resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                     resultHandler.handleResultComplete(null);
                 } else {
                     cancellable = attributeAccess.getReadHandler().execute(context, operation, resultHandler);
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(createErrorResult(e));
+                resultHandler.handleFailed(Util.createErrorResult(e));
             }
             return cancellable;
         }
@@ -245,7 +232,7 @@ public class GlobalOperationHandlers {
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(createErrorResult(e));
+                resultHandler.handleFailed(Util.createErrorResult(e));
             }
             return cancellable;
         }
@@ -285,13 +272,13 @@ public class GlobalOperationHandlers {
                             }
                         }
 
-                        resultHandler.handleResultFragment(NO_LOCATION, result);
+                        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                         resultHandler.handleResultComplete(null);
                     }
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(createErrorResult(e));
+                resultHandler.handleFailed(Util.createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -317,10 +304,10 @@ public class GlobalOperationHandlers {
                     result.setEmptyList();
                 }
 
-                resultHandler.handleResultFragment(NO_LOCATION, result);
+                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
-                resultHandler.handleFailed(createErrorResult(e));
+                resultHandler.handleFailed(Util.createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -341,10 +328,10 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = descriptionProvider == null ? new ModelNode() : descriptionProvider.getModelDescription(getLocale(operation));
 
-                resultHandler.handleResultFragment(NO_LOCATION, result);
+                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
-                resultHandler.handleFailed(createErrorResult(e));
+                resultHandler.handleFailed(Util.createErrorResult(e));
             }
             return Cancellable.NULL;
         }
@@ -373,11 +360,11 @@ public class GlobalOperationHandlers {
 //                    addProxyNodes(address, result, operations, locale, context.getRegistry());
 //                }
 
-                resultHandler.handleResultFragment(NO_LOCATION, result);
+                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                 resultHandler.handleResultComplete(null);
             } catch (final Exception e) {
                 e.printStackTrace();
-                resultHandler.handleFailed(createErrorResult(e));
+                resultHandler.handleFailed(Util.createErrorResult(e));
             }
             return Cancellable.NULL;
         }

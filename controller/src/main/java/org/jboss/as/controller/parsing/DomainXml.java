@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -506,7 +507,7 @@ public class DomainXml extends CommonXml {
             final ModelNode profile = new ModelNode();
             profile.get(OP).set(ADD);
             profile.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PROFILE, name);
-            profile.get(REQUEST_PROPERTIES, "includes").set(profileIncludes);
+            profile.get(INCLUDES).set(profileIncludes);
             list.add(profile);
 
             // Process subsystems
