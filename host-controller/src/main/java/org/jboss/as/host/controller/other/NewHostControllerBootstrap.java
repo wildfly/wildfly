@@ -59,8 +59,8 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -90,7 +90,6 @@ public class NewHostControllerBootstrap {
      * @throws Exception
      */
     public void start() throws Exception {
-
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister configurationPersister = createHostConfigurationPersister(configDir);
         final NewHostModel hostModel = new NewHostModel(configurationPersister);
