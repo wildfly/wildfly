@@ -107,12 +107,10 @@
              -->
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <!-- 
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>
             </subsystem>
-             -->
 
             <!-- subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/ -->
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">

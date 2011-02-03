@@ -23,6 +23,7 @@
 package org.jboss.as.txn;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -48,13 +49,21 @@ import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -78,6 +87,7 @@ public class NewTransactionExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(TransactionSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewTransactionSubsystemAdd.INSTANCE, TransactionSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, TransactionDescribeHandler.INSTANCE, TransactionDescribeHandler.INSTANCE, false);
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -85,6 +95,13 @@ public class NewTransactionExtension implements NewExtension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
+    }
+
+    private static ModelNode createEmptyAddOperation() {
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+        return subsystem;
     }
 
     static class TransactionSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
@@ -97,9 +114,7 @@ public class NewTransactionExtension implements NewExtension {
                 throw unexpectedAttribute(reader, 0);
             }
 
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            final ModelNode subsystem = createEmptyAddOperation();
             list.add(subsystem);
 
 
@@ -320,6 +335,43 @@ public class NewTransactionExtension implements NewExtension {
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
             writer.writeAttribute(attr.getLocalName(), value.asString());
         }
-
     }
+
+    private static class TransactionDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final TransactionDescribeHandler INSTANCE = new TransactionDescribeHandler();
+        @Override
+        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+            final ModelNode result = new ModelNode();
+
+            ModelNode add = createEmptyAddOperation();
+            result.add(add);
+
+            final ModelNode model = context.getSubModel();
+
+            if (has(model, CORE_ENVIRONMENT)) {
+                add.get(CORE_ENVIRONMENT).set(model.get(CORE_ENVIRONMENT));
+            }
+            if (has(model, RECOVERY_ENVIRONMENT)) {
+                add.get(RECOVERY_ENVIRONMENT).set(model.get(RECOVERY_ENVIRONMENT));
+            }
+            if (has(model, COORDINATOR_ENVIRONMENT)) {
+                add.get(RECOVERY_ENVIRONMENT).set(model.get(COORDINATOR_ENVIRONMENT));
+            }
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+
+        private boolean has(ModelNode node, String result) {
+            return node.has(result) && node.isDefined();
+        }
+    }
+
+
 }
