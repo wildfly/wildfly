@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller.other;
+package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -103,7 +103,7 @@ class NewLocalDomainConnectionService implements NewDomainControllerConnection, 
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        //
+        this.domainController.getValue();
     }
 
     /** {@inheritDoc} */

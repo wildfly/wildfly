@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,9 +28,7 @@ import static org.jboss.as.protocol.StreamUtils.readUTFZBytes;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jboss.as.host.controller.ManagedServer;
-import org.jboss.as.host.controller.NewHostController;
-import org.jboss.as.host.controller.NewManagedServer;
+import org.jboss.as.host.controller.NewManagedServerLifecycleCallback;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
@@ -38,37 +36,63 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
+import org.jboss.as.server.mgmt.domain.NewDomainServerProtocol;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Operation handler responsible for requests coming in from server processes.
  *
  * @author John Bailey
+ * @author Emanuel Muckenhuber
  */
-public class NewServerToHostControllerOperationHandler extends AbstractMessageHandler implements ManagementOperationHandler {
+public class NewServerToHostOperationHandler extends AbstractMessageHandler implements ManagementOperationHandler, Service<ManagementOperationHandler> {
+
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller.mgmt");
+    public static final ServiceName SERVICE_NAME = ManagementCommunicationService.SERVICE_NAME.append("server", "to", "host", "controller");
 
-    private final NewHostController hostController;
+    private final InjectedValue<NewManagedServerLifecycleCallback> callback = new InjectedValue<NewManagedServerLifecycleCallback>();
 
-    public NewServerToHostControllerOperationHandler(NewHostController hostController) {
-        this.hostController = hostController;
+    /** {@inheritDoc} */
+    @Override
+    public void start(StartContext context) throws StartException {
+        //
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void stop(StopContext context) {
+        //
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ManagementOperationHandler getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public byte getIdentifier() {
-        return DomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
+        return NewDomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
     }
 
     /** {@inheritDoc} */
-    public void handle(final Connection connection, final InputStream input) throws IOException {
-        expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
-        final byte commandCode = StreamUtils.readByte(input);
+    @Override
+    public void handle(Connection connection, InputStream inputStream) throws IOException {
+        expectHeader(inputStream, ManagementProtocol.REQUEST_OPERATION);
+        final byte commandCode = StreamUtils.readByte(inputStream);
 
         final AbstractMessageHandler operation = operationFor(commandCode);
         if (operation == null) {
             throw new IOException("Invalid command code " + commandCode + " received");
         }
-        operation.handle(connection, input);
+        operation.handle(connection, inputStream);
     }
 
     private AbstractMessageHandler operationFor(final byte commandByte) {
@@ -85,8 +109,10 @@ public class NewServerToHostControllerOperationHandler extends AbstractMessageHa
     private class ServerRegisterCommand extends ManagementResponse {
         private Connection connection;
 
+        /** {@inheritDoc} */
+        @Override
         protected byte getResponseCode() {
-            return DomainServerProtocol.REGISTER_RESPONSE;
+            return NewDomainServerProtocol.REGISTER_RESPONSE;
         }
 
         public void handle(final Connection connection, final InputStream input) throws IOException {
@@ -98,14 +124,13 @@ public class NewServerToHostControllerOperationHandler extends AbstractMessageHa
             expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
             final String serverName = readUTFZBytes(input);
             log.infof("Server [%s] registered using connection [%s]", serverName, connection);
-            final NewHostController hostController = NewServerToHostControllerOperationHandler.this.hostController;
-            String processName = ManagedServer.getServerProcessName(serverName);
-            final NewManagedServer managedServer = hostController.getServer(processName);
-            if (managedServer == null) {
-                log.errorf("Invalid server name [%s] registered", serverName);
-                return;
-            }
-            managedServer.setServerManagementConnection(connection);
+            NewServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, connection);
         }
+
     }
+
+    public InjectedValue<NewManagedServerLifecycleCallback> getCallback() {
+        return callback;
+    }
+
 }

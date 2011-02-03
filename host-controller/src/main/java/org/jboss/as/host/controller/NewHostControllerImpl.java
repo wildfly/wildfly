@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller.other;
+package org.jboss.as.host.controller;
 
 import java.util.concurrent.CancellationException;
 
@@ -96,15 +96,27 @@ public class NewHostControllerImpl implements NewHostController {
     /** {@inheritDoc} */
     @Override
     public ServerStatus restartServer(String serverName) {
+        return restartServer(serverName, -1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ServerStatus restartServer(String serverName, int gracefulTimeout) {
         final NewServerInventory servers = this.serverInventory;
-        return servers.restartServer(serverName);
+        return servers.restartServer(serverName, gracefulTimeout, hostModel.getModel().clone(), domainModel.getModel().clone());
     }
 
     /** {@inheritDoc} */
     @Override
     public ServerStatus stopServer(String serverName) {
+        return stopServer(serverName, -1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ServerStatus stopServer(String serverName, int gracefulTimeout) {
         final NewServerInventory servers = this.serverInventory;
-        return servers.stopServer(serverName);
+        return servers.stopServer(serverName, gracefulTimeout);
     }
 
 }

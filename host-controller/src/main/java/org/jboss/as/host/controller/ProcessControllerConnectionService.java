@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller.other;
+package org.jboss.as.host.controller;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 
 import javax.net.SocketFactory;
 
-import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;

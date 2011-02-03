@@ -27,21 +27,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
+import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.mgmt.domain.HostControllerClient;
+import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
+import org.jboss.as.server.mgmt.domain.NewHostControllerServerClient;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassTable;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -94,7 +100,7 @@ public final class DomainServerMain {
         try {
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
             configuration.setVersion(2);
-            configuration.setClassTable(ModularClassTable.getInstance(Module.getSystemModuleLoader()));
+            configuration.setClassResolver(new SimpleClassResolver(DomainServerMain.class.getClassLoader()));
             unmarshaller = factory.createUnmarshaller(configuration);
             byteInput = Marshalling.createByteInput(initialInput);
             unmarshaller.start(byteInput);
@@ -128,5 +134,33 @@ public final class DomainServerMain {
         // Once the input stream is cut off, shut down
         System.exit(0);
         throw new IllegalStateException(); // not reached
+    }
+
+    public static final class HostControllerCommunicationActivator implements ServiceActivator, Serializable {
+        private static final long serialVersionUID = 6671220116719309952L;
+        private final String serverName;
+        private final InetSocketAddress managementSocket;
+
+        public HostControllerCommunicationActivator(final String serverName, final InetSocketAddress managementSocket) {
+            this.serverName = serverName;
+            this.managementSocket = managementSocket;
+        }
+
+        public void activate(final ServiceActivatorContext serviceActivatorContext) {
+            final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
+
+            final HostControllerConnectionService smConnection = new HostControllerConnectionService();
+            serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, smConnection)
+                .addInjection(smConnection.getSmAddressInjector(), managementSocket)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+
+            final NewHostControllerServerClient client = new NewHostControllerServerClient(serverName);
+            serviceTarget.addService(HostControllerClient.SERVICE_NAME, client)
+                .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewServerController.class, client.getServerControllerInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        }
     }
 }

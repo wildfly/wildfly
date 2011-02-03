@@ -22,30 +22,17 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
+import java.net.InetSocketAddress;
+
+import org.jboss.as.server.DomainServerMain;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public interface NewHostOperationContext extends NewOperationContext {
+class NewHostCommunicationServices {
 
-    /** {@inheritDoc} */
-    @Override
-    NewHostModel getController();
+    static DomainServerMain.HostControllerCommunicationActivator createServerCommuncationActivator(final String serverName, final InetSocketAddress managementSocket) {
+        return new DomainServerMain.HostControllerCommunicationActivator(serverName, managementSocket);
+    }
 
-    /**
-     * Get the target to which new services may be added.
-     *
-     * @return the service target
-     */
-    ServiceTarget getServiceTarget();
-
-    /**
-     * Get the service registry.
-     *
-     * @return the service registry.
-     */
-    ServiceRegistry getServiceRegistry();
 }

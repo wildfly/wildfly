@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller;
-
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
+package org.jboss.as.server.mgmt.domain;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ *
  */
-public interface NewHostOperationContext extends NewOperationContext {
+public interface NewDomainServerProtocol {
 
-    /** {@inheritDoc} */
-    @Override
-    NewHostModel getController();
+    int SERVER_TO_HOST_CONTROLLER_OPERATION = Byte.MAX_VALUE; // TODO: Correct
+    int REGISTER_REQUEST = 0x00;
+    int PARAM_SERVER_NAME = 0x01;
+    int REGISTER_RESPONSE = 0x02;
 
-    /**
-     * Get the target to which new services may be added.
-     *
-     * @return the service target
-     */
-    ServiceTarget getServiceTarget();
+    int PARAM_OPERATION = 0x60;
 
-    /**
-     * Get the service registry.
-     *
-     * @return the service registry.
-     */
-    ServiceRegistry getServiceRegistry();
+    int EXECUTE_SYNCHRONOUS_REQUEST = 0x47;
+    int EXECUTE_SYNCHRONOUS_RESPONSE = 0x48;
+
 }

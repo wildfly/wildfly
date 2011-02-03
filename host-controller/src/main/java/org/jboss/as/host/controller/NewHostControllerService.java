@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,11 +22,12 @@
 
 package org.jboss.as.host.controller;
 
-import java.net.InetSocketAddress;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
-import org.jboss.as.model.DomainModel;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
-import org.jboss.msc.inject.Injector;
+import java.io.IOException;
+
+import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -34,49 +35,80 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * @author John Bailey
+ * Service creating the host controller.
+ *
+ * @author Emanuel Muckenhuber
  */
-public class NewHostControllerService implements Service<Void> {
-    private final NewHostController hostController;
+public class NewHostControllerService implements Service<NewHostController> {
 
-    private final InjectedValue<NetworkInterfaceBinding> managementInterface = new InjectedValue<NetworkInterfaceBinding>();
-    private final InjectedValue<Integer> managementPort = new InjectedValue<Integer>();
-    private final InjectedValue<DomainControllerConnection> domainControllerConnection = new InjectedValue<DomainControllerConnection>();
+    private final InjectedValue<NewDomainControllerConnection> connection = new InjectedValue<NewDomainControllerConnection>();
+    private final InjectedValue<NewServerInventory> serverInventory = new InjectedValue<NewServerInventory>();
+    private final NewHostModel hostModel;
+    private final FileRepository repository;
+    private final String name;
 
-    public NewHostControllerService(NewHostController hostController) {
-        this.hostController = hostController;
+    private NewHostController controller;
+
+    NewHostControllerService(final String name, final NewHostModel hostModel, final FileRepository repository) {
+        this.name = name;
+        this.hostModel = hostModel;
+        this.repository = repository;
     }
 
-    public void start(StartContext context) throws StartException {
-        // Register with the domain controller
-        final DomainControllerConnection domainControllerConnection = this.domainControllerConnection.getValue();
-        hostController.setDomainControllerConnection(domainControllerConnection);
-        final DomainModel domainModel = domainControllerConnection.register();
-        hostController.setDomain(domainModel);
-
-        // Start the servers
-        final NetworkInterfaceBinding interfaceBinding = managementInterface.getValue();
-        final InetSocketAddress managementSocketAddress = new InetSocketAddress(interfaceBinding.getAddress(), managementPort.getValue());
-        hostController.setManagementSocketAddress(managementSocketAddress);
-        hostController.startServers();
+    /** {@inheritDoc} */
+    @Override
+    public synchronized void start(StartContext context) throws StartException {
+        final NewDomainControllerConnection connection = this.connection.getValue();
+        final NewServerInventory serverInventory = this.serverInventory.getValue();
+        final NewHostControllerImpl controller = new NewHostControllerImpl(name, hostModel, serverInventory, repository);
+        try {
+            final ModelNode domainModel = connection.register(controller);
+            final FileRepository remoteRepository = connection.getRemoteFileRepository();
+            controller.initDomainConnection(domainModel, remoteRepository);
+            // start servers
+            if(hostModel.getModel().has(SERVER) && hostModel.getModel().get(SERVER).isDefined()) {
+                final ModelNode servers = hostModel.getModel().get(SERVER).clone();
+                for(final String serverName : servers.keys()) {
+                    controller.startServer(serverName);
+                }
+            }
+        } catch (IOException e) {
+            throw new StartException(e);
+        }
+        this.controller = controller;
     }
 
-    public void stop(StopContext context) {
+    /** {@inheritDoc} */
+    @Override
+    public synchronized void stop(StopContext context) {
+        final NewHostController controller = this.controller;
+        final NewDomainControllerConnection connection = this.connection.getValue();
+        connection.unregister();
+        this.controller = null;
+        // stop servers
+        if(hostModel.getModel().has(SERVER) && hostModel.getModel().get(SERVER).isDefined()) {
+            final ModelNode servers = hostModel.getModel().get(SERVER).clone();
+            for(final String serverName : servers.keys()) {
+                controller.stopServer(serverName);
+            }
+        }
     }
 
-    public Void getValue() throws IllegalStateException {
-        return null;
+    /** {@inheritDoc} */
+    @Override
+    public synchronized NewHostController getValue() throws IllegalStateException, IllegalArgumentException {
+        final NewHostController controller = this.controller;
+        if(controller == null) {
+            throw new IllegalArgumentException();
+        }
+        return controller;
     }
 
-    public Injector<NetworkInterfaceBinding> getManagementInterfaceInjector() {
-        return managementInterface;
+    InjectedValue<NewDomainControllerConnection> getConnection() {
+        return connection;
     }
 
-    public Injector<Integer> getManagementPortInjector() {
-        return managementPort;
-    }
-
-    public Injector<DomainControllerConnection> getDomainControllerConnectionInjector() {
-        return domainControllerConnection;
+    InjectedValue<NewServerInventory> getServerInventory() {
+        return serverInventory;
     }
 }

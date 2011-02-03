@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,27 +22,22 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.UpdateResultHandlerResponse;
+
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.ProtocolUtils;
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-import static org.jboss.as.protocol.StreamUtils.safeFinish;
-import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
@@ -50,11 +45,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import org.jboss.as.server.ServerController;
-import org.jboss.marshalling.Marshaller;
-import static org.jboss.marshalling.Marshalling.createByteInput;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
-import org.jboss.marshalling.Unmarshaller;
+import org.jboss.as.server.NewServerController;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -67,12 +59,18 @@ import org.jboss.msc.value.InjectedValue;
  * Client used to interact with the local {@link HostController}.
  *
  * @author John Bailey
+ * @author Emanuel Muckenhuber
  */
-public class HostControllerClient implements Service<Void> {
+public class NewHostControllerServerClient implements Service<Void> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
     private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
-    private final InjectedValue<ServerController> serverController = new InjectedValue<ServerController>();
+    private final InjectedValue<NewServerController> controller = new InjectedValue<NewServerController>();
+    private final String serverName;
+
+    public NewHostControllerServerClient(final String serverName) {
+        this.serverName = serverName;
+    }
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
@@ -94,22 +92,12 @@ public class HostControllerClient implements Service<Void> {
         return null;
     }
 
-    /**
-     * Get the injector for the host controller connection.
-     *
-     * @return The injector
-     */
     public Injector<Connection> getSmConnectionInjector() {
         return smConnection;
     }
 
-    /**
-     * Get the injector for the ServerModel.
-     *
-     * @return The injector
-     */
-    public Injector<ServerController> getServerControllerInjector() {
-        return serverController;
+    public Injector<NewServerController> getServerControllerInjector() {
+        return controller;
     }
 
     private MessageHandler managementHeaderMessageHandler = new AbstractMessageHandler() {
@@ -179,134 +167,72 @@ public class HostControllerClient implements Service<Void> {
 
     private ManagementResponse operationFor(final byte commandByte) {
         switch (commandByte) {
-            case DomainServerProtocol.SERVER_MODEL_UPDATES_REQUEST: {
-                return new ApplyServerModelUpdatesOperation();
-            }
-            case DomainServerProtocol.GET_SERVER_MODEL_REQUEST: {
-                return new GetServerModelOperation();
-            }
+            case NewDomainServerProtocol.EXECUTE_SYNCHRONOUS_REQUEST:
+                return new ExecuteSynchronousOperation();
         }
         return null;
+    }
+
+    private ModelNode readNode(InputStream in) throws IOException {
+        ModelNode node = new ModelNode();
+        node.readExternal(in);
+        return node;
+    }
+
+    private abstract class ExecuteOperation extends ManagementResponse {
+        ModelNode operation;
+
+        @Override
+        protected final void readRequest(final InputStream inputStream) throws IOException {
+            expectHeader(inputStream, NewDomainServerProtocol.PARAM_OPERATION);
+            operation = readNode(inputStream);
+        }
+    }
+
+    private class ExecuteSynchronousOperation extends ExecuteOperation {
+        @Override
+        protected final byte getResponseCode() {
+            return NewDomainServerProtocol.EXECUTE_SYNCHRONOUS_RESPONSE;
+        }
+
+        @Override
+        protected void sendResponse(final OutputStream outputStream) throws IOException {
+            ModelNode result = null;
+            try {
+                result = controller.getValue().execute(operation);
+            } catch (OperationFailedException e) {
+                result = new ModelNode().set(createErrorResult(e));
+            }
+            outputStream.write(NewDomainServerProtocol.PARAM_OPERATION);
+            result.writeExternal(outputStream);
+        }
     }
 
     private class ServerRegisterRequest extends ManagementRequest<Void> {
         @Override
         protected byte getHandlerId() {
-            return DomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
+            return NewDomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
         }
 
         @Override
         protected byte getRequestCode() {
-            return DomainServerProtocol.REGISTER_REQUEST;
+            return NewDomainServerProtocol.REGISTER_REQUEST;
         }
 
         @Override
         protected byte getResponseCode() {
-            return DomainServerProtocol.REGISTER_RESPONSE;
+            return NewDomainServerProtocol.REGISTER_RESPONSE;
         }
-
 
         @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            output.write(DomainServerProtocol.PARAM_SERVER_NAME);
-            writeUTFZBytes(output, serverController.getValue().getServerModel().getServerName());
+            output.write(NewDomainServerProtocol.PARAM_SERVER_NAME);
+            writeUTFZBytes(output, serverName);
         }
     }
 
-    private class ApplyServerModelUpdatesOperation extends ManagementResponse {
-        private List<AbstractServerModelUpdate<?>> updates;
-        private boolean allowRollback;
-
-        private ApplyServerModelUpdatesOperation() {
-            super(managementHeaderMessageHandler);
-        }
-
-        @Override
-        protected byte getResponseCode() {
-            return DomainServerProtocol.SERVER_MODEL_UPDATES_RESPONSE;
-        }
-
-        @Override
-        protected final void readRequest(final InputStream inputStream) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(inputStream));
-            try {
-                expectHeader(unmarshaller, DomainServerProtocol.PARAM_ALLOW_ROLLBACK);
-                allowRollback = unmarshaller.readBoolean();
-                expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
-                int count = unmarshaller.readInt();
-                updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
-                for (int i = 0; i < count; i++) {
-                    expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE);
-                    final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
-                    updates.add(update);
-                }
-                unmarshaller.finish();
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-
-        @Override
-        protected void sendResponse(final OutputStream output) throws IOException {
-            List<UpdateResultHandlerResponse<?>> responses = processUpdates();
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT);
-                marshaller.writeInt(responses.size());
-                for (UpdateResultHandlerResponse<?> response : responses) {
-                    marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE);
-                    marshaller.writeObject(response);
-                }
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-
-        private List<UpdateResultHandlerResponse<?>> processUpdates() {
-            return serverController.getValue().applyUpdates(updates, allowRollback, false);
-        }
+    static ModelNode createErrorResult(OperationFailedException e) {
+        return e.getFailureDescription();
     }
 
-    private class GetServerModelOperation extends ManagementResponse {
-
-        private GetServerModelOperation() {
-            super(managementHeaderMessageHandler);
-        }
-
-        @Override
-        protected byte getResponseCode() {
-            return DomainServerProtocol.GET_SERVER_MODEL_RESPONSE;
-        }
-
-        @Override
-        protected void readRequest(InputStream input) throws IOException {
-            super.readRequest(input);
-        }
-
-        @Override
-        protected void sendResponse(final OutputStream output) throws IOException {
-            ServerModel sm = serverController.getValue().getServerModel();
-
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainServerProtocol.RETURN_SERVER_MODEL);
-                marshaller.writeObject(sm);
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-    }
-
-    private static Marshaller getMarshaller() throws IOException {
-        return ProtocolUtils.getMarshaller(ProtocolUtils.MODULAR_CONFIG);
-    }
-
-    private static Unmarshaller getUnmarshaller() throws IOException {
-        return ProtocolUtils.getUnmarshaller(ProtocolUtils.MODULAR_CONFIG);
-    }
 }

@@ -36,7 +36,7 @@ import org.jboss.msc.value.Values;
  *
  * @author John Bailey
  */
-public class ManagementOperationHandlerService <T extends ManagementOperationHandler> implements Service<T> {
+public class ManagementOperationHandlerService<T extends ManagementOperationHandler> implements Service<T> {
 
     private Value<T> value;
 
@@ -70,5 +70,9 @@ public class ManagementOperationHandlerService <T extends ManagementOperationHan
     public T getValue() throws IllegalStateException {
         return value.getValue();
     }
-}
 
+    public static <T extends ManagementOperationHandler> ManagementOperationHandlerService<T> create(T service) {
+        return new ManagementOperationHandlerService<T>(service);
+    }
+
+}
