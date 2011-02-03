@@ -291,8 +291,8 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             if(!binding.get(DEFAULT_INTERFACE).isDefined()) {
                 binding.get(DEFAULT_INTERFACE).set(defaultInterface);
             }
-            SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME),
-                    PathElement.pathElement(SOCKET_BINDING, name)), binding);
+            updates.add(SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME),
+                    PathElement.pathElement(SOCKET_BINDING, name)), binding));
 
 
         }
