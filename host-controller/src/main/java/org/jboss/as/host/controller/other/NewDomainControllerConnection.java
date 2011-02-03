@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.host.controller.other;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import java.io.IOException;
+
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * @author Emanuel Muckenhuber
+ * Contract for communicating with a domain controller.
+ *
+ * @author John Bailey
  */
-public interface NewDomainModel extends ModelController {
+public interface NewDomainControllerConnection {
+
+    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "connection");
 
     /**
-     * Get the underlying model.
+     * Register with the domain controller.
      *
-     * @return the model.
+     * @param hostController the local host controller
+     * @return The latest domain model
      */
-    ModelNode getModel();
+    ModelNode register(final NewHostController hostController) throws IOException;
 
-    static class Factory {
-        public static NewDomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister) {
-            return new NewDomainModelImpl(domainModel, configurationPersister);
-        }
-    }
+    /**
+     * Unregister from the domain controller.
+     */
+    void unregister();
 
+    /**
+     * Get the file repository for the domain controller.  This can be used to pull contents from the domain
+     * controllers repository.
+     *
+     * @return The file repository
+     */
+    FileRepository getRemoteFileRepository();
 }

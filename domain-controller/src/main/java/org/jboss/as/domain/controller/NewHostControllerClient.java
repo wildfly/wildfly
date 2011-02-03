@@ -23,7 +23,6 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.model.HostModel;
 
 /**
  * @author Emanuel Muckenhuber
@@ -33,9 +32,7 @@ public interface NewHostControllerClient extends ModelController {
     /**
      * Get the identifier for the Host Controller.
      *
-     * @return the identifier. Cannot be <code>null</code>. Must match the
-     *   {@link HostModel#getName() name property} of the Host Controller's
-     *   {@link HostModel}.
+     * @return the host identifier. Cannot be <code>null</code>.
      */
     String getId();
 

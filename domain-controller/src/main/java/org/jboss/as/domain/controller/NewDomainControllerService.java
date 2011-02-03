@@ -94,7 +94,6 @@ public final class NewDomainControllerService implements Service<NewDomainContro
         if (count.decrementAndGet() == 0) {
             // some action?
         }
-        log.info(controller.getModel());
         this.controller = controller;
     }
 

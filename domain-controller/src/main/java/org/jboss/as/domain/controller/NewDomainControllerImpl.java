@@ -57,7 +57,7 @@ class NewDomainControllerImpl implements NewDomainController {
     /** {@inheritDoc} */
     @Override
     public void addClient(final NewHostControllerClient client) {
-        Logger.getLogger("org.jboss.domain").info("register client " + client);
+        Logger.getLogger("org.jboss.domain").info("register host " + client.getId());
     }
 
     /** {@inheritDoc} */

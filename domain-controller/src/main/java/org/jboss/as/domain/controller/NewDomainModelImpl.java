@@ -97,7 +97,7 @@ class NewDomainModelImpl extends BasicModelController implements NewDomainModel 
         rootModel.get(PATH);
     }
 
-    protected ModelNode getModel() {
+    public ModelNode getModel() {
         return super.getModel();
     }
 

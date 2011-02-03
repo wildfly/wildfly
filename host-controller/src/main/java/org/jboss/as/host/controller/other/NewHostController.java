@@ -20,28 +20,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.host.controller.other;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.domain.client.api.ServerStatus;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface NewDomainModel extends ModelController {
+public interface NewHostController extends ModelController {
+
+    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
 
     /**
-     * Get the underlying model.
+     * Get the host name.
      *
-     * @return the model.
+     * @return the host name
      */
-    ModelNode getModel();
+    String getName();
 
-    static class Factory {
-        public static NewDomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister) {
-            return new NewDomainModelImpl(domainModel, configurationPersister);
-        }
-    }
+    /**
+     * Start a local server.
+     *
+     * @param serverName the server name to start
+     * @return the server state
+     */
+    ServerStatus startServer(final String serverName);
+
+    /**
+     * Restart a local server.
+     *
+     * @param serverName the server name
+     * @return the server state
+     */
+    ServerStatus restartServer(final String serverName);
+
+    /**
+     * Stop a local server.
+     *
+     * @param serverName the server name to stop
+     * @return the server state
+     */
+    ServerStatus stopServer(final String serverName);
 
 }
