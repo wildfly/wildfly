@@ -109,7 +109,7 @@ class ModelCombiner {
         addSubsystems(updates);
         //TODO deployments
 
-        //System.out.println(combiner.createUpdates());
+        System.out.println(updates);
 
         return updates;
     }
