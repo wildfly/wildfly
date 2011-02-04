@@ -56,7 +56,7 @@
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
         <version.com.google.guava>r06</version.com.google.guava>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
-        <version.javax.enterprise.cdi-api>1.0-SP1</version.javax.enterprise.cdi-api>
+        <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-api>2.0.2-FCS</version.javax.faces.jsf-api>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
@@ -110,21 +110,21 @@
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-alpha-11</version.org.jboss.shrinkwrap.shrinkwrap>
-        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.0.Beta2</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
-        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.0.CR2</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
-        <version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>1.0.0.Beta2</version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>
-        <version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>1.0.0.Beta1</version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>
-        <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.0.Beta1</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
-        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Beta1</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
-        <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.0.Beta1</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
-        <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.0.Beta2</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
-        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.0.Beta2</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
-        <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.0.Beta1</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
-        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.0.Beta1</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
-        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.0.Beta1</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
-        <version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>1.0.0.Beta1</version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>
-        <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.0.Beta1</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
-        <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>1.0.0.Beta1</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
+        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
+        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
+        <version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>1.0.0.Final</version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>
+        <version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>1.0.0.Final</version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>
+        <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
+        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
+        <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
+        <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.0.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
+        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
+        <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
+        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
+        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
+        <version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>
+        <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
+        <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.staxmapper>1.0.0.Beta2</version.org.jboss.staxmapper>
         <version.org.jboss.stdio.jboss-stdio>1.0.0.CR3</version.org.jboss.stdio.jboss-stdio>
         <version.org.jboss.threads.jboss-threads>2.0.0.CR8</version.org.jboss.threads.jboss-threads>
