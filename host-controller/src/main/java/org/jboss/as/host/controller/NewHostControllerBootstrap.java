@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
@@ -239,7 +240,7 @@ public class NewHostControllerBootstrap {
     static void activateNetworkInterfaces(final ModelNode host, final ServiceTarget serviceTarget) {
         for(final Property iFace : host.get(INTERFACE).asPropertyList()) {
             final String interfaceName = iFace.getName();
-            final ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(iFace.getValue());
+            final ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(iFace.getValue().require(CRITERIA));
             serviceTarget.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName), NetworkInterfaceService.create(interfaceName, criteria))
                 .setInitialMode(Mode.ON_DEMAND)
                 .install();
