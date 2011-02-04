@@ -44,9 +44,9 @@ public final class RootDeploymentUnitService extends AbstractDeploymentUnitServi
      * Construct a new instance.
      *
      * @param name the deployment unit simple name
-     * @param runtimeName the deployoment runtime name
+     * @param runtimeName the deployment runtime name
      * @param deploymentHash the deployment hash
-     * @param parent
+     * @param parent the parent deployment unit
      */
     public RootDeploymentUnitService(final String name, final String runtimeName, final byte[] deploymentHash, final DeploymentUnit parent) {
         this.name = name;

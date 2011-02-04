@@ -50,9 +50,9 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
 
     public ServiceName getServiceName() {
         if (parent != null) {
-            return parent.getServiceName().append(name);
+            return Services.deploymentUnitName(parent.getName(), name);
         } else {
-            return ServiceName.JBOSS.append("deployment").append(name);
+            return Services.deploymentUnitName(name);
         }
     }
 
