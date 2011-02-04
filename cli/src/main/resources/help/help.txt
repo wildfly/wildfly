@@ -1,0 +1,15 @@
+Supported commands:
+/connect [host]:[port] - connects to the specified host and port (defaults is localhost:9999)
+/help (or /h) - prints this message
+/quit (or /q) - quit the command line interface
+
+Commands not prefixed with '/' are treated as operation requests.
+Operation requests are expected to follow the following format:
+
+[node-type=node-name [, node-type=node-name]*] : operation-name ([name=value [, name=value]*])
+
+e.g. profile=production,subsystem=threads,bounded-queue-thread-pool=pool1:write-core-threads(count=0, per-cpu=20)
+
+Whitespaces between separators are insignificant.
+If the address part is not specified then the ':' before the operation name is optional.
+If the operation has no arguments then the brackets '()' are optional.
