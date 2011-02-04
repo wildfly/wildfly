@@ -29,13 +29,10 @@ import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.Interceptor;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Author : Jaikiran Pai
@@ -60,13 +57,5 @@ public class StatelessSessionComponentFactory implements ComponentFactory {
     @Override
     public Collection<ComponentBinding> getComponentBindings(DeploymentUnit deploymentUnit, ComponentConfiguration componentConfiguration, ServiceName componentServiceName) {
         throw new RuntimeException("NYI: org.jboss.as.ejb3.component.stateless.StatelessSessionComponentFactory.getComponentBindings");
-    }
-
-    // TODO: The component interceptors should be configurable
-    private List<Interceptor> getComponentInterceptors() {
-        List<Interceptor> componentInterceptors = new ArrayList<Interceptor>();
-        // just return a dummy component interceptor
-        componentInterceptors.add(new DummyComponentInterceptor());
-        return componentInterceptors;
     }
 }
