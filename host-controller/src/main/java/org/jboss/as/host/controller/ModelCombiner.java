@@ -39,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -256,27 +257,29 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     static final String SOCKET_BINDING_GROUP_NAME = "default";
 
     private void addSocketBindings(List<ModelNode> updates, String bindingRef) {
-        final Map<String, ModelNode> bindings = new LinkedHashMap<String, ModelNode>();
-        addSocketBindingGroups(bindings, domainModel.get(SOCKET_BINDING_GROUP));
-
-        final ModelNode group = bindings.get(bindingRef);
+        final Set<String> processed = new HashSet<String>();
+        final Map<String, ModelNode> groups = new LinkedHashMap<String, ModelNode>();
+        if(domainModel.hasDefined(SOCKET_BINDING_GROUP)) {
+            for (Property prop : domainModel.get(SOCKET_BINDING_GROUP).asPropertyList()) {
+                groups.put(prop.getName(), prop.getValue());
+            }
+        }
+        final ModelNode group = groups.get(bindingRef);
         final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME));
         updates.add(SocketBindingGroupAddHandler.getOperation(groupAddress, group));
+        mergeBindingGroups(updates, groups, group, processed, group.get(INTERFACE));
+    }
 
+    private void mergeBindingGroups(List<ModelNode> updates, Map<String, ModelNode> groups, ModelNode group, Set<String> processed, ModelNode parentInterface) {
         addSocketBindings(updates, group, group.get(DEFAULT_INTERFACE));
         if(group.has(INCLUDE) && group.get(INCLUDE).isDefined()) {
             for(final ModelNode include : group.get(INCLUDE).asList()) {
-                final ModelNode includedGroup = bindings.get(include.asString());
-                addSocketBindings(updates, includedGroup, includedGroup.get(DEFAULT_INTERFACE));
-            }
-        }
-    }
-
-    private void addSocketBindingGroups(Map<String, ModelNode> map, ModelNode binding) {
-        if (binding.isDefined()) {
-            for (Property prop : binding.asPropertyList()) {
-                //TODO merge rather than replace existing?
-                map.put(prop.getName(), prop.getValue());
+                final String ref = include.asString();
+                if(processed.add(ref)) {
+                    final ModelNode includedGroup = groups.get(ref);
+                    final ModelNode defaultInterface = group.hasDefined(INTERFACE) ? group.get(INTERFACE) : parentInterface;
+                    addSocketBindings(updates, includedGroup, defaultInterface);
+                }
             }
         }
     }
@@ -293,8 +296,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             }
             updates.add(SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME),
                     PathElement.pathElement(SOCKET_BINDING, name)), binding));
-
-
         }
     }
 
