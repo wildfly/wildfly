@@ -25,18 +25,12 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Future;
 
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.PathElementUpdate;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.ServerPathAdd;
-import org.jboss.as.server.client.api.StandaloneClient;
-import org.jboss.as.server.client.api.StandaloneUpdateResult;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -46,28 +40,37 @@ public class __TestStandaloneClient {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Creating client");
-        StandaloneClient client = null;
+        ModelControllerClient client = null;
         try {
-            client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             System.out.println("Created client, getting model...");
-            ServerModel model = client.getServerModel();
-            System.out.println("Got model " + model);  //Why is this null?
+            ModelNode op = new ModelNode();
+            op.get("operation").set("read-resource");
+            op.get("address").setEmptyList();
+            op.get("recursive").set(true);
+            ModelNode response = client.execute(op);
+            if ("success".equals(op.get("outcome").asString())) {
+                System.out.println("Got model " + response.get("result"));
+            }
+            else {
+                System.out.println("Failed to get model -- " + response.get("failure-description"));
+            }
 
             // Apply update
-            List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
-            updates.add(new ServerPathAdd(new PathElementUpdate("org.jboss.test", "/home/emuckenh/Downloads", null)));
-
-
-            for(final StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
-                if(result.isSuccess()) {
-                    System.out.println(result.getResult());
-                } else {
-                    result.getFailure().printStackTrace(System.out);
-                }
+            op = new ModelNode();
+            op.get("operation").set("add");
+            op.get("address").add("path", "org.jboss.test");
+            op.get("path").set("/home/emuckenh/Downloads");
+            response = client.execute(op);
+            if ("success".equals(op.get("outcome").asString())) {
+                System.out.println("Added path");
+            }
+            else {
+                System.out.println("Failed to add path -- " + response.get("failure-description"));
             }
 
             System.out.println("Created client, getting dm...");
-            ServerDeploymentManager manager = client.getDeploymentManager();
+            ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(client);
             System.out.println("Got manager " + manager);
             File file = new File("sar-example.sar");
             if (!file.exists()) {

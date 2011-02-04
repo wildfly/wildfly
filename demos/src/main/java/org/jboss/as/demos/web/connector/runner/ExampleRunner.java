@@ -25,6 +25,7 @@ package org.jboss.as.demos.web.connector.runner;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URL;
@@ -32,18 +33,11 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.war.archive.SimpleServlet;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerSocketBindingUpdate;
-import org.jboss.as.model.ServerSubsystemUpdate;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.socket.SocketBindingAdd;
-import org.jboss.as.model.socket.SocketBindingRemove;
-import org.jboss.as.server.client.api.StandaloneClient;
-import org.jboss.as.server.client.api.StandaloneUpdateResult;
-import org.jboss.as.web.WebConnectorAdd;
-import org.jboss.as.web.WebConnectorRemove;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -52,7 +46,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
-        final StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             utils = new DeploymentUtils();
             utils.addWarDeployment("war-example.war", SimpleServlet.class.getPackage(), true);
@@ -91,37 +85,69 @@ public class ExampleRunner {
 
     }
 
-    static void createTestConnector(final StandaloneClient client) throws UpdateFailedException {
-        final SocketBindingAdd bindingUpdate = new SocketBindingAdd("default", "http-test", 8380);
+    static void createTestConnector(final ModelControllerClient client) throws OperationFailedException, IOException {
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+        op.get("operation").set("add");
+        op.get("address").add("socket-binding-group", "standard-sockets");
+        op.get("address").add("socket-binding", "http-test");
+        op.get("interface").set("default");
+        op.get("port").set(8380);
 
-        final WebConnectorAdd connector = new WebConnectorAdd("testConnector");
-        connector.setBindingRef("http-test");
-        connector.setEnabled(Boolean.TRUE);
-        connector.setProtocol("http");
-        connector.setScheme("http");
+        updates.add(op);
 
-        final List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
-        updates.add(new ServerSocketBindingUpdate(bindingUpdate));
-        updates.add(ServerSubsystemUpdate.create(connector));
+        op = new ModelNode();
+        op.get("operation").set("add");
+        op.get("address").add("subsystem", "web");
+        op.get("address").add("connector", "testConnector");
+        op.get("socket-binding").set("http-test");
+        op.get("enabled").set(true);
+        op.get("protocol").set("http");
+        op.get("scheme").set("http");
+
+        updates.add(op);
+
         applyUpdates(updates, client);
     }
 
-    static void removeTestConnector(final StandaloneClient client) throws UpdateFailedException {
-        final SocketBindingRemove bindingUpdate = new SocketBindingRemove("http-test");
+    static void removeTestConnector(final ModelControllerClient client) throws OperationFailedException, IOException {
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-        final WebConnectorRemove connector = new WebConnectorRemove("testConnector");
+        ModelNode op = new ModelNode();
+        op.get("operation").set("remove");
+        op.get("address").add("subsystem", "web");
+        op.get("address").add("connector", "testConnector");
 
-        final List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
-        updates.add(new ServerSocketBindingUpdate(bindingUpdate));
-        updates.add(ServerSubsystemUpdate.create(connector));
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get("operation").set("remove");
+        op.get("address").add("socket-binding-group", "standard-sockets");
+        op.get("address").add("socket-binding", "http-test");
+        updates.add(op);
+
         applyUpdates(updates, client);
     }
 
-    static void applyUpdates(final List<AbstractServerModelUpdate<?>> updates, final StandaloneClient client) throws UpdateFailedException {
-        for(StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
-            if(! result.isSuccess()) {
-                throw result.getFailure();
+    static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws OperationFailedException, IOException  {
+        // TODO consider creating a composite operation
+        for(ModelNode update : updates) {
+            applyUpdate(update, client);
+        }
+    }
+
+    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws OperationFailedException, IOException {
+        ModelNode result = client.execute(update);
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
             }
+        }
+        else if (result.hasDefined("failure-description")){
+            throw new RuntimeException(result.get("failure-description").toString());
+        }
+        else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 

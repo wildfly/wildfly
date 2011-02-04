@@ -22,11 +22,10 @@
 
 package org.jboss.as.demos.client.messaging.runner;
 
+import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.resource.spi.IllegalStateException;
@@ -42,13 +41,9 @@ import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.jboss.as.messaging.QueueAdd;
-import org.jboss.as.messaging.QueueRemove;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerSubsystemUpdate;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.server.client.api.StandaloneClient;
-import org.jboss.as.server.client.api.StandaloneUpdateResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Demo using the AS management API to create and destroy a HornetQ core queue.
@@ -62,18 +57,24 @@ public class ExampleRunner {
         final String queueName = "queue.standalone";
 
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
-        final StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
 
         try {
-            // Check that the queue does not exists
+            // Check that the queue does not exist
             if(queueExists(queueName, sf)) {
                 throw new IllegalStateException();
             }
 
             // Create a new core queue using the standalone client
-            final QueueAdd add = new QueueAdd(queueName);
-            add.setAddress(queueName);
-            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(add)), client);
+
+
+            ModelNode op = new ModelNode();
+            op.get("operation").set("add");
+            op.get("address").add("subsystem", "messaging");
+            op.get("address").add("queue", queueName);
+            op.get("queue-address").set(queueName);
+            applyUpdate(op, client);
+
             // Check if the queue exists
             if(! queueExists(queueName, sf)) {
                 throw new IllegalStateException();
@@ -102,10 +103,13 @@ public class ExampleRunner {
                }
             }
 
-            final QueueRemove remove = new QueueRemove(queueName);
-            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(remove)), client);
+            op = new ModelNode();
+            op.get("operation").set("remove");
+            op.get("address").add("subsystem", "messaging");
+            op.get("address").add("queue", queueName);
+            applyUpdate(op, client);
 
-            // Check that the queue does not exists
+            // Check that the queue does not exist
             if(queueExists(queueName, sf)) {
                 throw new IllegalStateException();
             }
@@ -114,11 +118,18 @@ public class ExampleRunner {
         }
     }
 
-    static void applyUpdates(final List<AbstractServerModelUpdate<?>> updates, final StandaloneClient client) throws UpdateFailedException {
-        for(StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
-            if(! result.isSuccess()) {
-                throw result.getFailure();
+    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws OperationFailedException, IOException {
+        ModelNode result = client.execute(update);
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
             }
+        }
+        else if (result.hasDefined("failure-description")){
+            throw new RuntimeException(result.get("failure-description").toString());
+        }
+        else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 

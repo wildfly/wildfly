@@ -40,7 +40,8 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.jboss.as.server.client.api.StandaloneClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
@@ -64,12 +65,12 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public class DeploymentUtils implements Closeable {
 
     private final List<AbstractDeployment> deployments = new ArrayList<AbstractDeployment>();
-    private final StandaloneClient client;
+    private final ModelControllerClient client;
     private final ServerDeploymentManager manager;
 
     public DeploymentUtils() throws UnknownHostException {
-        client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        manager = client.getDeploymentManager();
+        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        manager = ServerDeploymentManager.Factory.create(client);
     }
 
     public DeploymentUtils(String archiveName, Package pkg) throws UnknownHostException {
@@ -105,6 +106,10 @@ public class DeploymentUtils implements Closeable {
         }
         manager.execute(builder.build()).get();
 
+        for (AbstractDeployment deployment : deployments) {
+            deployment.deployed = true;
+        }
+
         // Evil hack, remove when we have update results blocking on all deployment services
         Thread.sleep(2000);
     }
@@ -114,7 +119,10 @@ public class DeploymentUtils implements Closeable {
         for (AbstractDeployment deployment : deployments) {
             builder = deployment.removeDeployment(builder);
         }
-        manager.execute(builder.build()).get();
+        DeploymentPlan plan = builder.build();
+        if (plan.getDeploymentActions().size() > 0) {
+            manager.execute(builder.build()).get();
+        }
     }
 
     public MBeanServerConnection getConnection() throws Exception {
@@ -126,23 +134,30 @@ public class DeploymentUtils implements Closeable {
         return (String)getConnection().invoke(new ObjectName("jboss:type=JNDIView"), "list", new Object[] {true}, new String[] {"boolean"});
     }
 
+    @Override
     public void close() throws IOException {
         safeClose(client);
     }
 
     private abstract class AbstractDeployment{
 
+        boolean deployed;
         String deployment;
 
         public synchronized DeploymentPlanBuilder addDeployment(ServerDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
-            System.out.println("Deploying " + getRealArchive().getName());
-            deployment = manager.addDeploymentContent(getRealArchive());
+            deployment = getRealArchive().getName();
+            System.out.println("Deploying " + deployment);
             return builder.add(deployment, getRealArchive()).deploy(deployment);
         }
 
         public synchronized DeploymentPlanBuilder removeDeployment(DeploymentPlanBuilder builder) {
-            System.out.println("Undeploying " + getRealArchive().getName());
-            return builder.undeploy(deployment).remove(deployment);
+            if (deployed) {
+                System.out.println("Undeploying " + deployment);
+                return builder.undeploy(deployment).remove(deployment);
+            }
+            else {
+                return builder;
+            }
         }
 
         protected void addFiles(ResourceContainer<?> archive, File dir, ArchivePath dest) {

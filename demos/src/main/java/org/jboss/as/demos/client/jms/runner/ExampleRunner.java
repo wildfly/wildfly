@@ -24,9 +24,8 @@ package org.jboss.as.demos.client.jms.runner;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
+import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.List;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -41,15 +40,10 @@ import javax.jms.TextMessage;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.fakejndi.FakeJndi;
-import org.jboss.as.messaging.jms.JMSQueueAdd;
-import org.jboss.as.messaging.jms.JMSQueueRemove;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerSubsystemUpdate;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.server.client.api.StandaloneClient;
-import org.jboss.as.server.client.api.StandaloneUpdateResult;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Demo using the AS management API to create and destroy a JMS queue.
@@ -63,7 +57,7 @@ public class ExampleRunner {
     public static void main(String[] args) throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         DeploymentUtils utils = null;
         boolean actionsApplied = false;
@@ -71,11 +65,12 @@ public class ExampleRunner {
             utils = new DeploymentUtils("fakejndi.sar", FakeJndi.class.getPackage());
             utils.deploy();
 
-            final JMSQueueAdd queueAdd = new JMSQueueAdd(QUEUE_NAME);
-            queueAdd.setBindings(Collections.singleton(QUEUE_NAME));
-
-            // Create the queue using the management API
-            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(queueAdd)), client);
+            ModelNode op = new ModelNode();
+            op.get("operation").set("add");
+            op.get("address").add("subsystem", "jms");
+            op.get("address").add("queue", QUEUE_NAME);
+            op.get("entries").add(QUEUE_NAME);
+            applyUpdate(op, client);
             actionsApplied = true;
 
             QueueConnectionFactory qcf = lookup(utils, "RemoteConnectionFactory", QueueConnectionFactory.class);
@@ -130,18 +125,28 @@ public class ExampleRunner {
             safeClose(utils);
             if(actionsApplied) {
                 // Remove the queue using the management API
-                final JMSQueueRemove remove = new JMSQueueRemove(QUEUE_NAME);
-                applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(remove)), client);
+                ModelNode op = new ModelNode();
+                op.get("operation").set("remove");
+                op.get("address").add("subsystem", "jms");
+                op.get("address").add("queue", QUEUE_NAME);
+                applyUpdate(op, client);
             }
             safeClose(client);
         }
     }
 
-    static void applyUpdates(final List<AbstractServerModelUpdate<?>> updates, final StandaloneClient client) throws UpdateFailedException {
-        for(StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
-            if(! result.isSuccess()) {
-                throw result.getFailure();
+    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
+        ModelNode result = client.execute(update);
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
             }
+        }
+        else if (result.hasDefined("failure-description")){
+            throw new RuntimeException(result.get("failure-description").toString());
+        }
+        else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 

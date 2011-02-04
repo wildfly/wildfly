@@ -40,6 +40,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
+        boolean ok = false;
         try {
             utils = new DeploymentUtils("jms-mbean.sar", Test.class.getPackage());
             utils.deploy();
@@ -52,9 +53,16 @@ public class ExampleRunner {
             Thread.sleep(1000);
             List<String> msgs = (List<String>)mbeanServer.invoke(objectName, "readMessages", new Object[] {}, new String[] {});
             System.out.println("Received messages: " + msgs);
+            ok = true;
         } finally {
-            utils.undeploy();
-            safeClose(utils);
+            try {
+                utils.undeploy();
+                safeClose(utils);
+            }
+            catch (Exception e) {
+                if (ok)
+                    throw e;
+            }
         }
     }
 
