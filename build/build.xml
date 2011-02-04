@@ -329,6 +329,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>
         </module-def>
 
+        <module-def name="org.jboss.as.cli">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>
+        </module-def>
+
         <module-def name="org.jboss.as.connector">
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>

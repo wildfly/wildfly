@@ -162,6 +162,7 @@
         <module>build</module>
         <module>build-config</module>
         <module>arquillian</module>
+        <module>cli</module>
         <module>connector</module>
         <module>controller</module>
         <module>controller-client</module>
@@ -1258,6 +1259,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-domain-http-api</artifactId>
+	            <version>${project.version}</version>
+	        </dependency>
+
+	        <dependency>
+	            <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-cli</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

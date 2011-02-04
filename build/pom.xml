@@ -230,6 +230,11 @@
         </dependency>
 
         <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-cli</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-connector</artifactId>
         </dependency>
