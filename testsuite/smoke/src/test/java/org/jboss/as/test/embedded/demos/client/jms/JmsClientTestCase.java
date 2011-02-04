@@ -24,10 +24,10 @@ package org.jboss.as.test.embedded.demos.client.jms;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -51,15 +51,10 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.messaging.jms.JMSQueueAdd;
-import org.jboss.as.messaging.jms.JMSQueueRemove;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerSubsystemUpdate;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.server.client.api.StandaloneClient;
-import org.jboss.as.server.client.api.StandaloneUpdateResult;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,16 +80,18 @@ public class JmsClientTestCase {
     public void testMessagingClient() throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
 
         boolean actionsApplied = false;
         try {
 
-            final JMSQueueAdd queueAdd = new JMSQueueAdd(QUEUE_NAME);
-            queueAdd.setBindings(Collections.singleton(QUEUE_NAME));
-
             // Create the queue using the management API
-            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(queueAdd)), client);
+            ModelNode op = new ModelNode();
+            op.get("operation").set("add");
+            op.get("address").add("subsystem", "jms");
+            op.get("address").add("queue", QUEUE_NAME);
+            op.get("entries").add(QUEUE_NAME);
+            applyUpdate(op, client);
             actionsApplied = true;
 
             QueueConnectionFactory qcf = lookup("RemoteConnectionFactory", QueueConnectionFactory.class);
@@ -152,18 +149,28 @@ public class JmsClientTestCase {
 
             if(actionsApplied) {
                 // Remove the queue using the management API
-                final JMSQueueRemove remove = new JMSQueueRemove(QUEUE_NAME);
-                applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(remove)), client);
+                ModelNode op = new ModelNode();
+                op.get("operation").set("remove");
+                op.get("address").add("subsystem", "jms");
+                op.get("address").add("queue", QUEUE_NAME);
+                applyUpdate(op, client);
             }
             safeClose(client);
         }
     }
 
-    static void applyUpdates(final List<AbstractServerModelUpdate<?>> updates, final StandaloneClient client) throws UpdateFailedException {
-        for(StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
-            if(! result.isSuccess()) {
-                throw result.getFailure();
+    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
+        ModelNode result = client.execute(update);
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
             }
+        }
+        else if (result.hasDefined("failure-description")){
+            throw new RuntimeException(result.get("failure-description").toString());
+        }
+        else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 

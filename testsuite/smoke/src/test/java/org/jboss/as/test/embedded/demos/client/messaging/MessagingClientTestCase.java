@@ -22,11 +22,10 @@
 
 package org.jboss.as.test.embedded.demos.client.messaging;
 
+import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.resource.spi.IllegalStateException;
@@ -38,22 +37,18 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.messaging.QueueAdd;
-import org.jboss.as.messaging.QueueRemove;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerSubsystemUpdate;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.server.client.api.StandaloneClient;
-import org.jboss.as.server.client.api.StandaloneUpdateResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,7 +74,7 @@ public class MessagingClientTestCase {
         final String queueName = "queue.standalone";
 
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
-        final StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
 
         try {
             // Check that the queue does not exists
@@ -88,9 +83,12 @@ public class MessagingClientTestCase {
             }
 
             // Create a new core queue using the standalone client
-            final QueueAdd add = new QueueAdd(queueName);
-            add.setAddress(queueName);
-            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(add)), client);
+            ModelNode op = new ModelNode();
+            op.get("operation").set("add");
+            op.get("address").add("subsystem", "messaging");
+            op.get("address").add("queue", queueName);
+            op.get("queue-address").set(queueName);
+            applyUpdate(op, client);
             // Check if the queue exists
             if(! queueExists(queueName, sf)) {
                 throw new IllegalStateException();
@@ -117,8 +115,11 @@ public class MessagingClientTestCase {
                }
             }
 
-            final QueueRemove remove = new QueueRemove(queueName);
-            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(remove)), client);
+            op = new ModelNode();
+            op.get("operation").set("remove");
+            op.get("address").add("subsystem", "messaging");
+            op.get("address").add("queue", queueName);
+            applyUpdate(op, client);
 
             // Check that the queue does not exists
             if(queueExists(queueName, sf)) {
@@ -129,11 +130,18 @@ public class MessagingClientTestCase {
         }
     }
 
-    static void applyUpdates(final List<AbstractServerModelUpdate<?>> updates, final StandaloneClient client) throws UpdateFailedException {
-        for(StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
-            if(! result.isSuccess()) {
-                throw result.getFailure();
+    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws OperationFailedException, IOException {
+        ModelNode result = client.execute(update);
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
             }
+        }
+        else if (result.hasDefined("failure-description")){
+            throw new RuntimeException(result.get("failure-description").toString());
+        }
+        else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 

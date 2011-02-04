@@ -32,7 +32,7 @@ import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.DeployableContainer;
 import org.jboss.arquillian.spi.DeploymentException;
-import org.jboss.as.server.client.api.StandaloneClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
@@ -40,9 +40,9 @@ import org.jboss.as.server.client.api.deployment.ServerDeploymentActionResult;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 import org.jboss.modules.management.ObjectProperties;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.management.ServiceContainerMXBean;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.osgi.spi.util.BundleInfo;
@@ -77,8 +77,8 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     @Override
     public void setup(Context context, Configuration configuration) {
         containerConfig = configuration.getContainerConfig(JBossAsContainerConfiguration.class);
-        StandaloneClient client = StandaloneClient.Factory.create(containerConfig.getBindAddress(), containerConfig.getManagementPort());
-        deploymentManager = client.getDeploymentManager();
+        ModelControllerClient client = ModelControllerClient.Factory.create(containerConfig.getBindAddress(), containerConfig.getManagementPort());
+        deploymentManager = ServerDeploymentManager.Factory.create(client);
     }
 
     protected JBossAsContainerConfiguration getContainerConfiguration() {
