@@ -49,6 +49,7 @@
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web"/>
@@ -107,6 +108,7 @@
              -->
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:security:1.0"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>

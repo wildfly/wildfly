@@ -196,5 +196,4 @@ public class NewJMXExtension implements NewExtension {
         }
 
     }
-
 }

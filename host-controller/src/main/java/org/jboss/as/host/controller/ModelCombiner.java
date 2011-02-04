@@ -98,8 +98,8 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     public List<ModelNode> getBootUpdates() {
 
-        System.out.println("DOMAIN");
-        System.out.println(domainModel);
+        //System.out.println("DOMAIN");
+        //System.out.println(domainModel);
         //System.out.println("HOST");
         //System.out.println(hostModel);
 

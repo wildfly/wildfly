@@ -23,14 +23,31 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
+import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
 
+import java.util.List;
 import java.util.Locale;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -66,12 +83,49 @@ public class NewSecurityExtension implements NewExtension {
         });
         jaas.registerOperationHandler(NewJaasApplicationPolicyAdd.OPERATION_NAME, NewJaasApplicationPolicyAdd.INSTANCE, NewJaasApplicationPolicyAdd.INSTANCE, false);
         jaas.registerOperationHandler(NewJaasApplicationPolicyRemove.OPERATION_NAME, NewJaasApplicationPolicyRemove.INSTANCE, NewJaasApplicationPolicyRemove.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, SecurityDescribeHandler.INSTANCE, SecurityDescribeHandler.INSTANCE, false);
         subsystem.registerXMLElementWriter(PARSER);
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), PARSER);
+    }
+
+    private static class SecurityDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final SecurityDescribeHandler INSTANCE = new SecurityDescribeHandler();
+        @Override
+        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+            final ModelNode model = context.getSubModel();
+
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+
+            if (model.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
+                subsystem.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(model.get(AUTHENTICATION_MANAGER_CLASS_NAME));
+            }
+            if (subsystem.hasDefined(DEEP_COPY_SUBJECT_MODE)) {
+                subsystem.get(DEEP_COPY_SUBJECT_MODE).set(model.get(DEEP_COPY_SUBJECT_MODE));
+
+            }
+            if (subsystem.hasDefined(DEFAULT_CALLBACK_HANDLER_CLASS_NAME)) {
+                subsystem.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).set(model.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME));
+            }
+
+            ModelNode result = new ModelNode();
+            result.add(subsystem);
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+            resultHandler.handleResultComplete(null);
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+
     }
 
 }

@@ -346,23 +346,17 @@ public class NewTransactionExtension implements NewExtension {
 
             final ModelNode model = context.getSubModel();
 
-            System.out.println(model.has(CORE_ENVIRONMENT));
-            System.out.println(model.get(CORE_ENVIRONMENT).isDefined());
-            System.out.println(has(model, CORE_ENVIRONMENT));
-            System.out.println(model.get(CORE_ENVIRONMENT));
-            if (has(model, CORE_ENVIRONMENT)) {
-                System.out.println("adding");
+            if (model.hasDefined(CORE_ENVIRONMENT)) {
                 add.get(CORE_ENVIRONMENT).set(model.get(CORE_ENVIRONMENT));
-                System.out.println(add);
             }
-            if (has(model, RECOVERY_ENVIRONMENT)) {
+            if (model.hasDefined(RECOVERY_ENVIRONMENT)) {
                 add.get(RECOVERY_ENVIRONMENT).set(model.get(RECOVERY_ENVIRONMENT));
             }
-            if (has(model, COORDINATOR_ENVIRONMENT)) {
+            if (model.hasDefined(COORDINATOR_ENVIRONMENT)) {
                 add.get(COORDINATOR_ENVIRONMENT).set(model.get(COORDINATOR_ENVIRONMENT));
             }
 
-            if (has(model, OBJECT_STORE)) {
+            if (model.hasDefined(OBJECT_STORE)) {
                 add.get(OBJECT_STORE).set(model.get(OBJECT_STORE));
             }
 
@@ -377,10 +371,6 @@ public class NewTransactionExtension implements NewExtension {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-
-        private boolean has(ModelNode node, String result) {
-            return node.has(result) && node.isDefined();
         }
     }
 
