@@ -447,6 +447,7 @@ public abstract class AbstractComponent implements Component {
             context.setMethod(method);
             context.setParameters(args);
             context.setTarget(proxy);
+            context.putPrivateData(Component.class, AbstractComponent.this);
             return componentInterceptor.processInvocation(context);
         }
     }
