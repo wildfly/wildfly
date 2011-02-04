@@ -341,15 +341,19 @@ public class NewTransactionExtension implements NewExtension {
         static final TransactionDescribeHandler INSTANCE = new TransactionDescribeHandler();
         @Override
         public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-            final ModelNode result = new ModelNode();
 
             ModelNode add = createEmptyAddOperation();
-            result.add(add);
 
             final ModelNode model = context.getSubModel();
 
+            System.out.println(model.has(CORE_ENVIRONMENT));
+            System.out.println(model.get(CORE_ENVIRONMENT).isDefined());
+            System.out.println(has(model, CORE_ENVIRONMENT));
+            System.out.println(model.get(CORE_ENVIRONMENT));
             if (has(model, CORE_ENVIRONMENT)) {
+                System.out.println("adding");
                 add.get(CORE_ENVIRONMENT).set(model.get(CORE_ENVIRONMENT));
+                System.out.println(add);
             }
             if (has(model, RECOVERY_ENVIRONMENT)) {
                 add.get(RECOVERY_ENVIRONMENT).set(model.get(RECOVERY_ENVIRONMENT));
@@ -361,6 +365,9 @@ public class NewTransactionExtension implements NewExtension {
             if (has(model, OBJECT_STORE)) {
                 add.get(OBJECT_STORE).set(model.get(OBJECT_STORE));
             }
+
+            final ModelNode result = new ModelNode();
+            result.add(add);
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
             resultHandler.handleResultComplete(new ModelNode());
