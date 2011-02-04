@@ -22,9 +22,8 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
 
 import java.util.HashSet;
@@ -36,29 +35,41 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
  */
 class NewJMSTopicAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
+    public static final String OPERATION_NAME = ADD;
+
+    /** Create an "add" operation using the existing model */
+    static ModelNode getOperation(ModelNode address, ModelNode existing) {
+        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        if (existing.hasDefined(ENTRIES)) {
+            op.get(ENTRIES).set(existing.get(ENTRIES));
+        }
+        return op;
+    }
+
     static final NewJMSTopicAdd INSTANCE = new NewJMSTopicAdd();
     private static final String[] NO_BINDINGS = new String[0];
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
@@ -70,7 +81,7 @@ class NewJMSTopicAdd implements ModelAddOperationHandler, RuntimeOperationHandle
                     .install();
         }
 
-        if(operation.has(ENTRIES)) {
+        if(operation.hasDefined(ENTRIES)) {
             context.getSubModel().get(ENTRIES).set(operation.get(ENTRIES));
         }
 

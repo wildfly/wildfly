@@ -113,6 +113,7 @@ interface CommonAttributes {
     String PERSIST_ID_CACHE ="persist-id-cache";
     String ROLE = "role";
     String QUEUE ="queue";
+    String QUEUE_ADDRESS ="queue-address";
     String QUEUES ="queues";
     String REDELIVERY_DELAY ="redelivery-delay";
     String REDISTRIBUTION_DELAY ="redistribution-delay";

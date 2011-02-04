@@ -22,11 +22,9 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
@@ -116,6 +114,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.server.NewRuntimeOperationContext;
@@ -147,11 +146,20 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
     static final NewMessagingSubsystemAdd INSTANCE = new NewMessagingSubsystemAdd();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+
+        // Populate subModel
+        final ModelNode subModel = context.getSubModel();
+        subModel.setEmptyObject();
+        for(final String attribute : NewMessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
+            if(operation.hasDefined(attribute)) {
+                subModel.get(attribute).set(operation.get(attribute));
+            }
+        }
+        subModel.get(QUEUE);
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
@@ -191,15 +199,6 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
             JMSService.addService(serviceTarget);
         }
 
-        // Populate subModel
-        final ModelNode subModel = context.getSubModel();
-        subModel.setEmptyObject();
-        for(final String attribute : NewMessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
-            if(operation.get(attribute).isDefined()) {
-                subModel.get(attribute).set(operation.get(attribute));
-            }
-        }
-
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;
@@ -227,10 +226,10 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
         configuration.setEnabledAsyncConnectionExecution(params.get(ASYNC_CONNECTION_EXECUTION_ENABLED).asBoolean(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED));
         configuration.setIDCacheSize(params.get(ID_CACHE_SIZE).asInt(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE));
         // TODO do we want to allow the jmx configuration ?
-        if(params.has(JMX_DOMAIN)) configuration.setJMXDomain(params.get(JMX_DOMAIN).asString());
+        if(params.hasDefined(JMX_DOMAIN)) configuration.setJMXDomain(params.get(JMX_DOMAIN).asString());
         configuration.setJMXManagementEnabled(params.get(JMX_MANAGEMENT_ENABLED).asBoolean(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED));
         // Journal
-        final JournalType journalType = params.has(JOURNAL_TYPE) ? JournalType.valueOf(params.get(JOURNAL_TYPE).asString()) : ConfigurationImpl.DEFAULT_JOURNAL_TYPE;
+        final JournalType journalType = params.hasDefined(JOURNAL_TYPE) ? JournalType.valueOf(params.get(JOURNAL_TYPE).asString()) : ConfigurationImpl.DEFAULT_JOURNAL_TYPE;
         configuration.setJournalType(journalType);
         // AIO Journal
         configuration.setJournalBufferSize_AIO(params.get(JOURNAL_BUFFER_SIZE).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
@@ -273,7 +272,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param bindings the referenced socket bindings
      */
     static void processAcceptors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
-        if(params.has(ACCEPTOR)) {
+        if(params.hasDefined(ACCEPTOR)) {
             final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
             for(final Property property : params.get(ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
@@ -319,7 +318,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      * @param bindings the referenced socket bindings
      */
     static void processConnectors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
-        if(params.has(CONNECTOR)) {
+        if(params.hasDefined(CONNECTOR)) {
             final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
             for(final Property property : params.get(CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();
@@ -390,7 +389,7 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
                 final ModelNode config = property.getValue();
 
                 final AddressSettings settings = new AddressSettings();
-                final AddressFullMessagePolicy addressPolicy = config.has(ADDRESS_FULL_MESSAGE_POLICY) ?
+                final AddressFullMessagePolicy addressPolicy = config.hasDefined(ADDRESS_FULL_MESSAGE_POLICY) ?
                         AddressFullMessagePolicy.valueOf(config.get(ADDRESS_FULL_MESSAGE_POLICY).asString()) : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
                 settings.setAddressFullMessagePolicy(addressPolicy);
                 settings.setDeadLetterAddress(asSimpleString(config.get(DEAD_LETTER_ADDRESS), null));
@@ -446,8 +445,8 @@ class NewMessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
      */
     static ServiceName createDirectoryService(final String name, final ModelNode path, final ServiceTarget serviceTarget) {
         final ServiceName serviceName = PATH_BASE.append(name);
-        final String relativeTo = path.has(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
-        final String pathName = path.has(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
+        final String relativeTo = path.hasDefined(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
+        final String pathName = path.hasDefined(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
         RelativePathService.addService(serviceName, pathName, relativeTo, serviceTarget);
         return serviceName;
     }

@@ -23,13 +23,15 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.messaging.jms.NewJMSExtension;
 
 /**
  * @author Emanuel Muckenhuber
@@ -38,8 +40,6 @@ public class NewMessagingExtension implements NewExtension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
 
-    private final NewJMSExtension JMS_EXTENSION = new NewJMSExtension();
-
     /** {@inheritDoc} */
     @Override
     public void initialize(NewExtensionContext context) {
@@ -47,16 +47,15 @@ public class NewMessagingExtension implements NewExtension {
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewMessagingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewMessagingSubsystemAdd.INSTANCE, NewMessagingSubsystemProviders.SUBSYSTEM_ADD, false);
         subsystem.registerXMLElementWriter(NewMessagingSubsystemParser.getInstance());
-        // Also register JMS subsystem
-        JMS_EXTENSION.initialize(context);
+        final ModelNodeRegistration queue = registration.registerSubModel(PathElement.pathElement(QUEUE), NewMessagingSubsystemProviders.QUEUE_RESOURCE);
+        queue.registerOperationHandler(ADD, NewQueueAdd.INSTANCE, NewQueueAdd.INSTANCE, false);
+        queue.registerOperationHandler(REMOVE, NewQueueRemove.INSTANCE, NewQueueRemove.INSTANCE, false);
     }
 
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.MESSAGING_1_0.getUriString(), NewMessagingSubsystemParser.getInstance());
-        // Also register JMS subsystem
-        JMS_EXTENSION.initializeParsers(context);
     }
 
 }

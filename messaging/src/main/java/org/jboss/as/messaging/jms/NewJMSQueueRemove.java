@@ -22,12 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.jms.CommonAttributes.SELECTOR;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
@@ -48,18 +43,15 @@ class NewJMSQueueRemove implements ModelRemoveOperationHandler, RuntimeOperation
     static final NewJMSQueueRemove INSTANCE = new NewJMSQueueRemove();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
         final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(subModel.require(OP_ADDR));
-        compensatingOperation.get(SELECTOR).set(subModel.get(SELECTOR));
-        compensatingOperation.get(DURABLE).set(subModel.get(DURABLE));
-        compensatingOperation.get(ENTRIES).set(subModel.get(ENTRIES));
+        final ModelNode compensatingOperation = NewJMSQueueAdd.getOperation(opAddr, subModel);
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

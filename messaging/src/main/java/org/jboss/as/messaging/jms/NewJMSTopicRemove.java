@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.Cancellable;
@@ -45,16 +43,15 @@ class NewJMSTopicRemove implements ModelRemoveOperationHandler, RuntimeOperation
     static final NewJMSTopicRemove INSTANCE = new NewJMSTopicRemove();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
         final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(CommonAttributes.ENTRIES).set(subModel.get(CommonAttributes.ENTRIES));
+        final ModelNode compensatingOperation = NewJMSTopicAdd.getOperation(opAddr, subModel);
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

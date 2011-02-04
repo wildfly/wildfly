@@ -22,15 +22,48 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.messaging.jms.CommonAttributes.*;
+import static org.jboss.as.messaging.jms.CommonAttributes.AUTO_GROUP;
+import static org.jboss.as.messaging.jms.CommonAttributes.BLOCK_ON_ACK;
+import static org.jboss.as.messaging.jms.CommonAttributes.BLOCK_ON_DURABLE_SEND;
+import static org.jboss.as.messaging.jms.CommonAttributes.BLOCK_ON_NON_DURABLE_SEND;
+import static org.jboss.as.messaging.jms.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT;
+import static org.jboss.as.messaging.jms.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.jms.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
+import static org.jboss.as.messaging.jms.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTION_TTL;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR_BACKUP_NAME;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_MAX_RATE;
+import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_WINDOW_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_GROUP_NAME;
+import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT;
+import static org.jboss.as.messaging.jms.CommonAttributes.DUPS_OK_BATCH_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.jms.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
+import static org.jboss.as.messaging.jms.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
+import static org.jboss.as.messaging.jms.CommonAttributes.GROUP_ID;
+import static org.jboss.as.messaging.jms.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
+import static org.jboss.as.messaging.jms.CommonAttributes.MAX_RETRY_INTERVAL;
+import static org.jboss.as.messaging.jms.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.PRE_ACK;
+import static org.jboss.as.messaging.jms.CommonAttributes.PRODUCER_MAX_RATE;
+import static org.jboss.as.messaging.jms.CommonAttributes.PRODUCER_WINDOW_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.jms.CommonAttributes.RETRY_INTERVAL;
+import static org.jboss.as.messaging.jms.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.as.messaging.jms.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.TRANSACTION_BATCH_SIZE;
+import static org.jboss.as.messaging.jms.CommonAttributes.USE_GLOBAL_POOLS;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
@@ -40,11 +73,12 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
@@ -55,14 +89,21 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
     private static final String[] NO_BINDINGS = new String[0];
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
+
+        final ModelNode subModel = context.getSubModel();
+        for(final String attribute : JMSServices.CF_ATTRIBUTES) {
+            if(operation.hasDefined(attribute)) {
+                subModel.get(attribute).set(operation.get(attribute));
+            }
+        }
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
@@ -74,13 +115,6 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
                     .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
                     .setInitialMode(Mode.ACTIVE)
                     .install();
-        }
-
-        final ModelNode subModel = context.getSubModel();
-        for(final String attribute : JMSServices.CF_ATTRIBUTES) {
-            if(operation.get(attribute).isDefined()) {
-                subModel.get(attribute).set(operation.get(attribute));
-            }
         }
 
         resultHandler.handleResultComplete(compensatingOperation);
@@ -98,29 +132,39 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
         config.setCacheLargeMessagesClient(operation.get(CACHE_LARGE_MESSAGE_CLIENT).asBoolean(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT));
         config.setCallTimeout(operation.get(CALL_TIMEOUT).asLong(HornetQClient.DEFAULT_CALL_TIMEOUT));
         config.setClientFailureCheckPeriod(operation.get(CLIENT_FAILURE_CHECK_PERIOD).asInt((int) HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD));
-        if(operation.has(CLIENT_ID)) {
+        if(operation.hasDefined(CLIENT_ID)) {
             config.setClientID(operation.get(CLIENT_ID).asString());
         }
         config.setConfirmationWindowSize(operation.get(CONFIRMATION_WINDOW_SIZE).asInt(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE));
         config.setConnectionTTL(operation.get(CONNECTION_TTL).asLong(HornetQClient.DEFAULT_CONNECTION_TTL));
+        if (operation.hasDefined(CONNECTOR)) {
+            ModelNode connectorRefs = operation.get(CONNECTOR);
+            List<Pair<String, String>> connectorNames = new ArrayList<Pair<String,String>>();
+            for (String connectorName : operation.get(CONNECTOR).keys()) {
+                ModelNode connectorRef = connectorRefs.get(connectorName);
+                String backup = connectorRef.hasDefined(CONNECTOR_BACKUP_NAME) ? connectorRef.get(CONNECTOR_BACKUP_NAME).asString() : null;
+                connectorNames.add( new Pair<String, String>(connectorName, backup));
+            }
+            config.setConnectorNames(connectorNames);
+        }
         //config.setConnectorConfigs(connectorConfigs)
         // config.setConnectorNames(connectors);
         config.setConsumerMaxRate(operation.get(CONSUMER_MAX_RATE).asInt(HornetQClient.DEFAULT_CONSUMER_MAX_RATE));
         config.setConsumerWindowSize(operation.get(CONSUMER_WINDOW_SIZE).asInt(HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE));
-        // config.setDiscoveryAddress(discoveryAddress)
-        if(operation.has(DISCOVERY_GROUP_NAME)) {
+        if(operation.hasDefined(DISCOVERY_GROUP_NAME)) {
             config.setDiscoveryGroupName(operation.get(DISCOVERY_GROUP_NAME).asString());
         }
-        // config.setDiscoveryPort(discoveryPort)
         config.setDupsOKBatchSize(operation.get(DUPS_OK_BATCH_SIZE).asInt(HornetQClient.DEFAULT_ACK_BATCH_SIZE));
         config.setFailoverOnInitialConnection(operation.get(FAILOVER_ON_INITIAL_CONNECTION).asBoolean(HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION));
         config.setFailoverOnServerShutdown(operation.get(FAILOVER_ON_SERVER_SHUTDOWN).asBoolean(HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN));
-        if(operation.has(GROUP_ID)) {
+        if(operation.hasDefined(GROUP_ID)) {
             config.setGroupID(operation.get(GROUP_ID).asString());
         }
-        // config.setInitialWaitTimeout(operation.get(INI));
-        // config.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName)
-        // config.setLocalBindAddress(localBindAddress)
+
+        config.setInitialWaitTimeout(operation.get(DISCOVERY_INITIAL_WAIT_TIMEOUT).asLong(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT));
+        if (operation.hasDefined(LOAD_BALANCING_CLASS_NAME)) {
+             config.setLoadBalancingPolicyClassName(operation.get(LOAD_BALANCING_CLASS_NAME).asString());
+        }
         config.setMaxRetryInterval(operation.get(MAX_RETRY_INTERVAL).asLong(HornetQClient.DEFAULT_MAX_RETRY_INTERVAL));
         config.setMinLargeMessageSize(operation.get(MIN_LARGE_MESSAGE_SIZE).asInt(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
         config.setPreAcknowledge(operation.get(PRE_ACK).asBoolean(HornetQClient.DEFAULT_PRE_ACKNOWLEDGE));
@@ -131,14 +175,14 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
         config.setRetryIntervalMultiplier(operation.get(RETRY_INTERVAL_MULTIPLIER).asDouble(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER));
         config.setScheduledThreadPoolMaxSize(operation.get(SCHEDULED_THREAD_POOL_MAX_SIZE).asInt(HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
         config.setThreadPoolMaxSize(operation.get(THREAD_POOL_MAX_SIZE).asInt(HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE));
-        config.setTransactionBatchSize(operation.get(TRANSACTION_BATH_SIZE).asInt(HornetQClient.DEFAULT_ACK_BATCH_SIZE));
+        config.setTransactionBatchSize(operation.get(TRANSACTION_BATCH_SIZE).asInt(HornetQClient.DEFAULT_ACK_BATCH_SIZE));
         config.setUseGlobalPools(operation.get(USE_GLOBAL_POOLS).asBoolean(HornetQClient.DEFAULT_USE_GLOBAL_POOLS));
 
         return config;
     }
 
     static String[] jndiBindings(final ModelNode node) {
-        if(node.has(ENTRIES)) {
+        if(node.hasDefined(ENTRIES)) {
             final Set<String> bindings = new HashSet<String>();
             for(final ModelNode entry : node.get(ENTRIES).asList()) {
                 bindings.add(entry.asString());

@@ -386,7 +386,7 @@ public class NewJMSSubsystemParser implements XMLStreamConstants, XMLElementRead
                 if (has(factory, CommonAttributes.DUPS_OK_BATCH_SIZE)){
                     writeSimpleElement(writer, Element.DUPS_OK_BATCH_SIZE, node);
                 }
-                if (has(factory, CommonAttributes.TRANSACTION_BATH_SIZE)){
+                if (has(factory, CommonAttributes.TRANSACTION_BATCH_SIZE)){
                     writeSimpleElement(writer, Element.TRANSACTION_BATH_SIZE, node);
                 }
                 if (has(factory, CommonAttributes.BLOCK_ON_ACK)){

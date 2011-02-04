@@ -22,9 +22,8 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.jms.CommonAttributes.SELECTOR;
@@ -38,6 +37,7 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -49,18 +49,35 @@ import org.jboss.msc.service.ServiceName;
  */
 class NewJMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
+    public static final String OPERATION_NAME = ADD;
+
+    /** Create an "add" operation using the existing model */
+    static ModelNode getOperation(ModelNode address, ModelNode existing) {
+        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        if (existing.hasDefined(SELECTOR)) {
+            op.get(SELECTOR).set(existing.get(SELECTOR));
+        }
+        if (existing.hasDefined(DURABLE)) {
+            op.get(DURABLE).set(existing.get(DURABLE));
+        }
+        if (existing.hasDefined(ENTRIES)) {
+            op.get(ENTRIES).set(existing.get(ENTRIES));
+        }
+        return op;
+    }
+
     static final NewJMSQueueAdd INSTANCE = new NewJMSQueueAdd();
     private static final String[] NO_BINDINGS = new String[0];
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

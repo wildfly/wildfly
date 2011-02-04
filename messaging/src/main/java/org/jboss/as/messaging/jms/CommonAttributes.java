@@ -45,7 +45,7 @@ public interface CommonAttributes {
     String CONNECTOR_REF ="connector-ref";
     String CONSUMER_MAX_RATE ="consumer-max-rate";
     String CONSUMER_WINDOW_SIZE ="consumer-window-size";
-    String DISCOVERY_GROUP_NAME ="discovery-group-nam";
+    String DISCOVERY_GROUP_NAME ="discovery-group-name";
     String DISCOVERY_GROUP_REF ="discovery-group-ref";
     String DISCOVERY_INITIAL_WAIT_TIMEOUT ="discovery-initial-wait-timeout";
     String DUPS_OK_BATCH_SIZE ="dups-ok-batch-size";
@@ -70,7 +70,7 @@ public interface CommonAttributes {
     String SELECTOR ="selector";
     String THREAD_POOL_MAX_SIZE ="thread-pool-max-size";
     String TOPIC ="topic";
-    String TRANSACTION_BATH_SIZE ="transaction-batch-size";
+    String TRANSACTION_BATCH_SIZE ="transaction-batch-size";
     String USE_GLOBAL_POOLS ="use-global-pools";
 
 }
