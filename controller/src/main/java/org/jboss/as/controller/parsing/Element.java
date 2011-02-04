@@ -54,6 +54,7 @@ public enum Element {
 
     HEAP("heap"),
     HOST("host"),
+    HTTP_API("http-api"),
 
     INCLUDE("include"),
     INET_ADDRESS("inet-address"),
@@ -74,6 +75,7 @@ public enum Element {
     MULTICAST("multicast"),
 
     NAME("name"),
+    NATIVE_API("native-api"),
     NIC("nic"),
     NIC_MATCH("nic-match"),
     NOT("not"),

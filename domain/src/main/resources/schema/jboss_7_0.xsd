@@ -70,7 +70,7 @@
                 <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="system-properties" type="properties" minOccurs="0"/>
-                <xs:element name="management" type="managementType"/>
+                <xs:element name="management" type="managementType" minOccurs="0"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
                 <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
@@ -122,10 +122,10 @@
         </xs:complexType>
     </xs:element>
     
-    <xs:complexType name="managementType">
+    <xs:complexType name="managementProtocolType">
         <xs:annotation>
             <xs:documentation>
-                Configuration of a host's or standalone server's 'management system.
+                Configuration of a host's or standalone server's management protocol.
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="interface" type="xs:string" use="required">        
@@ -144,6 +144,13 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="managementType">
+        <xs:all minOccurs="0">
+            <xs:element name="native-api" type="managementProtocolType"/>
+            <xs:element name="http-api" type="managementProtocolType"/>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="domain-controllerType">

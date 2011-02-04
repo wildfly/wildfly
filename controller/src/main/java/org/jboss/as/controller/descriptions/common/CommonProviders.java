@@ -58,6 +58,17 @@ public final class CommonProviders {
     };
 
     /**
+     * Provider for a sub-model that names an interface and specifies the criteria.
+     */
+    public static final DescriptionProvider MANAGEMENT_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ManagementDescription.getManagementDescription(locale);
+        }
+    };
+
+
+    /**
      * Provider for a sub-model that names a "path" and specifies the actual path.
      */
     public static final DescriptionProvider SPECIFIED_PATH_PROVIDER = new DescriptionProvider() {

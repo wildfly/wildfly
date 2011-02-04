@@ -28,10 +28,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -144,7 +146,7 @@ public class StandaloneXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagementSocket(reader, address, list);
+            parseManagement(reader, address, list);
             element = nextElement(reader);
         }
         // Single profile
@@ -464,14 +466,28 @@ public class StandaloneXml extends CommonXml {
 
     private void writeServerManagement(final XMLExtendedStreamWriter writer, final ModelNode serverManagement)
             throws XMLStreamException {
-        String iface = serverManagement.get(INTERFACE).asString();
-        String port = serverManagement.get(PORT).asString();
-
         writer.writeStartElement(Element.MANAGEMENT.getLocalName());
+
+        if (serverManagement.hasDefined(NATIVE_API)) {
+            writeManagementProtocol(Element.NATIVE_API, writer, serverManagement.get(NATIVE_API));
+        }
+
+        if (serverManagement.hasDefined(HTTP_API)) {
+            writeManagementProtocol(Element.HTTP_API, writer, serverManagement.get(HTTP_API));
+        }
+
+        writer.writeEndElement();
+    }
+
+    private void writeManagementProtocol(final Element type, final XMLExtendedStreamWriter writer, final ModelNode protocol)
+            throws XMLStreamException {
+        String iface = protocol.get(INTERFACE).asString();
+        String port = protocol.get(PORT).asString();
+        writer.writeStartElement(type.getLocalName());
         writeAttribute(writer, Attribute.INTERFACE, iface);
         writeAttribute(writer, Attribute.PORT, port);
-        if (hasDefinedChild(serverManagement, MAX_THREADS)) {
-            writeAttribute(writer, Attribute.MAX_THREADS, serverManagement.get(MAX_THREADS).asString());
+        if (protocol.hasDefined(MAX_THREADS)) {
+            writeAttribute(writer, Attribute.MAX_THREADS, protocol.get(MAX_THREADS).asString());
         }
         writer.writeEndElement();
     }

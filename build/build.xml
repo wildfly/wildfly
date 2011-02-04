@@ -74,6 +74,10 @@
             <maven-resource group="com.google.guava" artifact="guava" />
         </module-def>
 
+        <module-def name="com.sun.httpserver">
+            <maven-resource group="com.sun.httpserver" artifact="httpserver"/>
+        </module-def>
+
         <module-def name="com.sun.xml.bind">
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-impl"/>
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-xjc"/>
@@ -332,6 +336,10 @@
 
         <module-def name="org.jboss.as.domain">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.domain-http-api">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-api"/>
         </module-def>
 
         <module-def name="org.jboss.as.domain-client">

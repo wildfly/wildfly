@@ -85,17 +85,9 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, NAME, NILLABLE).set(true);
         root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
 
-        root.get(ATTRIBUTES, MANAGEMENT, DESCRIPTION).set(bundle.getString("server.management"));
-        root.get(ATTRIBUTES, MANAGEMENT, TYPE).set(ModelType.OBJECT);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.interface"));
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("server.management.port"));
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, PORT, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT, REQUIRED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT, HEAD_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(CHILDREN, MANAGEMENT, DESCRIPTION).set(bundle.getString("server.management"));
+        root.get(CHILDREN, MANAGEMENT, MIN_OCCURS).set(0);
+        root.get(CHILDREN, MANAGEMENT, MODEL_DESCRIPTION);
 
         root.get(ATTRIBUTES, PROFILE_NAME, DESCRIPTION).set(bundle.getString("server.profile"));
         root.get(ATTRIBUTES, PROFILE_NAME, TYPE).set(ModelType.STRING);

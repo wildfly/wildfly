@@ -55,6 +55,7 @@
         <!-- Dependency versions. Please keep alphabetical -->
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
         <version.com.google.guava>r06</version.com.google.guava>
+        <version.com.sun.httpserver>20100812-JBoss</version.com.sun.httpserver>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-api>2.0.2-FCS</version.javax.faces.jsf-api>
@@ -167,6 +168,7 @@
         <module>domain</module>
         <module>domain-client</module>
         <module>domain-controller</module>
+        <module>domain-http-api</module>
         <module>ee</module>
         <module>ejb3</module>
         <module>host-controller</module>
@@ -1181,6 +1183,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-domain-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-connector</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1401,6 +1409,17 @@
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-xjc</artifactId>
                 <version>${version.sun.jaxb}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.httpserver</groupId>
+                <artifactId>httpserver</artifactId>
+                <version>${version.com.sun.httpserver}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             
             <dependency>

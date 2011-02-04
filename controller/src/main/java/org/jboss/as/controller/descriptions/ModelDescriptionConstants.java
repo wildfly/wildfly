@@ -56,6 +56,7 @@ public class ModelDescriptionConstants {
     public static final String FIXED_PORT = "fixed-port";
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
+    public static final String HTTP_API = "http-api";
     public static final String HOST = "host";
     public static final String INCLUDE = "include";
     public static final String INCLUDE_RUNTIME = "include-runtime";
@@ -78,6 +79,7 @@ public class ModelDescriptionConstants {
     public static final String NAME = "name";
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
+    public static final String NATIVE_API = "native-api";
     public static final String NETWORK = "network";
     public static final String NILLABLE = "nillable";
     public static final String NOT = "not";

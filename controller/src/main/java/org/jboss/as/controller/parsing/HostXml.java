@@ -159,7 +159,7 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagementSocket(reader, address, list);
+            parseNativeManagementSocket(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DOMAIN_CONTROLLER) {

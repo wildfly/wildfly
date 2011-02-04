@@ -70,8 +70,11 @@
        <path name="relative" path="relative" relative-to="absolute"/>
     </paths>
 
-	<management interface="default" port="9999"/>
-	
+    <management>
+       <native-api interface="default" port="9999"/>
+       <http-api interface="default" port="9990"/>
+    </management>
+
     <profile name="ignore">
        <subsystem xmlns="urn:jboss:domain:logging:1.0">
             <console-handler name="CONSOLE">

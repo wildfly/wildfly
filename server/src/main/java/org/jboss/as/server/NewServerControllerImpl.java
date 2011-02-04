@@ -24,10 +24,12 @@ package org.jboss.as.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -86,9 +88,10 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
-import org.jboss.as.server.operations.ManagementSocketAddHandler;
 import org.jboss.as.server.operations.ServerCompositeOperationHandler;
 import org.jboss.as.server.operations.ServerOperationHandlers;
+import org.jboss.as.server.operations.HttpManagementAddHandler;
+import org.jboss.as.server.operations.NativeManagementAddHandler;
 import org.jboss.as.server.operations.ServerSocketBindingAddHandler;
 import org.jboss.as.server.operations.ServerSocketBindingRemoveHandler;
 import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
@@ -164,8 +167,12 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
         root.registerOperationHandler(ServerCompositeOperationHandler.OPERATION_NAME, ServerCompositeOperationHandler.INSTANCE, ServerCompositeOperationHandler.INSTANCE, false);
 
-        // Management socket
-        root.registerOperationHandler(ManagementSocketAddHandler.OPERATION_NAME, ManagementSocketAddHandler.INSTANCE, ManagementSocketAddHandler.INSTANCE, false);
+        // Management API protocols
+        ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT, NATIVE_API), CommonProviders.MANAGEMENT_PROVIDER);
+        managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
+
+        ModelNodeRegistration managementHttp = root.registerSubModel(PathElement.pathElement(MANAGEMENT, HTTP_API), CommonProviders.MANAGEMENT_PROVIDER);
+        managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, HttpManagementAddHandler.INSTANCE, HttpManagementAddHandler.INSTANCE, false);
         // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
 
         // Paths

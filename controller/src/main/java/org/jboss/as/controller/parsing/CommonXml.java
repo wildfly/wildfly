@@ -29,12 +29,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -71,6 +74,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.ManagementSocketAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -279,6 +283,32 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
+    protected void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case NATIVE_API: {
+                            parseNativeManagementSocket(reader, address, list);
+                            break;
+                        }
+                        case HTTP_API: {
+                            parseHttpManagementSocket(reader, address, list);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                } default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
     protected void parsePath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final boolean requirePath, final Set<String> defined) throws XMLStreamException {
         String name = null;
         String path = null;
@@ -367,7 +397,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         return properties;
     }
 
-    protected void parseManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseHttpManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String interfaceName = null;
         int port = 0;
@@ -412,25 +442,69 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         final ModelNode mgmtSocket = new ModelNode();
-        if(maxThreads > 0) mgmtSocket.get("max-threads").set(maxThreads);
         mgmtSocket.get(INTERFACE).set(interfaceName);
         mgmtSocket.get(PORT).set(port);
-        mgmtSocket.get(OP).set(ManagementSocketAddHandler.OPERATION_NAME);
-        mgmtSocket.get(OP_ADDR).setEmptyList();
-        list.add(mgmtSocket);
-//        final ModelNode addMgmt = Util.getWriteAttributeOperation(address, MANAGEMENT, mgmtSocket);
-//        list.add(addMgmt);
+        mgmtSocket.get(OP).set(ADD);
+        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT, HTTP_API);
 
-        if (maxThreads > 0) {
-            // TODO - this is non-optimal.
-            final ModelNode setSocketThreads = new ModelNode();
-            setSocketThreads.get(OP_ADDR).set(address);
-            setSocketThreads.get(OP).set("write-management-socket-threads");
-            setSocketThreads.get("max-threads").set(maxThreads);
-            list.add(setSocketThreads);
-        }
+        list.add(mgmtSocket);
+
         reader.discardRemainder();
 
+    }
+
+    protected void parseNativeManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        // Handle attributes
+        String interfaceName = null;
+        int port = 0;
+        int maxThreads = -1;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case INTERFACE: {
+                        interfaceName = value;
+                        break;
+                    }
+                    case PORT: {
+                        port = Integer.parseInt(value);
+                        if (port < 0) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + port + " -- cannot be negative",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    case MAX_THREADS: {
+                        maxThreads = Integer.parseInt(value);
+                        if (maxThreads < 1) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + maxThreads + " -- must be greater than 0",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (interfaceName == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
+        }
+
+        final ModelNode mgmtSocket = new ModelNode();
+        mgmtSocket.get(INTERFACE).set(interfaceName);
+        mgmtSocket.get(PORT).set(port);
+        mgmtSocket.get(OP).set(ADD);
+        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT, NATIVE_API);
+        list.add(mgmtSocket);
+
+        reader.discardRemainder();
     }
 
     protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> updates, final Set<String> jvmNames) throws XMLStreamException {
