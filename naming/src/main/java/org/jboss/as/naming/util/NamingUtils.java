@@ -24,6 +24,7 @@ package org.jboss.as.naming.util;
 
 import javax.naming.CannotProceedException;
 import javax.naming.CompositeName;
+import javax.naming.Context;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameAlreadyBoundException;
@@ -47,6 +48,29 @@ import java.util.Iterator;
  */
 public class NamingUtils {
     private NamingUtils() {}
+
+    /**
+     * Create a subcontext including any intermediate contexts.
+     * @param ctx the parent JNDI Context under which value will be bound
+     * @param name the name relative to ctx of the subcontext.
+     * @return The new or existing JNDI subcontext
+     * @throws NamingException on any JNDI failure
+     */
+    private static Context createSubcontext(Context ctx, final Name name) throws NamingException {
+        Context subctx = ctx;
+        for (int pos = 0; pos < name.size(); pos++) {
+            final String ctxName = name.get(pos);
+            try {
+                subctx = (Context) ctx.lookup(ctxName);
+            }
+            catch (NameNotFoundException e) {
+                subctx = ctx.createSubcontext(ctxName);
+            }
+            // The current subctx will be the ctx for the next name component
+            ctx = subctx;
+        }
+        return subctx;
+    }
 
     public static String getLastComponent(final Name name) {
         if(name.size() > 0)
@@ -165,5 +189,67 @@ public class NamingUtils {
     public static Referenceable asReferenceable(final Object object) {
         final Referenceable referenceable = cast(object);
         return referenceable;
+    }
+
+    /**
+     * Rebind val to name in ctx, and make sure that all intermediate contexts exist
+     *
+     * @param ctx the parent JNDI Context under which value will be bound
+     * @param name the name relative to ctx where value will be bound
+     * @param value the value to bind.
+     * @throws NamingException for any error
+     */
+    public static void rebind(final Context ctx, final String name, final Object value) throws NamingException {
+       final Name n = ctx.getNameParser("").parse(name);
+       rebind(ctx, n, value);
+    }
+
+    /**
+     * Rebind val to name in ctx, and make sure that all intermediate contexts exist
+     *
+     * @param ctx the parent JNDI Context under which value will be bound
+     * @param name the name relative to ctx where value will be bound
+     * @param value the value to bind.
+     * @throws NamingException for any error
+     */
+    public static void rebind(final Context ctx, final Name name, final Object value) throws NamingException {
+       final int size = name.size();
+       final String atom = name.get(size - 1);
+       final Context parentCtx = createSubcontext(ctx, name.getPrefix(size - 1));
+       parentCtx.rebind(atom, value);
+    }
+
+    /**
+     * Unbinds a name from ctx, and removes parents if they are empty
+     *
+     * @param ctx  the parent JNDI Context under which the name will be unbound
+     * @param name The name to unbind
+     * @throws NamingException for any error
+     */
+    public static void unbind(Context ctx, String name) throws NamingException {
+        unbind(ctx, ctx.getNameParser("").parse(name));
+    }
+
+    /**
+     * Unbinds a name from ctx, and removes parents if they are empty
+     *
+     * @param ctx  the parent JNDI Context under which the name will be unbound
+     * @param name The name to unbind
+     * @throws NamingException for any error
+     */
+    public static void unbind(Context ctx, Name name) throws NamingException {
+        ctx.unbind(name); //unbind the end node in the name
+        int sz = name.size();
+        // walk the tree backwards, stopping at the domain
+        while (--sz > 0) {
+            Name pname = name.getPrefix(sz);
+            try {
+                ctx.destroySubcontext(pname);
+            }
+            catch (NamingException e) {
+                //log.trace("Unable to remove context " + pname, e);
+                break;
+            }
+        }
     }
 }

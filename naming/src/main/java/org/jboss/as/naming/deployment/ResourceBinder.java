@@ -33,6 +33,9 @@ import org.jboss.msc.value.Value;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import static org.jboss.as.naming.util.NamingUtils.rebind;
+import static org.jboss.as.naming.util.NamingUtils.unbind;
+
 /**
  * Service responsible for binding and unbinding a resource into a naming context.  This service should be used as a dependency for
  * any service that needs to retrieve this entry from the context.
@@ -64,7 +67,7 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized void start(StartContext context) throws StartException {
         final Context namingContext = namingContextValue.getValue();
         try {
-            namingContext.rebind(localName, value.getValue());
+            rebind(namingContext, localName, value.getValue());
         } catch (NamingException e) {
             throw new StartException("Failed to bind resource into context [" + namingContext + "] at location [" + localName + "]", e);
         }
@@ -78,7 +81,7 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized void stop(StopContext context) {
         final Context namingContext = namingContextValue.getValue();
         try {
-            namingContext.unbind(localName);
+            unbind(namingContext, localName);
         } catch (NamingException e) {
             throw new RuntimeException("Failed to unbind resource from context [" + namingContext + "] at location [" + localName + "]", e);
         }
