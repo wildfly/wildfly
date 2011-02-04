@@ -43,6 +43,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
@@ -116,6 +120,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     private final AtomicStampedReference<State> state = new AtomicStampedReference<State>(null, 0);
     private final ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final DeploymentRepository deploymentRepository;
+    private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
 
     NewServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment,
             final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository) {
@@ -197,6 +202,11 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 
+        deployers.clear();
+        for (Phase phase : Phase.values()) {
+            deployers.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
+        }
+
     }
 
     private static ModelNode createCoreModel() {
@@ -216,8 +226,13 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         return root;
     }
 
-    void finishBoot() {
+    EnumMap<Phase, SortedSet<RegisteredProcessor>> finishBoot() {
         state.set(State.RUNNING, stamp.incrementAndGet());
+        EnumMap<Phase, SortedSet<RegisteredProcessor>> copy = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
+        for (Map.Entry<Phase, SortedSet<RegisteredProcessor>> entry : deployers.entrySet()) {
+            copy.put(entry.getKey(), new ConcurrentSkipListSet<RegisteredProcessor>(entry.getValue()));
+        }
+        return copy;
     }
 
     /** {@inheritDoc} */
@@ -251,7 +266,7 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
     protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
         if (operationHandler instanceof BootOperationHandler) {
             if (getState() == State.STARTING) {
-                return new BootContextImpl(subModel, getRegistry());
+                return new BootContextImpl(subModel, getRegistry(), deployers);
             } else {
                 state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
                 return super.getOperationContext(subModel, operation, operationHandler);
@@ -339,12 +354,25 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
 
     private class BootContextImpl extends ServerOperationContextImpl implements NewBootOperationContext {
 
-        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
+        private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers;
+
+        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry, final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers) {
             super(NewServerControllerImpl.this, registry, subModel);
+            this.deployers = deployers;
         }
 
         @Override
         public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
+            if (phase == null) {
+                throw new IllegalArgumentException("phase is null");
+            }
+            if (processor == null) {
+                throw new IllegalArgumentException("processor is null");
+            }
+            if (priority < 0) {
+                throw new IllegalArgumentException("priority is invalid (must be >= 0)");
+            }
+            deployers.get(phase).add(new RegisteredProcessor(priority, processor));
         }
     }
 
@@ -353,5 +381,30 @@ final class NewServerControllerImpl extends BasicModelController implements NewS
         private RuntimeContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
             super(NewServerControllerImpl.this, registry, subModel);
         }
+    }
+
+    static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
+        private final int priority;
+        private final DeploymentUnitProcessor processor;
+
+        RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
+            this.priority = priority;
+            this.processor = processor;
+        }
+
+        @Override
+        public int compareTo(final RegisteredProcessor o) {
+            final int rel = Integer.signum(priority - o.priority);
+            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
+        }
+
+        int getPriority() {
+            return priority;
+        }
+
+        DeploymentUnitProcessor getProcessor() {
+            return processor;
+        }
+
     }
 }

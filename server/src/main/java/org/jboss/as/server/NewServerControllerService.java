@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -39,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.server.NewServerControllerImpl.RegisteredProcessor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -62,6 +62,7 @@ import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.server.deployment.module.ModuleExtensionListProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecProcessor;
+import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.dmr.ModelNode;
@@ -136,11 +137,6 @@ final class NewServerControllerService implements Service<NewServerController> {
             throw new StartException(e);
         }
 
-        final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
-        for (Phase phase : Phase.values()) {
-            deployers.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
-        }
-
         log.info("Activating core services");
 
         final AtomicInteger count = new AtomicInteger(1);
@@ -177,7 +173,8 @@ final class NewServerControllerService implements Service<NewServerController> {
         if (count.decrementAndGet() == 0) {
             // some action?
         }
-        serverController.finishBoot();
+
+        final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = serverController.finishBoot();
 
         final File[] extDirs = serverEnvironment.getJavaExtDirs();
         final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
@@ -212,6 +209,7 @@ final class NewServerControllerService implements Service<NewServerController> {
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.MODULARIZE).add(new RegisteredProcessor(Phase.MODULARIZE_DEPLOYMENT, new ModuleDeploymentProcessor()));
+        deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
 
         // All deployers are registered
@@ -221,7 +219,7 @@ final class NewServerControllerService implements Service<NewServerController> {
             final SortedSet<RegisteredProcessor> processorSet = entry.getValue();
             final List<DeploymentUnitProcessor> list = new ArrayList<DeploymentUnitProcessor>(processorSet.size());
             for (RegisteredProcessor processor : processorSet) {
-                list.add(processor.processor);
+                list.add(processor.getProcessor());
             }
             finalDeployers.put(entry.getKey(), list);
         }
@@ -255,21 +253,5 @@ final class NewServerControllerService implements Service<NewServerController> {
     @Override
     public synchronized NewServerController getValue() throws IllegalStateException, IllegalArgumentException {
         return serverController;
-    }
-
-    private static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
-        private final int priority;
-        private final DeploymentUnitProcessor processor;
-
-        private RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
-            this.priority = priority;
-            this.processor = processor;
-        }
-
-        @Override
-        public int compareTo(final RegisteredProcessor o) {
-            final int rel = Integer.signum(priority - o.priority);
-            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
-        }
     }
 }
