@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 
 import java.io.File;
@@ -139,8 +140,8 @@ public class NewHostControllerBootstrap {
         });
         // Get the raw model
         final ModelNode rawModel = hostModel.getModel();
-        final String mgmtNetwork = rawModel.get(MANAGEMENT, INTERFACE).asString();
-        final int mgmtPort = rawModel.get(MANAGEMENT, PORT).asInt();
+        final String mgmtNetwork = rawModel.get(MANAGEMENT, NATIVE_API, INTERFACE).asString();
+        final int mgmtPort = rawModel.get(MANAGEMENT, NATIVE_API, PORT).asInt();
         // Install the process controller client
         final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
         batch.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
