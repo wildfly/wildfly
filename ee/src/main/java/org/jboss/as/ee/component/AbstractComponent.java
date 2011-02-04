@@ -35,6 +35,7 @@ import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
@@ -185,12 +186,14 @@ public abstract class AbstractComponent implements Component {
         interceptorFactoryMap = viewToInterceptorFactory;
     }
 
+    private static final AtomicInteger seq = new AtomicInteger();
+
     private static <T> ProxyFactory<?> getProxyFactory(Class<T> type) {
-        // TODO: Create this proxy into the right class loader.
+        String proxyName = type.getName() + "$$ee$proxy" + seq.getAndIncrement();
         if (type.isInterface()) {
-            return new ProxyFactory<Object>(Object.class, type);
+            return new ProxyFactory<Object>(proxyName, Object.class, type.getClassLoader(), type);
         } else {
-            return new ProxyFactory<T>(type);
+            return new ProxyFactory<T>(proxyName, type, type.getClassLoader());
         }
     }
 
