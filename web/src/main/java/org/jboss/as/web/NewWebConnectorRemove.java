@@ -22,16 +22,7 @@
 
 package org.jboss.as.web;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.web.CommonAttributes.ENABLE_LOOKUPS;
-import static org.jboss.as.web.CommonAttributes.MAX_POST_SIZE;
-import static org.jboss.as.web.CommonAttributes.MAX_SAVE_POST_SIZE;
-import static org.jboss.as.web.CommonAttributes.PROXY_NAME;
-import static org.jboss.as.web.CommonAttributes.PROXY_PORT;
-import static org.jboss.as.web.CommonAttributes.REDIRECT_PORT;
-import static org.jboss.as.web.CommonAttributes.SECURE;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
@@ -56,23 +47,15 @@ public class NewWebConnectorRemove implements ModelRemoveOperationHandler, Runti
     }
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
         final ModelNode subModel = context.getSubModel();
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(SECURE).set(subModel.get(SECURE).asBoolean());
-        compensatingOperation.get(ENABLE_LOOKUPS).set(subModel.get(ENABLE_LOOKUPS).asBoolean());
-        compensatingOperation.get(PROXY_NAME).set(subModel.get(PROXY_NAME).asString());
-        compensatingOperation.get(PROXY_PORT).set(subModel.get(PROXY_PORT).asInt());
-        compensatingOperation.get(REDIRECT_PORT).set(subModel.get(REDIRECT_PORT).asInt());
-        compensatingOperation.get(MAX_POST_SIZE).set(subModel.get(MAX_POST_SIZE).asInt());
-        compensatingOperation.get(MAX_SAVE_POST_SIZE).set(subModel.get(MAX_SAVE_POST_SIZE).asInt());
+        final ModelNode compensatingOperation = NewWebConnectorAdd.getRecreateOperation(opAddr, subModel);
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
