@@ -2485,6 +2485,12 @@
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-server</artifactId>
                 <version>${version.org.jboss.ws.jbossws-cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.jaxr</groupId>
+                        <artifactId>juddi-service</artifactId>
+                    </exclusion>
+               </exclusions>
             </dependency>
 
             <dependency>
