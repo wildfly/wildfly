@@ -478,24 +478,27 @@ public class StandaloneXml extends CommonXml {
 
     private void writeServerDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
             throws XMLStreamException {
-        writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+
         Set<String> deploymentNames = modelNode.keys();
-        for (String uniqueName : deploymentNames) {
-            ModelNode deployment = modelNode.get(uniqueName);
-            String runtimeName = deployment.get(RUNTIME_NAME).asString();
-            String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
-            boolean start = deployment.get(START).asBoolean();
-            writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
-            writeAttribute(writer, Attribute.NAME, uniqueName);
-            writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-            writeAttribute(writer, Attribute.SHA1, sha1);
-            if (!start) {
-                writeAttribute(writer, Attribute.START, "false");
+        if (deploymentNames.size() > 0) {
+            writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            for (String uniqueName : deploymentNames) {
+                ModelNode deployment = modelNode.get(uniqueName);
+                String runtimeName = deployment.get(RUNTIME_NAME).asString();
+                String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
+                boolean start = deployment.get(START).asBoolean();
+                writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                writeAttribute(writer, Attribute.NAME, uniqueName);
+                writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
+                writeAttribute(writer, Attribute.SHA1, sha1);
+                if (!start) {
+                    writeAttribute(writer, Attribute.START, "false");
+                }
+                writer.writeEndElement();
+
             }
             writer.writeEndElement();
-
         }
-        writer.writeEndElement();
     }
 
     private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
