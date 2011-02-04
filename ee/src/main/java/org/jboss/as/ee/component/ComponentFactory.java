@@ -24,11 +24,8 @@ package org.jboss.as.ee.component;
 
 import java.util.Collection;
 import org.jboss.as.server.deployment.DeploymentUnit;
-<<<<<<< HEAD
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-=======
 import org.jboss.msc.service.ServiceName;
->>>>>>> Add support for components with multiple namespace bindings
 
 /**
  * Factory responsible for crating {@link Component} instances.
@@ -44,11 +41,15 @@ public interface ComponentFactory {
      * @return Component service information
      * @throws DeploymentUnitProcessingException if the component could not be created
      */
-<<<<<<< HEAD
     Component createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException;
-=======
-    Component createComponent(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration);
 
+    /**
+     * Create the required namespace bindings for the component.
+     *
+     * @param deploymentUnit The current deployment unit
+     * @param componentConfiguration The component configuration
+     * @param componentServiceName The component service name
+     * @return The namespace bindings
+     */
     Collection<ComponentBinding> getComponentBindings(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration, final ServiceName componentServiceName);
->>>>>>> Add support for components with multiple namespace bindings
 }

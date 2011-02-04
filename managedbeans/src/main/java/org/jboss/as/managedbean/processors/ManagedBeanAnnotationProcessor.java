@@ -91,7 +91,6 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(deploymentUnit);
             componentConfiguration.setModuleContextServiceName(moduleContextServiceName);
             componentConfiguration.setCompContextServiceName(moduleContextServiceName);
-            componentConfiguration.setBindContextServiceName(moduleContextServiceName);
             componentConfiguration.setEnvContextServiceName(moduleContextServiceName.append("env"));
 
             deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.COMPONENT_CONFIGS, componentConfiguration);

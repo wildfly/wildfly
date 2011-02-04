@@ -24,17 +24,11 @@ package org.jboss.as.managedbean.component;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import javax.naming.LinkRef;
-import javax.naming.Reference;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentBinding;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.ee.component.injection.ResourceInjection;
-import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
-import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.ee.component.service.ComponentObjectFactory;
 import org.jboss.as.ee.naming.Attachments;
 import org.jboss.as.ee.naming.ContextNames;
@@ -64,7 +58,7 @@ public class ManagedBeanComponentFactory implements ComponentFactory {
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         componentConfiguration.addViewClassName(componentConfiguration.getComponentClassName());
         final ClassLoader classLoader = module.getClassLoader();
-        return new ManagedBeanComponent(componentConfiguration, classLoader, deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX));
+        return new ManagedBeanComponent(componentConfiguration, classLoader, deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX));
     }
 
 

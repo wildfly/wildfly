@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.interceptor.InvocationContext;
 import javax.naming.Context;
+import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
 import org.jboss.as.ee.component.injection.ResourceInjectionDependency;
-import org.jboss.as.ee.component.interceptor.ComponentInstanceInterceptorInstanceFactory;
 import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.interceptor.InjectingInterceptorInstanceFactory;
 import org.jboss.as.ee.component.interceptor.MethodInterceptorConfiguration;
@@ -78,51 +78,73 @@ public class InterceptorInstallProcessor extends AbstractComponentConfigProcesso
             current = current.getSuperclass();
         }
 
-        for (MethodInterceptorConfiguration interceptorConfiguration : componentConfiguration.getMethodInterceptorConfigs()) {
-
-            final Class<?> interceptorClass;
-            try {
-                interceptorClass = classLoader.loadClass(interceptorConfiguration.getInterceptorClassName());
-            } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Failed to load interceptors class " + interceptorConfiguration.getInterceptorClassName(), e);
-            }
-
-            final ClassReflectionIndex interceptorReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
-
-            final Method interceptorMethod = interceptorReflectionIndex.getMethod(Object.class, interceptorConfiguration.getMethodName(), InvocationContext.class);
-            if(interceptorMethod == null) {
-                throw new DeploymentUnitProcessingException("Unable to find interceptor method [" + interceptorConfiguration.getMethodName() + "] on interceptor class [" + interceptorClass + "]");
-            }
-
+        for (MethodInterceptorConfiguration interceptorConfiguration : componentConfiguration.getClassInterceptorConfigs()) {
             final MethodInterceptorFilter methodFilter = interceptorConfiguration.getMethodFilter();
-
-            final InterceptorInstanceFactory interceptorInstanceFactory;
-            if (interceptorClass.equals(componentClass)) {
-                interceptorInstanceFactory = new ComponentInstanceInterceptorInstanceFactory(componentClass);
-            } else {
-                final List<ResourceInjection> interceptorInjections = new ArrayList<ResourceInjection>(interceptorConfiguration.getResourceInjectionConfigs().size());
-                final ServiceName envContextServiceName = componentConfiguration.getEnvContextServiceName();
-                for (ResourceInjectionConfiguration resourceConfiguration : interceptorConfiguration.getResourceInjectionConfigs()) {
-                    final NamingLookupValue<Object> lookupValue = new NamingLookupValue<Object>(resourceConfiguration.getLocalContextName());
-                    final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, interceptorClass, interceptorReflectionIndex, lookupValue);
-                    if (injection != null) {
-                        interceptorInjections.add(injection);
-                    }
-                    componentConfiguration.addDependency(new ResourceInjectionDependency<Context>(envContextServiceName, Context.class, lookupValue.getContextInjector()));
-                }
-                interceptorInstanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass), interceptorInjections);
-            }
-            final InterceptorFactory interceptorFactory = new MethodInterceptorFactory(interceptorInstanceFactory, interceptorMethod);
+            final InterceptorFactory interceptorFactory = createInterceptorFactory(componentConfiguration, classLoader, componentClass, deploymentReflectionIndex, interceptorConfiguration);
             for (Method method : allMethods) {
                 if (methodFilter.intercepts(method)) {
-                    interceptorFactories.addInterceptorFactory(method, interceptorFactory);
+                    interceptorFactories.addClassInterceptorFactory(method, interceptorFactory);
+                }
+            }
+        }
+
+        for (MethodInterceptorConfiguration interceptorConfiguration : componentConfiguration.getMethodInterceptorConfigs()) {
+            final MethodInterceptorFilter methodFilter = interceptorConfiguration.getMethodFilter();
+            final InterceptorFactory interceptorFactory = createInterceptorFactory(componentConfiguration, classLoader, componentClass, deploymentReflectionIndex, interceptorConfiguration);
+            for (Method method : allMethods) {
+                if (methodFilter.intercepts(method)) {
+                    interceptorFactories.addMethodInterceptorFactory(method, interceptorFactory);
+                }
+            }
+        }
+
+        for (MethodInterceptorConfiguration interceptorConfiguration : componentConfiguration.getComponentInterceptorConfigs()) {
+            final MethodInterceptorFilter methodFilter = interceptorConfiguration.getMethodFilter();
+            final InterceptorFactory interceptorFactory = createInterceptorFactory(componentConfiguration, classLoader, componentClass, deploymentReflectionIndex, interceptorConfiguration);
+            for (Method method : allMethods) {
+                if (methodFilter.intercepts(method)) {
+                    interceptorFactories.addComponentInterceptorFactory(method, interceptorFactory);
                 }
             }
         }
 
         for (Method method : allMethods) {
-            interceptorFactories.addInterceptorFactory(method, Interceptors.getInvokingInterceptorFactory());
+            interceptorFactories.addComponentInterceptorFactory(method, Interceptors.getInvokingInterceptorFactory());
 
         }
+    }
+
+    private InterceptorFactory createInterceptorFactory(ComponentConfiguration componentConfiguration, ClassLoader classLoader, Class<?> componentClass, DeploymentReflectionIndex deploymentReflectionIndex, MethodInterceptorConfiguration interceptorConfiguration) throws DeploymentUnitProcessingException {
+        final Class<?> interceptorClass;
+        try {
+            interceptorClass = classLoader.loadClass(interceptorConfiguration.getInterceptorClassName());
+        } catch (ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Failed to load interceptors class " + interceptorConfiguration.getInterceptorClassName(), e);
+        }
+
+        final ClassReflectionIndex interceptorReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
+
+        final Method interceptorMethod = interceptorReflectionIndex.getMethod(Object.class, interceptorConfiguration.getMethodName(), InvocationContext.class);
+        if (interceptorMethod == null) {
+            throw new DeploymentUnitProcessingException("Unable to find interceptor method [" + interceptorConfiguration.getMethodName() + "] on interceptor class [" + interceptorClass + "]");
+        }
+
+        final InterceptorInstanceFactory interceptorInstanceFactory;
+        if (interceptorClass.equals(componentClass)) {
+            interceptorInstanceFactory = AbstractComponent.INSTANCE_FACTORY;
+        } else {
+            final List<ResourceInjection> interceptorInjections = new ArrayList<ResourceInjection>(interceptorConfiguration.getResourceInjectionConfigs().size());
+            final ServiceName envContextServiceName = componentConfiguration.getEnvContextServiceName();
+            for (ResourceInjectionConfiguration resourceConfiguration : interceptorConfiguration.getResourceInjectionConfigs()) {
+                final NamingLookupValue<Object> lookupValue = new NamingLookupValue<Object>(resourceConfiguration.getLocalContextName());
+                final ResourceInjection injection = ResourceInjection.Factory.create(resourceConfiguration, interceptorClass, interceptorReflectionIndex, lookupValue);
+                if (injection != null) {
+                    interceptorInjections.add(injection);
+                }
+                componentConfiguration.addDependency(new ResourceInjectionDependency<Context>(envContextServiceName, Context.class, lookupValue.getContextInjector()));
+            }
+            interceptorInstanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass), interceptorInjections);
+        }
+        return new MethodInterceptorFactory(interceptorInstanceFactory, interceptorMethod);
     }
 }

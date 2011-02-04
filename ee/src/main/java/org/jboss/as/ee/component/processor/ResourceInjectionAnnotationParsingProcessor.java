@@ -60,7 +60,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         }
         componentConfiguration.addResourceInjectionConfigs(getResourceConfigurations(classInfo));
 
-        final List<MethodInterceptorConfiguration> interceptorConfigurations = componentConfiguration.getMethodInterceptorConfigs();
+        final List<MethodInterceptorConfiguration> interceptorConfigurations = componentConfiguration.getClassInterceptorConfigs();
         for (MethodInterceptorConfiguration interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
             if(interceptorClassInfo == null) {

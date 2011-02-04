@@ -54,6 +54,6 @@ public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
         }
         final Class<?> viewClass = (Class<?>) viewClassAddr.getContent();
         final Component component = (Component) serviceValue;
-        return component.getInstance().createLocalClientProxy(viewClass);
+        return component.createLocalProxy(viewClass);
     }
 }

@@ -36,6 +36,7 @@ import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
 
 import java.util.Map;
 import org.jboss.as.ee.component.injection.ResourceInjection;
+import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -63,7 +64,7 @@ public abstract class AbstractComponent implements Component {
 
     static final Object INSTANCE_KEY = new Object();
 
-    private static final InterceptorInstanceFactory INSTANCE_FACTORY = new InterceptorInstanceFactory() {
+    public static final InterceptorInstanceFactory INSTANCE_FACTORY = new InterceptorInstanceFactory() {
         public Object createInstance(final InterceptorFactoryContext context) {
             return context.getContextData().get(INSTANCE_KEY);
         }
@@ -142,8 +143,10 @@ public abstract class AbstractComponent implements Component {
                     // assemble the final set of interceptor factories for this method.
                     final List<InterceptorFactory> finalFactories = new ArrayList<InterceptorFactory>();
                     // TODO: default-level interceptors if applicable
-                    // TODO: class-level interceptors if applicable
-                    // TODO: method-level interceptors if applicable
+                    final ComponentInterceptorFactories componentInterceptorFactories = configuration.getComponentInterceptorFactories();
+                    finalFactories.add(componentInterceptorFactories.getClassLevelInterceptorFactory(method));
+                    finalFactories.add(componentInterceptorFactories.getMethodLevelInterceptorFactory(method));
+                    finalFactories.add(componentInterceptorFactories.getComponentDefinedInterceptorFactory(method));
                     // The final interceptor invokes the method on the associated instance
                     finalFactories.add(new MethodInvokingInterceptorFactory(INSTANCE_FACTORY, method));
                     componentToInterceptorFactory.put(method, Interceptors.getChainedInterceptorFactory(finalFactories));

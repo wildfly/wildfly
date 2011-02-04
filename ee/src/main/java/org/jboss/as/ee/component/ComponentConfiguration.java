@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.jboss.as.ee.component.injection.ResourceInjectableConfiguration;
-import org.jboss.as.ee.component.injection.ResourceInjectionConfiguration;
 import org.jboss.as.ee.component.injection.ResourceInjectionDependency;
 import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
@@ -53,14 +52,16 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
     private final List<ComponentLifecycle> postConstructLifecycles = new ArrayList<ComponentLifecycle>();
     private final List<ComponentLifecycleConfiguration> preDestroyConfigurations = new ArrayList<ComponentLifecycleConfiguration>();
     private final List<ComponentLifecycle> preDestroyLifecycles = new ArrayList<ComponentLifecycle>();
-    private final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
+    private final List<MethodInterceptorConfiguration> classInterceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
+    private final List<MethodInterceptorConfiguration> methodInterceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
+    private final List<MethodInterceptorConfiguration> componentInterceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
+
     private final Set<ResourceInjectionDependency<?>> dependencies = new HashSet<ResourceInjectionDependency<?>>();
     private final ComponentInterceptorFactories componentInterceptorFactories = new ComponentInterceptorFactories();
     private final List<String> viewClassNames = new ArrayList<String>();
     private final List<InterceptorFactory> componentSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
 
     private Class<?> componentClass;
-    private ServiceName bindContextServiceName;
     private ServiceName envContextServiceName;
     private ServiceName compContextServiceName;
     private ServiceName moduleContextServiceName;
@@ -164,25 +165,63 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
     }
 
     /**
-     * The configurations for any method interceptors for this bean type.
+     * The configurations for any class interceptors for this component type.
+     *
+     * @return The method interceptor configurations
+     */
+    public List<MethodInterceptorConfiguration> getClassInterceptorConfigs() {
+        return Collections.unmodifiableList(classInterceptorConfigurations);
+    }
+
+    /**
+     * Add a class interceptor configuration to the component configuration.
+     *
+     * @param interceptorConfiguration The interceptor configuration
+     */
+    public void addClassInterceptorConfig(final MethodInterceptorConfiguration interceptorConfiguration) {
+        classInterceptorConfigurations.add(interceptorConfiguration);
+    }
+
+    /**
+     * Add class interceptor configurations to the component configuration.
+     *
+     * @param interceptorConfigurations The interceptor configurations
+     */
+    public void addClassInterceptorConfigs(final MethodInterceptorConfiguration... interceptorConfigurations) {
+        for (MethodInterceptorConfiguration config : interceptorConfigurations) {
+            addClassInterceptorConfig(config);
+        }
+    }
+
+    /**
+     * Add class interceptor configurations to the component configuration.
+     *
+     * @param interceptorConfigurations The interceptor configurations
+     */
+    public void addClassInterceptorConfigs(final Collection<MethodInterceptorConfiguration> interceptorConfigurations) {
+        this.classInterceptorConfigurations.addAll(interceptorConfigurations);
+    }
+
+    /**
+     * The configurations for any method interceptors for this component type.
      *
      * @return The method interceptor configurations
      */
     public List<MethodInterceptorConfiguration> getMethodInterceptorConfigs() {
-        return Collections.unmodifiableList(interceptorConfigurations);
+        return Collections.unmodifiableList(methodInterceptorConfigurations);
     }
 
     /**
-     * Add a method interceptor configuration to the bean configuration.
+     * Add a method interceptor configuration to the component configuration.
      *
      * @param interceptorConfiguration The interceptor configuration
      */
     public void addMethodInterceptorConfig(final MethodInterceptorConfiguration interceptorConfiguration) {
-        interceptorConfigurations.add(interceptorConfiguration);
+        methodInterceptorConfigurations.add(interceptorConfiguration);
     }
 
     /**
-     * Add method interceptor configurations to the bean configuration.
+     * Add method interceptor configurations to the component configuration.
      *
      * @param interceptorConfigurations The interceptor configurations
      */
@@ -193,12 +232,21 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
     }
 
     /**
-     * Add method interceptor configurations to the bean configuration.
+     * Add method interceptor configurations to the component configuration.
      *
      * @param interceptorConfigurations The interceptor configurations
      */
     public void addMethodInterceptorConfigs(final Collection<MethodInterceptorConfiguration> interceptorConfigurations) {
-        this.interceptorConfigurations.addAll(interceptorConfigurations);
+        this.methodInterceptorConfigurations.addAll(interceptorConfigurations);
+    }
+
+    /**
+     * The configurations for any component level interceptors for this component type.
+     *
+     * @return The method interceptor configurations
+     */
+    public List<MethodInterceptorConfiguration> getComponentInterceptorConfigs() {
+        return Collections.unmodifiableList(componentInterceptorConfigurations);
     }
 
     /**
@@ -220,25 +268,32 @@ public class ComponentConfiguration extends ResourceInjectableConfiguration {
     }
 
     /**
-     * The service name of the naming context this component's reference will be bound.
+     * Add a component level interceptor configuration to the component configuration.
      *
-     * @return The context service name
+     * @param interceptorConfiguration The interceptor configuration
      */
-    public ServiceName getBindContextServiceName() {
-        return bindContextServiceName;
-    }
-
-    public void setBindContextServiceName(ServiceName bindContextServiceName) {
-        this.bindContextServiceName = bindContextServiceName;
+    public void addComponentInterceptorConfig(final MethodInterceptorConfiguration interceptorConfiguration) {
+        componentInterceptorConfigurations.add(interceptorConfiguration);
     }
 
     /**
-     * The name used when binding the component reference in the bind context.
+     * Add component level interceptor configurations to the component configuration.
      *
-     * @return The bind name
+     * @param interceptorConfigurations The interceptor configurations
      */
-    public String getBindName() {
-        return getName();
+    public void addComponentInterceptorConfigs(final MethodInterceptorConfiguration... interceptorConfigurations) {
+        for (MethodInterceptorConfiguration config : interceptorConfigurations) {
+            addComponentInterceptorConfig(config);
+        }
+    }
+
+    /**
+     * Add component level interceptor configurations to the component configuration.
+     *
+     * @param interceptorConfigurations The interceptor configurations
+     */
+    public void addComponentInterceptorConfigs(final Collection<MethodInterceptorConfiguration> interceptorConfigurations) {
+        this.componentInterceptorConfigurations.addAll(interceptorConfigurations);
     }
 
     /**

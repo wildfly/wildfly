@@ -59,23 +59,13 @@ public class InterceptorAnnotationParsingProcessor extends AbstractComponentConf
         if(classInfo == null) {
             return; // We can't continue without the annotation index info.
         }
-        componentConfiguration.addMethodInterceptorConfigs(getInterceptorConfigs(classInfo, index));
+        processInterceptorConfigs(classInfo, index, componentConfiguration);
     }
 
-    private List<MethodInterceptorConfiguration> getInterceptorConfigs(final ClassInfo classInfo, final CompositeIndex index) {
-        final List<MethodInterceptorConfiguration> interceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
-        final List<MethodInterceptorConfiguration> methodLevelInterceptorConfigurations = new ArrayList<MethodInterceptorConfiguration>();
-        final List<MethodInterceptorConfiguration> componentDefinedInterceptors = new ArrayList<MethodInterceptorConfiguration>();
-        getInterceptorConfigs(classInfo, index, interceptorConfigurations, methodLevelInterceptorConfigurations, componentDefinedInterceptors);
-        interceptorConfigurations.addAll(methodLevelInterceptorConfigurations);
-        interceptorConfigurations.addAll(componentDefinedInterceptors);
-        return interceptorConfigurations;
-    }
-
-    private void getInterceptorConfigs(final ClassInfo classInfo, final CompositeIndex index, final List<MethodInterceptorConfiguration> classLevelInterceptorConfigurations, final List<MethodInterceptorConfiguration> methodLevelInterceptorConfigurations, final List<MethodInterceptorConfiguration> componentDefinedInterceptors) {
+    private void processInterceptorConfigs(final ClassInfo classInfo, final CompositeIndex index, final ComponentConfiguration componentConfiguration) {
         final ClassInfo superClassInfo = index.getClassByName(classInfo.superName());
         if (superClassInfo != null) {
-            getInterceptorConfigs(superClassInfo, index, classLevelInterceptorConfigurations, methodLevelInterceptorConfigurations, componentDefinedInterceptors);
+            processInterceptorConfigs(superClassInfo, index, componentConfiguration);
         }
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
@@ -107,17 +97,17 @@ public class InterceptorAnnotationParsingProcessor extends AbstractComponentConf
                     for (Type argType : methodInfo.args()) {
                         argTypes.add(argType.name().toString());
                     }
-                    methodLevelInterceptorConfigurations.add(new MethodInterceptorConfiguration(interceptorClassInfo.name().toString(), aroundInvokeMethod.name(), new MethodInterceptorMatchFilter(methodInfo.name(), argTypes.toArray(new String[argTypes.size()]))));
+                    componentConfiguration.addMethodInterceptorConfig(new MethodInterceptorConfiguration(interceptorClassInfo.name().toString(), aroundInvokeMethod.name(), new MethodInterceptorMatchFilter(methodInfo.name(), argTypes.toArray(new String[argTypes.size()]))));
                 } else {
-                    classLevelInterceptorConfigurations.add(new MethodInterceptorConfiguration(interceptorClassInfo.name().toString(), aroundInvokeMethod.name(), MethodInterceptorAllFilter.INSTANCE));
+                    componentConfiguration.addClassInterceptorConfig(new MethodInterceptorConfiguration(interceptorClassInfo.name().toString(), aroundInvokeMethod.name(), MethodInterceptorAllFilter.INSTANCE));
                 }
             }
         }
 
-        //Look for any @AroundInvoke methods on bean class
+        //Look for any @AroundInvoke methods on component class
         final MethodInfo methodInfo = getAroundInvokeMethod(classInfo);
         if (methodInfo != null) {
-            componentDefinedInterceptors.add(new MethodInterceptorConfiguration(classInfo.name().toString(), methodInfo.name(), MethodInterceptorAllFilter.INSTANCE));
+            componentConfiguration.addComponentInterceptorConfig(new MethodInterceptorConfiguration(classInfo.name().toString(), methodInfo.name(), MethodInterceptorAllFilter.INSTANCE));
         }
     }
 

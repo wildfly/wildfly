@@ -27,31 +27,68 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 
 /**
  * @author John Bailey
  */
 public class ComponentInterceptorFactories {
+    private final Map<Method, List<InterceptorFactory>> classInterceptorFactories = new HashMap<Method, List<InterceptorFactory>>();
     private final Map<Method, List<InterceptorFactory>> methodInterceptorFactories = new HashMap<Method, List<InterceptorFactory>>();
+    private final Map<Method, List<InterceptorFactory>> componentInterceptorFactories = new HashMap<Method, List<InterceptorFactory>>();
 
-    public Map<Method, Interceptor> createInstance(final InterceptorFactoryContext interceptorFactoryContext) {
-        final Map<Method, Interceptor> methodInterceptors = new HashMap<Method, Interceptor>();
-        for (Map.Entry<Method, List<InterceptorFactory>> entry : methodInterceptorFactories.entrySet()) {
-            methodInterceptors.put(entry.getKey(), Interceptors.getChainedInterceptorFactory(entry.getValue()).create(interceptorFactoryContext));
+    public InterceptorFactory getClassLevelInterceptorFactory(final Method method) {
+        final List<InterceptorFactory> interceptorFactories = classInterceptorFactories.get(method);
+        if (interceptorFactories == null) {
+            return Interceptors.getNullInterceptorFactory();
         }
-        return methodInterceptors;
+        return Interceptors.getChainedInterceptorFactory(interceptorFactories);
     }
 
-    public void addInterceptorFactory(final Method method, final InterceptorFactory interceptorFactory) {
+    public InterceptorFactory getMethodLevelInterceptorFactory(final Method method) {
+        final List<InterceptorFactory> interceptorFactories = methodInterceptorFactories.get(method);
+        if (interceptorFactories == null) {
+            return Interceptors.getNullInterceptorFactory();
+        }
+        return Interceptors.getChainedInterceptorFactory(interceptorFactories);
+    }
+
+    public InterceptorFactory getComponentDefinedInterceptorFactory(final Method method) {
+        final List<InterceptorFactory> interceptorFactories = componentInterceptorFactories.get(method);
+        if (interceptorFactories == null) {
+            return Interceptors.getNullInterceptorFactory();
+        }
+        return Interceptors.getChainedInterceptorFactory(interceptorFactories);
+    }
+
+    public void addClassInterceptorFactory(final Method method, final InterceptorFactory interceptorFactory) {
+        final Map<Method, List<InterceptorFactory>> classInterceptorFactories = this.classInterceptorFactories;
+        List<InterceptorFactory> classFactories = classInterceptorFactories.get(method);
+        if (classFactories == null) {
+            classFactories = new ArrayList<InterceptorFactory>();
+            methodInterceptorFactories.put(method, classFactories);
+        }
+        classFactories.add(interceptorFactory);
+    }
+
+    public void addMethodInterceptorFactory(final Method method, final InterceptorFactory interceptorFactory) {
+        final Map<Method, List<InterceptorFactory>> methodInterceptorFactories = this.methodInterceptorFactories;
         List<InterceptorFactory> methodFactories = methodInterceptorFactories.get(method);
         if (methodFactories == null) {
             methodFactories = new ArrayList<InterceptorFactory>();
             methodInterceptorFactories.put(method, methodFactories);
         }
         methodFactories.add(interceptorFactory);
+    }
+
+    public void addComponentInterceptorFactory(final Method method, final InterceptorFactory interceptorFactory) {
+        final Map<Method, List<InterceptorFactory>> componentInterceptorFactories = this.componentInterceptorFactories;
+        List<InterceptorFactory> componentFactories = componentInterceptorFactories.get(method);
+        if (componentFactories == null) {
+            componentFactories = new ArrayList<InterceptorFactory>();
+            componentInterceptorFactories.put(method, componentFactories);
+        }
+        componentFactories.add(interceptorFactory);
     }
 }
