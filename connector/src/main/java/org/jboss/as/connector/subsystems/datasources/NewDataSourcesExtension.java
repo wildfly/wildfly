@@ -30,7 +30,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALID
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES_SUBSYTEM;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
@@ -140,8 +139,222 @@ public class NewDataSourcesExtension implements NewExtension {
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             ModelNode node = context.getModelNode();
-            // FIXME write out the details
+
+            writer.writeStartElement(DATASOURCES);
+            if (node.has(DATASOURCES)) {
+                for (ModelNode dataSourceNode : node.get(DATASOURCES).asList()) {
+                    boolean isXADataSource = hasAnyOf(dataSourceNode, XA_RESOURCE_TIMEOUT, XADATASOURCECLASS,
+                            XADATASOURCEPROPERTIES);
+                    writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
+                            : DataSources.Tag.DATASOURCE.getLocalName());
+
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JNDINAME, JNDINAME);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.POOL_NAME, POOLNAME);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.ENABLED, ENABLED);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
+
+                    if (!isXADataSource) {
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTIONURL, CONNECTION_URL);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVERCLASS, DRIVER_CLASS);
+                    }
+                    if (isXADataSource) {
+                        // TODO - Write XA properties.
+                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.XADATASOURCECLASS, XADATASOURCECLASS);
+                    }
+                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.MODULE, MODULE);
+                    if (!isXADataSource) {
+                        // TODO - Write Properties
+
+                    }
+                    if (isXADataSource) {
+                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URLDELIMITER, URL_DELIMITER);
+                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URLSELECTORSTRATEGYCLASSNAME,
+                                URL_SELECTOR_STRATEGY_CLASS_NAME);
+                    }
+                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.NEWCONNECTIONSQL, NEW_CONNECTION_SQL);
+                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.TRANSACTIONISOLATION, TRANSACTION_ISOLOATION);
+                    if (!isXADataSource) {
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URLDELIMITER, URL_DELIMITER);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URLSELECTORSTRATEGYCLASSNAME,
+                                URL_SELECTOR_STRATEGY_CLASS_NAME);
+                    }
+                    boolean poolRequired = hasAnyOf(dataSourceNode, MIN_POOL_SIZE, MAX_POOL_SIZE, POOL_PREFILL,
+                            POOL_USE_STRICT_MIN);
+                    if (isXADataSource) {
+                        poolRequired = poolRequired
+                                || hasAnyOf(dataSourceNode, SAME_RM_OVERRIDE, INTERLIVING, NOTXSEPARATEPOOL, PAD_XID,
+                                        WRAP_XA_DATASOURCE);
+                    }
+                    if (poolRequired) {
+                        writer.writeStartElement(isXADataSource ? XaDataSource.Tag.XA_POOL.getLocalName() : DataSource.Tag.POOL
+                                .getLocalName());
+                        writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
+                        writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
+                        writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.PREFILL, POOL_PREFILL);
+                        writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
+                        if (isXADataSource) {
+                            writeElementIfHas(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE, SAME_RM_OVERRIDE);
+                            writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE,
+                                    SAME_RM_OVERRIDE);
+                            writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS,
+                                    NOTXSEPARATEPOOL);
+                            writeElementIfHas(writer, dataSourceNode, CommonXaPool.Tag.PAD_XID, PAD_XID);
+                            writeElementIfHas(writer, dataSourceNode, CommonXaPool.Tag.WRAP_XA_RESOURCE, WRAP_XA_DATASOURCE);
+                        }
+                        writer.writeEndElement();
+                    }
+                    boolean securityRequired = hasAnyOf(dataSourceNode, USERNAME, PASSWORD);
+                    if (securityRequired) {
+                        writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
+                        writeElementIfHas(writer, dataSourceNode, CommonSecurity.Tag.USERNAME, USERNAME);
+                        writeElementIfHas(writer, dataSourceNode, CommonSecurity.Tag.PASSWORD, PASSWORD);
+                        writer.writeEndElement();
+                    }
+                    boolean validationRequired = hasAnyOf(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
+                            CHECKVALIDCONNECTIONSQL, VALIDATEONMATCH, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES,
+                            USE_FAST_FAIL, STALECONNECTIONCHECKERCLASSNAME, EXCEPTIONSORTERCLASSNAME);
+                    if (validationRequired) {
+                        writer.writeStartElement(DataSource.Tag.VALIDATION.getLocalName());
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDCONNECTIONCHECKERCLASSNAME,
+                                VALIDCONNECTIONCHECKERCLASSNAME);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.CHECKVALIDCONNECTIONSQL,
+                                CHECKVALIDCONNECTIONSQL);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDATEONMATCH, VALIDATEONMATCH);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATION, BACKGROUNDVALIDATION);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATIONMINUTES,
+                                BACKGROUNDVALIDATIONMINUTES);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.USEFASTFAIL, USE_FAST_FAIL);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.STALECONNECTIONCHECKERCLASSNAME,
+                                STALECONNECTIONCHECKERCLASSNAME);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.EXCEPTIONSORTERCLASSNAME,
+                                EXCEPTIONSORTERCLASSNAME);
+                        writer.writeEndElement();
+                    }
+                    boolean timeoutRequired = hasAnyOf(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES,
+                            SETTXQUERTTIMEOUT, QUERYTIMEOUT, USETRYLOCK, ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
+                            XA_RESOURCE_TIMEOUT);
+                    if (timeoutRequired) {
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.BLOCKINGTIMEOUTMILLIS,
+                                BLOCKING_TIMEOUT_WAIT_MILLIS);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.IDLETIMEOUTMINUTES, IDLETIMEOUTMINUTES);
+                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, TimeOut.Tag.SETTXQUERYTIMEOUT, SETTXQUERTTIMEOUT);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.QUERYTIMEOUT, QUERYTIMEOUT);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.USETRYLOCK, USETRYLOCK);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATIONRETRY, ALLOCATION_RETRY);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATIONRETRYWAITMILLIS,
+                                ALLOCATION_RETRY_WAIT_MILLIS);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.XARESOURCETIMEOUT, XA_RESOURCE_TIMEOUT);
+                    }
+                    boolean statementRequired = hasAnyOf(dataSourceNode, TRACKSTATEMENTS, PREPAREDSTATEMENTSCACHESIZE,
+                            SHAREPREPAREDSTATEMENTS);
+                    if (statementRequired) {
+                        writer.writeStartElement(DataSource.Tag.STATEMENT.getLocalName());
+                        writeElementIfHas(writer, dataSourceNode, Statement.Tag.TRACKSTATEMENTS, TRACKSTATEMENTS);
+                        writeElementIfHas(writer, dataSourceNode, Statement.Tag.PREPAREDSTATEMENTCACHESIZE,
+                                PREPAREDSTATEMENTSCACHESIZE);
+                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, Statement.Tag.SHAREPREPAREDSTATEMENTS,
+                                SHAREPREPAREDSTATEMENTS);
+
+                        writer.writeEndElement();
+                    }
+
+                    writer.writeEndElement();
+                }
+            }
             writer.writeEndElement();
+
+            writer.writeEndElement();
+        }
+
+        private void writeAttributeIfHas(final XMLExtendedStreamWriter writer, final ModelNode node,
+                final DataSource.Attribute attr, final String identifier) throws XMLStreamException {
+            if (has(node, identifier)) {
+                writer.writeAttribute(attr.getLocalName(), node.get(identifier).asString());
+            }
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, String localName, String identifier)
+                throws XMLStreamException {
+            if (has(node, identifier)) {
+                writer.writeStartElement(localName);
+                writer.writeCharacters(node.get(identifier).asString());
+                writer.writeEndElement();
+            }
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, XaDataSource.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, DataSource.Tag element, String identifier)
+                throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonSecurity.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonPool.Tag element, String identifier)
+                throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonXaPool.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, TimeOut.Tag element, String identifier)
+                throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, Validation.Tag element, String identifier)
+                throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, Statement.Tag element, String identifier)
+                throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, String localName,
+                String identifier) throws XMLStreamException {
+            if (node.has(identifier) && node.get(identifier).asBoolean()) {
+                writer.writeEmptyElement(localName);
+            }
+        }
+
+        private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, Statement.Tag element,
+                String identifier) throws XMLStreamException {
+            writeEmptyElementIfHasAndTrue(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, CommonXaPool.Tag element,
+                String identifier) throws XMLStreamException {
+            writeEmptyElementIfHasAndTrue(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, TimeOut.Tag element,
+                String identifier) throws XMLStreamException {
+            writeEmptyElementIfHasAndTrue(writer, node, element.getLocalName(), identifier);
+        }
+
+        private boolean hasAnyOf(ModelNode node, String... names) {
+            for (String current : names) {
+                if (has(node, current)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name).isDefined();
         }
 
         @Override
