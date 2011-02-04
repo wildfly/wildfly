@@ -71,6 +71,10 @@ class NewJMSTopicAdd implements ModelAddOperationHandler, RuntimeOperationHandle
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
+        if(operation.hasDefined(ENTRIES)) {
+            context.getSubModel().get(ENTRIES).set(operation.get(ENTRIES));
+        }
+
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
             final JMSTopicService service = new JMSTopicService(name, jndiBindings(operation));
@@ -81,17 +85,13 @@ class NewJMSTopicAdd implements ModelAddOperationHandler, RuntimeOperationHandle
                     .install();
         }
 
-        if(operation.hasDefined(ENTRIES)) {
-            context.getSubModel().get(ENTRIES).set(operation.get(ENTRIES));
-        }
-
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;
     }
 
     static String[] jndiBindings(final ModelNode node) {
-        if(node.has(ENTRIES)) {
+        if(node.hasDefined(ENTRIES)) {
             final Set<String> bindings = new HashSet<String>();
             for(final ModelNode entry : node.get(ENTRIES).asList()) {
                 bindings.add(entry.asString());

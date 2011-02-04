@@ -79,10 +79,23 @@ class NewJMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandle
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
+        String selector = null;
+        final ModelNode subModel = context.getSubModel();
+        if (operation.hasDefined(SELECTOR)) {
+            selector = operation.get(SELECTOR).asString();
+            subModel.get(SELECTOR).set(selector);
+        }
+        if (operation.hasDefined(DURABLE)) {
+            subModel.get(DURABLE).set(operation.get(DURABLE));
+        }
+        if (operation.hasDefined(ENTRIES)) {
+            subModel.get(ENTRIES).set(operation.get(ENTRIES));
+        }
+
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
 
-            final JMSQueueService service = new JMSQueueService(name, operation.get(SELECTOR).asString(),
+            final JMSQueueService service = new JMSQueueService(name, selector,
                     operation.get(DURABLE).asBoolean(true), jndiBindings(operation));
             final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
             runtimeContext.getServiceTarget().addService(serviceName, service)
@@ -91,24 +104,13 @@ class NewJMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandle
                     .install();
         }
 
-        final ModelNode subModel = context.getSubModel();
-        if (operation.get(SELECTOR).isDefined()) {
-            subModel.get(SELECTOR).set(operation.get(SELECTOR));
-        }
-        if (operation.get(DURABLE).isDefined()) {
-            subModel.get(DURABLE).set(operation.get(DURABLE));
-        }
-        if (operation.get(ENTRIES).isDefined()) {
-            subModel.get(ENTRIES).set(operation.get(ENTRIES));
-        }
-
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;
     }
 
     static String[] jndiBindings(final ModelNode node) {
-        if(node.has(ENTRIES)) {
+        if(node.hasDefined(ENTRIES)) {
             final Set<String> bindings = new HashSet<String>();
             for(final ModelNode entry : node.get(ENTRIES).asList()) {
                 bindings.add(entry.asString());
