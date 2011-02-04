@@ -34,8 +34,8 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 
 /**
  * Author : Jaikiran Pai
@@ -49,7 +49,7 @@ public class StatelessSessionComponentFactory implements ComponentFactory {
         return new StatelessSessionComponent(componentConfiguration, cl, reflectionIndex);
     }
 
-    private ClassLoader getClassLoader(DeploymentUnit deploymentUnit) {
+    private static ClassLoader getClassLoader(DeploymentUnit deploymentUnit) {
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             throw new IllegalStateException("Module not found for deployment unit: " + deploymentUnit);
@@ -68,16 +68,29 @@ public class StatelessSessionComponentFactory implements ComponentFactory {
         String appName = null;
 
         // TODO: needs to take descriptor overrides into account
-        String moduleName = deploymentUnit.getName();
+        String moduleName = stripSuffix(deploymentUnit.getName());
 
         String beanName = componentConfiguration.getName();
 
         String globalJNDIName = (appName != null ? appName + "/" : "") + moduleName + "/" + beanName;
-        return Arrays.asList(
-                new ComponentBinding(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, globalJNDIName, ComponentObjectFactory.createReference(componentServiceName, componentConfiguration.getComponentClass()))
-//                new ComponentBinding(moduleNamespaceConfig.getContextServiceName(), componentConfiguration.getName(), ComponentObjectFactory.createReference(componentServiceName, componentConfiguration.getComponentClass())),
-//                new ComponentBinding(appNamespaceConfig.getContextServiceName().append(deploymentUnit.getName()), componentConfiguration.getName(), new LinkRef(ContextNames.MODULE_CONTEXT_NAME.append(componentConfiguration.getName()).getAbsoluteName()))
-        );
+        Collection<ComponentBinding> bindings = new LinkedList<ComponentBinding>();
+        try {
+            ClassLoader classLoader = getClassLoader(deploymentUnit);
+            for(String viewClassName : componentConfiguration.getViewClassNames()) {
+                Class<?> viewClass = Class.forName(viewClassName, true, classLoader);
+                bindings.add(new ComponentBinding(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, globalJNDIName + "!" + viewClass.getName(), ComponentObjectFactory.createReference(componentServiceName, viewClass)));
+            }
+        }
+        catch(ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return bindings;
+    }
 
+    private static String stripSuffix(String s) {
+       int i;
+       if(s == null || (i = s.lastIndexOf('.')) == -1)
+          return s;
+       return s.substring(0, i);
     }
 }

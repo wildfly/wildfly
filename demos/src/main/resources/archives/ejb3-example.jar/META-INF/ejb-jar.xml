@@ -6,6 +6,7 @@
    <enterprise-beans>
       <session>
          <ejb-name>SimpleStatelessSessionBean</ejb-name>
+         <business-local>org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal</business-local>
          <ejb-class>org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean</ejb-class>
          <session-type>Stateless</session-type>
          <around-invoke>
