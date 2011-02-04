@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.common.PathDescription.RELATI
 import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class PathRemoveHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class PathRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 

@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractExtensionRemoveHandler implements ModelAddOperationHandler, DescriptionProvider {
+public abstract class AbstractExtensionRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
