@@ -61,15 +61,11 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Run
      */
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
-        try {
-            ModelNode model = context.getSubModel();
-            model.get(START).set(true);
-            ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
-            DeploymentHandlerUtil.deploy(model, context, resultHandler, compensatingOp);
-        }
-        catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
-        }
+
+        ModelNode model = context.getSubModel();
+        model.get(START).set(true);
+        ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
+        DeploymentHandlerUtil.deploy(model, context, resultHandler, compensatingOp);
         return Cancellable.NULL;
     }
 }

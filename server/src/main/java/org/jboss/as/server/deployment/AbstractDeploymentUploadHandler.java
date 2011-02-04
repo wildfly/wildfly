@@ -21,6 +21,7 @@ package org.jboss.as.server.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.jboss.as.controller.Cancellable;
@@ -77,8 +78,8 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
                 resultHandler.handleFailed(new ModelNode().set(failure));
             }
         }
-        catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+        catch (IOException e) {
+            resultHandler.handleFailed(new ModelNode().set(e.toString()));
         }
         return Cancellable.NULL;
     }
