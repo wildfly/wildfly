@@ -73,7 +73,7 @@ class NewThreadsSubsystemProviders {
 
     static final String RESOURCE_NAME = NewThreadsSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+    static final DescriptionProvider SUBSYSTEM_PROVIDER = new DescriptionProvider() {
 
         @Override
         public ModelNode getModelDescription(final Locale locale) {

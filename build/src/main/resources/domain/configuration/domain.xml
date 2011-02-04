@@ -86,7 +86,6 @@
                 </root-logger>
             </subsystem>
              -->
-            <!-- 
              <subsystem xmlns="urn:jboss:domain:threads:1.0">
                 <scheduled-thread-pool name="remoting">
                     <max-threads count="10" per-cpu="20"/>
@@ -105,7 +104,6 @@
                     <keepalive-time time="10" unit="seconds"/>
                 </bounded-queue-thread-pool>
             </subsystem>
-             -->
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0"/>

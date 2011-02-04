@@ -120,7 +120,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         addSubsystems(updates);
         //TODO deployments
 
-        System.out.println(updates);
+        //System.out.println(updates);
 
         return updates;
     }

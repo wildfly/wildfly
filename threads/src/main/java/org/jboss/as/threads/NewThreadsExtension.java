@@ -23,6 +23,7 @@ package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -54,6 +55,7 @@ import static org.jboss.as.threads.Constants.THREADS;
 import static org.jboss.as.threads.Constants.THREAD_FACTORY;
 import static org.jboss.as.threads.Constants.THREAD_NAME_PATTERN;
 import static org.jboss.as.threads.Constants.UNBOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
@@ -89,8 +91,8 @@ import static org.jboss.as.threads.NewThreadsSubsystemProviders.REMOVE_SCHEDULED
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.REMOVE_THREAD_FACTORY_DESC;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.REMOVE_UNBOUNDED_QUEUE_THREAD_POOL_DESC;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.SCHEDULED_THREAD_POOL_DESC;
-import static org.jboss.as.threads.NewThreadsSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.threads.NewThreadsSubsystemProviders.SUBSYSTEM_PROVIDER;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.THREAD_FACTORY_DESC;
 import static org.jboss.as.threads.NewThreadsSubsystemProviders.UNBOUNDED_QUEUE_THREAD_POOL_DESC;
 
@@ -98,17 +100,25 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -127,6 +137,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class NewThreadsExtension implements NewExtension {
 
+    private static String SUBSYSTEM_NAME = "threads";
+
     @Override
     public void initialize(final NewExtensionContext context) {
 
@@ -135,8 +147,9 @@ public class NewThreadsExtension implements NewExtension {
         final SubsystemRegistration registration = context.registerSubsystem(THREADS);
         registration.registerXMLElementWriter(NewThreadsSubsystemParser.INSTANCE);
         // Remoting subsystem description and operation handlers
-        final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
+        final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
         subsystem.registerOperationHandler(ADD, NewThreadsSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE, ThreadsSubsystemDescribeHandler.INSTANCE, false);
 
         final ModelNodeRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY), THREAD_FACTORY_DESC);
         threadFactories.registerOperationHandler(ADD, NewThreadFactoryAdd.INSTANCE, ADD_THREAD_FACTORY_DESC, false);
@@ -164,6 +177,7 @@ public class NewThreadsExtension implements NewExtension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewThreadsSubsystemParser.INSTANCE);
     }
 
+
     static final class NewThreadsSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         static final NewThreadsSubsystemParser INSTANCE = new NewThreadsSubsystemParser();
@@ -172,7 +186,7 @@ public class NewThreadsExtension implements NewExtension {
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
             final ModelNode address = new ModelNode();
-            address.add(ModelDescriptionConstants.SUBSYSTEM, "threads");
+            address.add(SUBSYSTEM, SUBSYSTEM_NAME);
             address.protect();
 
             final ModelNode subsystem = new ModelNode();
@@ -971,4 +985,181 @@ public class NewThreadsExtension implements NewExtension {
             writer.writeAttribute(attr.getLocalName(), value.asString());
         }
     }
+
+    private static class ThreadsSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final ThreadsSubsystemDescribeHandler INSTANCE = new ThreadsSubsystemDescribeHandler();
+        @Override
+        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+            ModelNode result = new ModelNode();
+
+            result.add(Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME))));
+
+            final ModelNode model = context.getSubModel();
+            addBoundedQueueThreadPools(result, model);
+            addQueuelessThreadPools(result, model);
+            addScheduledThreadPools(result, model);
+            addThreadFactories(result, model);
+            addUnboundedQueueThreadPools(result, model);
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+
+        private void addBoundedQueueThreadPools(final ModelNode result, final ModelNode model) {
+            if (model.hasDefined(BOUNDED_QUEUE_THREAD_POOL)) {
+                ModelNode pools = model.get(BOUNDED_QUEUE_THREAD_POOL);
+                for (Property poolProp : pools.asPropertyList()) {
+                    final ModelNode operation = Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL, poolProp.getName())));
+                    final ModelNode pool = poolProp.getValue();
+
+                    operation.get(NAME).set(pool.require(NAME));
+                    if (pool.hasDefined(THREAD_FACTORY)) {
+                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
+                    }
+                    if (pool.hasDefined(PROPERTIES)) {
+                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
+                    }
+                    if (pool.hasDefined(MAX_THREADS)) {
+                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
+                    }
+                    if (pool.hasDefined(KEEPALIVE_TIME)) {
+                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
+                    }
+                    if (pool.hasDefined(BLOCKING)) {
+                        operation.get(BLOCKING).set(pool.get(BLOCKING));
+                    }
+                    if (pool.hasDefined(HANDOFF_EXECUTOR)) {
+                        operation.get(HANDOFF_EXECUTOR).set(pool.get(HANDOFF_EXECUTOR));
+                    }
+                    if (pool.hasDefined(ALLOW_CORE_TIMEOUT)) {
+                        operation.get(ALLOW_CORE_TIMEOUT).set(pool.get(ALLOW_CORE_TIMEOUT));
+                    }
+                    if (pool.hasDefined(QUEUE_LENGTH)) {
+                        operation.get(QUEUE_LENGTH).set(pool.get(QUEUE_LENGTH));
+                    }
+                    if (pool.hasDefined(CORE_THREADS)) {
+                        operation.get(CORE_THREADS).set(pool.get(CORE_THREADS));
+                    }
+                    result.add(operation);
+                }
+            }
+        }
+
+        private void addQueuelessThreadPools(final ModelNode result, final ModelNode model) {
+            if (model.hasDefined(QUEUELESS_THREAD_POOL)) {
+                ModelNode pools = model.get(QUEUELESS_THREAD_POOL);
+                for (Property poolProp : pools.asPropertyList()) {
+                    final ModelNode operation = Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(QUEUELESS_THREAD_POOL, poolProp.getName())));
+                    final ModelNode pool = poolProp.getValue();
+
+                    operation.get(NAME).set(pool.require(NAME));
+                    if (pool.hasDefined(THREAD_FACTORY)) {
+                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
+                    }
+                    if (pool.hasDefined(PROPERTIES)) {
+                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
+                    }
+                    if (pool.hasDefined(MAX_THREADS)) {
+                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
+                    }
+                    if (pool.hasDefined(KEEPALIVE_TIME)) {
+                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
+                    }
+                    if (pool.hasDefined(BLOCKING)) {
+                        operation.get(BLOCKING).set(pool.get(BLOCKING));
+                    }
+                    if (pool.hasDefined(HANDOFF_EXECUTOR)) {
+                        operation.get(HANDOFF_EXECUTOR).set(pool.get(HANDOFF_EXECUTOR));
+                    }
+                    result.add(operation);
+                }
+            }
+        }
+
+        private void addThreadFactories(final ModelNode result, final ModelNode model) {
+            if (model.hasDefined(THREAD_FACTORY)) {
+                ModelNode pools = model.get(THREAD_FACTORY);
+                for (Property poolProp : pools.asPropertyList()) {
+                    final ModelNode operation = Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(THREAD_FACTORY, poolProp.getName())));
+                    final ModelNode pool = poolProp.getValue();
+
+                    operation.get(NAME).set(pool.require(NAME));
+                    if (pool.hasDefined(GROUP_NAME)) {
+                        operation.get(GROUP_NAME).set(pool.get(GROUP_NAME));
+                    }
+                    if (pool.hasDefined(THREAD_NAME_PATTERN)) {
+                        operation.get(THREAD_NAME_PATTERN).set(pool.get(THREAD_NAME_PATTERN));
+                    }
+                    if (pool.hasDefined(PRIORITY)) {
+                        operation.get(PRIORITY).set(pool.get(PRIORITY));
+                    }
+                    if (pool.hasDefined(PROPERTIES)) {
+                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
+                    }
+                    result.add(operation);
+                }
+            }
+        }
+
+        private void addScheduledThreadPools(final ModelNode result, final ModelNode model) {
+            if (model.hasDefined(SCHEDULED_THREAD_POOL)) {
+                ModelNode pools = model.get(SCHEDULED_THREAD_POOL);
+                for (Property poolProp : pools.asPropertyList()) {
+                    final ModelNode operation = Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(SCHEDULED_THREAD_POOL, poolProp.getName())));
+                    final ModelNode pool = poolProp.getValue();
+
+                    operation.get(NAME).set(pool.require(NAME));
+                    if (pool.hasDefined(THREAD_FACTORY)) {
+                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
+                    }
+                    if (pool.hasDefined(PROPERTIES)) {
+                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
+                    }
+                    if (pool.hasDefined(MAX_THREADS)) {
+                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
+                    }
+                    if (pool.hasDefined(KEEPALIVE_TIME)) {
+                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
+                    }
+                    result.add(operation);
+                }
+            }
+        }
+
+        private void addUnboundedQueueThreadPools(final ModelNode result, final ModelNode model) {
+            if (model.hasDefined(UNBOUNDED_QUEUE_THREAD_POOL)) {
+                ModelNode pools = model.get(UNBOUNDED_QUEUE_THREAD_POOL);
+                for (Property poolProp : pools.asPropertyList()) {
+                    final ModelNode operation = Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL, poolProp.getName())));
+                    final ModelNode pool = poolProp.getValue();
+
+                    operation.get(NAME).set(pool.require(NAME));
+                    if (pool.hasDefined(THREAD_FACTORY)) {
+                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
+                    }
+                    if (pool.hasDefined(PROPERTIES)) {
+                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
+                    }
+                    if (pool.hasDefined(MAX_THREADS)) {
+                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
+                    }
+                    if (pool.hasDefined(KEEPALIVE_TIME)) {
+                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
+                    }
+                    result.add(operation);
+                }
+            }
+        }
+
+        private ModelNode pathAddress(PathElement...elements) {
+            return PathAddress.pathAddress(elements).toModelNode();
+        }
+    }
+
 }
