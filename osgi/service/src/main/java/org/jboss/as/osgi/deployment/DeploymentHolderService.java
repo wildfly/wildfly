@@ -98,7 +98,7 @@ public class DeploymentHolderService extends AbstractService<Deployment> {
     }
 
     public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = Services.JBOSS_DEPLOYMENT.append(contextName);
+        ServiceName deploymentServiceName = Services.deploymentUnitName(contextName);
         return SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 

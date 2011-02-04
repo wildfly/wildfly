@@ -85,7 +85,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
-        serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT.append(contextName));
+        serviceBuilder.addDependency(Services.deploymentUnitName(contextName));
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.addListener(listener);
@@ -104,7 +104,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
      * Get the OSGiDeploymentService name for a given context
      */
     public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = Services.JBOSS_DEPLOYMENT.append(contextName);
+        ServiceName deploymentServiceName = Services.deploymentUnitName(contextName);
         return OSGiDeploymentService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 
@@ -151,7 +151,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
 
         // [JBAS-8801] Undeployment leaks root deployment service
         // [TODO] remove this workaround
-        ServiceName serviceName = Services.JBOSS_DEPLOYMENT.append(context.getController().getName().getSimpleName());
+        ServiceName serviceName = Services.deploymentUnitName(context.getController().getName().getSimpleName());
         ServiceController<?> deploymentController = context.getController().getServiceContainer().getService(serviceName);
         if (deploymentController != null) {
             deploymentController.setMode(Mode.REMOVE);

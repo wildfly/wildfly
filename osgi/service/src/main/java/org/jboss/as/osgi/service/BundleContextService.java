@@ -109,7 +109,7 @@ public class BundleContextService implements Service<BundleContext> {
                     // Check if we have an {@link OSGiDeploymentService}
                     ServiceContainer container = context.getController().getServiceContainer();
                     ServiceName osgiDeploymentService = OSGiDeploymentService.getServiceName(contextName);
-                    ServiceName deploymentService = Services.JBOSS_DEPLOYMENT.append(contextName);
+                    ServiceName deploymentService = Services.deploymentUnitName(contextName);
                     if (container.getService(deploymentService) != null && container.getService(osgiDeploymentService) == null) {
                         ServiceName serviceName = ModuleRegistrationService.getServiceName(contextName);
                         try {

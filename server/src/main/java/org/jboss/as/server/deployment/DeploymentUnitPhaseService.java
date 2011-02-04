@@ -110,7 +110,8 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         final Phase nextPhase = phase.next();
         if (nextPhase != null) {
             final String name = deploymentUnit.getName();
-            final ServiceName serviceName = Services.JBOSS_DEPLOYMENT_UNIT.append(name).append(nextPhase.name());
+            final DeploymentUnit parent = deploymentUnit.getParent();
+            final ServiceName serviceName = parent == null ? Services.deploymentUnitName(name, nextPhase) : Services.deploymentUnitName(parent.getName(), name, nextPhase);
             final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(nextPhase);
             final ServiceBuilder<?> phaseServiceBuilder = serviceTarget.addService(serviceName, phaseService);
             phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService.getDeploymentUnitInjector());

@@ -62,7 +62,7 @@ public class ModuleRegistrationService extends AbstractService<Deployment> {
         ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
-        serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT.append(contextName));
+        serviceBuilder.addDependency(Services.deploymentUnitName(contextName));
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.install();
     }
@@ -71,7 +71,7 @@ public class ModuleRegistrationService extends AbstractService<Deployment> {
      * Get the service name for a given context
      */
     public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = Services.JBOSS_DEPLOYMENT.append(contextName);
+        ServiceName deploymentServiceName = Services.deploymentUnitName(contextName);
         return ModuleRegistrationService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 
@@ -92,7 +92,7 @@ public class ModuleRegistrationService extends AbstractService<Deployment> {
 
             // [JBAS-8801] Undeployment leaks root deployment service
             // [TODO] remove this workaround
-            ServiceName serviceName = Services.JBOSS_DEPLOYMENT.append(controller.getName().getSimpleName());
+            ServiceName serviceName = Services.deploymentUnitName(controller.getName().getSimpleName());
             ServiceController<?> deploymentController = serviceContainer.getService(serviceName);
             if (deploymentController != null) {
                 deploymentController.setMode(Mode.REMOVE);

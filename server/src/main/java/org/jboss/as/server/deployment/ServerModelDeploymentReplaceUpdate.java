@@ -100,7 +100,7 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     @Override
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         if (deploymentElement != null) {
-            final ServiceController<?> controller = updateContext.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(newDeployment));
+            final ServiceController<?> controller = updateContext.getServiceRegistry().getService(Services.deploymentUnitName(newDeployment));
             if(controller != null) {
                 controller.addListener(new AbstractServiceListener<Object>() {
                     public void serviceRemoved(ServiceController<? extends Object> serviceController) {
@@ -125,7 +125,7 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     private void deploy(final UpdateContext updateContext) {
         final ServiceTarget serviceTarget = updateContext.getServiceTarget();
         final RootDeploymentUnitService service = new RootDeploymentUnitService(newDeployment, newDeploymentRuntimeName, newDeploymentHash, null);
-        serviceTarget.addService(Services.JBOSS_DEPLOYMENT.append(newDeployment), service)
+        serviceTarget.addService(Services.deploymentUnitName(newDeployment), service)
             .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
             .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)

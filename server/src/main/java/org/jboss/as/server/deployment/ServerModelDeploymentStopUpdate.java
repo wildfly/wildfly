@@ -80,7 +80,7 @@ public class ServerModelDeploymentStopUpdate extends AbstractServerModelUpdate<V
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         // TODO using the deploymentElement cached in the model update method
         // has a bad smell
-        final ServiceName deploymentUnitServiceName = Services.JBOSS_DEPLOYMENT.append(deploymentUnitName);
+        final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
 
         if (deploymentElement != null) {

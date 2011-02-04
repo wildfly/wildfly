@@ -121,7 +121,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             final String depName = dependency.getIdentifier().getName();
             if(depName.startsWith(DEPLOYMENT_MODULE_PREFIX)) {
                 final String depDeploymentName = depName.substring(DEPLOYMENT_MODULE_PREFIX.length());
-                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, Services.JBOSS_DEPLOYMENT_UNIT.append(depDeploymentName).append(Phase.CONFIGURE_MODULE.name()));
+                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, Services.deploymentUnitName(depDeploymentName, Phase.CONFIGURE_MODULE));
             }
         }
         if (!childFirst) {

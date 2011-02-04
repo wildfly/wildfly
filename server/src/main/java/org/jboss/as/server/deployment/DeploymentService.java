@@ -50,10 +50,6 @@ public class DeploymentService implements Service<Void> {
         this.deploymentMount = deploymentMount;
     }
 
-    public static ServiceName getServiceName(String deploymentName) {
-        return Services.JBOSS_DEPLOYMENT_UNIT.append(deploymentName);
-    }
-
     /**
      * Start the deployment. This will re-mount the deployment root if service is restarted.
      *
