@@ -81,7 +81,6 @@ public final class NewServerStartTask implements ServerTask, Serializable, Objec
                 return updates;
             }
         });
-        configuration.setPortOffset(portOffset);
         bootstrap.start(configuration, startServices);
     }
 

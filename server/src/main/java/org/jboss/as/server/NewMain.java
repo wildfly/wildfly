@@ -30,12 +30,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.namespace.QName;
-
-import org.jboss.as.controller.parsing.StandaloneXml;
-import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.model.Namespace;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
@@ -85,13 +79,6 @@ public final class NewMain {
                 final NewBootstrap.Configuration configuration = new NewBootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getSystemModuleLoader());
-                configuration.setPortOffset(0);
-                QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-                StandaloneXml parser = new StandaloneXml(Module.getSystemModuleLoader());
-//                // Disable store() until marshallers are written
-//                ExtensibleConfigurationPersister persister = new TempHackConfigurationPersister(new File(serverEnvironment.getServerConfigurationDir(), "standalone.xml"), rootElement, parser, parser);
-                ExtensibleConfigurationPersister persister = new BackupXmlConfigurationPersister(new File(serverEnvironment.getServerConfigurationDir(), "standalone.xml"), rootElement, parser, parser);
-                configuration.setConfigurationPersister(persister);
                 bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
                 return;
             }
@@ -184,19 +171,4 @@ public final class NewMain {
 
         return url;
     }
-
-//    /** Disables store() until marshallers are written */
-//    private static class TempHackConfigurationPersister extends BackupXmlConfigurationPersister {
-//
-//        public TempHackConfigurationPersister(File fileName, QName rootElement,
-//                XMLElementReader<List<ModelNode>> rootParser, XMLElementWriter<ModelMarshallingContext> rootDeparser) {
-//            super(fileName, rootElement, rootParser, rootDeparser);
-//        }
-//
-//        @Override
-//        public void store(ModelNode model) throws ConfigurationPersistenceException {
-//            return;
-//        }
-//
-//    }
 }

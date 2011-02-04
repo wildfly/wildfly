@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import java.util.List;
+
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -45,7 +46,8 @@ import org.jboss.threads.JBossExecutors;
 final class NewBootstrapImpl implements NewBootstrap {
     private final ServiceContainer container = ServiceContainer.Factory.create("jboss-as");
 
-    public AsyncFuture<NewServerController> start(final Configuration configuration, final List<ServiceActivator> extraServices) {
+    @Override
+    public AsyncFuture<ServiceContainer> start(final Configuration configuration, final List<ServiceActivator> extraServices) {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
@@ -65,27 +67,31 @@ final class NewBootstrapImpl implements NewBootstrap {
         if (configurationPersister == null) {
             throw new IllegalArgumentException("configurationPersister is null");
         }
-        final FutureServerController future = new FutureServerController(container);
+        final FutureServiceContainer future = new FutureServiceContainer(container);
         final ServiceTarget tracker = container.subTarget();
         final Service<?> applicationServerService = new NewApplicationServerService(extraServices, configuration);
         tracker.addService(Services.JBOSS_AS, applicationServerService)
             .install();
         final ServiceController<?> rootService = container.getRequiredService(Services.JBOSS_AS);
         rootService.addListener(new AbstractServiceListener<Object>() {
+            @Override
             public void serviceStarted(final ServiceController<?> controller) {
                 controller.removeListener(this);
                 final ServiceController<?> controllerServiceController = controller.getServiceContainer().getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
                 controllerServiceController.addListener(new AbstractServiceListener<Object>() {
+                    @Override
                     public void serviceStarted(final ServiceController<?> controller) {
                         future.done((NewServerController) controller.getValue());
                         controller.removeListener(this);
                     }
 
+                    @Override
                     public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
                         future.failed(reason);
                         controller.removeListener(this);
                     }
 
+                    @Override
                     public void serviceRemoved(final ServiceController<?> controller) {
                         future.failed(new ServiceNotFoundException("Server controller service was removed"));
                         controller.removeListener(this);
@@ -93,11 +99,13 @@ final class NewBootstrapImpl implements NewBootstrap {
                 });
             }
 
+            @Override
             public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
                 controller.removeListener(this);
                 future.failed(reason);
             }
 
+            @Override
             public void serviceRemoved(final ServiceController<?> controller) {
                 controller.removeListener(this);
                 future.failed(new ServiceNotFoundException("Root service was removed"));
@@ -106,17 +114,19 @@ final class NewBootstrapImpl implements NewBootstrap {
         return future;
     }
 
-    private static class FutureServerController extends AsyncFutureTask<NewServerController> {
+    private static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
         private final ServiceContainer container;
 
-        public FutureServerController(final ServiceContainer container) {
+        public FutureServiceContainer(final ServiceContainer container) {
             super(JBossExecutors.directExecutor());
             this.container = container;
         }
 
+        @Override
         public void asyncCancel(final boolean interruptionDesired) {
             container.shutdown();
             container.addTerminateListener(new ServiceContainer.TerminateListener() {
+                @Override
                 public void handleTermination(final Info info) {
                     setCancelled();
                 }
@@ -124,7 +134,7 @@ final class NewBootstrapImpl implements NewBootstrap {
         }
 
         void done(NewServerController controller) {
-            setResult(controller);
+            setResult(container);
         }
 
         void failed(Throwable t) {

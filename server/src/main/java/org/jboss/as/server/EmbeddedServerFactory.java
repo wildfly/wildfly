@@ -42,11 +42,11 @@ import java.util.Properties;
 import java.util.logging.LogManager;
 
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.modules.log.JDKModuleLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.log.JDKModuleLogger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.threads.AsyncFuture;
 
@@ -114,21 +114,21 @@ public class EmbeddedServerFactory {
 
         StandaloneServer standaloneServer = new StandaloneServer() {
 
-            private Object serverController;
+            private Object serviceContainer;
 
             @Override
             public void start() throws ServerStartException {
                 try {
                     // Determine the ServerEnvironment
-                    Class<?> serverMainClass = serverModuleClassLoader.loadClass(Main.class.getName());
+                    Class<?> serverMainClass = serverModuleClassLoader.loadClass(NewMain.class.getName());
                     Method determineEnvironmentMethod = serverMainClass.getMethod("determineEnvironment", String[].class, Properties.class, Map.class);
                     Object serverEnvironment = determineEnvironmentMethod.invoke(null, new String[0], systemProps, systemEnv);
 
-                    Class<?> bootstrapFactoryClass = serverModuleClassLoader.loadClass(Bootstrap.Factory.class.getName());
+                    Class<?> bootstrapFactoryClass = serverModuleClassLoader.loadClass(NewBootstrap.Factory.class.getName());
                     Method newInstanceMethod = bootstrapFactoryClass.getMethod("newInstance");
                     Object bootstrap = newInstanceMethod.invoke(null);
 
-                    Class<?> configurationClass = serverModuleClassLoader.loadClass(Bootstrap.Configuration.class.getName());
+                    Class<?> configurationClass = serverModuleClassLoader.loadClass(NewBootstrap.Configuration.class.getName());
                     Constructor<?> configurationCtor = configurationClass.getConstructor();
                     Object configuration = configurationCtor.newInstance();
 
@@ -138,13 +138,13 @@ public class EmbeddedServerFactory {
                     Method setModuleLoaderMethod = configurationClass.getMethod("setModuleLoader", ModuleLoader.class);
                     setModuleLoaderMethod.invoke(configuration, moduleLoader);
 
-                    Class<?> bootstrapClass = serverModuleClassLoader.loadClass(Bootstrap.class.getName());
+                    Class<?> bootstrapClass = serverModuleClassLoader.loadClass(NewBootstrap.class.getName());
                     Method bootstrapStartMethod = bootstrapClass.getMethod("start", configurationClass, List.class);
                     Object future = bootstrapStartMethod.invoke(bootstrap, configuration, Collections.<ServiceActivator>emptyList());
 
                     Class<?> asyncFutureClass = serverModuleClassLoader.loadClass(AsyncFuture.class.getName());
                     Method getMethod = asyncFutureClass.getMethod("get");
-                    serverController = getMethod.invoke(future);
+                    serviceContainer = getMethod.invoke(future);
 
                 } catch (RuntimeException rte) {
                     throw rte;
@@ -155,14 +155,14 @@ public class EmbeddedServerFactory {
 
             @Override
             public void stop() {
-                if (serverController != null) {
+                if (serviceContainer != null) {
                     try {
-                        Class<?> serverControllerClass = serverModuleClassLoader.loadClass(ServerController.class.getName());
+                        Class<?> serverControllerClass = serverModuleClassLoader.loadClass(NewServerController.class.getName());
                         Method shutdownMethod = serverControllerClass.getMethod("shutdown");
-                        shutdownMethod.invoke(serverController);
+                        shutdownMethod.invoke(serviceContainer);
 
                         Method awaitTerminationMethod = serverControllerClass.getMethod("awaitTermination");
-                        awaitTerminationMethod.invoke(serverController);
+                        awaitTerminationMethod.invoke(serviceContainer);
                     } catch (RuntimeException rte) {
                         throw rte;
                     } catch (Exception ex) {

@@ -22,14 +22,20 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+
+import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.threads.AsyncFuture;
 
 /**
@@ -47,9 +53,9 @@ public interface NewBootstrap {
      *
      * @param configuration the server configuration
      * @param extraServices additional services to start and stop with the server instance
-     * @return the future server controller
+     * @return the future service container
      */
-    AsyncFuture<NewServerController> start(Configuration configuration, List<ServiceActivator> extraServices);
+    AsyncFuture<ServiceContainer> start(Configuration configuration, List<ServiceActivator> extraServices);
 
     /**
      * The configuration for server bootstrap.
@@ -59,17 +65,8 @@ public interface NewBootstrap {
         private int portOffset;
         private ServerEnvironment serverEnvironment;
         private ModuleLoader moduleLoader = Module.getSystemModuleLoader();
-        private ExtensibleConfigurationPersister configurationPersister = new NullConfigurationPersister(new StandaloneXml(moduleLoader));
+        private ExtensibleConfigurationPersister configurationPersister;
         private long startTime = Module.getStartTime();
-
-        /**
-         * Get the port offset.
-         *
-         * @return the port offset
-         */
-        public int getPortOffset() {
-            return portOffset;
-        }
 
         /**
          * Set the port offset.
@@ -97,7 +94,7 @@ public interface NewBootstrap {
          *
          * @param serverEnvironment the server environment
          */
-        public void setServerEnvironment(final ServerEnvironment serverEnvironment) {
+        public synchronized void setServerEnvironment(final ServerEnvironment serverEnvironment) {
             this.serverEnvironment = serverEnvironment;
         }
 
@@ -124,7 +121,17 @@ public interface NewBootstrap {
          *
          * @return the configuration persister
          */
-        public ExtensibleConfigurationPersister getConfigurationPersister() {
+        public synchronized ExtensibleConfigurationPersister getConfigurationPersister() {
+            if (configurationPersister == null) {
+                if (serverEnvironment == null) {
+                    configurationPersister = new NullConfigurationPersister(new StandaloneXml(moduleLoader));
+                }
+                else {
+                    QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
+                    StandaloneXml parser = new StandaloneXml(Module.getSystemModuleLoader());
+                    configurationPersister = new BackupXmlConfigurationPersister(new File(serverEnvironment.getServerConfigurationDir(), "standalone.xml"), rootElement, parser, parser);
+                }
+            }
             return configurationPersister;
         }
 
@@ -133,7 +140,7 @@ public interface NewBootstrap {
          *
          * @param configurationPersister the configuration persister
          */
-        public void setConfigurationPersister(final ExtensibleConfigurationPersister configurationPersister) {
+        public synchronized void setConfigurationPersister(final ExtensibleConfigurationPersister configurationPersister) {
             this.configurationPersister = configurationPersister;
         }
 
