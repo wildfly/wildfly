@@ -44,7 +44,8 @@ public class ServiceActivator implements org.jboss.msc.service.ServiceActivator 
 
         serviceTarget.addService(ServiceName.JBOSS.append("BeanWithSimpleInjected", "rebind"), rebindService)
             .addDependency(ContextNames.MODULE_CONTEXT_SERVICE_NAME.append("managedbean-example.jar"), Context.class, rebindService.getLookupContextInjector())
-            .addDependency(ServiceName.JBOSS.append("deployment", "managedbean-example.jar", "component", "BeanWithSimpleInjected"))
+            .addDependency(ServiceName.JBOSS.append("deployment", "unit", "managedbean-example.jar", "component", "BeanWithSimpleInjected"))
+            .addDependency(ContextNames.MODULE_CONTEXT_SERVICE_NAME.append("managedbean-example.jar", "BeanWithSimpleInjected"))
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
     }

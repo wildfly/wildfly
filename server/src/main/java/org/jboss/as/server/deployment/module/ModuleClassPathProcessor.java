@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -62,7 +63,7 @@ public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
                 if (deploymentName.equals(".") || deploymentName.equals("..")) {
                     throw new DeploymentUnitProcessingException("Invalid relative path '" + classPath + "' in class path entry");
                 }
-                deps.add(ServiceName.JBOSS.append("deployment").append(deploymentName).append(phaseContext.getPhase().name()));
+                deps.add(Services.deploymentUnitName(deploymentName, phaseContext.getPhase()));
                 // TODO: Need to add a resource root with a "future" virtual file root from an injected dependency
                 // resourceRoots.add(new ResourceRoot(classPath, null, null, false));
             }

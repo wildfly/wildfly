@@ -91,6 +91,9 @@ public abstract class AbstractComponent implements Component {
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
     private final Interceptor componentInterceptor;
 
+    private volatile boolean gate;
+    private int problem;
+
     // initialized later
     private javax.naming.Context applicationContext;
     private javax.naming.Context moduleContext;
@@ -199,6 +202,20 @@ public abstract class AbstractComponent implements Component {
 
     /** {@inheritDoc} */
     public ComponentInstance createInstance() {
+        if (! gate) {
+            // Block until successful start
+            synchronized (this) {
+                while (! gate) {
+                    // TODO: check for failure condition
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Component not available (interrupted)");
+                    }
+                }
+            }
+        }
         NamespaceContextSelector.pushCurrentSelector(selector);
         try {
             Object objectInstance = createObjectInstance();
@@ -211,7 +228,8 @@ public abstract class AbstractComponent implements Component {
     }
 
     /**
-     * Create a new instance.
+     * Create a new component object instance.  After the instance is constructed, injections and lifecycle methods will
+     * be called upon it.
      *
      * @return the new instance
      */
@@ -231,8 +249,8 @@ public abstract class AbstractComponent implements Component {
     }
 
     /**
-     * Construct the component instance.  After the instance is constructed, injections and lifecycle methods will
-     * be called upon it.
+     * Construct the component instance.  The object instance will have injections and lifecycle invocations completed
+     * already.
      *
      * @param instance the object instance to wrap
      * @return the component instance
@@ -369,12 +387,19 @@ public abstract class AbstractComponent implements Component {
      * {@inheritDoc}
      */
     public void start() {
+        synchronized (this) {
+            gate = true;
+            notifyAll();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void stop() {
+        synchronized (this) {
+            gate = false;
+        }
     }
 
     Map<Method, InterceptorFactory> getInterceptorFactoryMap() {

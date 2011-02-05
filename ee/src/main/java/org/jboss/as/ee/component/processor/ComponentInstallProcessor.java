@@ -24,15 +24,17 @@ package org.jboss.as.ee.component.processor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import javax.naming.Context;
 import javax.naming.Reference;
+
+import java.util.List;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentBinding;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.ee.component.injection.ResourceInjectionDependency;
-import org.jboss.as.ee.component.service.ComponentService;
+import org.jboss.as.ee.component.service.ComponentCreateService;
+import org.jboss.as.ee.component.service.ComponentStartService;
 import org.jboss.as.naming.deployment.ResourceBinder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -59,17 +61,28 @@ public class ComponentInstallProcessor extends AbstractComponentConfigProcessor 
         final ComponentFactory componentFactory = componentConfiguration.getComponentFactory();
 
         // Create the component
-        final Component component = componentFactory.createComponent(deploymentUnit, componentConfiguration);
-        final ServiceName componentServiceName  = deploymentUnit.getServiceName().append("component").append(componentConfiguration.getName());
+        final ServiceName componentCreateServiceName  = deploymentUnit.getServiceName().append("component").append(componentConfiguration.getName());
+        final ServiceName componentStartServiceName  = deploymentUnit.getServiceName().append("component").append(componentConfiguration.getName()).append("START");
+
+        ComponentCreateService createService = new ComponentCreateService(componentFactory, componentConfiguration);
+        serviceTarget.addService(componentCreateServiceName, createService)
+            .addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, createService.getDeploymentUnitInjector())
+            .addDependency(componentConfiguration.getCompContextServiceName(), Context.class, createService.getCompContextInjector())
+            .addDependency(componentConfiguration.getModuleContextServiceName(), Context.class, createService.getModuleContextInjector())
+            .addDependency(componentConfiguration.getAppContextServiceName(), Context.class, createService.getAppContextInjector())
+            .install();
+
+        // Create required component bindings, each depending on the component create service
 
         // Create required component bindings
         final List<ServiceName> componentBindingDeps = new ArrayList<ServiceName>();
-        final Collection<ComponentBinding> componentBindings = componentFactory.getComponentBindings(deploymentUnit, componentConfiguration,componentServiceName);
+        final Collection<ComponentBinding> componentBindings = componentFactory.getComponentBindings(deploymentUnit, componentConfiguration,componentStartServiceName);
         if(componentBindings != null) {
             for(ComponentBinding componentBinding : componentBindings) {
                 final ResourceBinder<Reference> factoryBinder = new ResourceBinder<Reference>(componentBinding.getBindName(), Values.immediateValue(componentBinding.getReference()));
                 final ServiceName referenceBinderName = componentBinding.getContextServiceName().append(componentBinding.getBindName());
                 serviceTarget.addService(referenceBinderName, factoryBinder)
+                        .addDependency(componentCreateServiceName)
                         .addDependency(componentBinding.getContextServiceName(), Context.class, factoryBinder.getContextInjector())
                         .setInitialMode(ServiceController.Mode.ON_DEMAND)
                         .install();
@@ -77,12 +90,12 @@ public class ComponentInstallProcessor extends AbstractComponentConfigProcessor 
             }
         }
 
-        final ComponentService componentService = new ComponentService(component);
-        final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(componentServiceName, componentService)
+        // TODO: set up start service so that if a dep is failed or missing, createInstance fails fast
+        // Create the component start service, which depends on all injections and the create service
+        final ComponentStartService startService = new ComponentStartService();
+        final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(componentStartServiceName, startService)
                 .addDependencies(componentBindingDeps)
-                .addDependency(componentConfiguration.getCompContextServiceName(), Context.class, componentService.getCompContextInjector())
-                .addDependency(componentConfiguration.getModuleContextServiceName(), Context.class, componentService.getModuleContextInjector())
-                .addDependency(componentConfiguration.getAppContextServiceName(), Context.class, componentService.getAppContextInjector())
+                .addDependency(componentCreateServiceName, Component.class, startService.getComponentInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
 
         // Make sure all the dependencies are in place for the component's resource injections

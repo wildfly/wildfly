@@ -50,14 +50,18 @@ public interface Component {
     Class<?> getComponentClass();
 
     /**
-     * Create a new instance of this component.
+     * Create a new instance of this component.  This may be invoked by a component interceptor, a client interceptor,
+     * or in the course of creating a new client, or in the case of an "eager" singleton, at component start.  This
+     * method will block until the component is available.  If the component fails to start then a runtime exception
+     * will be thrown.
      *
      * @return the component instance
      */
     ComponentInstance createInstance();
 
     /**
-     * Destroy an instance of the component.
+     * Destroy an instance of the component.  This method causes all uninjection and pre-destroy lifecycle invocations
+     * to occur.
      *
      * @param instance the instance to destroy
      */
