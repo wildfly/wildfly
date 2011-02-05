@@ -25,6 +25,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.webservices.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.webservices.CommonAttributes.MODIFY_SOAP_ADDRESS;
 import static org.jboss.as.webservices.CommonAttributes.WEBSERVICE_HOST;
@@ -43,7 +46,6 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -110,9 +112,7 @@ public class NewWSExtension implements NewExtension {
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             // no attributes
-            if (reader.getAttributeCount() > 0) {
-                throw ParseUtils.unexpectedAttribute(reader, 0);
-            }
+            requireNoAttributes(reader);
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
@@ -127,7 +127,7 @@ public class NewWSExtension implements NewExtension {
                         final Element element = Element.forName(reader.getLocalName());
                         required.remove(element);
                         if (!encountered.add(element)) {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                         switch (element) {
                             case CONFIGURATION: {
@@ -136,19 +136,19 @@ public class NewWSExtension implements NewExtension {
                                 break;
                             }
                             default: {
-                                throw ParseUtils.unexpectedElement(reader);
+                                throw unexpectedElement(reader);
                             }
                         }
                         break;
                     }
                     default: {
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                     }
                 }
             }
 
             if (!required.isEmpty()) {
-                throw ParseUtils.missingRequiredElement(reader, required);
+                throw missingRequiredElement(reader, required);
             }
 
             list.add(subsystem);
@@ -157,9 +157,7 @@ public class NewWSExtension implements NewExtension {
         private ModelNode parseConfigurationElement(XMLExtendedStreamReader reader) throws XMLStreamException {
             final ModelNode configuration = new ModelNode();
             // no attributes
-            if (reader.getAttributeCount() > 0) {
-                throw ParseUtils.unexpectedAttribute(reader, 0);
-            }
+            requireNoAttributes(reader);
 
             // elements
             final EnumSet<Element> required = EnumSet.of(Element.MODIFY_SOAP_ADDRESS, Element.WEBSERVICE_HOST);
@@ -171,7 +169,7 @@ public class NewWSExtension implements NewExtension {
                         final Element element = Element.forName(reader.getLocalName());
                         required.remove(element);
                         if (!encountered.add(element)) {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                         switch (element) {
                             case WEBSERVICE_HOST: {
@@ -191,19 +189,19 @@ public class NewWSExtension implements NewExtension {
                                 break;
                             }
                             default: {
-                                throw ParseUtils.unexpectedElement(reader);
+                                throw unexpectedElement(reader);
                             }
                         }
                         break;
                     }
                     default: {
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                     }
                 }
             }
 
             if (!required.isEmpty()) {
-                throw ParseUtils.missingRequiredElement(reader, required);
+                throw missingRequiredElement(reader, required);
             }
 
             return configuration;
@@ -211,9 +209,7 @@ public class NewWSExtension implements NewExtension {
 
         private String parseElementNoAttributes(XMLExtendedStreamReader reader) throws XMLStreamException {
             // no attributes
-            if (reader.getAttributeCount() > 0) {
-                throw ParseUtils.unexpectedAttribute(reader, 0);
-            }
+            requireNoAttributes(reader);
 
             return reader.getElementText().trim();
         }

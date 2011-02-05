@@ -26,6 +26,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
 import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
@@ -41,7 +44,6 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -85,32 +87,29 @@ public class NewSecurityExtension implements NewExtension {
             // read attributes
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case AUTHENTICATION_MANAGER_CLASS_NAME: {
-                            subsystem.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(value);
-                            break;
-                        }
-                        case DEEP_COPY_SUBJECT_MODE: {
-                            subsystem.get(DEEP_COPY_SUBJECT_MODE).set(value);
-                            break;
-                        }
-                        case DEFAULT_CALLBACK_HANDLER_CLASS_NAME: {
-                            subsystem.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).set(value);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedAttribute(reader, i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case AUTHENTICATION_MANAGER_CLASS_NAME: {
+                        subsystem.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(value);
+                        break;
                     }
+                    case DEEP_COPY_SUBJECT_MODE: {
+                        subsystem.get(DEEP_COPY_SUBJECT_MODE).set(value);
+                        break;
+                    }
+                    case DEFAULT_CALLBACK_HANDLER_CLASS_NAME: {
+                        subsystem.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).set(value);
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
                 }
             }
 
             // no sub elements yet
-            ParseUtils.requireNoContent(reader);
+            requireNoContent(reader);
 
             list.add(subsystem);
         }

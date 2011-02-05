@@ -26,11 +26,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.model.ParseUtils.invalidAttributeValue;
-import static org.jboss.as.model.ParseUtils.missingRequired;
-import static org.jboss.as.model.ParseUtils.missingRequiredElement;
-import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.model.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.threads.Constants.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.Constants.BLOCKING;
 import static org.jboss.as.threads.Constants.BOUNDED_QUEUE_THREAD_POOL;
@@ -91,7 +92,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -209,37 +209,34 @@ public class NewThreadsExtension implements NewExtension {
             String name = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case NAME: {
-                        op.get(NAME).set(value);
-                        name = value;
-                        break;
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case NAME: {
+                    op.get(NAME).set(value);
+                    name = value;
+                    break;
+                }
+                case GROUP_NAME: {
+                    op.get(GROUP_NAME).set(value);
+                    break;
+                }
+                case THREAD_NAME_PATTERN: {
+                    op.get(THREAD_NAME_PATTERN).set(value);
+                    break;
+                }
+                case PRIORITY: {
+                    try {
+                        int priority = Integer.valueOf(value);
+                        op.get(PRIORITY).set(priority);
+                    } catch (NumberFormatException e) {
+                        invalidAttributeValue(reader, i);
                     }
-                    case GROUP_NAME: {
-                        op.get(GROUP_NAME).set(value);
-                        break;
-                    }
-                    case THREAD_NAME_PATTERN: {
-                        op.get(THREAD_NAME_PATTERN).set(value);
-                        break;
-                    }
-                    case PRIORITY: {
-                        try {
-                            int priority = Integer.valueOf(value);
-                            op.get(PRIORITY).set(priority);
-                        } catch (NumberFormatException e) {
-                            invalidAttributeValue(reader, i);
-                        }
-                    }
-                        break;
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                }
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -282,26 +279,23 @@ public class NewThreadsExtension implements NewExtension {
             String name = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case NAME: {
-                        op.get(NAME).set(value);
-                        name = value;
-                        break;
-                    } case BLOCKING : {
-                        op.get(BLOCKING).set(Boolean.valueOf(value));
-                        break;
-                    } case ALLOW_CORE_TIMEOUT: {
-                        op.get(ALLOW_CORE_TIMEOUT).set(Boolean.valueOf(value));
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case NAME: {
+                    op.get(NAME).set(value);
+                    name = value;
+                    break;
+                } case BLOCKING : {
+                    op.get(BLOCKING).set(Boolean.valueOf(value));
+                    break;
+                } case ALLOW_CORE_TIMEOUT: {
+                    op.get(ALLOW_CORE_TIMEOUT).set(Boolean.valueOf(value));
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -391,20 +385,17 @@ public class NewThreadsExtension implements NewExtension {
             String name = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case NAME: {
-                        op.get(NAME).set(value);
-                        name = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case NAME: {
+                    op.get(NAME).set(value);
+                    name = value;
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -467,20 +458,17 @@ public class NewThreadsExtension implements NewExtension {
             String name = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case NAME: {
-                        op.get(NAME).set(value);
-                        name = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case NAME: {
+                    op.get(NAME).set(value);
+                    name = value;
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -543,23 +531,20 @@ public class NewThreadsExtension implements NewExtension {
             String name = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case NAME: {
-                        op.get(NAME).set(value);
-                        name = value;
-                        break;
-                    } case BLOCKING : {
-                        op.get(BLOCKING).set(Boolean.valueOf(value));
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case NAME: {
+                    op.get(NAME).set(value);
+                    name = value;
+                    break;
+                } case BLOCKING : {
+                    op.get(BLOCKING).set(Boolean.valueOf(value));
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -623,31 +608,28 @@ public class NewThreadsExtension implements NewExtension {
             BigDecimal count = null;
             BigDecimal perCpu = null;
             for (int i = 0; i < attrCount; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case COUNT: {
-                        try {
-                            count = new BigDecimal(value);
-                        } catch (NumberFormatException e) {
-                            throw invalidAttributeValue(reader, i);
-                        }
-                        break;
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case COUNT: {
+                    try {
+                        count = new BigDecimal(value);
+                    } catch (NumberFormatException e) {
+                        throw invalidAttributeValue(reader, i);
                     }
-                    case PER_CPU: {
-                        try {
-                            perCpu = new BigDecimal(value);
-                        } catch (NumberFormatException e) {
-                            throw invalidAttributeValue(reader, i);
-                        }
-                        break;
+                    break;
+                }
+                case PER_CPU: {
+                    try {
+                        perCpu = new BigDecimal(value);
+                    } catch (NumberFormatException e) {
+                        throw invalidAttributeValue(reader, i);
                     }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -675,23 +657,20 @@ public class NewThreadsExtension implements NewExtension {
             TimeUnit unit = null;
             Long duration = null;
             for (int i = 0; i < attrCount; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case TIME: {
-                        duration = reader.getLongAttributeValue(i);
-                        break;
-                    }
-                    case UNIT: {
-                        unit = Enum.valueOf(TimeUnit.class, value.toUpperCase());
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case TIME: {
+                    duration = reader.getLongAttributeValue(i);
+                    break;
+                }
+                case UNIT: {
+                    unit = Enum.valueOf(TimeUnit.class, value.toUpperCase());
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -716,19 +695,16 @@ public class NewThreadsExtension implements NewExtension {
             final int attrCount = reader.getAttributeCount();
             String refName = null;
             for (int i = 0; i < attrCount; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                    case NAME: {
-                        refName = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case NAME: {
+                    refName = value;
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -751,23 +727,20 @@ public class NewThreadsExtension implements NewExtension {
                         String propName = null;
                         String propValue = null;
                         for (int i = 0; i < attrCount; i++) {
+                            requireNoNamespaceAttribute(reader, i);
                             final String value = reader.getAttributeValue(i);
-                            if (reader.getAttributeNamespace(i) != null) {
-                                throw ParseUtils.unexpectedAttribute(reader, i);
-                            } else {
-                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                                switch (attribute) {
-                                case NAME: {
-                                    propName = value;
-                                    break;
-                                }
-                                case VALUE: {
-                                    propValue = value;
-                                }
-                                    break;
-                                default:
-                                    throw unexpectedAttribute(reader, i);
-                                }
+                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                            switch (attribute) {
+                            case NAME: {
+                                propName = value;
+                                break;
+                            }
+                            case VALUE: {
+                                propValue = value;
+                            }
+                                break;
+                            default:
+                                throw unexpectedAttribute(reader, i);
                             }
                         }
                         if (propName == null || propValue == null) {

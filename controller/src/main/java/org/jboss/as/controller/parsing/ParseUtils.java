@@ -30,8 +30,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
@@ -237,6 +240,29 @@ public final class ParseUtils {
         return value;
     }
 
+    public static Property readProperty(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final int cnt = reader.getAttributeCount();
+        String name = null;
+        String value = null;
+        for (int i = 0; i < cnt; i ++) {
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final String localName = reader.getAttributeLocalName(i);
+            if (localName.equals("name")) {
+                name = reader.getAttributeValue(i);
+            } else if (localName.equals("value")) {
+                value = reader.getAttributeValue(i);
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton("name"));
+        }
+        return new Property(name, new ModelNode().set(value == null ? "" : value));
+    }
+
     /**
      * Read an element which contains only a single list attribute of a given type, returning it as an array.
      *
@@ -267,7 +293,8 @@ public final class ParseUtils {
         if (count == 0) {
             throw missingRequired(reader, Collections.singleton(attributeName));
         }
-        if (reader.getAttributeNamespace(0) != null || ! attributeName.equals(reader.getAttributeLocalName(0))) {
+        requireNoNamespaceAttribute(reader, 0);
+        if  (! attributeName.equals(reader.getAttributeLocalName(0))) {
             throw unexpectedAttribute(reader, 0);
         }
         if (count > 1) {
@@ -297,6 +324,18 @@ public final class ParseUtils {
         return result;
     }
 
+    public static boolean isNoNamespaceAttribute(final XMLExtendedStreamReader reader, final int index) {
+        String namespace = reader.getAttributeNamespace(index);
+        // FIXME when STXM-8 is done, remove the null check
+        return namespace == null || XMLConstants.NULL_NS_URI.equals(namespace);
+    }
+
+    public static void requireNoNamespaceAttribute(final XMLExtendedStreamReader reader, final int index) throws XMLStreamException {
+        if (!isNoNamespaceAttribute(reader, index)) {
+            throw unexpectedAttribute(reader, index);
+        }
+    }
+
     public static int parseBoundedIntegerAttribute(final XMLExtendedStreamReader reader, final int index, final int minInclusive, final int maxInclusive) throws XMLStreamException {
         final String stringValue = reader.getAttributeValue(index);
         try {
@@ -309,7 +348,7 @@ public final class ParseUtils {
             return value;
         } catch (NumberFormatException nfe) {
             throw new XMLStreamException("Illegal value '" + stringValue +
-                    "' for attribute '" + reader.getAttributeNamespace(index) +
+                    "' for attribute '" + reader.getAttributeName(index) +
                     "' must be an integer", reader.getLocation(), nfe);
         }
     }

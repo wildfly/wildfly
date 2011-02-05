@@ -34,10 +34,12 @@ import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.model.ParseUtils.missingRequired;
-import static org.jboss.as.model.ParseUtils.missingRequiredElement;
-import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.model.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -52,7 +54,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -234,7 +235,7 @@ public class NewConnectorExtension implements NewExtension {
                 }
             }
             // Handle elements
-            ParseUtils.requireNoContent(reader);
+            requireNoContent(reader);
 
         }
 
@@ -263,12 +264,12 @@ public class NewConnectorExtension implements NewExtension {
                 missingRequired(reader, required);
             }
             // Handle elements
-            ParseUtils.requireNoContent(reader);
+            requireNoContent(reader);
 
         }
 
         private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
-            final boolean enabled = ParseUtils.readBooleanAttributeElement(reader, Attribute.ENABLED.getLocalName());
+            final boolean enabled = readBooleanAttributeElement(reader, Attribute.ENABLED.getLocalName());
             node.get(BEAN_VALIDATION_ENABLED).set(enabled);
             // Don't add a requireNoContent here as readBooleanAttributeElement already performs that check.
         }

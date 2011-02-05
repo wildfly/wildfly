@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -74,9 +75,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.ManagementSocketAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
@@ -316,7 +315,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -405,7 +404,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -461,7 +460,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -520,7 +519,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -679,7 +678,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -709,7 +708,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -740,7 +739,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -770,7 +769,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -800,7 +799,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -830,7 +829,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -869,7 +868,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         final int count = reader.getAttributeCount();
                         for (int i = 0; i < count; i++) {
                             final String attrValue = reader.getAttributeValue(i);
-                            if (reader.getAttributeNamespace(i) != null) {
+                            if (!isNoNamespaceAttribute(reader, i)) {
                                 throw ParseUtils.unexpectedAttribute(reader, i);
                             }
                             else {
@@ -1064,7 +1063,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -1126,7 +1125,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));

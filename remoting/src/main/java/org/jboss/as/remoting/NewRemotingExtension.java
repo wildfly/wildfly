@@ -27,11 +27,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.model.ParseUtils.missingRequired;
-import static org.jboss.as.model.ParseUtils.readProperty;
-import static org.jboss.as.model.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.model.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
@@ -67,9 +68,9 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.model.ParseUtils;
-import org.jboss.as.model.Property;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -109,6 +110,7 @@ public class NewRemotingExtension implements NewExtension {
 
         private static final NewRemotingSubsystemParser INSTANCE = new NewRemotingSubsystemParser();
 
+        @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
             final ModelNode address = new ModelNode();
@@ -118,19 +120,16 @@ public class NewRemotingExtension implements NewExtension {
             String threadPoolName = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case THREAD_POOL: {
-                            threadPoolName = value;
-                            break;
-                        }
-                        default:
-                            throw unexpectedAttribute(reader, i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case THREAD_POOL: {
+                        threadPoolName = value;
+                        break;
                     }
+                    default:
+                        throw unexpectedAttribute(reader, i);
                 }
             }
             if (threadPoolName == null) {
@@ -175,24 +174,21 @@ public class NewRemotingExtension implements NewExtension {
             final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.SOCKET_BINDING);
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case NAME: {
-                            name = value;
-                            break;
-                        }
-                        case SOCKET_BINDING: {
-                            socketBinding = value;
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedAttribute(reader, i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        break;
                     }
-                    required.remove(attribute);
+                    case SOCKET_BINDING: {
+                        socketBinding = value;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
             if (! required.isEmpty()) {
@@ -369,7 +365,7 @@ public class NewRemotingExtension implements NewExtension {
             while (reader.nextTag() != END_ELEMENT) {
                 reader.require(START_ELEMENT, Namespace.CURRENT.getUriString(), Element.PROPERTY.getLocalName());
                 final Property property = readProperty(reader);
-                node.set(property.getName(), property.getValue());
+                node.set(property);
             }
         }
 

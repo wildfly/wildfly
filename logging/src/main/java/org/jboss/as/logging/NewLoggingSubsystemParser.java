@@ -29,6 +29,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
@@ -42,7 +45,6 @@ import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
-import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
@@ -52,8 +54,6 @@ import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
-import static org.jboss.as.model.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.model.ParseUtils.requireNoContent;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -161,7 +161,6 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
                 }
             }
         }
-
     }
 
 
@@ -172,24 +171,21 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.CATEGORY);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case CATEGORY: {
-                        name = value;
-                        break;
-                    }
-                    case USE_PARENT_HANDLERS: {
-                        useParentHandlers = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CATEGORY: {
+                    name = value;
+                    break;
                 }
-                required.remove(attribute);
+                case USE_PARENT_HANDLERS: {
+                    useParentHandlers = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
@@ -207,13 +203,12 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case LOGGING_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    if (encountered.contains(element)) {
+                    if (!encountered.add(element)) {
                         throw duplicateNamedElement(reader, reader.getLocalName());
                     }
-                    encountered.add(element);
                     switch (element) {
                         case LEVEL: {
-                            level = parseLevelElement(reader);
+                            level = readStringAttributeElement(reader, "name");
                             break;
                         }
                         case HANDLERS: {
@@ -247,20 +242,17 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.FILE_NAME, Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
@@ -338,7 +330,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
                     encountered.add(element);
                     switch (element) {
                         case LEVEL: {
-                            level = parseLevelElement(reader);
+                            level = readStringAttributeElement(reader, "name");
                             break;
                         }
                         case HANDLERS: {
@@ -355,6 +347,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
                 }
             }
         }
+
         final ModelNode node = new ModelNode();
         node.get(OP).set("set-root-logger");
         node.get(OP_ADDR).set(address);
@@ -370,24 +363,21 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
@@ -450,24 +440,21 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
@@ -540,24 +527,21 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
@@ -636,24 +620,21 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
@@ -783,24 +764,21 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case PATH: {
-                        path = value;
-                        break;
-                    }
-                    case RELATIVE_TO: {
-                        relativeTo = value;
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case PATH: {
+                    path = value;
+                    break;
+                }
+                case RELATIVE_TO: {
+                    relativeTo = value;
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
                 }
             }
         }
@@ -848,28 +826,23 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Attribute> required = EnumSet.of(Attribute.PATTERN);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case PATTERN: {
-                        pattern = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case PATTERN: {
+                    pattern = value;
+                    break;
                 }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        if (reader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(reader);
-        }
+        requireNoContent(reader);
         return pattern;
     }
 
@@ -887,7 +860,7 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case HANDLER: {
-                            handlers.add(parseRefElement(reader));
+                            handlers.add(readStringAttributeElement(reader, "name"));
                             break;
                         }
                         default:
@@ -901,69 +874,6 @@ public class NewLoggingSubsystemParser implements XMLStreamConstants, XMLElement
             }
         }
         return handlers;
-    }
-
-    private static String parseRefElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Attributes
-        String name = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                }
-                required.remove(attribute);
-            }
-        }
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-        if (reader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(reader);
-        }
-        return name;
-    }
-
-    static String parseLevelElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Attributes
-        String level = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        level = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                }
-                required.remove(attribute);
-            }
-        }
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-
-        if (reader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(reader);
-        }
-        return level;
     }
 
     /** {@inheritDoc} */

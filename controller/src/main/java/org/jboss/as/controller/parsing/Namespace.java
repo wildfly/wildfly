@@ -26,6 +26,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
+
 /**
  * An enumeration of the supported domain model namespaces.
  *
@@ -80,7 +82,8 @@ public enum Namespace {
     }
 
     public static Namespace forUri(String uri) {
-        if (uri == null) return NONE;
+        // FIXME when STXM-8 is done, remove the null check
+        if (uri == null || XMLConstants.NULL_NS_URI.equals(uri)) return NONE;
         final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }

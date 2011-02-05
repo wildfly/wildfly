@@ -26,9 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.model.ParseUtils.requireNoAttributes;
-import static org.jboss.as.model.ParseUtils.requireNoContent;
-import static org.jboss.as.model.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,9 +47,9 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -192,35 +193,32 @@ public class NewDeploymentScannerExtension implements NewExtension {
             String relativeTo = null;
             final int attrCount = reader.getAttributeCount();
             for (int i = 0; i < attrCount; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case PATH: {
-                            path = value;
-                            break;
-                        }
-                        case NAME: {
-                            name = value;
-                            break;
-                        }
-                        case RELATIVE_TO: {
-                            relativeTo = value;
-                            break;
-                        }
-                        case SCAN_INTERVAL: {
-                            interval = Integer.parseInt(value);
-                            break;
-                        }
-                        case SCAN_ENABLED: {
-                            enabled = Boolean.parseBoolean(value);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedAttribute(reader, i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PATH: {
+                        path = value;
+                        break;
                     }
+                    case NAME: {
+                        name = value;
+                        break;
+                    }
+                    case RELATIVE_TO: {
+                        relativeTo = value;
+                        break;
+                    }
+                    case SCAN_INTERVAL: {
+                        interval = Integer.parseInt(value);
+                        break;
+                    }
+                    case SCAN_ENABLED: {
+                        enabled = Boolean.parseBoolean(value);
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
             if (name == null) {

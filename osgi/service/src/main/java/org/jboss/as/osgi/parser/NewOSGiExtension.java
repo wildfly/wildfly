@@ -25,6 +25,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION_PROPERTIES;
@@ -46,7 +52,6 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -109,12 +114,12 @@ public class NewOSGiExtension implements NewExtension {
                                 break;
                             }
                             default:
-                                throw ParseUtils.unexpectedElement(reader);
+                                throw unexpectedElement(reader);
                         }
                         break;
                     }
                     default:
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                 }
             }
 
@@ -128,25 +133,22 @@ public class NewOSGiExtension implements NewExtension {
                     // Handle attributes
                     int count = reader.getAttributeCount();
                     for (int i = 0; i < count; i++) {
+                        requireNoNamespaceAttribute(reader, i);
                         final String attrValue = reader.getAttributeValue(i);
-                        if (reader.getAttributeNamespace(i) != null) {
-                            throw ParseUtils.unexpectedAttribute(reader, i);
-                        } else {
-                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                            switch (attribute) {
-                                case ACTIVATION: {
-                                    addOperation.get(ACTIVATION).set(attrValue);
-                                    break;
-                                }
-                                default:
-                                    throw ParseUtils.unexpectedAttribute(reader, i);
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case ACTIVATION: {
+                                addOperation.get(ACTIVATION).set(attrValue);
+                                break;
                             }
+                            default:
+                                throw unexpectedAttribute(reader, i);
                         }
                     }
                     break;
                 }
                 default:
-                    throw ParseUtils.unexpectedElement(reader);
+                    throw unexpectedElement(reader);
             }
         }
 
@@ -157,24 +159,21 @@ public class NewOSGiExtension implements NewExtension {
             String pid = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String attrValue = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case PID: {
-                            pid = attrValue;
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedAttribute(reader, i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PID: {
+                        pid = attrValue;
+                        break;
                     }
+                    default:
+                        throw unexpectedAttribute(reader, i);
                 }
             }
 
             if (pid == null)
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PID));
+                throw missingRequired(reader, Collections.singleton(Attribute.PID));
 
             configuration.get(PID).set(pid);
 
@@ -189,26 +188,24 @@ public class NewOSGiExtension implements NewExtension {
                             String name = null;
                             count = reader.getAttributeCount();
                             for (int i = 0; i < count; i++) {
+                                requireNoNamespaceAttribute(reader, i);
                                 final String attrValue = reader.getAttributeValue(i);
-                                if (reader.getAttributeNamespace(i) != null) {
-                                    throw ParseUtils.unexpectedAttribute(reader, i);
-                                } else {
-                                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                                    switch (attribute) {
-                                        case NAME: {
-                                            name = attrValue;
-                                            if (configurationProperties.has(name))
-                                                throw new XMLStreamException("Property " + name + " already exists",
-                                                        reader.getLocation());
-                                            break;
-                                        }
-                                        default:
-                                            throw ParseUtils.unexpectedAttribute(reader, i);
+
+                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                switch (attribute) {
+                                    case NAME: {
+                                        name = attrValue;
+                                        if (configurationProperties.has(name))
+                                            throw new XMLStreamException("Property " + name + " already exists",
+                                                    reader.getLocation());
+                                        break;
                                     }
+                                    default:
+                                        throw unexpectedAttribute(reader, i);
                                 }
                             }
                             if (name == null)
-                                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
 
                             String value = reader.getElementText().trim();
                             if (value == null || value.length() == 0)
@@ -217,11 +214,11 @@ public class NewOSGiExtension implements NewExtension {
                             configurationProperties.get(name).set(value);
                             break;
                         } else {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                     }
                     default:
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                 }
             }
 
@@ -234,7 +231,7 @@ public class NewOSGiExtension implements NewExtension {
         ModelNode parsePropertiesElement(XMLExtendedStreamReader reader) throws XMLStreamException {
 
             // Handle attributes
-            ParseUtils.requireNoAttributes(reader);
+            requireNoAttributes(reader);
 
             ModelNode properties = new ModelNode();
 
@@ -249,27 +246,24 @@ public class NewOSGiExtension implements NewExtension {
                             String value = null;
                             int count = reader.getAttributeCount();
                             for (int i = 0; i < count; i++) {
+                                requireNoNamespaceAttribute(reader, i);
                                 final String attrValue = reader.getAttributeValue(i);
-                                if (reader.getAttributeNamespace(i) != null) {
-                                    throw ParseUtils.unexpectedAttribute(reader, i);
-                                } else {
-                                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                                    switch (attribute) {
-                                        case NAME: {
-                                            name = attrValue;
-                                            if (properties.has(name)) {
-                                                throw new XMLStreamException("Property " + name + " already exists",
-                                                        reader.getLocation());
-                                            }
-                                            break;
+                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                switch (attribute) {
+                                    case NAME: {
+                                        name = attrValue;
+                                        if (properties.has(name)) {
+                                            throw new XMLStreamException("Property " + name + " already exists",
+                                                    reader.getLocation());
                                         }
-                                        default:
-                                            throw ParseUtils.unexpectedAttribute(reader, i);
+                                        break;
                                     }
+                                    default:
+                                        throw unexpectedAttribute(reader, i);
                                 }
                             }
                             if (name == null) {
-                                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
                             }
                             value = reader.getElementText().trim();
                             if (value == null || value.length() == 0) {
@@ -278,11 +272,11 @@ public class NewOSGiExtension implements NewExtension {
                             properties.get(name).set(value);
                             break;
                         } else {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                     }
                     default:
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                 }
             }
 
@@ -292,7 +286,7 @@ public class NewOSGiExtension implements NewExtension {
         ModelNode parseModulesElement(XMLExtendedStreamReader reader) throws XMLStreamException {
 
             // Handle attributes
-            ParseUtils.requireNoAttributes(reader);
+            requireNoAttributes(reader);
 
             ModelNode modules = new ModelNode();
 
@@ -306,9 +300,7 @@ public class NewOSGiExtension implements NewExtension {
                             String start = null;
                             final int count = reader.getAttributeCount();
                             for (int i = 0; i < count; i++) {
-                                if (reader.getAttributeNamespace(i) != null) {
-                                    throw ParseUtils.unexpectedAttribute(reader, i);
-                                }
+                                requireNoNamespaceAttribute(reader, i);
                                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                                 switch (attribute) {
                                     case IDENTIFIER: {
@@ -320,11 +312,11 @@ public class NewOSGiExtension implements NewExtension {
                                         break;
                                     }
                                     default:
-                                        throw ParseUtils.unexpectedAttribute(reader, i);
+                                        throw unexpectedAttribute(reader, i);
                                 }
                             }
                             if (identifier == null)
-                                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.IDENTIFIER));
+                                throw missingRequired(reader, Collections.singleton(Attribute.IDENTIFIER));
                             if (modules.has(identifier))
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
 
@@ -334,14 +326,14 @@ public class NewOSGiExtension implements NewExtension {
                             }
                             modules.get(identifier).set(module);
 
-                            ParseUtils.requireNoContent(reader);
+                            requireNoContent(reader);
                         } else {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                         break;
                     }
                     default:
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                 }
             }
 

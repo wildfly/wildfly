@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
 import java.util.List;
 import java.util.Locale;
@@ -38,7 +40,6 @@ import org.jboss.as.controller.NewExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -77,8 +78,9 @@ public class NewWeldExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-            // Require no content
-            ParseUtils.requireNoContent(reader);
+            // Require no attributes or content
+            requireNoAttributes(reader);
+            requireNoContent(reader);
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);

@@ -26,6 +26,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.txn.CommonAttributes.BINDING;
 import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
@@ -52,7 +58,6 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -89,7 +94,7 @@ public class NewTransactionExtension implements NewExtension {
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             // no attributes
             if (reader.getAttributeCount() > 0) {
-                throw ParseUtils.unexpectedAttribute(reader, 0);
+                throw unexpectedAttribute(reader, 0);
             }
 
             final ModelNode subsystem = new ModelNode();
@@ -107,7 +112,7 @@ public class NewTransactionExtension implements NewExtension {
                         final Element element = Element.forName(reader.getLocalName());
                         required.remove(element);
                         if (! encountered.add(element)) {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                         switch (element) {
                             case RECOVERY_ENVIRONMENT: {
@@ -131,18 +136,18 @@ public class NewTransactionExtension implements NewExtension {
                                 break;
                             }
                             default: {
-                                throw ParseUtils.unexpectedElement(reader);
+                                throw unexpectedElement(reader);
                             }
                         }
                         break;
                     }
                     default: {
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                     }
                 }
             }
             if (! required.isEmpty()) {
-                throw ParseUtils.missingRequiredElement(reader, required);
+                throw missingRequiredElement(reader, required);
             }
         }
 
@@ -150,25 +155,22 @@ public class NewTransactionExtension implements NewExtension {
             final ModelNode store = new ModelNode();
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case RELATIVE_TO:
-                            store.get(RELATIVE_TO).set(value);
-                            break;
-                        case PATH:
-                            store.get(PATH).set(value);
-                            break;
-                        default:
-                            ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case RELATIVE_TO:
+                        store.get(RELATIVE_TO).set(value);
+                        break;
+                    case PATH:
+                        store.get(PATH).set(value);
+                        break;
+                    default:
+                        unexpectedAttribute(reader, i);
                 }
             }
             // Handle elements
-            ParseUtils.requireNoContent(reader);
+            requireNoContent(reader);
             return store;
         }
 
@@ -176,25 +178,22 @@ public class NewTransactionExtension implements NewExtension {
             final ModelNode coordinator = new ModelNode();
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case ENABLE_STATISTICS:
-                            coordinator.get(ENABLE_STATISTICS).set(value);
-                            break;
-                        case DEFAULT_TIMEOUT:
-                            coordinator.get(DEFAULT_TIMEOUT).set(value);
-                            break;
-                        default:
-                            ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ENABLE_STATISTICS:
+                        coordinator.get(ENABLE_STATISTICS).set(value);
+                        break;
+                    case DEFAULT_TIMEOUT:
+                        coordinator.get(DEFAULT_TIMEOUT).set(value);
+                        break;
+                    default:
+                        unexpectedAttribute(reader, i);
                 }
             }
             // Handle elements
-            ParseUtils.requireNoContent(reader);
+            requireNoContent(reader);
             return coordinator;
         }
 
@@ -203,32 +202,29 @@ public class NewTransactionExtension implements NewExtension {
             final int count = reader.getAttributeCount();
             final EnumSet<Attribute> required = EnumSet.of(Attribute.BINDING);
             for (int i = 0; i < count; i ++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    required.remove(attribute);
-                    switch (attribute) {
-                        case BINDING:
-                            env.get(BINDING).set(value);
-                            break;
-                        case NODE_IDENTIFIER:
-                            env.get(NODE_IDENTIFIER).set(value);
-                            break;
-                        case SOCKET_PROCESS_ID_MAX_PORTS:
-                            env.get(SOCKET_PROCESS_ID_MAX_PORTS).set(value);
-                            break;
-                        default:
-                            ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case BINDING:
+                        env.get(BINDING).set(value);
+                        break;
+                    case NODE_IDENTIFIER:
+                        env.get(NODE_IDENTIFIER).set(value);
+                        break;
+                    case SOCKET_PROCESS_ID_MAX_PORTS:
+                        env.get(SOCKET_PROCESS_ID_MAX_PORTS).set(value);
+                        break;
+                    default:
+                        unexpectedAttribute(reader, i);
                 }
             }
             if (! required.isEmpty()) {
-                ParseUtils.missingRequired(reader, required);
+                missingRequired(reader, required);
             }
             // Handle elements
-            ParseUtils.requireNoContent(reader);
+            requireNoContent(reader);
             return env;
         }
 
@@ -236,28 +232,25 @@ public class NewTransactionExtension implements NewExtension {
             final ModelNode env = new ModelNode();
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
+                requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case BINDING:
-                            env.get(BINDING).set(value);
-                            break;
-                        case STATUS_BINDING:
-                            env.get(STATUS_BINDING).set(value);
-                            break;
-                        default:
-                            ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case BINDING:
+                        env.get(BINDING).set(value);
+                        break;
+                    case STATUS_BINDING:
+                        env.get(STATUS_BINDING).set(value);
+                        break;
+                    default:
+                        unexpectedAttribute(reader, i);
                 }
             }
             if(! env.has(BINDING)) {
-                ParseUtils.missingRequired(reader, Collections.singleton(Attribute.BINDING));
+                missingRequired(reader, Collections.singleton(Attribute.BINDING));
             }
             // Handle elements
-            ParseUtils.requireNoContent(reader);
+            requireNoContent(reader);
             return env;
         }
 

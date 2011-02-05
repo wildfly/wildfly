@@ -26,7 +26,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.web.CommonAttributes.ACCESS_LOG;
 import static org.jboss.as.web.CommonAttributes.ALIAS;
 import static org.jboss.as.web.CommonAttributes.CONNECTOR;
@@ -67,7 +73,6 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -143,7 +148,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         // no attributes
         if (reader.getAttributeCount() > 0) {
-            throw ParseUtils.unexpectedAttribute(reader, 0);
+            throw unexpectedAttribute(reader, 0);
         }
 
         final ModelNode address = new ModelNode();
@@ -174,12 +179,12 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
                             parseHost(reader, address, list);
                             break;
                         } default: {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                     }
                     break;
                 } default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    throw unexpectedElement(reader);
                 }
             }
         }
@@ -189,7 +194,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         final ModelNode config = new ModelNode();
         // no attributes
         if (reader.getAttributeCount() > 0) {
-            throw ParseUtils.unexpectedAttribute(reader, 0);
+            throw unexpectedAttribute(reader, 0);
         }
         // elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -216,7 +221,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
                 break;
             }
             default:
-                throw ParseUtils.unexpectedElement(reader);
+                throw unexpectedElement(reader);
             }
         }
         return config;
@@ -226,39 +231,36 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         final ModelNode jsp = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                case DEVELOPMENT:
-                case DISABLED:
-                case KEEP_GENERATED:
-                case TRIM_SPACES:
-                case TAG_POOLING:
-                case MAPPED_FILE:
-                case CHECK_INTERVAL:
-                case MODIFIFICATION_TEST_INTERVAL:
-                case RECOMPILE_ON_FAIL:
-                case SMAP:
-                case DUMP_SMAP:
-                case GENERATE_STRINGS_AS_CHAR_ARRAYS:
-                case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT:
-                case SCRATCH_DIR:
-                case SOURCE_VM:
-                case TARGET_VM:
-                case JAVA_ENCODING:
-                case X_POWERED_BY:
-                case DISPLAY_SOOURCE_FRAGMENT:
-                    jsp.get(attribute.getLocalName()).set(value);
-                    break;
-                default:
-                    ParseUtils.unexpectedAttribute(reader, i);
-                }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case DEVELOPMENT:
+            case DISABLED:
+            case KEEP_GENERATED:
+            case TRIM_SPACES:
+            case TAG_POOLING:
+            case MAPPED_FILE:
+            case CHECK_INTERVAL:
+            case MODIFIFICATION_TEST_INTERVAL:
+            case RECOMPILE_ON_FAIL:
+            case SMAP:
+            case DUMP_SMAP:
+            case GENERATE_STRINGS_AS_CHAR_ARRAYS:
+            case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT:
+            case SCRATCH_DIR:
+            case SOURCE_VM:
+            case TARGET_VM:
+            case JAVA_ENCODING:
+            case X_POWERED_BY:
+            case DISPLAY_SOOURCE_FRAGMENT:
+                jsp.get(attribute.getLocalName()).set(value);
+                break;
+            default:
+                unexpectedAttribute(reader, i);
             }
         }
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
         return jsp;
     }
 
@@ -266,41 +268,38 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         final ModelNode resources = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                case LISTINGS:
-                    resources.get(LISTINGS).set(value);
-                    break;
-                case SENDFILE:
-                    resources.get(SENDFILE).set(value);
-                    break;
-                case FILE_ENCONDING:
-                    resources.get(FILE_ENCONDING).set(value);
-                case READ_ONLY:
-                    resources.get(READ_ONLY).set(value);
-                    break;
-                case WEBDAV:
-                    resources.get(WEBDAV).set(value);
-                    break;
-                case SECRET:
-                    resources.get(SECRET).set(value);
-                    break;
-                case MAX_DEPTH:
-                    resources.get(MAX_DEPTH).set(value);
-                    break;
-                case DISABLED:
-                    resources.get(DISABLED).set(value);
-                    break;
-                default:
-                    ParseUtils.unexpectedAttribute(reader, i);
-                }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case LISTINGS:
+                resources.get(LISTINGS).set(value);
+                break;
+            case SENDFILE:
+                resources.get(SENDFILE).set(value);
+                break;
+            case FILE_ENCONDING:
+                resources.get(FILE_ENCONDING).set(value);
+            case READ_ONLY:
+                resources.get(READ_ONLY).set(value);
+                break;
+            case WEBDAV:
+                resources.get(WEBDAV).set(value);
+                break;
+            case SECRET:
+                resources.get(SECRET).set(value);
+                break;
+            case MAX_DEPTH:
+                resources.get(MAX_DEPTH).set(value);
+                break;
+            case DISABLED:
+                resources.get(DISABLED).set(value);
+                break;
+            default:
+                unexpectedAttribute(reader, i);
             }
         }
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
         return resources;
     }
 
@@ -308,23 +307,20 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         String name = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    } default: {
-                        ParseUtils.unexpectedAttribute(reader, i);
-                    }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
+                } default: {
+                    unexpectedAttribute(reader, i);
                 }
             }
         }
         if(name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
         final ModelNode host = new ModelNode();
@@ -338,7 +334,7 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                 case ALIAS:
-                    host.get(ALIAS).add(readSingleAttributeNoContent(reader));
+                    host.get(ALIAS).add(readStringAttributeElement(reader, Attribute.NAME.getLocalName()));
                     break;
                 case ACCESS_LOG:
                     final ModelNode log = parseHostAccessLog(reader);
@@ -349,12 +345,12 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
                     host.get(REWRITE).set(rewrite);
                     break;
                 default:
-                    throw ParseUtils.unexpectedElement(reader);
+                    throw unexpectedElement(reader);
                 }
                 break;
             }
             default:
-                throw ParseUtils.unexpectedElement(reader);
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -385,63 +381,60 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         String redirectPort = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                case NAME:
-                    name = value;
-                    break;
-                case SOCKET_BINDING:
-                    bindingRef = value;
-                    break;
-                case SCHEME:
-                    scheme = value;
-                    break;
-                case PROTOCOL:
-                    protocol = value;
-                    break;
-                case EXECUTOR:
-                    executorRef = value;
-                    break;
-                case ENABLED:
-                    enabled = value;
-                    break;
-                case ENABLE_LOOKUPS:
-                    enableLookups = value;
-                    break;
-                case PROXY_NAME:
-                    proxyName = value;
-                    break;
-                case PROXY_PORT:
-                    proxyPort = value;
-                    break;
-                case MAX_POST_SIZE:
-                    maxPostSize = value;
-                    break;
-                case MAX_SAVE_POST_SIZE:
-                    maxSavePostSize = value;
-                    break;
-                case SECURE:
-                    secure = value;
-                    break;
-                case REDIRECT_PORT:
-                    redirectPort = value;
-                    break;
-                default:
-                    ParseUtils.unexpectedAttribute(reader, i);
-                }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NAME:
+                name = value;
+                break;
+            case SOCKET_BINDING:
+                bindingRef = value;
+                break;
+            case SCHEME:
+                scheme = value;
+                break;
+            case PROTOCOL:
+                protocol = value;
+                break;
+            case EXECUTOR:
+                executorRef = value;
+                break;
+            case ENABLED:
+                enabled = value;
+                break;
+            case ENABLE_LOOKUPS:
+                enableLookups = value;
+                break;
+            case PROXY_NAME:
+                proxyName = value;
+                break;
+            case PROXY_PORT:
+                proxyPort = value;
+                break;
+            case MAX_POST_SIZE:
+                maxPostSize = value;
+                break;
+            case MAX_SAVE_POST_SIZE:
+                maxSavePostSize = value;
+                break;
+            case SECURE:
+                secure = value;
+                break;
+            case REDIRECT_PORT:
+                redirectPort = value;
+                break;
+            default:
+                unexpectedAttribute(reader, i);
             }
         }
         if (name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         if (protocol == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PROTOCOL));
+            missingRequired(reader, Collections.singleton(Attribute.PROTOCOL));
         }
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
         connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
@@ -458,17 +451,6 @@ class NewWebSubsystemParser implements XMLStreamConstants, XMLElementReader<List
         if(secure != null) connector.get(SECURE).set(secure);
         if(redirectPort != null) connector.get(REDIRECT_PORT).set(redirectPort);
         list.add(connector);
-    }
-
-
-    static String readSingleAttributeNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        if(count > 1) {
-            throw ParseUtils.unexpectedAttribute(reader, 1);
-        }
-        final String value = reader.getAttributeValue(0);
-        ParseUtils.requireNoContent(reader);
-        return value.trim();
     }
 
     static void writeAttribute(final XMLExtendedStreamWriter writer, final String name, ModelNode node) throws XMLStreamException {

@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
@@ -277,7 +278,7 @@ public class HostXml extends CommonXml {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -376,7 +377,7 @@ public class HostXml extends CommonXml {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));

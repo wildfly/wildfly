@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
@@ -272,8 +273,9 @@ public class DomainXml extends CommonXml {
             // Handle attributes
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
+
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
+                if (!isNoNamespaceAttribute(reader, i)) {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 } else {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -368,7 +370,7 @@ public class DomainXml extends CommonXml {
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
+                if (!isNoNamespaceAttribute(reader, i)) {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 } else {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));

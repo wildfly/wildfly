@@ -45,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -210,8 +211,8 @@ public class StandaloneXml extends CommonXml {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
@@ -298,7 +299,7 @@ public class StandaloneXml extends CommonXml {
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
                 final String value = reader.getAttributeValue(i);
-                if (reader.getAttributeNamespace(i) != null) {
+                if (!isNoNamespaceAttribute(reader, i)) {
                     throw unexpectedAttribute(reader, i);
                 } else {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -375,7 +376,7 @@ public class StandaloneXml extends CommonXml {
 
         // Content
         final Set<String> configuredSubsystemTypes = new HashSet<String>();
-        while (reader.nextTag() != END_ELEMENT) {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.UNKNOWN) {
                 throw unexpectedElement(reader);
             }
@@ -388,6 +389,7 @@ public class StandaloneXml extends CommonXml {
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();
             reader.handleAny(subsystems);
+
             // Process subsystems
             for(final ModelNode update : subsystems) {
                 // TODO remove logging

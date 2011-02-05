@@ -26,6 +26,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
@@ -65,7 +68,6 @@ import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
-import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,9 +77,9 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.hornetq.core.server.JournalType;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -538,20 +540,17 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
             String type = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case ROLES_ATTR_NAME:
-                            roles = reader.getListAttributeValue(i);
-                            break;
-                        case TYPE_ATTR_NAME:
-                            type = reader.getAttributeValue(i);
-                            break;
-                        default:
-                            throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                requireNoNamespaceAttribute(reader, i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ROLES_ATTR_NAME:
+                        roles = reader.getListAttributeValue(i);
+                        break;
+                    case TYPE_ATTR_NAME:
+                        type = reader.getAttributeValue(i);
+                        break;
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
 
@@ -756,24 +755,22 @@ public class NewMessagingSubsystemParser implements XMLStreamConstants, XMLEleme
         final ModelNode directory = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                final String value = reader.getAttributeValue(i);
-                switch (attribute) {
-                    case RELATIVE_TO:
-                        directory.get(RELATIVE_TO).set(value);
-                        break;
-                    case PATH:
-                        directory.get(PATH).set(value);
-                        break;
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
+
+            requireNoNamespaceAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            final String value = reader.getAttributeValue(i);
+            switch (attribute) {
+                case RELATIVE_TO:
+                    directory.get(RELATIVE_TO).set(value);
+                    break;
+                case PATH:
+                    directory.get(PATH).set(value);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
         return directory;
     }
 
