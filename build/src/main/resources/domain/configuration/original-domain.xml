@@ -39,9 +39,7 @@
                             urn:jboss:domain:security:1.0 jboss-security.xsd">
 
     <extensions>
-    <!-- 
         <extension module="org.jboss.as.connector"/>
-         -->
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
@@ -52,7 +50,7 @@
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
-        <extension module="org.jboss.as.web"/>
+        <extension module="org.jboss.as.weld"/>
     </extensions>
 
     <profiles>
@@ -197,6 +195,12 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:connector:1.0">
+                <archive-validation enabled="true"/>
+                <bean-validation enabled="true"/>
+                <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
+            </subsystem>
         </profile>
     </profiles>
 

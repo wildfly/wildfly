@@ -32,8 +32,10 @@ import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemP
 import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.connector.NewConnectorSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
@@ -43,14 +45,22 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -75,14 +85,25 @@ public class NewConnectorExtension implements NewExtension {
 
         // Connector subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
-        subsystem.registerOperationHandler("add", NewConnectorSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler("remove", NewConnectorSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
-
+        subsystem.registerOperationHandler(ADD, NewConnectorSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(REMOVE, NewConnectorSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
+        subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE, ConnectorSubsystemDescribeHandler.INSTANCE, false);
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewConnectorSubsystemParser.INSTANCE);
+    }
+
+    private static ModelNode createEmptyAddOperation() {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, CONNECTOR);
+        address.protect();
+
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).set(address);
+        return subsystem;
     }
 
     static final class NewConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -158,13 +179,7 @@ public class NewConnectorExtension implements NewExtension {
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
-            final ModelNode address = new ModelNode();
-            address.add(ModelDescriptionConstants.SUBSYSTEM, CONNECTOR);
-            address.protect();
-
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).set(address);
+            final ModelNode subsystem = createEmptyAddOperation();
             list.add(subsystem);
 
             // Handle elements
@@ -274,4 +289,46 @@ public class NewConnectorExtension implements NewExtension {
             // Don't add a requireNoContent here as readBooleanAttributeElement already performs that check.
         }
     }
+
+
+    private static class ConnectorSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final ConnectorSubsystemDescribeHandler INSTANCE = new ConnectorSubsystemDescribeHandler();
+        @Override
+        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+            final ModelNode add = createEmptyAddOperation();
+            final ModelNode model = context.getSubModel();
+
+            if (model.hasDefined(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL)) {
+                add.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
+            }
+            if (model.hasDefined(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
+                add.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL));
+            }
+            if (model.hasDefined(BEAN_VALIDATION_ENABLED)) {
+                add.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
+            }
+            if (model.hasDefined(ARCHIVE_VALIDATION_ENABLED)) {
+                add.get(ARCHIVE_VALIDATION_ENABLED).set(model.get(ARCHIVE_VALIDATION_ENABLED));
+            }
+            if (model.hasDefined(ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
+                add.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR));
+            }
+            if (model.hasDefined(ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
+                add.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN));
+            }
+
+            ModelNode result = new ModelNode();
+            result.add(add);
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+    }
+
 }
