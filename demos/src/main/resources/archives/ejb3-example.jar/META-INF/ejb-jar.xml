@@ -14,4 +14,18 @@
          </around-invoke>
       </session>
    </enterprise-beans>
+   <interceptors>
+      <interceptor>
+         <interceptor-class>org.jboss.as.demos.ejb3.archive.SimpleInterceptor</interceptor-class>
+         <around-invoke>
+            <method-name>aroundInvoke</method-name>
+         </around-invoke>
+      </interceptor>
+   </interceptors>
+   <assembly-descriptor>
+      <interceptor-binding>
+         <ejb-name>*</ejb-name>
+         <interceptor-class>org.jboss.as.demos.ejb3.archive.SimpleInterceptor</interceptor-class>
+      </interceptor-binding>
+   </assembly-descriptor>
 </ejb-jar>
