@@ -56,15 +56,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -97,13 +105,24 @@ public class NewResourceAdaptersExtension implements NewExtension {
 
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
-        subsystem.registerOperationHandler("add", NewResourceAdaptersSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(ADD, NewResourceAdaptersSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
 
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewResourceAdapterSubsystemParser.INSTANCE);
+    }
+
+    private static ModelNode createAddSubsystemOperation() {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTER);
+        address.protect();
+
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).set(address);
+        return subsystem;
     }
 
     static final class NewResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -123,14 +142,7 @@ public class NewResourceAdaptersExtension implements NewExtension {
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
-            // FIXME this should come from somewhere
-            final ModelNode address = new ModelNode();
-            address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTER);
-            address.protect();
-
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).set(address);
+            ModelNode subsystem = createAddSubsystemOperation();
             list.add(subsystem);
 
             ResourceAdapters ras = null;
@@ -236,6 +248,29 @@ public class NewResourceAdaptersExtension implements NewExtension {
             }
 
             return condefModel;
+        }
+    }
+
+    private static class ResourceAdaptersSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
+        @Override
+        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+            ModelNode add = createAddSubsystemOperation();
+
+            //TODO Fill in the details
+
+            ModelNode result = new ModelNode();
+            result.add(add);
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     }
 }

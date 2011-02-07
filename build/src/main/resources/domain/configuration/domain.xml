@@ -140,7 +140,8 @@
                      <statement></statement>
                   </datasource>
                </datasources>
-            </subsystem-->            
+            </subsystem-->      
+            <!-- subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" / -->      
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
                 <journal-file-size>102400</journal-file-size>
