@@ -61,7 +61,7 @@ class NewLocalDomainConnectionService implements NewDomainControllerConnection, 
         this.name = hostController.getName();
         final NewHostControllerClient client = new NewLocalHostControllerClient(hostController);
         domainController.addClient(client);
-        return domainController.getModel();
+        return domainController.getDomainModel();
     }
 
 

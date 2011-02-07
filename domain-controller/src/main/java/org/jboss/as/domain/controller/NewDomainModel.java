@@ -32,11 +32,11 @@ import org.jboss.dmr.ModelNode;
 public interface NewDomainModel extends ModelController {
 
     /**
-     * Get the underlying model.
+     * Get a snapshot of the underlying model.
      *
      * @return the model.
      */
-    ModelNode getModel();
+    ModelNode getDomainModel();
 
     static class Factory {
         public static NewDomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister) {

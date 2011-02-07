@@ -187,8 +187,13 @@ class NewHostModel extends BasicModelController {
         root.get(DEPLOYMENT);
     }
 
-    protected ModelNode getModel() {
-        return super.getModel();
+    /**
+     * Get the undelying host model.
+     *
+     * @return the host model
+     */
+    protected ModelNode getHostModel() {
+        return super.getModel().clone();
     }
 
 }

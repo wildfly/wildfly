@@ -90,7 +90,7 @@ public class NewHostControllerImpl implements NewHostController {
     @Override
     public ServerStatus startServer(String serverName) {
         final NewServerInventory servers = this.serverInventory;
-        return servers.startServer(serverName, hostModel.getModel().clone(), domainModel.getModel().clone());
+        return servers.startServer(serverName, hostModel.getHostModel(), domainModel.getDomainModel());
     }
 
     /** {@inheritDoc} */
@@ -103,7 +103,7 @@ public class NewHostControllerImpl implements NewHostController {
     @Override
     public ServerStatus restartServer(String serverName, int gracefulTimeout) {
         final NewServerInventory servers = this.serverInventory;
-        return servers.restartServer(serverName, gracefulTimeout, hostModel.getModel().clone(), domainModel.getModel().clone());
+        return servers.restartServer(serverName, gracefulTimeout, hostModel.getHostModel(), domainModel.getDomainModel());
     }
 
     /** {@inheritDoc} */

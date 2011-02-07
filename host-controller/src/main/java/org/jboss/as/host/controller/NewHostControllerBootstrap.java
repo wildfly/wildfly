@@ -140,7 +140,7 @@ public class NewHostControllerBootstrap {
             }
         });
         // Get the raw model
-        final ModelNode rawModel = hostModel.getModel();
+        final ModelNode rawModel = hostModel.getHostModel();
         final String mgmtNetwork = rawModel.get(MANAGEMENT, NATIVE_API, INTERFACE).asString();
         final int mgmtPort = rawModel.get(MANAGEMENT, NATIVE_API, PORT).asInt();
         // Install the process controller client

@@ -57,6 +57,6 @@ public interface NewDomainController extends ModelController {
      *
      * @return the model
      */
-    ModelNode getModel();
+    ModelNode getDomainModel();
 
 }

@@ -99,8 +99,8 @@ class NewDomainModelImpl extends BasicModelController implements NewDomainModel 
         rootModel.get(PATH);
     }
 
-    public ModelNode getModel() {
-        return super.getModel();
+    public ModelNode getDomainModel() {
+        return super.getModel().clone();
     }
 
     protected static void initialize(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister) {

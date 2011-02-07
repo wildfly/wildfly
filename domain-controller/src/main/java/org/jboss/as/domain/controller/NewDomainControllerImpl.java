@@ -66,7 +66,7 @@ class NewDomainControllerImpl implements NewDomainController {
         // TODO Auto-generated method stub
     }
 
-    public ModelNode getModel() {
-        return domainModel.getModel();
+    public ModelNode getDomainModel() {
+        return domainModel.getDomainModel();
     }
 }

@@ -66,8 +66,9 @@ public class NewHostControllerService implements Service<NewHostController> {
             final FileRepository remoteRepository = connection.getRemoteFileRepository();
             controller.initDomainConnection(domainModel, remoteRepository);
             // start servers
-            if(hostModel.getModel().has(SERVER) && hostModel.getModel().get(SERVER).isDefined()) {
-                final ModelNode servers = hostModel.getModel().get(SERVER).clone();
+            final ModelNode rawModel = hostModel.getHostModel();
+            if(rawModel.hasDefined(SERVER)) {
+                final ModelNode servers = rawModel.get(SERVER).clone();
                 for(final String serverName : servers.keys()) {
                     controller.startServer(serverName);
                 }
@@ -86,8 +87,9 @@ public class NewHostControllerService implements Service<NewHostController> {
         connection.unregister();
         this.controller = null;
         // stop servers
-        if(hostModel.getModel().has(SERVER) && hostModel.getModel().get(SERVER).isDefined()) {
-            final ModelNode servers = hostModel.getModel().get(SERVER).clone();
+        final ModelNode rawModel = hostModel.getHostModel();
+        if(rawModel.hasDefined(SERVER) ) {
+            final ModelNode servers = rawModel.get(SERVER).clone();
             for(final String serverName : servers.keys()) {
                 controller.stopServer(serverName);
             }
