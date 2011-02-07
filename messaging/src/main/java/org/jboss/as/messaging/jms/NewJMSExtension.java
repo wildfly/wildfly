@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import org.jboss.as.controller.NewExtension;
@@ -51,6 +52,7 @@ public class NewJMSExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewJMSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewJMSSubsystemAdd.INSTANCE, NewJMSSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, NewJMSSubsystemDescribeHandler.INSTANCE, NewJMSSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
         subsystem.registerXMLElementWriter(parsers);
         // Connection factories
         final ModelNodeRegistration cfs = registration.registerSubModel(CFS_PATH, NewJMSSubsystemProviders.CF);

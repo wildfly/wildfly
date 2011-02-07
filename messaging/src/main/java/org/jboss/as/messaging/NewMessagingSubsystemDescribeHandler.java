@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,47 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging.jms;
+package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class NewConnectionFactoryRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
+class NewMessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
 
-    static final NewConnectionFactoryRemove INSTANCE = new NewConnectionFactoryRemove();
+    static final NewMessagingSubsystemDescribeHandler INSTANCE = new NewMessagingSubsystemDescribeHandler();
 
     /** {@inheritDoc} */
-    public Cancellable execute(final NewOperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    @Override
+    public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode operationAddress = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(operationAddress);
-        final String name = address.getLastElement().getValue();
-
+        final ModelNode subsystemAdd = new ModelNode();
         final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = NewConnectionFactoryAdd.getAddOperation(operationAddress, subModel);
-
-        if(context instanceof NewRuntimeOperationContext) {
-            final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
-            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(JMSServices.JMS_CF_BASE.append(name));
-            if(service != null) {
-                service.setMode(Mode.REMOVE);
+        PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
+        subsystemAdd.get(OP).set(ADD);
+        subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
+        //
+        for(final String attribute : NewMessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
+            if(subModel.hasDefined(attribute)) {
+                subsystemAdd.get(attribute).set(subModel.get(attribute));
             }
         }
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
+        final ModelNode result = new ModelNode();
+        result.add(subsystemAdd);
+        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+        resultHandler.handleResultComplete(new ModelNode());
         return Cancellable.NULL;
     }
 

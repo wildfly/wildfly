@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 
@@ -46,7 +47,10 @@ public class NewMessagingExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewMessagingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewMessagingSubsystemAdd.INSTANCE, NewMessagingSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, NewMessagingSubsystemDescribeHandler.INSTANCE, NewMessagingSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
+
         subsystem.registerXMLElementWriter(NewMessagingSubsystemParser.getInstance());
+
         final ModelNodeRegistration queue = registration.registerSubModel(PathElement.pathElement(QUEUE), NewMessagingSubsystemProviders.QUEUE_RESOURCE);
         queue.registerOperationHandler(ADD, NewQueueAdd.INSTANCE, NewQueueAdd.INSTANCE, false);
         queue.registerOperationHandler(REMOVE, NewQueueRemove.INSTANCE, NewQueueRemove.INSTANCE, false);

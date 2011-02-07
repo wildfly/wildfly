@@ -41,6 +41,10 @@ public class MessagingDescriptions {
         return new ModelNode();
     }
 
+    public static ModelNode getSubsystemDescribe(Locale locale) {
+        return new ModelNode();
+    }
+
     public static ModelNode getQueueResource(Locale locale) {
         return new ModelNode();
     }

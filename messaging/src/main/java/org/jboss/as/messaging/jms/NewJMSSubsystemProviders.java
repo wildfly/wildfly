@@ -57,6 +57,17 @@ public class NewJMSSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            // TODO
+            return node;
+        }
+    };
+
     static final DescriptionProvider JMS_QUEUE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {

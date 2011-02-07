@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.jms.CommonAttributes.AUTO_GROUP;
 import static org.jboss.as.messaging.jms.CommonAttributes.BLOCK_ON_ACK;
@@ -190,6 +192,21 @@ class NewConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperat
             return bindings.toArray(new String[bindings.size()]);
         }
         return NO_BINDINGS;
+    }
+
+    static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).set(address);
+
+        for(final String attribute : JMSServices.CF_ATTRIBUTES) {
+            if(subModel.hasDefined(attribute)) {
+                operation.get(attribute).set(subModel.get(attribute));
+            }
+        }
+
+        return operation;
     }
 
 }

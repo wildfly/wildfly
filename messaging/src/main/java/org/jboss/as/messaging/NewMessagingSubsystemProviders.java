@@ -91,6 +91,14 @@ class NewMessagingSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getSubsystemDescribe(locale);
+        }
+    };
+
     static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
 
         @Override
