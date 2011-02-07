@@ -64,6 +64,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.NewServerOperationContext;
@@ -94,7 +95,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     static final NewResourceAdaptersSubsystemAdd INSTANCE = new NewResourceAdaptersSubsystemAdd();
 
@@ -116,7 +117,8 @@ class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, Runti
 
             if (context instanceof NewBootOperationContext) {
                 NewBootOperationContext bootContext = (NewBootOperationContext) context;
-                bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS, new ResourceAdaptersAttachingProcessor(resourceAdapters));
+                bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS,
+                        new ResourceAdaptersAttachingProcessor(resourceAdapters));
             }
         }
 
@@ -147,7 +149,8 @@ class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, Runti
 
         if (operation.hasDefined(RESOURCEADAPTERS)) {
             for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
-                Map<String, String> configProperties = new HashMap<String, String>(raNode.get(CONFIG_PROPERTIES).asList().size());
+                Map<String, String> configProperties = new HashMap<String, String>(raNode.get(CONFIG_PROPERTIES).asList()
+                        .size());
                 for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
                     configProperties.put(property.asProperty().getName(), property.asString());
                 }

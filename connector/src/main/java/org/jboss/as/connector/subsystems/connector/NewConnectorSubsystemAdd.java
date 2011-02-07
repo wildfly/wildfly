@@ -46,6 +46,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.NewRuntimeOperationContext;
 import org.jboss.as.server.NewServerOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -61,7 +62,7 @@ import org.jboss.tm.JBossXATerminator;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-class NewConnectorSubsystemAdd implements ModelAddOperationHandler {
+class NewConnectorSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
     static final OperationHandler INSTANCE = new NewConnectorSubsystemAdd();
 
@@ -69,7 +70,7 @@ class NewConnectorSubsystemAdd implements ModelAddOperationHandler {
     @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        String shortRunningThreadPool =  operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
+        String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
         String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
         boolean beanValidationEnabled = NewParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
         boolean archiveValidationEnabled = NewParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
@@ -156,4 +157,5 @@ class NewConnectorSubsystemAdd implements ModelAddOperationHandler {
 
         return Cancellable.NULL;
     }
+
 }
