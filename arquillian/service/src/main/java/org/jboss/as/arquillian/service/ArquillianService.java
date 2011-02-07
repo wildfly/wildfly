@@ -29,19 +29,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
-import org.jboss.arquillian.context.ContextManager;
-import org.jboss.arquillian.context.ContextManagerBuilder;
-import org.jboss.arquillian.context.JavaNamespaceSetup;
-import org.jboss.arquillian.context.WeldContextSetup;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
 import org.jboss.arquillian.spi.TestEnricher;
-import org.jboss.arquillian.spi.TestResult;
 import org.jboss.arquillian.spi.util.ServiceLoader;
 import org.jboss.arquillian.testenricher.msc.ServiceContainerInjector;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
-import org.jboss.as.ee.naming.NamespaceSelectorService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.service.BundleContextService;
@@ -49,7 +43,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -59,7 +52,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
@@ -105,61 +97,6 @@ public class ArquillianService implements Service<ArquillianService> {
 
         try {
             jmxTestRunner = new JMXTestRunner() {
-
-                @Override
-                public TestResult runTestMethod(String className, String methodName, Map<String, String> props) {
-
-                    // TODO: The context setup actions should be attached to the deployment by the appropriate deployment
-                    // processors, rather than being hacked up here.
-                    final ContextManagerBuilder builder = new ContextManagerBuilder();
-                    ContextManager contextManager = null;
-                    ArquillianConfig config = getConfig(className);
-                    if (config != null) {
-
-                        final DeploymentUnit deployment = config.getDeploymentUnitContext();
-                        final Module module = deployment.getAttachment(Attachments.MODULE);
-                        builder.add(new TCCLSetup(module.getClassLoader()));
-                        // TODO: Massive hack to enable weld deployments to work correctly.
-                        // as we have no reliable way of determining when a deployment is done, we wait on
-                        // the weld service to come up.
-                        // this needs to go away when there is a proper way of determining when the deployment is complete
-                        ServiceController<?> weldService = deployment.getServiceRegistry().getService(
-                                deployment.getServiceName().append("beanmanager"));
-                        if (weldService != null) {
-                            DeploymentListener listener = new DeploymentListener();
-                            weldService.addListener(listener);
-                            listener.waitOnDeployment();
-                        }
-
-
-                        // try and get the service controller for the modules java: namespace
-                        ServiceName NamespaceContextSelectorServiceName = config.getDeploymentUnitContext().getServiceName()
-                                .append(NamespaceSelectorService.NAME);
-                        ServiceController<?> serviceController = serviceContainer
-                                .getService(NamespaceContextSelectorServiceName);
-                        if (serviceController != null) {
-                            // wait on the java: namespace to come up
-                            // this should allow non-weld deployments to work
-                            DeploymentListener listener = new DeploymentListener();
-                            serviceController.addListener(listener);
-                            listener.waitOnDeployment();
-                            builder.add(new JavaNamespaceSetup((NamespaceSelectorService) serviceController.getValue()));
-                        }
-                        if (weldService != null) {
-                            builder.add(new WeldContextSetup());
-                        }
-                    }
-                    contextManager = builder.build();
-                    contextManager.setup();
-                    try {
-                        // actually run the tests
-                        return super.runTestMethod(className, methodName, props);
-                    } finally {
-                        if (contextManager != null) {
-                            contextManager.teardown();
-                        }
-                    }
-                }
 
                 @Override
                 protected TestClassLoader getTestClassLoader() {
@@ -272,74 +209,6 @@ public class ArquillianService implements Service<ArquillianService> {
         private BundleContext getSystemBundleContext() {
             ServiceController<?> controller = serviceContainer.getService(BundleContextService.SERVICE_NAME);
             return (BundleContext) (controller != null ? controller.getValue() : null);
-        }
-    }
-
-    /**
-     * Listener that forces arquillian to wait for the deployment to be started before continuting
-     *
-     * @author Stuart Douglas
-     *
-     */
-    private class DeploymentListener extends AbstractServiceListener<Object> {
-
-        private volatile boolean proceed = false;
-
-        @Override
-        public synchronized void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
-            proceed();
-        }
-
-        @Override
-        public synchronized void dependencyFailed(ServiceController<? extends Object> controller) {
-            proceed();
-        }
-
-        @Override
-        public synchronized void listenerAdded(ServiceController<? extends Object> controller) {
-            if (controller.getState() == State.UP || controller.getState() == State.START_FAILED
-                    || controller.getState() == State.STOPPING) {
-                proceed();
-            }
-        }
-
-        @Override
-        public synchronized void serviceRemoved(ServiceController<? extends Object> controller) {
-            proceed();
-        }
-
-        @Override
-        public synchronized void serviceStarted(ServiceController<? extends Object> controller) {
-            proceed();
-        }
-
-        @Override
-        public synchronized void serviceStopped(ServiceController<? extends Object> controller) {
-            proceed();
-        }
-
-        @Override
-        public synchronized void serviceStopping(ServiceController<? extends Object> controller) {
-            proceed();
-        }
-
-        private synchronized void waitOnDeployment() {
-            long exitTime = System.currentTimeMillis() + 10000;
-            while (!proceed) {
-                try {
-                    wait(1000);
-                } catch (InterruptedException e) {
-
-                }
-                if (System.currentTimeMillis() > exitTime) {
-                    break;
-                }
-            }
-        }
-
-        private void proceed() {
-            proceed = true;
-            notify();
         }
     }
 }
