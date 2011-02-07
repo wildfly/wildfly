@@ -26,12 +26,12 @@ import java.util.Properties;
 
 import junit.framework.Assert;
 
-import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Main;
-import org.jboss.as.server.ServerController;
+import org.jboss.as.server.NewBootstrap;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
 import org.junit.Test;
 
 /**
@@ -49,16 +49,19 @@ public class ServerInModuleStartupTestCase {
         System.out.println(Main.class.getClassLoader());
         ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
         Assert.assertNotNull(serverEnvironment);
-        final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
+        final NewBootstrap bootstrap = NewBootstrap.Factory.newInstance();
+        final NewBootstrap.Configuration configuration = new NewBootstrap.Configuration();
         configuration.setServerEnvironment(serverEnvironment);
         configuration.setModuleLoader(Module.getSystemModuleLoader());
         configuration.setPortOffset(0);
 
-        final ServerController controller = bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
-        Assert.assertNotNull(controller);
-        controller.shutdown();
-        controller.awaitTermination();
-        Assert.assertTrue(controller.isShutdownComplete());
+        final ServiceContainer container = bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
+        Assert.assertNotNull(container);
+        container.shutdown();
+        container.awaitTermination();
+        Assert.assertTrue(container.isShutdownComplete());
+
+
+
     }
 }
