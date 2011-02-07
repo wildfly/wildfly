@@ -32,5 +32,6 @@ interface CommonAttributes {
     String AUTHENTICATION_MANAGER_CLASS_NAME = "authentication-manager-class-name";
     String DEEP_COPY_SUBJECT_MODE = "deep-copy-subject-mode";
     String DEFAULT_CALLBACK_HANDLER_CLASS_NAME = "default-callback-handler-class-name";
-
+    String SUBJECT_FACTORY_CLASS_NAME = "subject-factory-class-name";
+    String JAAS_APPLICATION_POLICY = "jaas-application-policy";
 }
