@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -86,6 +87,7 @@ public class StatelessSessionComponent extends AbstractComponent {
         return new StatelessSessionComponentInstance(this, instance);
     }
 
+    // TODO: I need to understand what exactly is this method meant for
     @Override
     public Interceptor createClientInterceptor(Class<?> viewClass) {
         // TODO: Needs to be implemented
@@ -93,6 +95,8 @@ public class StatelessSessionComponent extends AbstractComponent {
 
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
+                // setup the component being invoked
+                context.putPrivateData(Component.class, StatelessSessionComponent.this);
                 return context.proceed();
             }
         };

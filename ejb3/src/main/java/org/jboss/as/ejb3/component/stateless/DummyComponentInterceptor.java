@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
@@ -39,10 +41,22 @@ public class DummyComponentInterceptor implements Interceptor {
      */
     private static Logger logger = Logger.getLogger(DummyComponentInterceptor.class);
 
+
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
 
         logger.info(this.getClass().getSimpleName() + " interceptor invoked");
+        // get the component being invoked
+        Component component = context.getPrivateData(Component.class);
+        if (component == null) {
+            throw new IllegalStateException("Component not set in InterceptorContext: " + context);
+        }
+        // TODO: should be getInstance()
+        ComponentInstance componentInstance = component.createInstance();
+        // add it to the interceptor context
+        context.putPrivateData(ComponentInstance.class, componentInstance);
+
+        // proceed
         return context.proceed();
     }
 }
