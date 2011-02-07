@@ -56,7 +56,7 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
         final ModelNode result = new ModelNode();
         final ModelNode profile = context.getSubModel();
 
-        if (profile.has(INCLUDES) && profile.get(INCLUDES).isDefined()) {
+        if (profile.hasDefined(INCLUDES)) {
 
             for (ModelNode include : profile.get(INCLUDES).asList()) {
                 final ModelNode includeAddress = address.subAddress(0, address.size() - 1).append(PathElement.pathElement(PROFILE, include.asString())).toModelNode();
@@ -74,7 +74,7 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
             }
         }
 
-        if (profile.has(SUBSYSTEM) && profile.get(SUBSYSTEM).isDefined()) {
+        if (profile.hasDefined(SUBSYSTEM)) {
             for (String subsystemName : profile.get(SUBSYSTEM).keys()) {
                 final ModelNode subsystemAddress = address.append(PathElement.pathElement(SUBSYSTEM, subsystemName)).toModelNode();
                 final ModelNode newOp = operation.clone();

@@ -23,6 +23,7 @@
 package org.jboss.as.weld;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -35,10 +36,17 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -64,6 +72,7 @@ public class NewWeldExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, NewWeldSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
+        registration.registerOperationHandler(DESCRIBE, WeldSubsystemDescribeHandler.INSTANCE, WeldSubsystemDescribeHandler.INSTANCE, false);
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -71,6 +80,13 @@ public class NewWeldExtension implements NewExtension {
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(NewWeldExtension.NAMESPACE, parser);
+    }
+
+    private static ModelNode createAddSubSystemOperation() {
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        return subsystem;
     }
 
     static class WeldSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
@@ -81,10 +97,7 @@ public class NewWeldExtension implements NewExtension {
             // Require no attributes or content
             requireNoAttributes(reader);
             requireNoContent(reader);
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(subsystem);
+            list.add(createAddSubSystemOperation());
         }
 
         /** {@inheritDoc} */
@@ -111,4 +124,22 @@ public class NewWeldExtension implements NewExtension {
             return NewWeldSubsystemProviders.getSubsystemAddDescription(locale);
         }
     };
+
+    private static class WeldSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final WeldSubsystemDescribeHandler INSTANCE = new WeldSubsystemDescribeHandler();
+        @Override
+        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+            ModelNode node = new ModelNode();
+            node.add(createAddSubSystemOperation());
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+    }
 }
