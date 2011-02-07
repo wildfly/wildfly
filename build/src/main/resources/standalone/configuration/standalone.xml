@@ -164,7 +164,8 @@
                     <statement></statement>
                 </datasource>
             </datasources>
-        </subsystem>      
+        </subsystem>                
+        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" /> 
         <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>

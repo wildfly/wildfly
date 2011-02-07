@@ -27,6 +27,8 @@ package org.jboss.as.connector.subsystems.resourceadapters;
  */
 class Constants {
 
+    static final String RESOURCEADAPTER = "resource-adapter";
+
     static final String RESOURCEADAPTERS = "resource-adapters";
 
     static final String CONNECTIONDEFINITIONS = "connection-definitions";

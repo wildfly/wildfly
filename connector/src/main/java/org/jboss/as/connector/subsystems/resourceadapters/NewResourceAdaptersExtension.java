@@ -42,6 +42,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PASSW
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOLNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USERNAME;
@@ -90,9 +91,9 @@ public class NewResourceAdaptersExtension implements NewExtension {
     @Override
     public void initialize(final NewExtensionContext context) {
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTERS);
+        final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTER);
 
-        registration.registerXMLElementWriter(NewConnectorSubsystemParser.INSTANCE);
+        registration.registerXMLElementWriter(NewResourceAdapterSubsystemParser.INSTANCE);
 
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
@@ -102,13 +103,13 @@ public class NewResourceAdaptersExtension implements NewExtension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewResourceAdapterSubsystemParser.INSTANCE);
     }
 
-    static final class NewConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+    static final class NewResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
-        static final NewConnectorSubsystemParser INSTANCE = new NewConnectorSubsystemParser();
+        static final NewResourceAdapterSubsystemParser INSTANCE = new NewResourceAdapterSubsystemParser();
 
         /** {@inheritDoc} */
         @Override
@@ -124,7 +125,7 @@ public class NewResourceAdaptersExtension implements NewExtension {
 
             // FIXME this should come from somewhere
             final ModelNode address = new ModelNode();
-            address.add(ModelDescriptionConstants.SUBSYSTEM, "connecotr");
+            address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTER);
             address.protect();
 
             final ModelNode subsystem = new ModelNode();
@@ -153,30 +154,32 @@ public class NewResourceAdaptersExtension implements NewExtension {
                 throw new XMLStreamException(e);
             }
 
-            ModelNode rasNode = subsystem.get(RESOURCEADAPTERS);
-            for (ResourceAdapter ra : ras.getResourceAdapters()) {
-                ModelNode raModel = new ModelNode();
-                for (Entry<String, String> entry : ra.getConfigProperties().entrySet()) {
-                    raModel.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
+            if (ras != null) {
+                ModelNode rasNode = subsystem.get(RESOURCEADAPTERS);
+                for (ResourceAdapter ra : ras.getResourceAdapters()) {
+                    ModelNode raModel = new ModelNode();
+                    for (Entry<String, String> entry : ra.getConfigProperties().entrySet()) {
+                        raModel.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
+                    }
+                    raModel.get(ARCHIVE).set(ra.getArchive());
+                    raModel.get(TRANSACTIONSUPPORT).set(ra.getTransactionSupport().name());
+                    raModel.get(BOOTSTRAPCONTEXT).set(ra.getBootstrapContext());
+                    for (String beanValidationGroup : ra.getBeanValidationGroups()) {
+                        raModel.get(BEANVALIDATIONGROUPS).add(beanValidationGroup);
+                    }
+
+                    for (CommonConnDef conDef : ra.getConnectionDefinitions()) {
+                        raModel.get(CONNECTIONDEFINITIONS).add(createConnectionDefinitionModel(conDef));
+
+                    }
+
+                    for (CommonAdminObject adminObject : ra.getAdminObjects()) {
+                        raModel.get(ADMIN_OBJECTS).add(createAdminObjectModel(adminObject));
+
+                    }
+
+                    rasNode.add(raModel);
                 }
-                raModel.get(ARCHIVE).set(ra.getArchive());
-                raModel.get(TRANSACTIONSUPPORT).set(ra.getTransactionSupport().name());
-                raModel.get(BOOTSTRAPCONTEXT).set(ra.getBootstrapContext());
-                for (String beanValidationGroup : ra.getBeanValidationGroups()) {
-                    raModel.get(BEANVALIDATIONGROUPS).add(beanValidationGroup);
-                }
-
-                for (CommonConnDef conDef : ra.getConnectionDefinitions()) {
-                    raModel.get(CONNECTIONDEFINITIONS).add(createConnectionDefinitionModel(conDef));
-
-                }
-
-                for (CommonAdminObject adminObject : ra.getAdminObjects()) {
-                    raModel.get(ADMIN_OBJECTS).add(createAdminObjectModel(adminObject));
-
-                }
-
-                rasNode.add(raModel);
             }
 
         }

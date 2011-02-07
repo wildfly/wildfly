@@ -124,13 +124,15 @@ class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, Runti
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
 
-        for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
-            for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
-                subModel.get(CONFIG_PROPERTIES, property.asProperty().getName()).set(property.asString());
-            }
-            for (final String attribute : NewResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
-                if (raNode.get(attribute).isDefined()) {
-                    subModel.get(attribute).set(raNode.get(attribute));
+        if (operation.hasDefined(RESOURCEADAPTERS)) {
+            for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
+                for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
+                    subModel.get(CONFIG_PROPERTIES, property.asProperty().getName()).set(property.asString());
+                }
+                for (final String attribute : NewResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
+                    if (raNode.get(attribute).isDefined()) {
+                        subModel.get(attribute).set(raNode.get(attribute));
+                    }
                 }
             }
         }
@@ -143,25 +145,27 @@ class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, Runti
     private ResourceAdapters buildResourceAdaptersObject(ModelNode operation) {
         List<ResourceAdapter> resourceAdapters = new ArrayList<ResourceAdapter>();
 
-        for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
-            Map<String, String> configProperties = new HashMap<String, String>(raNode.get(CONFIG_PROPERTIES).asList().size());
-            for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
-                configProperties.put(property.asProperty().getName(), property.asString());
-            }
-            String archive = operation.get(ARCHIVE).asString();
-            TransactionSupportEnum transactionSupport = TransactionSupportEnum.valueOf(operation.get(TRANSACTIONSUPPORT)
-                    .asString());
-            String bootstrapContext = operation.get(BOOTSTRAPCONTEXT).asString();
-            List<String> beanValidationGroups = new ArrayList<String>(operation.get(BEANVALIDATIONGROUPS).asList().size());
-            for (ModelNode beanValidtion : operation.get(BEANVALIDATIONGROUPS).asList()) {
-                beanValidationGroups.add(beanValidtion.asString());
-            }
+        if (operation.hasDefined(RESOURCEADAPTERS)) {
+            for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
+                Map<String, String> configProperties = new HashMap<String, String>(raNode.get(CONFIG_PROPERTIES).asList().size());
+                for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
+                    configProperties.put(property.asProperty().getName(), property.asString());
+                }
+                String archive = operation.get(ARCHIVE).asString();
+                TransactionSupportEnum transactionSupport = TransactionSupportEnum.valueOf(operation.get(TRANSACTIONSUPPORT)
+                        .asString());
+                String bootstrapContext = operation.get(BOOTSTRAPCONTEXT).asString();
+                List<String> beanValidationGroups = new ArrayList<String>(operation.get(BEANVALIDATIONGROUPS).asList().size());
+                for (ModelNode beanValidtion : operation.get(BEANVALIDATIONGROUPS).asList()) {
+                    beanValidationGroups.add(beanValidtion.asString());
+                }
 
-            ResourceAdapter ra = new ResourceAdapterImpl(archive, transactionSupport,
-                    buildConnectionDefinitionObject(operation), buildAdminObjects(operation), configProperties,
-                    beanValidationGroups, bootstrapContext);
+                ResourceAdapter ra = new ResourceAdapterImpl(archive, transactionSupport,
+                        buildConnectionDefinitionObject(operation), buildAdminObjects(operation), configProperties,
+                        beanValidationGroups, bootstrapContext);
 
-            resourceAdapters.add(ra);
+                resourceAdapters.add(ra);
+            }
         }
 
         return new ResourceAdaptersImpl(resourceAdapters);
