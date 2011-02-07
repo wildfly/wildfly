@@ -55,6 +55,17 @@ class WSSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            // TODO
+            return node;
+        }
+    };
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
