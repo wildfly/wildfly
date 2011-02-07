@@ -23,6 +23,7 @@
 package org.jboss.as.remoting;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -56,14 +57,23 @@ import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewExtension;
 import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -93,6 +103,7 @@ public class NewRemotingExtension implements NewExtension {
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(NewRemotingSubsystemProviders.SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, NewRemotingSubsystemAdd.INSTANCE, NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerOperationHandler(DESCRIBE, RemotingSubsystemDescribeHandler.INSTANCE, RemotingSubsystemDescribeHandler.INSTANCE, false);
 
         // Remoting connectors
         final ModelNodeRegistration connectors = subsystem.registerSubModel(PathElement.pathElement(CONNECTOR), NewRemotingSubsystemProviders.CONNECTOR_SPEC);
@@ -492,5 +503,46 @@ public class NewRemotingExtension implements NewExtension {
             writer.writeEndElement();
         }
 
+    }
+
+    private static class RemotingSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final RemotingSubsystemDescribeHandler INSTANCE = new RemotingSubsystemDescribeHandler();
+        @Override
+        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+            final ModelNode result = new ModelNode();
+            final ModelNode model = context.getSubModel();
+
+            final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME));
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(address.toModelNode());
+            subsystem.get(THREAD_POOL).set(model.get(THREAD_POOL));
+
+            result.add(subsystem);
+
+            for (org.jboss.dmr.Property prop : model.get(CONNECTOR).asPropertyList()) {
+                final ModelNode connector = prop.getValue();
+                final ModelNode add = Util.getEmptyOperation(ADD_CONNECTOR, address.append(PathElement.pathElement(CONNECTOR, prop.getName())).toModelNode());
+                if (connector.hasDefined(SOCKET_BINDING)) {
+                    add.get(SOCKET_BINDING).set(connector.get(SOCKET_BINDING));
+                }
+                if (connector.hasDefined(AUTHENTICATION_PROVIDER)) {
+                    add.get(AUTHENTICATION_PROVIDER).set(AUTHENTICATION_PROVIDER);
+                }
+                if (connector.hasDefined(SASL)) {
+                    add.get(SASL);
+                }
+                result.add(connector);
+            }
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
     }
 }
