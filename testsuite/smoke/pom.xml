@@ -117,7 +117,7 @@
                 </executions>
                 <configuration>
                     <!-- DISABLE TEMPORARILY ON detyped2 -->
-                    <skipTests>true</skipTests>
+                    <skipTests>false</skipTests>
                     <!--  standard surefire options -->
                     <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->                    
                     <enableAssertions>true</enableAssertions>
