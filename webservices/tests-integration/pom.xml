@@ -28,20 +28,30 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-webservices</artifactId>
         <version>7.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-webservices</artifactId>
+    <artifactId>jboss-as-webservices-tests-integration</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Web Services Subsystem</name>
+    <name>JBoss Application Server: Web Services Tests Integration Subsystem</name>
 
-    <modules>
-        <module>tests-integration</module>
-        <module>server-integration</module>
-    </modules>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                    <enableAssertions>false</enableAssertions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
