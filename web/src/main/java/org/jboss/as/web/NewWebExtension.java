@@ -23,6 +23,7 @@
 package org.jboss.as.web;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import org.jboss.as.controller.NewExtension;
@@ -47,6 +48,7 @@ public class NewWebExtension implements NewExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewWebSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewWebSubsystemAdd.INSTANCE, NewWebSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, NewWebSubsystemDescribe.INSTANCE, NewWebSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
         subsystem.registerXMLElementWriter(NewWebSubsystemParser.getInstance());
         // connector
         final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, NewWebSubsystemProviders.CONNECTOR);

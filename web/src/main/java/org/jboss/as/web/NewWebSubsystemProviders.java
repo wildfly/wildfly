@@ -59,6 +59,17 @@ class NewWebSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode subsystem = new ModelNode();
+
+            return subsystem;
+        }
+    };
+
     static final DescriptionProvider CONNECTOR = new DescriptionProvider() {
 
         public ModelNode getModelDescription(Locale locale) {

@@ -22,9 +22,7 @@
 
 package org.jboss.as.web;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -53,15 +51,8 @@ class NewWebVirtualHostRemove implements ModelRemoveOperationHandler, RuntimeOpe
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
         final ModelNode subModel = context.getSubModel();
-
-        compensatingOperation.get(CommonAttributes.ALIAS).set(subModel.get(CommonAttributes.ALIAS));
-        compensatingOperation.get(CommonAttributes.ACCESS_LOG).set(subModel.get(CommonAttributes.ACCESS_LOG));
-        compensatingOperation.get(CommonAttributes.REWRITE).set(subModel.get(CommonAttributes.REWRITE));
+        final ModelNode compensatingOperation = NewWebVirtualHostAdd.getAddOperation(operation.require(OP_ADDR), subModel);
 
         if(context instanceof NewRuntimeOperationContext) {
             final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;

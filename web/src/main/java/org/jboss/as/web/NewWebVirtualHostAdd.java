@@ -22,11 +22,13 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
@@ -118,5 +120,22 @@ public class NewWebVirtualHostAdd implements ModelAddOperationHandler, RuntimeOp
             RelativePathService.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName, CommonAttributes.ACCESS_LOG),
                     hostName, DEFAULT_RELATIVE_TO, target);
         }
+    }
+
+    static ModelNode getAddOperation(final ModelNode address, final ModelNode subModel) {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).set(address);
+
+        if(subModel.hasDefined(CommonAttributes.ALIAS)) {
+            operation.get(CommonAttributes.ALIAS).set(subModel.get(CommonAttributes.ALIAS));
+        }
+        if(subModel.hasDefined(CommonAttributes.ACCESS_LOG)) {
+            operation.get(CommonAttributes.ACCESS_LOG).set(subModel.get(CommonAttributes.ACCESS_LOG));
+        }
+        if(subModel.hasDefined(CommonAttributes.REWRITE)) {
+            operation.get(CommonAttributes.REWRITE).set(subModel.get(CommonAttributes.REWRITE));
+        }
+        return operation;
     }
 }
