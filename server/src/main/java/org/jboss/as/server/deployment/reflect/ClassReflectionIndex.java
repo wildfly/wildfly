@@ -32,7 +32,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An index of all the declared fields and methods of a class.
+ * A short-lived index of all the declared fields and methods of a class.
+ *
+ * The ClassReflectionIndex is only available during the deployment.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -54,23 +56,31 @@ public final class ClassReflectionIndex {
         final Map<String, Map<ParamList, Map<Class<?>, Method>>> methods = new HashMap<String, Map<ParamList, Map<Class<?>, Method>>>();
         for (Method method : declaredMethods) {
             method.setAccessible(true);
-            final String name = method.getName();
-            Map<ParamList, Map<Class<?>, Method>> nameMap = methods.get(name);
-            if (nameMap == null) {
-                methods.put(name, nameMap = new HashMap<ParamList, Map<Class<?>, Method>>());
-            }
-            final Class<?>[] types = method.getParameterTypes();
-            final ParamList list = types.length == 0 ? EMPTY : new ParamList(types);
-            Map<Class<?>, Method> paramsMap = nameMap.get(list);
-            if (paramsMap == null) {
-                nameMap.put(list, paramsMap = new HashMap<Class<?>, Method>());
-            }
-            paramsMap.put(method.getReturnType(), method);
+            addMethod(methods, method);
+        }
+        // add all public methods as well
+        for (Method method : indexedClass.getMethods()) {
+            addMethod(methods, method);
         }
         this.methods = methods;
     }
 
     private static final ParamList EMPTY = new ParamList(new Class<?>[0]);
+
+    private static void addMethod(Map<String, Map<ParamList, Map<Class<?>, Method>>> methods, Method method) {
+        final String name = method.getName();
+        Map<ParamList, Map<Class<?>, Method>> nameMap = methods.get(name);
+        if (nameMap == null) {
+            methods.put(name, nameMap = new HashMap<ParamList, Map<Class<?>, Method>>());
+        }
+        final Class<?>[] types = method.getParameterTypes();
+        final ParamList list = types.length == 0 ? EMPTY : new ParamList(types);
+        Map<Class<?>, Method> paramsMap = nameMap.get(list);
+        if (paramsMap == null) {
+            nameMap.put(list, paramsMap = new HashMap<Class<?>, Method>());
+        }
+        paramsMap.put(method.getReturnType(), method);
+    }
 
     /**
      * Get the class indexed by this object.
