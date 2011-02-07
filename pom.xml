@@ -1334,7 +1334,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-webservices</artifactId>
+                <artifactId>jboss-as-webservices-server-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

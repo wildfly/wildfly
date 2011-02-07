@@ -35,61 +35,12 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-webservices</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>JBoss Application Server: Web Services Subsystem</name>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <enableAssertions>false</enableAssertions>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <modules>
+        <module>server-integration</module>
+    </modules>
 
-    <dependencies>
-    <dependency>
-       <groupId>junit</groupId>
-       <artifactId>junit</artifactId>
-       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.msc</groupId>
-       <artifactId>jboss-msc</artifactId>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-domain</artifactId>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-web</artifactId>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.ws</groupId>
-       <artifactId>jbossws-api</artifactId>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.ws</groupId>
-       <artifactId>jbossws-common</artifactId>
-    </dependency>
-
-    <dependency>
-       <groupId>org.jboss.ws</groupId>
-       <artifactId>jbossws-spi</artifactId>
-    </dependency>
-  
- </dependencies>
 </project>
