@@ -59,12 +59,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.processors.ResourceAdaptersAttachingProcessor;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.NewServerOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
@@ -95,19 +99,25 @@ class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, Runti
     static final NewResourceAdaptersSubsystemAdd INSTANCE = new NewResourceAdaptersSubsystemAdd();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if (context instanceof NewRuntimeOperationContext) {
-            final NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
+        if (context instanceof NewBootOperationContext || context instanceof NewRuntimeOperationContext) {
+            final NewServerOperationContext updateContext = (NewServerOperationContext) context;
             final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
             ResourceAdapters resourceAdapters = buildResourceAdaptersObject(operation);
             serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
                     .setInitialMode(Mode.ACTIVE).install();
+
+            if (context instanceof NewBootOperationContext) {
+                NewBootOperationContext bootContext = (NewBootOperationContext) context;
+                bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS, new ResourceAdaptersAttachingProcessor(resourceAdapters));
+            }
         }
 
         // Populate subModel

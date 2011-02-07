@@ -36,13 +36,16 @@ import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
+import org.jboss.as.connector.deployers.NewRaDeploymentActivator;
 import org.jboss.as.connector.workmanager.WorkManagerService;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.NewServerOperationContext;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -73,8 +76,8 @@ class NewConnectorSubsystemAdd implements ModelAddOperationHandler {
         boolean failOnError = NewParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);
         boolean failOnWarn = NewParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN, false);
 
-        if (context instanceof NewRuntimeOperationContext) {
-            ServiceTarget serviceTarget = ((NewRuntimeOperationContext) context).getServiceTarget();
+        if (context instanceof NewBootOperationContext || context instanceof NewRuntimeOperationContext) {
+            ServiceTarget serviceTarget = ((NewServerOperationContext) context).getServiceTarget();
             WorkManager wm = new WorkManagerImpl();
 
             final WorkManagerService wmService = new WorkManagerService(wm);
@@ -113,6 +116,10 @@ class NewConnectorSubsystemAdd implements ModelAddOperationHandler {
                     .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
                     .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class,
                             connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
+
+            if (context instanceof NewBootOperationContext) {
+                new NewRaDeploymentActivator().activate((NewBootOperationContext) context);
+            }
 
         }
 

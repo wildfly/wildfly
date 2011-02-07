@@ -22,10 +22,55 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERTTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USETRYLOCK;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,28 +79,30 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.processors.DataSourcesAttachmentProcessor;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.NewServerOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.Statement;
-import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Statement.TrackStatementsEnum;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
+import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
-import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.ds.DataSourceImpl;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
@@ -75,20 +122,26 @@ class NewDataSourcesSubsystemAdd implements ModelAddOperationHandler, RuntimeOpe
     static final NewDataSourcesSubsystemAdd INSTANCE = new NewDataSourcesSubsystemAdd();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if (context instanceof NewRuntimeOperationContext) {
-            final NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
+
+        if (context instanceof NewBootOperationContext || context instanceof NewRuntimeOperationContext) {
+            final NewServerOperationContext updateContext = (NewServerOperationContext) context;
             final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
             try {
                 DataSources datasources = buildDataSourcesObject(operation);
                 serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
                         .setInitialMode(Mode.ACTIVE).install();
+                if (context instanceof NewBootOperationContext) {
+                    NewBootOperationContext bootContext = (NewBootOperationContext) context;
+                    bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES, new DataSourcesAttachmentProcessor(datasources));
+                }
             } catch (Exception e) {
                 // e.printStackTrace();
             }
