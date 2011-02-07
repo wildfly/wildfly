@@ -54,6 +54,8 @@ class NewConsoleHandlerAdd implements ModelAddOperationHandler, RuntimeOperation
 
     static final NewConsoleHandlerAdd INSTANCE = new NewConsoleHandlerAdd();
 
+    static final String OPERATION_NAME = "add-console-handler";
+
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
@@ -78,8 +80,8 @@ class NewConsoleHandlerAdd implements ModelAddOperationHandler, RuntimeOperation
                 service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                 final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
                 if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                if (operation.has(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                if (operation.has(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
                 serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
                 serviceBuilder.install();
             } catch(Throwable t) {

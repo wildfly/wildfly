@@ -59,6 +59,8 @@ class NewPeriodicFileHandlerAdd implements ModelAddOperationHandler, RuntimeOper
 
     static final NewPeriodicFileHandlerAdd INSTANCE = new NewPeriodicFileHandlerAdd();
 
+    static final String OPERATION_NAME = "add-periodic-handler";
+
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
@@ -80,8 +82,8 @@ class NewPeriodicFileHandlerAdd implements ModelAddOperationHandler, RuntimeOper
             try {
                 final PeriodicRotatingFileHandlerService service = new PeriodicRotatingFileHandlerService();
                 final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                if (operation.has(FILE)) {
-                    if(operation.get(FILE).has(RELATIVE_TO)) {
+                if (operation.hasDefined(FILE)) {
+                    if(operation.get(FILE).hasDefined(RELATIVE_TO)) {
                         serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
                     }
                     service.setPath(operation.get(FILE, PATH).asString());
@@ -89,9 +91,9 @@ class NewPeriodicFileHandlerAdd implements ModelAddOperationHandler, RuntimeOper
                 service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                 final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
                 if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                if (operation.has(SUFFIX)) service.setSuffix(operation.get(SUFFIX).asString());
-                if (operation.has(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                if (operation.has(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                if (operation.hasDefined(SUFFIX)) service.setSuffix(operation.get(SUFFIX).asString());
+                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
                 serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
                 serviceBuilder.install();
             } catch(Throwable t) {

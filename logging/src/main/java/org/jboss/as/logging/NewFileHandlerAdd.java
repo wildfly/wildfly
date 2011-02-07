@@ -58,6 +58,8 @@ class NewFileHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHan
 
     static final NewFileHandlerAdd INSTANCE = new NewFileHandlerAdd();
 
+    static final String OPERATION_NAME = "add-file-handler";
+
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
@@ -79,8 +81,8 @@ class NewFileHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHan
             try {
                 final FileHandlerService service = new FileHandlerService();
                 final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                if (operation.has(FILE)) {
-                    if(operation.get(FILE).has(RELATIVE_TO)) {
+                if (operation.hasDefined(FILE)) {
+                    if(operation.get(FILE).hasDefined(RELATIVE_TO)) {
                         serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
                     }
                     service.setPath(operation.get(FILE, PATH).asString());
@@ -88,8 +90,8 @@ class NewFileHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHan
                 service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                 final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
                 if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                if (operation.has(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                if (operation.has(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
                 serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
                 serviceBuilder.install();
             } catch(Throwable t) {
@@ -101,6 +103,7 @@ class NewFileHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHan
         final ModelNode subModel = context.getSubModel();
         subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         subModel.get(ENCODING).set(operation.get(ENCODING));
+        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(FORMATTER).set(operation.get(FORMATTER));
         subModel.get(LEVEL).set(operation.get(LEVEL));
         subModel.get(FILE).set(operation.get(FILE));

@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.logging.Level;
 
 import org.jboss.as.controller.Cancellable;
@@ -43,6 +44,8 @@ import org.jboss.msc.service.ServiceTarget;
 class NewRootLoggerAdd implements ModelUpdateOperationHandler, RuntimeOperationHandler {
 
     static final NewRootLoggerAdd INSTANCE = new NewRootLoggerAdd();
+
+    static final String OPERATION_NAME = "set-root-logger";
 
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {

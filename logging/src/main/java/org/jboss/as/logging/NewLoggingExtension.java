@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -53,9 +54,10 @@ public class NewLoggingExtension implements NewExtension {
     public void initialize(NewExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NewLoggingSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, ADD_INSTANCE, NewLoggingSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler("set-root-logger", NewRootLoggerAdd.INSTANCE, NewLoggingSubsystemProviders.SET_ROOT_LOGGER, false);
-        registration.registerOperationHandler("remove-root-logger", NewRootLoggerRemove.INSTANCE, NewLoggingSubsystemProviders.SET_ROOT_LOGGER, false);
+        registration.registerOperationHandler(ADD, NewLoggingSubsystemAdd.ADD_INSTANCE, NewLoggingSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, NewLoggingDescribeHandler.INSTANCE, NewLoggingDescribeHandler.INSTANCE, false);
+        registration.registerOperationHandler(NewRootLoggerAdd.OPERATION_NAME, NewRootLoggerAdd.INSTANCE, NewLoggingSubsystemProviders.SET_ROOT_LOGGER, false);
+        registration.registerOperationHandler(NewRootLoggerRemove.OPERATION_NAME, NewRootLoggerRemove.INSTANCE, NewLoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
         subsystem.registerXMLElementWriter(NewLoggingSubsystemParser.getInstance());
         // loggers
         final ModelNodeRegistration loggers = registration.registerSubModel(loggersPath, NewLoggingSubsystemProviders.LOGGER);
@@ -65,11 +67,11 @@ public class NewLoggingExtension implements NewExtension {
         final ModelNodeRegistration handlers = registration.registerSubModel(handlersPath, NewLoggingSubsystemProviders.HANDLERS);
         handlers.registerOperationHandler(ADD, NewLoggerHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.HANDLER_ADD, false);
         handlers.registerOperationHandler(REMOVE, NewLoggerHandlerRemove.INSTANCE, NewLoggingSubsystemProviders.HANDLER_REMOVE, false);
-        handlers.registerOperationHandler("add-async-handler", NewAsyncHandlerAdd.INSTANCE, NewAsyncHandlerAdd.INSTANCE, false);
-        handlers.registerOperationHandler("add-console-handler", NewConsoleHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.CONSOLE_HANDLER_ADD, false);
-        handlers.registerOperationHandler("add-file-handler", NewFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.FILE_HANDLER_ADD, false);
-        handlers.registerOperationHandler("add-periodic-handler", NewPeriodicFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.PERIODIC_HANDLER_ADD, false);
-        handlers.registerOperationHandler("add-size-periodic-handler", NewSizePeriodicFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.SIZE_PERIODIC_HANDLER_ADD, false);
+        handlers.registerOperationHandler(NewAsyncHandlerAdd.OPERATION_NAME, NewAsyncHandlerAdd.INSTANCE, NewAsyncHandlerAdd.INSTANCE, false);
+        handlers.registerOperationHandler(NewConsoleHandlerAdd.OPERATION_NAME, NewConsoleHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.CONSOLE_HANDLER_ADD, false);
+        handlers.registerOperationHandler(NewFileHandlerAdd.OPERATION_NAME, NewFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.FILE_HANDLER_ADD, false);
+        handlers.registerOperationHandler(NewPeriodicFileHandlerAdd.OPERATION_NAME, NewPeriodicFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.PERIODIC_HANDLER_ADD, false);
+        handlers.registerOperationHandler(NewSizePeriodicFileHandlerAdd.OPERATION_NAME, NewSizePeriodicFileHandlerAdd.INSTANCE, NewLoggingSubsystemProviders.SIZE_PERIODIC_HANDLER_ADD, false);
     }
 
     /** {@inheritDoc} */
@@ -78,9 +80,10 @@ public class NewLoggingExtension implements NewExtension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewLoggingSubsystemParser.getInstance());
     }
 
-    private static final NewLoggingSubsystemAdd ADD_INSTANCE = new NewLoggingSubsystemAdd();
 
     static class NewLoggingSubsystemAdd implements ModelAddOperationHandler {
+
+        static final NewLoggingSubsystemAdd ADD_INSTANCE = new NewLoggingSubsystemAdd();
 
         /** {@inheritDoc} */
         @Override
@@ -97,6 +100,13 @@ public class NewLoggingExtension implements NewExtension {
             resultHandler.handleResultComplete(compensatingOperation);
 
             return Cancellable.NULL;
+        }
+
+        static ModelNode createOperation(ModelNode address) {
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(address);
+            return subsystem;
         }
     }
 }

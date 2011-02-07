@@ -59,6 +59,8 @@ class NewSizePeriodicFileHandlerAdd implements ModelAddOperationHandler, Runtime
 
     static final NewSizePeriodicFileHandlerAdd INSTANCE = new NewSizePeriodicFileHandlerAdd();
 
+    static final String OPERATION_NAME = "add-size-periodic-handler";
+
     static long DEFAULT_ROTATE_SIZE = 2L * 1024L * 1024L;
 
     /** {@inheritDoc} */

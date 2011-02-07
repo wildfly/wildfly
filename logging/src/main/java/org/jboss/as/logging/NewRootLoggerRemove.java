@@ -42,6 +42,8 @@ class NewRootLoggerRemove implements ModelUpdateOperationHandler, RuntimeOperati
 
     static final NewRootLoggerRemove INSTANCE = new NewRootLoggerRemove();
 
+    static final String OPERATION_NAME = "remove-root-logger";
+
     /** {@inheritDoc} */
     public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 

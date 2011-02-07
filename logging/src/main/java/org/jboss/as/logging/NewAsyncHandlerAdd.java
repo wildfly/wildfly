@@ -58,6 +58,8 @@ class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHa
 
     static final NewAsyncHandlerAdd INSTANCE = new NewAsyncHandlerAdd();
 
+    static final String OPERATION_NAME = "add-async-handler";
+
     /** {@inheritDoc} */
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
@@ -87,7 +89,7 @@ class NewAsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHa
                     list.add(injectedValue);
                 }
                 service.addHandlers(list);
-                if(operation.has(QUEUE_LENGTH)) service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
+                if(operation.hasDefined(QUEUE_LENGTH)) service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
                 service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                 service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
                 serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);

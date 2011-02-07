@@ -59,7 +59,6 @@
 
         <profile name="default">
 
-<!-- 
             <subsystem xmlns="urn:jboss:domain:logging:1.0">
                 <console-handler name="CONSOLE">
                     <level name="INFO"/>
@@ -85,7 +84,6 @@
                     </handlers>
                 </root-logger>
             </subsystem>
-             -->
              <subsystem xmlns="urn:jboss:domain:threads:1.0">
                 <scheduled-thread-pool name="remoting">
                     <max-threads count="10" per-cpu="20"/>
