@@ -57,7 +57,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <skipTests>false</skipTests>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
@@ -78,31 +78,40 @@
                         <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
                     </includes>
                 </configuration>
-                <!-- 
-                <executions>
-                    <execution> -->
+                
+                <executions> 
+                    <execution>
                         <!-- (Legacy) Tests not using arquillian  -->
-                        <!-- <id>default-test</id>
+                        <id>default-test</id>
                         <configuration>
+                            <skipTests>true</skipTests>
                             <includes>
                                 <include>org/jboss/as/test/flat/**/*TestCase.java</include>
                             </includes>
                         </configuration>
                     </execution>
-                    <execution> --> 
+                    <execution> 
                         <!-- Tests that run using arquillian + embedded AS-->
-                        <!-- <id>arquillian</id>
+                        <id>arquillian</id>
                         <phase>test</phase>
                         <goals>
                              <goal>test</goal>
                         </goals>
                         <configuration>
+                            <skipTests>false</skipTests>
                             <includes>
-                                <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/embedded/demos/sar/*TestCase.java</include>
+                                <include>org/jboss/as/test/embedded/demos/serviceloader/*TestCase.java</include>
+                                <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
+                                <include>org/jboss/as/test/embedded/demos/war/*TestCase.java</include>
+                                <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
+                                <include>org/jboss/as/test/embedded/demos/web/connector/*TestCase.java</include>
+                                <!--  The other demos don't work -->
+                                <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
                             </includes>
                         </configuration>
                     </execution>
-                </executions> -->             
+                </executions>             
             </plugin>
             <plugin>
                 <groupId>org.jboss.maven.surefire.modular</groupId>
