@@ -77,7 +77,7 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, Ru
         if (context instanceof NewRuntimeOperationContext) {
             NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
             String deploymentUnitName = model.require(NAME).asString();
-            final ServiceName deploymentUnitServiceName = Services.JBOSS_DEPLOYMENT.append(deploymentUnitName);
+            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
             final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
 
             final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
