@@ -39,6 +39,8 @@ import org.jboss.as.weld.deployment.processors.WebIntegrationProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDependencyProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDeploymentProcessor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.weld.bootstrap.api.SingletonProvider;
+import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
 
 /**
  * @author Emanuel Muckenhuber
@@ -57,6 +59,7 @@ class NewWeldSubsystemAdd implements ModelAddOperationHandler, BootOperationHand
 
         if(context instanceof NewBootOperationContext) {
             final NewBootOperationContext bootContext = (NewBootOperationContext) context;
+            SingletonProvider.initialize(new TCCLSingletonProvider());
             bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
             bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());
             bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
