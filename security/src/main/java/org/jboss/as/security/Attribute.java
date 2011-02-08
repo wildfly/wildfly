@@ -35,12 +35,14 @@ public enum Attribute {
     UNKNOWN(null),
 
     AUTHENTICATION_MANAGER_CLASS_NAME("authentication-manager-class-name"),
-
+    CODE("code"),
     DEEP_COPY_SUBJECT_MODE("deep-copy-subject-mode"),
-
     DEFAULT_CALLBACK_HANDLER_CLASS_NAME("default-callback-handler-class-name"),
-
-    SUBJECT_FACTORY_CLASS_NAME("subject-factory-class-name");
+    EXTENDS("extends"),
+    FLAG("flag"),
+    NAME("name"),
+    SUBJECT_FACTORY_CLASS_NAME("subject-factory-class-name"),
+    VALUE("value");
 
     private final String name;
 
@@ -74,6 +76,7 @@ public enum Attribute {
         return element == null ? UNKNOWN : element;
     }
 
+    @Override
     public String toString() {
         return getLocalName();
     }

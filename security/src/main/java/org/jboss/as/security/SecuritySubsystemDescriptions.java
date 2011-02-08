@@ -25,7 +25,6 @@ package org.jboss.as.security;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -33,31 +32,49 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class SecuritySubsystemProviders {
+class SecuritySubsystemDescriptions {
 
-    static final String RESOURCE_NAME = SecuritySubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    static final String RESOURCE_NAME = SecuritySubsystemDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+    static final ModelNode getSubsystemRoot(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        // TODO
+        return node;
+    }
 
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
-        }
-    };
+    static final ModelNode getSubsystemAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
+        final ModelNode node = new ModelNode();
+        // TODO
+        return node;
+    }
 
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
+    static final ModelNode getJaasApplicationPolicy(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
-        }
-    };
+        final ModelNode node = new ModelNode();
+        // TODO
+        return node;
+    }
+
+    static final ModelNode getJaasApplicationPolicyAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        // TODO
+        return node;
+    }
+
+    static final ModelNode getJaasApplicationPolicyRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        // TODO
+        return node;
+    }
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

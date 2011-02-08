@@ -131,8 +131,16 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />        
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
-        <subsystem xmlns="urn:jboss:domain:naming:1.0" />
-        <subsystem xmlns="urn:jboss:domain:security:1.0" />
+        <subsystem xmlns="urn:jboss:domain:naming:1.0" />        
+        <subsystem xmlns="urn:jboss:domain:security:1.0">
+            <jaas>
+                <application-policy name="other">
+                    <authentication>
+                        <login-module code="UsersRoles" flag="required"/>
+                    </authentication>
+                </application-policy>
+            </jaas>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />

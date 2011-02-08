@@ -34,11 +34,19 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
+    ACL("acl"),
+    APPLICATION_POLICY("application-policy"),
+    AUDIT("audit"),
+    AUTHENTICATION("authentication"),
+    AUTHENTICATION_JASPI("authentication-jaspi"),
+    AUTHORIZATION("authorization"),
+    IDENTITY_TRUST("identity-trust"),
+    JAAS("jaas"),
+    LOGIN_MODULE("login-module"),
+    MAPPING("mapping"),
+    MODULE_OPTION("module-option"),
     SECURITY_MANAGEMENT("security-management"),
-
-    SUBJECT_FACTORY("subject-factory"),
-
-    JAAS("jaas");
+    SUBJECT_FACTORY("subject-factory");
 
     private final String name;
 

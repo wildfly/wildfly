@@ -26,20 +26,26 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
 import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.JAAS_APPLICATION_POLICY;
 import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
+
+import java.util.Locale;
 
 import javax.naming.Context;
 import javax.naming.Reference;
+import javax.security.auth.login.Configuration;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.service.JavaContextService;
 import org.jboss.as.security.context.SecurityDomainObjectFactory;
 import org.jboss.as.security.processors.SecurityDependencyProcessor;
 import org.jboss.as.security.service.JaasBinderService;
+import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityManagementService;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -52,6 +58,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
+import org.jboss.security.auth.login.XMLLoginConfigImpl;
 import org.jboss.security.plugins.JBossAuthorizationManager;
 import org.jboss.security.plugins.JBossSecuritySubjectFactory;
 import org.jboss.security.plugins.auth.JaasSecurityManagerBase;
@@ -60,7 +67,7 @@ import org.jboss.security.plugins.auth.JaasSecurityManagerBase;
  * Add Security Subsystem Operation.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class NewSecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class NewSecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHandler, DescriptionProvider {
 
 
     private static final String AUTHENTICATION_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot()
@@ -109,9 +116,11 @@ class NewSecuritySubsystemAdd implements ModelAddOperationHandler, BootOperation
             subjectFactoryClassName = operation.get(SUBJECT_FACTORY_CLASS_NAME).asString();
             subModel.get(SUBJECT_FACTORY_CLASS_NAME).set(SUBJECT_FACTORY_CLASS_NAME);
         }
+        subModel.get(JAAS_APPLICATION_POLICY).setEmptyObject();
 
         if (context instanceof NewBootOperationContext) {
             final NewBootOperationContext updateContext = (NewBootOperationContext) context;
+
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE, new SecurityDependencyProcessor());
 
             final ServiceTarget target = updateContext.getServiceTarget();
@@ -149,10 +158,21 @@ class NewSecuritySubsystemAdd implements ModelAddOperationHandler, BootOperation
             target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService).addDependency(
                     SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                     subjectFactoryService.getSecurityManagementInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            // add jaas configuration service
+            Configuration loginConfig = XMLLoginConfigImpl.getInstance();
+            final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
+            target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService).setInitialMode(
+                    ServiceController.Mode.ACTIVE).install();
         }
 
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return SecuritySubsystemDescriptions.getSubsystemAdd(locale);
     }
 }

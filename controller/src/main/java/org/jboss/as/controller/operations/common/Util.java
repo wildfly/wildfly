@@ -25,6 +25,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.util.Set;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -78,5 +80,25 @@ public class Util {
 
     public static boolean isExpression(String value) {
         return value != null && value.startsWith("${") && value.endsWith("}");
+    }
+
+    public static void copyParamsToModel(final ModelNode operation, final ModelNode model) {
+        Set<String> keys = operation.keys();
+        keys.remove(OP);
+        keys.remove(OP_ADDR);
+        for (String key : keys) {
+            model.get(key).set(operation.get(key));
+        }
+    }
+
+    public static ModelNode getOperation(String operationName, ModelNode address, ModelNode params) {
+        ModelNode op = getEmptyOperation(operationName, address);
+        Set<String> keys = params.keys();
+        keys.remove(OP);
+        keys.remove(OP_ADDR);
+        for (String key : keys) {
+            op.get(key).set(params.get(key));
+        }
+        return op;
     }
 }
