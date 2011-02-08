@@ -179,15 +179,18 @@ public class NewWSExtension implements NewExtension {
                                 break;
                             }
                             case MODIFY_SOAP_ADDRESS: {
-                                configuration.get(MODIFY_SOAP_ADDRESS).set(parseElementNoAttributes(reader));
+                                boolean b = Boolean.parseBoolean(parseElementNoAttributes(reader));
+                                configuration.get(MODIFY_SOAP_ADDRESS).set(b);
                                 break;
                             }
                             case WEBSERVICE_SECURE_PORT: {
-                                configuration.get(WEBSERVICE_SECURE_PORT).set(parseElementNoAttributes(reader));
+                                int port = Integer.valueOf(parseElementNoAttributes(reader));
+                                configuration.get(WEBSERVICE_SECURE_PORT).set(port);
                                 break;
                             }
                             case WEBSERVICE_PORT: {
-                                configuration.get(WEBSERVICE_PORT).set(parseElementNoAttributes(reader));
+                                int port = Integer.valueOf(parseElementNoAttributes(reader));
+                                configuration.get(WEBSERVICE_PORT).set(port);
                                 break;
                             }
                             default: {
