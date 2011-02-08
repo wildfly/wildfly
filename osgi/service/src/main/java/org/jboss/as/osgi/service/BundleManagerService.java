@@ -47,6 +47,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -62,11 +63,8 @@ import org.jboss.osgi.framework.BundleManagerMBean;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.bundle.BundleManager;
 import org.jboss.osgi.framework.bundle.BundleManager.IntegrationMode;
-import org.jboss.osgi.framework.bundle.OSGiModuleLoader;
-import org.jboss.osgi.framework.bundle.SystemBundle;
 import org.jboss.osgi.framework.plugin.DeployerServicePlugin;
-import org.jboss.osgi.framework.plugin.SystemModuleProviderPlugin;
-import org.jboss.osgi.framework.plugin.internal.AbstractSystemModuleProviderPlugin;
+import org.jboss.osgi.framework.plugin.SystemPackagesPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
@@ -122,8 +120,9 @@ public class BundleManagerService implements Service<BundleManager> {
             // Get {@link ModuleLoader} for the OSGi layer
             bundleManager = new BundleManager(props);
 
-            // Setup the Framework module provider
-            bundleManager.addPlugin(SystemModuleProviderPlugin.class, new FrameworkModuleProvider(bundleManager));
+            // Setup the Framework {@link Module}
+            Module frameworkModule = new FrameworkModuleLoader(bundleManager).getFrameworkModule();
+            bundleManager.setProperty(Module.class.getName(), frameworkModule);
 
             // Setup the {@link DeployerServicePlugin}
             ServerDeploymentManager deploymentManager = injectedDeploymentManager.getValue();
@@ -138,7 +137,8 @@ public class BundleManagerService implements Service<BundleManager> {
                         ModuleLoader moduleLoader = injectedDeploymentModuleLoader.getValue();
                         Module module = moduleLoader.loadModule(identifier);
                         bundle = bundleManager.installBundle(module);
-                    } else {
+                    }
+                    else {
                         bundle = bundleManager.installBundle(identifier);
                     }
                     return bundle.getBundleId();
@@ -192,57 +192,65 @@ public class BundleManagerService implements Service<BundleManager> {
         return bundleManager;
     }
 
-    final class FrameworkModuleProvider extends AbstractSystemModuleProviderPlugin {
+    /**
+     * Provides the Framework module with its dependencies
+     *
+     * User defined dependencies can be added by property 'org.jboss.osgi.system.modules' in the configuration
+     *
+     * In case there are no user defined system modules, this loader simply returns the default 'org.jboss.osgi.framework'
+     * module
+     */
+    static class FrameworkModuleLoader extends ModuleLoader {
 
-        private Module frameworkModule;
+        private static final String EXTENDED_FRAMEWORK_IDENTIFIER = "org.jboss.osgi.framework.extended";
+        private final ModuleSpec moduleSpec;
 
-        public FrameworkModuleProvider(BundleManager bundleManager) {
-            super(bundleManager);
-        }
+        FrameworkModuleLoader(BundleManager bundleManager) throws ModuleLoadException {
 
-        @Override
-        public void destroyPlugin() {
-            super.destroyPlugin();
-            frameworkModule = null;
-        }
-
-        @Override
-        public Module getFrameworkModule() {
-            return frameworkModule;
-        }
-
-        @Override
-        public Module createFrameworkModule(OSGiModuleLoader osgiLoader, SystemBundle systemBundle) throws ModuleLoadException {
+            ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+            Module frameworkModule = moduleLoader.loadModule(ModuleIdentifier.create("org.jboss.osgi.framework"));
 
             // Setup the extended framework module spec
-            ModuleLoader systemLoader = Module.getSystemModuleLoader();
-            ModuleIdentifier systemIdentifier = getSystemModule().getIdentifier();
-            ModuleSpec.Builder specBuilder = ModuleSpec.build(ModuleIdentifier.create(Constants.JBOSGI_PREFIX + ".framework"));
-            specBuilder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(), PathFilters.acceptAll(), osgiLoader, systemIdentifier, false));
+            ModuleSpec.Builder builder = ModuleSpec.build(ModuleIdentifier.create(EXTENDED_FRAMEWORK_IDENTIFIER));
+            PathFilter all = PathFilters.acceptAll();
 
             // Add a dependency on the default framework module
-            ModuleIdentifier frameworkIdentifier = ModuleIdentifier.create("org.jboss.osgi.framework");
-            DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(), PathFilters.acceptAll(), systemLoader, frameworkIdentifier, false);
-            specBuilder.addDependency(moduleDep);
+            ModuleIdentifier moduleId = frameworkModule.getIdentifier();
+            DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(all, all, moduleLoader, moduleId, false);
+            builder.addDependency(moduleDep);
 
             // Add the user defined module dependencies
             String modulesProps = (String) bundleManager.getProperty(SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES);
             if (modulesProps != null) {
                 for (String moduleProp : modulesProps.split(",")) {
-                    ModuleIdentifier moduleId = ModuleIdentifier.create(moduleProp.trim());
-                    moduleDep = DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(), PathFilters.acceptAll(), systemLoader, moduleId, false);
-                    specBuilder.addDependency(moduleDep);
+                    moduleId = ModuleIdentifier.create(moduleProp.trim());
+                    moduleDep = DependencySpec.createModuleDependencySpec(all, all, moduleLoader, moduleId, false);
+                    builder.addDependency(moduleDep);
                 }
             }
 
-            ModuleSpec moduleSpec = specBuilder.create();
-            osgiLoader.addModule(systemBundle.getCurrentRevision(), moduleSpec);
-            try {
-                frameworkModule = osgiLoader.loadModule(specBuilder.getIdentifier());
-                return frameworkModule;
-            } catch (ModuleLoadException ex) {
-                throw new IllegalStateException(ex);
-            }
+            // Add a dependency on the system module
+            PathFilter exp = PathFilters.in(bundleManager.getPlugin(SystemPackagesPlugin.class).getExportedPaths());
+            moduleDep = DependencySpec.createModuleDependencySpec(all, exp, moduleLoader, ModuleIdentifier.SYSTEM, false);
+            builder.addDependency(moduleDep);
+
+            moduleSpec = builder.create();
+        }
+
+        Module getFrameworkModule() throws ModuleLoadException {
+            return loadModule(moduleSpec.getModuleIdentifier());
+        }
+
+        @Override
+        protected ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
+            if (EXTENDED_FRAMEWORK_IDENTIFIER.equals(identifier.getName()) == false)
+                throw new IllegalArgumentException("Unsupported identifier: " + identifier);
+            return moduleSpec;
+        }
+
+        @Override
+        public String toString() {
+            return "FrameworkModuleLoader";
         }
     }
 }
