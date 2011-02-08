@@ -70,9 +70,7 @@ public class CommandLineMain {
                 String line = input.readLine().trim();
 
                 if(line.isEmpty()) {
-                    cmdCtx.log("You are disconnected at the moment." +
-                            " Type /connect to connect to the server or" +
-                            " /help for the list of supported commands.");
+                    //cmdCtx.log("Type /help for the list of supported commands.");
                     continue;
                 }
 
