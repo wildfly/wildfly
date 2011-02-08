@@ -43,10 +43,8 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.NewBootOperationContext;
-import org.jboss.as.server.NewRuntimeOperationContext;
-import org.jboss.as.server.NewServerOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -62,7 +60,7 @@ import org.jboss.tm.JBossXATerminator;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-class NewConnectorSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class NewConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     static final OperationHandler INSTANCE = new NewConnectorSubsystemAdd();
 
@@ -77,8 +75,9 @@ class NewConnectorSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
         boolean failOnError = NewParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);
         boolean failOnWarn = NewParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN, false);
 
-        if (context instanceof NewBootOperationContext || context instanceof NewRuntimeOperationContext) {
-            ServiceTarget serviceTarget = ((NewServerOperationContext) context).getServiceTarget();
+        if (context instanceof NewBootOperationContext) {
+            NewBootOperationContext updateContext = (NewBootOperationContext) context;
+            ServiceTarget serviceTarget = updateContext.getServiceTarget();
             WorkManager wm = new WorkManagerImpl();
 
             final WorkManagerService wmService = new WorkManagerService(wm);
@@ -118,10 +117,7 @@ class NewConnectorSubsystemAdd implements ModelAddOperationHandler, RuntimeOpera
                     .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class,
                             connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
-            if (context instanceof NewBootOperationContext) {
-                new NewRaDeploymentActivator().activate((NewBootOperationContext) context);
-            }
-
+            new NewRaDeploymentActivator().activate(updateContext);
         }
 
         // Apply to the model

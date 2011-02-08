@@ -86,8 +86,6 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.NewBootOperationContext;
-import org.jboss.as.server.NewRuntimeOperationContext;
-import org.jboss.as.server.NewServerOperationContext;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
@@ -129,22 +127,16 @@ class NewDataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperat
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if (context instanceof NewBootOperationContext || context instanceof NewRuntimeOperationContext) {
-            final NewServerOperationContext updateContext = (NewServerOperationContext) context;
+        if (context instanceof NewBootOperationContext) {
+            final NewBootOperationContext updateContext = (NewBootOperationContext) context;
             final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
-            try {
-                DataSources datasources = buildDataSourcesObject(operation);
-                serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
-                        .setInitialMode(Mode.ACTIVE).install();
-                if (context instanceof NewBootOperationContext) {
-                    NewBootOperationContext bootContext = (NewBootOperationContext) context;
-                    bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES,
-                            new DataSourcesAttachmentProcessor(datasources));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            DataSources datasources = buildDataSourcesObject(operation);
+            serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
+                    .setInitialMode(Mode.ACTIVE).install();
+
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES,
+                        new DataSourcesAttachmentProcessor(datasources));
         }
 
         // Populate subModel
