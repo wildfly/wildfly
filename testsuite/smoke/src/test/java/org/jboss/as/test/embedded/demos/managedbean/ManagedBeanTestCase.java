@@ -66,7 +66,7 @@ public class ManagedBeanTestCase {
             Assert.assertNotNull(bean.getSimple());
             String s = bean.echo("Hello");
             Assert.assertNotNull(s);
-            Assert.assertEquals("#InterceptorFromParent##InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello", s);
+            Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello", s);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }

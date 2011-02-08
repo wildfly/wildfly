@@ -48,6 +48,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.log.JDKModuleLogger;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.threads.AsyncFuture;
 
 /**
@@ -157,11 +158,11 @@ public class EmbeddedServerFactory {
             public void stop() {
                 if (serviceContainer != null) {
                     try {
-                        Class<?> serverControllerClass = serverModuleClassLoader.loadClass(NewServerController.class.getName());
-                        Method shutdownMethod = serverControllerClass.getMethod("shutdown");
+                        Class<?> serverContainerClass = serverModuleClassLoader.loadClass(ServiceContainer.class.getName());
+                        Method shutdownMethod = serverContainerClass.getMethod("shutdown");
                         shutdownMethod.invoke(serviceContainer);
 
-                        Method awaitTerminationMethod = serverControllerClass.getMethod("awaitTermination");
+                        Method awaitTerminationMethod = serverContainerClass.getMethod("awaitTermination");
                         awaitTerminationMethod.invoke(serviceContainer);
                     } catch (RuntimeException rte) {
                         throw rte;

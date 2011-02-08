@@ -106,6 +106,7 @@
                                 <include>org/jboss/as/test/embedded/demos/war/*TestCase.java</include>
                                 <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
                                 <include>org/jboss/as/test/embedded/demos/web/connector/*TestCase.java</include>
+                                <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
                                 <!--  The other demos don't work -->
                                 <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
                             </includes>
@@ -125,7 +126,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- DISABLE TEMPORARILY ON detyped2 -->
                     <skipTests>false</skipTests>
                     <!--  standard surefire options -->
                     <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->                    
