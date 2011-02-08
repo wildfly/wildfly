@@ -30,8 +30,8 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.NewBootOperationContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -53,8 +53,8 @@ class NewEjb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHand
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if(context instanceof BootUpdateContext) {
-            final BootUpdateContext updateContext = (BootUpdateContext) context;
+        if(context instanceof NewBootOperationContext) {
+            final NewBootOperationContext updateContext = (NewBootOperationContext) context;
 
             // TODO add ejb3 deployers
 
