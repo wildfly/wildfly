@@ -26,7 +26,7 @@ package org.jboss.as.cli;
 /**
  * Default implementation of CommandParser which expects the following command format:
  *
- * node-type=node-name [| node-type=node-name]* : operation-name ( [name=value [, name=value]*] )
+ * node-type=node-name [, node-type=node-name]* : operation-name ( [name=value [, name=value]*] )
  *
  * the whitespaces are insignificant. E.g.
  *
@@ -43,7 +43,7 @@ package org.jboss.as.cli;
  */
 public class DefaultOperationRequestParser implements OperationRequestParser {
 
-    public static final String FORMAT = "node-type=node-name [| node-type=node-name]* : operation-name ( [name=value [, name=value]*] )";
+    public static final String FORMAT = "node-type=node-name [, node-type=node-name]* : operation-name ( [name=value [, name=value]*] )";
     public static final char NODE_SEPARATOR = ',';
     public static final char ADDRESS_OPERATION_SEPARATOR = ':';
     public static final char NODE_TYPE_NAME_SEPARATOR = '=';
