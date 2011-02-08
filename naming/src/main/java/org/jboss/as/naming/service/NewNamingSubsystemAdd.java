@@ -37,9 +37,12 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
-import org.jboss.as.server.NewRuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.NewBootOperationContext;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -49,19 +52,29 @@ import org.jboss.msc.value.Values;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewNamingSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+public class NewNamingSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.naming");
 
     static final NewNamingSubsystemAdd INSTANCE = new NewNamingSubsystemAdd();
 
     /** {@inheritDoc} */
+    @Override
     public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if(context instanceof NewRuntimeOperationContext) {
-            final NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
+        if(context instanceof NewBootOperationContext) {
+            final NewBootOperationContext updateContext = (NewBootOperationContext) context;
+
+            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
+
+            log.info("Activating Naming Subsystem");
+
+            ObjectFactoryBuilder.INSTANCE.setServiceRegistry(updateContext.getServiceRegistry());
+
             NamingContext.initializeNamingManager();
 
             // Create the Naming Service
