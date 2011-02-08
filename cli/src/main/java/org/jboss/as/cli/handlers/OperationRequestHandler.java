@@ -55,6 +55,7 @@ public class OperationRequestHandler implements CommandHandler {
             ctx.log("You are disconnected at the moment." +
                     " Type /connect to connect to the server" +
                     " or /help for the list of supported commands.");
+            return;
         }
 
         OperationRequestBuilder reqBuilder = new DefaultOperationRequestBuilder();

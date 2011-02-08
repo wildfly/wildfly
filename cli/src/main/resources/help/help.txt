@@ -1,5 +1,5 @@
 Supported commands:
-/connect [host]:[port] - connects to the specified host and port (defaults is localhost:9999)
+/connect [host]:[port] - connects to the specified host and port (default host is localhost, default port is 9999)
 /help (or /h) - prints this message
 /quit (or /q) - quit the command line interface
 
