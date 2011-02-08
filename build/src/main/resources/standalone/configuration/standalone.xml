@@ -21,7 +21,7 @@
   -->
 
 <server name="example"
-	    xmlns="urn:jboss:domain:1.0" 
+        xmlns="urn:jboss:domain:1.0" 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
@@ -43,9 +43,10 @@
                             urn:jboss:domain:security:1.0 jboss-security.xsd
                             urn:jboss:domain:webservices:1.0 jboss-webservices.xsd
                             urn:jboss:domain:weld:1.0 jboss-weld.xsd">
+
     <extensions>
         <extension module="org.jboss.as.arquillian.service"/>
-        <!--<extension module="org.jboss.as.connector"/>-->
+        <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
@@ -53,15 +54,16 @@
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
-        <!--<extension module="org.jboss.as.naming"/>
-        <extension module="org.jboss.as.osgi"/>-->
+        <extension module="org.jboss.as.naming"/>
+        <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
-        <!--<extension module="org.jboss.as.transactions"/>-->
+        <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web" />
-        <!--<extension module="org.jboss.as.security"/>-->
+        <extension module="org.jboss.as.webservices" />
+        <extension module="org.jboss.as.weld" />
     </extensions>
     
     <paths>
@@ -296,7 +298,7 @@
             </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
-		<subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.0">
@@ -313,39 +315,40 @@
         <interface name="default">
             <inet-address value="127.0.0.1"/>
         </interface>
-		<interface name="any">
-		   <any-address/>
-		</interface>
-		<interface name="complex">
-		   <any>
-			  <subnet-match value="192.168.0.0/16"/>
-			  <public-address/>
-		   </any>
-		   <not>
-			 <site-local-address/>
-		   </not>
-		   <up/>
-		   <multicast/>
-		</interface>
+        <interface name="any">
+           <any-address/>
+        </interface>
+        <interface name="complex">
+           <any>
+              <subnet-match value="192.168.0.0/16"/>
+              <public-address/>
+           </any>
+           <not>
+             <site-local-address/>
+           </not>
+           <up/>
+           <multicast/>
+        </interface>
     </interfaces>
 
-	    <socket-binding-group name="standard-sockets" default-interface="default">
-	       <socket-binding name="jndi" port="1099"/>
-	       <socket-binding name="jmx-connector-registry" port="1090"/>
-	       <socket-binding name="jmx-connector-server" port="1091"/>
-	       <socket-binding name="http" port="8080"/>
-	       <socket-binding name="https" port="8447"/>
-	       <socket-binding name="osgi-http" port="8090"/>
-	       <socket-binding name="remoting" port="4447"/>
-	       <socket-binding name="txn-recovery-environment" port="4712"/>
-	       <socket-binding name="txn-status-manager" port="4713"/>
-	       <socket-binding name="txn-socket-process-id" port="4714"/>
-	       <socket-binding name="netty" port="5445" />
-	       <socket-binding name="netty-throughput" port="5455"/>
-	    </socket-binding-group>
-	
-	<system-properties>
-		<property name="foo" value="bar"/>
-	    <property name="key" value="value"/>
-	</system-properties>
+        <socket-binding-group name="standard-sockets" default-interface="default">
+           <socket-binding name="jndi" port="1099"/>
+           <socket-binding name="jmx-connector-registry" port="1090"/>
+           <socket-binding name="jmx-connector-server" port="1091"/>
+           <socket-binding name="http" port="8080"/>
+           <socket-binding name="https" port="8447"/>
+           <socket-binding name="osgi-http" port="8090"/>
+           <socket-binding name="remoting" port="4447"/>
+           <socket-binding name="txn-recovery-environment" port="4712"/>
+           <socket-binding name="txn-status-manager" port="4713"/>
+           <socket-binding name="txn-socket-process-id" port="4714"/>
+           <socket-binding name="netty" port="5445" />
+           <socket-binding name="netty-throughput" port="5455"/>
+        </socket-binding-group>
+    
+    <system-properties>
+        <property name="foo" value="bar"/>
+        <property name="key" value="value"/>
+    </system-properties>
 </server>
+
