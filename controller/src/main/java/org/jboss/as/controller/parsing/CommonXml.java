@@ -75,7 +75,6 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.NewExtension;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -132,7 +131,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final int namespaceCount = reader.getNamespaceCount();
         for (int i = 0; i < namespaceCount; i ++) {
             String prefix = reader.getNamespacePrefix(i);
-            if (prefix != null) {
+            //FIXME - remove once STXM-8 is released
+            if (prefix != null && prefix.length() > 0) {
                 final ModelNode operation = new ModelNode();
                 operation.get(OP_ADDR).set(address);
                 operation.get(OP).set(NamespaceAddHandler.OPERATION_NAME);
