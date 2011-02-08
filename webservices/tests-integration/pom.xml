@@ -39,16 +39,88 @@
 
     <name>JBoss Application Server: Web Services Tests Integration Subsystem</name>
 
+    <properties>
+        <test.archive.directory>${project.build.directory}/test-libs</test.archive.directory>
+        <test.classes.directory>${project.build.directory}/test-classes</test.classes.directory>
+        <test.resources.directory>${project.build.directory}/test-resources</test.resources.directory>
+        <!--surefire.jvm.args>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005</surefire.jvm.args-->
+        <execute.deployment.test>false</execute.deployment.test>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.4</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-jars</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <tasks>
+                                <property name="tests.resources.dir" value="${basedir}/src/test/resources" />
+                                <property name="tests.output.dir" value="${project.build.directory}" />
+                                <ant antfile="src/test/scripts/build-jars.xml">
+                                    <target name="build-jars" />
+                                </ant>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>${surefire.jvm.args}</argLine>
+                    <failIfNoTests>false</failIfNoTests>
                     <includes>
                         <include>**/*TestCase.java</include>
                     </includes>
-                    <enableAssertions>false</enableAssertions>
+                    <systemProperties>
+                        <property>
+                            <name>test.archive.directory</name>
+                            <value>${test.archive.directory}</value>
+                        </property>
+                        <property>
+                            <name>execute.deployment.test</name>
+                            <value>${execute.deployment.test}</value>
+                        </property>
+                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>
