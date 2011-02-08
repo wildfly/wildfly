@@ -22,7 +22,6 @@
 package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -260,7 +259,7 @@ public class NewThreadsExtension implements NewExtension {
             final ModelNode address = parentAddress.clone();
             address.add(THREAD_FACTORY, name);
             address.protect();
-            op.get(ADDRESS).set(address);
+            op.get(OP_ADDR).set(address);
 
 
 
@@ -316,7 +315,7 @@ public class NewThreadsExtension implements NewExtension {
             final ModelNode address = parentAddress.clone();
             address.add(BOUNDED_QUEUE_THREAD_POOL, name);
             address.protect();
-            op.get(ADDRESS).set(address);
+            op.get(OP_ADDR).set(address);
 
             boolean foundQueueLength = false;
             boolean foundMaxThreads = false;
@@ -404,7 +403,7 @@ public class NewThreadsExtension implements NewExtension {
             final ModelNode address = parentAddress.clone();
             address.add(UNBOUNDED_QUEUE_THREAD_POOL, name);
             address.protect();
-            op.get(ADDRESS).set(address);
+            op.get(OP_ADDR).set(address);
 
             boolean foundMaxThreads = false;
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -470,7 +469,7 @@ public class NewThreadsExtension implements NewExtension {
             final ModelNode address = parentAddress.clone();
             address.add(SCHEDULED_THREAD_POOL, name);
             address.protect();
-            op.get(ADDRESS).set(address);
+            op.get(OP_ADDR).set(address);
 
             boolean foundMaxThreads = false;
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -539,7 +538,7 @@ public class NewThreadsExtension implements NewExtension {
             final ModelNode address = parentAddress.clone();
             address.add(QUEUELESS_THREAD_POOL, name);
             address.protect();
-            op.get(ADDRESS).set(address);
+            op.get(OP_ADDR).set(address);
 
             boolean foundMaxThreads = false;
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -916,10 +915,10 @@ public class NewThreadsExtension implements NewExtension {
             if (node.hasDefined(element.getLocalName())) {
                 writer.writeStartElement(element.getLocalName());
                 ModelNode threads = node.get(element.getLocalName());
-                if (node.hasDefined(COUNT)) {
+                if (threads.hasDefined(COUNT)) {
                     writeAttribute(writer, Attribute.COUNT, threads.get(COUNT));
                 }
-                if (node.hasDefined(PER_CPU)) {
+                if (threads.hasDefined(PER_CPU)) {
                     writeAttribute(writer, Attribute.PER_CPU, threads.get(PER_CPU));
                 }
                 writer.writeEndElement();

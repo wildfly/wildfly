@@ -79,8 +79,8 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
         OperationParametersImpl params = new OperationParametersImpl();
         parseBaseThreadPoolOperationParameters(operation, params);
 
-        params.blocking = has(operation, BLOCKING) ? operation.get(BLOCKING).asBoolean() : false;
-        params.handoffExecutor = has(operation, HANDOFF_EXECUTOR) ? operation.get(HANDOFF_EXECUTOR).asString() : null;
+        params.blocking = operation.hasDefined(BLOCKING) ? operation.get(BLOCKING).asBoolean() : false;
+        params.handoffExecutor = operation.hasDefined(HANDOFF_EXECUTOR) ? operation.get(HANDOFF_EXECUTOR).asString() : null;
 
         return params;
     }
@@ -89,9 +89,9 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
         OperationParametersImpl params = new OperationParametersImpl();
         parseBaseThreadPoolOperationParameters(operation, params);
 
-        params.blocking = has(operation, BLOCKING) ? operation.get(BLOCKING).asBoolean() : false;
-        params.allowCoreTimeout = has(operation, ALLOW_CORE_TIMEOUT) ? operation.get(ALLOW_CORE_TIMEOUT).asBoolean() : false;
-        params.handoffExecutor = has(operation, HANDOFF_EXECUTOR) ? operation.get(HANDOFF_EXECUTOR).asString() : null;
+        params.blocking = operation.hasDefined(BLOCKING) ? operation.get(BLOCKING).asBoolean() : false;
+        params.allowCoreTimeout = operation.hasDefined(ALLOW_CORE_TIMEOUT) ? operation.get(ALLOW_CORE_TIMEOUT).asBoolean() : false;
+        params.handoffExecutor = operation.hasDefined(HANDOFF_EXECUTOR) ? operation.get(HANDOFF_EXECUTOR).asString() : null;
         params.coreThreads = getScaledCount(operation, CORE_THREADS);
         params.queueLength = getScaledCount(operation, QUEUE_LENGTH);
 
@@ -102,8 +102,8 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
     private static OperationParametersImpl parseBaseThreadPoolOperationParameters(ModelNode operation, OperationParametersImpl params) {
         //Get/validate the properties
         params.name = operation.require(NAME).asString();
-        params.threadFactory = has(operation, THREAD_FACTORY) ? operation.get(THREAD_FACTORY).asString() : null;
-        params.properties = has(operation, PROPERTIES) ? operation.get(PROPERTIES) : null;
+        params.threadFactory = operation.hasDefined(THREAD_FACTORY) ? operation.get(THREAD_FACTORY).asString() : null;
+        params.properties = operation.hasDefined(PROPERTIES) ? operation.get(PROPERTIES) : null;
         if (params.properties != null) {
             if (params.properties.getType() != ModelType.LIST) {
                 throw new IllegalArgumentException(PROPERTIES + " must be a list of properties"); //TODO i18n
@@ -119,12 +119,12 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
             throw new IllegalArgumentException(MAX_THREADS + " was not defined");
         }
 
-        if (has(operation, KEEPALIVE_TIME)) {
+        if (operation.hasDefined(KEEPALIVE_TIME)) {
             ModelNode keepaliveTime = operation.get(KEEPALIVE_TIME);
-            if (!has(keepaliveTime, TIME)) {
+            if (!keepaliveTime.hasDefined(TIME)) {
                 throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
             }
-            if (!has(keepaliveTime, UNIT)) {
+            if (!keepaliveTime.hasDefined(UNIT)) {
                 throw new IllegalArgumentException("Missing '" + UNIT + "' for '" + KEEPALIVE_TIME + "'");
             }
             params.keepAliveTime = new TimeSpec(Enum.valueOf(TimeUnit.class, keepaliveTime.get(UNIT).asString()), keepaliveTime.get(TIME).asLong());
@@ -134,21 +134,17 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
     }
 
     private static ScaledCount getScaledCount(ModelNode operation, String paramName) {
-        if (has(operation, paramName)) {
+        if (operation.hasDefined(paramName)) {
             ModelNode scaledCount = operation.get(paramName);
-            if (!has(scaledCount, COUNT)) {
+            if (!scaledCount.hasDefined(COUNT)) {
                 throw new IllegalArgumentException("Missing '" + COUNT + "' for '" + paramName + "'");
             }
-            if (!has(scaledCount, PER_CPU)) {
+            if (!scaledCount.hasDefined(PER_CPU)) {
                 throw new IllegalArgumentException("Missing '" + PER_CPU + "' for '" + paramName + "'");
             }
             return new ScaledCount(scaledCount.get(COUNT).asBigDecimal(), scaledCount.get(PER_CPU).asBigDecimal());
         }
         return null;
-    }
-
-    private static boolean has(ModelNode operation, String name) {
-        return operation.has(name) && operation.get(name).isDefined();
     }
 
     interface BaseOperationParameters {
@@ -187,26 +183,32 @@ class NewThreadsSubsystemThreadPoolOperationUtils {
         ScaledCount coreThreads;
         ScaledCount queueLength;
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getThreadFactory() {
             return threadFactory;
         }
 
+        @Override
         public ModelNode getProperties() {
             return properties;
         }
 
+        @Override
         public ScaledCount getMaxThreads() {
             return maxThreads;
         }
 
+        @Override
         public TimeSpec getKeepAliveTime() {
             return keepAliveTime;
         }
 
+        @Override
         public boolean isBlocking() {
             return blocking;
         }
