@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.weld.deployment.processors.BeanArchiveProcessor;
 import org.jboss.as.weld.deployment.processors.BeansXmlProcessor;
 import org.jboss.as.weld.deployment.processors.WebIntegrationProcessor;
+import org.jboss.as.weld.deployment.processors.WeldBeanManagerServiceProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDependencyProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDeploymentProcessor;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
@@ -61,6 +62,7 @@ public class WeldSubsystemAdd extends AbstractSubsystemAdd<WeldSubsystemElement>
         updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
         updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_BEAN_ARCHIVE, new BeanArchiveProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor());
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_BEAN_MANAGER, new WeldBeanManagerServiceProcessor());
 
     }
 

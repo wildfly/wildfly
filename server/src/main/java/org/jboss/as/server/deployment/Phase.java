@@ -257,14 +257,15 @@ public enum Phase {
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0A00;
     public static final int INSTALL_DS_DEPLOYMENT                       = 0x0B00;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x0D00;
-    public static final int INSTALL_EE_COMPONENT_CLASSLOAD              = 0x0E00;
-    public static final int INSTALL_EE_COMPONENT_LIFECYCLES             = 0x0F00;
-    public static final int INSTALL_EE_COMPONENT_INTERCEPTORS           = 0x1000;
-    public static final int INSTALL_EE_COMPONENT_INJECTIONS             = 0x1100;
-    public static final int INSTALL_EE_COMPONENT                        = 0x1200;
-    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1400;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1500;
+    public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x0E00;
+    public static final int INSTALL_EE_COMPONENT_CLASSLOAD              = 0x0F00;
+    public static final int INSTALL_EE_COMPONENT_LIFECYCLES             = 0x1000;
+    public static final int INSTALL_EE_COMPONENT_INTERCEPTORS           = 0x1100;
+    public static final int INSTALL_EE_COMPONENT_INJECTIONS             = 0x1200;
+    public static final int INSTALL_EE_COMPONENT                        = 0x1300;
+    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1400;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1500;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1600;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;

@@ -25,14 +25,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
-import javax.naming.Context;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.ee.naming.ContextServiceNameBuilder;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -44,7 +40,6 @@ import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
-import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
@@ -59,7 +54,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.util.ServiceLoader;
@@ -98,9 +92,13 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         BeanDeploymentArchiveImpl rootBda = deploymentUnit.getAttachment(BeanDeploymentArchiveImpl.ROOT_ARCHIVE_ATTACHMENT_KEY);
 
         // all bean deployment archives are accessible to each other
-        // TODO: add proper accessibility rules
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
-            bda.addBeanDeploymentArchives(beanDeploymentArchives);
+            for (BeanDeploymentArchiveImpl accessableBda : beanDeploymentArchives) {
+                if (accessableBda.isIsolatedModule() && !accessableBda.getModule().equals(bda.getModule())) {
+                    continue;
+                }
+                bda.addBeanDeploymentArchive(accessableBda);
+            }
         }
 
         // now load extensions
@@ -132,22 +130,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldServiceBuilder.install();
 
-        // add the BeanManager service
-        final ServiceName beanManagerServiceName = deploymentUnit.getServiceName().append(BeanManagerService.NAME);
-        BeanManagerService beanManagerService = new BeanManagerService(deployment.getTopLevelBeanDeploymentArchive().getId());
-        serviceTarget.addService(beanManagerServiceName, beanManagerService).addDependency(weldServiceName,
-                WeldContainer.class, beanManagerService.getWeldContainer()).install();
 
-        // bind the bean manager to JNDI
-        final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(deploymentUnit);
-        final ServiceName beanManagerBindingServiceName = moduleContextServiceName.append("BeanManager");
-
-        InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
-        BinderService<BeanManager> beanManagerBindingService = new BinderService<BeanManager>("BeanManager",
-                injectedBeanManager);
-        serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService).addDependency(
-                moduleContextServiceName, Context.class, beanManagerBindingService.getContextInjector()).addDependency(
-                beanManagerServiceName, BeanManager.class, injectedBeanManager).install();
     }
 
     private ServiceName installEjbInjectionService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,

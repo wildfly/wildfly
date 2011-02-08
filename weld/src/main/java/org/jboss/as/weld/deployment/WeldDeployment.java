@@ -87,7 +87,7 @@ public class WeldDeployment implements Deployment {
             Set<Metadata<Extension>> extensions,
             Module module) {
         this.additionalBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
-                BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ADDITIONAL_CLASSES_BDA_SUFFIX);
+                BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ADDITIONAL_CLASSES_BDA_SUFFIX, false);
 
         this.topLevelBeanDeploymentArchive = rootBda;
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);

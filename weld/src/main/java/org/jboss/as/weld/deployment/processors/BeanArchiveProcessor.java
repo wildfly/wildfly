@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.web.deployment.WarDeploymentMarker;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
@@ -65,31 +66,36 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return;
         }
+        boolean isolatedModule = WarDeploymentMarker.isWarDeployment(deploymentUnit);
         log.info("Processing CDI deployment: " + phaseContext.getDeploymentUnit().getName());
 
         final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
 
         final Module module = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE);
         boolean rootArchiveFound = false;
-        for (BeanArchiveMetadata beanArchiveMetadata : cdiDeploymentMetadata.getBeanArchiveMetadata()) {
-            BeanDeploymentArchiveImpl bda = createBeanDeploymentArchive(indexes.get(beanArchiveMetadata.getResourceRoot()),
-                    beanArchiveMetadata, module);
-            BeanDeploymentArchiveImpl.attachToDeployment(deploymentUnit, bda);
-            if (beanArchiveMetadata.isDeploymentRoot()) {
-                rootArchiveFound = true;
-                BeanDeploymentArchiveImpl.attachRootArchiveToDeployment(deploymentUnit, bda);
+        if (cdiDeploymentMetadata != null) {
+            // this can be null for ear deployments
+            // however we still want to create a module level bean manager
+            for (BeanArchiveMetadata beanArchiveMetadata : cdiDeploymentMetadata.getBeanArchiveMetadata()) {
+                BeanDeploymentArchiveImpl bda = createBeanDeploymentArchive(indexes.get(beanArchiveMetadata.getResourceRoot()),
+                        beanArchiveMetadata, module, isolatedModule);
+                BeanDeploymentArchiveImpl.attachToDeployment(deploymentUnit, bda);
+                if (beanArchiveMetadata.isDeploymentRoot()) {
+                    rootArchiveFound = true;
+                    BeanDeploymentArchiveImpl.attachRootArchiveToDeployment(deploymentUnit, bda);
+                }
             }
         }
         if (!rootArchiveFound) {
             BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
-                    BeansXml.EMPTY_BEANS_XML, module, deploymentUnit.getName());
+                    BeansXml.EMPTY_BEANS_XML, module, deploymentUnit.getName(), isolatedModule);
             BeanDeploymentArchiveImpl.attachToDeployment(deploymentUnit, bda);
             BeanDeploymentArchiveImpl.attachRootArchiveToDeployment(deploymentUnit, bda);
         }
     }
 
     private BeanDeploymentArchiveImpl createBeanDeploymentArchive(final Index index,
-            BeanArchiveMetadata beanArchiveMetadata, Module module) throws DeploymentUnitProcessingException {
+            BeanArchiveMetadata beanArchiveMetadata, Module module, boolean isolatedModule) throws DeploymentUnitProcessingException {
 
         Set<String> classNames = new HashSet<String>();
         // index may be null if a war has a beans.xml but no WEB-INF/classes
@@ -99,7 +105,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             }
         }
         return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, beanArchiveMetadata
-                .getResourceRoot().getRootName());
+                .getResourceRoot().getRootName(),isolatedModule);
     }
 
     @Override

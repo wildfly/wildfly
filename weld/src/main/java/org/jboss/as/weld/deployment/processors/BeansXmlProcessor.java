@@ -106,7 +106,10 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
             WeldDeploymentMetadata deploymentMetadata = new WeldDeploymentMetadata(beanArchiveMetadata);
             deploymentUnit.putAttachment(WeldDeploymentMetadata.ATTACHMENT_KEY, deploymentMetadata);
             // mark the deployment as requiring CDI integration
-            WeldDeploymentMarker.mark(phaseContext.getDeploymentUnit());
+            WeldDeploymentMarker.mark(deploymentUnit);
+            if (deploymentUnit.getParent() != null) {
+                WeldDeploymentMarker.mark(deploymentUnit.getParent());
+            }
         }
     }
 

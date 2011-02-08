@@ -71,7 +71,13 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private final WeldModuleResourceLoader resourceLoader;
 
-    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id) {
+    /**
+     * If this is true this BDA is not accessible to other BDA's outside the module
+     */
+    private final boolean isolatedModule;
+
+    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id,
+            boolean isolatedModule) {
         this.beanClasses = new ConcurrentSkipListSet<String>(beanClasses);
         this.beanDeploymentArchives = new CopyOnWriteArraySet<BeanDeploymentArchive>();
         this.beansXml = beansXml;
@@ -80,6 +86,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         this.resourceLoader = new WeldModuleResourceLoader(module);
         this.serviceRegistry.add(ResourceLoader.class, resourceLoader);
         this.module = module;
+        this.isolatedModule = isolatedModule;
     }
 
     /**
@@ -167,6 +174,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public Module getModule() {
         return module;
+    }
+
+    public boolean isIsolatedModule() {
+        return isolatedModule;
     }
 
 }

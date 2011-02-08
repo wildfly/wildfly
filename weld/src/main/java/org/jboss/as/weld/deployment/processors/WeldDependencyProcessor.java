@@ -28,7 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
+import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -56,8 +56,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final WeldDeploymentMetadata deploymentMetadata = deploymentUnit.getAttachment(WeldDeploymentMetadata.ATTACHMENT_KEY);
-        if (deploymentMetadata == null || deploymentMetadata.getBeanArchiveMetadata().isEmpty()) {
+        if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return; // Skip if there are no beans.xml files in the deployment
         }
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
