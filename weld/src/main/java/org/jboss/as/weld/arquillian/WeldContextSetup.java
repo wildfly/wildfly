@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.arquillian.context;
+package org.jboss.as.weld.arquillian;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +30,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.weld.context.bound.BoundConversationContext;
 import org.jboss.weld.context.bound.BoundLiteral;
@@ -50,7 +51,7 @@ public class WeldContextSetup implements SetupAction {
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
     @SuppressWarnings("unchecked")
-    public void setup() {
+    public void setup(Map<String, Object> properties) {
         try {
             final BeanManager manager = (BeanManager) new InitialContext().lookup(STANDARD_BEAN_MANAGER_JNDI_NAME);
 
@@ -81,7 +82,7 @@ public class WeldContextSetup implements SetupAction {
                 final BoundConversationContext conversationContext = (BoundConversationContext) manager.getReference(
                         conversationContextBean, BoundConversationContext.class, ctx);
                 conversationContext.associate(new MutableBoundRequest(requestMap, sessionMap));
-                // conversationContext.activate();
+                conversationContext.activate();
             }
         } catch (NamingException e) {
             log.error("Failed to setup Weld contexts", e);
@@ -89,7 +90,7 @@ public class WeldContextSetup implements SetupAction {
     }
 
     @SuppressWarnings("unchecked")
-    public void teardown() {
+    public void teardown(Map<String, Object> properties) {
         try {
             final BeanManager manager = (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
 
@@ -101,21 +102,25 @@ public class WeldContextSetup implements SetupAction {
             sessionContext.deactivate();
 
             final Bean<BoundRequestContext> requestContextBean = (Bean<BoundRequestContext>) manager.resolve(manager.getBeans(
-                    BoundSessionContext.class, BoundLiteral.INSTANCE));
+                    BoundRequestContext.class, BoundLiteral.INSTANCE));
             ctx = manager.createCreationalContext(requestContextBean);
             final BoundRequestContext requestContext = (BoundRequestContext) manager.getReference(requestContextBean,
-                    BoundSessionContext.class, ctx);
+                    BoundRequestContext.class, ctx);
             requestContext.deactivate();
 
             final Bean<BoundConversationContext> conversationContextBean = (Bean<BoundConversationContext>) manager
                     .resolve(manager.getBeans(BoundConversationContext.class, BoundLiteral.INSTANCE));
             ctx = manager.createCreationalContext(conversationContextBean);
             final BoundConversationContext conversationContext = (BoundConversationContext) manager.getReference(
-                    conversationContextBean, BoundSessionContext.class, ctx);
+                    conversationContextBean, BoundConversationContext.class, ctx);
             conversationContext.deactivate();
         } catch (NamingException e) {
             log.error("Failed to tear down Weld contexts", e);
         }
     }
 
+    @Override
+    public int priority() {
+        return 100;
+    }
 }

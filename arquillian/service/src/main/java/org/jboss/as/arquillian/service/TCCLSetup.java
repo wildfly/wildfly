@@ -21,7 +21,9 @@
  */
 package org.jboss.as.arquillian.service;
 
-import org.jboss.arquillian.context.SetupAction;
+import java.util.Map;
+
+import org.jboss.as.server.deployment.SetupAction;
 
 /**
  * Sets and restores the TCCL
@@ -40,13 +42,18 @@ final class TCCLSetup implements SetupAction {
     }
 
     @Override
-    public void setup() {
+    public int priority() {
+        return 10000;
+    }
+
+    @Override
+    public void setup(Map<String, Object> properties) {
         oldClassLoader.set(SecurityActions.getContextClassLoader());
         SecurityActions.setContextClassLoader(classLoader);
     }
 
     @Override
-    public void teardown() {
+    public void teardown(Map<String, Object> properties) {
         ClassLoader old = oldClassLoader.get();
         oldClassLoader.remove();
         SecurityActions.setContextClassLoader(old);

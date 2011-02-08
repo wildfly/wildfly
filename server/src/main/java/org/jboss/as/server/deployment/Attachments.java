@@ -218,6 +218,11 @@ public final class Attachments {
      */
     public static final AttachmentKey<DeploymentReflectionIndex> REFLECTION_INDEX = AttachmentKey.create(DeploymentReflectionIndex.class);
 
+    /**
+     * Setup actions that must be run before running an arquillian test
+     */
+    public static final AttachmentKey<AttachmentList<SetupAction>> SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
+
     //
     // CLEANUP
     //

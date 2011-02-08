@@ -26,12 +26,14 @@ import javax.naming.Context;
 
 import org.jboss.as.ee.naming.ContextServiceNameBuilder;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.weld.arquillian.WeldContextSetup;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
@@ -88,6 +90,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService).addDependency(
                 moduleContextServiceName, Context.class, beanManagerBindingService.getContextInjector()).addDependency(
                 beanManagerServiceName, BeanManager.class, injectedBeanManager).install();
+        deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 
     @Override

@@ -19,32 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.arquillian.context;
+package org.jboss.as.server.deployment;
 
-import org.jboss.as.ee.naming.NamespaceSelectorService;
+import java.util.Map;
 
 /**
- * Sets and restores the <code>java:</code> contexts
+ * And action that sets up and tears down some form of context (e.g. the TCCL, JNDI context etc).
+ * <p>
+ * Implementations need to be thread safe, as multiple threads can be setting up and tearing down contexts at any given time
  *
  * @author Stuart Douglas
  *
  */
-public class JavaNamespaceSetup implements SetupAction {
+public interface SetupAction {
 
-    private final NamespaceSelectorService namespaceSelector;
+    /**
+     * Sets up the context. If this method throws an exception then the {@link #teardown()} method will not be called, so this
+     * method should be implmeneted in an atomic manner.
+     */
+    void setup(Map<String, Object> properties);
 
-    public JavaNamespaceSetup(NamespaceSelectorService namespaceSelector) {
-        this.namespaceSelector = namespaceSelector;
-    }
+    /**
+     * Tears down the context that was set up and restores the previous context state.
+     */
+    void teardown(Map<String, Object> properties);
 
-    @Override
-    public void setup() {
-        namespaceSelector.activate();
-    }
-
-    @Override
-    public void teardown() {
-        namespaceSelector.deactivate();
-    }
+    /**
+     * Higher priority setup actions run first
+     */
+    int priority();
 
 }

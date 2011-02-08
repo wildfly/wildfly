@@ -73,17 +73,12 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-ee</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-osgi-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jmx</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
@@ -91,10 +86,6 @@
         <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>

@@ -23,8 +23,12 @@ package org.jboss.arquillian.context;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+
+import org.jboss.as.server.deployment.SetupAction;
 
 /**
  * Sets up and tears down a set of contexts, represented by a list of {@link SetupAction}s. If {@link #setup()} completes
@@ -38,23 +42,31 @@ public class ContextManager {
     private final List<SetupAction> setupActions;
 
     ContextManager(List<SetupAction> setupActions) {
-        this.setupActions = Collections.unmodifiableList(new ArrayList<SetupAction>(setupActions));
+        List<SetupAction> actions = new ArrayList<SetupAction>(setupActions);
+        Collections.sort(actions, new Comparator<SetupAction>() {
+
+            @Override
+            public int compare(SetupAction arg0, SetupAction arg1) {
+                return arg0.priority() > arg1.priority() ? -1 : arg0.priority() == arg1.priority() ? 0 : 1;
+            }
+        });
+        this.setupActions = Collections.unmodifiableList(actions);
     }
 
     /**
      * Sets up the contexts. If any of the setup actions fail then any setup contexts are torn down, and then the exception is
      * wrapped and thrown
      */
-    public void setup() {
+    public void setup(Map<String, Object> properties) {
         final List<SetupAction> sucessfulActions = new ArrayList<SetupAction>();
         for (SetupAction action : setupActions) {
             try {
-                action.setup();
+                action.setup(properties);
                 sucessfulActions.add(action);
             } catch (Throwable e) {
                 for (SetupAction s : sucessfulActions) {
                     try {
-                        s.teardown();
+                        s.teardown(properties);
                     } catch (Throwable t) {
                         // we ignore these, and just propegate the exception that caused the setup to fail
                     }
@@ -73,13 +85,13 @@ public class ContextManager {
      * <p>
      * If more than one teardown() method thrown an exception then only the first is propegated.
      */
-    public void teardown() {
+    public void teardown(Map<String, Object> properties) {
         Throwable exceptionToThrow = null;
         ListIterator<SetupAction> itr = setupActions.listIterator(setupActions.size());
         while (itr.hasPrevious()) {
             SetupAction action = itr.previous();
             try {
-                action.setup();
+                action.teardown(properties);
             } catch (Throwable e) {
                 if (exceptionToThrow == null) {
                     exceptionToThrow = e;

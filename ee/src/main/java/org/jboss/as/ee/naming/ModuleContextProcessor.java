@@ -91,6 +91,10 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
                 namespaceSelector.getApp()).addDependency(moduleContextServiceName, Context.class,
                 namespaceSelector.getModule()).addDependency(moduleContextServiceName, Context.class,
                 namespaceSelector.getComp()).install();
+
+        // add the arquillian setup action, so the module namespace is availble in arquillian tests
+        JavaNamespaceSetup setupAction = new JavaNamespaceSetup(namespaceSelector);
+        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.SETUP_ACTIONS, setupAction);
     }
 
     private String getModuleName(final DeploymentUnit deploymentUnit) {

@@ -24,6 +24,10 @@ package org.jboss.arquillian.context;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.SetupAction;
+
 /**
  * Builds a {@link ContextManager}
  *
@@ -44,6 +48,14 @@ public class ContextManagerBuilder {
      */
     public ContextManagerBuilder add(SetupAction action) {
         setupActions.add(action);
+        return this;
+    }
+
+    public ContextManagerBuilder addAll(DeploymentUnit deploymentUnit) {
+        List<SetupAction> actions = deploymentUnit.getAttachment(Attachments.SETUP_ACTIONS);
+        if (actions != null) {
+            setupActions.addAll(actions);
+        }
         return this;
     }
 

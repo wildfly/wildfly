@@ -173,9 +173,6 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
                 throw deploymentException;
         }
 
-        // FIXME Evil hack, remove when we have update results blocking on all deployment services
-        Thread.sleep(2000);
-
         return deployAction.getDeploymentUnitUniqueName();
     }
 
