@@ -166,6 +166,8 @@ public class VFSDirContext extends BaseDirContext {
         attrs.setName(entry.getName());
         if (entry.isFile())
             attrs.setResourceType("");
+        else
+            attrs.setCollection(true);
         attrs.setContentLength(entry.getSize());
         attrs.setLastModified(entry.getLastModified());
 
