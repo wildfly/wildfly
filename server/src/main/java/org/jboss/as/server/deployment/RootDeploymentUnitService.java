@@ -24,8 +24,7 @@ package org.jboss.as.server.deployment;
 
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.DelegatingServiceRegistry;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -55,8 +54,8 @@ public final class RootDeploymentUnitService extends AbstractDeploymentUnitServi
         this.deploymentHash = deploymentHash;
     }
 
-    protected DeploymentUnit createAndInitializeDeploymentUnit(final ServiceContainer container) {
-        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, new DelegatingServiceRegistry(container));
+    protected DeploymentUnit createAndInitializeDeploymentUnit(final ServiceRegistry registry) {
+        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, registry);
         deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, runtimeName);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_HASH, deploymentHash);
 

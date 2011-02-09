@@ -116,7 +116,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
-    private final ServiceContainer container;
+    private final ServiceTarget serviceTarget;
     private final ServiceRegistry serviceRegistry;
     private final ServerEnvironment serverEnvironment;
     private final AtomicInteger stamp = new AtomicInteger(0);
@@ -125,11 +125,10 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
     private final DeploymentRepository deploymentRepository;
     private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
 
-    ServerControllerImpl(final ServiceContainer container, final ServerEnvironment serverEnvironment,
-            final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository) {
+    ServerControllerImpl(final ServiceContainer container, final ServiceTarget serviceTarget, final ServerEnvironment serverEnvironment, final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository) {
         super(createCoreModel(), configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
+        this.serviceTarget = serviceTarget;
         this.extensibleConfigurationPersister = configurationPersister;
-        this.container = container;
         this.serverEnvironment = serverEnvironment;
         this.deploymentRepository = deploymentRepository;
         serviceRegistry = new DelegatingServiceRegistry(container);
@@ -323,8 +322,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
 
         @Override
         public ServiceTarget getServiceTarget() {
-            // TODO: A tracking service listener which will somehow call complete when the operation is done
-            return container;
+            return serviceTarget;
         }
 
         @Override

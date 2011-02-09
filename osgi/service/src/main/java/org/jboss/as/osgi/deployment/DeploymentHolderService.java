@@ -26,13 +26,13 @@ import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.bundle.AbstractBundleContext;
@@ -58,9 +58,9 @@ public class DeploymentHolderService extends AbstractService<Deployment> {
         this.deployment = deployment;
     }
 
-    public static void addService(BatchBuilder batchBuilder, String contextName, Deployment dep) {
+    public static void addService(ServiceTarget serviceTarget, String contextName, Deployment dep) {
         DeploymentHolderService service = new DeploymentHolderService(dep);
-        ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
+        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.install();

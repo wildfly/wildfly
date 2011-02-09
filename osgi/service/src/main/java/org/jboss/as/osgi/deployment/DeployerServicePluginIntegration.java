@@ -35,13 +35,13 @@ import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.DeployerService;
@@ -88,10 +88,9 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                 try {
 
                     // Install the initiator service
-                    BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-                    DeploymentHolderService.addService(batchBuilder, contextName, dep);
-                    OSGiDeploymentLatchService.addService(batchBuilder, contextName);
-                    batchBuilder.install();
+                    ServiceTarget serviceTarget = serviceContainer.subTarget();
+                    DeploymentHolderService.addService(serviceTarget, contextName, dep);
+                    OSGiDeploymentLatchService.addService(serviceTarget, contextName);
 
                     // Build and execute the deployment plan
                     InputStream inputStream = dep.getRoot().openStream();
@@ -240,9 +239,9 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
 
         private InjectedValue<Deployment> injectedDeployment = new InjectedValue<Deployment>();
 
-        static void addService(BatchBuilder batchBuilder, String contextName) {
+        static void addService(ServiceTarget serviceTarget, String contextName) {
             OSGiDeploymentLatchService service = new OSGiDeploymentLatchService();
-            ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
+            ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
             ServiceName serviceName = OSGiDeploymentService.getServiceName(contextName);
             serviceBuilder.addDependency(serviceName, Deployment.class, service.injectedDeployment);
             serviceBuilder.setInitialMode(Mode.ACTIVE);

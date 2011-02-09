@@ -64,7 +64,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -140,8 +139,8 @@ public class HostControllerBootstrap {
             // some action?
         }
 
-        final BatchBuilder batch = serviceContainer.batchBuilder();
-        batch.addListener(new AbstractServiceListener<Object>() {
+        final ServiceTarget serviceTarget = serviceContainer;
+        serviceTarget.addListener(new AbstractServiceListener<Object>() {
             public void serviceFailed(final ServiceController<?> serviceController, final StartException reason) {
                 log.errorf(reason, "Service [%s] failed.", serviceController.getName());
             }
@@ -152,14 +151,14 @@ public class HostControllerBootstrap {
         final int mgmtPort = rawModel.get(MANAGEMENT, NATIVE_API, PORT).asInt();
         // Install the process controller client
         final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
-        batch.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
+        serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
         // manually install the network interface services
-        activateNetworkInterfaces(rawModel, batch);
+        activateNetworkInterfaces(rawModel, serviceTarget);
         // install the domain controller connection
-        activateDomainControllerConnection(environment, rawModel, batch);
+        activateDomainControllerConnection(environment, rawModel, serviceTarget);
         //
         final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
-        batch.addService(ServerInventoryService.SERVICE_NAME, inventory)
+        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
             .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
             .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, inventory.getDomainControllerConnection())
@@ -168,7 +167,7 @@ public class HostControllerBootstrap {
         final String name = rawModel.get(NAME).asString();
         final FileRepository repository = new LocalFileRepository(environment);
         final HostControllerService hc = new HostControllerService(name, hostModel, repository);
-        batch.addService(HostController.SERVICE_NAME, hc)
+        serviceTarget.addService(HostController.SERVICE_NAME, hc)
             .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hc.getConnection())
             .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, hc.getServerInventory())
             .addDependency(ServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
@@ -179,15 +178,15 @@ public class HostControllerBootstrap {
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
 
-        batch.addService(threadFactoryServiceName, new ThreadFactoryService()).install();
+        serviceTarget.addService(threadFactoryServiceName, new ThreadFactoryService()).install();
         final HostControllerExecutorService executorService = new HostControllerExecutorService();
-        batch.addService(executorServiceName, executorService)
+        serviceTarget.addService(executorServiceName, executorService)
             .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
             .install();
 
         //  Add the management communication service
         final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
-        batch.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
+        serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
             .addInjection(managementCommunicationService.getPortInjector(), mgmtPort)
             .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
@@ -197,13 +196,10 @@ public class HostControllerBootstrap {
 
         // Add the server to host operation handler
         final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
-        batch.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
             .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallback())
-            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverToHost))
+            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(serverToHost))
             .install();
-
-
-        batch.install();
     }
 
     /**

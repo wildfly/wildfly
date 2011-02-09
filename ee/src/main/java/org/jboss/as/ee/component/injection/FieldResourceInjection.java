@@ -37,25 +37,25 @@ import org.jboss.msc.value.Values;
  * @author John E. Bailey
  */
 public class FieldResourceInjection<V> extends AbstractResourceInjection<V> {
-    private final Value<Field> fieldValue;
+    private final Field field;
     private Injector<V> injector;
 
     /**
      * Construct an instance.
      *
-     * @param fieldValue The field on the target.
+     * @param field The field on the target
      * @param value The injection value
      * @param primitive Is the field type primitive
      */
-    public FieldResourceInjection(final Value<Field> fieldValue, final Value<V> value, final boolean primitive) {
+    public FieldResourceInjection(final Field field, final Value<V> value, final boolean primitive) {
         super(value, primitive);
-        this.fieldValue = fieldValue;
+        this.field = field;
     }
 
     /** {@inheritDoc} */
     protected synchronized Injector<V> getInjector(final Object target) {
         if(injector == null) {
-            injector = new FieldInjector<V>(Values.immediateValue(target), fieldValue);
+            injector = new FieldInjector<V>(Values.immediateValue(target), field);
         }
         return injector;
     }

@@ -73,7 +73,7 @@ public interface ResourceInjection {
             switch(resourceConfiguration.getTargetType()) {
                 case FIELD: {
                     final Field field = reflectionIndex.getField(resourceConfiguration.getName());
-                    return new FieldResourceInjection<V>(Values.immediateValue(field), value, argClass.isPrimitive());
+                    return new FieldResourceInjection<V>(field, value, argClass.isPrimitive());
                 }
                 case METHOD: {
                     final Method method = reflectionIndex.getMethod(Void.class, resourceConfiguration.getName(), argClass);

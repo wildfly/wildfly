@@ -100,7 +100,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         // TODO - decide if we really need NOT_INSTALLED and DESCRIBED stages
         // INSTANTIATED stage
         final ServiceName instantiatedServiceName = beanServiceName.append(BeanState.INSTANTIATED.name());
-        final ValueService<T> instantiatedService = new ValueService<T>(new ConstructedValue(Values.immediateValue(constructor), args));
+        final ValueService<T> instantiatedService = new ValueService<T>(new ConstructedValue(constructor, args));
         final ServiceBuilder<T> instantiatedServiceBuilder = serviceTarget.addService(instantiatedServiceName, instantiatedService);
         // TODO - add declared dependencies and injections for this stage -here-
         instantiatedServiceBuilder.install();

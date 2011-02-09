@@ -14,14 +14,13 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * Service configuring and starting the {@code HornetQService}.
@@ -51,12 +50,11 @@ class HornetQService implements Service<HornetQServer> {
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
 
     Injector<String> getPathInjector(String name) {
-        return new PathInjector(name);
+        return new MapInjector<String, String>(paths, name);
     }
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
-        SocketBindingInjector injector = new SocketBindingInjector(name);
-        return injector;
+        return new MapInjector<String, SocketBinding>(socketBindings, name);
     }
 
     InjectedValue<MBeanServer> getMBeanServer() {
@@ -179,61 +177,5 @@ class HornetQService implements Service<HornetQServer> {
 
     public void setConfiguration(Configuration hqConfig) {
         this.configuration = hqConfig;
-    }
-
-    /**
-     * An injector that manages a name/SocketBinding pair mapping in
-     * #socketBindings
-     */
-    class SocketBindingInjector implements Injector<SocketBinding>, Value<SocketBinding> {
-        private final String name;
-        private SocketBinding value;
-
-        SocketBindingInjector(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public void inject(SocketBinding value) throws InjectionException {
-            this.value = value;
-            socketBindings.put(name, value);
-        }
-
-        @Override
-        public void uninject() {
-            socketBindings.remove(name);
-        }
-
-        @Override
-        public SocketBinding getValue() throws IllegalStateException {
-            return value;
-        }
-    }
-
-    class PathInjector implements Injector<String>, Value<String> {
-        private final String name;
-        private String value;
-
-        public PathInjector(String name) {
-            this.name = name;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getValue() throws IllegalStateException {
-            return value;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void inject(String value) throws InjectionException {
-            HornetQService.this.paths.put(name, value);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void uninject() {
-            HornetQService.this.paths.remove(name);
-        }
     }
 }

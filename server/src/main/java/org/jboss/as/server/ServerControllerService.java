@@ -28,12 +28,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
@@ -72,18 +67,14 @@ import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.LifecycleContext;
-import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.TrackingServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -105,7 +96,6 @@ final class ServerControllerService implements Service<ServerController> {
 
     // mutable state
     private ServerController serverController;
-    private Set<ServiceName> bootServices;
 
     public ServerControllerService(final Bootstrap.Configuration configuration) {
         this.configuration = configuration;
@@ -125,18 +115,13 @@ final class ServerControllerService implements Service<ServerController> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         final ServiceContainer container = context.getController().getServiceContainer();
-        final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
-        serviceTarget.addDependency(context.getController().getName());
+        final ServiceTarget serviceTarget = context.getChildTarget();
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
 
-        final int threads = (int) (Runtime.getRuntime().availableProcessors() * 1.5f);
-        final ExecutorService executor = new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>());
-        container.setExecutor(executor);
-
         final ExtensibleConfigurationPersister persister = configuration.getConfigurationPersister();
 
-        final ServerControllerImpl serverController = new ServerControllerImpl(container, serverEnvironment, persister, injectedDeploymentRepository.getValue());
+        final ServerControllerImpl serverController = new ServerControllerImpl(container, serviceTarget, serverEnvironment, persister, injectedDeploymentRepository.getValue());
         serverController.init();
 
         final List<ModelNode> updates;
@@ -241,26 +226,12 @@ final class ServerControllerService implements Service<ServerController> {
         DeployerChainsService.addService(serviceTarget, finalDeployers);
 
         this.serverController = serverController;
-        bootServices = serviceTarget.getSet();
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(final StopContext context) {
         serverController = null;
-        final ServiceContainer container = context.getController().getServiceContainer();
-        final Set<ServiceName> bootServices = this.bootServices;
-        context.asynchronous();
-        MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
-        for (ServiceName serviceName : bootServices) {
-            final ServiceController<?> controller = container.getService(serviceName);
-            if (controller != null) {
-                controller.addListener(listener);
-                controller.setMode(ServiceController.Mode.REMOVE);
-            }
-        }
-        // tick the count down
-        listener.done();
     }
 
     /** {@inheritDoc} */

@@ -28,7 +28,6 @@ import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -114,9 +113,8 @@ public class BundleContextService implements Service<BundleContext> {
                         ServiceName serviceName = ModuleRegistrationService.getServiceName(contextName);
                         try {
                             log.tracef("Register service: %s", serviceName);
-                            BatchBuilder batchBuilder = container.batchBuilder();
-                            ModuleRegistrationService.addService(batchBuilder, dep, contextName);
-                            batchBuilder.install();
+                            ServiceTarget serviceTarget = container.subTarget();
+                            ModuleRegistrationService.addService(serviceTarget, dep, contextName);
                         } catch (ServiceRegistryException ex) {
                             throw new IllegalStateException("Cannot register service: " + serviceName, ex);
                         }
