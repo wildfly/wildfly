@@ -26,8 +26,8 @@ import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
 
 import javax.naming.Context;
 
-import org.jboss.as.naming.deployment.ContextService;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.ContextService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -72,13 +72,13 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
             .install();
 
         // Create the module entry in the java:app/ context
-        final NamingContextConfig appContext = deploymentUnit.getAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
+        final ServiceName appContextServiceName = deploymentUnit.getAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
         final ContextService appModuleContextService = new ContextService(deploymentUnit.getName());
-        serviceTarget.addService(appContext.getContextServiceName().append(deploymentUnit.getName()), appModuleContextService)
-            .addDependency(appContext.getContextServiceName(), Context.class, appModuleContextService.getParentContextInjector())
+        serviceTarget.addService(appContextServiceName.append(deploymentUnit.getName()), appModuleContextService)
+            .addDependency(appContextServiceName, Context.class, appModuleContextService.getParentContextInjector())
             .install();
 
-        deploymentUnit.putAttachment(Attachments.MODULE_CONTEXT_CONFIG, new NamingContextConfig(moduleContextServiceName));
+        deploymentUnit.putAttachment(Attachments.MODULE_CONTEXT_CONFIG, moduleContextServiceName);
 
         // Add the namespace selector service for the module
         ServiceName appNs = ContextServiceNameBuilder.app(deploymentUnit);

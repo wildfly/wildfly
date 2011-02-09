@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;

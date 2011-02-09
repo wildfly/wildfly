@@ -32,7 +32,6 @@ import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.ee.component.service.ComponentObjectFactory;
 import org.jboss.as.ee.naming.Attachments;
 import org.jboss.as.ee.naming.ContextNames;
-import org.jboss.as.ee.naming.NamingContextConfig;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.modules.Module;
@@ -63,12 +62,12 @@ public class ManagedBeanComponentFactory implements ComponentFactory {
 
 
     public Collection<ComponentBinding> getComponentBindings(final DeploymentUnit deploymentUnit, final ComponentConfiguration componentConfiguration, final ServiceName componentServiceName) {
-        final NamingContextConfig appNamespaceConfig = deploymentUnit.getAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
-        final NamingContextConfig moduleNamespaceConfig = deploymentUnit.getAttachment(Attachments.MODULE_CONTEXT_CONFIG);
+        final ServiceName appNamespaceName = deploymentUnit.getAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
+        final ServiceName moduleNamespaceName = deploymentUnit.getAttachment(Attachments.MODULE_CONTEXT_CONFIG);
 
         return Arrays.asList(
-                new ComponentBinding(moduleNamespaceConfig.getContextServiceName(), componentConfiguration.getName(), ComponentObjectFactory.createReference(componentServiceName, componentConfiguration.getComponentClass())),
-                new ComponentBinding(appNamespaceConfig.getContextServiceName().append(deploymentUnit.getName()), componentConfiguration.getName(), new LinkRef(ContextNames.MODULE_CONTEXT_NAME.append(componentConfiguration.getName()).getAbsoluteName()))
+                new ComponentBinding(moduleNamespaceName,  componentConfiguration.getName(), ComponentObjectFactory.createReference(componentServiceName, componentConfiguration.getComponentClass())),
+                new ComponentBinding(appNamespaceName.append(deploymentUnit.getName()), componentConfiguration.getName(), new LinkRef(ContextNames.MODULE_CONTEXT_NAME.append(componentConfiguration.getName()).getAbsoluteName()))
         );
     }
 }

@@ -30,7 +30,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
@@ -62,7 +61,7 @@ public class ContextService implements Service<Context> {
      */
     public synchronized void start(StartContext context) throws StartException {
         try {
-            final Context parentContext = getParentContext();
+            final Context parentContext = parentContextValue.getValue();
             this.context = parentContext.createSubcontext(contextName);
         } catch (NamingException e) {
             throw new StartException("Failed to create context", e);
@@ -77,19 +76,11 @@ public class ContextService implements Service<Context> {
      */
     public synchronized void stop(StopContext context) {
         try {
-            final Context parentContext = getParentContext();
+            final Context parentContext = parentContextValue.getValue();
             parentContext.unbind(contextName);
         } catch (NamingException e) {
             throw new IllegalStateException("Failed to unbind context", e);
         }
-    }
-
-    private Context getParentContext() throws NamingException {
-        Context parentContext = parentContextValue.getOptionalValue();
-        if(parentContext == null) {
-            parentContext = new InitialContext();
-        }
-        return parentContext;
     }
 
     /**
