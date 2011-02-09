@@ -120,6 +120,7 @@ public class ModelDescriptionConstants {
     public static final String REQUIRED = "required";
     public static final String RESULT = "result";
     public static final String RUNTIME_NAME = "runtime-name";
+    public static final String RUNNING_SERVER = "running-server";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SERVER = "server";

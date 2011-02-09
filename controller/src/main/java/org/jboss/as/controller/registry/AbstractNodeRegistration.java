@@ -61,6 +61,10 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     @Override
     public abstract void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException;
 
+    /** {@inheritDoc} */
+    @Override
+    public abstract void unregisterProxyController(PathElement address);
+
     /**
      * Get a handler at a specific address.
      *

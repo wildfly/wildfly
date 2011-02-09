@@ -33,6 +33,7 @@ import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.DeployableContainer;
 import org.jboss.arquillian.spi.DeploymentException;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
@@ -77,7 +78,7 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     @Override
     public void setup(Context context, Configuration configuration) {
         containerConfig = configuration.getContainerConfig(JBossAsContainerConfiguration.class);
-        ModelControllerClient client = ModelControllerClient.Factory.create(containerConfig.getBindAddress(), containerConfig.getManagementPort());
+        ModelControllerClient client = ModelControllerClient.Factory.create(Type.STANDALONE, containerConfig.getBindAddress(), containerConfig.getManagementPort());
         deploymentManager = ServerDeploymentManager.Factory.create(client);
     }
 

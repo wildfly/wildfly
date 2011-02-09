@@ -66,6 +66,5 @@ public class ManagementCommunicationServiceInjector implements Injector<Manageme
         if(communicationService  != null) {
             communicationService.removeHandler(handlerValue.getValue());
         }
-
     }
 }

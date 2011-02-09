@@ -22,10 +22,14 @@
 
 package org.jboss.as.domain.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
@@ -58,12 +62,14 @@ class DomainControllerImpl implements DomainController {
     @Override
     public void addClient(final HostControllerClient client) {
         Logger.getLogger("org.jboss.domain").info("register host " + client.getId());
+        domainModel.registerProxy(client);
+
     }
 
     /** {@inheritDoc} */
     @Override
     public void removeClient(final String id) {
-        // TODO Auto-generated method stub
+        domainModel.unregisterProxy(PathAddress.pathAddress(PathElement.pathElement(HOST, id)));
     }
 
     public ModelNode getDomainModel() {

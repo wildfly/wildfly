@@ -26,7 +26,6 @@ import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,16 +48,13 @@ import org.jboss.dmr.ModelNode;
 * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
 * @version $Revision: 1.1 $
 */
-class ModelControllerClientImpl implements ModelControllerClient {
-    private static final long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(5L);
-    private final InetAddress address;
-    private final int port;
-    private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
-    private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
+abstract class AbstractModelControllerClient implements ModelControllerClient {
+    final Type type;
+    final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+    final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-    public ModelControllerClientImpl(final InetAddress address, final int port) {
-        this.address = address;
-        this.port = port;
+    public AbstractModelControllerClient(final Type type) {
+        this.type = type;
     }
 
     @Override
@@ -122,9 +118,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
         executorService.shutdown();
     }
 
-    private ManagementRequestConnectionStrategy getConnectionStrategy() {
-        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
-    }
+    abstract ManagementRequestConnectionStrategy getConnectionStrategy();
 
     private ModelNode readNode(InputStream in) throws IOException {
         ModelNode node = new ModelNode();
@@ -135,7 +129,7 @@ class ModelControllerClientImpl implements ModelControllerClient {
     private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
         @Override
         protected byte getHandlerId() {
-            return ModelControllerClientProtocol.HANDLER_ID;
+            return type.getHandlerId();
         }
     }
 

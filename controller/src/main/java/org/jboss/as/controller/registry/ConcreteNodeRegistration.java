@@ -147,6 +147,14 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
 
+    public void unregisterProxyController(final PathElement address) throws IllegalArgumentException {
+        final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
+        final NodeSubregistry subregistry = snapshot.get(address.getKey());
+        if (subregistry != null) {
+            subregistry.unregisterProxyController(address.getValue());
+        }
+    }
+
     NodeSubregistry getOrCreateSubregistry(final String key) {
         for (;;) {
             final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);

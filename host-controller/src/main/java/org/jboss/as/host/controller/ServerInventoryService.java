@@ -95,5 +95,4 @@ class ServerInventoryService implements Service<ServerInventory> {
     InjectedValue<ProcessControllerClient> getClient() {
         return client;
     }
-
 }

@@ -22,16 +22,24 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.DomainModel;
+import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -117,6 +125,18 @@ public class HostControllerImpl implements HostController {
     public ServerStatus stopServer(String serverName, int gracefulTimeout) {
         final ServerInventory servers = this.serverInventory;
         return servers.stopServer(serverName, gracefulTimeout);
+    }
+
+    @Override
+    public void registerRunningServer(String serverName, Connection connection) {
+        PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
+        ProxyController serverController = RemoteProxyController.create(ModelControllerClient.Type.STANDALONE, connection, PathAddress.pathAddress(element));
+        hostModel.registerProxy(serverController);
+    }
+
+    @Override
+    public void unregisterRunningServer(String serverName) {
+        hostModel.unregisterProxy(serverName);
     }
 
 }

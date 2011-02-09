@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -35,8 +36,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -59,7 +60,7 @@ class LocalDomainConnectionService implements DomainControllerConnection, Servic
         assert hostController != null : "null HC";
         final DomainController domainController = this.domainController.getValue();
         this.name = hostController.getName();
-        final HostControllerClient client = new NewLocalHostControllerClient(hostController);
+        final HostControllerClient client = new LocalHostControllerClient(hostController);
         domainController.addClient(client);
         return domainController.getDomainModel();
     }
@@ -122,10 +123,13 @@ class LocalDomainConnectionService implements DomainControllerConnection, Servic
         return domainController;
     }
 
-    static class NewLocalHostControllerClient implements HostControllerClient {
+    static class LocalHostControllerClient implements HostControllerClient {
         private final HostController controller;
-        NewLocalHostControllerClient(final HostController controller) {
+
+        private final PathAddress proxyNodeAddress;
+        LocalHostControllerClient(final HostController controller) {
             this.controller = controller;
+            this.proxyNodeAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, getId()));
         }
 
         /** {@inheritDoc} */
@@ -152,5 +156,9 @@ class LocalDomainConnectionService implements DomainControllerConnection, Servic
             return true;
         }
 
+        @Override
+        public PathAddress getProxyNodeAddress() {
+            return proxyNodeAddress;
+        }
     }
 }

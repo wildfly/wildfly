@@ -43,6 +43,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -57,7 +58,7 @@ public class ExampleRunner {
         final String queueName = "queue.standalone";
 
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
 
         try {
             // Check that the queue does not exist

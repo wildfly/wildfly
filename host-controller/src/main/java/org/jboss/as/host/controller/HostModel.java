@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -52,6 +53,7 @@ import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
@@ -66,8 +68,8 @@ import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.host.controller.operations.ExtensionRemoveHandler;
@@ -185,6 +187,7 @@ class HostModel extends BasicModelController {
         root.get(INTERFACE);
         root.get(JVM);
         root.get(DEPLOYMENT);
+        root.get(RUNNING_SERVER);
     }
 
     /**
@@ -196,4 +199,15 @@ class HostModel extends BasicModelController {
         return super.getModel().clone();
     }
 
+    void registerProxy(final ProxyController controller) {
+        final PathElement element = controller.getProxyNodeAddress().getLastElement();
+        getRegistry().registerProxyController(element, controller);
+        getModel().get(element.getKey(), element.getValue());
+    }
+
+    void unregisterProxy(final String serverName) {
+        PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
+        getModel().get(element.getKey()).remove(element.getValue());
+        getRegistry().unregisterProxyController(element);
+    }
 }

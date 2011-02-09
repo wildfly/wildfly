@@ -156,6 +156,62 @@ public class RegistryProxyControllerTestCase {
         assertEquals(0, addresses.size());
     }
 
+    @Test
+    public void removeAndAddTopLevelProxyController() {
+        assertNotNull(root.getProxyController(PathAddress.pathAddress(proxyB)));
+        root.unregisterProxyController(proxyB);
+        assertNull(root.getProxyController(PathAddress.pathAddress(proxyB)));
+
+        Set<PathAddress> addresses = getProxyAddresses(PathAddress.EMPTY_ADDRESS);
+        assertEquals(3, addresses.size());
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyB)));
+
+        root.registerProxyController(proxyB, new TestProxyController(proxyB));
+
+        addresses = getProxyAddresses(PathAddress.EMPTY_ADDRESS);
+        assertEquals(4, addresses.size());
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyB)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyB)));
+    }
+
+    @Test
+    public void removeAndAddChildLevelProxyController() {
+        assertNotNull(root.getProxyController(PathAddress.pathAddress(profileB, proxyA)));
+        profileBReg.unregisterProxyController(proxyA);
+        assertNull(profileBReg.getProxyController(PathAddress.pathAddress(proxyA)));
+
+        Set<PathAddress> addresses = getProxyAddresses(PathAddress.EMPTY_ADDRESS);
+        assertEquals(3, addresses.size());
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyB)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyB)));
+
+        profileBReg.registerProxyController(proxyA, new TestProxyController(profileB, proxyA));
+
+        addresses = getProxyAddresses(PathAddress.EMPTY_ADDRESS);
+        assertEquals(4, addresses.size());
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyB)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyB)));
+    }
+
+    @Test
+    public void testRemoveNonExistantProxyController() {
+        PathElement element = PathElement.pathElement("profile", "profileA");
+        root.unregisterProxyController(element);
+        Set<PathAddress> addresses = getProxyAddresses(PathAddress.EMPTY_ADDRESS);
+        assertEquals(4, addresses.size());
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(proxyB)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyA)));
+        assertTrue(addresses.contains(PathAddress.pathAddress(profileB, proxyB)));
+    }
+
     private Set<PathAddress> getProxyAddresses(PathAddress address){
         Set<PathAddress> addresses = new HashSet<PathAddress>();
         for (ProxyController proxy : root.getProxyControllers(address)) {

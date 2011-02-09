@@ -92,7 +92,7 @@ public class DomainClientImpl implements DomainClient {
     public DomainClientImpl(InetAddress address, int port) {
         this.address = address;
         this.port = port;
-        this.delegate = ModelControllerClient.Factory.create(address, port);
+        this.delegate = ModelControllerClient.Factory.create(ModelControllerClient.Type.DOMAIN, address, port);
     }
 
     @Override

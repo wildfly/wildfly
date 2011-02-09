@@ -61,6 +61,7 @@ public class HostControllerService implements Service<HostController> {
         final DomainControllerConnection connection = this.connection.getValue();
         final ServerInventory serverInventory = this.serverInventory.getValue();
         final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory, repository);
+        serverInventory.setHostController(controller);
         try {
             final ModelNode domainModel = connection.register(controller);
             final FileRepository remoteRepository = connection.getRemoteFileRepository();

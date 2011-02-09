@@ -124,6 +124,10 @@ class ManagedServer implements ModelController {
         return serverProcessName;
     }
 
+    Connection getServerConnection() {
+        return serverManagementConnection;
+    }
+
     public ServerState getState() {
         return state;
     }

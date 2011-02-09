@@ -119,6 +119,11 @@ public abstract class AbstractProxyControllerTest {
 
         result = mainController.execute(operation);
         checkRootSubModelDescription(result.get(RESULT), false);
+
+        System.out.println("------------");
+
+        result = mainController.execute(operation);
+        checkRootSubModelDescription(result.get(RESULT), false);
     }
 
     @Test

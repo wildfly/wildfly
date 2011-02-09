@@ -21,11 +21,7 @@
 */
 package org.jboss.as.controller.test;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -33,20 +29,13 @@ import java.util.concurrent.Executors;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClientProtocol;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolServer;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
-import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
+import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 
 /**
  *
@@ -56,7 +45,7 @@ import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 public class RemoteModelControllerSetup implements ConnectionHandler {
     private final ModelController controller;
     private final int port;
-    ModelControllerOperationHandler operationHandler = new ModelControllerOperationHandler();
+    ModelControllerOperationHandler operationHandler;
     private ProtocolServer server;
 
     public RemoteModelControllerSetup(ModelController controller, int port) {
@@ -64,10 +53,11 @@ public class RemoteModelControllerSetup implements ConnectionHandler {
         this.port = port;
     }
 
+    public int getPort() {
+        return server.getBoundAddress().getPort();
+    }
+
     public void start() throws Exception {
-
-        operationHandler.getModelControllerValue().inject(controller);
-
         final ProtocolServer.Configuration config = new ProtocolServer.Configuration();
         config.setBindAddress(new InetSocketAddress(InetAddress.getByName("localhost"), port));
         config.setThreadFactory(Executors.defaultThreadFactory());
@@ -79,7 +69,6 @@ public class RemoteModelControllerSetup implements ConnectionHandler {
         server = new ProtocolServer(config);
         server.start();
 
-        operationHandler.start(null);
     }
 
     public int getPort() {
@@ -91,75 +80,20 @@ public class RemoteModelControllerSetup implements ConnectionHandler {
     }
 
     public MessageHandler handleConnected(Connection connection) throws IOException {
-        return new ManagementHeaderMessageHandler();
+        return new SetupManagementHeaderMessageHandler(controller);
     }
 
-    private class ManagementHeaderMessageHandler implements MessageHandler {
-        public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
-            final int workingVersion;
-            final ManagementRequestHeader requestHeader;
-            final ManagementOperationHandler handler;
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(dataStream);
+    static class SetupManagementHeaderMessageHandler extends ManagementHeaderMessageHandler {
+        final ModelControllerOperationHandler operationHandler;
 
-                // Start by reading the request header
-                requestHeader = new ManagementRequestHeader(input);
-
-                // Work with the lowest protocol version
-                workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
-
-                byte handlerId = requestHeader.getOperationHandlerId();
-                if (handlerId == -1) {
-                    throw new IOException("Management request failed.  Invalid handler id");
-                }
-
-                if (handlerId != ModelControllerClientProtocol.HANDLER_ID) {
-                    String msg = "Management request failed.  No handler found for id " + handlerId;
-                    throw new IOException(msg);
-                }
-                connection.setMessageHandler(operationHandler);
-            } catch (IOException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new IOException("Failed to read request header", t);
-            } finally {
-                safeClose(input);
-                safeClose(dataStream);
-            }
-
-            OutputStream dataOutput = null;
-            ByteDataOutput output = null;
-            try {
-                dataOutput = connection.writeMessage();
-                output = new SimpleByteDataOutput(dataOutput);
-
-                // Now write the response header
-                final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
-                responseHeader.write(output);
-
-                output.close();
-                dataOutput.close();
-            } catch (IOException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new IOException("Failed to write management response headers", t);
-            } finally {
-                safeClose(output);
-                safeClose(dataOutput);
-            }
+        SetupManagementHeaderMessageHandler(ModelController controller){
+            this.operationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.STANDALONE, controller, this);
         }
 
-        public void handleShutdown(final Connection connection) throws IOException {
-            connection.shutdownWrites();
-        }
 
-        public void handleFailure(final Connection connection, final IOException e) throws IOException {
-            connection.close();
-        }
-
-        public void handleFinished(final Connection connection) throws IOException {
-            // nothing
+        @Override
+        protected MessageHandler getHandlerForId(byte handlerId) {
+            return operationHandler;
         }
     }
 

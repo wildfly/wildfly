@@ -81,6 +81,11 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
+    public void unregisterProxyController(final PathElement address) throws IllegalArgumentException {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
+
+    @Override
     Map<String, DescriptionProvider> getOperationDescriptions(final ListIterator<PathElement> iterator) {
         return Collections.emptyMap();
     }

@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 import org.jboss.dmr.ModelNode;
@@ -42,7 +43,7 @@ public class __TestStandaloneClient {
         System.out.println("Creating client");
         ModelControllerClient client = null;
         try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
             System.out.println("Created client, getting model...");
             ModelNode op = new ModelNode();
             op.get("operation").set("read-resource");

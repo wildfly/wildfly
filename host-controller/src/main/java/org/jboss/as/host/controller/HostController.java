@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.client.api.ServerStatus;
+import org.jboss.as.protocol.Connection;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -82,4 +83,18 @@ public interface HostController extends ModelController {
      */
     ServerStatus stopServer(String serverName, int gracefulTimeout);
 
+    /**
+     * Registers a running server in the domain model
+     *
+     * @param serverName the name of the server
+     * @param connection the connection to the running server
+     */
+    void registerRunningServer(String serverName, Connection connection);
+
+    /**
+     * Unregisters a running server from the domain model
+     *
+     * @param serverName the name of the server
+     */
+    void unregisterRunningServer(String serverName);
 }

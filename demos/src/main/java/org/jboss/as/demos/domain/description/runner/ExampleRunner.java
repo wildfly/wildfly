@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.description.runner;
+package org.jboss.as.demos.domain.description.runner;
 
 import java.net.InetAddress;
 
@@ -42,14 +42,15 @@ public class ExampleRunner {
         ModelControllerClient client = null;
         try {
             System.out.println("Connecting");
-            client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
+            client = ModelControllerClient.Factory.create(Type.DOMAIN, InetAddress.getByName("localhost"), 9999);
             System.out.println("Connected");
 
             System.out.println("Dumping resource tree\n");
             ModelNode request = new ModelNode();
             request.get("operation").set("read-resource");
-            request.get("address").setEmptyList();
-            // request.get("address").set("subsystem", "threads");
+            request.get("address").setEmptyList();  //1
+            //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined")).toModelNode()); //2
+            //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined"), PathElement.pathElement("running-server", "Server:server-two")).toModelNode()); //3
             request.get("recursive").set(true);
             ModelNode r = client.execute(request);
             System.out.println(r);
@@ -58,6 +59,7 @@ public class ExampleRunner {
             request = new ModelNode();
             request.get("operation").set("read-resource-description");
             request.get("address").setEmptyList();
+            //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined")).toModelNode());
             request.get("operations").set(true);
             request.get("recursive").set(true);
             r = client.execute(request);

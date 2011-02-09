@@ -26,7 +26,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
@@ -36,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -44,7 +47,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -91,12 +96,15 @@ class DomainModelImpl extends BasicModelController implements DomainModel {
     private void createCoreModel() {
         // Create roots
         final ModelNode rootModel = getModel();
+        rootModel.get(NAMESPACES).setEmptyList();
+        rootModel.get(SCHEMA_LOCATIONS).setEmptyList();
         rootModel.get(EXTENSION);
         rootModel.get(INTERFACE);
         rootModel.get(PROFILE);
         rootModel.get(SERVER_GROUP);
         rootModel.get(SOCKET_BINDING_GROUP);
         rootModel.get(PATH);
+        rootModel.get(HOST);
     }
 
     public ModelNode getDomainModel() {
@@ -161,4 +169,17 @@ class DomainModelImpl extends BasicModelController implements DomainModel {
     protected ModelNodeRegistration getRegistry() {
         return super.getRegistry();
     }
+
+    void registerProxy(final ProxyController controller) {
+        final PathElement element = controller.getProxyNodeAddress().getLastElement();
+        getRegistry().registerProxyController(element, controller);
+        getModel().get(element.getKey(), element.getValue());
+    }
+
+    void unregisterProxy(final PathAddress proxyNodeAddress) {
+        final PathElement element = proxyNodeAddress.getLastElement();
+        getModel().get(element.getKey()).remove(element.getValue());
+        getRegistry().unregisterProxyController(element);
+    }
+
 }

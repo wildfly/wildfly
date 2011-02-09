@@ -47,6 +47,7 @@ import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -74,7 +75,7 @@ public class MessagingClientTestCase {
         final String queueName = "queue.standalone";
 
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
 
         try {
             // Check that the queue does not exists

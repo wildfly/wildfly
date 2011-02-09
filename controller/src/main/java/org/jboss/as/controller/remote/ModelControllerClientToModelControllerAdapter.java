@@ -30,6 +30,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,13 +44,23 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
     final ModelControllerClient client;
 
     /**
-     * Create a new model controller adapter
+     * Create a new model controller adapter connecting to a remote host
      *
+     * @param type the type of controller to connect to
      * @param address the address of the remote model controller to connect to
      * @param port the port of the remote model controller to connect to
      */
-    ModelControllerClientToModelControllerAdapter(final InetAddress address, final int port) {
-        client = ModelControllerClient.Factory.create(address, port);
+    ModelControllerClientToModelControllerAdapter(final ModelControllerClient.Type type, final InetAddress address, final int port) {
+        client = ModelControllerClient.Factory.create(type, address, port);
+    }
+
+    /**
+     * Create a new model controller adapter reusing an existing connection
+     *
+     * @param connection the connection
+     */
+    public ModelControllerClientToModelControllerAdapter(final ModelControllerClient.Type type, final Connection connection) {
+        client = ModelControllerClient.Factory.create(type, connection);
     }
 
     @Override

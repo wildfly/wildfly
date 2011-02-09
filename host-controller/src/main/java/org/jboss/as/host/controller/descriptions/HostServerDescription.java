@@ -52,7 +52,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -63,7 +62,7 @@ import org.jboss.dmr.ModelType;
  */
 public class HostServerDescription {
 
-    private static final String RESOURCE_NAME = InterfaceDescription.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = HostServerDescription.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ModelNode getDescription(final Locale locale) {
 

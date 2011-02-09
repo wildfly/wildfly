@@ -102,6 +102,13 @@ public interface ModelNodeRegistration {
     void registerProxyController(PathElement address, ProxyController proxyController);
 
     /**
+     * Unregister a proxy controller
+     *
+     * @param address the child of this registry that should no longer be proxied
+     */
+    void unregisterProxyController(PathElement address);
+
+    /**
      * Get the operation handler at the given address, or {@code null} if none exists.
      *
      * @param address the address, relative to this node

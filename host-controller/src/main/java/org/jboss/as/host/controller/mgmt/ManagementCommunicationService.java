@@ -22,11 +22,7 @@
 
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -35,18 +31,12 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.net.ServerSocketFactory;
 
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolServer;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
-import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -164,79 +154,18 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
 
     @Override
     public MessageHandler handleConnected(Connection connection) throws IOException {
-        return new ManagementHeaderMessageHandler();
+        return initialMessageHandler;
     }
 
-    private class ManagementHeaderMessageHandler implements MessageHandler {
-        @Override
-        public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
-            final int workingVersion;
-            final ManagementRequestHeader requestHeader;
-            final ManagementOperationHandler handler;
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(dataStream);
-
-                // Start by reading the request header
-                requestHeader = new ManagementRequestHeader(input);
-
-                // Work with the lowest protocol version
-                workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
-
-                byte handlerId = requestHeader.getOperationHandlerId();
-                if (handlerId == -1) {
-                    throw new IOException("Management request failed.  Invalid handler id");
-                }
-                handler = handlers.get(handlerId);
-                if (handler == null) {
-                    String msg = "Management request failed.  No handler found for id " + handlerId;
-                    throw new IOException(msg);
-                }
-                connection.setMessageHandler(handler);
-            } catch (IOException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new IOException("Failed to read request header", t);
-            } finally {
-                safeClose(input);
-                safeClose(dataStream);
-            }
-
-            OutputStream dataOutput = null;
-            ByteDataOutput output = null;
-            try {
-                dataOutput = connection.writeMessage();
-                output = new SimpleByteDataOutput(dataOutput);
-
-                // Now write the response header
-                final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
-                responseHeader.write(output);
-
-                output.close();
-                dataOutput.close();
-            } catch (IOException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new IOException("Failed to write management response headers", t);
-            } finally {
-                safeClose(output);
-                safeClose(dataOutput);
-            }
-        }
-
-        @Override
-        public void handleShutdown(final Connection connection) throws IOException {
-            connection.shutdownWrites();
-        }
-
-        @Override
-        public void handleFailure(final Connection connection, final IOException e) throws IOException {
-            connection.close();
-        }
-
-        @Override
-        public void handleFinished(final Connection connection) throws IOException {
-            // nothing
-        }
+    public MessageHandler getInitialMessageHandler() {
+        return initialMessageHandler;
     }
+
+    private final MessageHandler initialMessageHandler = new ManagementHeaderMessageHandler() {
+
+            @Override
+            protected MessageHandler getHandlerForId(byte handlerId) {
+                return handlers.get(handlerId);
+            }
+        };
 }

@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.server.client.impl.ModelControllerClientServerDeploymentManager;
 import org.jboss.msc.service.ServiceName;
 
@@ -58,7 +59,7 @@ public interface ServerDeploymentManager {
          * @return A domain client
          */
         public static ServerDeploymentManager create(final InetAddress address, int port) {
-            return create(ModelControllerClient.Factory.create(address, port));
+            return create(ModelControllerClient.Factory.create(Type.STANDALONE, address, port));
         }
 
         /**

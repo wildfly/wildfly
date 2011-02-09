@@ -41,6 +41,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.fakejndi.FakeJndi;
 import org.jboss.dmr.ModelNode;
@@ -57,7 +58,7 @@ public class ExampleRunner {
     public static void main(String[] args) throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         DeploymentUtils utils = null;
         boolean actionsApplied = false;

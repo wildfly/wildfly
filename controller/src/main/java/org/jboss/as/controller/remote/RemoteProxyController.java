@@ -31,6 +31,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,20 +48,35 @@ public class RemoteProxyController implements ProxyController {
     private final PathAddress proxyNodeAddress;
 
     /**
-     * Create a new model controller adapter
+     * Create a new model controller adapter connecting to a remote host
      *
+     * @param type the type of controller to connect to
      * @param address the address of the remote model controller to connect to
      * @param port the port of the remote model controller to connect to
      * @param proxyNodeAddress the address in the host ModelController where this proxy controller applies to
      */
-    public static ProxyController create(InetAddress inetAddress, int port, PathAddress proxyNodeAddress) throws UnknownHostException {
+    public static ProxyController create(final ModelControllerClient.Type type, final InetAddress inetAddress, final int port, final PathAddress proxyNodeAddress) throws UnknownHostException {
         if (inetAddress == null) {
             throw new IllegalArgumentException("Null address");
         }
         if (proxyNodeAddress == null) {
             throw new IllegalArgumentException("Null proxy address");
         }
-        return new RemoteProxyController(new ModelControllerClientToModelControllerAdapter(inetAddress, port), proxyNodeAddress);
+        return new RemoteProxyController(new ModelControllerClientToModelControllerAdapter(type, inetAddress, port), proxyNodeAddress);
+    }
+
+    /**
+     * Create a new model controller adapter reusing an existing connection
+     *
+     * @param type the type of controller being connected to
+     * @param connection the connection
+     * @param proxyNodeAddress the address in the host ModelController where this proxy controller applies to
+     */
+    public static ProxyController create(final ModelControllerClient.Type type, final Connection connection, final PathAddress proxyNodeAddress) {
+        if (connection == null) {
+            throw new IllegalArgumentException("Null connection");
+        }
+        return new RemoteProxyController(new ModelControllerClientToModelControllerAdapter(type, connection), proxyNodeAddress);
     }
 
     private RemoteProxyController(ModelController delegate, PathAddress proxyNodeAddress) {

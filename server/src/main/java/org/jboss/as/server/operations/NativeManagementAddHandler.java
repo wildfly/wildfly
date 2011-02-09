@@ -35,12 +35,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.ManagementCommunicationService;
-import org.jboss.as.server.mgmt.ManagementCommunicationServiceInjector;
+import org.jboss.as.server.mgmt.ServerControllerOperationHandlerService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -84,12 +83,12 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Run
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
 
-            ModelControllerOperationHandler modelControllerOperationHandler = new ModelControllerOperationHandler();
-            serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER.append(ModelControllerOperationHandler.OPERATION_HANDLER_NAME_SUFFIX), modelControllerOperationHandler)
-                    .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(modelControllerOperationHandler))
-                    .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, modelControllerOperationHandler.getModelControllerValue())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
+            ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
+            serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, operationHandlerService.getModelControllerValue())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
         }
 

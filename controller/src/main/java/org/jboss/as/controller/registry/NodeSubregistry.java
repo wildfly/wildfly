@@ -79,6 +79,10 @@ final class NodeSubregistry {
         }
     }
 
+    void unregisterProxyController(final String elementValue) {
+        childRegistriesUpdater.remove(this, elementValue);
+    }
+
     OperationHandler getHandler(final ListIterator<PathElement> iterator, final String child, final String operationName) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
         final AbstractNodeRegistration childRegistry = snapshot.get(child);

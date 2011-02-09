@@ -40,12 +40,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
+import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
@@ -195,6 +197,7 @@ public class HostControllerBootstrap {
             .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverToHost))
             .install();
 
+
         batch.install();
     }
 
@@ -225,6 +228,13 @@ public class HostControllerBootstrap {
             .setInitialMode(Mode.ACTIVE)
             .install();
 
+        //Install the domain controller operation handler
+        final DomainControllerOperationHandlerService operationHandlerService = new DomainControllerOperationHandlerService();
+        serviceTarget.addService(DomainControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
+            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
+            .addDependency(DomainController.SERVICE_NAME, ModelController.class, operationHandlerService.getModelControllerValue())
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
     }
 
     static void installRemoteDomainControllerConnection(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {

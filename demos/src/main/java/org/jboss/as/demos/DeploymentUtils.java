@@ -41,6 +41,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
@@ -69,7 +70,7 @@ public class DeploymentUtils implements Closeable {
     private final ServerDeploymentManager manager;
 
     public DeploymentUtils() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
         manager = ServerDeploymentManager.Factory.create(client);
     }
 

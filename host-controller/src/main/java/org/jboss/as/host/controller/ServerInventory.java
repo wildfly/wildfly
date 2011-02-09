@@ -48,12 +48,17 @@ class ServerInventory implements ManagedServerLifecycleCallback {
     private final ProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
     private final DomainControllerConnection domainControllerConnection;
+    private HostControllerImpl hostController;
 
     ServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient, final DomainControllerConnection domainControllerConnection) {
         this.environment = environment;
         this.managementAddress = managementAddress;
         this.processControllerClient = processControllerClient;
         this.domainControllerConnection = domainControllerConnection;
+    }
+
+    void setHostController(HostControllerImpl hostController) {
+        this.hostController = hostController;
     }
 
     ServerStatus determineServerStatus(final String serverName) {
@@ -163,6 +168,8 @@ class ServerInventory implements ManagedServerLifecycleCallback {
             // TODO
             server.setState(ServerState.STARTED);
 
+            //This should really be in serverStarted() along with an unregisterCall in serverStopped()
+            hostController.registerRunningServer(serverName, server.getServerConnection());
         } catch (final Exception e) {
             log.errorf(e, "Could not start server %s", serverName);
         }

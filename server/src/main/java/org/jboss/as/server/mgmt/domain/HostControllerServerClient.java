@@ -22,31 +22,19 @@
 
 package org.jboss.as.server.mgmt.domain;
 
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
-import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
-import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
-import org.jboss.as.protocol.mgmt.ManagementResponse;
-import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.server.ServerController;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -67,6 +55,14 @@ public class HostControllerServerClient implements Service<Void> {
     private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
     private final InjectedValue<ServerController> controller = new InjectedValue<ServerController>();
     private final String serverName;
+    private volatile ModelControllerOperationHandler modelControllerOperationHandler;
+    private final MessageHandler initialMessageHandler = new ManagementHeaderMessageHandler() {
+
+        @Override
+        protected MessageHandler getHandlerForId(byte handlerId) {
+            return modelControllerOperationHandler;
+        }
+    };
 
     public HostControllerServerClient(final String serverName) {
         this.serverName = serverName;
@@ -80,7 +76,8 @@ public class HostControllerServerClient implements Service<Void> {
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        smConnection.setMessageHandler(managementHeaderMessageHandler);
+        modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.STANDALONE, controller.getValue(), initialMessageHandler);
+        smConnection.setMessageHandler(initialMessageHandler);
     }
 
     /** {@inheritDoc} */
@@ -100,113 +97,7 @@ public class HostControllerServerClient implements Service<Void> {
         return controller;
     }
 
-    private MessageHandler managementHeaderMessageHandler = new AbstractMessageHandler() {
-        @Override
-        public void handle(Connection connection, InputStream dataStream) throws IOException {
-            final int workingVersion;
-            final ManagementRequestHeader requestHeader;
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(dataStream);
 
-                // Start by reading the request header
-                requestHeader = new ManagementRequestHeader(input);
-
-                // Work with the lowest protocol version
-                workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
-
-                byte handlerId = requestHeader.getOperationHandlerId();
-                if (handlerId == -1) {
-                    throw new IOException("Management request failed.  Invalid handler id");
-                }
-                connection.setMessageHandler(requestStartHeader);
-            } catch (IOException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new IOException("Failed to read request header", t);
-            } finally {
-                safeClose(input);
-            }
-
-            OutputStream dataOutput = null;
-            ByteDataOutput output = null;
-            try {
-                dataOutput = connection.writeMessage();
-                output = new SimpleByteDataOutput(dataOutput);
-
-                // Now write the response header
-                final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
-                responseHeader.write(output);
-
-                output.close();
-                dataOutput.close();
-            } catch (IOException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new IOException("Failed to write management response headers", t);
-            } finally {
-                safeClose(output);
-                safeClose(dataOutput);
-            }
-        }
-    };
-
-    private MessageHandler requestStartHeader = new AbstractMessageHandler() {
-        @Override
-        public void handle(Connection connection, InputStream input) throws IOException {
-            expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
-            final byte commandCode = StreamUtils.readByte(input);
-
-            final ManagementResponse operation = operationFor(commandCode);
-            if (operation == null) {
-                throw new IOException("Invalid command code " + commandCode + " received");
-            }
-            operation.handle(connection, input);
-        }
-    };
-
-    private ManagementResponse operationFor(final byte commandByte) {
-        switch (commandByte) {
-            case NewDomainServerProtocol.EXECUTE_SYNCHRONOUS_REQUEST:
-                return new ExecuteSynchronousOperation();
-        }
-        return null;
-    }
-
-    private ModelNode readNode(InputStream in) throws IOException {
-        ModelNode node = new ModelNode();
-        node.readExternal(in);
-        return node;
-    }
-
-    private abstract class ExecuteOperation extends ManagementResponse {
-        ModelNode operation;
-
-        @Override
-        protected final void readRequest(final InputStream inputStream) throws IOException {
-            expectHeader(inputStream, NewDomainServerProtocol.PARAM_OPERATION);
-            operation = readNode(inputStream);
-        }
-    }
-
-    private class ExecuteSynchronousOperation extends ExecuteOperation {
-        @Override
-        protected final byte getResponseCode() {
-            return NewDomainServerProtocol.EXECUTE_SYNCHRONOUS_RESPONSE;
-        }
-
-        @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
-            ModelNode result = null;
-            try {
-                result = controller.getValue().execute(operation);
-            } catch (OperationFailedException e) {
-                result = new ModelNode().set(createErrorResult(e));
-            }
-            outputStream.write(NewDomainServerProtocol.PARAM_OPERATION);
-            result.writeExternal(outputStream);
-        }
-    }
 
     private class ServerRegisterRequest extends ManagementRequest<Void> {
         @Override
@@ -230,9 +121,4 @@ public class HostControllerServerClient implements Service<Void> {
             writeUTFZBytes(output, serverName);
         }
     }
-
-    static ModelNode createErrorResult(OperationFailedException e) {
-        return e.getFailureDescription();
-    }
-
 }

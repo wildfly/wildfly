@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.CancellationException;
 
+import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -57,14 +58,41 @@ public interface ModelControllerClient extends Closeable {
 
     class Factory {
         /**
-         * Create an {@link org.jboss.as.PrototypeDetypedClient.client.api.StandaloneClient} instance for a remote address and port.
+         * Create a client instance for a remote address and port.
          *
-         +         * @param address The remote address to connect to
+         * @param type The type to connect to
+         * @param address The remote address to connect to
          * @param port The remote port
          * @return A domain client
          */
-        public static ModelControllerClient create(final InetAddress address, int port) {
-            return new ModelControllerClientImpl(address, port);
+        public static ModelControllerClient create(final Type type, final InetAddress address, final int port) {
+            return new EstablishConnectionModelControllerClient(type, address, port);
+        }
+
+        /**
+         * Create client instance using an existing connection
+         * @param type The type to connect to
+         * @param connection the connection
+         * @return A domain client
+         */
+        public static ModelControllerClient create(final Type type, final Connection connection) {
+            return new ExistingConnectionModelControllerClient(type, connection);
+        }
+    }
+
+    enum Type {
+        STANDALONE((byte)0x01),
+        HOST((byte)0x02),
+        DOMAIN((byte)0x03);
+
+        private final byte handlerId;
+
+        Type(final byte handlerId){
+            this.handlerId = handlerId;
+        }
+
+        public byte getHandlerId() {
+            return handlerId;
         }
     }
 }

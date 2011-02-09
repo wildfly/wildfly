@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.war.archive.SimpleServlet;
 import org.jboss.dmr.ModelNode;
@@ -46,7 +47,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
         try {
             utils = new DeploymentUtils();
             utils.addWarDeployment("war-example.war", SimpleServlet.class.getPackage(), true);

@@ -22,19 +22,16 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import org.jboss.as.controller.client.ModelControllerClientProtocol;
+
 /**
  *
  */
-public interface NewDomainServerProtocol {
+public interface NewDomainServerProtocol extends ModelControllerClientProtocol{
 
     int SERVER_TO_HOST_CONTROLLER_OPERATION = Byte.MAX_VALUE; // TODO: Correct
     int REGISTER_REQUEST = 0x00;
     int PARAM_SERVER_NAME = 0x01;
     int REGISTER_RESPONSE = 0x02;
-
-    int PARAM_OPERATION = 0x60;
-
-    int EXECUTE_SYNCHRONOUS_REQUEST = 0x47;
-    int EXECUTE_SYNCHRONOUS_RESPONSE = 0x48;
 
 }
