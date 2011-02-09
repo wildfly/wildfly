@@ -46,7 +46,7 @@ import javax.xml.stream.XMLStreamWriter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class XmlConfigurationPersister implements NewConfigurationPersister {
+public class XmlConfigurationPersister implements ConfigurationPersister {
     private final File fileName;
     private final QName rootElement;
     private final XMLElementReader<ModelNode> rootParser;

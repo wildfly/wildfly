@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewConfigurationPersister {
+public interface ConfigurationPersister {
 
     /**
      * Persist the given configuration model.
