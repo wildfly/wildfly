@@ -43,7 +43,7 @@ import org.jboss.staxmapper.XMLElementWriter;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewConfigurationPersisterFactory {
+public class ConfigurationPersisterFactory {
 
     private static final String HOST_XML = "host.xml";
     private static final String DOMAIN_XML = "domain.xml";

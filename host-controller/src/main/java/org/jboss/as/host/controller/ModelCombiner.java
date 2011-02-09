@@ -55,7 +55,7 @@ import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.host.controller.NewManagedServer.ManagedServerBootConfiguration;
+import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
@@ -82,9 +82,9 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     final ModelNode serverModel;
     final String profileName;
     final HostControllerEnvironment environment;
-    final NewDomainControllerConnection domainControllerConnection;
+    final DomainControllerConnection domainControllerConnection;
 
-    ModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final NewDomainControllerConnection domainControllerConnection) {
+    ModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final DomainControllerConnection domainControllerConnection) {
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;

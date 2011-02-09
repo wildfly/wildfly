@@ -22,8 +22,10 @@
 
 package org.jboss.as.host.controller;
 
+import java.io.IOException;
+
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.model.DomainModel;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -32,16 +34,24 @@ import org.jboss.msc.service.ServiceName;
  * @author John Bailey
  */
 public interface DomainControllerConnection {
+
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "connection");
 
     /**
      * Register with the domain controller.
      *
+     * @param hostController the local host controller
      * @return The latest domain model
      */
-    DomainModel register();
+    ModelNode register(final HostController hostController) throws IOException;
 
-    /*
+    /**
+     * Get the operations required to create the subsystems that make up the profile
+     */
+    ModelNode getProfileOperations(String profileName);
+
+
+    /**
      * Unregister from the domain controller.
      */
     void unregister();

@@ -48,14 +48,14 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewLocalDomainConnectionService implements NewDomainControllerConnection, Service<NewDomainControllerConnection> {
+class LocalDomainConnectionService implements DomainControllerConnection, Service<DomainControllerConnection> {
 
     final InjectedValue<NewDomainController> domainController = new InjectedValue<NewDomainController>();
     private String name;
 
     /** {@inheritDoc} */
     @Override
-    public synchronized ModelNode register(final NewHostController hostController) {
+    public synchronized ModelNode register(final HostController hostController) {
         assert hostController != null : "null HC";
         final NewDomainController domainController = this.domainController.getValue();
         this.name = hostController.getName();
@@ -114,7 +114,7 @@ class NewLocalDomainConnectionService implements NewDomainControllerConnection, 
 
     /** {@inheritDoc} */
     @Override
-    public synchronized NewDomainControllerConnection getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized DomainControllerConnection getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -123,8 +123,8 @@ class NewLocalDomainConnectionService implements NewDomainControllerConnection, 
     }
 
     static class NewLocalHostControllerClient implements NewHostControllerClient {
-        private final NewHostController controller;
-        NewLocalHostControllerClient(final NewHostController controller) {
+        private final HostController controller;
+        NewLocalHostControllerClient(final HostController controller) {
             this.controller = controller;
         }
 

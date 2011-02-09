@@ -29,11 +29,11 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewHostOperationContext extends NewOperationContext {
+public interface HostOperationContext extends NewOperationContext {
 
     /** {@inheritDoc} */
     @Override
-    NewHostModel getController();
+    HostModel getController();
 
     /**
      * Get the target to which new services may be added.

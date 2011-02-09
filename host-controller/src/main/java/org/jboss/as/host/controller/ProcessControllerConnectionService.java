@@ -48,7 +48,7 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCli
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "process-controller-connection");
 
-    final InjectedValue<NewServerInventory> serverInventory = new InjectedValue<NewServerInventory>();
+    final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
 
     private final HostControllerEnvironment environment;
     private final byte[] authCode;

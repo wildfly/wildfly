@@ -27,7 +27,7 @@ import org.jboss.as.protocol.Connection;
 /**
  * @author Emanuel Muckenhuber
  */
-public interface NewManagedServerLifecycleCallback {
+public interface ManagedServerLifecycleCallback {
 
     void serverRegistered(String serverName, Connection connection);
     void serverDown(String serverName);

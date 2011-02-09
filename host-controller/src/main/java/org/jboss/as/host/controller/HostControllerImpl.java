@@ -38,21 +38,21 @@ import org.jboss.logging.Logger;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewHostControllerImpl implements NewHostController {
+public class HostControllerImpl implements HostController {
 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private static final ExtensibleConfigurationPersister domainPersister = new NullConfigurationPersister(null);
 
     private final String name;
-    private final NewHostModel hostModel;
-    private final NewServerInventory serverInventory;
+    private final HostModel hostModel;
+    private final ServerInventory serverInventory;
     private final FileRepository repository;
 
     private NewDomainModel domainModel;
     private FileRepository remoteRepository;
 
-    NewHostControllerImpl(final String name, final NewHostModel model, final NewServerInventory serverInventory, final FileRepository repository) {
+    HostControllerImpl(final String name, final HostModel model, final ServerInventory serverInventory, final FileRepository repository) {
         this.name = name;
         this.hostModel = model;
         this.repository = repository;
@@ -89,7 +89,7 @@ public class NewHostControllerImpl implements NewHostController {
     /** {@inheritDoc} */
     @Override
     public ServerStatus startServer(String serverName) {
-        final NewServerInventory servers = this.serverInventory;
+        final ServerInventory servers = this.serverInventory;
         return servers.startServer(serverName, hostModel.getHostModel(), domainModel.getDomainModel());
     }
 
@@ -102,7 +102,7 @@ public class NewHostControllerImpl implements NewHostController {
     /** {@inheritDoc} */
     @Override
     public ServerStatus restartServer(String serverName, int gracefulTimeout) {
-        final NewServerInventory servers = this.serverInventory;
+        final ServerInventory servers = this.serverInventory;
         return servers.restartServer(serverName, gracefulTimeout, hostModel.getHostModel(), domainModel.getDomainModel());
     }
 
@@ -115,7 +115,7 @@ public class NewHostControllerImpl implements NewHostController {
     /** {@inheritDoc} */
     @Override
     public ServerStatus stopServer(String serverName, int gracefulTimeout) {
-        final NewServerInventory servers = this.serverInventory;
+        final ServerInventory servers = this.serverInventory;
         return servers.stopServer(serverName, gracefulTimeout);
     }
 

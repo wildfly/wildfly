@@ -47,6 +47,8 @@ import org.jboss.stdio.StdioContext;
  * The main-class entry point for the host controller process.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:kkhan@redhat.com">Kabir Khan</a>
+ * @author Brian Stansberry
  */
 public final class Main {
 
@@ -112,20 +114,20 @@ public final class Main {
     private Main() {
     }
 
-    private static HostController create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+    private static HostControllerBootstrap create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
         Main main = new Main();
         return main.boot(args, stdin, stdout, stderr, authCode);
     }
 
-    private HostController boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
-        HostController hc = null;
+    private HostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+        HostControllerBootstrap hc = null;
         try {
             HostControllerEnvironment config = determineEnvironment(args, props, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return null;
             } else {
-                hc = new HostController(config, authCode);
+                hc = new HostControllerBootstrap(config, authCode);
                 hc.start();
             }
         } catch (Throwable t) {

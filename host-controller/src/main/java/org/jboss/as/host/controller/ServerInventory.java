@@ -39,17 +39,17 @@ import org.jboss.logging.Logger;
  *
  * @author Emanuel Muckenhuber
  */
-class NewServerInventory implements NewManagedServerLifecycleCallback {
+class ServerInventory implements ManagedServerLifecycleCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
-    private final Map<String, NewManagedServer> servers = new HashMap<String, NewManagedServer>();
+    private final Map<String, ManagedServer> servers = new HashMap<String, ManagedServer>();
 
     private final HostControllerEnvironment environment;
     private final ProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
-    private final NewDomainControllerConnection domainControllerConnection;
+    private final DomainControllerConnection domainControllerConnection;
 
-    NewServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient, final NewDomainControllerConnection domainControllerConnection) {
+    ServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient, final DomainControllerConnection domainControllerConnection) {
         this.environment = environment;
         this.managementAddress = managementAddress;
         this.processControllerClient = processControllerClient;
@@ -58,8 +58,8 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
 
     ServerStatus determineServerStatus(final String serverName) {
         ServerStatus status;
-        final String processName = NewManagedServer.getServerProcessName(serverName);
-        final NewManagedServer client = servers.get(processName);
+        final String processName = ManagedServer.getServerProcessName(serverName);
+        final ManagedServer client = servers.get(processName);
         if (client == null) {
             status = ServerStatus.STOPPED; // TODO move the configuration state outside
         } else {
@@ -90,14 +90,14 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
     }
 
     ServerStatus startServer(final String serverName, final ModelNode hostModel, final ModelNode domainModel) {
-        final String processName = NewManagedServer.getServerProcessName(serverName);
-        final NewManagedServer existing = servers.get(processName);
+        final String processName = ManagedServer.getServerProcessName(serverName);
+        final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
             log.warnf("existing server [%s] with state: " + existing.getState());
             return determineServerStatus(serverName);
         }
         log.info("starting server " + serverName);
-        final NewManagedServer server = createManagedServer(serverName, hostModel, domainModel);
+        final ManagedServer server = createManagedServer(serverName, hostModel, domainModel);
         servers.put(processName, server);
         try {
             server.createServerProcess();
@@ -119,9 +119,9 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
 
     ServerStatus stopServer(final String serverName, final int gracefulTimeout) {
         log.info("stopping server " + serverName);
-        final String processName = NewManagedServer.getServerProcessName(serverName);
+        final String processName = ManagedServer.getServerProcessName(serverName);
         try {
-            final NewManagedServer server = servers.get(processName);
+            final ManagedServer server = servers.get(processName);
             if (server != null) {
                 if (gracefulTimeout > -1) {
                     // FIXME implement gracefulShutdown
@@ -152,7 +152,7 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
     @Override
     public void serverRegistered(String serverName, Connection connection) {
         try {
-            final NewManagedServer server = servers.get(serverName);
+            final ManagedServer server = servers.get(serverName);
             if (server == null) {
                 log.errorf("No server called %s available", serverName);
                 return;
@@ -171,7 +171,7 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
     /** {@inheritDoc} */
     @Override
     public void serverDown(String serverName) {
-        final NewManagedServer server = servers.get(serverName);
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists", serverName);
             return;
@@ -202,7 +202,7 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
     /** {@inheritDoc} */
     @Override
     public void serverStarted(String serverName) {
-        final NewManagedServer server = servers.get(serverName);
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for start", serverName);
             return;
@@ -214,7 +214,7 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
     /** {@inheritDoc} */
     @Override
     public void serverStartFailed(String serverName) {
-        final NewManagedServer server = servers.get(serverName);
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists", serverName);
             return;
@@ -226,7 +226,7 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
     /** {@inheritDoc} */
     @Override
     public void serverStopped(String serverName) {
-        final NewManagedServer server = servers.get(serverName);
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for stop", serverName);
             return;
@@ -246,7 +246,7 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
     }
 
     void reconnectedServer(final String serverName, final ServerState state) {
-        final NewManagedServer server = servers.get(serverName);
+        final ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server found for reconnected server %s", serverName);
             return;
@@ -263,16 +263,16 @@ class NewServerInventory implements NewManagedServerLifecycleCallback {
         }
     }
 
-    private void checkState(final NewManagedServer server, final ServerState expected) {
+    private void checkState(final ManagedServer server, final ServerState expected) {
         final ServerState state = server.getState();
         if (state != expected) {
             log.warnf("Server %s is not in the expected %s state: %s" , server.getServerProcessName(), expected, state);
         }
     }
 
-    private NewManagedServer createManagedServer(final String serverName, final ModelNode hostModel, final ModelNode domainModel) {
+    private ManagedServer createManagedServer(final String serverName, final ModelNode hostModel, final ModelNode domainModel) {
         final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, environment, domainControllerConnection);
-        return new NewManagedServer(serverName, processControllerClient, managementAddress, combiner);
+        return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
     }
 
 }

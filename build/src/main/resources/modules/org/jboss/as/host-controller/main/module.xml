@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.0" name="org.jboss.as.host-controller">
 
-    <main-class name="org.jboss.as.host.controller.NewMain"/>
+    <main-class name="org.jboss.as.host.controller.Main"/>
 
     <resources>
         <!-- Insert resources here -->

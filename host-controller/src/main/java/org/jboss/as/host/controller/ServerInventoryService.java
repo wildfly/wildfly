@@ -36,19 +36,19 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewServerInventoryService implements Service<NewServerInventory> {
+class ServerInventoryService implements Service<ServerInventory> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
     private final InjectedValue<NetworkInterfaceBinding> iFace = new InjectedValue<NetworkInterfaceBinding>();
-    private final InjectedValue<NewDomainControllerConnection> domainControllerConnection = new InjectedValue<NewDomainControllerConnection>();
+    private final InjectedValue<DomainControllerConnection> domainControllerConnection = new InjectedValue<DomainControllerConnection>();
     private final InjectedValue<ProcessControllerClient> client = new InjectedValue<ProcessControllerClient>();
     private final HostControllerEnvironment environment;
     private final int port;
 
-    private NewServerInventory serverInventory;
+    private ServerInventory serverInventory;
 
-    NewServerInventoryService(final HostControllerEnvironment environment, final int port) {
+    ServerInventoryService(final HostControllerEnvironment environment, final int port) {
         this.environment = environment;
         this.port = port;
     }
@@ -56,12 +56,12 @@ class NewServerInventoryService implements Service<NewServerInventory> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        final NewServerInventory serverInventory;
+        final ServerInventory serverInventory;
         try {
             final NetworkInterfaceBinding interfaceBinding = iFace.getValue();
             final ProcessControllerClient client = this.client.getValue();
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getAddress(), port);
-            serverInventory = new NewServerInventory(environment, binding, client, domainControllerConnection.getValue());
+            serverInventory = new ServerInventory(environment, binding, client, domainControllerConnection.getValue());
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -76,8 +76,8 @@ class NewServerInventoryService implements Service<NewServerInventory> {
 
     /** {@inheritDoc} */
     @Override
-    public synchronized NewServerInventory getValue() throws IllegalStateException, IllegalArgumentException {
-        final NewServerInventory serverInventory = this.serverInventory;
+    public synchronized ServerInventory getValue() throws IllegalStateException, IllegalArgumentException {
+        final ServerInventory serverInventory = this.serverInventory;
         if(serverInventory == null) {
             throw new IllegalStateException();
         }
@@ -88,7 +88,7 @@ class NewServerInventoryService implements Service<NewServerInventory> {
         return iFace;
     }
 
-    InjectedValue<NewDomainControllerConnection> getDomainControllerConnection() {
+    InjectedValue<DomainControllerConnection> getDomainControllerConnection() {
         return domainControllerConnection;
     }
 

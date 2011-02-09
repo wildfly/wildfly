@@ -29,7 +29,7 @@ import org.jboss.as.server.DomainServerMain;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewHostCommunicationServices {
+class HostCommunicationServices {
 
     static DomainServerMain.HostControllerCommunicationActivator createServerCommuncationActivator(final String serverName, final InetSocketAddress managementSocket) {
         return new DomainServerMain.HostControllerCommunicationActivator(serverName, managementSocket);

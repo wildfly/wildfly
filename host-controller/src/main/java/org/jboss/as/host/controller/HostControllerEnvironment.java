@@ -12,7 +12,7 @@ import java.util.Properties;
 import org.jboss.as.process.DefaultJvmUtils;
 
 /**
- * Encapsulates the runtime environment for a {@link HostController}.
+ * Encapsulates the runtime environment for a host controller.
  *
  * @author Brian Stansberry
  */

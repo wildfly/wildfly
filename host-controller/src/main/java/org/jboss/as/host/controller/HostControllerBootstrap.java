@@ -48,7 +48,7 @@ import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainControllerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
-import org.jboss.as.host.controller.mgmt.NewServerToHostOperationHandler;
+import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -72,7 +72,7 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewHostControllerBootstrap {
+public class HostControllerBootstrap {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
@@ -81,7 +81,7 @@ public class NewHostControllerBootstrap {
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
 
-    public NewHostControllerBootstrap(final HostControllerEnvironment environment, final byte[] authCode) {
+    public HostControllerBootstrap(final HostControllerEnvironment environment, final byte[] authCode) {
         this.environment = environment;
         this.authCode = authCode;
     }
@@ -94,7 +94,7 @@ public class NewHostControllerBootstrap {
     public void start() throws Exception {
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister configurationPersister = createHostConfigurationPersister(configDir);
-        final NewHostModel hostModel = new NewHostModel(configurationPersister);
+        final HostModel hostModel = new HostModel(configurationPersister);
 
         // Load the host model
         final List<ModelNode> operations = configurationPersister.load();
@@ -151,20 +151,20 @@ public class NewHostControllerBootstrap {
         // install the domain controller connection
         activateDomainControllerConnection(environment, rawModel, batch);
         //
-        final NewServerInventoryService inventory = new NewServerInventoryService(environment, mgmtPort);
-        batch.addService(NewServerInventoryService.SERVICE_NAME, inventory)
+        final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
+        batch.addService(ServerInventoryService.SERVICE_NAME, inventory)
             .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
-            .addDependency(NewDomainControllerConnection.SERVICE_NAME, NewDomainControllerConnection.class, inventory.getDomainControllerConnection())
+            .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, inventory.getDomainControllerConnection())
             .install();
 
         final String name = rawModel.get(NAME).asString();
         final FileRepository repository = new LocalFileRepository(environment);
-        final NewHostControllerService hc = new NewHostControllerService(name, hostModel, repository);
-        batch.addService(NewHostController.SERVICE_NAME, hc)
-            .addDependency(NewDomainControllerConnection.SERVICE_NAME, NewDomainControllerConnection.class, hc.getConnection())
-            .addDependency(NewServerInventoryService.SERVICE_NAME, NewServerInventory.class, hc.getServerInventory())
-            .addDependency(NewServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
+        final HostControllerService hc = new HostControllerService(name, hostModel, repository);
+        batch.addService(HostController.SERVICE_NAME, hc)
+            .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hc.getConnection())
+            .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, hc.getServerInventory())
+            .addDependency(ServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
             .setInitialMode(Mode.ACTIVE)
             .install();
 
@@ -189,9 +189,9 @@ public class NewHostControllerBootstrap {
             .install();
 
         // Add the server to host operation handler
-        final NewServerToHostOperationHandler serverToHost = new NewServerToHostOperationHandler();
-        batch.addService(NewServerToHostOperationHandler.SERVICE_NAME, serverToHost)
-            .addDependency(NewServerInventoryService.SERVICE_NAME, NewManagedServerLifecycleCallback.class, serverToHost.getCallback())
+        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
+        batch.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallback())
             .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverToHost))
             .install();
 
@@ -219,8 +219,8 @@ public class NewHostControllerBootstrap {
         final NewDomainControllerService dcService = new NewDomainControllerService(domainConfigurationPersister);
         serviceTarget.addService(NewDomainController.SERVICE_NAME, dcService).install();
 
-        final NewLocalDomainConnectionService service = new NewLocalDomainConnectionService();
-        serviceTarget.addService(NewDomainControllerConnection.SERVICE_NAME, service)
+        final LocalDomainConnectionService service = new LocalDomainConnectionService();
+        serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, service)
             .addDependency(NewDomainController.SERVICE_NAME, NewDomainController.class, service.getDomainController())
             .setInitialMode(Mode.ACTIVE)
             .install();
@@ -254,7 +254,7 @@ public class NewHostControllerBootstrap {
      * @return the configuration persister
      */
     static ExtensibleConfigurationPersister createHostConfigurationPersister(final File configDir) {
-        return NewConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir);
+        return ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir);
     }
 
     /**
@@ -264,7 +264,7 @@ public class NewHostControllerBootstrap {
      * @return the configuration persister
      */
     static ExtensibleConfigurationPersister createDomainConfigurationPersister(final File configDir) {
-        return NewConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir);
+        return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir);
     }
 
     static final class HostControllerExecutorService implements Service<Executor> {
