@@ -158,7 +158,7 @@ public final class DomainServerMain {
             final NewHostControllerServerClient client = new NewHostControllerServerClient(serverName);
             serviceTarget.addService(HostControllerClient.SERVICE_NAME, client)
                 .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewServerController.class, client.getServerControllerInjector())
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, client.getServerControllerInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
         }

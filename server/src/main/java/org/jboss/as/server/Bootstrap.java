@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,20 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
 import java.util.List;
-import org.jboss.as.server.mgmt.ServerConfigurationPersister;
-import org.jboss.as.server.mgmt.StandaloneServerConfigurationPersister;
+
+import javax.xml.namespace.QName;
+
+import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.threads.AsyncFuture;
 
 /**
@@ -45,9 +53,9 @@ public interface Bootstrap {
      *
      * @param configuration the server configuration
      * @param extraServices additional services to start and stop with the server instance
-     * @return the future server controller
+     * @return the future service container
      */
-    AsyncFuture<ServerController> start(Configuration configuration, List<ServiceActivator> extraServices);
+    AsyncFuture<ServiceContainer> start(Configuration configuration, List<ServiceActivator> extraServices);
 
     /**
      * The configuration for server bootstrap.
@@ -57,17 +65,8 @@ public interface Bootstrap {
         private int portOffset;
         private ServerEnvironment serverEnvironment;
         private ModuleLoader moduleLoader = Module.getSystemModuleLoader();
-        private ServerConfigurationPersister configurationPersister = new StandaloneServerConfigurationPersister();
+        private ExtensibleConfigurationPersister configurationPersister;
         private long startTime = Module.getStartTime();
-
-        /**
-         * Get the port offset.
-         *
-         * @return the port offset
-         */
-        public int getPortOffset() {
-            return portOffset;
-        }
 
         /**
          * Set the port offset.
@@ -95,7 +94,7 @@ public interface Bootstrap {
          *
          * @param serverEnvironment the server environment
          */
-        public void setServerEnvironment(final ServerEnvironment serverEnvironment) {
+        public synchronized void setServerEnvironment(final ServerEnvironment serverEnvironment) {
             this.serverEnvironment = serverEnvironment;
         }
 
@@ -122,7 +121,17 @@ public interface Bootstrap {
          *
          * @return the configuration persister
          */
-        public ServerConfigurationPersister getConfigurationPersister() {
+        public synchronized ExtensibleConfigurationPersister getConfigurationPersister() {
+            if (configurationPersister == null) {
+                if (serverEnvironment == null) {
+                    configurationPersister = new NullConfigurationPersister(new StandaloneXml(moduleLoader));
+                }
+                else {
+                    QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
+                    StandaloneXml parser = new StandaloneXml(Module.getSystemModuleLoader());
+                    configurationPersister = new BackupXmlConfigurationPersister(new File(serverEnvironment.getServerConfigurationDir(), "standalone.xml"), rootElement, parser, parser);
+                }
+            }
             return configurationPersister;
         }
 
@@ -131,7 +140,7 @@ public interface Bootstrap {
          *
          * @param configurationPersister the configuration persister
          */
-        public void setConfigurationPersister(final ServerConfigurationPersister configurationPersister) {
+        public synchronized void setConfigurationPersister(final ExtensibleConfigurationPersister configurationPersister) {
             this.configurationPersister = configurationPersister;
         }
 
@@ -155,7 +164,7 @@ public interface Bootstrap {
     }
 
     /**
-     * The factory for creating new instances of {@link Bootstrap}.
+     * The factory for creating new instances of {@link org.jboss.as.server.Bootstrap}.
      */
     final class Factory {
 

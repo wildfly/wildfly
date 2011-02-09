@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,9 +36,6 @@ import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -49,6 +46,7 @@ import org.jboss.stdio.StdioContext;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author John Bailey
+ * @author Brian Stansberry
  */
 public final class Main {
 
@@ -82,12 +80,7 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getSystemModuleLoader());
-                configuration.setPortOffset(0);
-                bootstrap.start(configuration, Arrays.<ServiceActivator>asList(new ServiceActivator() {
-                    public void activate(final ServiceActivatorContext serviceActivatorContext) {
-                        installManagement(serviceActivatorContext.getServiceTarget());
-                    }
-                })).get();
+                bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
                 return;
             }
         } catch (Throwable t) {
@@ -179,14 +172,4 @@ public final class Main {
 
         return url;
     }
-
-    public static void installManagement(ServiceTarget batchBuilder) {
-        ManagementInstallationService installer = new ManagementInstallationService();
-        batchBuilder
-                .addService(ManagementInstallationService.SERVICE_NAME, installer)
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class,
-                        installer.getServerControllerInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-    }
-
 }

@@ -25,7 +25,7 @@ package org.jboss.as.server.mgmt;
 import java.util.List;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.server.ServerController;
+import org.jboss.as.server.legacy.ServerController;
 
 /**
  * Implementation of {@link ServerConfigurationPersister} for domain server instances.

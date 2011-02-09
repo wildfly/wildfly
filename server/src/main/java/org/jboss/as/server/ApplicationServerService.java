@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -34,11 +34,10 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
-import org.jboss.as.server.services.net.SocketBindingManager;
-import org.jboss.as.server.services.net.SocketBindingManagerService;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
@@ -75,6 +74,7 @@ final class ApplicationServerService implements Service<Void> {
         startTime = configuration.getStartTime();
     }
 
+    @Override
     public synchronized void start(final StartContext context) throws StartException {
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
@@ -114,13 +114,16 @@ final class ApplicationServerService implements Service<Void> {
         myController.addListener(bootstrapListener);
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         serviceTarget.addDependency(myController.getName());
-        DeploymentModuleLoaderImpl.addService(serviceTarget, configuration);
+        ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir());
+        DeploymentModuleLoaderImpl.addService(serviceTarget, configuration.getModuleLoader());
         ServerControllerService.addService(serviceTarget, configuration);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
+            @Override
             public ServiceTarget getServiceTarget() {
                 return serviceTarget;
             }
 
+            @Override
             public ServiceRegistry getServiceRegistry() {
                 return container;
             }
@@ -151,11 +154,6 @@ final class ApplicationServerService implements Service<Void> {
         AbsolutePathService.addService("user.home", System.getProperty("user.home"), serviceTarget);
         AbsolutePathService.addService("java.home", System.getProperty("java.home"), serviceTarget);
 
-        // Socket binding manager
-        serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
-            new SocketBindingManagerService(configuration.getPortOffset()))
-            .setInitialMode(ServiceController.Mode.ON_DEMAND)
-            .install();
         services = new ArrayList<ServiceName>(serviceTarget.getSet());
         if (log.isDebugEnabled()) {
             final long nanos = context.getElapsedTime();
@@ -163,11 +161,13 @@ final class ApplicationServerService implements Service<Void> {
         }
     }
 
+    @Override
     public synchronized void stop(final StopContext context) {
         log.infof("Shutdown requested; stopping all services");
         context.asynchronous();
         final ServiceContainer container = context.getController().getServiceContainer();
         final MultipleRemoveListener<Runnable> listener = MultipleRemoveListener.create(new Runnable() {
+            @Override
             public void run() {
                 context.complete();
                 log.infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
@@ -183,6 +183,7 @@ final class ApplicationServerService implements Service<Void> {
         listener.done();
     }
 
+    @Override
     public Void getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
     }
@@ -210,6 +211,7 @@ final class ApplicationServerService implements Service<Void> {
             this.map = map;
         }
 
+        @Override
         public void listenerAdded(final ServiceController<?> controller) {
             final ServiceController.Mode mode = controller.getMode();
             if (mode == ServiceController.Mode.ACTIVE) {
@@ -220,35 +222,41 @@ final class ApplicationServerService implements Service<Void> {
             map.get(mode).incrementAndGet();
         }
 
+        @Override
         public void serviceStarted(final ServiceController<?> controller) {
             started.incrementAndGet();
             controller.removeListener(this);
             tick(controller.getServiceContainer());
         }
 
+        @Override
         public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
             failed.incrementAndGet();
             controller.removeListener(this);
             tick(controller.getServiceContainer());
         }
 
+        @Override
         public void dependencyFailed(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
             tick(controller.getServiceContainer());
         }
 
+        @Override
         public void dependencyUninstalled(final ServiceController<? extends Object> controller) {
             missingDeps.incrementAndGet();
             missingDepsSet.add(controller.getName());
             check();
         }
 
+        @Override
         public void dependencyInstalled(final ServiceController<? extends Object> controller) {
             missingDeps.decrementAndGet();
             missingDepsSet.remove(controller.getName());
             check();
         }
 
+        @Override
         public void serviceRemoved(final ServiceController<?> controller) {
             cancelLikely = true;
             controller.removeListener(this);

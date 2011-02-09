@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,10 +28,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
-
 import java.util.Properties;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.server.mgmt.DomainServerConfigurationPersister;
+
+import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivator;
 
 /**
@@ -47,10 +49,10 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final String serverName;
     private final int portOffset;
     private final List<ServiceActivator> startServices;
-    private final List<AbstractServerModelUpdate<?>> updates;
+    private final List<ModelNode> updates;
     private final ServerEnvironment providedEnvironment;
 
-    public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
+    public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<ModelNode> updates) {
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name " + serverName + " is invalid; cannot be null or blank");
         }
@@ -64,15 +66,25 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         providedEnvironment = new ServerEnvironment(properties, System.getenv(), false);
     }
 
+    @Override
     public void run(final List<ServiceActivator> runServices) {
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
         configuration.setServerEnvironment(providedEnvironment);
-        configuration.setConfigurationPersister(new DomainServerConfigurationPersister(updates));
-        configuration.setPortOffset(portOffset);
+        configuration.setConfigurationPersister(new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader())) {
+            @Override
+            public void store(final ModelNode model) throws ConfigurationPersistenceException {
+            }
+
+            @Override
+            public List<ModelNode> load() throws ConfigurationPersistenceException {
+                return updates;
+            }
+        });
         bootstrap.start(configuration, startServices);
     }
 
+    @Override
     public void validateObject() throws InvalidObjectException {
         if (serverName == null) {
             throw new InvalidObjectException("serverName is null");

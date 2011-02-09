@@ -50,7 +50,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.NewServerController;
+import org.jboss.as.server.ServerController;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
 import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
@@ -82,13 +82,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
 //    private final ServerModel serverModel;
     private final ScheduledExecutorService scheduledExecutor;
-    private final NewServerController serverController;
+    private final ServerController serverController;
     private final DeploymentRepository deploymentRepository;
 
     //TODO Extenalize filter config
     private FileFilter filter = new ExtensibleFilter();
 
-    FileSystemDeploymentService(final File deploymentDir, final long scanInterval, final NewServerController serverController, final ScheduledExecutorService scheduledExecutor, DeploymentRepository deploymentRepository) throws OperationFailedException {
+    FileSystemDeploymentService(final File deploymentDir, final long scanInterval, final ServerController serverController, final ScheduledExecutorService scheduledExecutor, DeploymentRepository deploymentRepository) throws OperationFailedException {
         if (scheduledExecutor == null) {
             throw new IllegalStateException("null scheduled executor");
         }

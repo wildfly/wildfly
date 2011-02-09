@@ -25,7 +25,6 @@ package org.jboss.as.server.deployment.module;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -51,10 +50,6 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader implement
 
     private DeploymentModuleLoaderImpl(final ModuleLoader mainModuleLoader) {
         this.mainModuleLoader = mainModuleLoader;
-    }
-
-    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
-        addService(serviceTarget, configuration.getModuleLoader());
     }
 
     public static void addService(final ServiceTarget serviceTarget, final ModuleLoader mainModuleLoader) {

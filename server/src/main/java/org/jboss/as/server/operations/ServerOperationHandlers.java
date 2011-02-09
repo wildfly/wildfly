@@ -27,7 +27,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.server.RuntimeOperationHandler;
 
 /**
- * Server specific {@link OperationHanlder}s which get registered at the {@link NewServerController} to
+ * Server specific {@link OperationHanlder}s which get registered at the {@link ServerController} to
  * add runtime capabilities when executing the registered attribute handlers.
  *
  * @author Emanuel Muckenhuber

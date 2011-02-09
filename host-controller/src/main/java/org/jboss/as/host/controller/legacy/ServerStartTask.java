@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.host.controller.legacy;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -30,10 +30,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.as.controller.parsing.StandaloneXml;
-import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerTask;
 import org.jboss.msc.service.ServiceActivator;
 
 /**
@@ -42,17 +41,17 @@ import org.jboss.msc.service.ServiceActivator;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class NewServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
+public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
 
     private static final long serialVersionUID = -8505496119636153918L;
 
     private final String serverName;
     private final int portOffset;
     private final List<ServiceActivator> startServices;
-    private final List<ModelNode> updates;
+    private final List<AbstractServerModelUpdate<?>> updates;
     private final ServerEnvironment providedEnvironment;
 
-    public NewServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<ModelNode> updates) {
+    public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name " + serverName + " is invalid; cannot be null or blank");
         }
@@ -68,20 +67,7 @@ public final class NewServerStartTask implements ServerTask, Serializable, Objec
 
     @Override
     public void run(final List<ServiceActivator> runServices) {
-        final NewBootstrap bootstrap = NewBootstrap.Factory.newInstance();
-        final NewBootstrap.Configuration configuration = new NewBootstrap.Configuration();
-        configuration.setServerEnvironment(providedEnvironment);
-        configuration.setConfigurationPersister(new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader())) {
-            @Override
-            public void store(final ModelNode model) throws ConfigurationPersistenceException {
-            }
-
-            @Override
-            public List<ModelNode> load() throws ConfigurationPersistenceException {
-                return updates;
-            }
-        });
-        bootstrap.start(configuration, startServices);
+        throw new UnsupportedOperationException("Converted to detyped");
     }
 
     @Override

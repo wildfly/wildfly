@@ -20,12 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.server.legacy;
 
 import java.util.concurrent.Executors;
 
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.impl.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;

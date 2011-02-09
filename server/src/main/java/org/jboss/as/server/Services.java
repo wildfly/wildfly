@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.server.legacy.ServerController;
 import org.jboss.msc.service.ServiceName;
 
 /**

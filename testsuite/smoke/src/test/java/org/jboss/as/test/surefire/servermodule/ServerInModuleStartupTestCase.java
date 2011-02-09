@@ -26,8 +26,8 @@ import java.util.Properties;
 
 import junit.framework.Assert;
 
+import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Main;
-import org.jboss.as.server.NewBootstrap;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
@@ -49,8 +49,8 @@ public class ServerInModuleStartupTestCase {
         System.out.println(Main.class.getClassLoader());
         ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
         Assert.assertNotNull(serverEnvironment);
-        final NewBootstrap bootstrap = NewBootstrap.Factory.newInstance();
-        final NewBootstrap.Configuration configuration = new NewBootstrap.Configuration();
+        final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
+        final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
         configuration.setServerEnvironment(serverEnvironment);
         configuration.setModuleLoader(Module.getSystemModuleLoader());
         configuration.setPortOffset(0);

@@ -121,15 +121,15 @@ public class EmbeddedServerFactory {
             public void start() throws ServerStartException {
                 try {
                     // Determine the ServerEnvironment
-                    Class<?> serverMainClass = serverModuleClassLoader.loadClass(NewMain.class.getName());
+                    Class<?> serverMainClass = serverModuleClassLoader.loadClass(Main.class.getName());
                     Method determineEnvironmentMethod = serverMainClass.getMethod("determineEnvironment", String[].class, Properties.class, Map.class);
                     Object serverEnvironment = determineEnvironmentMethod.invoke(null, new String[0], systemProps, systemEnv);
 
-                    Class<?> bootstrapFactoryClass = serverModuleClassLoader.loadClass(NewBootstrap.Factory.class.getName());
+                    Class<?> bootstrapFactoryClass = serverModuleClassLoader.loadClass(Bootstrap.Factory.class.getName());
                     Method newInstanceMethod = bootstrapFactoryClass.getMethod("newInstance");
                     Object bootstrap = newInstanceMethod.invoke(null);
 
-                    Class<?> configurationClass = serverModuleClassLoader.loadClass(NewBootstrap.Configuration.class.getName());
+                    Class<?> configurationClass = serverModuleClassLoader.loadClass(Bootstrap.Configuration.class.getName());
                     Constructor<?> configurationCtor = configurationClass.getConstructor();
                     Object configuration = configurationCtor.newInstance();
 
@@ -139,7 +139,7 @@ public class EmbeddedServerFactory {
                     Method setModuleLoaderMethod = configurationClass.getMethod("setModuleLoader", ModuleLoader.class);
                     setModuleLoaderMethod.invoke(configuration, moduleLoader);
 
-                    Class<?> bootstrapClass = serverModuleClassLoader.loadClass(NewBootstrap.class.getName());
+                    Class<?> bootstrapClass = serverModuleClassLoader.loadClass(Bootstrap.class.getName());
                     Method bootstrapStartMethod = bootstrapClass.getMethod("start", configurationClass, List.class);
                     Object future = bootstrapStartMethod.invoke(bootstrap, configuration, Collections.<ServiceActivator>emptyList());
 

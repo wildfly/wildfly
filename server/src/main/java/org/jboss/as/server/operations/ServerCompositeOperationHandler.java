@@ -42,7 +42,7 @@ import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.NewRuntimeOperationContext;
-import org.jboss.as.server.NewServerController;
+import org.jboss.as.server.ServerController;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
 import org.jboss.dmr.ModelNode;
@@ -248,7 +248,7 @@ public class ServerCompositeOperationHandler
                 }
 
                 @Override
-                public NewServerController getController() {
+                public ServerController getController() {
                     return overallRuntimeContext.getController();
                 }
 

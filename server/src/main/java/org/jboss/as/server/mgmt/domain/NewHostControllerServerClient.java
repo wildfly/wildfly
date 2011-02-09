@@ -45,7 +45,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import org.jboss.as.server.NewServerController;
+import org.jboss.as.server.ServerController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -65,7 +65,7 @@ public class NewHostControllerServerClient implements Service<Void> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
     private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
-    private final InjectedValue<NewServerController> controller = new InjectedValue<NewServerController>();
+    private final InjectedValue<ServerController> controller = new InjectedValue<ServerController>();
     private final String serverName;
 
     public NewHostControllerServerClient(final String serverName) {
@@ -96,7 +96,7 @@ public class NewHostControllerServerClient implements Service<Void> {
         return smConnection;
     }
 
-    public Injector<NewServerController> getServerControllerInjector() {
+    public Injector<ServerController> getServerControllerInjector() {
         return controller;
     }
 

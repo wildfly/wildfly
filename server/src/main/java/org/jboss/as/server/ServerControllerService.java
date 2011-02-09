@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,15 +30,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.ServerModel;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.server.ServerControllerImpl.RegisteredProcessor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -51,7 +51,6 @@ import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.ExtensionIndexService;
@@ -66,9 +65,8 @@ import org.jboss.as.server.deployment.module.ModuleSpecProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
-import org.jboss.as.server.mgmt.ServerConfigurationPersister;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
@@ -76,7 +74,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -97,12 +94,13 @@ final class ServerControllerService implements Service<ServerController> {
     private final Bootstrap.Configuration configuration;
 
     private final InjectedValue<DeploymentModuleLoader> injectedModuleLoader = new InjectedValue<DeploymentModuleLoader>();
+    private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
 
     // mutable state
     private ServerController serverController;
     private Set<ServiceName> bootServices;
 
-    private ServerControllerService(final Bootstrap.Configuration configuration) {
+    public ServerControllerService(final Bootstrap.Configuration configuration) {
         this.configuration = configuration;
     }
 
@@ -110,15 +108,16 @@ final class ServerControllerService implements Service<ServerController> {
         ServerControllerService service = new ServerControllerService(configuration);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_MODULE_LOADER, DeploymentModuleLoader.class, service.injectedModuleLoader);
+        serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
         serviceBuilder.install();
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(final StartContext context) throws StartException {
         final ServiceContainer container = context.getController().getServiceContainer();
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         serviceTarget.addDependency(context.getController().getName());
-        final DelegatingServiceRegistry serviceRegistry = new DelegatingServiceRegistry(container);
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
 
@@ -126,81 +125,70 @@ final class ServerControllerService implements Service<ServerController> {
         final ExecutorService executor = new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>());
         container.setExecutor(executor);
 
-        final ServerModel serverModel = new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset());
+        final ExtensibleConfigurationPersister persister = configuration.getConfigurationPersister();
 
-        final ServerConfigurationPersister persister = configuration.getConfigurationPersister();
+        final ServerControllerImpl serverController = new ServerControllerImpl(container, serverEnvironment, persister, injectedDeploymentRepository.getValue());
+        serverController.init();
 
-        final ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container, serverEnvironment, persister, executor);
-
-        final List<AbstractServerModelUpdate<?>> updates;
+        final List<ModelNode> updates;
         try {
-            updates = persister.load(serverController);
+            updates = persister.load();
         } catch (Exception e) {
             throw new StartException(e);
         }
 
-        final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
-        for (Phase phase : Phase.values()) {
-            deployers.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
-        }
-        final BootUpdateContext bootUpdateContext = new BootUpdateContext() {
-
-            public ServiceTarget getServiceTarget() {
-                return serviceTarget;
-            }
-
-            public ServiceRegistry getServiceRegistry() {
-                return serviceRegistry;
-            }
-
-            public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
-                if (phase == null) {
-                    throw new IllegalArgumentException("phase is null");
-                }
-                if (processor == null) {
-                    throw new IllegalArgumentException("processor is null");
-                }
-                if (priority < 0) {
-                    throw new IllegalArgumentException("priority is invalid (must be >= 0)");
-                }
-                deployers.get(phase).add(new RegisteredProcessor(priority, processor));
-            }
-        };
-
         log.info("Activating core services");
 
-        serviceTarget.addService(ServerModel.SERVICE_NAME, new Service<ServerModel>() {
-            public void start(StartContext context) throws StartException {
+        final AtomicInteger count = new AtomicInteger(1);
+        final ResultHandler resultHandler = new ResultHandler() {
+            @Override
+            public void handleResultFragment(final String[] location, final ModelNode result) {
             }
 
-            public void stop(StopContext context) {
+            @Override
+            public void handleResultComplete(final ModelNode compensatingOperation) {
+                if (count.decrementAndGet() == 0) {
+                    // some action
+                }
             }
 
-            public ServerModel getValue() throws IllegalStateException, IllegalArgumentException {
-                return serverModel;
+            @Override
+            public void handleFailed(final ModelNode failureDescription) {
+                if (count.decrementAndGet() == 0) {
+                    // some action
+                }
             }
-        }).install();
 
-        serverController.applyUpdates(updates, false, true);
-        for (AbstractServerModelUpdate<?> update : updates) {
-            update.applyUpdateBootAction(bootUpdateContext);
+            @Override
+            public void handleCancellation() {
+                if (count.decrementAndGet() == 0) {
+                    // some action
+                }
+            }
+        };
+        for (ModelNode update : updates) {
+            count.incrementAndGet();
+            serverController.execute(update, resultHandler);
         }
+        if (count.decrementAndGet() == 0) {
+            // some action?
+        }
+
+        final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = serverController.finishBoot();
 
         final File[] extDirs = serverEnvironment.getJavaExtDirs();
         final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
         newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "lib/ext");
         serviceTarget.addService(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX, new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND);
 
-        serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
-            new ServerDeploymentRepositoryImpl(serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir()))
-            .install();
-
         // Activate deployment module loader
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_DEPLOYMENT_MODULE_LOADER, new DeploymentUnitProcessor() {
+            @Override
             public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
                 phaseContext.getDeploymentUnit().putAttachment(Attachments.DEPLOYMENT_MODULE_LOADER, injectedModuleLoader.getValue());
             }
 
+            @Override
             public void undeploy(DeploymentUnit context) {
                 context.removeAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
             }
@@ -231,7 +219,7 @@ final class ServerControllerService implements Service<ServerController> {
             final SortedSet<RegisteredProcessor> processorSet = entry.getValue();
             final List<DeploymentUnitProcessor> list = new ArrayList<DeploymentUnitProcessor>(processorSet.size());
             for (RegisteredProcessor processor : processorSet) {
-                list.add(processor.processor);
+                list.add(processor.getProcessor());
             }
             finalDeployers.put(entry.getKey(), list);
         }
@@ -243,6 +231,7 @@ final class ServerControllerService implements Service<ServerController> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(final StopContext context) {
         serverController = null;
         final ServiceContainer container = context.getController().getServiceContainer();
@@ -261,22 +250,8 @@ final class ServerControllerService implements Service<ServerController> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized ServerController getValue() throws IllegalStateException, IllegalArgumentException {
         return serverController;
-    }
-
-    private static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
-        private final int priority;
-        private final DeploymentUnitProcessor processor;
-
-        private RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
-            this.priority = priority;
-            this.processor = processor;
-        }
-
-        public int compareTo(final RegisteredProcessor o) {
-            final int rel = Integer.signum(priority - o.priority);
-            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
-        }
     }
 }

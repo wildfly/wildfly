@@ -38,7 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.Connection;
-import org.jboss.as.server.NewServerStartTask;
+import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.marshalling.Marshaller;
@@ -178,7 +178,7 @@ class NewManagedServer implements ModelController {
 
             processControllerClient.startProcess(serverProcessName);
             ServiceActivator hostControllerCommActivator = NewHostCommunicationServices.createServerCommuncationActivator(serverProcessName, managementSocket);
-            NewServerStartTask startTask = new NewServerStartTask(serverName, portOffSet, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
+            ServerStartTask startTask = new ServerStartTask(serverName, portOffSet, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
             marshaller.start(Marshalling.createByteOutput(os));

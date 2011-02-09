@@ -44,7 +44,7 @@ import org.jboss.as.model.ModelXmlParsers;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.ServerController;
+import org.jboss.as.server.legacy.ServerController;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;

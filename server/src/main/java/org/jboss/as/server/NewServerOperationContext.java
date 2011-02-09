@@ -33,7 +33,7 @@ public interface NewServerOperationContext extends NewOperationContext {
 
     /** {@inheritDoc} */
     @Override
-    NewServerController getController();
+    ServerController getController();
 
     /**
      * Get the target to which new services may be added.
@@ -50,17 +50,17 @@ public interface NewServerOperationContext extends NewOperationContext {
     ServiceRegistry getServiceRegistry();
 
     /**
-     * Changes {@link NewServerController#getState() the server controller state}
-     * to {@link NewServerController.State#RESTART_REQUIRED}, unless the current
-     * state is {@link NewServerController.State#STARTING}.
+     * Changes {@link ServerController#getState() the server controller state}
+     * to {@link ServerController.State#RESTART_REQUIRED}, unless the current
+     * state is {@link ServerController.State#STARTING}.
      */
     void restartRequired();
 
     /**
      * Reverts any change made by {@link #restartRequired()} unless the controller
      * state has subsequently been changed. (Following the "subsequent change"
-     * the {@link NewServerController#getState()} may still return
-     * {@link NewServerController.State#RESTART_REQUIRED};
+     * the {@link ServerController#getState()} may still return
+     * {@link ServerController.State#RESTART_REQUIRED};
      * the fact that a different caller also requested that it be RESTART_REQUIRED
      * in and of itself constitutes a change to the controllers state.)
      */

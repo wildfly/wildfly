@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,31 +22,16 @@
 
 package org.jboss.as.server;
 
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.TimeUnit;
-
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.model.UpdateResultHandlerResponse;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.ModelController;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * The API entry point for a server controller, which manages the state of running server.
+ *
+ * TODO: this will be renamed to {@code ServerController} and replace that type
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ServerController {
-
-    /**
-     * Get the server model
-     *
-     * @return the server model
-     * @deprecated this is an abstraction leak; in the detyped system, this should return a *copy* of the model only
-     */
-    @Deprecated
-    ServerModel getServerModel();
+public interface ServerController extends ModelController {
 
     /**
      * Get this server's environment.
@@ -55,63 +40,36 @@ public interface ServerController {
      */
     ServerEnvironment getServerEnvironment();
 
-    void execute(final ModelNode request, final Queue<ModelNode> responseQueue);
+    /**
+     * Get this server's service container registry.
+     *
+     * @return the container registry
+     */
+    ServiceRegistry getServiceRegistry();
 
     /**
-     * Apply a series of updates.
+     * Get the server controller state.
      *
-     * @param updates the updates
-     * @param rollbackOnFailure <code>true</code> if successfully applied updates
-     *                          should be rolled back if an update later in the list fails
-     * @param modelOnly <code>true</code> if the updates should only be applied
-     *                  to the ServerModel and should not be applied
-     *                to the runtime, <code>false</code> if they should also
-     *                be applied to the runtime. A {@code true} value is only
-     *                legal on a standalone server
-     *
-     * @return the results of the updates
-     *
-     * @throws IllegalStateException if this is not a standalone server and
-     *           {@code modelOnly} is {@code true}
+     * @return the state
      */
-    // TODO: Change this to accept only one update at a time; multi-step updates should be a composite object of some sort
-    List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
-            boolean rollbackOnFailure, boolean modelOnly);
+    State getState();
 
     /**
-     * Apply a persistent update.
-     *
-     * @param update the update to apply
-     * @param resultHandler the result handler
-     * @param param the result handler parameter
-     * @param <R> the result type
-     * @param <P> the result handler parameter type
+     * The server controller state.
      */
-    <R, P> void update(AbstractServerModelUpdate<R> update, UpdateResultHandler<R, P> resultHandler, P param);
-
-    /**
-     * Shut down the server.
-     */
-    void shutdown();
-
-    /**
-     * Determine whether shutdown is complete.
-     *
-     * @return {@code true} if shutdown is complete
-     */
-    boolean isShutdownComplete();
-
-    /**
-     * Wait for termination to complete.
-     *
-     * @throws InterruptedException if the current thread was interrupted while waiting
-     */
-    void awaitTermination() throws InterruptedException;
-
-    /**
-     * Wait for a certain amount of time for termination to complete.
-     *
-     * @throws InterruptedException if the current thread was interrupted while waiting
-     */
-    void awaitTermination(long time, TimeUnit unit) throws InterruptedException;
+    enum State {
+        /**
+         * The server is starting up; both boot-time and run-time updates are being processed.
+         */
+        STARTING,
+        /**
+         * The server is running; only run-time updates are being processed.
+         */
+        RUNNING,
+        /**
+         * The server requires a restart in order to bring further updates into effect because a boot-time update
+         * was processed at run time.
+         */
+        RESTART_REQUIRED,
+    }
 }
