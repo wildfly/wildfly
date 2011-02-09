@@ -37,13 +37,13 @@ import org.jboss.msc.service.StopContext;
 /**
  * @author Emanuel Muckenhuber
  */
-public final class NewDomainControllerService implements Service<NewDomainController> {
+public final class DomainControllerService implements Service<DomainController> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final ExtensibleConfigurationPersister configurationPersister;
-    private NewDomainController controller;
+    private DomainController controller;
 
-    public NewDomainControllerService(final ExtensibleConfigurationPersister configurationPersister) {
+    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister) {
         this.configurationPersister = configurationPersister;
     }
 
@@ -51,7 +51,7 @@ public final class NewDomainControllerService implements Service<NewDomainContro
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         log.info("Starting Domain Controller");
-        final NewDomainController controller = new NewDomainControllerImpl(configurationPersister);
+        final DomainController controller = new DomainControllerImpl(configurationPersister);
         final List<ModelNode> updates;
         try {
              updates = configurationPersister.load();
@@ -105,8 +105,8 @@ public final class NewDomainControllerService implements Service<NewDomainContro
 
     /** {@inheritDoc} */
     @Override
-    public synchronized NewDomainController getValue() throws IllegalStateException, IllegalArgumentException {
-        final NewDomainController controller = this.controller;
+    public synchronized DomainController getValue() throws IllegalStateException, IllegalArgumentException {
+        final DomainController controller = this.controller;
         if(controller == null) {
             throw new IllegalStateException();
         }

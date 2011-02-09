@@ -29,7 +29,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-public interface NewDomainModel extends ModelController {
+public interface DomainModel extends ModelController {
 
     /**
      * Get a snapshot of the underlying model.
@@ -39,8 +39,8 @@ public interface NewDomainModel extends ModelController {
     ModelNode getDomainModel();
 
     static class Factory {
-        public static NewDomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister) {
-            return new NewDomainModelImpl(domainModel, configurationPersister);
+        public static DomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister) {
+            return new DomainModelImpl(domainModel, configurationPersister);
         }
     }
 

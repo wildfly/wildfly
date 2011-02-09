@@ -44,8 +44,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainController;
-import org.jboss.as.domain.controller.NewDomainControllerService;
+import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
@@ -216,12 +216,12 @@ public class HostControllerBootstrap {
     static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir);
-        final NewDomainControllerService dcService = new NewDomainControllerService(domainConfigurationPersister);
-        serviceTarget.addService(NewDomainController.SERVICE_NAME, dcService).install();
+        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister);
+        serviceTarget.addService(DomainController.SERVICE_NAME, dcService).install();
 
         final LocalDomainConnectionService service = new LocalDomainConnectionService();
         serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, service)
-            .addDependency(NewDomainController.SERVICE_NAME, NewDomainController.class, service.getDomainController())
+            .addDependency(DomainController.SERVICE_NAME, DomainController.class, service.getDomainController())
             .setInitialMode(Mode.ACTIVE)
             .install();
 

@@ -34,12 +34,12 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewHostControllerProxy implements ProxyController {
+class HostControllerProxy implements ProxyController {
 
     private final String hostName;
-    private final NewHostControllerClient host;
+    private final HostControllerClient host;
 
-    public NewHostControllerProxy(final NewHostControllerClient host) {
+    public HostControllerProxy(final HostControllerClient host) {
         this.hostName = host.getId();
         this.host = host;
     }

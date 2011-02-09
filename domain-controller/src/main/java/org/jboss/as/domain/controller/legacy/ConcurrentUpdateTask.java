@@ -1,4 +1,4 @@
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.controller.legacy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,9 +6,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.jboss.logging.Logger;
+
 /** A task that uses the executor service to concurrently execute other tasks */
 class ConcurrentUpdateTask implements Runnable {
 
+    static Logger logger = Logger.getLogger("org.jboss.as.domain");
     private final List<Runnable> concurrentTasks;
     private final ExecutorService executorService;
 
@@ -32,11 +35,11 @@ class ConcurrentUpdateTask implements Runnable {
             try {
                 future.get();
             } catch (InterruptedException e) {
-                DomainDeploymentHandler.logger.errorf("ConcurrentUpdateTask caught InterruptedException waiting for task %s; returning", concurrentTasks.get(i).toString());
+                logger.errorf("ConcurrentUpdateTask caught InterruptedException waiting for task %s; returning", concurrentTasks.get(i).toString());
                 Thread.currentThread().interrupt();
                 return;
             } catch (ExecutionException e) {
-                DomainDeploymentHandler.logger.errorf(e, "ConcurrentUpdateTask caught ExecutionException waiting for task %s", concurrentTasks.get(i).toString());
+                logger.errorf(e, "ConcurrentUpdateTask caught ExecutionException waiting for task %s", concurrentTasks.get(i).toString());
             }
         }
     }

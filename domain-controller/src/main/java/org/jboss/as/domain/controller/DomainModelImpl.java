@@ -75,15 +75,15 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewDomainModelImpl extends BasicModelController implements NewDomainModel {
+class DomainModelImpl extends BasicModelController implements DomainModel {
 
-    protected NewDomainModelImpl(final ExtensibleConfigurationPersister configurationPersister) {
+    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister) {
         super(configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         initialize(getRegistry(), configurationPersister);
         createCoreModel();
     }
 
-    protected NewDomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister) {
+    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister) {
         super(model, configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         initialize(getRegistry(), configurationPersister);
     }

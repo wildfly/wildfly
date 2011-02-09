@@ -20,38 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.controller.legacy;
 
 /**
- * Wrapper for a value that can be one in a stream of related values sent
- * in response to {@link DomainClientProtocol} request.
- *
- * @author Brian Stansberry
+ * @author John Bailey
  */
-public class StreamedResponse {
+public interface DomainControllerProtocol {
+    int DOMAIN_CONTROLLER_REQUEST = 0x08;
 
-    private final Object value;
-    private final byte protocolValue;
-    private final boolean isLastInStream;
-
-
-    public StreamedResponse(final byte protocolValue, final Object value) {
-        this(protocolValue, value, false);
-    }
-
-    public StreamedResponse(final byte protocolValue, final Object value, final boolean isLastInStream) {
-        this.value = value;
-        this.protocolValue = protocolValue;
-        this.isLastInStream = isLastInStream;
-    }
-
-    public boolean isLastInStream() {
-        return isLastInStream;
-    }
-    public byte getProtocolValue() {
-        return protocolValue;
-    }
-    public Object getValue() {
-        return value;
-    }
+    int PARAM_HOST_CONTROLLER_ID = 0x09;
+    int PARAM_HOST_CONTROLLER_HOST = 0x10;
+    int PARAM_HOST_CONTROLLER_PORT = 0x11;
+    int REGISTER_REQUEST = 0x12;
+    int PARAM_DOMAIN_MODEL = 0x13;
+    int REGISTER_RESPONSE = 0x14;
+    int UNREGISTER_REQUEST = 0x15;
+    int UNREGISTER_RESPONSE = 0x16;
+    int SYNC_FILE_REQUEST = 0x17;
+    int PARAM_ROOT_ID = 0x18;
+    int PARAM_ROOT_ID_FILE = 0x19;
+    int PARAM_ROOT_ID_CONFIGURATION = 0x20;
+    int PARAM_ROOT_ID_DEPLOYMENT = 0x21;
+    int PARAM_FILE_PATH = 0x22;
+    int PARAM_NUM_FILES = 0x23;
+    int PARAM_FILE_SIZE = 0x24;
+    int FILE_START = 0x25;
+    int FILE_END = 0x26;
+    int SYNC_FILE_RESPONSE = 0x27;
 }

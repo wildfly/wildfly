@@ -20,7 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller.mgmt;
+package org.jboss.as.domain.controller.legacy;
+
+import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,14 +35,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
-import org.jboss.as.domain.controller.ModelUpdateResponse;
-import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
@@ -47,29 +48,28 @@ import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.protocol.ProtocolUtils;
-import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
+import org.jboss.as.protocol.mgmt.HostControllerProtocol;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
-import org.jboss.as.protocol.mgmt.HostControllerProtocol;
 import org.jboss.marshalling.Marshaller;
-import static org.jboss.marshalling.Marshalling.createByteInput;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
- * A remote domain controller client.  Provides a mechanism to communicate with remote clients.
+ * Provides a mechanism for a domain controller to communicate as a client with remote host controllers.
+ *
+ * FIXME this may be entirely replaced by HostControllerProxy or some derivative of it.
  *
  * @author John Bailey
  */
-public class RemoteDomainControllerClient implements HostControllerClient {
+public class RemoteHostControllerClient implements HostControllerClient {
     private final String id;
     private final InetAddress address;
     private final int port;
     private final ScheduledExecutorService executorService;
     private final ThreadFactory threadFactory;
 
-    public RemoteDomainControllerClient(final String id, final InetAddress address, final int port, final ScheduledExecutorService executorService, final ThreadFactory threadFactory) {
+    public RemoteHostControllerClient(final String id, final InetAddress address, final int port, final ScheduledExecutorService executorService, final ThreadFactory threadFactory) {
         this.id = id;
         this.address = address;
         this.port = port;
@@ -77,11 +77,13 @@ public class RemoteDomainControllerClient implements HostControllerClient {
         this.threadFactory = threadFactory;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void updateDomainModel(final DomainModel domain) {
         try {
             new UpdateFullDomainRequest(domain).execute(getConnectionStrategy());
@@ -91,6 +93,7 @@ public class RemoteDomainControllerClient implements HostControllerClient {
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<HostUpdateResult<?>> updateHostModel(final List<AbstractHostModelUpdate<?>> updates) {
         try {
             return new UpdateHostModelRequest(updates).executeForResult(getConnectionStrategy());
@@ -100,6 +103,7 @@ public class RemoteDomainControllerClient implements HostControllerClient {
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<ModelUpdateResponse<List<ServerIdentity>>> updateDomainModel(final List<AbstractDomainModelUpdate<?>> updates) {
         try {
             return new UpdateDomainModelRequest(updates).executeForResult(getConnectionStrategy());
@@ -108,6 +112,7 @@ public class RemoteDomainControllerClient implements HostControllerClient {
         }
     }
 
+    @Override
     public List<UpdateResultHandlerResponse<?>> updateServerModel(final String serverName, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
         try {
             return new UpdateServerModelRequest(updates, serverName, allowOverallRollback).executeForResult(getConnectionStrategy());
@@ -116,6 +121,7 @@ public class RemoteDomainControllerClient implements HostControllerClient {
         }
     }
 
+    @Override
     public boolean isActive() {
         try {
             return new IsActiveRequest().executeForResult(getConnectionStrategy());

@@ -1,4 +1,4 @@
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.controller.legacy;
 
 import java.io.IOException;
 import java.io.InputStream;

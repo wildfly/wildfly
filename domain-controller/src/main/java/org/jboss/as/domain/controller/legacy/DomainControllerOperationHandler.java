@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller.mgmt;
+package org.jboss.as.domain.controller.legacy;
 
 import java.io.DataOutput;
 import java.io.File;
@@ -34,9 +34,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
@@ -198,7 +196,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_PORT);
                 final int port = input.readInt();
                 final InetAddress address = InetAddress.getByAddress(addressBytes);
-                final HostControllerClient client = new RemoteDomainControllerClient(hostControllerId, address, port, executorService, threadFactory);
+                final HostControllerClient client = new RemoteHostControllerClient(hostControllerId, address, port, executorService, threadFactory);
                 domainController.addClient(client);
                 log.infof("host controller registered [%s]", client);
                 input.close();

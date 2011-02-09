@@ -31,7 +31,7 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainModel;
+import org.jboss.as.domain.controller.DomainModel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -49,7 +49,7 @@ public class HostControllerImpl implements HostController {
     private final ServerInventory serverInventory;
     private final FileRepository repository;
 
-    private NewDomainModel domainModel;
+    private DomainModel domainModel;
     private FileRepository remoteRepository;
 
     HostControllerImpl(final String name, final HostModel model, final ServerInventory serverInventory, final FileRepository repository) {
@@ -62,7 +62,7 @@ public class HostControllerImpl implements HostController {
     void initDomainConnection(final ModelNode domainModel, final FileRepository remoteRepository) {
         assert domainModel != null : "null domain model";
         /// assert remoteRepository != null : "null remote repository";
-        this.domainModel = NewDomainModel.Factory.create(domainModel, domainPersister);
+        this.domainModel = DomainModel.Factory.create(domainModel, domainPersister);
         this.remoteRepository = remoteRepository;
     }
 

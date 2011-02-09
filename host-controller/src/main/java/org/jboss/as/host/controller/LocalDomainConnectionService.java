@@ -36,8 +36,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainController;
-import org.jboss.as.domain.controller.NewHostControllerClient;
+import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -50,16 +50,16 @@ import org.jboss.msc.value.InjectedValue;
  */
 class LocalDomainConnectionService implements DomainControllerConnection, Service<DomainControllerConnection> {
 
-    final InjectedValue<NewDomainController> domainController = new InjectedValue<NewDomainController>();
+    final InjectedValue<DomainController> domainController = new InjectedValue<DomainController>();
     private String name;
 
     /** {@inheritDoc} */
     @Override
     public synchronized ModelNode register(final HostController hostController) {
         assert hostController != null : "null HC";
-        final NewDomainController domainController = this.domainController.getValue();
+        final DomainController domainController = this.domainController.getValue();
         this.name = hostController.getName();
-        final NewHostControllerClient client = new NewLocalHostControllerClient(hostController);
+        final HostControllerClient client = new NewLocalHostControllerClient(hostController);
         domainController.addClient(client);
         return domainController.getDomainModel();
     }
@@ -69,7 +69,7 @@ class LocalDomainConnectionService implements DomainControllerConnection, Servic
     @Override
     public ModelNode getProfileOperations(String profileName) {
         assert profileName != null : "Null profile name";
-        final NewDomainController domainController = this.domainController.getValue();
+        final DomainController domainController = this.domainController.getValue();
         ModelNode operation = new ModelNode();
 
         operation.get(OP).set(DESCRIBE);
@@ -89,7 +89,7 @@ class LocalDomainConnectionService implements DomainControllerConnection, Servic
     /** {@inheritDoc} */
     @Override
     public synchronized void unregister() {
-        final NewDomainController domainController = this.domainController.getValue();
+        final DomainController domainController = this.domainController.getValue();
         domainController.removeClient(name);
     }
 
@@ -118,11 +118,11 @@ class LocalDomainConnectionService implements DomainControllerConnection, Servic
         return this;
     }
 
-    InjectedValue<NewDomainController> getDomainController() {
+    InjectedValue<DomainController> getDomainController() {
         return domainController;
     }
 
-    static class NewLocalHostControllerClient implements NewHostControllerClient {
+    static class NewLocalHostControllerClient implements HostControllerClient {
         private final HostController controller;
         NewLocalHostControllerClient(final HostController controller) {
             this.controller = controller;
