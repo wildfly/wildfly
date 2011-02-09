@@ -35,25 +35,25 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOLNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLIVING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_DATASOURCE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.NewResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.NewResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -143,21 +143,20 @@ public class NewResourceAdaptersExtension implements NewExtension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             ModelNode node = context.getModelNode();
+            boolean hasChildren = node.hasDefined(RESOURCEADAPTER) && node.get(RESOURCEADAPTER).asInt() > 0;
 
-            writer.writeStartElement(RESOURCEADAPTERS);
-            if (node.has(RESOURCEADAPTERS)) {
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), !hasChildren);
+
+            if (hasChildren) {
                 writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
                 for (ModelNode ra : node.get(RESOURCEADAPTER).asList()) {
                     writeRaElement(writer, ra);
                 }
                 writer.writeEndElement();
+                // Close the subsystem element
+                writer.writeEndElement();
             }
-
-            writer.writeEndElement();
-
-            writer.writeEndElement();
         }
 
         private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
