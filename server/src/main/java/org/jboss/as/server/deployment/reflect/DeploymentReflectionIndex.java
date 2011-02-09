@@ -58,7 +58,7 @@ public final class DeploymentReflectionIndex {
      * @param clazz the class
      * @return the index
      */
-    public ClassReflectionIndex getClassIndex(Class<?> clazz) {
+    public synchronized ClassReflectionIndex getClassIndex(Class<?> clazz) {
         ClassReflectionIndex index = classes.get(clazz);
         if (index == null) {
             classes.put(clazz, index = new ClassReflectionIndex(clazz));

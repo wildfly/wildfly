@@ -102,6 +102,15 @@ public final class ClassReflectionIndex {
     }
 
     /**
+     * Get a collection of fields declared on this object.
+     *
+     * @return The (possibly empty) collection of all declared fields on this object
+     */
+    public Collection<Field> getFields() {
+        return Collections.unmodifiableCollection(fields.values());
+    }
+
+    /**
      * Get a method declared on this object.
      *
      * @param returnType the method return type
@@ -137,7 +146,7 @@ public final class ClassReflectionIndex {
         if (paramsMap == null) {
             return Collections.emptySet();
         }
-        return paramsMap.values();
+        return Collections.unmodifiableCollection(paramsMap.values());
     }
 
     /**
@@ -161,7 +170,7 @@ public final class ClassReflectionIndex {
     /**
      * Get a collection of methods declared on this object.
      *
-     * @return the (possibly empty) collection of methods with the given name
+     * @return the (possibly empty) collection of all declared methods
      */
     public Collection<Method> getMethods() {
         final Collection<Method> methods = new ArrayList<Method>();
