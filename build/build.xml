@@ -83,6 +83,10 @@
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-xjc"/>
         </module-def>
 
+        <module-def name="com.sun.xml.messaging.saaj">
+            <maven-resource group="com.sun.xml.messaging.saaj" artifact="saaj-impl"/>
+        </module-def>
+
         <module-def name="javaee.api"/>
 
         <module-def name="javax.api"/>

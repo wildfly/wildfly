@@ -58,6 +58,7 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JBOSS_WS_CXF_FACTORIES = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-factories");
     private static final ModuleIdentifier JBOSS_WS_CXF_SERVER = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-server");
     private static final ModuleIdentifier JBOSS_WEBSERVICES = ModuleIdentifier.create("org.jboss.as.webservices");
+    private static final ModuleIdentifier SAAJ_IMPL = ModuleIdentifier.create("com.sun.xml.messaging.saaj");
     private static final ModuleIdentifier WSDL4J = ModuleIdentifier.create("wsdl4j.wsdl4j");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -79,6 +80,7 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
             deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, apacheCxfDep);
 
             deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WEBSERVICES, false, false, true));
+            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, SAAJ_IMPL, false, false, true));
             deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, WSDL4J, false, false, true));
         }
     }

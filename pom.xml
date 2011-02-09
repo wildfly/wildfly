@@ -149,6 +149,7 @@
         <version.osgi>4.2.0</version.osgi>
         <version.ch.qos.cal10n.cal10n-api>0.7.2</version.ch.qos.cal10n.cal10n-api>
         <version.sun.jaxb>2.2</version.sun.jaxb>
+        <version.sun.saaj-impl>1.3.2</version.sun.saaj-impl>
         <version.wsdl4j>1.6.2</version.wsdl4j>
         <!-- Surefire args -->
         <surefire.jpda.args />
@@ -1420,6 +1421,12 @@
                         <artifactId>junit</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.sun.xml.messaging.saaj</groupId>
+                <artifactId>saaj-impl</artifactId>
+                <version>${version.sun.saaj-impl}</version>
             </dependency>
             
             <dependency>
