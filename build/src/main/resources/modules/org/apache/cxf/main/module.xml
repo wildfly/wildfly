@@ -32,6 +32,7 @@
         <module name="javax.api" />
         <module name="javax.annotation.api" />
         <module name="javax.jws.api" />
+        <module name="javax.mail.api" />
         <module name="javax.servlet.api" />
         <module name="javax.xml.bind.api" services="import"/>
         <module name="javax.xml.soap.api" />
