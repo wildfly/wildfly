@@ -128,4 +128,14 @@ class Constants {
     static final String EXCEPTIONSORTERCLASSNAME = "exception-sorter-class-name";
 
     static final String ADMIN_OBJECTS = "admin-objects";
+
+    static final String INTERLIVING = "interliving";
+
+    static final String NOTXSEPARATEPOOL = "no-tx-separate-pool";
+
+    static final String PAD_XID = "pad-xid";
+
+    static final String SAME_RM_OVERRIDE = "same-rm-override";
+
+    static final String WRAP_XA_DATASOURCE = "wrap-xa-datasource";
 }

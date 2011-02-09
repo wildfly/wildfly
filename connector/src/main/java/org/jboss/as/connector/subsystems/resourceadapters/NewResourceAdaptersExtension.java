@@ -49,6 +49,11 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USERN
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLIVING;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.NewResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.NewResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -79,6 +84,11 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
+import org.jboss.jca.common.api.metadata.common.CommonValidation;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterParser;
@@ -135,8 +145,203 @@ public class NewResourceAdaptersExtension implements NewExtension {
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             ModelNode node = context.getModelNode();
-            // FIXME write out the details
+
+            writer.writeStartElement(RESOURCEADAPTERS);
+            if (node.has(RESOURCEADAPTERS)) {
+                writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
+                for (ModelNode ra : node.get(RESOURCEADAPTER).asList()) {
+                    writeRaElement(writer, ra);
+                }
+                writer.writeEndElement();
+            }
+
             writer.writeEndElement();
+
+            writer.writeEndElement();
+        }
+
+        private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
+            streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADPTER.getLocalName());
+
+            writeElementIfHas(streamWriter, ra, ResourceAdapter.Tag.ARCHIVE, ARCHIVE);
+
+            if (ra.has(BEANVALIDATIONGROUPS)) {
+                for (ModelNode bvg : ra.get(BEANVALIDATIONGROUPS).asList()) {
+                    writeElementIfHas(streamWriter, bvg, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP, BEANVALIDATIONGROUPS);
+                }
+            }
+
+            writeElementIfHas(streamWriter, ra, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT, BOOTSTRAPCONTEXT);
+            writeElementIfHas(streamWriter, ra, ResourceAdapter.Tag.TRANSACTION_SUPPORT, TRANSACTIONSUPPORT);
+            writeConfigProperties(streamWriter, ra);
+
+            if (ra.has(CONNECTIONDEFINITIONS)) {
+                streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITIONS.getLocalName());
+                for (ModelNode conDef : ra.get(CONNECTIONDEFINITIONS).asList()) {
+                    writeConDef(streamWriter, conDef);
+                }
+                streamWriter.writeEndElement();
+            }
+
+            if (ra.has(ADMIN_OBJECTS)) {
+                streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECTS.getLocalName());
+                for (ModelNode adminObject : ra.get(ADMIN_OBJECTS).asList()) {
+                    writeAdminObject(streamWriter, adminObject);
+                }
+                streamWriter.writeEndElement();
+            }
+            streamWriter.writeEndElement();
+
+        }
+
+        private void writeConfigProperties(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
+            if (ra.has(CONFIG_PROPERTIES)) {
+                for (ModelNode property : ra.get(CONFIG_PROPERTIES).asList()) {
+                    streamWriter.writeStartElement(ResourceAdapter.Tag.CONFIG_PROPERTY.getLocalName());
+                    streamWriter.writeCharacters(property.asString());
+                    streamWriter.writeEndElement();
+                }
+            }
+        }
+
+        private void writeAdminObject(XMLExtendedStreamWriter streamWriter, ModelNode adminObject) throws XMLStreamException {
+            streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECT.getLocalName());
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.CLASS_NAME, CLASS_NAME);
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.JNDINAME, JNDI_NAME);
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.ENABLED, ENABLED);
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.POOL_NAME, POOLNAME);
+
+            writeConfigProperties(streamWriter, adminObject);
+            streamWriter.writeEndElement();
+
+        }
+
+        private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef) throws XMLStreamException {
+            streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITION.getLocalName());
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.CLASS_NAME, CLASS_NAME);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.JNDINAME, JNDI_NAME);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.ENABLED, ENABLED);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.POOL_NAME, POOLNAME);
+
+            writeConfigProperties(streamWriter, conDef);
+
+            if (conDef.has(MAX_POOL_SIZE) || conDef.has(MIN_POOL_SIZE) || conDef.has(POOL_USE_STRICT_MIN)
+                    || conDef.has(POOL_PREFILL)) {
+                if (conDef.has(INTERLIVING) || conDef.has(WRAP_XA_DATASOURCE) || conDef.has(NOTXSEPARATEPOOL)
+                        || conDef.has(PAD_XID) || conDef.has(SAME_RM_OVERRIDE)) {
+                    streamWriter.writeStartElement(CommonConnDef.Tag.XA_POOL.getLocalName());
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.PREFILL, POOL_PREFILL);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
+
+                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE, SAME_RM_OVERRIDE);
+                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.INTERLEAVING, INTERLIVING);
+                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS, NOTXSEPARATEPOOL);
+                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.PAD_XID, PAD_XID);
+                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.WRAP_XA_RESOURCE, WRAP_XA_DATASOURCE);
+
+                    streamWriter.writeEndElement();
+                } else {
+                    streamWriter.writeStartElement(CommonConnDef.Tag.POOL.getLocalName());
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.PREFILL, POOL_PREFILL);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
+                    streamWriter.writeEndElement();
+                }
+
+            }
+
+            if (conDef.has(USERNAME) || conDef.has(PASSWORD)) {
+                streamWriter.writeStartElement(CommonConnDef.Tag.SECURITY.getLocalName());
+                writeElementIfHas(streamWriter, conDef, CommonSecurity.Tag.USERNAME, USERNAME);
+                writeElementIfHas(streamWriter, conDef, CommonSecurity.Tag.PASSWORD, PASSWORD);
+                streamWriter.writeEndElement();
+            }
+
+            if (conDef.has(BLOCKING_TIMEOUT_WAIT_MILLIS) || conDef.has(IDLETIMEOUTMINUTES) || conDef.has(ALLOCATION_RETRY)
+                    || conDef.has(ALLOCATION_RETRY_WAIT_MILLIS) || conDef.has(XA_RESOURCE_TIMEOUT)) {
+                streamWriter.writeStartElement(CommonConnDef.Tag.TIMEOUT.getLocalName());
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.BLOCKINGTIMEOUTMILLIS, BLOCKING_TIMEOUT_WAIT_MILLIS);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.IDLETIMEOUTMINUTES, IDLETIMEOUTMINUTES);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.ALLOCATIONRETRY, ALLOCATION_RETRY);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.ALLOCATIONRETRYWAITMILLIS,
+                        ALLOCATION_RETRY_WAIT_MILLIS);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.XARESOURCETIMEOUT, XA_RESOURCE_TIMEOUT);
+                streamWriter.writeEndElement();
+            }
+
+            if (conDef.has(BACKGROUNDVALIDATION) || conDef.has(BACKGROUNDVALIDATIONMINUTES) || conDef.has(USE_FAST_FAIL)) {
+                streamWriter.writeStartElement(CommonConnDef.Tag.VALIDATION.getLocalName());
+                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATION, BACKGROUNDVALIDATION);
+                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATIONMINUTES,
+                        BACKGROUNDVALIDATIONMINUTES);
+                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.USEFASTFAIL, USE_FAST_FAIL);
+                streamWriter.writeEndElement();
+            }
+
+            streamWriter.writeEndElement();
+
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, String localName, String identifier)
+                throws XMLStreamException {
+            if (has(node, identifier)) {
+                writer.writeStartElement(localName);
+                writer.writeCharacters(node.get(identifier).asString());
+                writer.writeEndElement();
+            }
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, ResourceAdapter.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonPool.Tag element, String identifier)
+                throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonXaPool.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonSecurity.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonTimeOut.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonValidation.Tag element,
+                String identifier) throws XMLStreamException {
+            writeElementIfHas(writer, node, element.getLocalName(), identifier);
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name).isDefined();
+        }
+
+        private void writeAttributeIfHas(final XMLExtendedStreamWriter writer, final ModelNode node,
+                final CommonAdminObject.Attribute attr, final String identifier) throws XMLStreamException {
+            if (has(node, identifier)) {
+                writer.writeAttribute(attr.getLocalName(), node.get(identifier).asString());
+            }
+        }
+
+        private void writeAttributeIfHas(final XMLExtendedStreamWriter writer, final ModelNode node,
+                final CommonConnDef.Attribute attr, final String identifier) throws XMLStreamException {
+            if (has(node, identifier)) {
+                writer.writeAttribute(attr.getLocalName(), node.get(identifier).asString());
+            }
         }
 
         @Override
@@ -226,6 +431,15 @@ public class NewResourceAdaptersExtension implements NewExtension {
                 condefModel.get(MIN_POOL_SIZE).set(conDef.getPool().getMinPoolSize());
                 condefModel.get(POOL_PREFILL).set(conDef.getPool().isPrefill());
                 condefModel.get(POOL_USE_STRICT_MIN).set(conDef.getPool().isUseStrictMin());
+                if (conDef.isXa()) {
+                    CommonXaPool xaPool = (CommonXaPool) conDef.getPool();
+                    condefModel.get(INTERLIVING).set(xaPool.isInterleaving());
+                    condefModel.get(PAD_XID).set(xaPool.isPadXid());
+                    condefModel.get(SAME_RM_OVERRIDE).set(xaPool.isSameRmOverride());
+                    condefModel.get(NOTXSEPARATEPOOL).set(xaPool.isNoTxSeparatePool());
+                    condefModel.get(WRAP_XA_DATASOURCE).set(xaPool.isWrapXaDataSource());
+
+                }
             }
 
             if (conDef.getTimeOut() != null) {
@@ -253,12 +467,13 @@ public class NewResourceAdaptersExtension implements NewExtension {
 
     private static class ResourceAdaptersSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
+
         @Override
         public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
             ModelNode add = createAddSubsystemOperation();
 
-            //TODO Fill in the details
+            // TODO Fill in the details
 
             ModelNode result = new ModelNode();
             result.add(add);

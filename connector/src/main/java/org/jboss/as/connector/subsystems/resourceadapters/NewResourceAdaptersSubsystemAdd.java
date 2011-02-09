@@ -104,7 +104,7 @@ class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootO
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if (context instanceof NewBootOperationContext ) {
+        if (context instanceof NewBootOperationContext) {
             final NewBootOperationContext updateContext = (NewBootOperationContext) context;
             final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
@@ -113,21 +113,33 @@ class NewResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootO
                     .setInitialMode(Mode.ACTIVE).install();
 
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS,
-                        new ResourceAdaptersAttachingProcessor(resourceAdapters));
+                    new ResourceAdaptersAttachingProcessor(resourceAdapters));
         }
 
         // Populate subModel
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
 
-        if (operation.hasDefined(RESOURCEADAPTERS)) {
-            for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
-                for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
-                    subModel.get(CONFIG_PROPERTIES, property.asProperty().getName()).set(property.asString());
-                }
-                for (final String attribute : NewResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
-                    if (raNode.get(attribute).isDefined()) {
-                        subModel.get(attribute).set(raNode.get(attribute));
+        // Workaround to populate domain model.
+
+        boolean workaround = true;
+
+        if (workaround) {
+            if (operation.has(RESOURCEADAPTERS)) {
+                ModelNode datasources = operation.get(RESOURCEADAPTERS);
+                subModel.get(RESOURCEADAPTERS).set(datasources);
+            }
+        } else {
+            if (operation.hasDefined(RESOURCEADAPTERS)) {
+
+                for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
+                    for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
+                        subModel.get(CONFIG_PROPERTIES, property.asProperty().getName()).set(property.asString());
+                    }
+                    for (final String attribute : NewResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
+                        if (raNode.get(attribute).isDefined()) {
+                            subModel.get(attribute).set(raNode.get(attribute));
+                        }
                     }
                 }
             }
