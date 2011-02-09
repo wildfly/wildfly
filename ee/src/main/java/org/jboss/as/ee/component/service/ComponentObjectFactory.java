@@ -22,15 +22,18 @@
 
 package org.jboss.as.ee.component.service;
 
-import java.util.Hashtable;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.naming.ServiceReferenceObjectFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.msc.service.ServiceName;
+
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.naming.ServiceReferenceObjectFactory;
+import java.util.Hashtable;
+
 import static org.jboss.as.naming.util.NamingUtils.asReference;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Object factory used to retrieve instances of beans managed by a {@link org.jboss.as.ee.component.Component}.
@@ -54,6 +57,7 @@ public class ComponentObjectFactory extends ServiceReferenceObjectFactory {
         }
         final Class<?> viewClass = (Class<?>) viewClassAddr.getContent();
         final Component component = (Component) serviceValue;
-        return component.createLocalProxy(viewClass);
+        final Interceptor clientInterceptor = component.createClientInterceptor(viewClass);
+        return component.createLocalProxy(viewClass, clientInterceptor);
     }
 }

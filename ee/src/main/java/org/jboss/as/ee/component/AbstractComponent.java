@@ -22,20 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-
-import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
-import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.ee.component.injection.ResourceInjection;
 import org.jboss.as.ee.component.interceptor.ComponentInterceptorFactories;
 import org.jboss.as.ee.component.lifecycle.ComponentLifecycle;
@@ -54,6 +40,20 @@ import org.jboss.invocation.MethodInvokingInterceptorFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
+import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
 
 /**
  * The parent of all component classes.
@@ -321,17 +321,8 @@ public abstract class AbstractComponent implements Component {
         return handler;
     }
 
-    /**
-     * Create a new client-side interceptor for a local proxy.  A new interceptor is created for every client
-     * instance.
-     *
-     * @param viewClass the view class in use
-     * @return the client-side interceptor
-     */
-    protected abstract Interceptor createClientInterceptor(final Class<?> viewClass);
-
-    public <T> T createLocalProxy(final Class<T> viewClass) {
-        final Interceptor clientInterceptor = createClientInterceptor(viewClass);
+    @Override
+    public <T> T createLocalProxy(final Class<T> viewClass, final Interceptor clientInterceptor) {
         final InterceptorInvocationHandler handler = new InterceptorInvocationHandler(Interceptors.getChainedInterceptor(clientInterceptor, componentInterceptor));
         try {
             return viewClass.cast(views.get(viewClass).proxyFactory.newInstance(handler));
@@ -434,7 +425,8 @@ public abstract class AbstractComponent implements Component {
     }
 
     /** {@inheritDoc} */
-    public Object createRemoteProxy(final Class<?> view, final ClassLoader targetClassLoader) {
+    @Override
+    public Object createRemoteProxy(final Class<?> view, final ClassLoader targetClassLoader, final Interceptor clientInterceptor) {
         throw new UnsupportedOperationException("One thing at a time!");
     }
 

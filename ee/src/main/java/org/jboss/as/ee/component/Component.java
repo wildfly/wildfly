@@ -23,12 +23,14 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.invocation.Interceptor;
 
 /**
  * Common contract for an EE component.  Implementations of this will be available as a service and can be used as the
  * backing for a JNDI ObjectFactory reference.
  *
  * @author John Bailey
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface Component {
 
@@ -80,22 +82,35 @@ public interface Component {
     ComponentInvocationHandler createClient(Class<?> view);
 
     /**
+     * Create a new client interceptor for this component.  The returned interceptor will contain the necessary logic to
+     * locate the appropriate instance.
+     * <p>
+     * The given view type must be one of the registered view types for this component.
+     *
+     * @param view the view type
+     * @return the client entry point
+     */
+    Interceptor createClientInterceptor(Class<?> view);
+
+    /**
      * Create a local client proxy for this component.
      *
      * @param view the view type class
+     * @param clientInterceptor the client interceptor to use for this proxy.
      * @param <T> the view type
      * @return the proxy
      */
-    <T> T createLocalProxy(Class<T> view);
+    <T> T createLocalProxy(Class<T> view, Interceptor clientInterceptor);
 
     /**
      * Create a remote client proxy for this component.
      *
      * @param view the view type class
      * @param targetClassLoader the target class loader for the proxy
+     * @param clientInterceptor the client interceptor to use for this proxy.
      * @return the proxy instance
      */
-    Object createRemoteProxy(Class<?> view, ClassLoader targetClassLoader);
+    Object createRemoteProxy(Class<?> view, ClassLoader targetClassLoader, Interceptor clientInterceptor);
 
     /**
      * Get the naming context selector for this component.

@@ -58,8 +58,9 @@ public class ManagedBeanComponent extends AbstractComponent {
     }
 
     /** {@inheritDoc} */
-    protected Interceptor createClientInterceptor(final Class<?> viewClass) {
-        // One instance per client interface.
+    @Override
+    public Interceptor createClientInterceptor(final Class<?> viewClass) {
+        // One instance per client lookup.
         final ComponentInstance instance = createInstance();
         return new Interceptor() {
             public Object processInvocation(final InterceptorContext context) throws Exception {
