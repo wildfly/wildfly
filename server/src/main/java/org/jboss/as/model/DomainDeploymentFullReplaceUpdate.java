@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.jboss.as.server.deployment.ServerModelDeploymentFullReplaceUpdate;
 
 /**
@@ -152,12 +153,12 @@ public final class DomainDeploymentFullReplaceUpdate extends AbstractDomainModel
 
         // Find servers in those groups
         List<String> result = new ArrayList<String>();
-        for (String serverName : hostModel.getActiveServerNames()) {
-            ServerElement server = hostModel.getServer(serverName);
-            if (groupNames.contains(server.getServerGroup())) {
-                result.add(serverName);
-            }
-        }
+//        for (String serverName : hostModel.getActiveServerNames()) {
+//            ServerElement server = hostModel.getServer(serverName);
+//            if (groupNames.contains(server.getServerGroup())) {
+//                result.add(serverName);
+//            }
+//        }
 
         return result;
     }

@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -77,10 +78,9 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     /**
      * Gets the default jvm configuration for servers in this group. Which jvm to
-     * use can be overridden at the {@link ServerElement#getJvm() server level}.
+     * use can be overridden at the server level.
      * The details of the configuration of this jvm can be overridden at the
-     * @{link {@link HostModel#getJvm(String) host level} or at the
-     * {@link ServerElement#getJvm() server level}.
+     * @{link host level or at the server level.
      *
      * @return the jvm configuration, or <code>null</code> if there is none
      */
@@ -145,8 +145,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
      * server group. These properties can extend and override any properties
      * declared at the {@link DomainModel#getSystemProperties() domain level} and
      * may in turn be extended or overridden by any properties declared at the
-     * {@link HostModel#getSystemProperties() host level} or the
-     * {@link ServerElement#getSystemProperties() server level}.
+     * host level or the server level}.
      *
      * @return the system properties, or <code>null</code> if there are none
      */

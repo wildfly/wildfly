@@ -58,7 +58,6 @@ import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
-import org.jboss.as.model.PathElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandlerResponse;
@@ -90,9 +89,6 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     private ScheduledFuture<?> pollingFuture;
     private DomainDeploymentHandler deploymentPlanHandler;
     private DomainDeploymentRepository deploymentRepository;
-
-    private final ModelNode modelRoot = new ModelNode();
-    private final Map<List<PathElement>, ModelNode> modelMetaData = new ConcurrentHashMap<List<PathElement>, ModelNode>();
 
     public DomainControllerImpl() {
     }

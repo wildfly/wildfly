@@ -24,20 +24,15 @@ package org.jboss.as.model;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -49,14 +44,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  */
 public final class ServerModel extends AbstractModel<ServerModel> {
-
-    /**
-     * ServiceName under which a {@link org.jboss.msc.service.Service}<ServerModel>
-     * will be registered on a running server.
-     *
-     * TODO see if exposing the ServerModel this way can be avoided.
-     */
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "model");
 
     public static final String DEFAULT_STANDALONE_NAME;
     static {
@@ -73,16 +60,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.SERVER.getLocalName());
 
     /** Name for this server that was actually provided via configuration */
-    private String configuredServerName;
-    private final Set<String> extensions = new LinkedHashSet<String>();
     private final Map<String, ServerGroupDeploymentElement> deployments = new LinkedHashMap<String, ServerGroupDeploymentElement>();
-    private final Map<String, InterfaceElement> interfaces = new LinkedHashMap<String, InterfaceElement>();
-    private final Map<String, PathElement> paths = new LinkedHashMap<String, PathElement>();
-    private ProfileElement profile;
-    private SocketBindingGroupElement socketBindings;
-    private int portOffset;
-    private final PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
-    private ManagementElement managementElement;
 
     /**
      * Construct a new instance.
@@ -91,78 +69,8 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         super(ELEMENT_NAME);
     }
 
-    /**
-     * Construct a new instance.
-     *
-     * @param configuredServerName the server name
-     * @param portOffset the port offset
-     */
-    public ServerModel(final String serverName, final int portOffset) {
-        super(ELEMENT_NAME);
-        this.configuredServerName = serverName;
-        this.portOffset = portOffset;
-    }
-
-    /**
-     * Gets the name of the server.
-     *
-     * @return the name. Will not be <code>null</code>
-     */
-    public String getServerName() {
-        return configuredServerName == null ? DEFAULT_STANDALONE_NAME : configuredServerName;
-    }
-
-    void setServerName(final String name) {
-        this.configuredServerName = name;
-    }
-
-    /**
-     * Gets the portOffset of the server.
-     *
-     * @return the portOffset
-     */
-    public int getPortOffset() {
-        return portOffset;
-    }
-
-    void setPortOffset(int portOffset) {
-        this.portOffset = portOffset;
-    }
-
-    /**
-     * Gets any system properties defined for this server.
-     *
-     * @return the system properties, or <code>null</code> if there are none
-     */
-    public PropertiesElement getSystemProperties() {
-        return systemProperties;
-    }
-
     public ServerGroupDeploymentElement getDeployment(String deploymentName) {
         return deployments.get(deploymentName);
-    }
-
-    /**
-     * Get the paths.
-     *
-     * @return the paths
-     */
-    public Collection<PathElement> getPaths() {
-        return Collections.unmodifiableCollection(new HashSet<PathElement>(paths.values()));
-    }
-
-    /**
-     * Get a path element.
-     *
-     * @param name the path name
-     * @return the path, <code>null</code> if it does not exist
-     */
-    public PathElement getPath(final String name) {
-        return paths.get(name);
-    }
-
-    public ManagementElement getManagementElement() {
-        return managementElement;
     }
 
     /** {@inheritDoc} */
@@ -174,82 +82,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     /** {@inheritDoc} */
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-
-        if (configuredServerName != null) {
-            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), configuredServerName);
-        }
-
-        writeNamespaces(streamWriter);
-
-        if (! extensions.isEmpty()) {
-            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-            for (String extension : extensions) {
-                streamWriter.writeEmptyElement(Element.EXTENSION.getLocalName());
-                streamWriter.writeAttribute(Attribute.MODULE.getLocalName(), extension);
-            }
-            streamWriter.writeEndElement();
-        }
-
-        synchronized(paths) {
-            if(! paths.isEmpty()) {
-                streamWriter.writeStartElement(Element.PATHS.getLocalName());
-                for(final PathElement path : paths.values()) {
-                    streamWriter.writeStartElement(Element.PATH.getLocalName());
-                    path.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
-            }
-        }
-
-        if (managementElement != null) {
-            streamWriter.writeStartElement(Element.MANAGEMENT.getLocalName());
-            managementElement.writeContent(streamWriter);
-        }
-
-        streamWriter.writeStartElement(Element.PROFILE.getLocalName());
-        profile.writeContent(streamWriter);
-
-        synchronized (interfaces) {
-            if (! interfaces.isEmpty()) {
-                streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-                for (InterfaceElement element : interfaces.values()) {
-                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                    element.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
-            }
-        }
-
-        if (socketBindings != null) {
-            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-            socketBindings.writeContent(streamWriter);
-        }
-
-        // FIXME ssls
-
-        if (systemProperties != null && systemProperties.size() > 0) {
-            streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
-            systemProperties.writeContent(streamWriter);
-        }
-
-        if (! deployments.isEmpty()) {
-            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
-            for (ServerGroupDeploymentElement element : deployments.values()) {
-                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
-                element.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
-        }
-
-        streamWriter.writeEndElement();
-    }
-
-    boolean addExtension(final String name) {
-        return extensions.add(name);
-    }
-
-    AbstractSubsystemElement<?> getSubsystem(final String namespaceUri) {
-        return profile.getSubsystem(namespaceUri);
     }
 
     public void addDeployment(final ServerGroupDeploymentElement deploymentElement) {
@@ -273,73 +105,4 @@ public final class ServerModel extends AbstractModel<ServerModel> {
             return new HashSet<ServerGroupDeploymentElement>(deployments.values());
         }
     }
-
-    public InterfaceElement getInterface(final String name) {
-        synchronized(interfaces) {
-            return interfaces.get(name);
-        }
-    }
-
-    boolean addSubsystem(final String namespaceUri, final AbstractSubsystemElement<?> element) {
-        return profile.addSubsystem(namespaceUri, element);
-    }
-
-    public ProfileElement getProfile() {
-        return profile;
-    }
-
-    void setProfile(ProfileElement profile) {
-        this.profile = profile;
-    }
-
-    SocketBindingGroupElement getSocketBindings() {
-        return socketBindings;
-    }
-
-    void setSocketBindings(SocketBindingGroupElement socketBindings) {
-        this.socketBindings = socketBindings;
-    }
-
-    InterfaceElement addInterface(final String name) {
-        if(interfaces.containsKey(name)) {
-            return null;
-        }
-        final InterfaceElement element = new InterfaceElement(name);
-        this.interfaces.put(name, element);
-        return element;
-    }
-
-    boolean removeInterface(final String name) {
-        return interfaces.remove(name) != null;
-    }
-
-    PathElement addPath(final String name) {
-        if(paths.containsKey(name)) {
-            return null;
-        }
-        final PathElement path = new PathElement(name);
-        paths.put(name, path);
-        return path;
-    }
-
-    boolean removePath(final String name) {
-        return paths.remove(name) != null;
-    }
-
-    boolean addManagementElement(String interfaceName, int port) {
-        if (managementElement != null)
-            return false;
-        managementElement = new ManagementElement(interfaceName, port);
-        return true;
-    }
-
-    boolean removeManagementElement() {
-        if (managementElement != null) {
-            managementElement = null;
-            return true;
-        }
-        return false;
-    }
-
-
 }

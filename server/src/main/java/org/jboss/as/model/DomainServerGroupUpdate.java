@@ -93,11 +93,11 @@ public final class DomainServerGroupUpdate<R> extends AbstractDomainModelUpdate<
         }
         else {
             List<String> result = new ArrayList<String>();
-            for (String server : hostModel.getActiveServerNames()) {
-                if (serverGroupName.equals(hostModel.getServer(server).getServerGroup())) {
-                    result.add(server);
-                }
-            }
+//            for (String server : hostModel.getActiveServerNames()) {
+//                if (serverGroupName.equals(hostModel.getServer(server).getServerGroup())) {
+//                    result.add(server);
+//                }
+//            }
             return result;
         }
     }

@@ -20,49 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+package org.jboss.as.mc;
 
 /**
+ * The result of a parsing operation.
+ *
+ * @param <T> the parse result type
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class HostModel extends AbstractModel<HostModel> {
+public final class ParseResult<T> {
 
-    private static final long serialVersionUID = 7667892965813702351L;
-
-    public static final String DEFAULT_NAME;
-    static {
-        try {
-            DEFAULT_NAME = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.HOST.getLocalName());
+    private T result;
 
     /**
-     * Construct a new instance.
+     * Set the result.
+     *
+     * @param result the parsing result
      */
-    public HostModel() {
-        super(ELEMENT_NAME);
+    public void setResult(T result) {
+        this.result = result;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected Class<HostModel> getElementClass() {
-        return HostModel.class;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+    /**
+     * Get the result.
+     *
+     * @return the parsing result
+     */
+    public T getResult() {
+        return result;
     }
 }

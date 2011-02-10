@@ -60,7 +60,7 @@ public abstract class AbstractDomainModelUpdate<R> extends AbstractModelUpdate<D
     public abstract AbstractServerModelUpdate<R> getServerModelUpdate();
 
     /**
-     * Returns the {@link ServerElement#getName() server names} of the servers
+     * Returns the server names of the servers
      * associated with the given host model that would be affected by this
      * update.
      *

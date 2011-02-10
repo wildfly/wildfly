@@ -30,7 +30,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -58,8 +57,6 @@ import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -69,7 +66,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.domain.client.api.DomainClient;
-import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
@@ -79,20 +75,11 @@ import org.jboss.as.domain.client.api.deployment.DeploymentSetActionsCompleteBui
 import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.UndeployDeploymentPlanBuilder;
-import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.HostServerAdd;
-import org.jboss.as.model.HostServerRemove;
-import org.jboss.as.model.HostServerUpdate;
-import org.jboss.as.model.ServerElement;
-import org.jboss.as.model.ServerElementSocketBindingGroupUpdate;
-import org.jboss.as.model.ServerElementSocketBindingPortOffsetUpdate;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.socket.SocketBindingElement;
-import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
@@ -383,76 +370,79 @@ public class ExampleRunner implements Runnable {
     }
 
     private boolean addServer() throws Exception {
-        addCount++;
-        stdout.println("Enter the name of the new server, or [C] to cancel:");
-        String serverName = readStdIn();
-        if ("C".equals(serverName.toUpperCase()))
-            return continuePrompt();
 
-        String hostController = null;
-        List<String> hostControllers = client.getHostControllerNames();
-        if (hostControllers.size() == 1) {
-            hostController = hostControllers.get(0);
-        }
-        else {
-            do {
-                stdout.println("Choose a Host Controller for the new Server:");
-                Map<String, Object> choices = writeMenuBody(hostControllers);
-                stdout.println("[C]   Cancel");
-                String choice = readStdIn();
-                if ("C".equals(choice.toUpperCase())) {
-                    return continuePrompt();
-                }
-                Object obj = choices.get(choice);
-
-                if (obj == null) {
-                    stdout.println(choice + " is not a valid selection");
-                }
-                else {
-                    hostController = obj.toString();
-                }
-            }
-            while (hostController == null);
-        }
-
-        String serverGroup = null;
-        List<String> serverGroups = getServerGroupNames();
-        do {
-            stdout.println("Choose a Server Group for the new Server:");
-            Map<String, Object> choices = writeMenuBody(serverGroups);
-            stdout.println("[C]   Cancel");
-            String choice = readStdIn();
-            if ("C".equals(choice.toUpperCase())) {
-                return continuePrompt();
-            }
-            Object obj = choices.get(choice);
-
-            if (obj == null) {
-                stdout.println(choice + " is not a valid selection");
-            }
-            else {
-                serverGroup = obj.toString();
-            }
-
-        }
-        while (serverGroup == null);
-
-        stdout.println("\nCreating new server: " + serverName + " on host controller " + hostController + " in server group: " + serverGroup);
-        List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(2);
-        updates.add(new HostServerAdd(serverName, serverGroup));
-        updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingGroupUpdate("standard-sockets")));
-        addCount++;
-        updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingPortOffsetUpdate(addCount * 1000)));
-        List<HostUpdateResult<?>> results = client.applyHostUpdates(hostController, updates);
-        HostUpdateResult<?> result = results.get(0);
-        System.out.println("Add success: " + result.isSuccess());
-
-        if(result.isSuccess()) {
-            System.out.println("Starting server " + serverName);
-            ServerStatus status = client.startServer(hostController, serverName);
-            System.out.println("Start executed. Server status is " + status);
-        }
-        return continuePrompt();
+        // THIS DOES NOT CURRENTLY WORK
+        throw new UnsupportedOperationException("Convert to detyped API");
+//        addCount++;
+//        stdout.println("Enter the name of the new server, or [C] to cancel:");
+//        String serverName = readStdIn();
+//        if ("C".equals(serverName.toUpperCase()))
+//            return continuePrompt();
+//
+//        String hostController = null;
+//        List<String> hostControllers = client.getHostControllerNames();
+//        if (hostControllers.size() == 1) {
+//            hostController = hostControllers.get(0);
+//        }
+//        else {
+//            do {
+//                stdout.println("Choose a Host Controller for the new Server:");
+//                Map<String, Object> choices = writeMenuBody(hostControllers);
+//                stdout.println("[C]   Cancel");
+//                String choice = readStdIn();
+//                if ("C".equals(choice.toUpperCase())) {
+//                    return continuePrompt();
+//                }
+//                Object obj = choices.get(choice);
+//
+//                if (obj == null) {
+//                    stdout.println(choice + " is not a valid selection");
+//                }
+//                else {
+//                    hostController = obj.toString();
+//                }
+//            }
+//            while (hostController == null);
+//        }
+//
+//        String serverGroup = null;
+//        List<String> serverGroups = getServerGroupNames();
+//        do {
+//            stdout.println("Choose a Server Group for the new Server:");
+//            Map<String, Object> choices = writeMenuBody(serverGroups);
+//            stdout.println("[C]   Cancel");
+//            String choice = readStdIn();
+//            if ("C".equals(choice.toUpperCase())) {
+//                return continuePrompt();
+//            }
+//            Object obj = choices.get(choice);
+//
+//            if (obj == null) {
+//                stdout.println(choice + " is not a valid selection");
+//            }
+//            else {
+//                serverGroup = obj.toString();
+//            }
+//
+//        }
+//        while (serverGroup == null);
+//
+//        stdout.println("\nCreating new server: " + serverName + " on host controller " + hostController + " in server group: " + serverGroup);
+//        List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(2);
+//        updates.add(new HostServerAdd(serverName, serverGroup));
+//        updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingGroupUpdate("standard-sockets")));
+//        addCount++;
+//        updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingPortOffsetUpdate(addCount * 1000)));
+//        List<HostUpdateResult<?>> results = client.applyHostUpdates(hostController, updates);
+//        HostUpdateResult<?> result = results.get(0);
+//        System.out.println("Add success: " + result.isSuccess());
+//
+//        if(result.isSuccess()) {
+//            System.out.println("Starting server " + serverName);
+//            ServerStatus status = client.startServer(hostController, serverName);
+//            System.out.println("Start executed. Server status is " + status);
+//        }
+//        return continuePrompt();
     }
 
     private List<String> getServerGroupNames() {
@@ -461,17 +451,20 @@ public class ExampleRunner implements Runnable {
     }
 
     private boolean removeServer() throws Exception {
-        ServerIdentity server = chooseServer(ServerStatus.STOPPED, ServerStatus.DISABLED);
-        if (server != null) {
-            stdout.println("Removing server " + server.getServerName());
-            List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(1);
-            updates.add(new HostServerRemove(server.getServerName()));
 
-            List<HostUpdateResult<?>>results = client.applyHostUpdates(server.getHostName(), updates);
-            HostUpdateResult<?> result = results.get(0);
-            stdout.println("Remove success: " + result.isSuccess());
-        }
-        return continuePrompt();
+        // THIS DOES NOT CURRENTLY WORK
+        throw new UnsupportedOperationException("Convert to detyped API");
+//        ServerIdentity server = chooseServer(ServerStatus.STOPPED, ServerStatus.DISABLED);
+//        if (server != null) {
+//            stdout.println("Removing server " + server.getServerName());
+//            List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(1);
+//            updates.add(new HostServerRemove(server.getServerName()));
+//
+//            List<HostUpdateResult<?>>results = client.applyHostUpdates(server.getHostName(), updates);
+//            HostUpdateResult<?> result = results.get(0);
+//            stdout.println("Remove success: " + result.isSuccess());
+//        }
+//        return continuePrompt();
     }
 
     private ServerIdentity chooseServer(ServerStatus valid, ServerStatus...alsoValid) throws IOException {
@@ -1078,40 +1071,43 @@ public class ExampleRunner implements Runnable {
     }
 
     private MBeanServerConnection getMBeanServerConnection(ServerIdentity server) throws Exception {
-        // FIXME we need an API to get the actual address and port used by a server given
-        // the socket binding name. So then we'd get the socket binding name
-        // from the subsystem config and then find the InetSocketAddress from the server using that API
-        DomainModel domainModel = client.getDomainModel();
-        ServerElement se = client.getHostModel(server.getHostName()).getServer(server.getServerName());
-        String socketBindingGroupName = se.getSocketBindingGroupName();
-        int offset = se.getSocketBindingPortOffset();
-        if (socketBindingGroupName == null) {
-            ServerGroupElement sge = domainModel.getServerGroup(se.getServerGroup());
-            socketBindingGroupName = sge.getSocketBindingGroupName();
-        }
-        SocketBindingGroupElement sbge = domainModel.getSocketBindingGroup(socketBindingGroupName);
-        String address = null;
-        int port = -1;
-        for (SocketBindingElement sbe : sbge.getSocketBindings()) {
-            // TODO deal with fact this socket could be in an included group
-            if ("jmx-connector-registry".equals(sbe.getName())) {
-                address = sbe.getInterfaceName();
-                port = sbe.getPort() + offset;
-                break;
-            }
-        }
-        InetAddress addr = null;
 
-        try {
-            addr = InetAddress.getByName(address);
-            address = addr.getHostAddress();
-        } catch (UnknownHostException e) {
-            address = "localhost";
-        }
-
-        String url = String.format("service:jmx:rmi:///jndi/rmi://%s:%d/jmxrmi", address, port);
-        return JMXConnectorFactory.connect(new JMXServiceURL(url),
-                new HashMap<String, Object>()).getMBeanServerConnection();
+        // THIS DOES NOT CURRENTLY WORK
+        throw new UnsupportedOperationException("Convert to detyped API");
+//        // FIXME we need an API to get the actual address and port used by a server given
+//        // the socket binding name. So then we'd get the socket binding name
+//        // from the subsystem config and then find the InetSocketAddress from the server using that API
+//        DomainModel domainModel = client.getDomainModel();
+//        ServerElement se = client.getHostModel(server.getHostName()).getServer(server.getServerName());
+//        String socketBindingGroupName = se.getSocketBindingGroupName();
+//        int offset = se.getSocketBindingPortOffset();
+//        if (socketBindingGroupName == null) {
+//            ServerGroupElement sge = domainModel.getServerGroup(se.getServerGroup());
+//            socketBindingGroupName = sge.getSocketBindingGroupName();
+//        }
+//        SocketBindingGroupElement sbge = domainModel.getSocketBindingGroup(socketBindingGroupName);
+//        String address = null;
+//        int port = -1;
+//        for (SocketBindingElement sbe : sbge.getSocketBindings()) {
+//            // TODO deal with fact this socket could be in an included group
+//            if ("jmx-connector-registry".equals(sbe.getName())) {
+//                address = sbe.getInterfaceName();
+//                port = sbe.getPort() + offset;
+//                break;
+//            }
+//        }
+//        InetAddress addr = null;
+//
+//        try {
+//            addr = InetAddress.getByName(address);
+//            address = addr.getHostAddress();
+//        } catch (UnknownHostException e) {
+//            address = "localhost";
+//        }
+//
+//        String url = String.format("service:jmx:rmi:///jndi/rmi://%s:%d/jmxrmi", address, port);
+//        return JMXConnectorFactory.connect(new JMXServiceURL(url),
+//                new HashMap<String, Object>()).getMBeanServerConnection();
     }
 
     private static interface MenuItem {

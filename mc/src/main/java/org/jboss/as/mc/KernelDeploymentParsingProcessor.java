@@ -28,14 +28,13 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
+import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptorParser;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
-import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptorParser;
-import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -62,6 +61,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
@@ -96,6 +96,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
         }
     }
 
+    @Override
     public void undeploy(DeploymentUnit context) {
     }
 }

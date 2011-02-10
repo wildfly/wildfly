@@ -23,10 +23,7 @@ package org.jboss.as.server.services.net;
 
 import java.net.InetAddress;
 
-import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -88,17 +85,6 @@ public class SocketBindingService implements Service<SocketBinding> {
 
     public InjectedValue<NetworkInterfaceBinding> getInterfaceBinding() {
         return interfaceBinding;
-    }
-
-    @Deprecated
-    public static void addService(ServiceTarget serviceTarget, SocketBindingAdd add) {
-        SocketBindingService service = new SocketBindingService(add.getName(), add.getPort(), add.isFixedPort(),
-                   add.getMulticastAddress(), add.getMulticastPort());
-        serviceTarget.addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service)
-            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(add.getInterfaceName()), NetworkInterfaceBinding.class, service.getInterfaceBinding())
-            .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
-            .setInitialMode(Mode.ON_DEMAND)
-            .install();
     }
 
 }

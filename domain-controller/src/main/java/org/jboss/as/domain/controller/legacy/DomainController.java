@@ -21,7 +21,6 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
-import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.model.UpdateResultHandlerResponse;
@@ -101,7 +100,7 @@ public interface DomainController {
      * Gets the current running configuration for a server.
      *
      * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
-     * @param serverName the {@link ServerElement#getName() name of the server}
+     * @param serverName the  name of the server
      *
      * @return the current server configuration, or <code>null</code> if the Host Controller isn't currently
      *          registered or the server isn't started
@@ -113,7 +112,7 @@ public interface DomainController {
      * Attempts to start a server.
      *
      * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
-     * @param serverName the {@link ServerElement#getName() name of the server}
+     * @param serverName the name of the server
      *
      * @return the status of the server after the attempt to start it
      */
@@ -124,7 +123,7 @@ public interface DomainController {
      * Attempts to stop a currently running server.
      *
      * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
-     * @param serverName the {@link ServerElement#getName() name of the server}
+     * @param serverName the name of the server
      * @param maximum period, in milliseconds, the server should wait for any long-running work to gracefully complete
      *           before proceeding with the shutdown. A value of {@code -1} means an attempt at graceful shutdown
      *           is not required
@@ -138,7 +137,7 @@ public interface DomainController {
      * Attempts to restart a currently running server.
      *
      * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
-     * @param serverName the {@link ServerElement#getName() name of the server}
+     * @param serverName the name of the server
      * @param maximum period, in milliseconds, the server should wait for any long-running work to gracefully complete
      *           before proceeding with the restart. A value of {@code -1} means an attempt at graceful shutdown
      *           is not required

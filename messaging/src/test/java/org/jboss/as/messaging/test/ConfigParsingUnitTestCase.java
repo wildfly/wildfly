@@ -1,10 +1,5 @@
 package org.jboss.as.messaging.test;
 
-import javax.xml.namespace.QName;
-
-import org.jboss.as.messaging.MessagingSubsystemParser;
-import org.jboss.as.model.ModelXmlParsers;
-import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;
 
 /**
@@ -104,10 +99,10 @@ public class ConfigParsingUnitTestCase {
     * @return
     * @throws Exception
     */
-   protected XMLMapper createXMLMapper() throws Exception {
-      XMLMapper mapper = XMLMapper.Factory.create();
-      mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.SERVER_XML_READER);
-      mapper.registerRootElement(new QName(namespace, "subsystem"), MessagingSubsystemParser.getInstance());
-      return mapper;
-   }
+//   protected XMLMapper createXMLMapper() throws Exception {
+//      XMLMapper mapper = XMLMapper.Factory.create();
+//      mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.SERVER_XML_READER);
+//      mapper.registerRootElement(new QName(namespace, "subsystem"), MessagingSubsystemParser.getInstance());
+//      return mapper;
+//   }
 }

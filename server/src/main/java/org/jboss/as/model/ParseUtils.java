@@ -22,17 +22,18 @@
 
 package org.jboss.as.model;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamException;
 
-import static javax.xml.stream.XMLStreamConstants.*;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * A utility class for parsers to use.
@@ -295,29 +296,6 @@ public final class ParseUtils {
         } else {
             return Collections.emptyList();
         }
-    }
-
-    public static Property readProperty(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final int cnt = reader.getAttributeCount();
-        String name = null;
-        String value = null;
-        for (int i = 0; i < cnt; i ++) {
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            }
-            final String localName = reader.getAttributeLocalName(i);
-            if (localName.equals("name")) {
-                name = reader.getAttributeValue(i);
-            } else if (localName.equals("value")) {
-                value = reader.getAttributeValue(i);
-            } else {
-                throw unexpectedAttribute(reader, i);
-            }
-        }
-        if (name == null) {
-            throw missingRequired(reader, Collections.singleton("name"));
-        }
-        return new Property(name, value == null ? "" : value);
     }
 
     /**

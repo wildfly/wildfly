@@ -33,9 +33,8 @@ import java.util.Arrays;
 
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.mgmt.domain.HostControllerClient;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
-import org.jboss.as.server.mgmt.domain.NewHostControllerServerClient;
+import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.marshalling.ByteInput;
@@ -107,6 +106,7 @@ public final class DomainServerMain {
             final ServerTask task = unmarshaller.readObject(ServerTask.class);
             unmarshaller.finish();
             task.run(Arrays.<ServiceActivator>asList(new ServiceActivator() {
+                @Override
                 public void activate(final ServiceActivatorContext serviceActivatorContext) {
                     // TODO activate host controller client service
                 }
@@ -146,6 +146,7 @@ public final class DomainServerMain {
             this.managementSocket = managementSocket;
         }
 
+        @Override
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
@@ -155,8 +156,8 @@ public final class DomainServerMain {
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 
-            final NewHostControllerServerClient client = new NewHostControllerServerClient(serverName);
-            serviceTarget.addService(HostControllerClient.SERVICE_NAME, client)
+            final HostControllerServerClient client = new HostControllerServerClient(serverName);
+            serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
                 .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, client.getServerControllerInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
