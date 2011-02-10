@@ -64,46 +64,51 @@ public class CommandLineMain {
 
     public static void main(String[] args) throws Exception {
 
-        CommandContextImpl cmdCtx = new CommandContextImpl();
+        final CommandContextImpl cmdCtx = new CommandContextImpl();
+        SecurityActions.addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                StreamUtils.safeClose(cmdCtx.client);
+                System.out.println("closed");
+            }
+        }));
 
         cmdCtx.log("You are disconnected at the moment." +
                 " Type /connect to connect to the server or" +
                 " /help for the list of supported commands.");
 
-        try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-            while (!cmdCtx.terminate) {
-                String line = input.readLine().trim();
+        BufferedReader input = new BufferedReader(new InputStreamReader(
+                System.in));
+        while (!cmdCtx.terminate) {
+            String line = input.readLine().trim();
 
-                if(line.isEmpty()) {
-                    //cmdCtx.log("Type /help for the list of supported commands.");
-                    continue;
-                }
-
-                if (line.charAt(0) == '/') {
-                    String cmd = line.substring(1).toLowerCase();
-                    cmdCtx.cmdArgs = null;
-                    for(int i = 0; i < cmd.length(); ++i) {
-                        if(Character.isWhitespace(cmd.charAt(i))) {
-                            cmdCtx.cmdArgs = cmd.substring(i + 1).trim();
-                            cmd = cmd.substring(0, i);
-                        }
-                    }
-
-                    CommandHandler handler = handlers.get(cmd);
-                    if(handler != null) {
-                        handler.handle(cmdCtx);
-                    } else {
-                        cmdCtx.log("Unexpected command '" + line + "'. Type /help for the list of supported commands.");
-                    }
-                } else {
-                    cmdCtx.cmdArgs = line;
-                    operationHandler.handle(cmdCtx);
-                }
+            if (line.isEmpty()) {
+                // cmdCtx.log("Type /help for the list of supported commands.");
+                continue;
             }
 
-        } finally {
-            StreamUtils.safeClose(cmdCtx.client);
+            if (line.charAt(0) == '/') {
+                String cmd = line.substring(1).toLowerCase();
+                cmdCtx.cmdArgs = null;
+                for (int i = 0; i < cmd.length(); ++i) {
+                    if (Character.isWhitespace(cmd.charAt(i))) {
+                        cmdCtx.cmdArgs = cmd.substring(i + 1).trim();
+                        cmd = cmd.substring(0, i);
+                    }
+                }
+
+                CommandHandler handler = handlers.get(cmd);
+                if (handler != null) {
+                    handler.handle(cmdCtx);
+                } else {
+                    cmdCtx.log("Unexpected command '"
+                            + line
+                            + "'. Type /help for the list of supported commands.");
+                }
+            } else {
+                cmdCtx.cmdArgs = line;
+                operationHandler.handle(cmdCtx);
+            }
         }
     }
 
