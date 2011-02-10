@@ -20,6 +20,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -78,6 +79,10 @@ public class DomainHttpServer implements HttpHandler {
         ModelNode response;
         int status = 200;
 
+        Headers requestHeaders = http.getRequestHeaders();
+        boolean encode = "application/dmr-encoded".equals(requestHeaders.getFirst("Accept")) ||
+                         "application/dmr-encoded".equals(requestHeaders.getFirst("Content-Type"));
+
         try {
             dmr = convertToRequest(request);
             response = modelController.execute(dmr);
@@ -90,16 +95,28 @@ public class DomainHttpServer implements HttpHandler {
             return;
         }
 
-        http.getResponseHeaders().add("Content-Type", "application/json");
+        Headers responseHeaders = http.getResponseHeaders();
+        responseHeaders.add("Content-Type", encode ? "application/dmr-encoded" : "application/json");
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
         http.sendResponseHeaders(status, 0);
 
         OutputStream out = http.getResponseBody();
         PrintStream print = new PrintStream(out);
 
+        // Successful responses are wrapped in a result field to allow for an outcome,
+        // which is already represented in the HTTP status, unwrap it.
+        if (status == 200)
+            response = response.get("result");
+
         try {
-            // TODO: Change DMR to stream JSON output
-            print.println(response.toJSONString(false));
+            if (encode) {
+                response.writeBase64(out);
+            } else {
+                // TODO: Change DMR to stream JSON output
+                print.println(response.toJSONString(false));
+            }
         } finally {
+            out.flush();
             print.flush();
             print.close();
         }
