@@ -22,10 +22,17 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
  * The web extension.
@@ -34,16 +41,39 @@ import org.jboss.msc.service.ServiceActivatorContext;
  */
 public class WebExtension implements Extension {
 
-    private static final Logger log = Logger.getLogger("org.jboss.web");
+    private static final Logger log = Logger.getLogger("org.jboss.as.web");
+
+    public static final String SUBSYSTEM_NAME = "web";
+    private static final PathElement connectorPath =  PathElement.pathElement(CommonAttributes.CONNECTOR);
+    private static final PathElement hostPath = PathElement.pathElement(CommonAttributes.VIRTUAL_SERVER);
 
     /** {@inheritDoc} */
-    public void initialize(final ExtensionContext context) {
-        context.registerSubsystem(Namespace.CURRENT.getUriString(), WebSubsystemParser.getInstance());
+    @Override
+    public void initialize(ExtensionContext context) {
+        log.debugf("Activating Web Extension");
+
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(WebSubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
+        subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
+        // connector
+        final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, WebSubsystemProviders.CONNECTOR);
+        connectors.registerOperationHandler(ADD, WebConnectorAdd.INSTANCE, WebSubsystemProviders.CONNECTOR_ADD, false);
+        connectors.registerOperationHandler(REMOVE, WebConnectorRemove.INSTANCE, WebSubsystemProviders.CONNECTOR_REMOVE, false);
+        for(final String attributeName : WebConnectorMetrics.ATTRIBUTES) {
+            connectors.registerMetric(attributeName, WebConnectorMetrics.INSTANCE);
+        }
+        //hosts
+        final ModelNodeRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemProviders.HOST);
+        hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebSubsystemProviders.HOST_ADD, false);
+        hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebSubsystemProviders.HOST_REMOVE, false);
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Web Extension");
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), WebSubsystemParser.getInstance());
     }
 
 }

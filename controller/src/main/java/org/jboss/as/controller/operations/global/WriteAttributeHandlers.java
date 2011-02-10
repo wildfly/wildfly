@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
@@ -60,7 +60,7 @@ public class WriteAttributeHandlers {
 
 
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
             try {
                 final String name = operation.require(NAME).asString();

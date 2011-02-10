@@ -19,7 +19,7 @@
 package org.jboss.as.controller.persistence;
 
 /**
- * Combines {@link NewConfigurationPersister} and {@link SubsystemXmlWriterRegistry}.
+ * Combines {@link ConfigurationPersister} and {@link SubsystemXmlWriterRegistry}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

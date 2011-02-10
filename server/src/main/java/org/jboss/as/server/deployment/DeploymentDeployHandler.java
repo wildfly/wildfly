@@ -25,7 +25,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -60,7 +60,7 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Run
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         ModelNode model = context.getSubModel();
         model.get(START).set(true);

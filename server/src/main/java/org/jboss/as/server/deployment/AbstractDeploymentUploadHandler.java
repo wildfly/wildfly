@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -58,7 +58,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             String failure = validator.validate(operation);
             if (failure == null) {

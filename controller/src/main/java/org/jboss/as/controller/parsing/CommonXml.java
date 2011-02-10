@@ -74,7 +74,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.NewExtension;
+import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -242,14 +242,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             try {
                 final Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
                 boolean initialized = false;
-                for (final NewExtension extension : module.loadService(NewExtension.class)) {
+                for (final Extension extension : module.loadService(Extension.class)) {
                     extension.initializeParsers(context);
                     if (!initialized) {
                         initialized = true;
                     }
                 }
                 if (!initialized) {
-                    throw new IllegalStateException("No META-INF/services/" + NewExtension.class.getName() + " found for " + module.getIdentifier());
+                    throw new IllegalStateException("No META-INF/services/" + Extension.class.getName() + " found for " + module.getIdentifier());
                 }
                 final ModelNode add = new ModelNode();
                 add.get(OP_ADDR).set(address).add(EXTENSION, moduleName);

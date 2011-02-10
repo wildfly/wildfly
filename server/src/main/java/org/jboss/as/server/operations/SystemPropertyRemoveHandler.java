@@ -18,9 +18,9 @@
  */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -40,9 +40,9 @@ public class SystemPropertyRemoveHandler
 
 
     @Override
-    protected void removeSystemProperty(String name, NewOperationContext context, ResultHandler resultHandler,
+    protected void removeSystemProperty(String name, OperationContext context, ResultHandler resultHandler,
             ModelNode compensating) {
-        if (context instanceof NewRuntimeOperationContext) {
+        if (context instanceof RuntimeOperationContext) {
             System.clearProperty(name);
         }
         resultHandler.handleResultComplete(compensating);

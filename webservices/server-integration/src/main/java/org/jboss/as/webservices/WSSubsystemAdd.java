@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,19 +21,34 @@
  */
 package org.jboss.as.webservices;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.webservices.CommonAttributes.CONFIGURATION;
+import static org.jboss.as.webservices.CommonAttributes.MODIFY_SOAP_ADDRESS;
+import static org.jboss.as.webservices.CommonAttributes.WEBSERVICE_HOST;
+import static org.jboss.as.webservices.CommonAttributes.WEBSERVICE_PORT;
+import static org.jboss.as.webservices.CommonAttributes.WEBSERVICE_SECURE_PORT;
+
 import java.net.UnknownHostException;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ServerConfigService;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -41,45 +56,60 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.common.management.AbstractServerConfig;
 
 /**
- *
  * @author alessio.soldano@jboss.com
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @since 09-Nov-2010
- *
  */
-public final class WSSubsystemAdd extends AbstractSubsystemAdd<WSSubsystemElement> {
+public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+    private static final Logger log = Logger.getLogger("org.jboss.as.webservices");
 
-    private static final long serialVersionUID = 3326871447114169145L;
     private static final ServiceName mbeanServiceName = ServiceName.JBOSS.append("mbean", "server");
 
-    private WSConfigurationElement configuration;
+    static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
 
-    protected WSSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
-    }
+    private final ParametersValidator operationValidator = new ParametersValidator();
+    private final ParametersValidator configValidator = new ParametersValidator();
 
-    public WSConfigurationElement getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(WSConfigurationElement configuration) {
-        this.configuration = configuration;
+    // Private to ensure a singleton.
+    private WSSubsystemAdd() {
+        operationValidator.registerValidator(CONFIGURATION, new ModelTypeValidator(ModelType.OBJECT));
+        configValidator.registerValidator(WEBSERVICE_HOST, new ModelTypeValidator(ModelType.STRING));
+        configValidator.registerValidator(MODIFY_SOAP_ADDRESS, new ModelTypeValidator(ModelType.BOOLEAN));
+        configValidator.registerValidator(WEBSERVICE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
+        configValidator.registerValidator(WEBSERVICE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
     }
 
     @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
-            final P param) {
-        ServiceTarget serviceTarget = updateContext.getServiceTarget();
-        addConfigService(serviceTarget, configuration);
-        addRegistryService(serviceTarget);
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        // Create the compensating operation
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+
+        operationValidator.validate(operation);
+        ModelNode config = operation.require(CONFIGURATION);
+        configValidator.validate(config);
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(CONFIGURATION).set(config);
+
+        if (context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = (BootOperationContext) context;
+
+            log.info("Activating WebServices Extension");
+            WSServices.saveContainerRegistry(updateContext.getServiceRegistry());
+
+            ServiceTarget serviceTarget = updateContext.getServiceTarget();
+            addConfigService(serviceTarget, config);
+            addRegistryService(serviceTarget);
+
+            //add the DUP for dealing with WS deployments
+            WSDeploymentActivator.activate(updateContext);
+        }
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
-        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
-        //add the DUP for dealing with WS deployments
-        WSDeploymentActivator.activate(updateContext);
-    }
-
-    private static void addConfigService(ServiceTarget serviceTarget, WSConfigurationElement configuration) {
+    private static void addConfigService(ServiceTarget serviceTarget, ModelNode configuration) {
         InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
         InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
         AbstractServerConfig serverConfig = createServerConfig(configuration, mbeanServer, serverEnvironment);
@@ -97,28 +127,22 @@ public final class WSSubsystemAdd extends AbstractSubsystemAdd<WSSubsystemElemen
                 .install();
     }
 
-    private static AbstractServerConfig createServerConfig(WSConfigurationElement configuration,
+    private static AbstractServerConfig createServerConfig(ModelNode configuration,
             InjectedValue<MBeanServer> mbeanServer, InjectedValue<ServerEnvironment> serverEnvironment) {
         AbstractServerConfig config = new ServerConfigImpl(mbeanServer, serverEnvironment);
         try {
-            config.setWebServiceHost(configuration.getWebServiceHost());
+            config.setWebServiceHost(configuration.require(WEBSERVICE_HOST).asString());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        config.setModifySOAPAddress(configuration.isModifySOAPAddress());
-        if (configuration.getWebServicePort() != null) {
-            config.setWebServicePort(configuration.getWebServicePort());
+        config.setModifySOAPAddress(configuration.require(MODIFY_SOAP_ADDRESS).asBoolean());
+        if (configuration.hasDefined(WEBSERVICE_PORT)) {
+            config.setWebServicePort(configuration.require(WEBSERVICE_PORT).asInt());
         }
-        if (configuration.getWebServiceSecurePort() != null) {
-            config.setWebServicePort(configuration.getWebServiceSecurePort());
+        if (configuration.hasDefined(WEBSERVICE_SECURE_PORT)) {
+            config.setWebServicePort(configuration.require(WEBSERVICE_SECURE_PORT).asInt());
         }
         return config;
-    }
-
-    protected WSSubsystemElement createSubsystemElement() {
-        WSSubsystemElement element = new WSSubsystemElement();
-        element.setConfiguration(configuration);
-        return element;
     }
 
 }

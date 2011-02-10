@@ -22,89 +22,107 @@
 
 package org.jboss.as.logging;
 
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.server.services.path.AbstractPathService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.CommonAttributes.PATH;
+import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public class SizeRotatingFileHandlerAdd extends FileHandlerAdd {
+class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 3144252544518106859L;
+    static final SizeRotatingFileHandlerAdd INSTANCE = new SizeRotatingFileHandlerAdd();
 
-    private long rotateSize = 2L * 1024L * 1024L;
+    static final String OPERATION_NAME = "add-size-periodic-handler";
 
-    private int maxBackupIndex = 1;
+    static long DEFAULT_ROTATE_SIZE = 2L * 1024L * 1024L;
 
-    public SizeRotatingFileHandlerAdd(final String name) {
-        super(name);
-    }
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    public long getRotateSize() {
-        return rotateSize;
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    public void setRotateSize(final long rotateSize) {
-        this.rotateSize = rotateSize;
-    }
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set(REMOVE);
 
-    public int getMaxBackupIndex() {
-        return maxBackupIndex;
-    }
-
-    public void setMaxBackupIndex(final int maxBackupIndex) {
-        this.maxBackupIndex = maxBackupIndex;
-    }
-
-    protected AbstractHandlerElement<?> createElement(final String name) {
-        final SizeRotatingFileHandlerElement element = new SizeRotatingFileHandlerElement(name);
-        element.setMaxBackupIndex(maxBackupIndex);
-        element.setRotateSize(rotateSize);
-        element.setPath(getRelativeTo(), getPath());
-        return element;
-    }
-
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        try {
-            final ServiceTarget target = updateContext.getServiceTarget();
-            final SizeRotatingFileHandlerService service = new SizeRotatingFileHandlerService();
-            final ServiceBuilder<Handler> serviceBuilder = target.addService(LogServices.handlerName(getName()), service);
-            final String relativeTo = getRelativeTo();
-            if (relativeTo != null) {
-                serviceBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo), String.class, service.getRelativeToInjector());
-            }
-            service.setLevel(Level.parse(getLevelName()));
-            final Boolean autoFlush = getAutoflush();
-            if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-            try {
-                service.setEncoding(getEncoding());
-            } catch (UnsupportedEncodingException e) {
-                handler.handleFailure(e, param);
-                return;
-            }
-            try {
-                service.setPath(getPath());
-            } catch (FileNotFoundException e) {
-                handler.handleFailure(e, param);
-                return;
-            }
-            service.setFormatterSpec(getFormatter());
-            service.setMaxBackupIndex(maxBackupIndex);
-            service.setRotateSize(rotateSize);
-            serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-            serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
-            serviceBuilder.install();
-        } catch (Throwable t) {
-            handler.handleFailure(t, param);
+        final String handlerType = operation.require(HANDLER_TYPE).asString();
+        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
+        if(type != LoggerHandlerType.SIZE_ROTATING_FILE_HANDLER) {
+            resultHandler.handleFailed(new ModelNode().set("invalid operation for handler-type: " + type));
         }
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
+            try {
+                final SizeRotatingFileHandlerService service = new SizeRotatingFileHandlerService();
+                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                if (operation.has(FILE)) {
+                    if(operation.get(FILE).has(RELATIVE_TO)) {
+                        serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
+                    }
+                    service.setPath(operation.get(FILE, PATH).asString());
+                }
+                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+                if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+                if (operation.has(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.has(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                if (operation.has(MAX_BACKUP_INDEX)) service.setMaxBackupIndex(operation.get(MAX_BACKUP_INDEX).asInt());
+                if (operation.has(ROTATE_SIZE)) service.setRotateSize(operation.get(ROTATE_SIZE).asLong(DEFAULT_ROTATE_SIZE));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                serviceBuilder.install();
+            } catch(Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
+        }
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
+        subModel.get(ENCODING).set(operation.get(ENCODING));
+        subModel.get(FORMATTER).set(operation.get(FORMATTER));
+        subModel.get(HANDLER_TYPE).set(handlerType);
+        subModel.get(LEVEL).set(operation.get(LEVEL));
+        subModel.get(FILE).set(operation.get(FILE));
+        subModel.get(MAX_BACKUP_INDEX).set(operation.get(MAX_BACKUP_INDEX));
+        subModel.get(ROTATE_SIZE).set(operation.get(ROTATE_SIZE));
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
+    }
+
+    static AbstractFormatterSpec createFormatterSpec(final ModelNode operation) {
+        return new PatternFormatterSpec(operation.get(FORMATTER).asString());
     }
 }

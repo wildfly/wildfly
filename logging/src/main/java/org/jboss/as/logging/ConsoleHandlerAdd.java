@@ -22,64 +22,90 @@
 
 package org.jboss.as.logging;
 
-import java.io.UnsupportedEncodingException;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public class ConsoleHandlerAdd extends AbstractHandlerAdd {
+class ConsoleHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -4769503787024853339L;
+    static final ConsoleHandlerAdd INSTANCE = new ConsoleHandlerAdd();
 
-    private Target target = Target.SYSTEM_OUT;
+    static final String OPERATION_NAME = "add-console-handler";
 
-    public ConsoleHandlerAdd(final String name) {
-        super(name);
-    }
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    public Target getTarget() {
-        return target;
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    public void setTarget(final Target target) {
-        this.target = target;
-    }
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set(REMOVE);
 
-    protected AbstractHandlerElement<?> createElement(final String name) {
-        final ConsoleHandlerElement element = new ConsoleHandlerElement(name);
-        element.setTarget(target);
-        return element;
-    }
-
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        try {
-            final ServiceTarget target = updateContext.getServiceTarget();
-            final ConsoleHandlerService service = new ConsoleHandlerService();
-            final ServiceBuilder<Handler> serviceBuilder = target.addService(LogServices.handlerName(getName()), service);
-            service.setLevel(Level.parse(getLevelName()));
-            final Boolean autoFlush = getAutoflush();
-            if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-            try {
-                service.setEncoding(getEncoding());
-            } catch (UnsupportedEncodingException e) {
-                handler.handleFailure(e, param);
-                return;
-            }
-            service.setFormatterSpec(getFormatter());
-            serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-            serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
-            serviceBuilder.install();
-        } catch (Throwable t) {
-            handler.handleFailure(t, param);
-            return;
+        final String handlerType = operation.require(HANDLER_TYPE).asString();
+        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
+        if(type != LoggerHandlerType.CONSOLE_HANDLER) {
+            resultHandler.handleFailed(new ModelNode().set("invalid operation for handler-type: " + type));
         }
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
+            try {
+                final ConsoleHandlerService service = new ConsoleHandlerService();
+                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+                if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                serviceBuilder.install();
+            } catch(Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
+        }
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
+        subModel.get(ENCODING).set(operation.get(ENCODING));
+        subModel.get(FORMATTER).set(operation.get(FORMATTER));
+        subModel.get(HANDLER_TYPE).set(handlerType);
+        subModel.get(LEVEL).set(operation.get(LEVEL));
+        subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
+    }
+
+    static AbstractFormatterSpec createFormatterSpec(final ModelNode operation) {
+        return new PatternFormatterSpec(operation.get(FORMATTER).asString());
     }
 }

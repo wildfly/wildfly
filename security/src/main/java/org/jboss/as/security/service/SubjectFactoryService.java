@@ -22,7 +22,7 @@
 
 package org.jboss.as.security.service;
 
-import org.jboss.as.security.SecuritySubsystemElement;
+import org.jboss.as.security.SecurityExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -42,7 +42,7 @@ import org.jboss.security.plugins.JBossSecuritySubjectFactory;
  */
 public class SubjectFactoryService implements Service<SubjectFactory> {
 
-    public static final ServiceName SERVICE_NAME = SecuritySubsystemElement.JBOSS_SECURITY.append("subject-factory");
+    public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("subject-factory");
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
@@ -57,6 +57,7 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void start(StartContext context) throws StartException {
         if (log.isDebugEnabled())
             log.debug("Starting SubjectFactoryService");
@@ -78,11 +79,13 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void stop(StopContext context) {
         // nothing to do
     }
 
     /** {@inheritDoc} */
+    @Override
     public SubjectFactory getValue() throws IllegalStateException {
         return subjectFactory;
     }

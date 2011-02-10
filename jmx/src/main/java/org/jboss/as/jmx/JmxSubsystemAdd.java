@@ -22,33 +22,47 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Thomas.Diesler@jboss.com
+ * @author Emanuel Muckenhuber
  */
-public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElement> {
+class JMXSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -3662389863046074060L;
+    static final JMXSubsystemAdd INSTANCE = new JMXSubsystemAdd();
 
-    public JmxSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
+    private JMXSubsystemAdd() {
+        //
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final ServiceTarget target = updateContext.getServiceTarget();
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        MBeanServerService.addService(target);
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext bootContext = (RuntimeOperationContext) context;
+            // Add the MBean service
+            MBeanServerService.addService(bootContext.getServiceTarget());
+        }
 
+        context.getSubModel().get(CommonAttributes.SERVER_BINDING);
+        context.getSubModel().get(CommonAttributes.REGISTRY_BINDING);
+
+        // TODO add a remove handler
+        resultHandler.handleResultComplete(Util.getResourceRemoveOperation(operation.require(OP_ADDR)));
+
+        return Cancellable.NULL;
     }
 
-    @Override
-    protected JmxSubsystemElement createSubsystemElement() {
-        return new JmxSubsystemElement();
-    }
 }

@@ -29,7 +29,7 @@ import java.util.Locale;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -75,7 +75,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             byte[] hash = null;
             String failure = validator.validate(operation);

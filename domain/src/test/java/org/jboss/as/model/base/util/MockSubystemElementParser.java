@@ -29,7 +29,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.server.ExtensionContext.SubsystemConfiguration;
+import org.jboss.as.server.legacy.ExtensionContext.SubsystemConfiguration;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;

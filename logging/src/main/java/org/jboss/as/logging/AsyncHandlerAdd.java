@@ -22,81 +22,102 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import java.util.Locale;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public class AsyncHandlerAdd extends AbstractHandlerAdd {
+class AsyncHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler, DescriptionProvider {
 
-    private static final long serialVersionUID = 3144252544518106859L;
+    static final AsyncHandlerAdd INSTANCE = new AsyncHandlerAdd();
 
-    private OverflowAction overflowAction;
+    static final String OPERATION_NAME = "add-async-handler";
 
-    private int queueLength;
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    protected AsyncHandlerAdd(final String name) {
-        super(name);
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    protected AbstractHandlerElement<?> createElement(final String name) {
-        final AsyncHandlerElement element = new AsyncHandlerElement(name);
-        element.setOverflowAction(overflowAction);
-        element.setQueueLength(queueLength);
-        element.setSubhandlers(getSubhandlers());
-        return element;
-    }
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set(REMOVE);
 
-    public OverflowAction getOverflowAction() {
-        return overflowAction;
-    }
-
-    public void setOverflowAction(final OverflowAction overflowAction) {
-        this.overflowAction = overflowAction;
-    }
-
-    public int getQueueLength() {
-        return queueLength;
-    }
-
-    public void setQueueLength(final int queueLength) {
-        this.queueLength = queueLength;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        try {
-            final ServiceTarget target = updateContext.getServiceTarget();
-            final AsyncHandlerService service = new AsyncHandlerService();
-            final ServiceBuilder<Handler> serviceBuilder = target.addService(LogServices.handlerName(getName()), service);
-            final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
-            for (String handlerName : getSubhandlers()) {
-                final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
-                serviceBuilder.addDependency(LogServices.handlerName(handlerName), Handler.class, injectedValue);
-                list.add(injectedValue);
-            }
-            service.addHandlers(list);
-            service.setQueueLength(queueLength);
-            service.setLevel(Level.parse(getLevelName()));
-            service.setOverflowAction(overflowAction);
-            serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-            serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
-            serviceBuilder.install();
-        } catch (Throwable t) {
-            resultHandler.handleFailure(t, param);
-            return;
+        final String handlerType = operation.require(HANDLER_TYPE).asString();
+        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
+        if(type != LoggerHandlerType.ASYNC_HANDLER) {
+            resultHandler.handleFailed(new ModelNode().set("invalid operation for handler-type: " + type));
         }
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
+            try {
+                final AsyncHandlerService service = new AsyncHandlerService();
+                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
+                for(final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
+                    final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
+                    serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
+                    list.add(injectedValue);
+                }
+                service.addHandlers(list);
+                if(operation.hasDefined(QUEUE_LENGTH)) service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
+                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                serviceBuilder.install();
+            } catch(Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
+        }
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(HANDLER_TYPE).set(handlerType);
+        subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+        subModel.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
+        subModel.get(LEVEL).set(operation.get(LEVEL));
+        subModel.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return LoggingSubsystemProviders.getAsyncModelDescription(locale);
+    }
+
 }

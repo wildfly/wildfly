@@ -23,7 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -45,5 +45,5 @@ public interface BootOperationHandler extends ServerOperationHandler {
      * @param resultHandler the result handler to invoke when the operation is complete
      * @return a handler which may be used to asynchronously cancel this operation
      */
-    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

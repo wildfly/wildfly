@@ -62,7 +62,7 @@ import java.util.Set;
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -558,7 +558,7 @@ public abstract class AbstractProxyControllerTest {
                     new OperationHandler() {
 
                         @Override
-                        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },

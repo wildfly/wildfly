@@ -22,53 +22,53 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class JMXConnectorAdd extends AbstractSubsystemUpdate<JmxSubsystemElement, Void> {
+class JMXConnectorAdd implements ModelUpdateOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -1898250436998656765L;
-    private String serverBinding;
-    private String registryBinding;
+    static final JMXConnectorAdd INSTANCE = new JMXConnectorAdd();
 
-    public JMXConnectorAdd(final String serverBinding, final String registryBinding) {
-        super(Namespace.CURRENT.getUriString());
-        if(serverBinding == null) {
-            throw new IllegalArgumentException("null connector binding");
+    static final String OPERATION_NAME = "add-connector";
+
+    private JMXConnectorAdd() {
+        //
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
+        final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
+
+        final ModelNode compensatingOperation = Util.getEmptyOperation(JMXConnectorRemove.OPERATION_NAME, operation.require(OP_ADDR));
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+
+            final ServiceTarget target = runtimeContext.getServiceTarget();
+            JMXConnectorService.addService(target, serverBinding, registryBinding);
         }
-        if(registryBinding == null) {
-            throw new IllegalArgumentException("null registry binding");
-        }
-        this.serverBinding = serverBinding;
-        this.registryBinding = registryBinding;
-    }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceTarget target = updateContext.getServiceTarget().subTarget();
-        target.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
-        JMXConnectorService.addService(target, serverBinding, registryBinding);
-    }
+        context.getSubModel().get(CommonAttributes.SERVER_BINDING).set(serverBinding);
+        context.getSubModel().get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<JmxSubsystemElement, ?> getCompensatingUpdate(JmxSubsystemElement original) {
-        return new JMXConnectorRemove();
-    }
+        resultHandler.handleResultComplete(compensatingOperation);
 
-    /** {@inheritDoc} */
-    public Class<JmxSubsystemElement> getModelElementType() {
-        return JmxSubsystemElement.class;
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(JmxSubsystemElement element) throws UpdateFailedException {
-        element.setConnector(new JMXConnectorElement(serverBinding, registryBinding));
+        return Cancellable.NULL;
     }
 
 }

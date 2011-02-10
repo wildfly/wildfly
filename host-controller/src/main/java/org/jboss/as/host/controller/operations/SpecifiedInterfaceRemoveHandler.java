@@ -18,10 +18,10 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -37,9 +37,9 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler impl
     public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
 
     @Override
-    protected void uninstallInterface(String name, ModelNode criteria, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
-            NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
+    protected void uninstallInterface(String name, ModelNode criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
             final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
             if(controller == null) {
                 resultHandler.handleResultComplete(compensatingOp);

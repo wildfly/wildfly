@@ -24,6 +24,7 @@ package org.jboss.as.web;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.spec.TldMetaData;
 
 /**
@@ -36,14 +37,10 @@ class SharedTldsMetaDataBuilder {
     static final List<TldMetaData> tlds = new ArrayList<TldMetaData>();
 
     /** The common container config. */
-    private final WebContainerConfigElement containerConfig;
+    private final ModelNode containerConfig;
 
-    SharedTldsMetaDataBuilder(final WebContainerConfigElement containerConfig) {
-        if(containerConfig == null) {
-            this.containerConfig = new WebContainerConfigElement();
-        } else {
-            this.containerConfig = containerConfig;
-        }
+    SharedTldsMetaDataBuilder(final ModelNode containerConfig) {
+        this.containerConfig = containerConfig;
         init();
     }
 

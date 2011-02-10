@@ -83,7 +83,7 @@ import javax.xml.stream.XMLStreamReader;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.NewExtensionContext;
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
@@ -95,7 +95,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.threads.NewThreadsExtension.NewThreadsSubsystemParser;
+import org.jboss.as.threads.ThreadsExtension.NewThreadsSubsystemParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -152,7 +152,7 @@ public class ThreadsSubsystemTestCase {
         });
 
         TestNewExtensionContext context = new TestNewExtensionContext(testProfileRegistration);
-        NewThreadsExtension extension = new NewThreadsExtension();
+        ThreadsExtension extension = new ThreadsExtension();
         extension.initialize(context);
         Assert.assertNotNull(context.createdRegistration);
 
@@ -841,7 +841,7 @@ public class ThreadsSubsystemTestCase {
         }
     }
 
-    static class TestNewExtensionContext implements NewExtensionContext {
+    static class TestNewExtensionContext implements ExtensionContext {
         final ModelNodeRegistration testProfileRegistration;
         ModelNodeRegistration createdRegistration;
 

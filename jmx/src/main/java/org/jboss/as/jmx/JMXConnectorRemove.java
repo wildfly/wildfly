@@ -22,50 +22,61 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class JMXConnectorRemove extends AbstractSubsystemUpdate<JmxSubsystemElement, Void> {
+class JMXConnectorRemove implements ModelUpdateOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 5839017395274175195L;
+    static final JMXConnectorRemove INSTANCE = new JMXConnectorRemove();
 
-    protected JMXConnectorRemove() {
-        super(Namespace.CURRENT.getUriString());
+    static final String OPERATION_NAME = "remove-connector";
+
+    private JMXConnectorRemove() {
+        //
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(JmxSubsystemElement element) throws UpdateFailedException {
-        element.setConnector(null);
-    }
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = context.getServiceRegistry().getService(JMXConnectorService.SERVICE_NAME);
-        if(service == null) {
-            resultHandler.handleSuccess(null, param);
-        } else {
-            service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
+        final ModelNode subModel = context.getSubModel();
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(JMXConnectorAdd.OPERATION_NAME);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(CommonAttributes.SERVER_BINDING).set(subModel.get(CommonAttributes.SERVER_BINDING));
+        compensatingOperation.get(CommonAttributes.REGISTRY_BINDING).set(subModel.get(CommonAttributes.REGISTRY_BINDING));
+
+        subModel.get(CommonAttributes.SERVER_BINDING).clear();
+        subModel.get(CommonAttributes.REGISTRY_BINDING).clear();
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+
+            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(JMXConnectorService.SERVICE_NAME);
+            if(service != null) {
+                service.setMode(Mode.REMOVE);
+            }
         }
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<JmxSubsystemElement, ?> getCompensatingUpdate(JmxSubsystemElement original) {
-        final JMXConnectorElement connector = original.getConnector();
-        if(connector == null) {
-            return null;
-        }
-        return new JMXConnectorAdd(connector.getServerBinding(), connector.getRegistryBinding());
-    }
 
-    /** {@inheritDoc} */
-    public Class<JmxSubsystemElement> getModelElementType() {
-        return JmxSubsystemElement.class;
-    }
 
 }

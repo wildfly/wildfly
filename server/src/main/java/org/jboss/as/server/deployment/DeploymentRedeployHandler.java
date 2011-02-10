@@ -25,11 +25,11 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
@@ -60,7 +60,7 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, Ru
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             ModelNode model = context.getSubModel();
             ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
@@ -72,10 +72,10 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, Ru
         return Cancellable.NULL;
     }
 
-    private void redeploy(ModelNode model, NewOperationContext context, ResultHandler resultHandler,
+    private void redeploy(ModelNode model, OperationContext context, ResultHandler resultHandler,
             ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
-            NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
             String deploymentUnitName = model.require(NAME).asString();
             final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
             final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();

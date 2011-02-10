@@ -22,65 +22,104 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.server.services.path.AbstractPathService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.PATH;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public class PeriodicRotatingFileHandlerAdd extends FileHandlerAdd {
+class PeriodicRotatingFileHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 3144252544518106859L;
+    static final PeriodicRotatingFileHandlerAdd INSTANCE = new PeriodicRotatingFileHandlerAdd();
 
-    private String suffix;
+    static final String OPERATION_NAME = "add-periodic-handler";
 
-    public PeriodicRotatingFileHandlerAdd(final String name) {
-        super(name);
-    }
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    public String getSuffix() {
-        return suffix;
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    public void setSuffix(final String suffix) {
-        this.suffix = suffix;
-    }
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set(REMOVE);
 
-    protected AbstractHandlerElement<?> createElement(final String name) {
-        final PeriodicRotatingFileHandlerElement element = new PeriodicRotatingFileHandlerElement(name);
-        element.setSuffix(suffix);
-        element.setPath(getRelativeTo(), getPath());
-        return element;
-    }
-
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        try {
-            final ServiceTarget target = updateContext.getServiceTarget();
-            final PeriodicRotatingFileHandlerService service = new PeriodicRotatingFileHandlerService();
-            final ServiceBuilder<Handler> serviceBuilder = target.addService(LogServices.handlerName(getName()), service);
-            final String relativeTo = getRelativeTo();
-            if (relativeTo != null) {
-                serviceBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo), String.class, service.getRelativeToInjector());
-            }
-            service.setLevel(Level.parse(getLevelName()));
-            final Boolean autoFlush = getAutoflush();
-            if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-            service.setEncoding(getEncoding());
-            service.setPath(getPath());
-            service.setFormatterSpec(getFormatter());
-            service.setSuffix(suffix);
-            serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-            serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
-            serviceBuilder.install();
-        } catch (Throwable t) {
-            handler.handleFailure(t, param);
+        final String handlerType = operation.require(HANDLER_TYPE).asString();
+        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
+        if(type != LoggerHandlerType.PERIODIC_ROTATING_FILE_HANDLER) {
+            resultHandler.handleFailed(new ModelNode().set("invalid operation for handler-type: " + type));
         }
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
+            try {
+                final PeriodicRotatingFileHandlerService service = new PeriodicRotatingFileHandlerService();
+                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                if (operation.hasDefined(FILE)) {
+                    if(operation.get(FILE).hasDefined(RELATIVE_TO)) {
+                        serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
+                    }
+                    service.setPath(operation.get(FILE, PATH).asString());
+                }
+                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+                if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+                if (operation.hasDefined(SUFFIX)) service.setSuffix(operation.get(SUFFIX).asString());
+                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                serviceBuilder.install();
+            } catch(Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
+        }
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
+        subModel.get(ENCODING).set(operation.get(ENCODING));
+        subModel.get(FORMATTER).set(operation.get(FORMATTER));
+        subModel.get(HANDLER_TYPE).set(handlerType);
+        subModel.get(LEVEL).set(operation.get(LEVEL));
+        subModel.get(FILE).set(operation.get(FILE));
+        subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+        subModel.get(SUFFIX).set(operation.get(SUFFIX));
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
+    }
+
+    static AbstractFormatterSpec createFormatterSpec(final ModelNode operation) {
+        return new PatternFormatterSpec(operation.get(FORMATTER).asString());
     }
 }

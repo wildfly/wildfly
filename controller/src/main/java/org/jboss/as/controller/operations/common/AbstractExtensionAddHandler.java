@@ -27,7 +27,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -61,7 +61,7 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             ModelNode opAddr = operation.get(OP_ADDR);
             PathAddress address = PathAddress.pathAddress(opAddr);
@@ -87,6 +87,6 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
         return ExtensionDescription.getExtensionAddOperation(locale);
     }
 
-    protected abstract String installExtension(String module, NewOperationContext context);
+    protected abstract String installExtension(String module, OperationContext context);
 
 }

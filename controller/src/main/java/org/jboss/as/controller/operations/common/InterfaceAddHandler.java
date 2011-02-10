@@ -28,7 +28,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -68,7 +68,7 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = address.getLastElement().getValue();
@@ -97,7 +97,7 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
         return specified ? InterfaceDescription.getSpecifiedInterfaceAddOperation(locale) : InterfaceDescription.getNamedInterfaceAddOperation(locale);
     }
 
-    protected void installInterface(String name, ParsedInterfaceCriteria criteria, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected void installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         resultHandler.handleResultComplete(compensatingOp);
     }
 

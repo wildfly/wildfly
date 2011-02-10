@@ -19,49 +19,74 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.threads;
 
-import java.util.concurrent.ExecutorService;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
-import org.jboss.as.model.ChildElement;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import java.util.concurrent.ScheduledExecutorService;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseOperationParameters;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * Adds a scheduled thread pool.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
  */
-public final class ScheduledThreadPoolAdd extends AbstractExecutorAdd {
+public class ScheduledThreadPoolAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
 
-    private static final long serialVersionUID = 5597662601486525937L;
-
-    public ScheduledThreadPoolAdd(final String name, final ScaledCount maxThreads) {
-        super(name, maxThreads);
-    }
+    static final OperationHandler INSTANCE = new ScheduledThreadPoolAdd();
 
     @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceTarget target = updateContext.getServiceTarget();
-        final ScaledCount maxThreadsCount = getMaxThreads();
-        final int maxThreads = maxThreadsCount.getScaledCount();
-        final String name = getName();
-        final ServiceName serviceName = ThreadsServices.executorName(name);
-        final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(maxThreads, getKeepaliveTime());
-        final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
-        addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-        serviceBuilder.install();
-    }
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        BaseOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseScheduledThreadPoolOperationParameters(operation);
 
-    @Override
-    protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-        final ScheduledThreadPoolElement poolElement = new ScheduledThreadPoolElement(getName());
-        poolElement.setKeepaliveTime(getKeepaliveTime());
-        poolElement.setThreadFactory(getThreadFactory());
-        poolElement.setMaxThreads(getMaxThreads());
-        element.addExecutor(getName(), new ChildElement<ScheduledThreadPoolElement>(Element.SCHEDULED_THREAD_POOL.getLocalName(), poolElement));
+        //Apply to the model
+        final ModelNode model = context.getSubModel();
+        model.get(NAME).set(params.getName());
+        if (params.getThreadFactory() != null) {
+            model.get(THREAD_FACTORY).set(params.getThreadFactory());
+        }
+        if (params.getProperties() != null && params.getProperties().asList().size() > 0) {
+            model.get(PROPERTIES).set(params.getProperties());
+        }
+        if (params.getMaxThreads() != null) {
+            model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
+        }
+        if (params.getKeepAliveTime() != null) {
+            model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
+        }
+
+        if (context instanceof RuntimeOperationContext) {
+            ServiceTarget target = ((RuntimeOperationContext)context).getServiceTarget();
+            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+            final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
+            final ServiceBuilder<ScheduledExecutorService> serviceBuilder = target.addService(serviceName, service);
+            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+            serviceBuilder.install();
+        }
+
+        // Compensating is remove
+        final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
+        resultHandler.handleResultComplete(compensating);
+
+        return Cancellable.NULL;
     }
 }

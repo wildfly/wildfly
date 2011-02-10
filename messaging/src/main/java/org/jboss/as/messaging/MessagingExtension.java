@@ -22,31 +22,46 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
-import org.jboss.as.messaging.jms.JMSExtension;
-import org.jboss.msc.service.ServiceActivatorContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 
 /**
- * The implementation of the Messaging extension.
+ * Domain extension that integrates HornetQ.
  *
- * @author scott.stark@jboss.org
+ * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
+public class MessagingExtension implements Extension {
 
-    private final JMSExtension jmsExtension = new JMSExtension();
+    public static final String SUBSYSTEM_NAME = "messaging";
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, MessagingSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
 
-        // initialize the jms extension
-        jmsExtension.initialize(context);
+        subsystem.registerXMLElementWriter(MessagingSubsystemParser.getInstance());
+
+        final ModelNodeRegistration queue = registration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
+        queue.registerOperationHandler(ADD, QueueAdd.INSTANCE, QueueAdd.INSTANCE, false);
+        queue.registerOperationHandler(REMOVE, QueueRemove.INSTANCE, QueueRemove.INSTANCE, false);
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        jmsExtension.activate(context);
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
     }
 
 }

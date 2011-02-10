@@ -22,58 +22,57 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceNotFoundException;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * @author Emanuel Muckenhuber
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public class RootLoggerRemove extends AbstractLoggingSubsystemUpdate<Void> {
+class RootLoggerRemove implements ModelUpdateOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -9178350859833986971L;
+    static final RootLoggerRemove INSTANCE = new RootLoggerRemove();
 
-    public RootLoggerRemove() {
-    }
+    static final String OPERATION_NAME = "remove-root-logger";
 
-    /**
-     * {@inheritDoc}
-     */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service;
-        try {
-            service = updateContext.getServiceRegistry().getRequiredService(LogServices.ROOT_LOGGER);
-        } catch (ServiceNotFoundException e) {
-            resultHandler.handleFailure(e, param);
-            return;
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set("set-root-logger");
+        compensatingOperation.get(CommonAttributes.LEVEL).set(subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL));
+        compensatingOperation.get(CommonAttributes.HANDLERS).set(subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceRegistry registry = runtimeContext.getServiceRegistry();
+            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(LogServices.ROOT_LOGGER);
+            if(controller != null) {
+                controller.setMode(ServiceController.Mode.REMOVE);
+            }
+            if(subModel.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
+                LogServices.uninstallLoggerHandlers(registry, "", subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
+            }
         }
-        service.setMode(ServiceController.Mode.REMOVE);
-        service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
+
+        subModel.get(CommonAttributes.ROOT_LOGGER).clear();
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public RootLoggerAdd getCompensatingUpdate(LoggingSubsystemElement original) {
-        final RootLoggerElement loggerElement = original.getRootLogger();
-        if (loggerElement == null) {
-            return null;
-        }
-        final RootLoggerAdd add = new RootLoggerAdd();
-        add.setLevelName(loggerElement.getLevel());
-        return add;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
-        final AbstractLoggerElement<?> logger = element.clearRootLogger();
-        if (logger == null) {
-            throw new UpdateFailedException("Root logger not defined");
-        }
-    }
 }

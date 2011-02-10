@@ -22,66 +22,87 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Brian Stansberry
  */
-public final class ThreadFactoryPriorityUpdate extends AbstractThreadsSubsystemUpdate<Void> {
+public final class ThreadFactoryPriorityUpdate implements RuntimeOperationHandler, ModelUpdateOperationHandler {
 
     private static final long serialVersionUID = 4253625376544201028L;
 
-    private final String name;
-    private final Integer newPriority;
+    public static final ThreadFactoryPriorityUpdate INSTANCE = new ThreadFactoryPriorityUpdate();
 
-    public ThreadFactoryPriorityUpdate(final String name, final Integer newPriority) {
-        this.name = name;
-        this.newPriority = newPriority;
+    private final ParametersValidator validator = new ParametersValidator();
+    private ThreadFactoryPriorityUpdate() {
+        validator.registerValidator(VALUE, new IntRangeValidator(1, 10, true, true));
     }
 
-    public ThreadFactoryPriorityUpdate getCompensatingUpdate(final ThreadsSubsystemElement original) {
-        final ThreadFactoryElement threadFactory = original.getThreadFactory(name);
-        if (threadFactory == null) {
-            return null;
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+
+        String failure = validator.validate(operation);
+        if (failure != null) {
+            resultHandler.handleFailed(new ModelNode().set(failure));
+            return Cancellable.NULL;
         }
-        return new ThreadFactoryPriorityUpdate(name, threadFactory.getPriority());
-    }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceController<?> service = updateContext.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
-        if (service == null) {
-            handler.handleFailure(notConfigured(), param);
-        } else {
-            try {
+        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
+
+        ModelNode model = context.getSubModel();
+        if (!model.isDefined()) {
+            resultHandler.handleFailed(notConfigured(name));
+            return Cancellable.NULL;
+        }
+
+        ModelNode oldValue = model.get(CommonAttributes.PRIORITY);
+        Integer newPriority = null;
+        ModelNode newValue;
+        if (operation.hasDefined(VALUE)) {
+            newValue = operation.get(VALUE);
+            newPriority = Integer.valueOf(newValue.resolve().asInt()); // TODO validate resolved value
+        }
+        else {
+            newValue = new ModelNode();
+        }
+
+        model.get(CommonAttributes.PRIORITY).set(newValue);
+
+        if (context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
+            final ServiceController<?> service = updateContext.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
+            if (service == null) {
+                resultHandler.handleFailed(notConfigured(name));
+                return Cancellable.NULL;
+            } else {
                 final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
                 threadFactoryService.setPriority(newPriority);
-                handler.handleSuccess(null, param);
-            } catch (Throwable t) {
-                handler.handleFailure(t, param);
             }
         }
+
+        final ModelNode compensatingOp = operation.clone();
+        compensatingOp.get(VALUE).set(oldValue);
+
+        resultHandler.handleResultComplete(compensatingOp);
+
+        return Cancellable.NULL;
     }
 
-    protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-        final ThreadFactoryElement threadFactory = element.getThreadFactory(name);
-        if (threadFactory == null) {
-            throw notConfigured();
-        }
-        threadFactory.setPriority(newPriority);
-    }
-
-    public Integer getNewPriority() {
-        return newPriority;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    private UpdateFailedException notConfigured() {
-        return new UpdateFailedException("No thread factory named " + name + " is configured");
+    private ModelNode notConfigured(String name) {
+        return new ModelNode().set(String.format("No thread factory named %s is configured", name));
     }
 }

@@ -22,9 +22,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -44,10 +44,10 @@ public class DeploymentHandlerUtil {
     private DeploymentHandlerUtil() {
     }
 
-    public static void deploy(ModelNode deploymentModel, NewOperationContext context, ResultHandler resultHandler,
+    public static void deploy(ModelNode deploymentModel, OperationContext context, ResultHandler resultHandler,
             ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
-            NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
             String deploymentUnitName = deploymentModel.require(NAME).asString();
             final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
             final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
@@ -74,11 +74,11 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    public static void replace(final ModelNode deploymentModel, final String toReplace, final NewOperationContext context, final ResultHandler resultHandler,
+    public static void replace(final ModelNode deploymentModel, final String toReplace, final OperationContext context, final ResultHandler resultHandler,
             final ModelNode compensatingOp) {
 
-        if (context instanceof NewRuntimeOperationContext) {
-            NewRuntimeOperationContext updateContext = (NewRuntimeOperationContext) context;
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
             final ServiceController<?> controller = updateContext.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(toReplace));
             if(controller != null) {
                 controller.addListener(new AbstractServiceListener<Object>() {

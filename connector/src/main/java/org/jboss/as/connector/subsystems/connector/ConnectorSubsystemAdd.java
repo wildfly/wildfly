@@ -22,19 +22,32 @@
 
 package org.jboss.as.connector.subsystems.connector;
 
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
+import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
 import org.jboss.as.connector.workmanager.WorkManagerService;
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.bootstrapcontext.BaseCloneableBootstrapContext;
@@ -44,134 +57,101 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 
 /**
- * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorSubsystemElement> {
+class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    private static final long serialVersionUID = -874698675049495644L;
-    private boolean archiveValidation = true;
-    private boolean archiveValidationFailOnError = true;
-    private boolean archiveValidationFailOnWarn = false;
-    private boolean beanValidation = true;
+    static final OperationHandler INSTANCE = new ConnectorSubsystemAdd();
 
-    private String shortRunningThreadPool = null;
-    private String longRunningThreadPool = null;
-
-    protected ConnectorSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
-    }
-
+    /** {@inheritDoc} */
     @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
-            final P param) {
-        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        WorkManager wm = new WorkManagerImpl();
+        String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
+        String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
+        boolean beanValidationEnabled = ParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
+        boolean archiveValidationEnabled = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
+        boolean failOnError = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);
+        boolean failOnWarn = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN, false);
 
-        final WorkManagerService wmService = new WorkManagerService(wm);
-        serviceTarget.addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
-            .addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class, wmService.getExecutorShortInjector())
-            .addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class, wmService.getExecutorLongInjector())
-            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
-            .setInitialMode(Mode.ACTIVE)
-            .install();
+        if (context instanceof BootOperationContext) {
+            BootOperationContext updateContext = (BootOperationContext) context;
+            ServiceTarget serviceTarget = updateContext.getServiceTarget();
+            WorkManager wm = new WorkManagerImpl();
 
-        CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
-        final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
-        serviceTarget.addService(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService)
-            .addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class, defaultBootCtxService.getWorkManagerValueInjector())
-            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, defaultBootCtxService.getXaTerminatorInjector())
-            .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, defaultBootCtxService.getTxManagerInjector())
-            .setInitialMode(Mode.ACTIVE)
-            .install();
+            final WorkManagerService wmService = new WorkManagerService(wm);
+            serviceTarget
+                    .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
+                    .addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class,
+                            wmService.getExecutorShortInjector())
+                    .addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class,
+                            wmService.getExecutorLongInjector())
+                    .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
+                            wmService.getXaTerminatorInjector()).setInitialMode(Mode.ACTIVE).install();
 
-        final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
+            CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
+            final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
+            serviceTarget
+                    .addService(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService)
+                    .addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class,
+                            defaultBootCtxService.getWorkManagerValueInjector())
+                    .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
+                            defaultBootCtxService.getXaTerminatorInjector())
+                    .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER,
+                            com.arjuna.ats.jbossatx.jta.TransactionManagerService.class,
+                            defaultBootCtxService.getTxManagerInjector()).setInitialMode(Mode.ACTIVE).install();
+            final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
 
-        config.setArchiveValidation(archiveValidation);
-        config.setArchiveValidationFailOnError(archiveValidationFailOnError);
-        config.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
-        config.setBeanValidation(false);
+            config.setArchiveValidation(archiveValidationEnabled);
+            config.setArchiveValidationFailOnError(failOnError);
+            config.setArchiveValidationFailOnWarn(failOnWarn);
 
-        final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-        serviceTarget.addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
-            .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class, connectorConfigService.getDefaultBootstrapContextInjector())
-            .setInitialMode(Mode.ACTIVE)
-            .install();
-    }
+            // FIXME Bean validation currently not used
+            config.setBeanValidation(false);
 
-    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
-        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
-        new RaDeploymentActivator().activate(updateContext);
-    }
+            final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
 
-    protected void applyUpdate(ConnectorSubsystemElement element) throws UpdateFailedException {
-        element.setArchiveValidation(archiveValidation);
-        element.setArchiveValidationFailOnError(archiveValidationFailOnError);
-        element.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
-        element.setBeanValidation(false);
-        element.setLongRunningThreadPool(longRunningThreadPool);
-        element.setShortRunningThreadPool(shortRunningThreadPool);
-    }
+            serviceTarget
+                    .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
+                    .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class,
+                            connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
-    protected ConnectorSubsystemElement createSubsystemElement() {
-        ConnectorSubsystemElement element = new ConnectorSubsystemElement();
-        element.setArchiveValidation(archiveValidation);
-        element.setArchiveValidationFailOnError(archiveValidationFailOnError);
-        element.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
-        element.setBeanValidation(false);
-        element.setLongRunningThreadPool(longRunningThreadPool);
-        element.setShortRunningThreadPool(shortRunningThreadPool);
-        return element;
-    }
+            new RaDeploymentActivator().activate(updateContext);
+        }
 
-    public boolean isArchiveValidation() {
-        return archiveValidation;
-    }
+        // Apply to the model
+        final ModelNode model = context.getSubModel();
 
-    public void setArchiveValidation(final boolean archiveValidation) {
-        this.archiveValidation = archiveValidation;
-    }
+        if (shortRunningThreadPool != null) {
+            model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(shortRunningThreadPool);
 
-    public boolean isArchiveValidationFailOnError() {
-        return archiveValidationFailOnError;
-    }
+        }
+        if (longRunningThreadPool != null) {
+            model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(longRunningThreadPool);
 
-    public void setArchiveValidationFailOnError(final boolean archiveValidationFailOnError) {
-        this.archiveValidationFailOnError = archiveValidationFailOnError;
-    }
+        }
+        if (ParamsUtils.has(operation, BEAN_VALIDATION_ENABLED)) {
+            model.get(BEAN_VALIDATION_ENABLED).set(beanValidationEnabled);
+        }
+        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_ENABLED)) {
+            model.get(ARCHIVE_VALIDATION_ENABLED).set(archiveValidationEnabled);
+        }
+        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
+            model.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(failOnError);
+        }
+        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
+            model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(failOnWarn);
+        }
 
-    public boolean isArchiveValidationFailOnWarn() {
-        return archiveValidationFailOnWarn;
-    }
+        // Compensating is remove
+        final ModelNode compensating = new ModelNode();
+        compensating.get(OP_ADDR).set(operation.require(ADDRESS));
+        compensating.get(OP).set("remove");
 
-    public void setArchiveValidationFailOnWarn(final boolean archiveValidationFailOnWarn) {
-        this.archiveValidationFailOnWarn = archiveValidationFailOnWarn;
-    }
+        resultHandler.handleResultComplete(compensating);
 
-    public boolean isBeanValidation() {
-        return false;
-    }
-
-    public void setBeanValidation(final boolean beanValidation) {
-        this.beanValidation = beanValidation;
-    }
-
-    public String getShortRunningThreadPool() {
-        return shortRunningThreadPool;
-    }
-
-    public void setShortRunningThreadPool(String shortRunningThreadPool) {
-        this.shortRunningThreadPool = shortRunningThreadPool;
-    }
-
-    public String getLongRunningThreadPool() {
-        return longRunningThreadPool;
-    }
-
-    public void setLongRunningThreadPool(String longRunningThreadPool) {
-        this.longRunningThreadPool = longRunningThreadPool;
+        return Cancellable.NULL;
     }
 
 }

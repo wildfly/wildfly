@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,78 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.ejb3;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
-import org.jboss.msc.service.ServiceActivatorContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Domain extension used to initialize the EJB 3 subsystem element handlers.
- *
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Emanuel Muckenhuber
  */
 public class EJB3Extension implements Extension {
-   @Override
-   public void initialize(ExtensionContext context) {
-      context.registerSubsystem(EJB3SubsystemParser.NAMESPACE, EJB3SubsystemParser.getInstance());
-   }
 
-   @Override
-   public void activate(ServiceActivatorContext context) {
-      throw new RuntimeException("NYI: org.jboss.as.ejb3.EJB3Extension.activate");
-   }
+    public static final String SUBSYSTEM_NAME = "ejb3";
+    public static final String NAMESPACE = "urn:jboss:domain:ejb3:1.0";
+
+    private static final EJB3SubsystemParser parser = new EJB3SubsystemParser();
+
+    /** {@inheritDoc} */
+    @Override
+    public void initialize(ExtensionContext context) {
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(EJB3SubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, Ejb3SubsystemAdd.INSTANCE, EJB3SubsystemProviders.SUBSYSTEM_ADD, false);
+
+        subsystem.registerXMLElementWriter(parser);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(NAMESPACE, parser);
+    }
+
+    static class EJB3SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+
+        /** {@inheritDoc} */
+        @Override
+        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+            // //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewManagedBeansExtension.NAMESPACE, true);
+            context.startSubsystemElement(NAMESPACE, false);
+            writer.writeEndElement();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
+            ParseUtils.requireNoAttributes(reader);
+            ParseUtils.requireNoContent(reader);
+            final ModelNode update = new ModelNode();
+            update.get(OP).set(ADD);
+            update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            list.add(update);
+        }
+    }
+
 }

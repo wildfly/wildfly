@@ -22,66 +22,55 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Update removing a web connector
  *
  * @author Emanuel Muckenhuber
  */
-public class WebConnectorRemove extends AbstractWebSubsystemUpdate<Void> {
+public class WebConnectorRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -5287654247889240561L;
-    private final String name;
+    static final WebConnectorRemove INSTANCE = new WebConnectorRemove();
 
-    public WebConnectorRemove(final String name) {
-        if(name == null) {
-            throw new IllegalArgumentException("null connector name");
-        }
-        this.name = name;
+    private WebConnectorRemove() {
+        //
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(WebSubsystemElement element) throws UpdateFailedException {
-        if(! element.removeConnector(name)) {
-            throw new UpdateFailedException("no such connector " + name);
-        }
-    }
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = context.getServiceRegistry().getService(WebSubsystemElement.JBOSS_WEB_CONNECTOR.append(name));
-        if(service == null) {
-            resultHandler.handleSuccess(null, param);
-        } else {
-            service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
-        }
-    }
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<WebSubsystemElement, ?> getCompensatingUpdate(WebSubsystemElement original) {
-        final WebConnectorElement connector = original.getConnector(name);
-        if(connector == null) {
-            return null;
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = WebConnectorAdd.getRecreateOperation(opAddr, subModel);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
+            if(service != null) {
+                // FIXME
+                service.setMode(Mode.REMOVE);
+            }
         }
-        final WebConnectorAdd action = new WebConnectorAdd(name);
-        action.setBindingRef(connector.getBindingRef());
-        action.setProtocol(connector.getProtocol());
-        action.setScheme(connector.getScheme());
-        action.setExecutorRef(connector.getExecutorRef());
-        action.setEnabled(connector.isEnabled());
-        action.setRedirectPort(connector.getRedirectPort());
-        action.setProxyName(connector.getProxyName());
-        action.setProxyPort(connector.getProxyPort());
-        action.setEnableLookups(connector.isEnableLookups());
-        action.setMaxPostSize(connector.getMaxPostSize());
-        action.setMaxSavePostSize(connector.getMaxSavePostSize());
-        action.setSecure(connector.isSecure());
-        return action;
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

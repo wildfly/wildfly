@@ -43,5 +43,5 @@ public interface ModelRemoveOperationHandler extends ModelUpdateOperationHandler
      *
      * @return a handle which may be used to asynchronously cancel this operation
      */
-    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

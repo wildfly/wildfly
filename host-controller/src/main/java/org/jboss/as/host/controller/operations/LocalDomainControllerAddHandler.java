@@ -28,7 +28,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -61,7 +61,7 @@ public class LocalDomainControllerAddHandler implements ModelUpdateOperationHand
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         try {
             final ModelNode model = context.getSubModel();
             model.get(DOMAIN_CONTROLLER).get(LOCAL).setEmptyObject();

@@ -19,102 +19,102 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.threads;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
+import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
 import java.util.concurrent.Executor;
 
-import org.jboss.as.model.ChildElement;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedOperationParameters;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * Adds a bounded queue thread pool.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
  */
-public final class BoundedQueueThreadPoolAdd extends AbstractExecutorAdd {
+public class BoundedQueueThreadPoolAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
 
-    private static final long serialVersionUID = 5597662601486525937L;
+    static final OperationHandler INSTANCE = new BoundedQueueThreadPoolAdd();
 
-    private final ScaledCount queueLength;
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(operation);
 
-    private String handoffExecutor;
-    private boolean blocking;
-    private boolean allowCoreTimeout;
-    private ScaledCount coreThreads;
-
-    public BoundedQueueThreadPoolAdd(final String name, final ScaledCount maxThreads, final ScaledCount queueLength) {
-        super(name, maxThreads);
-        if (queueLength == null) {
-            throw new IllegalArgumentException("queueLength is null");
+        //Apply to the model
+        final ModelNode model = context.getSubModel();
+        model.get(NAME).set(params.getName());
+        if (params.getThreadFactory() != null) {
+            model.get(THREAD_FACTORY).set(params.getThreadFactory());
         }
-        this.queueLength = queueLength;
-    }
+        if (params.getProperties() != null && params.getProperties().asList().size() > 0) {
+            model.get(PROPERTIES).set(params.getProperties());
+        }
+        if (params.getMaxThreads() != null) {
+            model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
+        }
+        if (params.getKeepAliveTime() != null) {
+            model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
+        }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceTarget target = updateContext.getServiceTarget();
-        final ScaledCount coreThreadsCount = getCoreThreads();
-        final ScaledCount maxThreadsCount = getMaxThreads();
-        final int maxThreads = maxThreadsCount.getScaledCount();
-        final int coreThreads = coreThreadsCount == null ? maxThreads : coreThreadsCount.getScaledCount();
-        final int queueLength = this.queueLength.getScaledCount();
-        final String name = getName();
-        final ServiceName serviceName = ThreadsServices.executorName(name);
-        final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(coreThreads, maxThreads, queueLength, blocking, getKeepaliveTime(), allowCoreTimeout);
-        final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
-        addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-        serviceBuilder.install();
-    }
+        model.get(BLOCKING).set(params.isBlocking());
+        if (params.getHandoffExecutor() != null) {
+            model.get(HANDOFF_EXECUTOR).set(params.getHandoffExecutor());
+        }
+        model.get(ALLOW_CORE_TIMEOUT).set(params.isAllowCoreTimeout());
+        if (params.getQueueLength() != null) {
+            model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+        }
 
-    protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-        final BoundedQueueThreadPoolElement poolElement = new BoundedQueueThreadPoolElement(getName());
-        poolElement.setAllowCoreTimeout(allowCoreTimeout);
-        poolElement.setBlocking(blocking);
-        poolElement.setCoreThreads(coreThreads);
-        poolElement.setHandoffExecutor(handoffExecutor);
-        poolElement.setQueueLength(queueLength);
-        poolElement.setKeepaliveTime(getKeepaliveTime());
-        poolElement.setThreadFactory(getThreadFactory());
-        poolElement.setMaxThreads(getMaxThreads());
-        element.addExecutor(getName(), new ChildElement<BoundedQueueThreadPoolElement>(Element.BOUNDED_QUEUE_THREAD_POOL.getLocalName(), poolElement));
-    }
+        if (params.getCoreThreads() != null) {
+            model.get(CORE_THREADS).set(operation.get(CORE_THREADS));
+        }
 
-    public String getHandoffExecutor() {
-        return handoffExecutor;
-    }
+        // Compensating is remove
+        final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
 
-    public void setHandoffExecutor(final String handoffExecutor) {
-        this.handoffExecutor = handoffExecutor;
-    }
+        if (context instanceof RuntimeOperationContext) {
+            ServiceTarget target = ((RuntimeOperationContext)context).getServiceTarget();
+            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+            final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
+                    params.getCoreThreads().getScaledCount(),
+                    params.getMaxThreads().getScaledCount(),
+                    params.getQueueLength().getScaledCount(),
+                    params.isBlocking(),
+                    params.getKeepAliveTime(),
+                    params.isAllowCoreTimeout());
 
-    public boolean isBlocking() {
-        return blocking;
-    }
+            //TODO add the handoffExceutor injection
 
-    public void setBlocking(final boolean blocking) {
-        this.blocking = blocking;
-    }
+            final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
+            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+            serviceBuilder.install();
+        }
 
-    public boolean isAllowCoreTimeout() {
-        return allowCoreTimeout;
-    }
+        resultHandler.handleResultComplete(compensating);
 
-    public void setAllowCoreTimeout(final boolean allowCoreTimeout) {
-        this.allowCoreTimeout = allowCoreTimeout;
-    }
-
-    public ScaledCount getCoreThreads() {
-        return coreThreads;
-    }
-
-    public void setCoreThreads(final ScaledCount coreThreads) {
-        this.coreThreads = coreThreads;
-    }
-
-    public ScaledCount getQueueLength() {
-        return queueLength;
+        return Cancellable.NULL;
     }
 }

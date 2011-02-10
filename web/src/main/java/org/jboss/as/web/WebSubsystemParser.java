@@ -22,50 +22,212 @@
 
 package org.jboss.as.web;
 
-import java.util.ArrayList;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.web.CommonAttributes.ACCESS_LOG;
+import static org.jboss.as.web.CommonAttributes.ALIAS;
+import static org.jboss.as.web.CommonAttributes.CONNECTOR;
+import static org.jboss.as.web.CommonAttributes.CONTAINER_CONFIG;
+import static org.jboss.as.web.CommonAttributes.DEFAULT_HOST;
+import static org.jboss.as.web.CommonAttributes.DISABLED;
+import static org.jboss.as.web.CommonAttributes.ENABLED;
+import static org.jboss.as.web.CommonAttributes.ENABLE_LOOKUPS;
+import static org.jboss.as.web.CommonAttributes.EXECUTOR;
+import static org.jboss.as.web.CommonAttributes.FILE_ENCONDING;
+import static org.jboss.as.web.CommonAttributes.JSP_CONFIGURATION;
+import static org.jboss.as.web.CommonAttributes.LISTINGS;
+import static org.jboss.as.web.CommonAttributes.MAX_DEPTH;
+import static org.jboss.as.web.CommonAttributes.MAX_POST_SIZE;
+import static org.jboss.as.web.CommonAttributes.MAX_SAVE_POST_SIZE;
+import static org.jboss.as.web.CommonAttributes.MIME_MAPPING;
+import static org.jboss.as.web.CommonAttributes.NAME;
+import static org.jboss.as.web.CommonAttributes.PROTOCOL;
+import static org.jboss.as.web.CommonAttributes.PROXY_NAME;
+import static org.jboss.as.web.CommonAttributes.PROXY_PORT;
+import static org.jboss.as.web.CommonAttributes.READ_ONLY;
+import static org.jboss.as.web.CommonAttributes.REDIRECT_PORT;
+import static org.jboss.as.web.CommonAttributes.REWRITE;
+import static org.jboss.as.web.CommonAttributes.SCHEME;
+import static org.jboss.as.web.CommonAttributes.SECRET;
+import static org.jboss.as.web.CommonAttributes.SECURE;
+import static org.jboss.as.web.CommonAttributes.SENDFILE;
+import static org.jboss.as.web.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.web.CommonAttributes.STATIC_RESOURCES;
+import static org.jboss.as.web.CommonAttributes.VIRTUAL_SERVER;
+import static org.jboss.as.web.CommonAttributes.WEBDAV;
+import static org.jboss.as.web.CommonAttributes.WELCOME_FILE;
+
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.server.ExtensionContext;
-import org.jboss.as.server.ExtensionContext.SubsystemConfiguration;
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.ParseResult;
-import org.jboss.as.model.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The web subsystem parser.
  *
  * @author Emanuel Muckenhuber
+ * @author Brian Stansberry
  */
-public class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<WebSubsystemElement>>> {
+class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final WebSubsystemParser INSTANCE = new WebSubsystemParser();
 
-    public static WebSubsystemParser getInstance() {
+    static WebSubsystemParser getInstance() {
         return INSTANCE;
     }
 
-    private WebSubsystemParser() {
-        //
+    /** {@inheritDoc} */
+    @Override
+    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+
+        ModelNode node = context.getModelNode();
+        if(node.hasDefined(DEFAULT_HOST)) {
+            writer.writeAttribute(Attribute.DEFAULT_HOST.getLocalName(), node.get(DEFAULT_HOST).asString());
+        }
+        if(node.hasDefined(CONTAINER_CONFIG)) {
+            writeContainerConfig(writer, node.get(CONTAINER_CONFIG));
+        }
+        if(node.hasDefined(CONNECTOR)) {
+            for(final Property connector : node.get(CONNECTOR).asPropertyList()) {
+                final ModelNode config = connector.getValue();
+                writer.writeStartElement(Element.CONNECTOR.getLocalName());
+                writer.writeAttribute(NAME, connector.getName());
+                writeAttribute(writer, Attribute.PROTOCOL.getLocalName(), config);
+                writeAttribute(writer, Attribute.SOCKET_BINDING.getLocalName(), config);
+                writeAttribute(writer, Attribute.SCHEME.getLocalName(), config);
+                writeAttribute(writer, Attribute.ENABLED.getLocalName(), config);
+                writeAttribute(writer, Attribute.ENABLE_LOOKUPS.getLocalName(), config);
+                writeAttribute(writer, Attribute.PROXY_NAME.getLocalName(), config);
+                writeAttribute(writer, Attribute.PROXY_PORT.getLocalName(), config);
+                writeAttribute(writer, Attribute.SECURE.getLocalName(), config);
+                writeAttribute(writer, Attribute.EXECUTOR.getLocalName(), config);
+                writeAttribute(writer, Attribute.MAX_POST_SIZE.getLocalName(), config);
+                writeAttribute(writer, Attribute.MAX_SAVE_POST_SIZE.getLocalName(), config);
+                writer.writeEndElement();
+            }
+        }
+        if(node.hasDefined(VIRTUAL_SERVER)) {
+            for(final Property host : node.get(VIRTUAL_SERVER).asPropertyList()) {
+                final ModelNode config = host.getValue();
+                writer.writeStartElement(Element.VIRTUAL_SERVER.getLocalName());
+                writer.writeAttribute(NAME, host.getName());
+                if(config.has(ALIAS)) {
+                    for(final ModelNode alias : config.get(ALIAS).asList()) {
+                        writer.writeEmptyElement(ALIAS);
+                        writer.writeAttribute(NAME, alias.asString());
+                    }
+                }
+                // TODO other config elements
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeContainerConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
+
+
+        if(config.hasDefined(STATIC_RESOURCES)) {
+            writeStaticResources(writer, config.get(STATIC_RESOURCES));
+        }
+        if(config.hasDefined(JSP_CONFIGURATION)) {
+            writeJSPConfiguration(writer, config.get(JSP_CONFIGURATION));
+        }
+        if(config.hasDefined(MIME_MAPPING)) {
+            for(final Property entry : config.get(MIME_MAPPING).asPropertyList()) {
+                writer.writeEmptyElement(Element.MIME_MAPPING.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), entry.getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue().asString());
+            }
+        }
+        if(config.hasDefined(WELCOME_FILE)) {
+            for(final ModelNode file : config.get(WELCOME_FILE).asList()) {
+                writer.writeStartElement(Element.WELCOME_FILE.getLocalName());
+                writer.writeCharacters(file.asString());
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeStaticResources(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.STATIC_RESOURCES.getLocalName());
+
+        writeAttribute(writer, Attribute.LISTINGS.getLocalName(), config);
+        writeAttribute(writer, Attribute.SENDFILE.getLocalName(), config);
+        writeAttribute(writer, Attribute.FILE_ENCONDING.getLocalName(), config);
+        writeAttribute(writer, Attribute.READ_ONLY.getLocalName(), config);
+        writeAttribute(writer, Attribute.WEBDAV.getLocalName(), config);
+        writeAttribute(writer, Attribute.SECRET.getLocalName(), config);
+        writeAttribute(writer, Attribute.MAX_DEPTH.getLocalName(), config);
+        writeAttribute(writer, Attribute.DISABLED.getLocalName(), config);
+
+        writer.writeEndElement();
+    }
+
+    private void writeJSPConfiguration(XMLExtendedStreamWriter writer, ModelNode jsp) throws XMLStreamException {
+        writer.writeStartElement(Element.JSP_CONFIGURATION.getLocalName());
+
+        writeAttribute(writer, Attribute.DEVELOPMENT.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.KEEP_GENERATED.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.TRIM_SPACES.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.TAG_POOLING.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.MAPPED_FILE.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.CHECK_INTERVAL.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.MODIFIFICATION_TEST_INTERVAL.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.RECOMPILE_ON_FAIL.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.SMAP.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.DUMP_SMAP.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.GENERATE_STRINGS_AS_CHAR_ARRAYS.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.SCRATCH_DIR.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.SOURCE_VM.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.TARGET_VM.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.JAVA_ENCODING.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.X_POWERED_BY.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.DISPLAY_SOOURCE_FRAGMENT.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.DISABLED.getLocalName(), jsp);
+        writer.writeEndElement();
     }
 
     /** {@inheritDoc} */
-    public void readElement(XMLExtendedStreamReader reader, ParseResult<SubsystemConfiguration<WebSubsystemElement>> result) throws XMLStreamException {
-        final List<AbstractSubsystemUpdate<WebSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<WebSubsystemElement,?>>();
-        final WebSubsystemAdd subsystem = new WebSubsystemAdd();
+    @Override
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         // no attributes
         if (reader.getAttributeCount() > 0) {
-            throw ParseUtils.unexpectedAttribute(reader, 0);
+            throw unexpectedAttribute(reader, 0);
         }
+
+        final ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME);
+        address.protect();
+
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).set(address);
+        list.add(subsystem);
+
         // elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -73,190 +235,205 @@ public class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
-                            WebContainerConfigElement config = parseContainerConfig(reader);
-                            subsystem.setConfig(config);
+                            final ModelNode config = parseContainerConfig(reader);
+                            subsystem.get(CONTAINER_CONFIG).set(config);
                             break;
                         }
                         case CONNECTOR: {
-                            parseConnector(reader, updates);
+                            parseConnector(reader,address, list);
                             break;
                         }
                         case VIRTUAL_SERVER: {
-                            parseHost(reader, updates);
+                            parseHost(reader, address, list);
                             break;
                         } default: {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                     }
                     break;
                 } default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    throw unexpectedElement(reader);
                 }
             }
         }
-
-        result.setResult(new ExtensionContext.SubsystemConfiguration<WebSubsystemElement>(subsystem, updates));
     }
 
-    static WebContainerConfigElement parseContainerConfig(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final WebContainerConfigElement config = new WebContainerConfigElement();
+    static ModelNode parseContainerConfig(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode config = new ModelNode();
         // no attributes
         if (reader.getAttributeCount() > 0) {
-            throw ParseUtils.unexpectedAttribute(reader, 0);
+            throw unexpectedAttribute(reader, 0);
         }
         // elements
-        Set<String> welcomeFiles = new HashSet<String>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
             case STATIC_RESOURCES: {
-                final WebStaticResourcesElement resourceServing = parseStaticResourceConfiguration(reader);
-                config.setStaticResources(resourceServing);
+                final ModelNode resourceServing = parseStaticResources(reader);
+                config.get(STATIC_RESOURCES).set(resourceServing);
                 break;
             }
             case JSP_CONFIGURATION: {
-                final WebJspConfigurationElement jspConfiguration = parseJSPConfiguration(reader);
-                config.setJspConfiguration(jspConfiguration);
+                final ModelNode jspConfiguration = parseJSPConfiguration(reader);
+                config.get(JSP_CONFIGURATION).set(jspConfiguration);
                 break;
             }
             case MIME_MAPPING: {
-                Map<String, String> mappings = parseProperties(reader, Element.MIME_MAPPING, false);
-                if(mappings != null && ! mappings.isEmpty()) {
-                    config.setMimeMappings(mappings);
-                }
+                final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
+                config.get(MIME_MAPPING).get(array[0]).set(array[1]);
                 break;
             }
             case WELCOME_FILE: {
                 final String welcomeFile = reader.getElementText().trim();
-                welcomeFiles.add(welcomeFile);
+                config.get(WELCOME_FILE).add(welcomeFile);
                 break;
             }
             default:
-                throw ParseUtils.unexpectedElement(reader);
+                throw unexpectedElement(reader);
             }
         }
-        config.setWelcomeFiles(welcomeFiles);
         return config;
     }
 
-    static WebJspConfigurationElement parseJSPConfiguration(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final WebJspConfigurationElement config = new WebJspConfigurationElement();
+    static ModelNode parseJSPConfiguration(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode jsp = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                case DEVELOPMENT:
-                    config.setDevelopment(Boolean.valueOf(value));
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case DEVELOPMENT:
+            case DISABLED:
+            case KEEP_GENERATED:
+            case TRIM_SPACES:
+            case TAG_POOLING:
+            case MAPPED_FILE:
+            case CHECK_INTERVAL:
+            case MODIFIFICATION_TEST_INTERVAL:
+            case RECOMPILE_ON_FAIL:
+            case SMAP:
+            case DUMP_SMAP:
+            case GENERATE_STRINGS_AS_CHAR_ARRAYS:
+            case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT:
+            case SCRATCH_DIR:
+            case SOURCE_VM:
+            case TARGET_VM:
+            case JAVA_ENCODING:
+            case X_POWERED_BY:
+            case DISPLAY_SOOURCE_FRAGMENT:
+                jsp.get(attribute.getLocalName()).set(value);
+                break;
+            default:
+                unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        return jsp;
+    }
+
+    static ModelNode parseStaticResources(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode resources = new ModelNode();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case LISTINGS:
+                resources.get(LISTINGS).set(value);
+                break;
+            case SENDFILE:
+                resources.get(SENDFILE).set(value);
+                break;
+            case FILE_ENCONDING:
+                resources.get(FILE_ENCONDING).set(value);
+            case READ_ONLY:
+                resources.get(READ_ONLY).set(value);
+                break;
+            case WEBDAV:
+                resources.get(WEBDAV).set(value);
+                break;
+            case SECRET:
+                resources.get(SECRET).set(value);
+                break;
+            case MAX_DEPTH:
+                resources.get(MAX_DEPTH).set(value);
+                break;
+            case DISABLED:
+                resources.get(DISABLED).set(value);
+                break;
+            default:
+                unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        return resources;
+    }
+
+    static void parseHost(XMLExtendedStreamReader reader, final ModelNode address, List<ModelNode> list) throws XMLStreamException {
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    name = value;
                     break;
-                case DISABLED:
-                    config.setDisabled(Boolean.valueOf(value));
-                    break;
-                case KEEP_GENERATED:
-                    config.setKeepGenerated(Boolean.valueOf(value));
-                    break;
-                case TRIM_SPACES:
-                    config.setTrimSpaces(Boolean.valueOf(value));
-                    break;
-                case TAG_POOLING:
-                    config.setTagPooling(Boolean.valueOf(value));
-                    break;
-                case MAPPED_FILE:
-                    config.setMappedFile(Boolean.valueOf(value));
-                    break;
-                case CHECK_INTERVAL:
-                    config.setCheckInterval(Integer.valueOf(value));
-                    break;
-                case MODIFIFICATION_TEST_INTERVAL:
-                    config.setModificationTestInterval(Integer.valueOf(value));
-                    break;
-                case RECOMPILE_ON_FAIL:
-                    config.setRecompileOnFail(Boolean.valueOf(value));
-                case SMAP:
-                    config.setSmap(Boolean.valueOf(value));
-                    break;
-                case DUMP_SMAP:
-                    config.setDumpSmap(Boolean.valueOf(value));
-                    break;
-                case GENERATE_STRINGS_AS_CHAR_ARRAYS:
-                    config.setGenerateStringsAsCharArrays(Boolean.valueOf(value));
-                    break;
-                case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT:
-                    config.setErrorOnInvalidClassAttribute(Boolean.valueOf(value));
-                    break;
-                case SCRATCH_DIR:
-                    config.setScratchDir(value);
-                    break;
-                case SOURCE_VM:
-                    config.setScratchDir(value);
-                    break;
-                case TARGET_VM:
-                    config.setTargetVM(value);
-                    break;
-                case JAVA_ENCODING:
-                    config.setJavaEncoding(value);
-                    break;
-                case X_POWERED_BY:
-                    config.setXPoweredBy(Boolean.valueOf(value));
-                    break;
-                case DISPLAY_SOOURCE_FRAGMENT:
-                    config.setDisplaySourceFragment(Boolean.valueOf(value));
-                    break;
-                default:
-                    ParseUtils.unexpectedAttribute(reader, i);
+                } default: {
+                    unexpectedAttribute(reader, i);
                 }
             }
         }
-        ParseUtils.requireNoContent(reader);
-        return config;
-    }
+        if(name == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
 
-    static WebStaticResourcesElement parseStaticResourceConfiguration(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final WebStaticResourcesElement config = new WebStaticResourcesElement();
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                case LISTINGS:
-                    config.setListings(Boolean.valueOf(value));
+        final ModelNode host = new ModelNode();
+        host.get(OP).set(ADD);
+        host.get(OP_ADDR).set(address).add(VIRTUAL_SERVER, name);
+        list.add(host);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+            case WEB_1_0: {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                case ALIAS:
+                    host.get(ALIAS).add(readStringAttributeElement(reader, Attribute.NAME.getLocalName()));
                     break;
-                case SENDFILE:
-                    config.setSendfileSize(Integer.valueOf(value));
+                case ACCESS_LOG:
+                    final ModelNode log = parseHostAccessLog(reader);
+                    host.get(ACCESS_LOG).set(log);
                     break;
-                case FILE_ENCONDING:
-                    config.setFileEncoding(value);
-                case READ_ONLY:
-                    config.setReadOnly(Boolean.valueOf(value));
-                    break;
-                case WEBDAV:
-                    config.setWebDav(Boolean.valueOf(value));
-                    break;
-                case SECRET:
-                    config.setSecret(value);
-                    break;
-                case MAX_DEPTH:
-                    config.setMaxDepth(Integer.valueOf(value));
-                    break;
-                case DISABLED:
-                    config.setDisabled(Boolean.valueOf(value));
+                case REWRITE:
+                    final ModelNode rewrite = parseHostRewrite(reader);
+                    host.get(REWRITE).set(rewrite);
                     break;
                 default:
-                    ParseUtils.unexpectedAttribute(reader, i);
+                    throw unexpectedElement(reader);
                 }
+                break;
+            }
+            default:
+                throw unexpectedElement(reader);
             }
         }
-        ParseUtils.requireNoContent(reader);
-        return config;
     }
 
-    static void parseConnector(final XMLExtendedStreamReader reader, final List<AbstractSubsystemUpdate<WebSubsystemElement, ?>> list) throws XMLStreamException {
+    static ModelNode parseHostRewrite(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode rewrite = new ModelNode();
+        return rewrite;
+    }
+
+    static ModelNode parseHostAccessLog(XMLExtendedStreamReader reader)  throws XMLStreamException {
+        final ModelNode log = new ModelNode();
+        return log;
+    }
+
+    static void parseConnector(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
         String name = null;
         String protocol = null;
         String bindingRef = null;
@@ -272,292 +449,81 @@ public class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<
         String redirectPort = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                case NAME:
-                    name = value;
-                    break;
-                case SOCKET_BINDING:
-                    bindingRef = value;
-                    break;
-                case SCHEME:
-                    scheme = value;
-                    break;
-                case PROTOCOL:
-                    protocol = value;
-                    break;
-                case EXECUTOR:
-                    executorRef = value;
-                    break;
-                case ENABLED:
-                    enabled = value;
-                    break;
-                case ENABLE_LOOKUPS:
-                    enableLookups = value;
-                    break;
-                case PROXY_NAME:
-                    proxyName = value;
-                    break;
-                case PROXY_PORT:
-                    proxyPort = value;
-                    break;
-                case MAX_POST_SIZE:
-                    maxPostSize = value;
-                    break;
-                case MAX_SAVE_POST_SIZE:
-                    maxSavePostSize = value;
-                    break;
-                case SECURE:
-                    secure = value;
-                    break;
-                case REDIRECT_PORT:
-                    redirectPort = value;
-                    break;
-                default:
-                    ParseUtils.unexpectedAttribute(reader, i);
-                }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NAME:
+                name = value;
+                break;
+            case SOCKET_BINDING:
+                bindingRef = value;
+                break;
+            case SCHEME:
+                scheme = value;
+                break;
+            case PROTOCOL:
+                protocol = value;
+                break;
+            case EXECUTOR:
+                executorRef = value;
+                break;
+            case ENABLED:
+                enabled = value;
+                break;
+            case ENABLE_LOOKUPS:
+                enableLookups = value;
+                break;
+            case PROXY_NAME:
+                proxyName = value;
+                break;
+            case PROXY_PORT:
+                proxyPort = value;
+                break;
+            case MAX_POST_SIZE:
+                maxPostSize = value;
+                break;
+            case MAX_SAVE_POST_SIZE:
+                maxSavePostSize = value;
+                break;
+            case SECURE:
+                secure = value;
+                break;
+            case REDIRECT_PORT:
+                redirectPort = value;
+                break;
+            default:
+                unexpectedAttribute(reader, i);
             }
         }
         if (name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         if (protocol == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PROTOCOL));
+            missingRequired(reader, Collections.singleton(Attribute.PROTOCOL));
         }
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-        final WebConnectorAdd action = new WebConnectorAdd(name);
-        action.setBindingRef(bindingRef);
-        action.setProtocol(protocol);
-        action.setScheme(scheme);
-        action.setExecutorRef(executorRef);
-        action.setProxyName(proxyName);
-        if(enabled != null) action.setEnabled(Boolean.valueOf(enabled));
-        if(proxyPort != null) action.setProxyPort(Integer.valueOf(proxyPort));
-        if(enableLookups != null) action.setEnableLookups(Boolean.valueOf(enableLookups));
-        if(redirectPort != null) action.setRedirectPort(Integer.valueOf(redirectPort));
-        if(secure != null) action.setSecure(Boolean.valueOf(secure));
-        if(maxPostSize != null) action.setMaxPostSize(Integer.valueOf(maxPostSize));
-        if(maxSavePostSize != null) action.setMaxSavePostSize(Integer.valueOf(maxSavePostSize));
-        list.add(action);
+        requireNoContent(reader);
+        final ModelNode connector = new ModelNode();
+        connector.get(OP).set(ADD);
+        connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
+        if(protocol != null) connector.get(PROTOCOL).set(protocol);
+        connector.get(SOCKET_BINDING).set(bindingRef);
+        if(scheme != null) connector.get(SCHEME).set(scheme);
+        if(executorRef != null) connector.get(EXECUTOR).set(executorRef);
+        if(enabled != null) connector.get(ENABLED).set(enabled);
+        if(enableLookups != null) connector.get(ENABLE_LOOKUPS).set(enableLookups);
+        if(proxyName != null) connector.get(PROXY_NAME).set(proxyName);
+        if(proxyPort != null) connector.get(PROXY_PORT).set(proxyPort);
+        if(maxPostSize != null) connector.get(MAX_POST_SIZE).set(maxPostSize);
+        if(maxSavePostSize != null) connector.get(MAX_SAVE_POST_SIZE).set(maxSavePostSize);
+        if(secure != null) connector.get(SECURE).set(secure);
+        if(redirectPort != null) connector.get(REDIRECT_PORT).set(redirectPort);
+        list.add(connector);
     }
 
-    static void parseHost(final XMLExtendedStreamReader reader, final List<AbstractSubsystemUpdate<WebSubsystemElement, ?>> list) throws XMLStreamException {
-        String name = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    } default: {
-                        ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
+    static void writeAttribute(final XMLExtendedStreamWriter writer, final String name, ModelNode node) throws XMLStreamException {
+        if(node.hasDefined(name)) {
+            writer.writeAttribute(name, node.get(name).asString());
         }
-        if(name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        Set<String> aliases = new HashSet<String>();
-        WebHostAccessLogElement accessLog = null;
-        WebHostRewriteElement rewrite = null;
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case WEB_1_0: {
-                final Element element = Element.forName(reader.getLocalName());
-                switch (element) {
-                case ALIAS:
-                    aliases.add(readSingleAttributeNoContent(reader));
-                    break;
-                case ACCESS_LOG:
-                    accessLog = parseHostAccessLog(reader);
-                    break;
-                case REWRITE:
-                    rewrite = parseHostRewrite(reader);
-                    break;
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-                }
-                break;
-            }
-            default:
-                throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-        final WebVirtualHostAdd action = new WebVirtualHostAdd(name);
-        action.setAliases(aliases);
-        action.setAccessLog(accessLog);
-        action.setRewrite(rewrite);
-        list.add(action);
     }
-
-    static WebHostAccessLogElement parseHostAccessLog(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        String pattern = null;
-        String prefix = null;
-        Boolean rotate = null;
-        Boolean extended = null;
-        Boolean resolveHosts = null;
-        WebHostAccessLogElement.LogDirectory directory = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                case DIRECTORY:
-                    directory = parseLogDir(reader);
-                    if(directory.isEmpty()) {
-                        directory = null;
-                    }
-                    break;
-                case PATTERN:
-                    pattern = value;
-                    break;
-                case PREFIX:
-                    prefix = value;
-                    break;
-                case RESOLVE_HOSTS:
-                    resolveHosts = Boolean.valueOf(value);
-                    break;
-                case EXTENDED:
-                    extended = Boolean.valueOf(value);
-                    break;
-                case ROTATE:
-                    rotate = Boolean.valueOf(value);
-                    break;
-                default:
-                    ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        ParseUtils.requireNoContent(reader);
-        final WebHostAccessLogElement accessLog = new WebHostAccessLogElement();
-        accessLog.setPattern(pattern);
-        accessLog.setExtended(extended);
-        accessLog.setPrefix(prefix);
-        accessLog.setRotate(rotate);
-        accessLog.setResolveHosts(resolveHosts);
-        accessLog.setDirectory(directory);
-        return accessLog;
-    }
-
-    static WebHostAccessLogElement.LogDirectory parseLogDir(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final WebHostAccessLogElement.LogDirectory directory = new WebHostAccessLogElement.LogDirectory();
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case RELATIVE_TO:
-                        directory.setRelativeTo(value.trim());
-                        break;
-                    case PATH:
-                        directory.setPath(value.trim());
-                        break;
-                    default:
-                        ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-        return directory;
-    }
-
-    static WebHostRewriteElement parseHostRewrite(final XMLExtendedStreamReader reader) throws XMLStreamException {
-
-        // FIXME
-
-        ParseUtils.requireNoContent(reader);
-        return new WebHostRewriteElement();
-    }
-
-    static String readSingleAttributeNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        if(count > 1) {
-            throw ParseUtils.unexpectedAttribute(reader, 1);
-        }
-        final String value = reader.getAttributeValue(0);
-        ParseUtils.requireNoContent(reader);
-        return value.trim();
-    }
-
-    static Map<String, String>  parseProperties(final XMLExtendedStreamReader reader, final Element propertyType, final boolean allowNullValue) throws XMLStreamException {
-        Map<String, String> properties = new HashMap<String, String>();
-        // Handle attributes
-        ParseUtils.requireNoAttributes(reader);
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case WEB_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (element == propertyType) {
-                        // Handle attributes
-                        String name = null;
-                        String value = null;
-                        int count = reader.getAttributeCount();
-                        for (int i = 0; i < count; i++) {
-                            final String attrValue = reader.getAttributeValue(i);
-                            if (reader.getAttributeNamespace(i) != null) {
-                                throw ParseUtils.unexpectedAttribute(reader, i);
-                            }
-                            else {
-                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                                switch (attribute) {
-                                    case NAME: {
-                                        name = attrValue;
-                                        if (properties.containsKey(name)) {
-                                            throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
-                                        }
-                                        break;
-                                    }
-                                    case VALUE: {
-                                        value = attrValue;
-                                        break;
-                                    }
-                                    default:
-                                        throw ParseUtils.unexpectedAttribute(reader, i);
-                                }
-                            }
-                        }
-                        if (name == null) {
-                            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-                        }
-                        if (value == null && !allowNullValue) {
-                            throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
-                        }
-                        // add
-                        properties.put(name, value);
-                        // Handle elements
-                        ParseUtils.requireNoContent(reader);
-                    } else {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-        if (properties.size() == 0) {
-            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(propertyType));
-        }
-        return properties;
-    }
-
 }

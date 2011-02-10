@@ -27,6 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.util.Set;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,6 +44,11 @@ public class Util {
      * Prevent instantiation
      */
     private Util() {
+    }
+
+    public static String getNameFromAddress(final ModelNode address) {
+        PathElement pe = PathAddress.pathAddress(address).getLastElement();
+        return pe == null ? null : pe.getValue();
     }
 
     public static ModelNode getEmptyOperation(String operationName, ModelNode address) {

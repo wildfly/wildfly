@@ -32,7 +32,6 @@ import java.io.Reader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,10 +68,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.demos.DomainDeploymentUtils;
-import org.jboss.as.demos.fakejndi.FakeJndi;
 import org.jboss.as.domain.client.api.DomainClient;
-import org.jboss.as.domain.client.api.DomainUpdateResult;
 import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
@@ -83,14 +79,9 @@ import org.jboss.as.domain.client.api.deployment.DeploymentSetActionsCompleteBui
 import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.UndeployDeploymentPlanBuilder;
-import org.jboss.as.messaging.jms.JMSQueueAdd;
-import org.jboss.as.messaging.jms.JMSQueueRemove;
-import org.jboss.as.messaging.jms.JMSSubsystemElement;
-import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.DomainSubsystemUpdate;
 import org.jboss.as.model.HostServerAdd;
 import org.jboss.as.model.HostServerRemove;
 import org.jboss.as.model.HostServerUpdate;
@@ -100,7 +91,6 @@ import org.jboss.as.model.ServerElementSocketBindingPortOffsetUpdate;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.staxmapper.XMLContentWriter;
@@ -942,76 +932,76 @@ public class ExampleRunner implements Runnable {
     private boolean addJmsQueue() throws Exception {
 
         // THIS DOES NOT CURRENTLY WORK
-
-        stdout.println("Enter the name for the new queue or [C] to cancel:");
-        String queueName = readStdIn();
-        if ("C".equals(queueName.toUpperCase()))
-            return continuePrompt();
-
-        DomainDeploymentUtils utils = null;
-        boolean actionsApplied = false;
-        boolean deployed = false;
-        try {
-            utils = new DomainDeploymentUtils(client);
-            utils.addDeployment("fakejndi.sar", FakeJndi.class.getPackage());
-            utils.deploy();
-
-            deployed = true;
-
-            final JMSQueueAdd queueAdd = new JMSQueueAdd(queueName);
-            queueAdd.setBindings(Collections.singleton(queueName));
-
-            DomainSubsystemUpdate<JMSSubsystemElement, Void> domainUpdate = DomainSubsystemUpdate.create("messaging", queueAdd);
-            List<AbstractDomainModelUpdate<?>> list = Collections.<AbstractDomainModelUpdate<?>>singletonList(domainUpdate);
-            List<DomainUpdateResult<?>> results = client.applyUpdates(list);
-            DomainUpdateResult<?> result = results.get(0);
-            stdout.println(result + (result != null ? String.valueOf(result.isSuccess()) + String.valueOf(result.getServerResults().size()) : ""));
-            if (result.getDomainFailure() == null && result.getHostFailures().size() == 0) {
-                actionsApplied = true;
-            }
-            if (result.isSuccess()) {
-                for (ServerIdentity server : result.getServerResults().keySet()) {
-                    exerciseQueueOnServer(queueName, server);
-                }
-            }
-            else if (result.getDomainFailure() != null) {
-                stdout.println("Queue addition failed on the domain controller");
-                result.getDomainFailure().printStackTrace(stdout);
-            }
-            else if (result.getHostFailures().size() > 0) {
-                for (Map.Entry<String, UpdateFailedException> entry : result.getHostFailures().entrySet()) {
-                    stdout.println("\nQueue addition failed on Host Controller " + entry.getKey());
-                    entry.getValue().printStackTrace(stdout);
-                }
-            }
-            else if (result.getServerFailures().size() > 0) {
-
-                for (Map.Entry<ServerIdentity, Throwable> entry : result.getServerFailures().entrySet()) {
-                    stdout.println("\nQueue addition failed on Server " + entry.getKey().getServerName());
-                    entry.getValue().printStackTrace(stdout);
-                }
-            }
-            else if (result.getServerCancellations().size() > 0) {
-                for (ServerIdentity server : result.getServerCancellations()) {
-                    stdout.println("\nQueue addition was cancelled on Server " + server.getServerName());
-                }
-            }
-
-            return continuePrompt();
-        }
-        finally {
-            if (deployed) {
-                utils.undeploy();
-            }
-            if (utils != null)
-                utils.close();
-            if(actionsApplied) {
-                // Remove the queue using the management API
-                final JMSQueueRemove queueRemove = new JMSQueueRemove(queueName);
-                DomainSubsystemUpdate<JMSSubsystemElement, Void> domainUpdate = DomainSubsystemUpdate.create("messaging", queueRemove);
-                client.applyUpdates(Collections.<AbstractDomainModelUpdate<?>>singletonList(domainUpdate));
-            }
-        }
+        throw new UnsupportedOperationException("Convert to detyped API");
+//        stdout.println("Enter the name for the new queue or [C] to cancel:");
+//        String queueName = readStdIn();
+//        if ("C".equals(queueName.toUpperCase()))
+//            return continuePrompt();
+//
+//        DomainDeploymentUtils utils = null;
+//        boolean actionsApplied = false;
+//        boolean deployed = false;
+//        try {
+//            utils = new DomainDeploymentUtils(client);
+//            utils.addDeployment("fakejndi.sar", FakeJndi.class.getPackage());
+//            utils.deploy();
+//
+//            deployed = true;
+//
+//            final JMSQueueAdd queueAdd = new JMSQueueAdd(queueName);
+//            queueAdd.setBindings(Collections.singleton(queueName));
+//
+//            DomainSubsystemUpdate<JMSSubsystemElement, Void> domainUpdate = DomainSubsystemUpdate.create("messaging", queueAdd);
+//            List<AbstractDomainModelUpdate<?>> list = Collections.<AbstractDomainModelUpdate<?>>singletonList(domainUpdate);
+//            List<DomainUpdateResult<?>> results = client.applyUpdates(list);
+//            DomainUpdateResult<?> result = results.get(0);
+//            stdout.println(result + (result != null ? String.valueOf(result.isSuccess()) + String.valueOf(result.getServerResults().size()) : ""));
+//            if (result.getDomainFailure() == null && result.getHostFailures().size() == 0) {
+//                actionsApplied = true;
+//            }
+//            if (result.isSuccess()) {
+//                for (ServerIdentity server : result.getServerResults().keySet()) {
+//                    exerciseQueueOnServer(queueName, server);
+//                }
+//            }
+//            else if (result.getDomainFailure() != null) {
+//                stdout.println("Queue addition failed on the domain controller");
+//                result.getDomainFailure().printStackTrace(stdout);
+//            }
+//            else if (result.getHostFailures().size() > 0) {
+//                for (Map.Entry<String, UpdateFailedException> entry : result.getHostFailures().entrySet()) {
+//                    stdout.println("\nQueue addition failed on Host Controller " + entry.getKey());
+//                    entry.getValue().printStackTrace(stdout);
+//                }
+//            }
+//            else if (result.getServerFailures().size() > 0) {
+//
+//                for (Map.Entry<ServerIdentity, Throwable> entry : result.getServerFailures().entrySet()) {
+//                    stdout.println("\nQueue addition failed on Server " + entry.getKey().getServerName());
+//                    entry.getValue().printStackTrace(stdout);
+//                }
+//            }
+//            else if (result.getServerCancellations().size() > 0) {
+//                for (ServerIdentity server : result.getServerCancellations()) {
+//                    stdout.println("\nQueue addition was cancelled on Server " + server.getServerName());
+//                }
+//            }
+//
+//            return continuePrompt();
+//        }
+//        finally {
+//            if (deployed) {
+//                utils.undeploy();
+//            }
+//            if (utils != null)
+//                utils.close();
+//            if(actionsApplied) {
+//                // Remove the queue using the management API
+//                final JMSQueueRemove queueRemove = new JMSQueueRemove(queueName);
+//                DomainSubsystemUpdate<JMSSubsystemElement, Void> domainUpdate = DomainSubsystemUpdate.create("messaging", queueRemove);
+//                client.applyUpdates(Collections.<AbstractDomainModelUpdate<?>>singletonList(domainUpdate));
+//            }
+//        }
     }
 
     private void exerciseQueueOnServer(final String queueName, final ServerIdentity server) throws Exception {
@@ -1156,6 +1146,7 @@ public class ExampleRunner implements Runnable {
             this.prompt = "[" + cmd + "]" + spaces + message;
         }
 
+        @Override
         public String getPrompt() {
             return prompt;
         }
@@ -1190,6 +1181,7 @@ public class ExampleRunner implements Runnable {
             this.prompt = "[" + cmd + "]" + spaces + message;
         }
 
+        @Override
         public String getPrompt() {
             return prompt;
         }
@@ -1218,6 +1210,7 @@ public class ExampleRunner implements Runnable {
             this.prompt = "[" + cmd + "]" + spaces + message;
         }
 
+        @Override
         public String getPrompt() {
             return prompt;
         }

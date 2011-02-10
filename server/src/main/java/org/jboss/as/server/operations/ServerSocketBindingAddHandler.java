@@ -27,7 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
@@ -35,7 +35,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -69,16 +69,16 @@ public class ServerSocketBindingAddHandler extends SocketBindingAddHandler imple
     }
 
     @Override
-    protected void installSocketBinding(String name, ModelNode operation, NewOperationContext context,
+    protected void installSocketBinding(String name, ModelNode operation, OperationContext context,
             ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
+        if (context instanceof RuntimeOperationContext) {
 
             // Resolve any expressions and re-validate
             final ModelNode resolvedOp = operation.resolve();
             final String failure = runtimeValidator.validate(resolvedOp);
             if (failure == null) {
 
-                final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
+                final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
                 final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
 
 

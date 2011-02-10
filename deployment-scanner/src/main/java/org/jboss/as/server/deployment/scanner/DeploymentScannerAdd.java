@@ -22,62 +22,70 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Update adding a new {@code DeploymentScanner}.
+ * Operation adding a new {@link DeploymentScannerService}.
  *
  * @author John E. Bailey
+ * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerAdd extends AbstractDeploymentScannerSubsystemUpdate {
+class DeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -1611269698053636197L;
-    private static final String DEFAULT_NAME = "default";
+    static final DeploymentScannerAdd INSTANCE = new DeploymentScannerAdd();
 
-    private final String name;
-    private final String path;
-
-    private final String relativeTo;
-    private final int interval;
-    private final boolean enabled;
-
-    public DeploymentScannerAdd(final String name, String path, final String relativeTo, int interval, boolean enabled) {
-        this.name = name;
-        this.path = path;
-        this.relativeTo = relativeTo;
-        this.interval = interval;
-        this.enabled = enabled;
+    private DeploymentScannerAdd() {
+        //
     }
 
     /** {@inheritDoc} */
     @Override
-    public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceTarget target = updateContext.getServiceTarget().subTarget();
-        target.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
-        DeploymentScannerService.addService(target, repositoryName(), relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
-    }
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    public AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, ?> getCompensatingUpdate(DeploymentScannerSubsystemElement original) {
-        return new DeploymentScannerRemove(path);
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        final String path = operation.require(CommonAttributes.PATH).asString();
+        final boolean enabled = operation.get(CommonAttributes.SCAN_ENABLED).asBoolean(true);
+        final int interval = operation.get(CommonAttributes.SCAN_INTERVAL).asInt(5000);
+        String relativeTo = null;
+        if(operation.has(CommonAttributes.RELATIVE_TO)) {
+            relativeTo = operation.get(CommonAttributes.RELATIVE_TO).asString();
+        }
 
-    protected void applyUpdate(DeploymentScannerSubsystemElement element) throws UpdateFailedException {
-        final DeploymentScannerElement scannerElement = new DeploymentScannerElement();
-        scannerElement.setEnabled(enabled);
-        scannerElement.setInterval(interval);
-        scannerElement.setName(name);
-        scannerElement.setPath(path);
-        scannerElement.setRelativeTo(relativeTo);
-        element.addScanner(scannerElement);
-    }
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-    private String repositoryName() {
-        return name != null ? name : DEFAULT_NAME;
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+
+            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
+            DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
+        }
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(CommonAttributes.PATH).set(path);
+        subModel.get(CommonAttributes.SCAN_ENABLED).set(enabled);
+        subModel.get(CommonAttributes.SCAN_INTERVAL).set(interval);
+        if(relativeTo != null) subModel.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

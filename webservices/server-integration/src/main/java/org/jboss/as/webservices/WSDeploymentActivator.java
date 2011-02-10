@@ -28,7 +28,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.jboss.as.model.BootUpdateContext;
+import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
@@ -44,7 +44,7 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
  */
 class WSDeploymentActivator {
 
-    static void activate(final BootUpdateContext updateContext) {
+    static void activate(final BootOperationContext updateContext) {
         int priority = Phase.INSTALL_WAR_METADATA + 10;
 
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
@@ -58,7 +58,7 @@ class WSDeploymentActivator {
         addDeploymentProcessors(WSDeploymentActivator.class.getClassLoader(), updateContext, priority);
     }
 
-    private static void addDeploymentProcessors(final ClassLoader cl, final BootUpdateContext updateContext, int priority) {
+    private static void addDeploymentProcessors(final ClassLoader cl, final BootOperationContext updateContext, int priority) {
         try {
             Enumeration<URL> urls = cl.getResources("/META-INF/deployment-aspects.xml");
             if (urls != null) {

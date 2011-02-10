@@ -22,6 +22,14 @@
 
 package org.jboss.as.ee.service;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.ee.component.processor.ComponentClassLoadingProcessor;
 import org.jboss.as.ee.component.processor.ComponentInstallProcessor;
 import org.jboss.as.ee.component.processor.InterceptorAnnotationParsingProcessor;
@@ -32,60 +40,67 @@ import org.jboss.as.ee.component.processor.ResourceInjectionAnnotationParsingPro
 import org.jboss.as.ee.component.processor.ResourceInjectionInstallProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
-import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
 import org.jboss.as.ee.structure.EarInitializationProcessor;
+import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
 import org.jboss.as.ee.structure.EarStructureProcessor;
 import org.jboss.as.ee.structure.JBossAppMetaDataParsingProcessor;
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * @author Weston M. Price
+ * Handler for adding the ee subsystem.
  *
+ * @author Weston M. Price
+ * @author Emanuel Muckenhuber
  */
-public final class EeSubsystemAdd extends AbstractSubsystemAdd<EeSubsystemElement> {
-
-    private static final long serialVersionUID = -3501832241733737257L;
+public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     private static final Logger logger = Logger.getLogger("org.jboss.as.ee");
 
-    protected EeSubsystemAdd() {
-        super(EeExtension.NAMESPACE);
+    static final EeSubsystemAdd INSTANCE = new EeSubsystemAdd();
+
+    private EeSubsystemAdd() {
+        //
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-    }
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    @Override
-    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
-        logger.info("Activating EE subsystem");
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new EarMetaDataParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
+        if(context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = (BootOperationContext) context;
+            logger.info("Activating EE subsystem");
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new EarMetaDataParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
 
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_INTERCEPTOR_ANNOTATION, new InterceptorAnnotationParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_INTERCEPTOR_ANNOTATION, new InterceptorAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
 
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
 
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_CLASSLOAD, new ComponentClassLoadingProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_LIFECYCLES, new LifecycleInstallProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_INTERCEPTORS, new InterceptorInstallProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_INJECTIONS, new ResourceInjectionInstallProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
-    }
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_CLASSLOAD, new ComponentClassLoadingProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_LIFECYCLES, new LifecycleInstallProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_INTERCEPTORS, new InterceptorInstallProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_INJECTIONS, new ResourceInjectionInstallProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
+        }
 
-    @Override
-    protected EeSubsystemElement createSubsystemElement() {
-        return new EeSubsystemElement();
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+
+        context.getSubModel().setEmptyObject();
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

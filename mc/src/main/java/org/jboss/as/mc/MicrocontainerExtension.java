@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,48 +22,86 @@
 
 package org.jboss.as.mc;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
-import org.jboss.as.model.ParseResult;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Microcontainer extension.
  * Support JBoss5 and JBoss6 configuration model.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author Emanuel Muckenhuber
  */
 public class MicrocontainerExtension implements Extension {
 
+    public static final String SUBSYSTEM_NAME = "mc";
     public static final String NAMESPACE = "urn:jboss:domain:mc:1.0";
 
-    static final McSubSystemElementParser PARSER = new McSubSystemElementParser();
+    private static final MCSubsystemParser parser = new MCSubsystemParser();
+    private static final DescriptionProvider NULL_DESCRIPTION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return new ModelNode();
+        }
+    };
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(NAMESPACE, PARSER);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NULL_DESCRIPTION);
+        registration.registerOperationHandler(ADD, McSubsystemAdd.INSTANCE, NULL_DESCRIPTION, false);
+        subsystem.registerXMLElementWriter(parser);
     }
 
-    /**
-     * Activate the extension.
-     *
-     * @param context the service activation context
-     */
-    public void activate(final ServiceActivatorContext context) {
+    /** {@inheritDoc} */
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(NAMESPACE, parser);
     }
 
-    static class McSubSystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<McSubsystemElement>>> {
+    static final class MCSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
-        public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<McSubsystemElement>> result) throws XMLStreamException {
+        @Override
+        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(MicrocontainerExtension.NAMESPACE, true);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
             // Require no content
             ParseUtils.requireNoContent(reader);
-            result.setResult(new ExtensionContext.SubsystemConfiguration<McSubsystemElement>(new McSubsystemAdd()));
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            list.add(subsystem);
         }
+
     }
+
 }

@@ -22,25 +22,58 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
-import org.jboss.msc.service.ServiceActivatorContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 
 /**
  * The JMS extension.
  *
  * @author Emanuel Muckenhuber
  */
-public final class JMSExtension implements Extension {
+public class JMSExtension implements Extension {
+
+    public static final String SUBSYSTEM_NAME = "jms";
+
+    private static final PathElement CFS_PATH = PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY);
+    private static final PathElement QUEUE_PATH = PathElement.pathElement(CommonAttributes.QUEUE);
+    private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.TOPIC);
+
+    private static final JMSSubsystemParser parsers = JMSSubsystemParser.getInstance();
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.CURRENT.getUriString(), JMSSubsystemParser.getInstance());
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(JMSSubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, JMSSubsystemAdd.INSTANCE, JMSSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, JMSSubsystemDescribeHandler.INSTANCE, JMSSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
+        subsystem.registerXMLElementWriter(parsers);
+        // Connection factories
+        final ModelNodeRegistration cfs = registration.registerSubModel(CFS_PATH, JMSSubsystemProviders.CF);
+        cfs.registerOperationHandler(ADD, ConnectionFactoryAdd.INSTANCE, JMSSubsystemProviders.CF_ADD, false);
+        cfs.registerOperationHandler(REMOVE, ConnectionFactoryRemove.INSTANCE, JMSSubsystemProviders.CF_REMOVE, false);
+        // Queues
+        final ModelNodeRegistration queues = registration.registerSubModel(QUEUE_PATH, JMSSubsystemProviders.JMS_QUEUE);
+        queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, JMSSubsystemProviders.JMS_QUEUE_ADD, false);
+        queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, JMSSubsystemProviders.JMS_QUEUE_REMOVE, false);
+        // Topics
+        final ModelNodeRegistration topics = registration.registerSubModel(TOPIC_PATH, JMSSubsystemProviders.JMS_TOPIC);
+        topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, JMSSubsystemProviders.JMS_TOPIC_ADD, false);
+        topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, JMSSubsystemProviders.JMS_TOPIC_REMOVE, false);
     }
 
     /** {@inheritDoc} */
-    public void activate(ServiceActivatorContext context) {
-        //
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parsers);
     }
 
 }

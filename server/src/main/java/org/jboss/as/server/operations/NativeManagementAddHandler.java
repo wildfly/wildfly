@@ -31,12 +31,12 @@ import java.util.concurrent.Executors;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.ManagementCommunicationService;
@@ -58,7 +58,7 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Run
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(ModelDescriptionConstants.REMOVE);
@@ -67,8 +67,8 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Run
         final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
         final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
 
-        if(context instanceof NewRuntimeOperationContext) {
-            final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
             final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
 
             Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);

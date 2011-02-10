@@ -22,30 +22,111 @@
 
 package org.jboss.as.ee.service;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
-import org.jboss.msc.service.ServiceActivatorContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
- * @author Weston M. Price
  *
+ * @author Weston M. Price
+ * @author Emanuel Muckenhuber
  */
 public class EeExtension implements Extension {
 
     public static final String NAMESPACE = "urn:jboss:domain:ee:1.0";
+    private static final String SUBSYSTEM_NAME = "ee";
+    private static final EESubsystemParser parser = new EESubsystemParser();
 
-    static EeSubsystemElementParser PARSER = new EeSubsystemElementParser();
-
+    /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(NAMESPACE, PARSER);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(EeSubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, EeSubsystemAdd.INSTANCE, EeSubsystemProviders.SUBSYSTEM, false);
+        registration.registerOperationHandler(DESCRIBE, EESubsystemDescribeHandler.INSTANCE, EESubsystemDescribeHandler.INSTANCE, false);
+        subsystem.registerXMLElementWriter(parser);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void activate(ServiceActivatorContext context) {
-        // TODO Auto-generated method stub
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(NAMESPACE, parser);
+    }
 
+    static ModelNode createAddOperation() {
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        return subsystem;
+    }
+
+    static class EESubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+
+        /** {@inheritDoc} */
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+            //context.startSubsystemElement(NewEeExtension.NAMESPACE, true);
+            context.startSubsystemElement(EeExtension.NAMESPACE, false);
+            writer.writeEndElement();
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+            ParseUtils.requireNoAttributes(reader);
+            ParseUtils.requireNoContent(reader);
+
+            list.add(createAddOperation());
+        }
+    }
+
+    private static class EESubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        static final EESubsystemDescribeHandler INSTANCE = new EESubsystemDescribeHandler();
+        @Override
+        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+            ModelNode node = new ModelNode();
+            node.add(createAddOperation());
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
+            resultHandler.handleResultComplete(new ModelNode());
+            return Cancellable.NULL;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
     }
 
 }

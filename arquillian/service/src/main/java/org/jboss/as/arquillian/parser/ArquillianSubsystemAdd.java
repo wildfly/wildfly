@@ -22,47 +22,57 @@
 
 package org.jboss.as.arquillian.parser;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.arquillian.service.ArquillianDeploymentProcessor;
 import org.jboss.as.arquillian.service.ArquillianRunWithAnnotationProcessor;
 import org.jboss.as.arquillian.service.ArquillianService;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * Arquillian subsystem add element.
+ * Arquillian subsystem add handler.
  *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
- * @since 17-Nov-2010
+ * @author Emanuel Muckenhuber
  */
-public final class ArquillianSubsystemAdd extends AbstractSubsystemAdd<ArquillianSubsystemElement> {
+class ArquillianSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    private static final long serialVersionUID = -7876823389815006153L;
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
+    static final ArquillianSubsystemAdd INSTANCE = new ArquillianSubsystemAdd();
 
-    protected ArquillianSubsystemAdd() {
-        super(ArquillianExtension.NAMESPACE);
+    private ArquillianSubsystemAdd() {
+        //
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected ArquillianSubsystemElement createSubsystemElement() {
-        return new ArquillianSubsystemElement();
-    }
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-    }
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-    @Override
-    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
-        log.infof("Activating Arquillian Subsystem");
-        ArquillianService.addService(updateContext.getServiceTarget());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ARQUILLIAN_RUNWITH, new ArquillianRunWithAnnotationProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
+        if(context instanceof BootOperationContext) {
+            log.infof("Activating Arquillian Subsystem");
+            final BootOperationContext bootContext = (BootOperationContext) context;
+            ArquillianService.addService(bootContext.getServiceTarget());
+            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ARQUILLIAN_RUNWITH, new ArquillianRunWithAnnotationProcessor());
+            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
+        }
+
+        context.getSubModel().setEmptyObject();
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

@@ -22,36 +22,47 @@
 
 package org.jboss.as.service;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElement> {
+public class SarSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    private static final long serialVersionUID = 7065406809630792436L;
+    static final SarSubsystemAdd INSTANCE = new SarSubsystemAdd();
 
-    public SarSubsystemAdd() {
-        super(SarExtension.NAMESPACE);
+    private SarSubsystemAdd() {
     }
 
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-    }
-
+    /** {@inheritDoc} */
     @Override
-    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SAR_SUB_DEPLOY_CHECK, new SarSubDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new SarModuleDependencyProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SERVICE_DEPLOYMENT, new ServiceDeploymentParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVICE_DEPLOYMENT, new ParsedServiceDeploymentProcessor());
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        if(context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = (BootOperationContext) context;
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SAR_SUB_DEPLOY_CHECK, new SarSubDeploymentProcessor());
+            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new SarModuleDependencyProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SERVICE_DEPLOYMENT, new ServiceDeploymentParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVICE_DEPLOYMENT, new ParsedServiceDeploymentProcessor());
+        }
+
+        context.getSubModel().setEmptyObject();
+
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    @Override
-    protected SarSubsystemElement createSubsystemElement() {
-        return new SarSubsystemElement();
-    }
 }

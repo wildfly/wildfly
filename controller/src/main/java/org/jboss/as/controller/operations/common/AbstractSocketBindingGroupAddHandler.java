@@ -27,7 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -58,7 +58,7 @@ public abstract class AbstractSocketBindingGroupAddHandler implements ModelAddOp
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = address.getLastElement().getValue();
@@ -85,7 +85,7 @@ public abstract class AbstractSocketBindingGroupAddHandler implements ModelAddOp
 
     protected abstract void populateModel(ModelNode model, ModelNode operation);
 
-    protected void installSocketBindingGroup(String name, ModelNode operation, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected void installSocketBindingGroup(String name, ModelNode operation, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         resultHandler.handleResultComplete(compensatingOp);
     }
 

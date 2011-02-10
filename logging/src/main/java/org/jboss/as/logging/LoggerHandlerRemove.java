@@ -22,43 +22,60 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class LoggerHandlerRemove extends AbstractLoggingSubsystemUpdate<Void> {
+class LoggerHandlerRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 1370469831899844699L;
+    static final LoggerHandlerRemove INSTANCE = new LoggerHandlerRemove();
 
-    private final String loggerName;
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    private final String handlerName;
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    public LoggerHandlerRemove(final String loggerName, final String handlerName) {
-        this.loggerName = loggerName;
-        this.handlerName = handlerName;
-    }
-
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        try {
-            final ServiceController<?> controller = updateContext.getServiceRegistry().getRequiredService(LogServices.loggerHandlerName(loggerName, handlerName));
-            controller.setMode(ServiceController.Mode.REMOVE);
-            controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
-        } catch (Throwable t) {
-            handler.handleFailure(t, param);
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set("set-root-logger");
+        for(final Property property : subModel.asPropertyList()) {
+            compensatingOperation.get(property.getName()).set(property.getValue());
         }
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceRegistry registry = runtimeContext.getServiceRegistry();
+            try {
+                final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
+                if(controller != null) {
+                    controller.setMode(ServiceController.Mode.REMOVE);
+                }
+            } catch (Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+            }
+        }
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    public AbstractSubsystemUpdate<LoggingSubsystemElement, ?> getCompensatingUpdate(final LoggingSubsystemElement original) {
-        return new LoggerHandlerAdd(loggerName, handlerName);
-    }
-
-    protected void applyUpdate(final LoggingSubsystemElement element) throws UpdateFailedException {
-        element.getLogger(loggerName).getHandlers().remove(handlerName);
-    }
 }

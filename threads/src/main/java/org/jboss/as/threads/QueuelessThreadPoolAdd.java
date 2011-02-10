@@ -19,68 +19,83 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.threads;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.model.ChildElement;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.QueuelessOperationParameters;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * Adds a queueless thread pool.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
  */
-public final class QueuelessThreadPoolAdd extends AbstractExecutorAdd {
+public class QueuelessThreadPoolAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
 
-    private static final long serialVersionUID = 5597662601486525937L;
+    static final OperationHandler INSTANCE = new QueuelessThreadPoolAdd();
 
-    private String handoffExecutor;
-    private boolean blocking;
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        QueuelessOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolOperationParameters(operation);
+        //Apply to the model
+        final ModelNode model = context.getSubModel();
+        model.get(NAME).set(params.getName());
+        if (params.getThreadFactory() != null) {
+            model.get(THREAD_FACTORY).set(params.getThreadFactory());
+        }
+        if (params.getProperties() != null && params.getProperties().asList().size() > 0) {
+            model.get(PROPERTIES).set(params.getProperties());
+        }
+        if (params.getMaxThreads() != null) {
+            model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
+        }
+        if (params.getKeepAliveTime() != null) {
+            model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
+        }
+        model.get(BLOCKING).set(params.isBlocking());
+        if (params.getHandoffExecutor() != null) {
+            model.get(HANDOFF_EXECUTOR).set(params.getHandoffExecutor());
+        }
 
-    public QueuelessThreadPoolAdd(final String name, final ScaledCount maxThreads) {
-        super(name, maxThreads);
-    }
+        if (context instanceof RuntimeOperationContext) {
+            ServiceTarget target = ((RuntimeOperationContext)context).getServiceTarget();
+            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+            final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceTarget target = updateContext.getServiceTarget();
-        final ScaledCount maxThreadsCount = getMaxThreads();
-        final int maxThreads = maxThreadsCount.getScaledCount();
-        final String name = getName();
-        final ServiceName serviceName = ThreadsServices.executorName(name);
-        final QueuelessThreadPoolService service = new QueuelessThreadPoolService(maxThreads, blocking, getKeepaliveTime());
-        final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
-        addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-        serviceBuilder.install();
-    }
+            //TODO add the handoffExceutor injection
 
-    protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-        final QueuelessThreadPoolElement poolElement = new QueuelessThreadPoolElement(getName());
-        poolElement.setBlocking(blocking);
-        poolElement.setHandoffExecutor(handoffExecutor);
-        poolElement.setKeepaliveTime(getKeepaliveTime());
-        poolElement.setThreadFactory(getThreadFactory());
-        poolElement.setMaxThreads(getMaxThreads());
-        element.addExecutor(getName(), new ChildElement<QueuelessThreadPoolElement>(Element.QUEUELESS_THREAD_POOL.getLocalName(), poolElement));
-    }
+            final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+            serviceBuilder.install();
 
-    public String getHandoffExecutor() {
-        return handoffExecutor;
-    }
+        }
 
-    public void setHandoffExecutor(final String handoffExecutor) {
-        this.handoffExecutor = handoffExecutor;
-    }
+        // Compensating is remove
+        final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
+        resultHandler.handleResultComplete(compensating);
 
-    public boolean isBlocking() {
-        return blocking;
-    }
-
-    public void setBlocking(final boolean blocking) {
-        this.blocking = blocking;
+        return Cancellable.NULL;
     }
 }

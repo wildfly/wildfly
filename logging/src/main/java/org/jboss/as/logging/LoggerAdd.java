@@ -22,72 +22,77 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.logging.Level;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+
 /**
- * @author Emanuel Muckenhuber
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public class LoggerAdd extends AbstractLoggerAdd {
+class LoggerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 4230922005791983261L;
+    static final LoggerAdd INSTANCE = new LoggerAdd();
 
-    private final String name;
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    private boolean useParentHandlers = true;
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    public LoggerAdd(final String name, final boolean useParentHandlers) {
-        this.name = name;
-        this.useParentHandlers = useParentHandlers;
-    }
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set(REMOVE);
 
-    public LoggerAdd(final String name) {
-        this.name = name;
-    }
+        final String level = operation.require(CommonAttributes.LEVEL).asString();
+        final ModelNode handlers = operation.hasDefined(CommonAttributes.HANDLERS) ? operation.get(CommonAttributes.HANDLERS) : new ModelNode();
 
-    protected AbstractLoggerElement<?> addNewElement(final LoggingSubsystemElement element) throws UpdateFailedException {
-        final LoggerElement newElement = new LoggerElement(name);
-        newElement.setUseParentHandlers(useParentHandlers);
-        if (!element.addLogger(newElement)) {
-            throw new UpdateFailedException("Logger " + name + " already exists");
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget target = runtimeContext.getServiceTarget();
+            final String loggerName = name;
+            try {
+                // Install logger service
+                final LoggerService service = new LoggerService(loggerName);
+                service.setLevel(Level.parse(level));
+                target.addService(LogServices.loggerName(loggerName), service)
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
+            } catch (Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
+            try {
+                // install logger handler services
+                if(handlers.isDefined()) {
+                    LogServices.installLoggerHandlers(target, loggerName, handlers);
+                }
+            } catch (Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
         }
-        return newElement;
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        try {
-            final String loggerName = getLoggerName();
-            final LoggerService service = new LoggerService(loggerName);
-            service.setLevel(Level.parse(getLevelName()));
-            final ServiceTarget target = updateContext.getServiceTarget();
-            target.addService(LogServices.loggerName(loggerName), service)
-                .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-        } catch (Throwable t) {
-            resultHandler.handleFailure(t, param);
-            return;
-        }
-    }
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(CommonAttributes.LEVEL).set(level);
+        subModel.get(CommonAttributes.HANDLERS).set(handlers);
 
-    public boolean isUseParentHandlers() {
-        return useParentHandlers;
-    }
+        resultHandler.handleResultComplete(compensatingOperation);
 
-    public void setUseParentHandlers(final boolean useParentHandlers) {
-        this.useParentHandlers = useParentHandlers;
-    }
-
-    public String getLoggerName() {
-        return name;
+        return Cancellable.NULL;
     }
 }

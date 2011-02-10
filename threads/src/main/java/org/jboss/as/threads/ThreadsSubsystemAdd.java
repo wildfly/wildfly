@@ -22,26 +22,47 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
+import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
 
 /**
+ * Add the threads subsystem.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
  */
-public final class ThreadsSubsystemAdd extends AbstractSubsystemAdd<ThreadsSubsystemElement> {
+class ThreadsSubsystemAdd implements ModelAddOperationHandler {
 
-    private static final long serialVersionUID = 7069161666204315629L;
+    static final OperationHandler INSTANCE = new ThreadsSubsystemAdd();
 
-    protected ThreadsSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
-    }
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        // no operation
-    }
+        context.getSubModel().get(BOUNDED_QUEUE_THREAD_POOL).setEmptyObject();
+        context.getSubModel().get(QUEUELESS_THREAD_POOL).setEmptyObject();
+        context.getSubModel().get(SCHEDULED_THREAD_POOL).setEmptyObject();
+        context.getSubModel().get(THREAD_FACTORY).setEmptyObject();
+        context.getSubModel().get(UNBOUNDED_QUEUE_THREAD_POOL).setEmptyObject();
 
-    protected ThreadsSubsystemElement createSubsystemElement() {
-        return new ThreadsSubsystemElement();
+        // Compensating is remove
+        final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(ADDRESS));
+
+        resultHandler.handleResultComplete(compensating);
+
+        return Cancellable.NULL;
     }
 }

@@ -27,7 +27,7 @@ import javax.naming.Context;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.as.messaging.MessagingSubsystemElement;
+import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.naming.service.JavaContextService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -52,7 +52,7 @@ public class JMSService implements Service<JMSServerManager> {
     public static void addService(final ServiceTarget target) {
         final JMSService service = new JMSService();
         target.addService(JMSServices.JMS_MANAGER, service)
-            .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
+            .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
             .addDependency(JavaContextService.SERVICE_NAME, Context.class, service.getContextInjector())
             .setInitialMode(Mode.ACTIVE)
             .install();
@@ -63,6 +63,7 @@ public class JMSService implements Service<JMSServerManager> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         try {
             final JMSServerManager jmsServer = new JMSServerManagerImpl(hornetQServer.getValue());
@@ -87,6 +88,7 @@ public class JMSService implements Service<JMSServerManager> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(StopContext context) {
         final JMSServerManager jmsServer = this.jmsServer;
         this.jmsServer = null;
@@ -98,6 +100,7 @@ public class JMSService implements Service<JMSServerManager> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized JMSServerManager getValue() throws IllegalStateException {
         final JMSServerManager jmsServer = this.jmsServer;
         if(jmsServer == null) {

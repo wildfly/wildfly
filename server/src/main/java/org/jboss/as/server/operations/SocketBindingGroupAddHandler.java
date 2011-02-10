@@ -24,7 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupAddHandler;
@@ -32,7 +32,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -92,9 +92,9 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
     }
 
     @Override
-    protected void installSocketBindingGroup(String name, ModelNode operation, NewOperationContext context,
+    protected void installSocketBindingGroup(String name, ModelNode operation, OperationContext context,
             ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
+        if (context instanceof RuntimeOperationContext) {
             // Resolve any expressions and re-validate
             ModelNode resolvedOp = operation.resolve();
             String failure = runtimeValidator.validate(resolvedOp);
@@ -103,7 +103,7 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
                 int portOffset = resolvedOp.get(PORT_OFFSET).isDefined() ? resolvedOp.get(PORT_OFFSET).asInt() : 0;
                 String defaultInterface = resolvedOp.require(DEFAULT_INTERFACE).asString();
 
-                NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
+                RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
                 SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
                 final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
                 serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)

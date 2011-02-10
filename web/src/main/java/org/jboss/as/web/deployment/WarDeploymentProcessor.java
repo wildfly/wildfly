@@ -41,14 +41,14 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.NamingListener;
-import org.jboss.as.web.WebSubsystemElement;
+import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.security.JBossWebRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
@@ -70,6 +70,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
@@ -88,6 +89,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         processDeployment(hostName, metaData, deploymentUnit, phaseContext.getServiceTarget());
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 
@@ -183,8 +185,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
-            serviceTarget.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), webDeploymentService).addDependency(
-                    WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
+            serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService).addDependency(
+                    WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
                     .addDependency(namespaceSelectorServiceName, NamespaceSelectorService.class,
                             webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE).install();
         } catch (ServiceRegistryException e) {

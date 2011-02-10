@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,83 +22,88 @@
 
 package org.jboss.as.logging;
 
-import java.util.ArrayList;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLER;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.LOGGER;
+import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.CommonAttributes.PATH;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+import static org.jboss.as.logging.CommonAttributes.SUFFIX;
+import static org.jboss.as.logging.CommonAttributes.TARGET;
+import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
+
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jboss.as.server.ExtensionContext;
-import org.jboss.as.server.ExtensionContext.SubsystemConfiguration;
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.ParseResult;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import static org.jboss.as.model.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.model.ParseUtils.requireNoContent;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class LoggingSubsystemParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<LoggingSubsystemElement>>>, XMLStreamConstants {
+public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final LoggingSubsystemParser INSTANCE = new LoggingSubsystemParser();
 
-    /**
-     * @return the instance
-     */
     public static LoggingSubsystemParser getInstance() {
         return INSTANCE;
     }
 
-    private static XMLStreamException unexpectedAttribute(final XMLExtendedStreamReader reader, final int index) {
-        return new XMLStreamException("Unexpected attribute '" + reader.getAttributeName(index) + "' encountered", reader.getLocation());
+    private LoggingSubsystemParser() {
+        //
     }
 
-    private static XMLStreamException duplicateNamedElement(final XMLExtendedStreamReader reader, final String name) {
-        return new XMLStreamException("An element of this type named '" + name + "' has already been declared", reader.getLocation());
-    }
 
-    private static XMLStreamException unexpectedElement(final XMLExtendedStreamReader reader) {
-        return new XMLStreamException("Unexpected element '" + reader.getName() + "' encountered", reader.getLocation());
-    }
-
-    private static XMLStreamException missingRequired(final XMLExtendedStreamReader reader, final Set<?> required) {
-        final StringBuilder b = new StringBuilder();
-        Iterator<?> iterator = required.iterator();
-        while (iterator.hasNext()) {
-            final Object o = iterator.next();
-            b.append(o.toString());
-            if (iterator.hasNext()) {
-                b.append(", ");
-            }
-        }
-        return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void readElement(XMLExtendedStreamReader reader, ParseResult<SubsystemConfiguration<LoggingSubsystemElement>> result)
-            throws XMLStreamException {
-        final List<AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<LoggingSubsystemElement, ?>>();
-        readElement(reader, updates);
-        result.setResult(new ExtensionContext.SubsystemConfiguration<LoggingSubsystemElement>(new LoggingSubsystemAdd(), updates));
-    }
-
-    void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> updates)
-            throws XMLStreamException {
+    /** {@inheritDoc} */
+    @Override
+    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
         // No attributes
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
+
+        final ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
+        address.protect();
+
+        list.add(LoggingExtension.NewLoggingSubsystemAdd.createOperation(address));
 
         // Elements
         final Set<String> loggerNames = new HashSet<String>();
@@ -110,9 +115,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case LOGGER: {
-                            // http://youtrack.jetbrains.net/issue/IDEA-59290
-                            //noinspection unchecked
-                            parseLoggerElement(reader, updates, loggerNames);
+                            parseLoggerElement(reader, address, list, loggerNames);
                             break;
                         }
                         case ROOT_LOGGER: {
@@ -120,43 +123,31 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                                 throw unexpectedElement(reader);
                             }
                             gotRoot = true;
-                            // http://youtrack.jetbrains.net/issue/IDEA-59290
-                            //noinspection unchecked
-                            parseRootLoggerElement(reader, updates);
+                            parseRootLoggerElement(reader, address, list);
                             break;
                         }
                         case CONSOLE_HANDLER: {
-                            // http://youtrack.jetbrains.net/issue/IDEA-59290
-                            //noinspection unchecked
-                            parseConsoleHandlerElement(reader, updates, handlerNames);
+                            parseConsoleHandlerElement(reader, address, list, handlerNames);
                             break;
                         }
                         case FILE_HANDLER: {
-                            // http://youtrack.jetbrains.net/issue/IDEA-59290
-                            //noinspection unchecked
-                            parseFileHandlerElement(reader, updates, handlerNames);
+                            parseFileHandlerElement(reader, address, list, handlerNames);
                             break;
                         }
                         case PERIODIC_ROTATING_FILE_HANDLER: {
-                            // http://youtrack.jetbrains.net/issue/IDEA-59290
-                            //noinspection unchecked
-                            parsePeriodicRotatingFileHandlerElement(reader, updates, handlerNames);
+                            parsePeriodicRotatingFileHandlerElement(reader, address, list, handlerNames);
                             break;
                         }
                         case SIZE_ROTATING_FILE_HANDLER: {
-                            // http://youtrack.jetbrains.net/issue/IDEA-59290
-                            //noinspection unchecked
-                            parseSizeRotatingHandlerElement(reader, updates, handlerNames);
+                            parseSizeRotatingHandlerElement(reader, address, list, handlerNames);
                             break;
                         }
                         case ASYNC_HANDLER: {
-                            // http://youtrack.jetbrains.net/issue/IDEA-59290
-                            //noinspection unchecked
-                            parseAsyncHandlerElement(reader, updates, handlerNames);
+                            parseAsyncHandlerElement(reader, address, list, handlerNames);
                             break;
                         }
                         default: {
-                            reader.handleAny(updates);
+                            reader.handleAny(list);
                             break;
                         }
                     }
@@ -169,58 +160,52 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         }
     }
 
-    private static void parseLoggerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
 
+    static void parseLoggerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean useParentHandlers = true;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.CATEGORY);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case CATEGORY: {
-                        name = value;
-                        break;
-                    }
-                    case USE_PARENT_HANDLERS: {
-                        useParentHandlers = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CATEGORY: {
+                    name = value;
+                    break;
                 }
-                required.remove(attribute);
+                case USE_PARENT_HANDLERS: {
+                    useParentHandlers = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
         assert name != null;
-        if (names.contains(name)) {
+        if (! names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
-        final LoggerAdd add = new LoggerAdd(name);
-        add.setUseParentHandlers(useParentHandlers);
-
-        // Elements
-        List<String> handlers = null;
+        // Element
+        String level = null;
+        ModelNode handlers = null;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case LOGGING_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    if (encountered.contains(element)) {
+                    if (!encountered.add(element)) {
                         throw duplicateNamedElement(reader, reader.getLocalName());
                     }
-                    encountered.add(element);
                     switch (element) {
                         case LEVEL: {
-                            add.setLevelName(parseLevelElement(reader));
+                            level = readStringAttributeElement(reader, "name");
                             break;
                         }
                         case HANDLERS: {
@@ -237,47 +222,92 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                 }
             }
         }
-        list.add(add);
-        if (handlers != null) {
-            for (String handlerName : handlers) {
-                list.add(new LoggerHandlerAdd(name, handlerName));
-            }
-        }
+
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(LOGGER, name);
+        node.get(USE_PARENT_HANDLERS).set(useParentHandlers);
+        node.get(LEVEL).set(level);
+        if(handlers != null) node.get(HANDLERS).set(handlers);
+        list.add(node);
     }
 
-    private static String parseLevelElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    static void parseAsyncHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
-        String level = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        String name = null;
+        boolean autoflush = true;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.FILE_NAME, Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        level = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
-                required.remove(attribute);
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-
-        if (reader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(reader);
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
         }
-        return level;
+        // Elements
+        String levelName = null;
+        ModelNode subhandlers = null;
+        int queueLength = 0;
+        OverflowAction overflowAction = OverflowAction.BLOCK;
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case LEVEL: {
+                    levelName = readStringAttributeElement(reader, "name");
+                    break;
+                }
+                case SUBHANDLERS: {
+                    subhandlers = parseHandlersElement(reader);
+                    break;
+                }
+                case QUEUE_LENGTH: {
+                    queueLength = Integer.parseInt(readStringAttributeElement(reader, "value"));
+                    break;
+                }
+                case OVERFLOW_ACTION: {
+                    overflowAction = OverflowAction.valueOf(readStringAttributeElement(reader, "value").toUpperCase(Locale.US));
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        // TODO - Only values set in the XML should be set on the model otherwise defaults end up being written when
+        // marshalling.
+
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.ASYNC_HANDLER.toString());
+        node.get(LEVEL).set(levelName);
+        if(subhandlers != null) node.get(SUBHANDLERS).set(subhandlers);
+        node.get(AUTOFLUSH).set(Boolean.valueOf(autoflush));
+        node.get(QUEUE_LENGTH).set(queueLength);
+        node.get(OVERFLOW_ACTION).set(overflowAction.toString());
+        list.add(node);
     }
 
-    private static void parseRootLoggerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list) throws XMLStreamException {
+    static void parseRootLoggerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // No attributes
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
@@ -285,7 +315,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
 
         String level = null;
         // Elements
-        List<String> handlers = null;
+        ModelNode handlers = null;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -297,7 +327,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                     encountered.add(element);
                     switch (element) {
                         case LEVEL: {
-                            level = parseLevelElement(reader);
+                            level = readStringAttributeElement(reader, "name");
                             break;
                         }
                         case HANDLERS: {
@@ -314,114 +344,49 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                 }
             }
         }
-        final RootLoggerAdd add = new RootLoggerAdd();
-        add.setLevelName(level);
-        list.add(add);
-        if (handlers != null) {
-            for (String handlerName : handlers) {
-                list.add(new LoggerHandlerAdd("", handlerName));
-            }
-        }
+
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(RootLoggerAdd.OPERATION_NAME);
+        node.get(OP_ADDR).set(address);
+        node.get(LEVEL).set(level);
+        if(handlers != null) node.get(HANDLERS).set(handlers);
+        list.add(node);
     }
 
-    private static AbstractFormatterSpec parseFormatterElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
-        }
-        AbstractFormatterSpec formatterSpec = null;
-        if (reader.nextTag() != START_ELEMENT) {
-            throw new XMLStreamException("Missing required nested filter element", reader.getLocation());
-        }
-        switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case LOGGING_1_0: {
-                final Element element = Element.forName(reader.getLocalName());
-                switch (element) {
-                    case PATTERN_FORMATTER: {
-                        formatterSpec = parsePatternFormatterElement(reader);
-                        break;
-                    }
-                    default: {
-                        throw unexpectedElement(reader);
-                    }
-                }
-                break;
-            }
-            default: {
-                throw unexpectedElement(reader);
-            }
-        }
-        if (reader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(reader);
-        }
-        return formatterSpec;
-    }
-
-    private static PatternFormatterSpec parsePatternFormatterElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        String pattern = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.PATTERN);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case PATTERN: {
-                        pattern = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-        if (reader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(reader);
-        }
-        final PatternFormatterSpec spec = new PatternFormatterSpec(pattern);
-        return spec;
-    }
-
-    private static void parseConsoleHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
+    static void parseConsoleHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         // Elements
         String levelName = null;
         String encoding = null;
-        AbstractFormatterSpec formatterSpec = null;
+        String formatterSpec = null;
         String target = null;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
@@ -454,55 +419,53 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                 }
             }
         }
-        if (names.contains(name)) {
-            throw duplicateNamedElement(reader, name);
-        }
-        final ConsoleHandlerAdd add = new ConsoleHandlerAdd(name);
-        add.setAutoflush(Boolean.valueOf(autoflush));
-        add.setLevelName(levelName);
-        add.setEncoding(encoding);
-        add.setFormatter(formatterSpec);
-        if (target != null) add.setTarget(Target.fromString(target));
-        list.add(add);
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.CONSOLE_HANDLER.toString());
+        node.get(AUTOFLUSH).set(autoflush);
+        node.get(LEVEL).set(levelName);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        list.add(node);
     }
 
-    private static void parseFileHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
+    static void parseFileHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         // Elements
         String levelName = null;
         String encoding = null;
-        FileSpec fileSpec = null;
+        ModelNode fileSpec = null;
         boolean append = true;
-        AbstractFormatterSpec formatterSpec = null;
+        String formatterSpec = null;
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -541,90 +504,56 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        if (names.contains(name)) {
-            throw duplicateNamedElement(reader, name);
-        }
-        final FileHandlerAdd add = new FileHandlerAdd(name);
-        add.setAutoflush(Boolean.valueOf(autoflush));
-        add.setLevelName(levelName);
-        add.setEncoding(encoding);
-        add.setFormatter(formatterSpec);
-        add.setPath(fileSpec.fileName);
-        add.setRelativeTo(fileSpec.relativeTo);
-        add.setAppend(append);
-        list.add(add);
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.FILE_HANDLER.toString());
+        node.get(AUTOFLUSH).set(autoflush);
+        node.get(LEVEL).set(levelName);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FILE).set(fileSpec);
+        node.get(APPEND).set(append);
+        list.add(node);
     }
 
-    private static FileSpec parseFileElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Attributes
-        String path = null;
-        String relativeTo = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case PATH: {
-                        path = value;
-                        break;
-                    }
-                    case RELATIVE_TO: {
-                        relativeTo = value;
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-        }
-        requireNoContent(reader);
-        return new FileSpec(relativeTo, path);
-    }
-
-    private static void parsePeriodicRotatingFileHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
+    static void parsePeriodicRotatingFileHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         // Elements
         String levelName = null;
         String encoding = null;
         String suffix = null;
-        FileSpec fileSpec = null;
+        ModelNode fileSpec = null;
         boolean append = true;
-        AbstractFormatterSpec formatterSpec = null;
+        String formatterSpec = null;
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE, Element.SUFFIX);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -667,60 +596,58 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        if (names.contains(name)) {
-            throw duplicateNamedElement(reader, name);
-        }
-        final PeriodicRotatingFileHandlerAdd add = new PeriodicRotatingFileHandlerAdd(name);
-        add.setAutoflush(Boolean.valueOf(autoflush));
-        add.setLevelName(levelName);
-        add.setEncoding(encoding);
-        add.setFormatter(formatterSpec);
-        add.setPath(fileSpec.fileName);
-        add.setRelativeTo(fileSpec.relativeTo);
-        add.setAppend(append);
-        add.setSuffix(suffix);
-        list.add(add);
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.PERIODIC_ROTATING_FILE_HANDLER.toString());
+        node.get(AUTOFLUSH).set(autoflush);
+        node.get(LEVEL).set(levelName);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FILE).set(fileSpec);
+        node.get(APPEND).set(append);
+        if(suffix != null) node.get(SUFFIX).set(suffix);
+        list.add(node);
     }
 
-    private static void parseSizeRotatingHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
+    static void parseSizeRotatingHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case AUTOFLUSH: {
-                        autoflush = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
                 }
+                case AUTOFLUSH: {
+                    autoflush = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         // Elements
         String levelName = null;
         String encoding = null;
-        FileSpec fileSpec = null;
+        ModelNode fileSpec = null;
         boolean append = true;
         long rotateSize = 0L;
         int maxBackupIndex = 1;
-        AbstractFormatterSpec formatterSpec = null;
+        String formatterSpec = null;
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -771,24 +698,23 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        if (names.contains(name)) {
-            throw duplicateNamedElement(reader, name);
-        }
-        final SizeRotatingFileHandlerAdd add = new SizeRotatingFileHandlerAdd(name);
-        add.setAutoflush(Boolean.valueOf(autoflush));
-        add.setLevelName(levelName);
-        add.setEncoding(encoding);
-        add.setFormatter(formatterSpec);
-        add.setPath(fileSpec.fileName);
-        add.setRelativeTo(fileSpec.relativeTo);
-        add.setAppend(append);
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(HANDLER, name);
+        node.get(HANDLER_TYPE).set(LoggerHandlerType.SIZE_ROTATING_FILE_HANDLER.toString());
+        node.get(AUTOFLUSH).set(autoflush);
+        node.get(LEVEL).set(levelName);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FILE).set(fileSpec);
+        node.get(APPEND).set(append);
         if (rotateSize > 0L) {
-            add.setRotateSize(rotateSize);
+            node.get(ROTATE_SIZE).set(rotateSize);
         }
         if (maxBackupIndex > 0) {
-            add.setMaxBackupIndex(maxBackupIndex);
+            node.get(MAX_BACKUP_INDEX).set(maxBackupIndex);
         }
-        list.add(add);
+        list.add(node);
     }
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+)([kKmMgGbBtT])?");
@@ -828,84 +754,101 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         return qty;
     }
 
-    private static void parseAsyncHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
+    private static ModelNode parseFileElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         // Attributes
-        String name = null;
-        boolean autoflush = true;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.FILE_NAME, Attribute.NAME);
+        String path = null;
+        String relativeTo = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case PATH: {
+                    path = value;
+                    break;
+                }
+                case RELATIVE_TO: {
+                    relativeTo = value;
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        requireNoContent(reader);
+        final ModelNode node = new ModelNode();
+        if(path != null) node.get(PATH).set(path);
+        if(relativeTo != null) node.get(RELATIVE_TO).set(relativeTo);
+        return node;
+    }
+
+    private static String parseFormatterElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+        String formatterSpec = null;
+        if (reader.nextTag() != START_ELEMENT) {
+            throw new XMLStreamException("Missing required nested filter element", reader.getLocation());
+        }
+        switch (Namespace.forUri(reader.getNamespaceURI())) {
+            case LOGGING_1_0: {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case PATTERN_FORMATTER: {
+                        formatterSpec = parsePatternFormatterElement(reader);
                         break;
                     }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+                    default: {
+                        throw unexpectedElement(reader);
+                    }
                 }
+                break;
+            }
+            default: {
+                throw unexpectedElement(reader);
+            }
+        }
+        if (reader.nextTag() != END_ELEMENT) {
+            throw unexpectedElement(reader);
+        }
+        return formatterSpec;
+    }
+
+    private static String parsePatternFormatterElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        String pattern = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.PATTERN);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case PATTERN: {
+                    pattern = value;
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-
-        // Elements
-        String levelName = null;
-        List<String> subhandlers = null;
-        int queueLength = 0;
-        OverflowAction overflowAction = OverflowAction.BLOCK;
-        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        while (reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            if (!encountered.add(element)) {
-                throw unexpectedElement(reader);
-            }
-            switch (element) {
-                case LEVEL: {
-                    levelName = readStringAttributeElement(reader, "name");
-                    break;
-                }
-                case SUBHANDLERS: {
-                    subhandlers = parseHandlersElement(reader);
-                    break;
-                }
-                case QUEUE_LENGTH: {
-                    queueLength = Integer.parseInt(readStringAttributeElement(reader, "value"));
-                    break;
-                }
-                case OVERFLOW_ACTION: {
-                    overflowAction = OverflowAction.valueOf(readStringAttributeElement(reader, "value").toUpperCase(Locale.US));
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-        if (names.contains(name)) {
-            throw duplicateNamedElement(reader, name);
-        }
-        final AsyncHandlerAdd add = new AsyncHandlerAdd(name);
-        if (subhandlers != null) add.setSubhandlers(subhandlers.toArray(new String[subhandlers.size()]));
-        if (queueLength > 0) add.setQueueLength(queueLength);
-        add.setOverflowAction(overflowAction);
-        add.setAutoflush(Boolean.valueOf(autoflush));
-        add.setLevelName(levelName);
-        list.add(add);
+        requireNoContent(reader);
+        return pattern;
     }
 
-    private static List<String> parseHandlersElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    private static ModelNode parseHandlersElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         // No attributes
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
-        final List<String> handlers = new ArrayList<String>();
+        final ModelNode handlers = new ModelNode();
 
         // Elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -914,7 +857,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case HANDLER: {
-                            handlers.add(parseRefElement(reader));
+                            handlers.add(readStringAttributeElement(reader, "name"));
                             break;
                         }
                         default:
@@ -930,46 +873,268 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         return handlers;
     }
 
-    private static String parseRefElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Attributes
-        String name = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
+    /** {@inheritDoc} */
+    @Override
+    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+
+        ModelNode node = context.getModelNode();
+        if (node.hasDefined(HANDLER)) {
+            final ModelNode handlers = node.get(HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (!handler.isDefined()) {
+                    continue;
                 }
-                required.remove(attribute);
+                final LoggerHandlerType type;
+                try {
+                    type = Enum.valueOf(LoggerHandlerType.class, handler.get(HANDLER_TYPE).asString());
+                } catch (IllegalArgumentException e) {
+                    continue;
+                }
+
+                switch (type) {
+                    case ASYNC_HANDLER:
+                        writeAsynchHandler(writer, handler, name);
+                        break;
+                    case CONSOLE_HANDLER:
+                        writeConsoleHandler(writer, handler, name);
+                        break;
+                    case FILE_HANDLER:
+                        writeFileHandler(writer, handler, name);
+                        break;
+                    case PERIODIC_ROTATING_FILE_HANDLER:
+                        writePeriodicRotatingFileHandler(writer, handler, name);
+                        break;
+                    case SIZE_ROTATING_FILE_HANDLER:
+                        writeSizeRotatingFileHandler(writer, handler, name);
+                        break;
+                }
             }
         }
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
+        if (node.hasDefined(LOGGER)) {
+            for (String name : node.get(LOGGER).keys()) {
+                writeLogger(writer, name, node.get(LOGGER, name));
+            }
         }
-        if (reader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(reader);
+        if (node.hasDefined(ROOT_LOGGER)) {
+            writeRootLogger(writer, node.get(ROOT_LOGGER));
         }
-        return name;
+        writer.writeEndElement();
     }
 
-    private static final class FileSpec {
+    private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
+            throws XMLStreamException {
+        writer.writeStartElement(Element.CONSOLE_HANDLER.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+        if (node.hasDefined(AUTOFLUSH)) {
+            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
+        }
+        writeLevel(writer, node);
+        writeEncoding(writer, node);
+        writeFilter(writer, node);
+        writeFormatter(writer, node);
+        writeProperties(writer, node);
+        if (node.hasDefined(TARGET)) {
+            writer.writeStartElement(Element.TARGET.getLocalName());
+            writeAttribute(writer, Attribute.NAME, node.get(TARGET));
+            writer.writeEndElement();
+        }
 
-        private final String relativeTo;
+        writer.writeEndElement();
+    }
 
-        private final String fileName;
+    private void writeFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
+        writer.writeStartElement(Element.FILE_HANDLER.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+        if (node.hasDefined(AUTOFLUSH)) {
+            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
+        }
+        writeLevel(writer, node);
+        writeEncoding(writer, node);
+        writeFilter(writer, node);
+        writeFormatter(writer, node);
+        writeProperties(writer, node);
+        writeFile(writer, node);
+        writeAppend(writer, node);
 
-        private FileSpec(final String relativeTo, final String fileName) {
-            this.relativeTo = relativeTo;
-            this.fileName = fileName;
+        writer.writeEndElement();
+    }
+
+    private void writePeriodicRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
+        writer.writeStartElement(Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+        if (node.hasDefined(AUTOFLUSH)) {
+            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
+        }
+        writeLevel(writer, node);
+        writeEncoding(writer, node);
+        writeFilter(writer, node);
+        writeFormatter(writer, node);
+        writeProperties(writer, node);
+        writeFile(writer, node);
+        if (node.hasDefined(SUFFIX)) {
+            writer.writeStartElement(Element.SUFFIX.getLocalName());
+            writeAttribute(writer, Attribute.VALUE, node.get(SUFFIX));
+            writer.writeEndElement();
+        }
+        writeAppend(writer, node);
+
+        writer.writeEndElement();
+    }
+
+    private void writeSizeRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
+        writer.writeStartElement(Element.SIZE_ROTATING_FILE_HANDLER.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+        if (node.hasDefined(AUTOFLUSH)) {
+            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
+        }
+        writeLevel(writer, node);
+        writeEncoding(writer, node);
+        writeFilter(writer, node);
+        writeFormatter(writer, node);
+        writeProperties(writer, node);
+        writeFile(writer, node);
+        if (node.hasDefined(ROTATE_SIZE)) {
+            writer.writeStartElement(Element.ROTATE_SIZE.getLocalName());
+            writeAttribute(writer, Attribute.VALUE, node.get(ROTATE_SIZE));
+            writer.writeEndElement();
+        }
+        if (node.hasDefined(MAX_BACKUP_INDEX)) {
+            writer.writeStartElement(Element.MAX_BACKUP_INDEX.getLocalName());
+            writeAttribute(writer, Attribute.VALUE, node.get(MAX_BACKUP_INDEX));
+            writer.writeEndElement();
+        }
+        writeAppend(writer, node);
+
+        writer.writeEndElement();
+    }
+
+    private void writeAsynchHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
+        writer.writeStartElement(Element.ASYNC_HANDLER.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+        writeLevel(writer, node);
+        writeFilter(writer, node);
+        writeProperties(writer, node);
+        if (node.hasDefined(QUEUE_LENGTH)) {
+            writer.writeStartElement(Element.QUEUE_LENGTH.getLocalName());
+            writeAttribute(writer, Attribute.VALUE, node.get(QUEUE_LENGTH));
+            writer.writeEndElement();
+        }
+        if (node.hasDefined(OVERFLOW_ACTION)) {
+            writer.writeStartElement(Element.OVERFLOW_ACTION.getLocalName());
+            writeAttribute(writer, Attribute.VALUE, node.get(OVERFLOW_ACTION));
+            writer.writeEndElement();
+        }
+        if (node.hasDefined(SUBHANDLERS)) {
+            final ModelNode handlers = node.get(SUBHANDLERS);
+            writeHandlersContent(writer, Element.SUBHANDLERS, handlers);
+        }
+
+        writer.writeEndElement();
+    }
+
+    private void writeLogger(final XMLExtendedStreamWriter writer, String name, final ModelNode node) throws XMLStreamException {
+        writer.writeStartElement(Element.LOGGER.getLocalName());
+        writer.writeAttribute(Attribute.CATEGORY.getLocalName(), name);
+        if (node.hasDefined(USE_PARENT_HANDLERS)) {
+            writeAttribute(writer, Attribute.USE_PARENT_HANDLERS, node.get(USE_PARENT_HANDLERS));
+        }
+        writeLevel(writer, node);
+        writeFilter(writer, node);
+        writeHandlers(writer, node);
+        writer.writeEndElement();
+    }
+
+    private void writeRootLogger(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        writer.writeStartElement(Element.ROOT_LOGGER.getLocalName());
+        writeLevel(writer, node);
+        writeFilter(writer, node);
+        writeHandlers(writer, node);
+        writer.writeEndElement();
+    }
+
+    private void writeLevel(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (node.hasDefined(LEVEL)) {
+            writer.writeStartElement(Element.LEVEL.getLocalName());
+            writeAttribute(writer, Attribute.NAME, node.get(LEVEL));
+            writer.writeEndElement();
         }
     }
+
+    private void writeFilter(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        //TODO - we're not parsing it yet
+    }
+
+    private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        //TODO - we're not parsing it yet
+    }
+
+    private void writeFormatter(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (node.hasDefined(FORMATTER)) {
+            writer.writeStartElement(Element.FORMATTER.getLocalName());
+            writer.writeStartElement(Element.PATTERN_FORMATTER.getLocalName());
+            writeAttribute(writer, Attribute.PATTERN, node.get(FORMATTER));
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeFile(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (node.hasDefined(FILE)) {
+            writer.writeStartElement(Element.FILE.getLocalName());
+            final ModelNode file = node.get(FILE);
+            if (file.hasDefined(RELATIVE_TO)) {
+                writeAttribute(writer, Attribute.RELATIVE_TO, file.get(RELATIVE_TO));
+            }
+            if (file.hasDefined(PATH)) {
+                writeAttribute(writer, Attribute.PATH, file.get(PATH));
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeEncoding(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (node.hasDefined(ENCODING)) {
+            writer.writeStartElement(Element.ENCODING.getLocalName());
+            writeAttribute(writer, Attribute.VALUE, node.get(ENCODING));
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeHandlers(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (node.hasDefined(HANDLERS)) {
+            final ModelNode handlers = node.get(HANDLERS);
+            writeHandlersContent(writer, Element.HANDLERS, handlers);
+        }
+    }
+
+    private void writeHandlersContent(final XMLExtendedStreamWriter writer, Element element, final ModelNode handlers) throws XMLStreamException {
+        if (handlers.getType() == ModelType.LIST) {
+            writer.writeStartElement(Element.HANDLERS.getLocalName());
+            for (ModelNode handler : handlers.asList()) {
+                if (handler.isDefined()) {
+                    writer.writeStartElement(Element.HANDLER.getLocalName());
+                    writeAttribute(writer, Attribute.NAME, handler);
+                    writer.writeEndElement();
+                }
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeAppend(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (node.hasDefined(APPEND)) {
+            writer.writeStartElement(Element.APPEND.getLocalName());
+            writeAttribute(writer, Attribute.VALUE, node.get(APPEND));
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
+        writer.writeAttribute(attr.getLocalName(), value.asString());
+    }
+
 }

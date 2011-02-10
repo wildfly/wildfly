@@ -18,10 +18,10 @@
  */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -42,10 +42,10 @@ public class ServerSocketBindingRemoveHandler extends SocketBindingRemoveHandler
     }
 
     @Override
-    protected void uninstallSocketBinding(String name, ModelNode model, NewOperationContext context,
+    protected void uninstallSocketBinding(String name, ModelNode model, OperationContext context,
             ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
-            final NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
+        if (context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
 
             final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
             if(controller == null) {

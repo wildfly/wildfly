@@ -65,11 +65,11 @@ public class RemotingSubsystemUnitTestCase {
     public static void main(final String[] args) throws Exception {
 
         ModelNodeRegistration reg = c.getRegistry().registerSubModel(PathElement.pathElement("profile", "web"), NULL_PROVIDER);
-        reg = reg.registerSubModel(PathElement.pathElement("subsystem", "remoting"), NewRemotingSubsystemProviders.SUBSYSTEM);
-        reg.registerOperationHandler(ADD, new NewRemotingSubsystemAdd(), NewRemotingSubsystemProviders.SUBSYSTEM_ADD, false);
+        reg = reg.registerSubModel(PathElement.pathElement("subsystem", "remoting"), RemotingSubsystemProviders.SUBSYSTEM);
+        reg.registerOperationHandler(ADD, new RemotingSubsystemAdd(), RemotingSubsystemProviders.SUBSYSTEM_ADD, false);
         reg = reg.registerSubModel(PathElement.pathElement("connector"), NULL_PROVIDER);
-        reg.registerOperationHandler(ADD, new NewConnectorAdd(), NewRemotingSubsystemProviders.CONNECTOR_ADD, false);
-        reg.registerOperationHandler(REMOVE, new NewConnectorRemove(), NewRemotingSubsystemProviders.CONNECTOR_REMOVE, false);
+        reg.registerOperationHandler(ADD, new ConnectorAdd(), RemotingSubsystemProviders.CONNECTOR_ADD, false);
+        reg.registerOperationHandler(REMOVE, new ConnectorRemove(), RemotingSubsystemProviders.CONNECTOR_REMOVE, false);
 
         try {
             System.out.println(model);

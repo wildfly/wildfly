@@ -22,43 +22,59 @@
 
 package org.jboss.as.managedbean;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanDependencyProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanResourceTargetProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanSubDeploymentProcessor;
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.dmr.ModelNode;
 
 /**
- * The managed subsystem add update.
+ * The managed beans subsystem add handler.
  *
+ * @author John E. Bailey
  * @author Emanuel Muckenhuber
  */
-public class ManagedBeansSubsystemAdd extends AbstractSubsystemAdd<ManagedBeansSubsystemElement> {
+class ManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    private static final long serialVersionUID = 8639964348855747105L;
+    static final ManagedBeansSubsystemAdd INSTANCE = new ManagedBeansSubsystemAdd();
 
-    protected ManagedBeansSubsystemAdd() {
-        super(ManagedBeansExtension.NAMESPACE);
-    }
-
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    private ManagedBeansSubsystemAdd() {
+        //
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK, new ManagedBeanSubDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new ManagedBeanDependencyProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_RESOURCE_TARGET, new ManagedBeanResourceTargetProcessor());
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
+        if(context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = (BootOperationContext) context;
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK, new ManagedBeanSubDeploymentProcessor());
+            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new ManagedBeanDependencyProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_RESOURCE_TARGET, new ManagedBeanResourceTargetProcessor());
+        }
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+
+        context.getSubModel().setEmptyObject();
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+
+        return Cancellable.NULL;
     }
 
-    /** {@inheritDoc} */
-    protected ManagedBeansSubsystemElement createSubsystemElement() {
-        return new ManagedBeansSubsystemElement();
-    }
 }

@@ -41,5 +41,5 @@ public interface OperationHandler {
      * @param resultHandler the result handler to invoke when the operation is complete
      * @return a handle which may be used to asynchronously cancel this operation
      */
-    Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler);
+    Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler);
 }

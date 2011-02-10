@@ -23,7 +23,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Set;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
@@ -52,7 +52,7 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler implements
     }
 
     @Override
-    protected void installInterface(String name, ParsedInterfaceCriteria criteria, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected void installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         if (context instanceof HostOperationContext) {
             HostOperationContext runtimeContext = (HostOperationContext) context;
             final ServiceTarget target = runtimeContext.getServiceTarget();

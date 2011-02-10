@@ -22,57 +22,62 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
- * Update removing a {@code DeploymentRepositoryElement} form the {@code ServerModel}.
+ * Operation removing a {@link DeploymentScannerService}.
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerRemove extends AbstractDeploymentScannerSubsystemUpdate {
+class DeploymentScannerRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -8749135039011134115L;
-    private final String path;
+    static final DeploymentScannerRemove INSTANCE = new DeploymentScannerRemove();
 
-    public DeploymentScannerRemove(String path) {
-        this.path = path;
+    private DeploymentScannerRemove() {
+        //
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected void applyUpdate(DeploymentScannerSubsystemElement element) throws UpdateFailedException {
-        final DeploymentScannerElement scannerElement = element.removeScanner(path);
-        if (scannerElement == null) {
-            throw new IllegalStateException("No deployment scanner for path " + path);
-        }
-    }
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    /**
-     * {@inheritDoc}
-     */
-    public AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, ?> getCompensatingUpdate(DeploymentScannerSubsystemElement element) {
-        final DeploymentScannerElement original = element.getScanner(path);
-        if (original == null) {
-            throw new IllegalStateException("No deployment scanner for path " + path);
-        }
-        return new DeploymentScannerAdd(original.getName(), path, original.getRelativeTo(), original.getScanInterval(), original.isScanEnabled());
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    /**
-     * {@inheritDoc}
-     */
-    public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(path));
-        if (controller == null) {
-            resultHandler.handleSuccess(null, param);
-            return;
+        final ModelNode subModel = new ModelNode();
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(ADD);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(CommonAttributes.PATH).set(subModel.get(CommonAttributes.PATH));
+        compensatingOperation.get(CommonAttributes.SCAN_ENABLED).set(subModel.get(CommonAttributes.SCAN_ENABLED));
+        compensatingOperation.get(CommonAttributes.SCAN_INTERVAL).set(subModel.get(CommonAttributes.SCAN_INTERVAL));
+        compensatingOperation.get(CommonAttributes.RELATIVE_TO).set(subModel.get(CommonAttributes.RELATIVE_TO));
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+
+            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(DeploymentScannerService.getServiceName(name));
+            if (controller != null) {
+                controller.setMode(Mode.REMOVE);
+            }
         }
-        controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

@@ -1,5 +1,11 @@
 package org.jboss.as.messaging;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.management.MBeanServer;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -16,12 +22,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.management.MBeanServer;
 
 /**
  * Service configuring and starting the {@code HornetQService}.
@@ -66,6 +66,7 @@ class HornetQService implements Service<HornetQServer> {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void start(final StartContext context) throws StartException {
         ClassLoader origTCCL = SecurityActions.getContextClassLoader();
         // Validate whether the AIO native layer can be used
@@ -148,6 +149,7 @@ class HornetQService implements Service<HornetQServer> {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void stop(final StopContext context) {
         try {
             if (server != null) {
@@ -162,6 +164,7 @@ class HornetQService implements Service<HornetQServer> {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized HornetQServer getValue() throws IllegalStateException {
         final HornetQServer server = this.server;
         if (server == null) {
@@ -216,16 +219,19 @@ class HornetQService implements Service<HornetQServer> {
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getValue() throws IllegalStateException {
             return value;
         }
 
         /** {@inheritDoc} */
+        @Override
         public void inject(String value) throws InjectionException {
             HornetQService.this.paths.put(name, value);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void uninject() {
             HornetQService.this.paths.remove(name);
         }

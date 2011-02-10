@@ -22,56 +22,51 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
- * Update removing a {@code JMSTopicElement} from the {@code JMSSubsystemElement}. The
- * runtime action will remove the corresponding {@code JMSTopicService}.
+ * Update handler removing a topic from the JMS subsystem. The
+ * runtime action will remove the corresponding {@link JMSTopicService}.
  *
  * @author Emanuel Muckenhuber
  */
-public class JMSTopicRemove extends AbstractJMSSubsystemUpdate<Void> {
+class JMSTopicRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 141328949523686903L;
-    private final String topicName;
-
-    public JMSTopicRemove(final String topicName) {
-        if(topicName == null) {
-            throw new IllegalArgumentException("null name");
-        }
-        this.topicName = topicName;
-    }
+    static final JMSTopicRemove INSTANCE = new JMSTopicRemove();
 
     /** {@inheritDoc} */
-    protected void applyUpdate(JMSSubsystemElement element) throws UpdateFailedException {
-        if(! element.removeTopic(topicName)) {
-            throw new UpdateFailedException(String.format("topic (%s) does not exist", topicName));
-        }
-    }
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_TOPIC_BASE.append(topicName));
-        if(service == null) {
-            handler.handleSuccess(null, param);
-        } else {
-            service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
-        }
-    }
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<JMSSubsystemElement, ?> getCompensatingUpdate(JMSSubsystemElement original) {
-        final JMSTopicElement element = original.getTopic(topicName);
-        if(element == null) {
-            return null;
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = JMSTopicAdd.getOperation(opAddr, subModel);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(JMSServices.JMS_TOPIC_BASE.append(name));
+            if(service != null) {
+                service.setMode(Mode.REMOVE);
+            }
         }
-        final JMSTopicAdd action = new JMSTopicAdd(topicName);
-        action.setBindings(element.getBindings());
-        return action;
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

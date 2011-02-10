@@ -22,113 +22,105 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.jms.CommonAttributes.SELECTOR;
+
+import java.util.HashSet;
 import java.util.Set;
 
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Update adding a {@code JMSQueueElement} to the {@code JMSSubsystemElement}. The
- * runtime action, will create the {@code JMSQueueService}.
+ * Update handler adding a queue to the JMS subsystem. The
+ * runtime action will create the {@link JMSQueueService}.
  *
  * @author Emanuel Muckenhuber
  */
-public class JMSQueueAdd extends AbstractJMSSubsystemUpdate<Void> {
+class JMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 5900849533546313463L;
+    public static final String OPERATION_NAME = ADD;
 
-    private final String name;
-    private Set<String> bindings;
-    private String selector;
-    private Boolean durable;
-
-    static JMSQueueAdd create(final JMSQueueElement queue) {
-        final JMSQueueAdd action = new JMSQueueAdd(queue.getName());
-        action.bindings = queue.getBindings();
-        action.selector = queue.getSelector();
-        action.durable = queue.getDurable();
-        return action;
-    }
-
-    public JMSQueueAdd(String name) {
-        if(name == null) {
-            throw new IllegalArgumentException("null name");
+    /** Create an "add" operation using the existing model */
+    static ModelNode getOperation(ModelNode address, ModelNode existing) {
+        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        if (existing.hasDefined(SELECTOR)) {
+            op.get(SELECTOR).set(existing.get(SELECTOR));
         }
-        this.name = name;
+        if (existing.hasDefined(DURABLE)) {
+            op.get(DURABLE).set(existing.get(DURABLE));
+        }
+        if (existing.hasDefined(ENTRIES)) {
+            op.get(ENTRIES).set(existing.get(ENTRIES));
+        }
+        return op;
     }
+
+    static final JMSQueueAdd INSTANCE = new JMSQueueAdd();
+    private static final String[] NO_BINDINGS = new String[0];
 
     /** {@inheritDoc} */
-    protected void applyUpdate(JMSSubsystemElement element) throws UpdateFailedException {
-        final JMSQueueElement queue = element.addQueue(name);
-        if(queue == null) {
-            throw new UpdateFailedException("duplicate queue " + name);
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
+
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
+
+        String selector = null;
+        final ModelNode subModel = context.getSubModel();
+        if (operation.hasDefined(SELECTOR)) {
+            selector = operation.get(SELECTOR).asString();
+            subModel.get(SELECTOR).set(selector);
         }
-        queue.setBindings(bindings);
-        queue.setSelector(selector);
-        queue.setDurable(durable);
-    }
-
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final JMSQueueService service = new JMSQueueService(name, selector, durableDefault(), jndiBindings());
-        final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
-        context.getServiceTarget().addService(serviceName, service)
-                .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
-                .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))
-                .setInitialMode(Mode.ACTIVE)
-                .install();
-    }
-
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<JMSSubsystemElement, ?> getCompensatingUpdate(JMSSubsystemElement original) {
-        return new JMSQueueRemove(name);
-    }
-
-    public Set<String> getBindings() {
-        return bindings;
-    }
-
-    public void setBindings(Set<String> bindings) {
-        this.bindings = bindings;
-    }
-
-    public String getSelector() {
-        return selector;
-    }
-
-    public void setSelector(String selector) {
-        this.selector = selector;
-    }
-
-    public Boolean getDurable() {
-        return durable;
-    }
-
-    public void setDurable(Boolean durable) {
-        this.durable = durable;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    private boolean durableDefault() {
-        if(durable != null) {
-            return durable;
+        if (operation.hasDefined(DURABLE)) {
+            subModel.get(DURABLE).set(operation.get(DURABLE));
         }
-        // JMSServerDeployer.DEFAULT_QUEUE_DURABILITY
-        return true;
+        if (operation.hasDefined(ENTRIES)) {
+            subModel.get(ENTRIES).set(operation.get(ENTRIES));
+        }
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+
+            final JMSQueueService service = new JMSQueueService(name, selector,
+                    operation.get(DURABLE).asBoolean(true), jndiBindings(operation));
+            final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
+            runtimeContext.getServiceTarget().addService(serviceName, service)
+                    .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                    .setInitialMode(Mode.ACTIVE)
+                    .install();
+        }
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    private String[] jndiBindings() {
-        if(bindings != null && ! bindings.isEmpty()) {
+    static String[] jndiBindings(final ModelNode node) {
+        if(node.hasDefined(ENTRIES)) {
+            final Set<String> bindings = new HashSet<String>();
+            for(final ModelNode entry : node.get(ENTRIES).asList()) {
+                bindings.add(entry.asString());
+            }
             return bindings.toArray(new String[bindings.size()]);
         }
-        return new String[0];
+        return NO_BINDINGS;
     }
+
 }

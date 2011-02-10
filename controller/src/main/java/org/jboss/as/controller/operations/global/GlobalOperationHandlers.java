@@ -46,7 +46,7 @@ import java.util.Set;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
@@ -84,7 +84,7 @@ public class GlobalOperationHandlers {
      */
     public static class ReadResourceHandler implements ModelQueryOperationHandler {
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
                 final ModelNode result;
@@ -191,7 +191,7 @@ public class GlobalOperationHandlers {
      */
     public static class ReadAttributeHandler implements ModelQueryOperationHandler {
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
             try {
                 final String attributeName = operation.require(NAME).asString();
@@ -218,7 +218,7 @@ public class GlobalOperationHandlers {
      */
     public static class WriteAttributeHandler implements ModelUpdateOperationHandler {
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             Cancellable cancellable = Cancellable.NULL;
             try {
                 final String attributeName = operation.require(NAME).asString();
@@ -243,7 +243,7 @@ public class GlobalOperationHandlers {
      */
     public static final ModelQueryOperationHandler READ_CHILDREN_NAMES = new ModelQueryOperationHandler() {
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 String childName = operation.require(CHILD_TYPE).asString();
 
@@ -290,7 +290,7 @@ public class GlobalOperationHandlers {
     public static final ModelQueryOperationHandler READ_OPERATION_NAMES = new ModelQueryOperationHandler() {
 
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 final ModelNodeRegistration registry = context.getRegistry();
                 final Map<String, DescriptionProvider> descriptionProviders = registry.getOperationDescriptions(PathAddress.pathAddress(operation.require(ADDRESS)));
@@ -319,7 +319,7 @@ public class GlobalOperationHandlers {
     public static final ModelQueryOperationHandler READ_OPERATION_DESCRIPTION = new ModelQueryOperationHandler() {
 
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 String operationName = operation.require(NAME).asString();
 
@@ -343,7 +343,7 @@ public class GlobalOperationHandlers {
     public static final ModelQueryOperationHandler READ_RESOURCE_DESCRIPTION = new ModelQueryOperationHandler() {
 
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 final boolean operations = operation.get(OPERATIONS).isDefined() ? operation.get(OPERATIONS).asBoolean() : false;
                 final boolean recursive = operation.get(RECURSIVE).isDefined() ? operation.get(RECURSIVE).asBoolean() : false;

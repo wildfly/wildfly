@@ -22,47 +22,65 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
+import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
+
 import java.util.concurrent.Executor;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.threads.ThreadsServices;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.xnio.OptionMap;
 
 /**
+ * Add operation handler for the remoting subsystem.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class RemotingSubsystemAdd extends AbstractSubsystemAdd<RemotingSubsystemElement> {
+class RemotingSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -3368184946165491737L;
+    static final OperationHandler INSTANCE = new RemotingSubsystemAdd();
 
-    private final String threadPoolName;
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    protected RemotingSubsystemAdd(final String threadPoolName) {
-        super(Namespace.CURRENT.getUriString());
-        this.threadPoolName = threadPoolName;
-    }
+        String threadPoolName = operation.require(THREAD_POOL).asString();
+        context.getSubModel().get(THREAD_POOL).set(threadPoolName);
+        // initialize the connectors
+        context.getSubModel().get(CONNECTOR).setEmptyObject();
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        // create endpoint
-        final EndpointService endpointService = new EndpointService();
-        // todo configure option map
-        endpointService.setOptionMap(OptionMap.EMPTY);
-        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
+        // Compensating is remove
+        final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-        updateContext.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
-            .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install();
-    }
+        if (context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
+            // create endpoint
+            final EndpointService endpointService = new EndpointService();
+            // todo configure option map
+            endpointService.setOptionMap(OptionMap.EMPTY);
+            final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
 
-    protected RemotingSubsystemElement createSubsystemElement() {
-        final RemotingSubsystemElement element = new RemotingSubsystemElement();
-        element.setThreadPoolName(threadPoolName);
-        return element;
+            updateContext.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
+                .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        }
+
+        resultHandler.handleResultComplete(compensating);
+
+        return Cancellable.NULL;
     }
 }

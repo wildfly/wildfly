@@ -22,55 +22,55 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author Emanuel Muckenhuber
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class LoggerRemove extends AbstractLoggingSubsystemUpdate<Void> {
+class LoggerRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -9178350859833986971L;
+    static final LoggerRemove INSTANCE = new LoggerRemove();
 
-    private final String name;
+    /** {@inheritDoc} */
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    public LoggerRemove(String name) {
-        this.name = name;
-    }
+        final ModelNode address = operation.get(OP_ADDR);
+        final String name = address.get(address.asInt() - 1).asProperty().getValue().asString();
 
-    /**
-     * {@inheritDoc}
-     */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        try {
-            final ServiceController<?> controller = updateContext.getServiceRegistry().getRequiredService(LogServices.loggerName(name));
-            controller.setMode(ServiceController.Mode.REMOVE);
-            controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
-        } catch (Throwable t) {
-            resultHandler.handleFailure(t, param);
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set(ADD);
+        compensatingOperation.get(CommonAttributes.LEVEL).set(subModel.get(CommonAttributes.LEVEL));
+        compensatingOperation.get(CommonAttributes.HANDLERS).set(subModel.get(CommonAttributes.HANDLERS));
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceRegistry registry = runtimeContext.getServiceRegistry();
+            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(LogServices.loggerName(name));
+            if(controller != null) {
+                controller.setMode(ServiceController.Mode.REMOVE);
+            }
+            if(subModel.has(CommonAttributes.HANDLERS)) {
+                LogServices.uninstallLoggerHandlers(registry, name, subModel.get(CommonAttributes.HANDLERS));
+            }
         }
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public LoggerAdd getCompensatingUpdate(LoggingSubsystemElement original) {
-        final LoggerElement loggerElement = original.getLogger(name);
-        final LoggerAdd add = new LoggerAdd(name, loggerElement.isUseParentHandlers());
-        add.setLevelName(loggerElement.getLevel());
-        return add;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
-        final AbstractLoggerElement<?> logger = element.removeLogger(name);
-        if (logger == null) {
-            throw new UpdateFailedException(String.format("logger (%s) does not exist", name));
-        }
-    }
 }

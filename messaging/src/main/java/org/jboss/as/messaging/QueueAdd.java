@@ -1,107 +1,115 @@
-/*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+/**
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
+
+import java.util.Locale;
+
 import org.hornetq.core.server.HornetQServer;
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Core queue add update.
  *
  * @author Emanuel Muckenhuber
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class QueueAdd extends AbstractMessagingSubsystemUpdate<Void> {
+public class QueueAdd implements ModelAddOperationHandler, RuntimeOperationHandler, DescriptionProvider {
 
-    private static final long serialVersionUID = 2210829361890051692L;
+    public static final String OPERATION_NAME = ADD;
 
-    private final String name;
-    private String address;
-    private String filter;
-    private Boolean durable;
-
-    public QueueAdd(final String name) {
-        if(name == null) {
-            throw new IllegalArgumentException("null name");
+    public static ModelNode getOperation(ModelNode address, ModelNode existing) {
+        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        op.get(QUEUE_ADDRESS).set(existing.get(ADDRESS));
+        if (existing.hasDefined(FILTER)) {
+            op.get(FILTER).set(existing.get(FILTER));
         }
-        this.name = name;
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(MessagingSubsystemElement element) throws UpdateFailedException {
-        final QueueElement queue = element.addQueue(name);
-        if(queue == null) {
-            throw new UpdateFailedException("duplicate queue " + name);
+        if (existing.hasDefined(DURABLE)) {
+            op.get(DURABLE).set(existing.get(DURABLE));
         }
-        queue.setAddress(address);
-        queue.setFilter(filter);
-        if(durable != null) queue.setDurable(durable);
+        return op;
     }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final QueueService service = new QueueService(address, name, filter, durable != null ? durable : true, false);
-        context.getServiceTarget().addService(MessagingSubsystemElement.CORE_QUEUE_BASE.append(name), service)
-            .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
-            .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
-            .setInitialMode(Mode.ACTIVE)
-            .install();
+    public static QueueAdd INSTANCE = new QueueAdd();
+
+    private final ParametersValidator validator = new ParametersValidator();
+
+    private QueueAdd() {
+        validator.registerValidator(QUEUE_ADDRESS, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+        validator.registerValidator(FILTER, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+        validator.registerValidator(DURABLE, new ModelTypeValidator(ModelType.BOOLEAN, true));
     }
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(MessagingSubsystemElement original) {
-        return new QueueRemove(name);
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        String failure = validator.validate(operation);
+        if (failure == null) {
+            ModelNode opAddr = operation.require(OP_ADDR);
+            ModelNode compensatingOp = Util.getResourceRemoveOperation(opAddr);
+            PathAddress address = PathAddress.pathAddress(opAddr);
+            String name = address.getLastElement().getValue();
+            String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
+            String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
+            Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
+
+            ModelNode model = context.getSubModel();
+            model.get(NAME).set(name);
+            if (queueAddress != null) {
+                model.get(ADDRESS).set(queueAddress);
+            }
+            if (filter != null) {
+                model.get(FILTER).set(filter);
+            }
+            if (durable != null) {
+                model.get(DURABLE).set(durable);
+            }
+            if (context instanceof RuntimeOperationContext) {
+                RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
+                final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
+                updateContext.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
+                    .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
+                    .addListener(new ResultHandler.ServiceStartListener(resultHandler, compensatingOp))
+                    .setInitialMode(Mode.ACTIVE)
+                    .install();
+
+            }
+            else {
+                resultHandler.handleResultComplete(compensatingOp);
+            }
+        }
+        else {
+            resultHandler.handleFailed(new ModelNode().set(failure));
+        }
+
+        return Cancellable.NULL;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getFilter() {
-        return filter;
-    }
-
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
-
-    public Boolean getDurable() {
-        return durable;
-    }
-
-    public void setDurable(Boolean durable) {
-        this.durable = durable;
-    }
-
-    public String getName() {
-        return name;
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getQueueAdd(locale);
     }
 
 }

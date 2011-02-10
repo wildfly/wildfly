@@ -54,7 +54,7 @@ import static org.jboss.as.messaging.jms.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.jms.CommonAttributes.TRANSACTION_BATCH_SIZE;
 import static org.jboss.as.messaging.jms.CommonAttributes.USE_GLOBAL_POOLS;
 
-import org.jboss.as.messaging.MessagingSubsystemElement;
+import org.jboss.as.messaging.MessagingServices;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -62,7 +62,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JMSServices {
 
-    public static final ServiceName JMS = MessagingSubsystemElement.JBOSS_MESSAGING.append("jms");
+    public static final ServiceName JMS = MessagingServices.JBOSS_MESSAGING.append("jms");
     public static final ServiceName JMS_MANAGER = JMS.append("manager");
     public static final ServiceName JMS_QUEUE_BASE = JMS.append("queue");
     public static final ServiceName JMS_TOPIC_BASE = JMS.append("topic");

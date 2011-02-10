@@ -22,82 +22,86 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
+
+import java.util.HashSet;
 import java.util.Set;
 
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Update adding a {@code JMSTopicElement} to the {@code JMSSubsystemElement}. The
- * runtime action, will create the {@code JMSTopicService}.
+ * Update handler adding a topic to the JMS subsystem. The
+ * runtime action, will create the {@link JMSTopicService}.
  *
  * @author Emanuel Muckenhuber
  */
-public class JMSTopicAdd extends AbstractJMSSubsystemUpdate<Void> {
+class JMSTopicAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 3528505591156292231L;
-    private final String name;
-    private Set<String> bindings;
+    public static final String OPERATION_NAME = ADD;
 
-    static JMSTopicAdd create(final JMSTopicElement topic) {
-        final JMSTopicAdd action = new JMSTopicAdd(topic.getName());
-        action.bindings = topic.getBindings();
-        return action;
-    }
-
-    public JMSTopicAdd(final String name) {
-        if(name == null) {
-            throw new IllegalArgumentException("null name");
+    /** Create an "add" operation using the existing model */
+    static ModelNode getOperation(ModelNode address, ModelNode existing) {
+        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        if (existing.hasDefined(ENTRIES)) {
+            op.get(ENTRIES).set(existing.get(ENTRIES));
         }
-        this.name = name;
+        return op;
     }
 
+    static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
+    private static final String[] NO_BINDINGS = new String[0];
+
     /** {@inheritDoc} */
-    protected void applyUpdate(JMSSubsystemElement element) throws UpdateFailedException {
-        final JMSTopicElement topic = element.addTopic(name);
-        if(topic == null) {
-            throw new UpdateFailedException("duplicate topic " + name);
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
+
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
+
+        if(operation.hasDefined(ENTRIES)) {
+            context.getSubModel().get(ENTRIES).set(operation.get(ENTRIES));
         }
-        topic.setBindings(bindings);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final JMSTopicService service = new JMSTopicService(name, jndiBindings(operation));
+            final ServiceName serviceName = JMSServices.JMS_TOPIC_BASE.append(name);
+            runtimeContext.getServiceTarget().addService(serviceName, service)
+                    .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                    .setInitialMode(Mode.ACTIVE)
+                    .install();
+        }
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final JMSTopicService service = new JMSTopicService(name, jndiBindings());
-        final ServiceName serviceName = JMSServices.JMS_TOPIC_BASE.append(name);
-        context.getServiceTarget().addService(serviceName, service)
-                .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
-                .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))
-                .setInitialMode(Mode.ACTIVE)
-                .install();
-    }
-
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<JMSSubsystemElement, ?> getCompensatingUpdate(JMSSubsystemElement original) {
-        return new JMSTopicRemove(name);
-    }
-
-    public Set<String> getBindings() {
-        return bindings;
-    }
-
-    public void setBindings(Set<String> bindings) {
-        this.bindings = bindings;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    private String[] jndiBindings() {
-        if(bindings != null && ! bindings.isEmpty()) {
+    static String[] jndiBindings(final ModelNode node) {
+        if(node.hasDefined(ENTRIES)) {
+            final Set<String> bindings = new HashSet<String>();
+            for(final ModelNode entry : node.get(ENTRIES).asList()) {
+                bindings.add(entry.asString());
+            }
             return bindings.toArray(new String[bindings.size()]);
         }
-        return new String[0];
+        return NO_BINDINGS;
     }
+
 }

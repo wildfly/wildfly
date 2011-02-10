@@ -49,8 +49,6 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.server.Extension;
-import org.jboss.as.server.ExtensionContext;
 import org.jboss.as.controller.parsing.JvmType;
 import org.jboss.as.model.socket.AbstractInterfaceCriteriaElement;
 import org.jboss.as.model.socket.CompoundCriteriaElement;
@@ -60,6 +58,8 @@ import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
 import org.jboss.as.server.deployment.ServerModelDeploymentAdd;
 import org.jboss.as.server.deployment.ServerModelDeploymentStartUpdate;
+import org.jboss.as.server.legacy.Extension;
+import org.jboss.as.server.legacy.ExtensionContext;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;

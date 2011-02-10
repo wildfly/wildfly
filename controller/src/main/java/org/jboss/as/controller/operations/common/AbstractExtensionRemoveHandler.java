@@ -27,7 +27,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -60,7 +60,7 @@ public abstract class AbstractExtensionRemoveHandler implements ModelRemoveOpera
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String module = address.getLastElement().getValue();
@@ -84,6 +84,6 @@ public abstract class AbstractExtensionRemoveHandler implements ModelRemoveOpera
         return ExtensionDescription.getExtensionRemoveOperation(locale);
     }
 
-    protected abstract String uninstallExtension(String module, NewOperationContext context);
+    protected abstract String uninstallExtension(String module, OperationContext context);
 
 }

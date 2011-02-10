@@ -22,14 +22,14 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface HostOperationContext extends NewOperationContext {
+public interface HostOperationContext extends OperationContext {
 
     /** {@inheritDoc} */
     @Override

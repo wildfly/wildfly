@@ -22,19 +22,25 @@
 
 package org.jboss.as.naming.service;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import javax.management.MBeanServer;
 import javax.naming.Context;
 import javax.naming.Reference;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -44,60 +50,64 @@ import org.jboss.msc.value.Values;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsystemElement> {
-
-    private static final long serialVersionUID = -3087211831484406967L;
-
-    protected NamingSubsystemAdd() {
-        super(NamingExtension.NAMESPACE);
-    }
+public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        log.info("Activating Naming Subsystem");
+    static final NamingSubsystemAdd INSTANCE = new NamingSubsystemAdd();
 
-        ObjectFactoryBuilder.INSTANCE.setServiceRegistry(updateContext.getServiceRegistry());
-
-        NamingContext.initializeNamingManager();
-
-        // Create the Naming Service
-        final ServiceTarget target = updateContext.getServiceTarget();
-        target.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
-
-        // Create java: context service
-        final JavaContextService javaContextService = new JavaContextService();
-        target.addService(JavaContextService.SERVICE_NAME, javaContextService)
-            .addDependency(NamingService.SERVICE_NAME)
-            .install();
-
-        final ContextService globalContextService = new ContextService("global");
-        target.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
-             .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
-             .install();
-
-        addContextFactory(target, "app");
-        addContextFactory(target, "module");
-        addContextFactory(target, "comp");
-
-        // Provide the {@link InitialContext} as OSGi service
-        InitialContextFactoryService.addService(target);
-
-        final JndiView jndiView = new JndiView();
-        target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
-            .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
-            .install();
-    }
-
-    protected NamingSubsystemElement createSubsystemElement() {
-        return new NamingSubsystemElement();
-    }
-
+    /** {@inheritDoc} */
     @Override
-    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
-        super.applyUpdateBootAction(updateContext);
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+
+        if(context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = (BootOperationContext) context;
+
+            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
+
+            log.info("Activating Naming Subsystem");
+
+            ObjectFactoryBuilder.INSTANCE.setServiceRegistry(updateContext.getServiceRegistry());
+
+            NamingContext.initializeNamingManager();
+
+            // Create the Naming Service
+            final ServiceTarget target = updateContext.getServiceTarget();
+            target.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
+
+            // Create java: context service
+            final JavaContextService javaContextService = new JavaContextService();
+            target.addService(JavaContextService.SERVICE_NAME, javaContextService)
+                .addDependency(NamingService.SERVICE_NAME)
+                .install();
+
+            final ContextService globalContextService = new ContextService("global");
+            target.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
+                 .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
+                 .install();
+
+            addContextFactory(target, "app");
+            addContextFactory(target, "module");
+            addContextFactory(target, "comp");
+
+            // Provide the {@link InitialContext} as OSGi service
+            InitialContextFactoryService.addService(target);
+
+            final JndiView jndiView = new JndiView();
+            target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
+                .install();
+        }
+
+        context.getSubModel().setEmptyObject();
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
     private static void addContextFactory(final ServiceTarget target, final String contextName) {

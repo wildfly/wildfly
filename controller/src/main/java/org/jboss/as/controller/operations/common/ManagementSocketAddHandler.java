@@ -29,7 +29,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -50,7 +50,7 @@ public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, 
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove-management-socket");
@@ -75,7 +75,7 @@ public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, 
         return new ModelNode();
     }
 
-    protected void installManagementSocket(String interfaceName, int port, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOperation) {
+    protected void installManagementSocket(String interfaceName, int port, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOperation) {
         resultHandler.handleResultComplete(compensatingOperation);
     }
 

@@ -22,50 +22,51 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class WebVirtualHostRemove extends AbstractWebSubsystemUpdate<Void> {
+class WebVirtualHostRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 8956517548114021696L;
-    private final String name;
+    static final WebVirtualHostRemove INSTANCE = new WebVirtualHostRemove();
 
-    public WebVirtualHostRemove(String name) {
-        this.name = name;
+    private WebVirtualHostRemove() {
+        //
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(WebSubsystemElement element) throws UpdateFailedException {
-        if(! element.removeHost(name)) {
-            throw new UpdateFailedException("no such hosts " + name);
-        }
-    }
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = updateContext.getServiceRegistry().getService(WebSubsystemElement.JBOSS_WEB_HOST.append(name));
-        if(service == null) {
-            resultHandler.handleSuccess(null, param);
-        } else {
-            service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
-        }
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<WebSubsystemElement, ?> getCompensatingUpdate(WebSubsystemElement original) {
-        final WebVirtualHostElement host = original.getHost(name);
-        if(host == null) {
-            return null;
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = WebVirtualHostAdd.getAddOperation(operation.require(OP_ADDR), subModel);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
+            if(service != null) {
+                service.setMode(Mode.REMOVE);
+            }
         }
-        final WebVirtualHostAdd action = new WebVirtualHostAdd(name);
-        action.setAliases(host.getAliases());
-        return action;
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

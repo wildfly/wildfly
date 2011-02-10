@@ -24,7 +24,7 @@ package org.jboss.as.security.service;
 
 import javax.security.auth.login.Configuration;
 
-import org.jboss.as.security.SecuritySubsystemElement;
+import org.jboss.as.security.SecurityExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -39,7 +39,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class JaasConfigurationService implements Service<Configuration> {
 
-    public static final ServiceName SERVICE_NAME = SecuritySubsystemElement.JBOSS_SECURITY.append("jaas");
+    public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("jaas");
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
@@ -50,6 +50,7 @@ public class JaasConfigurationService implements Service<Configuration> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void start(StartContext arg0) throws StartException {
         if (log.isDebugEnabled())
             log.debug("Starting JaasConfigurationService");
@@ -59,12 +60,14 @@ public class JaasConfigurationService implements Service<Configuration> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void stop(StopContext arg0) {
         // restore configuration to null
         Configuration.setConfiguration(null);
     }
 
     /** {@inheritDoc} */
+    @Override
     public Configuration getValue() throws IllegalStateException, IllegalArgumentException {
         return configuration;
     }

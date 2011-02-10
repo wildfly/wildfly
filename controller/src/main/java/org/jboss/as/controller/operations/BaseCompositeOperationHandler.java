@@ -36,7 +36,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
@@ -68,7 +68,7 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         try {
             final List<ModelNode> steps = operation.require(STEPS).asList();
@@ -95,7 +95,7 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                 final OperationHandler stepHandler = context.getRegistry().getOperationHandler(address, operationName);
 
                 final Integer id = Integer.valueOf(i);
-                final NewOperationContext stepContext = context.getStepOperationContext(id, address, stepHandler);
+                final OperationContext stepContext = context.getStepOperationContext(id, address, stepHandler);
                 final boolean remove = (stepHandler instanceof ModelRemoveOperationHandler);
                 final ResultHandler stepResultHandler = new StepResultHandler(id, stepHandlerContext, address, context.getSubModel(), stepContext.getSubModel(), remove);
 
@@ -116,17 +116,17 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
 
     protected static class CompositeOperationContext {
 
-        private final NewOperationContext overallContext;
+        private final OperationContext overallContext;
         private final ResultHandler resultHandler;
 
-        public CompositeOperationContext(final NewOperationContext overallContext, final ResultHandler resultHandler) {
+        public CompositeOperationContext(final OperationContext overallContext, final ResultHandler resultHandler) {
             this.overallContext = overallContext;
             this.resultHandler = resultHandler;
         }
 
-        public NewOperationContext getStepOperationContext(final Integer index, final PathAddress address, final OperationHandler stepHandler) {
+        public OperationContext getStepOperationContext(final Integer index, final PathAddress address, final OperationHandler stepHandler) {
             final ModelNode stepModel = getStepSubModel(address, stepHandler);
-            return new NewOperationContext() {
+            return new OperationContext() {
 
                 @Override
                 public ModelNode getSubModel() throws IllegalArgumentException {

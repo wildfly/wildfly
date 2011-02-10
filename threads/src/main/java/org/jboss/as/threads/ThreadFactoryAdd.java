@@ -19,95 +19,96 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.threads;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
+import static org.jboss.as.threads.CommonAttributes.PRIORITY;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * Adds a thread factory to the threads subsystem.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public final class ThreadFactoryAdd extends AbstractThreadsSubsystemUpdate<Void> {
+public class ThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
 
-    private static final long serialVersionUID = 1935521612404501853L;
+    static final OperationHandler INSTANCE = new ThreadFactoryAdd();
 
-    private final Map<String, String> properties = new HashMap<String, String>();
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    private final String name;
+        final ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
 
-    private String groupName;
-    private String threadNamePattern;
-    private Integer priority;
-
-    public ThreadFactoryAdd(final String name) {
-        super(false);
-        this.name = name;
-    }
-
-    public ThreadFactoryRemove getCompensatingUpdate(final ThreadsSubsystemElement original) {
-        return new ThreadFactoryRemove(name);
-    }
-
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ThreadFactoryService service = new ThreadFactoryService();
-        service.setNamePattern(threadNamePattern);
-        service.setPriority(priority);
-        service.setThreadGroupName(groupName);
-        final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(handler, param);
-        final ServiceTarget target = updateContext.getServiceTarget();
-        try {
-            target.addService(ThreadsServices.threadFactoryName(name), service)
-                .addListener(listener)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-        } catch (ServiceRegistryException e) {
-            handler.handleFailure(e, param);
+        //Get/validate the properties
+        final String groupName = operation.hasDefined(GROUP_NAME) ? operation.get(GROUP_NAME).asString() : null;
+        final String threadNamePattern = operation.hasDefined(THREAD_NAME_PATTERN) ? operation.get(THREAD_NAME_PATTERN).asString() : null;
+        final int priority = operation.hasDefined(PRIORITY) ? operation.get(PRIORITY).asInt() : -1;
+        if (priority != -1 && priority < 0 || priority > 10) {
+            throw new IllegalArgumentException(PRIORITY + " is out of range " + priority); //TODO i18n
         }
-    }
+        final ModelNode properties = operation.hasDefined(PROPERTIES) ? operation.get(PROPERTIES) : null;
 
-    protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-        final ThreadFactoryElement addedElement = element.addThreadFactory(name);
-        if (addedElement == null) {
-            throw new UpdateFailedException("A thread factory named '" + name + "' is already registered here");
+        if (context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget target = runtimeContext.getServiceTarget();
+            final ThreadFactoryService service = new ThreadFactoryService();
+            service.setNamePattern(threadNamePattern);
+            service.setPriority(priority);
+            service.setThreadGroupName(groupName);
+            //TODO What about the properties?
+            //final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(handler, param);
+            try {
+                target.addService(ThreadsServices.threadFactoryName(name), service)
+                    //.addListener(listener)
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
+            } catch (ServiceRegistryException e) {
+                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+            }
+
         }
-        if (groupName != null) addedElement.setGroupName(groupName);
-        if (threadNamePattern != null) addedElement.setThreadNamePattern(threadNamePattern);
-        if (priority != null) addedElement.setPriority(priority);
-        if (! properties.isEmpty()) addedElement.setProperties(properties);
+
+        //Apply to the model
+        final ModelNode model = context.getSubModel();
+        model.get(NAME).set(name);
+        if (groupName != null) {
+            model.get(GROUP_NAME).set(groupName);
+        }
+        if (threadNamePattern != null) {
+            model.get(THREAD_NAME_PATTERN).set(threadNamePattern);
+        }
+        if (priority >= 0) {
+            model.get(PRIORITY).set(priority);
+        }
+        if (properties != null) {
+            model.get(PROPERTIES).set(properties);
+        }
+
+        // Compensating is remove
+        final ModelNode compensating = Util.getResourceRemoveOperation(opAddr);
+        resultHandler.handleResultComplete(compensating);
+
+        return Cancellable.NULL;
     }
 
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(final String groupName) {
-        this.groupName = groupName;
-    }
-
-    public String getThreadNamePattern() {
-        return threadNamePattern;
-    }
-
-    public void setThreadNamePattern(final String threadNamePattern) {
-        this.threadNamePattern = threadNamePattern;
-    }
-
-    public Integer getPriority() {
-        return priority;
-    }
-
-    public void setPriority(final Integer priority) {
-        this.priority = priority;
-    }
-
-    public Map<String, String> getProperties() {
-        return properties;
-    }
 }

@@ -22,9 +22,9 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.logmanager.formatters.PatternFormatter;
-
 import java.util.logging.Handler;
+
+import org.jboss.logmanager.formatters.PatternFormatter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -39,10 +39,7 @@ public final class PatternFormatterSpec extends AbstractFormatterSpec {
         this.pattern = pattern;
     }
 
-    protected void apply(final AbstractHandlerElement<?> handlerElement) {
-        handlerElement.setFormatter(new PatternFormatterElement(pattern));
-    }
-
+    @Override
     protected void apply(final Handler handler) {
         handler.setFormatter(new PatternFormatter(pattern));
     }

@@ -22,51 +22,51 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
- * Update removing a {@code ConnectionFactoryElement} from the {@code JMSSubsystemElement}. The
- * runtime action will remove the corresponding {@code ConnectionFactoryService}.
+ * Update handler removing a connection factory from the JMS subsystem. The
+ * runtime action will remove the corresponding {@link ConnectionFactoryService}.
  *
  * @author Emanuel Muckenhuber
  */
-public class ConnectionFactoryRemove extends AbstractJMSSubsystemUpdate<Void> {
+class ConnectionFactoryRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -4308722612702198415L;
-    private final String cfName;
-
-    public ConnectionFactoryRemove(String cfName) {
-        this.cfName = cfName;
-    }
+    static final ConnectionFactoryRemove INSTANCE = new ConnectionFactoryRemove();
 
     /** {@inheritDoc} */
-    protected void applyUpdate(JMSSubsystemElement element) throws UpdateFailedException {
-        if(! element.removeConnectionFactory(cfName)) {
-            throw new UpdateFailedException(String.format("connection-factory (%s) does not exist", cfName));
-        }
-    }
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_CF_BASE.append(cfName));
-        if(service == null) {
-            handler.handleSuccess(null, param);
-        } else {
-            service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
-        }
-    }
+        final ModelNode operationAddress = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(operationAddress);
+        final String name = address.getLastElement().getValue();
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<JMSSubsystemElement, ?> getCompensatingUpdate(JMSSubsystemElement original) {
-        final ConnectionFactoryElement element = original.getConnectionFactory(cfName);
-        if(element == null) {
-            return null;
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = ConnectionFactoryAdd.getAddOperation(operationAddress, subModel);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(JMSServices.JMS_CF_BASE.append(name));
+            if(service != null) {
+                service.setMode(Mode.REMOVE);
+            }
         }
-        return new ConnectionFactoryAdd(element);
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

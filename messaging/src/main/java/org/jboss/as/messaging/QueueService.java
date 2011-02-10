@@ -57,6 +57,7 @@ class QueueService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         try {
             final HornetQServer hornetQService = this.hornetQService.getValue();
@@ -68,6 +69,7 @@ class QueueService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(StopContext context) {
         try {
             final HornetQServer hornetQService = this.hornetQService.getValue();
@@ -78,6 +80,7 @@ class QueueService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Void getValue() throws IllegalStateException {
         return null;
     }

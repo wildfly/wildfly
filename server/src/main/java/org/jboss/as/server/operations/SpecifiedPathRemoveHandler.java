@@ -18,10 +18,10 @@
  */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.PathRemoveHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
@@ -37,9 +37,9 @@ public class SpecifiedPathRemoveHandler extends PathRemoveHandler implements Run
     public static SpecifiedPathRemoveHandler INSTANCE = new SpecifiedPathRemoveHandler();
 
     @Override
-    protected void uninstallPath(String name, String path, String relativeTo, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
-            NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
+    protected void uninstallPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
             final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(AbstractPathService.pathNameOf(name));
             if(controller == null) {
                 resultHandler.handleResultComplete(compensatingOp);

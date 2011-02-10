@@ -28,9 +28,10 @@ import java.util.ResourceBundle;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Subsystem provider for the security subsystem.
+ * Subsystem descriptions for the security subsystem.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Brian Stansberry
  */
 class SecuritySubsystemDescriptions {
 

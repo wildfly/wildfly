@@ -22,7 +22,7 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.server.Extension;
+import org.jboss.as.server.legacy.Extension;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;

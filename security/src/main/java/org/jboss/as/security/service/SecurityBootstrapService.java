@@ -27,7 +27,7 @@ import java.util.Set;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
-import org.jboss.as.security.SecuritySubsystemElement;
+import org.jboss.as.security.SecurityExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -45,7 +45,7 @@ import org.jboss.security.jacc.SubjectPolicyContextHandler;
  */
 public class SecurityBootstrapService implements Service<Void> {
 
-    public static final ServiceName SERVICE_NAME = SecuritySubsystemElement.JBOSS_SECURITY.append("bootstrap");
+    public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("bootstrap");
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
@@ -53,6 +53,7 @@ public class SecurityBootstrapService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void start(StartContext context) throws StartException {
         if (log.isDebugEnabled())
             log.debug("Starting SecurityBootstrapService");
@@ -70,6 +71,7 @@ public class SecurityBootstrapService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void stop(StopContext context) {
         // remove handlers
         Set handlerKeys = PolicyContext.getHandlerKeys();
@@ -78,6 +80,7 @@ public class SecurityBootstrapService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Void getValue() throws IllegalStateException {
         return null;
     }

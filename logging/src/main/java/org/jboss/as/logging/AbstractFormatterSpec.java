@@ -23,7 +23,6 @@
 package org.jboss.as.logging;
 
 import java.io.Serializable;
-
 import java.util.logging.Handler;
 
 /**
@@ -32,8 +31,6 @@ import java.util.logging.Handler;
 public abstract class AbstractFormatterSpec implements Serializable {
 
     private static final long serialVersionUID = -2383088369142242658L;
-
-    protected abstract void apply(AbstractHandlerElement<?> handlerElement);
 
     protected abstract void apply(Handler handler);
 }

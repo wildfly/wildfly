@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,41 +19,49 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.ejb3;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Add the EJB 3 subsystem directive.
- *
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Emanuel Muckenhuber
  */
-public class EJB3SubsystemAdd extends AbstractSubsystemAdd<EJB3SubsystemElement> {
-   protected EJB3SubsystemAdd(final String namespaceUri) {
-      super(namespaceUri);
-   }
+class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-   @Override
-   protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-      throw new RuntimeException("NYI: org.jboss.as.ejb3.EJB3SubsystemAdd.applyUpdate");
-   }
+    static final Ejb3SubsystemAdd INSTANCE = new Ejb3SubsystemAdd();
 
-   @Override
-   protected void applyUpdateBootAction(BootUpdateContext updateContext) {
-      // add the metadata parser deployment processor
-      // TODO
-      // add the real deployment processor
-      // TODO: add the proper deployment processors
-      // updateContext.addDeploymentProcessor(processor, priority);
+    private Ejb3SubsystemAdd() {
+        //
+    }
 
-      super.applyUpdateBootAction(updateContext);
-   }
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-   @Override
-   protected EJB3SubsystemElement createSubsystemElement() {
-      return new EJB3SubsystemElement();
-   }
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+
+        if(context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = (BootOperationContext) context;
+
+            // TODO add ejb3 deployers
+
+        }
+
+        context.getSubModel().setEmptyObject();
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
+    }
+
 }

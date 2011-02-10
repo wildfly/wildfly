@@ -22,125 +22,121 @@
 
 package org.jboss.as.web;
 
-import java.util.Set;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * {@code OperationHandler} responsible for adding a virtual host.
+ *
  * @author Emanuel Muckenhuber
  */
-public class WebVirtualHostAdd extends AbstractWebSubsystemUpdate<Void> {
+public class WebVirtualHostAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 727085265030986640L;
+    static final WebVirtualHostAdd INSTANCE = new WebVirtualHostAdd();
+    private static final String DEFAULT_RELATIVE_TO = "jboss.server.log.dir";
     private static final String TEMP_DIR = "jboss.server.temp.dir";
+    private static final String[] NO_ALIASES = new String[0];
 
-    private final String name;
-    private Set<String> aliases;
-    private WebHostAccessLogElement accessLog;
-    private WebHostRewriteElement rewrite;
-
-    public WebVirtualHostAdd(String name) {
-        if(name == null) {
-            throw new IllegalArgumentException("null host name");
-        }
-        this.name = name;
+    private WebVirtualHostAdd() {
+        //
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(WebSubsystemElement element) throws UpdateFailedException {
-        final WebVirtualHostElement host = element.addHost(name);
-        if(host == null) {
-            throw new IllegalStateException("duplicate host " + name);
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
+            final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation));
+            final ServiceBuilder<?> serviceBuilder =  serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
+                .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
+                .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
+            if(operation.has(CommonAttributes.ACCESS_LOG)) {
+                final ModelNode accessLog = operation.get(CommonAttributes.ACCESS_LOG);
+                service.setAccessLog(accessLog.clone());
+                // Create the access log service
+                accessLogService(name, accessLog, serviceTarget);
+                serviceBuilder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name, CommonAttributes.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
+            }
+            if(operation.has(CommonAttributes.REWRITE)) {
+                service.setRewrite(operation.get(CommonAttributes.REWRITE).clone());
+            }
+            serviceBuilder.install();
         }
-        host.setAliases(aliases);
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(CommonAttributes.ALIAS).set(operation.get(CommonAttributes.ALIAS));
+        subModel.get(CommonAttributes.ACCESS_LOG).set(operation.get(CommonAttributes.ACCESS_LOG));
+        subModel.get(CommonAttributes.REWRITE).set(operation.get(CommonAttributes.REWRITE));
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceTarget target = updateContext.getServiceTarget();
-        final WebVirtualHostService service = new WebVirtualHostService(name, aliases());
-        final ServiceBuilder<?> serviceBuilder =  target.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(name), service)
-            .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
-            .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getWebServer());
-        if(accessLog != null) {
-            // service.setAccessLog(accessLog);
-            // Create the access log service
-            accessLogService(name, accessLog.getDirectory(), target);
-            serviceBuilder.addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(name, "access-log"), String.class, service.getAccessLogPathInjector());
+    static String[] aliases(final ModelNode node) {
+        if(node.has(CommonAttributes.ALIAS)) {
+            final ModelNode aliases = node.require(CommonAttributes.ALIAS);
+            final int size = aliases.asInt();
+            final String[] array = new String[size];
+            for(int i = 0; i < size; i ++) array[i] = aliases.get(i).asString();
+            return array;
         }
-        if(rewrite != null) {
-            // service.setRewrite(rewrite);
-        }
-        serviceBuilder.install();
+        return NO_ALIASES;
     }
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<WebSubsystemElement, ?> getCompensatingUpdate(WebSubsystemElement original) {
-        return new WebVirtualHostRemove(name);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Set<String> getAliases() {
-        return aliases;
-    }
-
-    public void setAliases(Set<String> aliases) {
-        this.aliases = aliases;
-    }
-
-    public WebHostAccessLogElement getAccessLog() {
-        return accessLog;
-    }
-
-    public void setAccessLog(WebHostAccessLogElement accessLog) {
-        this.accessLog = accessLog;
-    }
-
-    public WebHostRewriteElement getRewrite() {
-        return rewrite;
-    }
-
-    public void setRewrite(WebHostRewriteElement rewrite) {
-        this.rewrite = rewrite;
-    }
-
-    private String[] aliases() {
-        if(aliases != null && ! aliases.isEmpty()) {
-            return aliases.toArray(new String[aliases.size()]);
-        }
-        return new String[0];
-    }
-
-    static WebVirtualHostAdd create(final WebVirtualHostElement host) {
-        final WebVirtualHostAdd action = new WebVirtualHostAdd(host.getName());
-        action.setAliases(host.getAliases());
-        action.setAccessLog(host.getAccessLog());
-        action.setRewrite(host.getRewrite());
-        return action;
-    }
-
-    static final String DEFAULT_RELATIVE_TO = "jboss.server.log.dir";
-
-    static void accessLogService(final String hostName, final WebHostAccessLogElement.LogDirectory directory, final ServiceTarget target) {
-        if(directory == null) {
-            RelativePathService.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName, "access-log"),
-                    hostName, DEFAULT_RELATIVE_TO, target);
-        } else {
-            final String relativeTo = directory.getRelativeTo() != null ? directory.getRelativeTo() : DEFAULT_RELATIVE_TO;
-            final String path = directory.getPath() != null ? directory.getPath() : hostName;
-            RelativePathService.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName, "access-log"),
+    static void accessLogService(final String hostName, final ModelNode element, final ServiceTarget target) {
+        if(element.has(CommonAttributes.ACCESS_LOG)) {
+            final ModelNode accessLog = element.get(CommonAttributes.ACCESS_LOG);
+            final String relativeTo = accessLog.has(RELATIVE_TO) ? accessLog.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
+            final String path = accessLog.has(PATH) ? accessLog.get(PATH).asString() : hostName;
+            RelativePathService.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName, CommonAttributes.ACCESS_LOG),
                     path, relativeTo, target);
+        } else {
+            RelativePathService.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName, CommonAttributes.ACCESS_LOG),
+                    hostName, DEFAULT_RELATIVE_TO, target);
         }
     }
 
+    static ModelNode getAddOperation(final ModelNode address, final ModelNode subModel) {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).set(address);
+
+        if(subModel.hasDefined(CommonAttributes.ALIAS)) {
+            operation.get(CommonAttributes.ALIAS).set(subModel.get(CommonAttributes.ALIAS));
+        }
+        if(subModel.hasDefined(CommonAttributes.ACCESS_LOG)) {
+            operation.get(CommonAttributes.ACCESS_LOG).set(subModel.get(CommonAttributes.ACCESS_LOG));
+        }
+        if(subModel.hasDefined(CommonAttributes.REWRITE)) {
+            operation.get(CommonAttributes.REWRITE).set(subModel.get(CommonAttributes.REWRITE));
+        }
+        return operation;
+    }
 }

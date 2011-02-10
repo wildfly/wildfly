@@ -49,8 +49,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.NewExtensionContext;
-import org.jboss.as.controller.NewExtensionContextImpl;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -125,7 +125,7 @@ class HostModel extends BasicModelController {
 
         //Extensions
         ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        NewExtensionContext extensionContext = new NewExtensionContextImpl(getRegistry(), null, configurationPersister);
+        ExtensionContext extensionContext = new ExtensionContextImpl(getRegistry(), null, configurationPersister);
         ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);

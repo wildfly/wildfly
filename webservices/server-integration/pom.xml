@@ -68,7 +68,7 @@
 
     <dependency>
        <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-domain</artifactId>
+       <artifactId>jboss-as-server</artifactId>
     </dependency>
 
     <dependency>

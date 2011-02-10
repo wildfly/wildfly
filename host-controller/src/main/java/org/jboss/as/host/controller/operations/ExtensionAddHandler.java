@@ -18,9 +18,9 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.controller.NewExtension;
-import org.jboss.as.controller.NewExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.modules.Module;
@@ -35,9 +35,9 @@ import org.jboss.modules.ModuleLoadException;
 // TODO this could likely be folded into the superclass
 public class ExtensionAddHandler extends AbstractExtensionAddHandler implements RuntimeOperationHandler {
 
-    private final NewExtensionContext extensionContext;
+    private final ExtensionContext extensionContext;
 
-    public ExtensionAddHandler(final NewExtensionContext extensionContext) {
+    public ExtensionAddHandler(final ExtensionContext extensionContext) {
         if (extensionContext == null) {
             throw new IllegalArgumentException("extensionContext is null");
         }
@@ -48,9 +48,9 @@ public class ExtensionAddHandler extends AbstractExtensionAddHandler implements 
      * {@inheritDoc}
      */
     @Override
-    protected String installExtension(String module, NewOperationContext context) {
+    protected String installExtension(String module, OperationContext context) {
         try {
-            for (NewExtension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(module), NewExtension.class)) {
+            for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(module), Extension.class)) {
                 extension.initialize(extensionContext);
             }
             return null;

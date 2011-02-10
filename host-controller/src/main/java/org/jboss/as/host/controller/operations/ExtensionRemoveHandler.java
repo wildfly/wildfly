@@ -18,7 +18,7 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.operations.common.AbstractExtensionRemoveHandler;
 import org.jboss.as.server.BootOperationHandler;
 
@@ -39,7 +39,7 @@ public class ExtensionRemoveHandler extends AbstractExtensionRemoveHandler imple
      * {@inheritDoc}
      */
     @Override
-    protected String uninstallExtension(String module, NewOperationContext context) {
+    protected String uninstallExtension(String module, OperationContext context) {
         // nothing to do right now
         return null;
     }

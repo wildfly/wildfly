@@ -33,4 +33,9 @@ public final class RemotingServices {
 
     public static final ServiceName REMOTING = ServiceName.JBOSS.append("remoting");
     public static final ServiceName ENDPOINT = REMOTING.append("endpoint");
+    public static final ServiceName CONNECTOR = REMOTING.append("connector");
+
+    public static ServiceName connectorServiceName(String connectorName) {
+        return CONNECTOR.append(connectorName);
+    }
 }

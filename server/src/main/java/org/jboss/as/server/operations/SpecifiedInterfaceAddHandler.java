@@ -18,11 +18,11 @@
  */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -46,9 +46,9 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler implements
     }
 
     @Override
-    protected void installInterface(String name, ParsedInterfaceCriteria criteria, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof NewRuntimeOperationContext) {
-            NewRuntimeOperationContext runtimeContext = (NewRuntimeOperationContext) context;
+    protected void installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
             final ServiceTarget target = runtimeContext.getServiceTarget();
             ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));
             // This doesn't work -- the service is ON_DEMAND so there will be no callback, and the model will not get updated

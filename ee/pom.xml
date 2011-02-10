@@ -57,7 +57,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-domain</artifactId>
+            <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.invocation</groupId>
@@ -66,6 +66,10 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-naming</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.interceptor</groupId>
+            <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

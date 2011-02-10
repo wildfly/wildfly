@@ -37,7 +37,7 @@ import javax.xml.stream.XMLStreamException;
 
 import junit.framework.TestCase;
 
-import org.jboss.as.messaging.NewMessagingSubsystemParser;
+import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ import org.junit.Assert;
 public class SubsystemParsingUnitTestCase extends TestCase {
 
     private static final String namespace = "urn:jboss:domain:messaging:1.0";
-    private static final NewMessagingSubsystemParser parser = NewMessagingSubsystemParser.getInstance();
+    private static final MessagingSubsystemParser parser = MessagingSubsystemParser.getInstance();
 
     public void test() throws Exception {
 

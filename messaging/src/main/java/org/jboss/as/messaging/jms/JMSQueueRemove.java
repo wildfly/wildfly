@@ -22,58 +22,52 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
- * Update removing a {@code JMSQueueElement} from the {@code JMSSubsystemElement}. The
- * runtime action will remove the corresponding {@code JMSQueueService}.
+ * Update handler removing a queue from the JMS subsystem. The
+ * runtime action will remove the corresponding {@link JMSQueueService}.
  *
  * @author Emanuel Muckenhuber
  */
-public class JMSQueueRemove extends AbstractJMSSubsystemUpdate<Void> {
+class JMSQueueRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = -635741968258725932L;
-    private final String queueName;
-
-    public JMSQueueRemove(final String queueName) {
-        if(queueName == null) {
-            throw new IllegalArgumentException("null name");
-        }
-        this.queueName = queueName;
-    }
+    static final JMSQueueRemove INSTANCE = new JMSQueueRemove();
 
     /** {@inheritDoc} */
-    protected void applyUpdate(JMSSubsystemElement element) throws UpdateFailedException {
-        if(! element.removeQueue(queueName)) {
-            throw new UpdateFailedException(String.format("queue (%s) does not exist", queueName));
-        }
-    }
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_QUEUE_BASE.append(queueName));
-        if(service == null) {
-            handler.handleSuccess(null, param);
-        } else {
-            service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
-        }
-    }
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<JMSSubsystemElement, ?> getCompensatingUpdate(JMSSubsystemElement original) {
-        final JMSQueueElement element = original.getQueue(queueName);
-        if(element == null) {
-            return null;
+        final ModelNode subModel = context.getSubModel();
+        final ModelNode compensatingOperation = JMSQueueAdd.getOperation(opAddr, subModel);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+
+            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(JMSServices.JMS_QUEUE_BASE.append(name));
+            if(service != null) {
+                service.setMode(Mode.REMOVE);
+            }
         }
-        final JMSQueueAdd action = new JMSQueueAdd(queueName);
-        action.setBindings(element.getBindings());
-        action.setSelector(element.getSelector());
-        action.setDurable(element.getDurable());
-        return action;
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

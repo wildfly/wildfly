@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
@@ -41,7 +41,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.NewRuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
@@ -74,11 +74,11 @@ public class ServerCompositeOperationHandler
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         // The type of the context tells us whether we are allowed to make
         // runtime updates
-        if (!(context instanceof NewRuntimeOperationContext)) {
+        if (!(context instanceof RuntimeOperationContext)) {
             // The server's in model-only mode; just use the superclass logic
             return super.execute(context, operation, resultHandler);
         }
@@ -110,7 +110,7 @@ public class ServerCompositeOperationHandler
                 final ModelNode rorf = operation.get(ROLLBACK_ON_RUNTIME_FAILURE);
                 final boolean rollback = !rorf.isDefined() || rorf.asBoolean();
 
-                final RuntimeCompositeOperationContext compositeContext = new RuntimeCompositeOperationContext((NewRuntimeOperationContext) context, resultHandler, rollback);
+                final RuntimeCompositeOperationContext compositeContext = new RuntimeCompositeOperationContext((RuntimeOperationContext) context, resultHandler, rollback);
                 executeSteps(compositeContext, steps);
             }
         }
@@ -121,12 +121,12 @@ public class ServerCompositeOperationHandler
         return Cancellable.NULL;
     }
 
-    private void validateAgainstModel(final NewOperationContext context, final ModelNode operation, final ModelNode testResult, final ModelNode testFailure) {
+    private void validateAgainstModel(final OperationContext context, final ModelNode operation, final ModelNode testResult, final ModelNode testFailure) {
 
         // This is the key bit -- clone the "submodel" and then execute
         // the operations against the clone
         final ModelNode testModel = context.getSubModel().clone();
-        final NewOperationContext testContext = new NewOperationContext() {
+        final OperationContext testContext = new OperationContext() {
 
             @Override
             public ModelNode getSubModel() throws IllegalArgumentException {
@@ -198,11 +198,11 @@ public class ServerCompositeOperationHandler
     private static class RuntimeCompositeOperationContext extends CompositeOperationContext {
 
         private final boolean rollbackOnRuntimeFailure;
-        private final NewRuntimeOperationContext overallRuntimeContext;
+        private final RuntimeOperationContext overallRuntimeContext;
         private boolean modelOnly = false;
         private final Map<Integer, Boolean> modelOnlyStates = new HashMap<Integer, Boolean>();
 
-        private RuntimeCompositeOperationContext(final NewRuntimeOperationContext overallContext, final ResultHandler resultHandler,
+        private RuntimeCompositeOperationContext(final RuntimeOperationContext overallContext, final ResultHandler resultHandler,
                 final boolean rollbackOnRuntimeFailure) {
             super(overallContext, resultHandler);
             this.overallRuntimeContext = overallContext;
@@ -210,9 +210,9 @@ public class ServerCompositeOperationHandler
         }
 
         @Override
-        public NewOperationContext getStepOperationContext(final Integer index, final PathAddress address, final OperationHandler stepHandler) {
+        public OperationContext getStepOperationContext(final Integer index, final PathAddress address, final OperationHandler stepHandler) {
             modelOnlyStates.put(index, Boolean.valueOf(modelOnly));
-            NewOperationContext stepOperationContext;
+            OperationContext stepOperationContext;
             if (modelOnly) {
 //                System.out.println("we're model only");
                 stepOperationContext = super.getStepOperationContext(index, address, stepHandler);
@@ -234,8 +234,8 @@ public class ServerCompositeOperationHandler
             return stepOperationContext;
         }
 
-        private NewOperationContext getRuntimeOperationContext(final ModelNode stepModel) {
-            return new NewRuntimeOperationContext() {
+        private OperationContext getRuntimeOperationContext(final ModelNode stepModel) {
+            return new RuntimeOperationContext() {
 
                 @Override
                 public ModelNode getSubModel() throws IllegalArgumentException {
@@ -320,7 +320,7 @@ public class ServerCompositeOperationHandler
                     final String operationName = compStep.require(OP).asString();
                     final OperationHandler stepHandler = getRegistry().getOperationHandler(address, operationName);
                     final boolean stepModelOnly = modelOnlyStates.get(i);
-                    final NewOperationContext stepRollbackContext;
+                    final OperationContext stepRollbackContext;
                     if (stepModelOnly) {
                         stepRollbackContext = super.getStepOperationContext(Integer.valueOf(i), address, stepHandler);
                     }
@@ -329,7 +329,7 @@ public class ServerCompositeOperationHandler
                             // Controller needs to know that the change that put us in restart mode has been reverted
                             overallRuntimeContext.revertRestartRequired();
                         }
-                        if (stepHandler instanceof NewRuntimeOperationContext) {
+                        if (stepHandler instanceof RuntimeOperationContext) {
                             final ModelNode stepModel = getStepSubModel(address, stepHandler);
                             stepRollbackContext = getRuntimeOperationContext(stepModel);
                         }

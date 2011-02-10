@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -54,7 +54,7 @@ public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, 
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
@@ -71,7 +71,7 @@ public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, 
         return SocketBindingGroupDescription.getSocketBindingRemoveOperation(locale);
     }
 
-    protected void uninstallSocketBinding(String name, ModelNode model, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected void uninstallSocketBinding(String name, ModelNode model, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         resultHandler.handleResultComplete(compensatingOp);
     }
 

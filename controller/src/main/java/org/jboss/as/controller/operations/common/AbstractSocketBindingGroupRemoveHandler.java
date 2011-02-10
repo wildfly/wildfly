@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -52,7 +52,7 @@ public abstract class AbstractSocketBindingGroupRemoveHandler implements ModelRe
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = address.getLastElement().getValue();
@@ -73,7 +73,7 @@ public abstract class AbstractSocketBindingGroupRemoveHandler implements ModelRe
 
     protected abstract ModelNode getCompensatingOperation(ModelNode model, ModelNode operation);
 
-    protected void uninstallSocketBindingGroup(String name, ModelNode model, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected void uninstallSocketBindingGroup(String name, ModelNode model, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         resultHandler.handleResultComplete(compensatingOp);
     }
 

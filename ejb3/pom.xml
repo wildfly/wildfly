@@ -18,11 +18,7 @@
    <dependencies>
       <dependency>
           <groupId>${project.groupId}</groupId>
-          <artifactId>jboss-as-domain</artifactId>
-      </dependency>
-	  <dependency>
-	      <groupId>${project.groupId}</groupId>
-	      <artifactId>jboss-as-server</artifactId>
+            <artifactId>jboss-as-server</artifactId>
 	  </dependency>
    </dependencies>
 </project>

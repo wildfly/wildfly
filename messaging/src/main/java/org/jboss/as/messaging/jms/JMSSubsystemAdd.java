@@ -22,40 +22,51 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceName;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * The JMS subsystem update. Creating and installing the core subsystem services.
+ * The JMS subsystem add handler. Creating and installing the core subsystem services.
  *
  * @author Emanuel Muckenhuber
  */
-public class JMSSubsystemAdd extends AbstractSubsystemAdd<JMSSubsystemElement> {
+class JMSSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler{
 
-    private static final long serialVersionUID = 8476951371785341747L;
-    // Dependency on the JNDI service
-    static final ServiceName JNDI_SERVICE_NAME = ServiceName.JBOSS.append("naming", "context", "java");
-
-    public JMSSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
-    }
+    static final JMSSubsystemAdd INSTANCE = new JMSSubsystemAdd();
 
     /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        // FIXME the JMSServer is started as part of the messaging subsystem for now
-        // final BatchBuilder builder = context.getBatchBuilder();
-        // final JMSService service = new JMSService();
-        // final ServiceBuilder<?> serviceBuilder = builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
-        //    .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
-        //    .addOptionalDependency(JNDI_SERVICE_NAME);
-        // serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
-    }
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    protected JMSSubsystemElement createSubsystemElement() {
-        return new JMSSubsystemElement();
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+
+        if(context instanceof RuntimeOperationContext) {
+            // FIXME the JMSServer is started as part of the messaging subsystem for now
+            // final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            // final BatchBuilder builder = runtimeContext.getBatchBuilder();
+            // final JMSService service = new JMSService();
+            // final ServiceBuilder<?> serviceBuilder = builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
+            //    .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
+            //    .addOptionalDependency(JNDI_SERVICE_NAME);
+            // serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
+        }
+
+        final ModelNode node = context.getSubModel();
+        node.get(CommonAttributes.CONNECTION_FACTORY).setEmptyObject();
+        node.get(CommonAttributes.QUEUE).setEmptyObject();
+        node.get(CommonAttributes.TOPIC).setEmptyObject();
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

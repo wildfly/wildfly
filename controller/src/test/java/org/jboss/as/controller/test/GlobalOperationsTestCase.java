@@ -68,7 +68,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
@@ -923,7 +923,7 @@ public class GlobalOperationsTestCase {
             profileSub1Reg.registerOperationHandler("testA1-1",
                     new OperationHandler() {
                         @Override
-                        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },
@@ -942,7 +942,7 @@ public class GlobalOperationsTestCase {
                     new OperationHandler() {
 
                         @Override
-                        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },
@@ -963,7 +963,7 @@ public class GlobalOperationsTestCase {
                     new OperationHandler() {
 
                         @Override
-                        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },
@@ -1014,7 +1014,7 @@ public class GlobalOperationsTestCase {
             profileCSub5Reg.registerReadOnlyAttribute("name", new OperationHandler() {
 
                 @Override
-                public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                     resultHandler.handleResultFragment(new String[0], new ModelNode().set("Overridden by special read handler"));
                     resultHandler.handleResultComplete(null);
                     return Cancellable.NULL;
@@ -1046,7 +1046,7 @@ public class GlobalOperationsTestCase {
         static final TestMetricHandler INSTANCE = new TestMetricHandler();
         private static final Random random = new Random();
         @Override
-        public Cancellable execute(final NewOperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             resultHandler.handleResultFragment(new String[0], new ModelNode().set(random.nextInt()));
             resultHandler.handleResultComplete(null);
             return Cancellable.NULL;

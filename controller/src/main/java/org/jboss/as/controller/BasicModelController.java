@@ -163,7 +163,7 @@ public class BasicModelController implements ModelController {
                 subModel = null;
             }
 
-            final NewOperationContext context = getOperationContext(subModel, operation, operationHandler);
+            final OperationContext context = getOperationContext(subModel, operation, operationHandler);
             // TODO: do not persist during boot!
             final ResultHandler useHandler = (operationHandler instanceof ModelUpdateOperationHandler) ? new ResultHandler() {
                 @Override
@@ -219,7 +219,7 @@ public class BasicModelController implements ModelController {
     /**
      * Registers {@link OperationHandler}s for operations that require
      * access to controller internals not meant to be exposed via an
-     * {@link NewOperationContext}.
+     * {@link OperationContext}.
      * <p>
      * This default implementation registers a handler for the
      * {@link CommonDescriptions#getReadConfigAsXmlOperation(Locale) read-config-as-xml}
@@ -235,15 +235,15 @@ public class BasicModelController implements ModelController {
 
     /**
      * Get the operation context for the operation.  By default, this method creates a basic implementation of
-     * {@link NewOperationContext}.
+     * {@link OperationContext}.
      *
      * @param subModel the submodel affected by the operation
      * @param operation the operation itself
      * @param operationHandler the operation handler which will run the operation
      * @return the operation context
      */
-    protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
-        return new NewOperationContextImpl(this, getRegistry(), subModel);
+    protected OperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
+        return new OperationContextImpl(this, getRegistry(), subModel);
     }
 
     /**
@@ -257,7 +257,7 @@ public class BasicModelController implements ModelController {
      * @param resultHandler the result handler for this operation
      * @return a handle which can be used to asynchronously cancel the operation
      */
-    protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
+    protected Cancellable doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
         return operationHandler.execute(context, operation, resultHandler);
     }
 
@@ -395,7 +395,7 @@ public class BasicModelController implements ModelController {
         }
 
         @Override
-        public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try {

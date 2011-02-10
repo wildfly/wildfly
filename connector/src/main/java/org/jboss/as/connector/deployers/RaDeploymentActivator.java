@@ -34,8 +34,8 @@ import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
 import org.jboss.as.connector.jndi.JndiStrategyService;
 import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
+import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.model.BootUpdateContext;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -48,7 +48,7 @@ public class RaDeploymentActivator {
      * Activate the services required for service deployments.
      * @param updateContext The update context
      */
-    public void activate(final BootUpdateContext updateContext) {
+    public void activate(final BootOperationContext updateContext) {
         final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
         // add resources here

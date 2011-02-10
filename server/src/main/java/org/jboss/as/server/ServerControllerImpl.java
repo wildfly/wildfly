@@ -56,10 +56,10 @@ import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewExtensionContext;
-import org.jboss.as.controller.NewExtensionContextImpl;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewOperationContextImpl;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ExtensionContextImpl;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContextImpl;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
@@ -204,7 +204,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
 
         // Extensions
         ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        NewExtensionContext extensionContext = new NewExtensionContextImpl(getRegistry(), deployments, extensibleConfigurationPersister);
+        ExtensionContext extensionContext = new ExtensionContextImpl(getRegistry(), deployments, extensibleConfigurationPersister);
         ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
@@ -270,7 +270,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
 
     /** {@inheritDoc} */
     @Override
-    protected NewOperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
+    protected OperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
         if (operationHandler instanceof BootOperationHandler) {
             if (getState() == State.STARTING) {
                 return new BootContextImpl(subModel, getRegistry(), deployers);
@@ -287,10 +287,10 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
 
     /** {@inheritDoc} */
     @Override
-    protected Cancellable doExecute(final NewOperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
-        if (context instanceof NewBootOperationContext) {
+    protected Cancellable doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
+        if (context instanceof BootOperationContext) {
             return ((BootOperationHandler)operationHandler).execute(context, operation, resultHandler);
-        } else if (context instanceof NewRuntimeOperationContext) {
+        } else if (context instanceof RuntimeOperationContext) {
             return ((RuntimeOperationHandler)operationHandler).execute(context, operation, resultHandler);
         } else {
             return super.doExecute(context, operation, operationHandler, resultHandler);
@@ -306,7 +306,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         }
     }
 
-    private class ServerOperationContextImpl extends NewOperationContextImpl implements NewServerOperationContext {
+    private class ServerOperationContextImpl extends OperationContextImpl implements ServerOperationContext {
 
         // -1 as initial value ensures the CAS in revertRestartRequired()
         // will never succeed unless restartRequired() is called
@@ -359,7 +359,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
 
     }
 
-    private class BootContextImpl extends ServerOperationContextImpl implements NewBootOperationContext {
+    private class BootContextImpl extends ServerOperationContextImpl implements BootOperationContext {
 
         private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers;
 
@@ -383,7 +383,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         }
     }
 
-    private class RuntimeContextImpl extends ServerOperationContextImpl implements NewRuntimeOperationContext {
+    private class RuntimeContextImpl extends ServerOperationContextImpl implements RuntimeOperationContext {
 
         private RuntimeContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
             super(ServerControllerImpl.this, registry, subModel);

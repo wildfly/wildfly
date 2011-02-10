@@ -22,49 +22,74 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.logging.Level;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+
 /**
- * @author Emanuel Muckenhuber
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public class RootLoggerAdd extends AbstractLoggerAdd {
+class RootLoggerAdd implements ModelUpdateOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 4230922005791983261L;
+    static final RootLoggerAdd INSTANCE = new RootLoggerAdd();
 
-    protected String getLoggerName() {
-        return "";
-    }
+    static final String OPERATION_NAME = "set-root-logger";
 
-    protected AbstractLoggerElement<?> addNewElement(final LoggingSubsystemElement element) throws UpdateFailedException {
-        final RootLoggerElement newElement = new RootLoggerElement();
-        if (!element.setRootLogger(newElement)) {
-            throw new UpdateFailedException("Root logger already defined");
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        compensatingOperation.get(OP).set("remove-root-logger");
+
+        final String level = operation.require(CommonAttributes.LEVEL).asString();
+        final ModelNode handlers = operation.get(CommonAttributes.HANDLERS);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceTarget target = runtimeContext.getServiceTarget();
+            try {
+                final RootLoggerService service = new RootLoggerService();
+                service.setLevel(Level.parse(level));
+                target.addService(LogServices.ROOT_LOGGER, service)
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
+            } catch (Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
+            try {
+                // install logger handler services
+                if(handlers.getType() != ModelType.UNDEFINED) {
+                    LogServices.installLoggerHandlers(target, "", handlers);
+                }
+            } catch (Throwable t) {
+                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                return Cancellable.NULL;
+            }
         }
-        return newElement;
-    }
-    /**
-     * {@inheritDoc}
-     */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        try {
-            final RootLoggerService service = new RootLoggerService();
-            service.setLevel(Level.parse(getLevelName()));
-            final ServiceTarget target = updateContext.getServiceTarget();
-            target.addService(LogServices.ROOT_LOGGER, service)
-                .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-        } catch (Throwable t) {
-            resultHandler.handleFailure(t, param);
-            return;
-        }
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
+        subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS).set(handlers);
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        return Cancellable.NULL;
     }
 
 }

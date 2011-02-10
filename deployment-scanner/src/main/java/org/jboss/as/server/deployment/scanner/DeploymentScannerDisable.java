@@ -22,61 +22,79 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * Update disabling a {@code DeploymentRepositoryElement}.
+ * Update disabling a {@code DeploymentScanner}.
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerDisable extends AbstractDeploymentScannerSubsystemUpdate {
+class DeploymentScannerDisable implements ModelUpdateOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 4421499058480729575L;
-    private final String name;
-    private final String path;
+    static final DeploymentScannerDisable INSTANCE = new DeploymentScannerDisable();
 
-    public DeploymentScannerDisable(final String name, final String path) {
-        this.name = name;
-        this.path = path;
+    private DeploymentScannerDisable() {
+        //
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(DeploymentScannerSubsystemElement element) throws UpdateFailedException {
-        final DeploymentScannerElement scannerElement = element.getScanner(path);
-        if (scannerElement == null) {
-            throw new IllegalStateException("No deployment scanner for path " + path);
-        }
-        scannerElement.setEnabled(false);
-    }
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<DeploymentScannerSubsystemElement, ?> getCompensatingUpdate(DeploymentScannerSubsystemElement original) {
-        return new DeploymentScannerEnable(name, path);
-    }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
-    /** {@inheritDoc} */
-    public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(name));
-        if(controller == null) {
-            resultHandler.handleFailure(notConfigured(), param);
-        } else {
-            try {
-                final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
-                scanner.stopScanner();
-                resultHandler.handleSuccess(null, param);
-            } catch (Throwable t) {
-                resultHandler.handleFailure(t, param);
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set("enable");
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+
+        // update the model
+        context.getSubModel().get(CommonAttributes.SCAN_ENABLED).set(false);
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
+            final ServiceController<?> controller = updateContext.getServiceRegistry().getService(DeploymentScannerService.getServiceName(name));
+            if(controller == null) {
+                resultHandler.handleFailed(new ModelNode().set("scanner not configured"));
+            } else {
+                try {
+                    final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
+                    scanner.stopScanner();
+                    resultHandler.handleResultComplete(compensatingOperation);
+                } catch (Throwable t) {
+                    resultHandler.handleFailed(getFailureResult(t));
+                }
             }
         }
+        else {
+            resultHandler.handleResultComplete(compensatingOperation);
+        }
+
+        return Cancellable.NULL;
     }
 
-    private UpdateFailedException notConfigured() {
-        return new UpdateFailedException("No deployment repository named " + name + " is configured");
+    protected ModelNode getFailureResult(Throwable t) {
+        final ModelNode node = new ModelNode();
+        // todo - define this structure
+        node.get("success").set(false);
+        do {
+            final String message = t.getLocalizedMessage();
+            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
+            t = t.getCause();
+        } while (t != null);
+        return node;
     }
 
 }

@@ -33,7 +33,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -94,7 +94,7 @@ public class SocketBindingAddHandler implements ModelAddOperationHandler, Descri
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(NewOperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             String failure = validator.validate(operation);
             if (failure == null) {
@@ -125,7 +125,7 @@ public class SocketBindingAddHandler implements ModelAddOperationHandler, Descri
         return SocketBindingGroupDescription.getSocketBindingAddOperation(locale);
     }
 
-    protected void installSocketBinding(String name, ModelNode operation, NewOperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected void installSocketBinding(String name, ModelNode operation, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         resultHandler.handleResultComplete(compensatingOp);
     }
 

@@ -22,202 +22,113 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.web.CommonAttributes.ENABLED;
+import static org.jboss.as.web.CommonAttributes.ENABLE_LOOKUPS;
+import static org.jboss.as.web.CommonAttributes.EXECUTOR;
+import static org.jboss.as.web.CommonAttributes.MAX_POST_SIZE;
+import static org.jboss.as.web.CommonAttributes.MAX_SAVE_POST_SIZE;
+import static org.jboss.as.web.CommonAttributes.PROTOCOL;
+import static org.jboss.as.web.CommonAttributes.PROXY_NAME;
+import static org.jboss.as.web.CommonAttributes.PROXY_PORT;
+import static org.jboss.as.web.CommonAttributes.REDIRECT_PORT;
+import static org.jboss.as.web.CommonAttributes.SCHEME;
+import static org.jboss.as.web.CommonAttributes.SECURE;
+import static org.jboss.as.web.CommonAttributes.SOCKET_BINDING;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
- * Update adding a web connector.
+ * {@code OperationHandler} responsible for adding a web connector.
  *
  * @author Emanuel Muckenhuber
  */
-public class WebConnectorAdd extends AbstractWebSubsystemUpdate<Void> {
+class WebConnectorAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
-    private static final long serialVersionUID = 8619926322146139691L;
+    static final String OPERATION_NAME = ADD;
 
-    private final String name;
-    private String protocol;
-    private String bindingRef;
-    private String scheme;
-    private String executorRef;
-    private Boolean enabled;
-    private Boolean enableLookups;
-    private String proxyName;
-    private Integer proxyPort;
-    private Integer redirectPort;
-    private Boolean secure;
-    private Integer maxPostSize;
-    private Integer maxSavePostSize;
+    static ModelNode getRecreateOperation(ModelNode address, ModelNode existing) {
+        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        op.get(PROTOCOL).set(existing.get(PROTOCOL));
+        op.get(SOCKET_BINDING).set(existing.get(SOCKET_BINDING));
+        if (existing.hasDefined(SCHEME)) op.get(SCHEME).set(existing.get(SCHEME).asString());
+        if (existing.hasDefined(SECURE)) op.get(SECURE).set(existing.get(SECURE).asBoolean());
+        if (existing.hasDefined(ENABLED)) op.get(ENABLED).set(existing.get(ENABLED).asBoolean());
+        if (existing.hasDefined(ENABLE_LOOKUPS)) op.get(ENABLE_LOOKUPS).set(existing.get(ENABLE_LOOKUPS).asBoolean());
+        if (existing.hasDefined(EXECUTOR)) op.get(EXECUTOR).set(existing.get(EXECUTOR).asString());
+        if (existing.hasDefined(PROXY_NAME)) op.get(PROXY_NAME).set(existing.get(PROXY_NAME).asString());
+        if (existing.hasDefined(PROXY_PORT)) op.get(PROXY_PORT).set(existing.get(PROXY_PORT).asInt());
+        if (existing.hasDefined(REDIRECT_PORT)) op.get(REDIRECT_PORT).set(existing.get(REDIRECT_PORT).asInt());
+        if (existing.hasDefined(MAX_POST_SIZE)) op.get(MAX_POST_SIZE).set(existing.get(MAX_POST_SIZE).asInt());
+        if (existing.hasDefined(MAX_SAVE_POST_SIZE)) op.get(MAX_SAVE_POST_SIZE).set(existing.get(MAX_SAVE_POST_SIZE).asInt());
 
-    public WebConnectorAdd(final String name) {
-        if(name == null) {
-            throw new IllegalArgumentException("null connector name");
+        return op;
+    }
+
+    static final WebConnectorAdd INSTANCE = new WebConnectorAdd();
+
+    private WebConnectorAdd() {
+        //
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
+        final String bindingRef = operation.require(SOCKET_BINDING).asString();
+
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
+
+        final ModelNode subModel = context.getSubModel();
+        subModel.get(PROTOCOL).set(operation.get(PROTOCOL));
+        subModel.get(SOCKET_BINDING).set(operation.get(SOCKET_BINDING));
+        if(operation.hasDefined(SCHEME)) subModel.get(SCHEME).set(operation.get(SCHEME));
+        if(operation.hasDefined(SECURE)) subModel.get(SECURE).set(operation.get(SECURE).asBoolean());
+        if(operation.hasDefined(ENABLED)) subModel.get(ENABLED).set(operation.get(ENABLED).asBoolean());
+        if(operation.hasDefined(ENABLE_LOOKUPS)) subModel.get(ENABLE_LOOKUPS).set(operation.get(ENABLE_LOOKUPS).asBoolean());
+        if(operation.hasDefined(EXECUTOR)) subModel.get(EXECUTOR).set(operation.get(EXECUTOR).asString());
+        if(operation.hasDefined(PROXY_NAME)) subModel.get(PROXY_NAME).set(operation.get(PROXY_NAME).asString());
+        if(operation.hasDefined(PROXY_PORT)) subModel.get(PROXY_PORT).set(operation.get(PROXY_PORT).asInt());
+        if(operation.hasDefined(REDIRECT_PORT)) subModel.get(REDIRECT_PORT).set(operation.get(REDIRECT_PORT).asInt());
+        if(operation.hasDefined(MAX_POST_SIZE)) subModel.get(MAX_POST_SIZE).set(operation.get(MAX_POST_SIZE).asInt());
+        if(operation.hasDefined(MAX_SAVE_POST_SIZE)) subModel.get(MAX_SAVE_POST_SIZE).set(operation.get(MAX_SAVE_POST_SIZE).asInt());
+
+        if(context instanceof RuntimeOperationContext) {
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+
+            final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
+            final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
+            if(operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
+            if(operation.hasDefined(ENABLE_LOOKUPS)) service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
+            if(operation.hasDefined(PROXY_NAME)) service.setProxyName(operation.get(PROXY_NAME).asString());
+            if(operation.hasDefined(PROXY_PORT)) service.setProxyPort(operation.get(PROXY_PORT).asInt());
+            if(operation.hasDefined(REDIRECT_PORT)) service.setRedirectPort(operation.get(REDIRECT_PORT).asInt());
+            if(operation.hasDefined(MAX_POST_SIZE)) service.setMaxPostSize(operation.get(MAX_POST_SIZE).asInt());
+            if(operation.hasDefined(MAX_SAVE_POST_SIZE)) service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
+            runtimeContext.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
+                .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
+                .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER)
+                .install();
         }
-        this.name = name;
-    }
 
-    /** {@inheritDoc} */
-    protected void applyUpdate(WebSubsystemElement element) throws UpdateFailedException {
-        final WebConnectorElement connector = element.addConnector(name);
-        if(connector == null) {
-            throw new UpdateFailedException("duplicate connector " + name);
-        }
-        connector.setProtocol(protocol);
-        connector.setBindingRef(bindingRef);
-        connector.setScheme(scheme);
-        connector.setExecutorRef(executorRef);
-        if(enabled != null) connector.setEnabled(enabled);
-        if(secure != null) connector.setSecure(secure);
-        if(enableLookups != null) connector.setEnableLookups(enabled);
-        if(proxyName != null) connector.setProxyName(proxyName);
-        if(proxyPort != null) connector.setProxyPort(proxyPort);
-        if(redirectPort != null) connector.setRedirectPort(redirectPort);
-        if(maxPostSize != null) connector.setMaxPostSize(maxPostSize);
-        if(maxSavePostSize != null) connector.setMaxSavePostSize(maxSavePostSize);
-    }
+        resultHandler.handleResultComplete(compensatingOperation);
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final boolean enabled = this.enabled == null || this.enabled;
-        final WebConnectorService service = new WebConnectorService(protocol, scheme);
-        if(secure != null) service.setSecure(secure);
-        if(enableLookups != null) service.setEnableLookups(enabled);
-        if(proxyName != null) service.setProxyName(proxyName);
-        if(proxyPort != null) service.setProxyPort(proxyPort);
-        if(redirectPort != null) service.setRedirectPort(redirectPort);
-        if(maxPostSize != null) service.setMaxPostSize(maxPostSize);
-        if(maxSavePostSize != null) service.setMaxSavePostSize(maxSavePostSize);
-        context.getServiceTarget().addService(WebSubsystemElement.JBOSS_WEB_CONNECTOR.append(name), service)
-            .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getServer())
-            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-            .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
-            .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER)
-            .install();
-    }
-
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<WebSubsystemElement, ?> getCompensatingUpdate(WebSubsystemElement original) {
-        return new WebConnectorRemove(name);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getBindingRef() {
-        return bindingRef;
-    }
-
-    public void setBindingRef(String bindingRef) {
-        this.bindingRef = bindingRef;
-    }
-
-    public String getScheme() {
-        return scheme;
-    }
-
-    public void setScheme(String scheme) {
-        this.scheme = scheme;
-    }
-
-    public String getExecutorRef() {
-        return executorRef;
-    }
-
-    public void setExecutorRef(String executorRef) {
-        this.executorRef = executorRef;
-    }
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public Boolean getSecure() {
-        return secure;
-    }
-
-    public void setSecure(Boolean secure) {
-        this.secure = secure;
-    }
-
-    protected Boolean getEnableLookups() {
-        return enableLookups;
-    }
-
-    protected void setEnableLookups(Boolean enableLookups) {
-        this.enableLookups = enableLookups;
-    }
-
-    protected String getProxyName() {
-        return proxyName;
-    }
-
-    protected void setProxyName(String proxyName) {
-        this.proxyName = proxyName;
-    }
-
-    protected Integer getProxyPort() {
-        return proxyPort;
-    }
-
-    protected void setProxyPort(Integer proxyPort) {
-        this.proxyPort = proxyPort;
-    }
-
-    protected Integer getRedirectPort() {
-        return redirectPort;
-    }
-
-    protected void setRedirectPort(Integer redirectPort) {
-        this.redirectPort = redirectPort;
-    }
-
-    protected Integer getMaxPostSize() {
-        return maxPostSize;
-    }
-
-    protected void setMaxPostSize(Integer maxPostSize) {
-        this.maxPostSize = maxPostSize;
-    }
-
-    protected Integer getMaxSavePostSize() {
-        return maxSavePostSize;
-    }
-
-    protected void setMaxSavePostSize(Integer maxSavePostSize) {
-        this.maxSavePostSize = maxSavePostSize;
-    }
-
-    static WebConnectorAdd create(final WebConnectorElement connector) {
-        final WebConnectorAdd action = new WebConnectorAdd(connector.getName());
-        action.setBindingRef(connector.getBindingRef());
-        action.setProtocol(connector.getProtocol());
-        action.setScheme(connector.getScheme());
-        action.setExecutorRef(connector.getExecutorRef());
-        action.setEnabled(connector.isEnabled());
-        action.setSecure(connector.isSecure());
-        action.setEnableLookups(connector.isEnableLookups());
-        action.setProxyName(connector.getProxyName());
-        action.setProxyPort(connector.getProxyPort());
-        action.setRedirectPort(connector.getRedirectPort());
-        action.setMaxPostSize(connector.getMaxPostSize());
-        action.setMaxSavePostSize(connector.getMaxSavePostSize());
-        return action;
+        return Cancellable.NULL;
     }
 
 }

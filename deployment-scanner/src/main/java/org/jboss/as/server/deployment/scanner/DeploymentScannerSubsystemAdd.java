@@ -22,25 +22,42 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Update adding a new {@code DeploymentRepositoryElement} to a {@code ServerModel}.
+ * Handles the addition of the deployment scanning subsystem.
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerSubsystemAdd extends AbstractSubsystemAdd<DeploymentScannerSubsystemElement> {
+public class DeploymentScannerSubsystemAdd implements ModelAddOperationHandler {
 
-    public DeploymentScannerSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
+    static final DeploymentScannerSubsystemAdd INSTANCE = new DeploymentScannerSubsystemAdd();
+
+    private DeploymentScannerSubsystemAdd() {
+        //
     }
 
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    /** {@inheritDoc} */
+    @Override
+    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        // Initialize the scanner
+        context.getSubModel().get(CommonAttributes.DEPLOYMENT_SCANNER).setEmptyObject();
+
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
+
+        resultHandler.handleResultComplete(compensatingOperation);
+
+        context.getSubModel().setEmptyObject();
+
+        return Cancellable.NULL;
     }
 
-    protected DeploymentScannerSubsystemElement createSubsystemElement() {
-        return new DeploymentScannerSubsystemElement();
-    }
 }

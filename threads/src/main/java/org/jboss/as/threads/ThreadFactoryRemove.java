@@ -19,59 +19,67 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.threads;
 
-import java.util.Map;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
+import static org.jboss.as.threads.CommonAttributes.PRIORITY;
+import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
+import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
  */
-public final class ThreadFactoryRemove extends AbstractThreadsSubsystemUpdate<Void> {
+public class ThreadFactoryRemove implements RuntimeOperationHandler, ModelRemoveOperationHandler {
 
-    private static final long serialVersionUID = -6232099966839106128L;
+    static final OperationHandler INSTANCE = new ThreadFactoryRemove();
 
-    private final String name;
+    @Override
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-    public ThreadFactoryRemove(final String name) {
-        super(false);
-        this.name = name;
-    }
+        final ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
 
-    public ThreadFactoryAdd getCompensatingUpdate(final ThreadsSubsystemElement original) {
-        final ThreadFactoryAdd add = new ThreadFactoryAdd(name);
-        final ThreadFactoryElement threadFactory = original.getThreadFactory(name);
-        final Integer priority = threadFactory.getPriority();
-        if (priority != null) add.setPriority(priority);
-        final String groupName = threadFactory.getGroupName();
-        if (groupName != null) add.setGroupName(groupName);
-        final String namePattern = threadFactory.getThreadNamePattern();
-        if (namePattern != null) add.setThreadNamePattern(namePattern);
-        final Map<String,String> properties = threadFactory.getProperties();
-        if (! properties.isEmpty()) add.getProperties().putAll(properties);
-        return add;
-    }
+        if (context instanceof RuntimeOperationContext) {
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceController<?> controller = updateContext.getServiceRegistry().
-                getService(ThreadsServices.threadFactoryName(name));
-        if (controller == null) {
-            handler.handleSuccess(null, param);
-        } else {
-            controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
-            controller.setMode(ServiceController.Mode.REMOVE);
+            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+            final ServiceController<?> controller = runtimeContext.getServiceRegistry(). getService(ThreadsServices.threadFactoryName(name));
+            if (controller == null) {
+                resultHandler.handleResultComplete(null);
+                return Cancellable.NULL;
+            } else {
+                //controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
+                controller.setMode(Mode.REMOVE);
+            }
         }
+
+        final ModelNode threadFactory = context.getSubModel();
+        final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
+        compensating.get(GROUP_NAME).set(threadFactory.get(GROUP_NAME));
+        compensating.get(THREAD_NAME_PATTERN).set(threadFactory.get(THREAD_NAME_PATTERN));
+        compensating.get(PRIORITY).set(threadFactory.get(PRIORITY));
+        compensating.get(PROPERTIES).set(threadFactory.get(PROPERTIES).clone());
+        threadFactory.clear();
+
+        resultHandler.handleResultComplete(compensating);
+        return Cancellable.NULL;
     }
 
-    protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-        element.removeThreadFactory(name);
-    }
-
-    public String getName() {
-        return name;
-    }
 }
