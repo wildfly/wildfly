@@ -3,12 +3,13 @@ Supported commands:
 /help (alias /h) - prints this message
 /quit (alias /q) - quit the command line interface
 
-/prefix node-type [=node-name] [,node-type[=node-name]] (alias /to) - sets the node address prefix
+/prefix [node-type [=node-name]] [,node-type[=node-name]] (alias /to) - sets the node address prefix
  which is added to the operation request. The prefix can end on node-type.
  In that case, to execute an operation just a node-name would be sufficient (e.g. logging:read-resource).
  To move to the parent node from the current one use '..' (e.g. '/to ..').
  To move to the node type from the current node use 'type' (e.g. '/to .type').
  The root is specified with '~' (e.g. '/to ~' or '/to ~other=thing').
+ Executing the command w/o arguments prints the current prefix.
 
 Commands not prefixed with '/' are treated as operation requests.
 Operation requests are expected to follow the following format:
