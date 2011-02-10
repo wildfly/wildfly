@@ -25,7 +25,8 @@ package org.jboss.as.domain.client.api.deployment;
 import java.util.Map;
 import java.util.UUID;
 
-import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.domain.client.api.ServerUpdateResult;
+import org.jboss.as.domain.client.api.UpdateFailedException;
 
 /**
  * Describes the results of executing a {@link DeploymentAction} across

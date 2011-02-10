@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller.mgmt;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,21 +34,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import javax.net.ServerSocketFactory;
+
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
-import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
-import org.jboss.as.server.client.impl.StandaloneClientProtocol;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -78,6 +79,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
      * @param context The start context
      * @throws StartException If any errors occur
      */
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         final ExecutorService executorService = executorServiceValue.getValue();
         final ThreadFactory threadFactory = threadFactoryValue.getValue();
@@ -104,6 +106,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
      *
      * @param context The stop context
      */
+    @Override
     public synchronized void stop(StopContext context) {
         if (server != null) {
             server.stop();
@@ -111,6 +114,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
     }
 
     /** {@inheritDoc} */
+    @Override
     public ManagementCommunicationService getValue() throws IllegalStateException {
         return this;
     }
@@ -158,11 +162,13 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
         }
     }
 
+    @Override
     public MessageHandler handleConnected(Connection connection) throws IOException {
         return new ManagementHeaderMessageHandler();
     }
 
     private class ManagementHeaderMessageHandler implements MessageHandler {
+        @Override
         public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
             final int workingVersion;
             final ManagementRequestHeader requestHeader;
@@ -183,16 +189,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
                 }
                 handler = handlers.get(handlerId);
                 if (handler == null) {
-                    String msg = null;
-                    if (handlerId == StandaloneClientProtocol.SERVER_CONTROLLER_REQUEST) {
-                        msg = "Management request failed.  A request from a client " +
-                                 "wishing to communicate with a standalone server " +
-                                 "was received by this host controller. Server " +
-                                 "managers do not support the standalone client protocol";
-                    }
-                    else {
-                        msg = "Management request failed.  No handler found for id " + handlerId;
-                    }
+                    String msg = "Management request failed.  No handler found for id " + handlerId;
                     throw new IOException(msg);
                 }
                 connection.setMessageHandler(handler);
@@ -227,14 +224,17 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
             }
         }
 
+        @Override
         public void handleShutdown(final Connection connection) throws IOException {
             connection.shutdownWrites();
         }
 
+        @Override
         public void handleFailure(final Connection connection, final IOException e) throws IOException {
             connection.close();
         }
 
+        @Override
         public void handleFinished(final Connection connection) throws IOException {
             // nothing
         }

@@ -27,7 +27,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.concurrent.Future;
 
-import org.jboss.as.server.client.api.StandaloneClient;
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
@@ -53,8 +52,7 @@ public class DeployerClientImpl implements OSGiDeployerClient {
 
     public DeployerClientImpl() throws IOException {
         InetAddress address = InetAddress.getByName("127.0.0.1");
-        StandaloneClient client = StandaloneClient.Factory.create(address, 9999);
-        deploymentManager = client.getDeploymentManager();
+        deploymentManager = ServerDeploymentManager.Factory.create(address, 9999);
     }
 
     @Override

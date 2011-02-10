@@ -21,18 +21,14 @@
  */
 package org.jboss.as.demos.domain.configs.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.net.InetAddress;
-import java.util.List;
+
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.domain.client.api.DomainClient;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
@@ -46,26 +42,29 @@ import org.jboss.staxmapper.XMLMapper;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        DomainClient client = null;
-        try {
-            client = DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999);
 
-            System.out.println("\nReading the domain configuration:\n");
-            System.out.println(writeModel("domain", client.getDomainModel()));
-            System.out.println("\nReading the list of active host controllers:\n");
-            List<String> hostControllers = client.getHostControllerNames();
-            for (String hc : hostControllers) {
-                System.out.println(hc);
-            }
-
-            for (String hc : hostControllers) {
-                System.out.println("\nReading host configuration for host controller " + hc + "\n");
-                System.out.println(writeModel("host", client.getHostModel(hc)));
-            }
-
-        } finally {
-            safeClose(client);
-        }
+        // THIS DOES NOT CURRENTLY WORK
+        throw new UnsupportedOperationException("Convert to detyped API");
+//        DomainClient client = null;
+//        try {
+//            client = DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+//
+//            System.out.println("\nReading the domain configuration:\n");
+//            System.out.println(writeModel("domain", client.getDomainModel()));
+//            System.out.println("\nReading the list of active host controllers:\n");
+//            List<String> hostControllers = client.getHostControllerNames();
+//            for (String hc : hostControllers) {
+//                System.out.println(hc);
+//            }
+//
+//            for (String hc : hostControllers) {
+//                System.out.println("\nReading host configuration for host controller " + hc + "\n");
+//                System.out.println(writeModel("host", client.getHostModel(hc)));
+//            }
+//
+//        } finally {
+//            safeClose(client);
+//        }
     }
 
     private static String writeModel(final String element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {

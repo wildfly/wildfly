@@ -22,6 +22,13 @@
 
 package org.jboss.as.domain.client.impl;
 
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,45 +37,33 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.controller.client.Cancellable;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.as.domain.client.api.DomainClient;
-import org.jboss.as.domain.client.api.DomainUpdateApplier;
-import org.jboss.as.domain.client.api.DomainUpdateResult;
-import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlanResult;
 import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.impl.deployment.DeploymentPlanResultReader;
-
-import org.jboss.as.model.AbstractDomainModelUpdate;
-import org.jboss.as.model.AbstractHostModelUpdate;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.HostModel;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ProtocolUtils;
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-import static org.jboss.as.protocol.StreamUtils.safeFinish;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
+import org.jboss.dmr.ModelNode;
 import org.jboss.marshalling.Marshaller;
-import static org.jboss.marshalling.Marshalling.createByteInput;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
@@ -92,52 +87,22 @@ public class DomainClientImpl implements DomainClient {
     private final int port;
     private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
     private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
+    private final ModelControllerClient delegate;
 
     public DomainClientImpl(InetAddress address, int port) {
         this.address = address;
         this.port = port;
+        this.delegate = ModelControllerClient.Factory.create(address, port);
     }
 
     @Override
-    public DomainModel getDomainModel() {
-        try {
-            return new GetDomainOperation().executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to get domain model.", e);
-        }
+    public Cancellable execute(ModelNode operation, ResultHandler handler) {
+        return delegate.execute(operation, handler);
     }
 
     @Override
-    public List<DomainUpdateResult<?>> applyUpdates(final List<AbstractDomainModelUpdate<?>> updates) {
-        try {
-            return new ApplyUpdatesOperation(updates).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to apply domain updates", e);
-        }
-    }
-
-    @Override
-    public <R, P> void applyUpdate(final AbstractDomainModelUpdate<R> update, final DomainUpdateApplier<R, P> updateApplier, final P param) {
-        try {
-            DomainUpdateApplierResponse response = new ApplyUpdateToModelOperation(update).executeForResult(getConnectionStrategy());
-            if (response.isCancelled()) {
-                updateApplier.handleCancelled();
-            }
-            else if (response.getDomainFailure() != null) {
-                updateApplier.handleDomainFailed(response.getDomainFailure());
-            } else {
-                if (response.getHostFailures().size() > 0) {
-                    updateApplier.handleHostFailed(response.getHostFailures());
-                }
-                if (response.getServers().size() > 0) {
-                    AbstractServerModelUpdate<R> serverUpdate = update.getServerModelUpdate();
-                    DomainUpdateApplier.Context<R> context = DomainUpdateApplierContextImpl.createDomainUpdateApplierContext(this, response.getServers(), serverUpdate);
-                    updateApplier.handleReady(context, param);
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to determine if deployment name is unique", e);
-        }
+    public ModelNode execute(ModelNode operation) throws CancellationException, IOException {
+        return delegate.execute(operation);
     }
 
     @Override
@@ -162,38 +127,11 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public List<HostUpdateResult<?>> applyHostUpdates(String hostName, List<AbstractHostModelUpdate<?>> updates) {
-        try {
-            return new ApplyHostUpdatesOperation(hostName, updates).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to apply host updates", e);
-        }
-    }
-
-    @Override
-    public HostModel getHostModel(String hostControllerName) {
-        try {
-            return new GetHostModelOperation(hostControllerName).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to get host model", e);
-        }
-    }
-
-    @Override
     public List<String> getHostControllerNames() {
         try {
             return new GethostControllerNamesOperation().executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to get host controller names", e);
-        }
-    }
-
-    @Override
-    public ServerModel getServerModel(String hostControllerName, String serverName) {
-        try {
-            return new GetServerModelOperation(hostControllerName, serverName).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to get server model", e);
         }
     }
 
@@ -252,17 +190,7 @@ public class DomainClientImpl implements DomainClient {
         }
     }
 
-    <R, P> Future<Void> applyUpdateToServer(final AbstractServerModelUpdate<R> update,
-                                                           final ServerIdentity server,
-                                                           final UpdateResultHandler<R, P> resultHandler,
-                                                           final P param) {
-        try {
-            return new ApplyUpdateToServerOperation<R, P>(update, server, resultHandler, param).execute(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get update result future", e);
-        }
-    }
-
+    @Override
     public void close() throws IOException {
         executorService.shutdown();
     }
@@ -271,32 +199,6 @@ public class DomainClientImpl implements DomainClient {
         @Override
         protected byte getHandlerId() {
             return DomainClientProtocol.DOMAIN_CONTROLLER_CLIENT_REQUEST;
-        }
-    }
-
-    private class GetDomainOperation extends DomainClientRequest<DomainModel> {
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.GET_DOMAIN_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.GET_DOMAIN_RESPONSE;
-        }
-
-        @Override
-        protected final DomainModel receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_DOMAIN_MODEL);
-                final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
-                unmarshaller.finish();
-                return domainModel;
-            } finally {
-                safeFinish(unmarshaller);
-            }
         }
     }
 
@@ -325,102 +227,6 @@ public class DomainClientImpl implements DomainClient {
                 }
                 unmarshaller.finish();
                 return results;
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-    }
-
-    private class GetHostModelOperation extends DomainClientRequest<HostModel> {
-
-        private final String hostControllerName;
-
-        private GetHostModelOperation(final String hostControllerName) {
-            this.hostControllerName = hostControllerName;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.GET_HOST_MODEL_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.GET_HOST_MODEL_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                marshaller.writeUTF(hostControllerName);
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-
-        @Override
-        protected final HostModel receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-                try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_MODEL);
-                final HostModel hostModel = unmarshal(unmarshaller, HostModel.class);
-                unmarshaller.finish();
-                return hostModel;
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-    }
-
-    private class GetServerModelOperation extends DomainClientRequest<ServerModel> {
-
-        private final String hostControllerName;
-        private final String serverName;
-
-        private GetServerModelOperation(final String hostControllerName, final String serverName) {
-            this.hostControllerName = hostControllerName;
-            this.serverName = serverName;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.GET_SERVER_MODEL_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.GET_SERVER_MODEL_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                marshaller.writeUTF(hostControllerName);
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-                marshaller.writeUTF(serverName);
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-
-        @Override
-        protected final ServerModel receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_MODEL);
-                final ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
-                unmarshaller.finish();
-                return serverModel;
             } finally {
                 safeFinish(unmarshaller);
             }
@@ -556,245 +362,6 @@ public class DomainClientImpl implements DomainClient {
                 final ServerStatus serverStatus = unmarshal(unmarshaller, ServerStatus.class);
                 unmarshaller.finish();
                 return serverStatus;
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-    }
-
-    private class ApplyUpdatesOperation extends DomainClientRequest<List<DomainUpdateResult<?>>> {
-        final List<AbstractDomainModelUpdate<?>> updates;
-
-        private ApplyUpdatesOperation(List<AbstractDomainModelUpdate<?>> updates) {
-            this.updates = updates;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.APPLY_UPDATES_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.APPLY_UPDATES_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
-                marshaller.writeInt(updates.size());
-                for (AbstractDomainModelUpdate<?> update : updates) {
-                    marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                    marshaller.writeObject(update);
-                }
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-
-        @Override
-        protected final List<DomainUpdateResult<?>> receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATES_RESULT_COUNT);
-                final int updateCount = unmarshaller.readInt();
-                final List<DomainUpdateResult<?>> results = new ArrayList<DomainUpdateResult<?>>(updateCount);
-                for (int i = 0; i < updateCount; i++) {
-                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATE);
-                    DomainUpdateResult<?> updateResult = unmarshal(unmarshaller, DomainUpdateResult.class);
-                    results.add(updateResult);
-                }
-                unmarshaller.finish();
-                return results;
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-    }
-
-    private class ApplyHostUpdatesOperation extends DomainClientRequest<List<HostUpdateResult<?>>> {
-
-        final String hostControllerName;
-        final List<AbstractHostModelUpdate<?>> updates;
-
-        private ApplyHostUpdatesOperation(final String hostControllerName, final List<AbstractHostModelUpdate<?>> updates) {
-            this.hostControllerName = hostControllerName;
-            this.updates = updates;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.APPLY_HOST_UPDATES_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.APPLY_HOST_UPDATES_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                marshaller.writeUTF(hostControllerName);
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
-                marshaller.writeInt(updates.size());
-                for (AbstractHostModelUpdate<?> update : updates) {
-                    marshaller.writeByte(DomainClientProtocol.PARAM_HOST_MODEL_UPDATE);
-                    marshaller.writeObject(update);
-                }
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-
-        @Override
-        protected final List<HostUpdateResult<?>> receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATES_RESULT_COUNT);
-                final int updateCount = unmarshaller.readInt();
-                final List<HostUpdateResult<?>> results = new ArrayList<HostUpdateResult<?>>(updateCount);
-                for (int i = 0; i < updateCount; i++) {
-                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_HOST_UPDATE);
-                    HostUpdateResult<?> updateResult = unmarshal(unmarshaller, HostUpdateResult.class);
-                    results.add(updateResult);
-                }
-                unmarshaller.finish();
-                return results;
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-    }
-
-    private class ApplyUpdateToModelOperation extends DomainClientRequest<DomainUpdateApplierResponse> {
-        final AbstractDomainModelUpdate<?> update;
-
-        private ApplyUpdateToModelOperation(AbstractDomainModelUpdate<?> update) {
-            this.update = update;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.APPLY_UPDATE_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.APPLY_UPDATE_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                marshaller.writeObject(update);
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-
-        @Override
-        protected final DomainUpdateApplierResponse receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATE);
-                DomainUpdateApplierResponse rsp = unmarshal(unmarshaller, DomainUpdateApplierResponse.class);
-                unmarshaller.finish();
-                return rsp;
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-    }
-
-    private class ApplyUpdateToServerOperation<R, P> extends DomainClientRequest<Void> {
-        private final AbstractServerModelUpdate<R> update;
-        private final ServerIdentity server;
-        private final UpdateResultHandler<R, P> resultHandler;
-        private final P param;
-
-        private ApplyUpdateToServerOperation(final AbstractServerModelUpdate<R> update,
-                                             final ServerIdentity server,
-                                             final UpdateResultHandler<R, P> resultHandler,
-                                             final P param) {
-            this.update = update;
-            this.server = server;
-            this.resultHandler = resultHandler;
-            this.param = param;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.APPLY_SERVER_MODEL_UPDATE_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.APPLY_SERVER_MODEL_UPDATE_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                marshaller.writeUTF(server.getHostName());
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                marshaller.writeUTF(server.getServerGroupName());
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-                marshaller.writeUTF(server.getServerName());
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_MODEL_UPDATE);
-                marshaller.writeObject(update);
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
-            }
-        }
-
-        @Override
-        protected final Void receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_SERVER_MODEL_UPDATE);
-                @SuppressWarnings("unchecked")
-                final UpdateResultHandlerResponse<R> result = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
-                unmarshaller.finish();
-                if (resultHandler != null) {
-                    if (result.isCancelled()) {
-                        resultHandler.handleCancellation(param);
-                    }
-                    else if (result.isRolledBack()) {
-                        resultHandler.handleRollbackSuccess(param);
-                    }
-                    else if (result.isTimedOut()) {
-                        resultHandler.handleTimeout(param);
-                    }
-                    else if (result.getFailureResult() != null) {
-                        resultHandler.handleFailure(result.getFailureResult(), param);
-                    }
-                    else {
-                        resultHandler.handleSuccess(result.getSuccessResult(), param);
-                    }
-                }
-                unmarshaller.finish();
-                return null;
             } finally {
                 safeFinish(unmarshaller);
             }

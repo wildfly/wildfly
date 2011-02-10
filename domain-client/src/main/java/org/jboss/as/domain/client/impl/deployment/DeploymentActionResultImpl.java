@@ -29,11 +29,11 @@ import java.util.UUID;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerUpdateResult;
+import org.jboss.as.domain.client.api.UpdateFailedException;
 import org.jboss.as.domain.client.api.deployment.DeploymentAction;
 import org.jboss.as.domain.client.api.deployment.DeploymentActionResult;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentActionResult;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
-import org.jboss.as.model.UpdateFailedException;
 
 /**
  * Default implementation of {@link DeploymentActionResult}.

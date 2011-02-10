@@ -24,8 +24,6 @@ package org.jboss.as.domain.client.api;
 
 import java.util.Collection;
 import java.util.Map;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
 
 /**
  * Callback interface for listeners that wish to receive notifications related
@@ -36,7 +34,66 @@ import org.jboss.as.model.UpdateResultHandler;
  *
  * @author Brian Stansberry
  */
-public interface DomainUpdateListener<R> extends UpdateResultHandler<R, ServerIdentity> {
+public interface DomainUpdateListener<R> {
+
+    /**
+     * Handle successful application of the update.
+     *
+     * @param result the update result, if any
+     * @param the server that generated the event
+     */
+    void handleSuccess(R result, ServerIdentity server);
+
+    /**
+     * Handle a failure to apply the update.
+     *
+     * @param cause the cause of the failure
+     * @param the server that generated the event
+     */
+    void handleFailure(Throwable cause, ServerIdentity server);
+
+    /**
+     * Handle cancellation of the update.
+     *
+     * @param the server that generated the event
+     */
+    void handleCancellation(ServerIdentity server);
+
+    /**
+     * Handle a timeout in applying the update.
+     *
+     * @param the server that generated the event
+     */
+    void handleTimeout(ServerIdentity server);
+
+    /**
+     * Handle a successful rollback of the update.
+     *
+     * @param the server that generated the event
+     */
+    void handleRollbackSuccess(ServerIdentity server);
+
+    /**
+     * Handle a failed rollback of the update.
+     *
+     * @param cause the cause of the failure
+     * @param the server that generated the event
+     */
+    void handleRollbackFailure(Throwable cause, ServerIdentity server);
+
+    /**
+     * Handle cancellation of a rollback of the update.
+     *
+     * @param the server that generated the event
+     */
+    void handleRollbackCancellation(ServerIdentity server);
+
+    /**
+     * Handle a timeout in rolling back the update.
+     *
+     * @param the server that generated the event
+     */
+    void handleRollbackTimeout(ServerIdentity server);
 
     /**
      * Handle the event of the update failing to apply to the domain.

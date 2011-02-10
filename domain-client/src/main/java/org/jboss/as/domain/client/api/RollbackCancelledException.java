@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.client.api;
 
-import org.jboss.as.model.UpdateFailedException;
 
 /**
  * Exception indicating that the rollback of a domain model update failed

@@ -24,8 +24,8 @@ package org.jboss.as.host.controller;
 
 import java.io.File;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.model.DeploymentUnitElement;
 
 
 /**
@@ -65,7 +65,7 @@ public class LocalFileRepository implements FileRepository {
     /** {@inheritDoc} */
     @Override
     public File getDeploymentRoot(byte[] hash) {
-        String hex = DeploymentUnitElement.bytesToHexString(hash);
+        String hex = HashUtil.bytesToHexString(hash);
         File first = new File(deploymentRoot, hex.substring(0,2));
         return new File(first, hex.substring(2));
 

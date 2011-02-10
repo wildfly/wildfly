@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface ModelControllerClient extends Closeable{
+public interface ModelControllerClient extends Closeable {
 
     /**
      * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler.

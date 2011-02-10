@@ -29,9 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.domain.client.api.DomainUpdateApplier;
 import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.domain.client.api.UpdateFailedException;
 
 /**
  * Encapsulates the results provided by the domain controller in response

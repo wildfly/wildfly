@@ -29,6 +29,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readArrayAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
@@ -75,9 +77,9 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.model.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -205,11 +207,11 @@ public class RemotingExtension implements Extension {
                         break;
                     }
                     default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
+                        throw unexpectedAttribute(reader, i);
                 }
             }
             if (! required.isEmpty()) {
-                throw ParseUtils.missingRequired(reader, required);
+                throw missingRequired(reader, required);
             }
             assert name != null;
             assert socketBinding != null;
@@ -227,7 +229,7 @@ public class RemotingExtension implements Extension {
                     case REMOTING_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (visited.contains(element)) {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                         visited.add(element);
                         switch (element) {
@@ -264,7 +266,7 @@ public class RemotingExtension implements Extension {
             // No attributes
             final int count = reader.getAttributeCount();
             if (count > 0) {
-                throw ParseUtils.unexpectedAttribute(reader, 0);
+                throw unexpectedAttribute(reader, 0);
             }
             // Nested elements
             final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
@@ -273,13 +275,13 @@ public class RemotingExtension implements Extension {
                     case REMOTING_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (visited.contains(element)) {
-                            throw ParseUtils.unexpectedElement(reader);
+                            throw unexpectedElement(reader);
                         }
                         visited.add(element);
                         switch (element) {
                             case INCLUDE_MECHANISMS: {
                                 final ModelNode includes = saslElement.get(INCLUDE_MECHANISMS);
-                                for(final String s : ParseUtils.readArrayAttributeElement(reader, "value", String.class)) {
+                                for(final String s : readArrayAttributeElement(reader, "value", String.class)) {
                                     includes.add().set(s);
                                 }
                                 break;
@@ -294,30 +296,30 @@ public class RemotingExtension implements Extension {
                             }
                             case QOP: {
                                 //FIXME is this really an attribute?
-                                saslElement.get(QOP).set(ParseUtils.readArrayAttributeElement(reader, "value", SaslQop.class).toString());
+                                saslElement.get(QOP).set(readArrayAttributeElement(reader, "value", SaslQop.class).toString());
                                 break;
                             }
                             case REUSE_SESSION: {
-                                saslElement.get(REUSE_SESSION).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                saslElement.get(REUSE_SESSION).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             case SERVER_AUTH: {
-                                saslElement.get(SERVER_AUTH).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                saslElement.get(SERVER_AUTH).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             case STRENGTH: {
                                 //FIXME is this really an xml attribute?
-                                saslElement.get(STRENGTH).set(ParseUtils.readArrayAttributeElement(reader, "value", SaslStrength.class).toString());
+                                saslElement.get(STRENGTH).set(readArrayAttributeElement(reader, "value", SaslStrength.class).toString());
                                 break;
                             }
                             default: {
-                                throw ParseUtils.unexpectedElement(reader);
+                                throw unexpectedElement(reader);
                             }
                         }
                         break;
                     }
                     default: {
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                     }
                 }
             }
@@ -341,37 +343,37 @@ public class RemotingExtension implements Extension {
                         visited.add(element);
                         switch (element) {
                             case FORWARD_SECRECY: {
-                                policy.get(FORWARD_SECRECY).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                policy.get(FORWARD_SECRECY).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             case NO_ACTIVE: {
-                                policy.get(NO_ACTIVE).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                policy.get(NO_ACTIVE).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             case NO_ANONYMOUS: {
-                                policy.set(NO_ANONYMOUS).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                policy.set(NO_ANONYMOUS).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             case NO_DICTIONARY: {
-                                policy.get(NO_DICTIONARY).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                policy.get(NO_DICTIONARY).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             case NO_PLAINTEXT: {
-                                policy.get(NO_PLAINTEXT).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                policy.get(NO_PLAINTEXT).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             case PASS_CREDENTIALS: {
-                                policy.get(PASS_CREDENTIALS).set(ParseUtils.readBooleanAttributeElement(reader, "value"));
+                                policy.get(PASS_CREDENTIALS).set(readBooleanAttributeElement(reader, "value"));
                                 break;
                             }
                             default: {
-                                throw ParseUtils.unexpectedElement(reader);
+                                throw unexpectedElement(reader);
                             }
                         }
                         break;
                     }
                     default: {
-                        throw ParseUtils.unexpectedElement(reader);
+                        throw unexpectedElement(reader);
                     }
                 }
             }

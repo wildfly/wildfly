@@ -22,10 +22,11 @@
 
 package org.jboss.as.demos.client;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.net.InetAddress;
 
 import org.jboss.as.domain.client.api.DomainClient;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * @author Emanuel Muckenhuber
@@ -36,7 +37,7 @@ public class __TestDomainClient {
         DomainClient client = null;
         try {
             client = new DomainClient.Factory().create(InetAddress.getByName("localhost"), 9999);
-            System.out.println(client.getDomainModel());
+            System.out.println(client.getServerStatuses());
         } finally {
             safeClose(client);
         }

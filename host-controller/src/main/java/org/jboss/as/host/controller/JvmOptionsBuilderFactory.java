@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.parsing.JvmType;
-import org.jboss.as.model.Attribute;
-import org.jboss.as.model.Element;
-import org.jboss.as.model.JvmElement;
 import org.jboss.logging.Logger;
 
 /**

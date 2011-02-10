@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.domain.client.api;
 
 /**
  * An exception thrown when a model update fails for some reason.

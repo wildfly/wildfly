@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.jboss.as.server.client.api.StandaloneClient;
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
@@ -52,8 +51,7 @@ public final class RemoteDeployer implements Deployer {
 
     public RemoteDeployer() throws IOException {
         final InetAddress address = InetAddress.getByName("127.0.0.1");
-        final StandaloneClient client = StandaloneClient.Factory.create(address, 9999);
-        deploymentManager = client.getDeploymentManager();
+        deploymentManager = ServerDeploymentManager.Factory.create(address, 9999);
     }
 
     @Override

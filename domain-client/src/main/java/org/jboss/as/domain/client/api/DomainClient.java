@@ -22,20 +22,15 @@
 
 package org.jboss.as.domain.client.api;
 
-import java.io.Closeable;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.impl.DomainClientImpl;
-import org.jboss.as.model.AbstractDomainModelUpdate;
-import org.jboss.as.model.AbstractHostModelUpdate;
-import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.HostModel;
-import org.jboss.as.model.ServerModel;
 
 /**
  * Client interface used to interact with the domain management infrastructure.  THis interface allows clients to get
@@ -43,14 +38,8 @@ import org.jboss.as.model.ServerModel;
  *
  * @author John Bailey
  */
-public interface DomainClient extends Closeable {
-
-    /**
-     * Get the current domain model.
-     *
-     * @return The domain model
-     */
-    DomainModel getDomainModel();
+@Deprecated
+public interface DomainClient extends ModelControllerClient {
 
     /**
      * Gets the list of currently running host controllers.
@@ -58,26 +47,6 @@ public interface DomainClient extends Closeable {
      * @return the names of the host controllers. Will not be <code>null</code>
      */
     List<String> getHostControllerNames();
-
-    /**
-     * Apply a series of updates to the domain.
-     *
-     * @param updates The domain updates to apply
-     * @return The results of the update
-     */
-    List<DomainUpdateResult<?>> applyUpdates(List<AbstractDomainModelUpdate<?>> updates);
-
-    /**
-     * Apply an update to the domain, using the given {@link DomainUpdateApplier}
-     * to control the update process.
-     *
-     * @param <R> the type of result that is returned by this update type
-     * @param <P> the type of the parameter to pass to the handler instance
-     * @param update the update. Cannot be <code>null</code>
-     * @param updateApplier the update applier. Cannot be <code>null</code>
-     * @param param the parameter to pass to the handler
-     */
-    <R, P> void applyUpdate(AbstractDomainModelUpdate<R> update, DomainUpdateApplier<R, P> updateApplier, P param);
 
     /**
      * Add the content for a deployment to the domain controller. Note that
@@ -100,23 +69,6 @@ public interface DomainClient extends Closeable {
     DomainDeploymentManager getDeploymentManager();
 
     /**
-     * Get the host model for the given host.
-     *
-     * @param hostControllerName  the name of the host controller responsible for the host
-     * @return The host model, or <code>null</code> if the host is unknown
-     */
-    HostModel getHostModel(String hostControllerName);
-
-    /**
-     * Apply a series of updates to a host controller.
-     *
-     * @param hostControllerName the name of the host controller
-     * @param updates The host updates to apply
-     * @return The results of the update
-     */
-    List<HostUpdateResult<?>> applyHostUpdates(String hostControllerName, List<AbstractHostModelUpdate<?>> updates);
-
-    /**
      * Gets a list of all servers known to the domain, along with their current
      * {@link ServerStatus status}. Servers associated with host controllers that
      * are currently off line will not be included.
@@ -124,15 +76,6 @@ public interface DomainClient extends Closeable {
      * @return the servers and their current status. Will not be <code>null</code>
      */
     Map<ServerIdentity, ServerStatus> getServerStatuses();
-
-    /**
-     * Get the server model representing the current running configuration for a server.
-     *
-     * @param hostControllerName the name of the host controller responsible for the server
-     * @param serverName the name of the server
-     * @return The server model, or <code>null</code> if the server is unknown or not currently started
-     */
-    ServerModel getServerModel(String hostControllerName, String serverName);
 
     /**
      * Starts the given server. Ignored if the server is not stopped.

@@ -28,7 +28,7 @@ import java.util.UUID;
 import org.jboss.as.domain.client.api.RollbackCancelledException;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerUpdateResult;
-import org.jboss.as.model.UpdateResultHandlerResponse;
+import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 
 /**
  * Default implementation of {@link ServerUpdateResult}.

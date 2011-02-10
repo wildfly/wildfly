@@ -21,6 +21,8 @@
  */
 package org.jboss.as.demos;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -45,10 +47,6 @@ import org.jboss.as.domain.client.api.deployment.DeploymentSetActionsCompleteBui
 import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.api.deployment.DuplicateDeploymentNameException;
 import org.jboss.as.domain.client.api.deployment.RemoveDeploymentPlanBuilder;
-import org.jboss.as.model.DeploymentUnitElement;
-import org.jboss.as.model.DomainModel;
-
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -138,6 +136,7 @@ public class DomainDeploymentUtils implements Closeable {
         return (String)getServerTwoConnection().invoke(new ObjectName("jboss:type=JNDIView"), "list", new Object[] {true}, new String[] {"boolean"});
     }
 
+    @Override
     public void close() throws IOException {
         if (!injectedClient) {
             safeClose(client);
@@ -180,20 +179,24 @@ public class DomainDeploymentUtils implements Closeable {
         }
 
         public synchronized DeploymentSetActionsCompleteBuilder addDeployment(DomainDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
-            System.out.println("Deploying " + realArchive.getName());
-            DomainModel dm = client.getDomainModel();
-            DeploymentSetActionsCompleteBuilder result;
-            DeploymentUnitElement due = dm.getDeployment(archiveName);
-            if (due  != null) {
-                result = builder.replace(archiveName, realArchive);
-                if (!due.isStart()) {
-                    result = result.deploy(archiveName);
-                }
-            }
-            else {
-                result = builder.add(archiveName, realArchive).andDeploy();
-            }
-            return result;
+
+
+            // THIS DOES NOT CURRENTLY WORK
+            throw new UnsupportedOperationException("Convert to detyped API");
+//            System.out.println("Deploying " + realArchive.getName());
+//            DomainModel dm = client.getDomainModel();
+//            DeploymentSetActionsCompleteBuilder result;
+//            DeploymentUnitElement due = dm.getDeployment(archiveName);
+//            if (due  != null) {
+//                result = builder.replace(archiveName, realArchive);
+//                if (!due.isStart()) {
+//                    result = result.deploy(archiveName);
+//                }
+//            }
+//            else {
+//                result = builder.add(archiveName, realArchive).andDeploy();
+//            }
+//            return result;
         }
 
         public synchronized RemoveDeploymentPlanBuilder removeDeployment(DeploymentPlanBuilder builder) {
