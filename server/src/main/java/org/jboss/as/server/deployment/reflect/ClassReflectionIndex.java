@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.reflect;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -36,15 +37,19 @@ import java.util.Map;
  *
  * The ClassReflectionIndex is only available during the deployment.
  *
+ * @param <T> the type being indexed
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ClassReflectionIndex {
-    private final Class<?> indexedClass;
+public final class ClassReflectionIndex<T> {
+    private final Class<T> indexedClass;
     private final Map<String, Field> fields;
+    private final Map<ParamList, Constructor<T>> constructors;
     private final Map<String, Map<ParamList, Map<Class<?>, Method>>> methods;
 
-    ClassReflectionIndex(final Class<?> indexedClass) {
+    @SuppressWarnings( { "unchecked" })
+    ClassReflectionIndex(final Class<T> indexedClass) {
         this.indexedClass = indexedClass;
+        // -- fields --
         final Field[] declaredFields = indexedClass.getDeclaredFields();
         final Map<String, Field> fields = new HashMap<String, Field>();
         for (Field field : declaredFields) {
@@ -52,6 +57,7 @@ public final class ClassReflectionIndex {
             fields.put(field.getName(), field);
         }
         this.fields = fields;
+        // -- methods --
         final Method[] declaredMethods = indexedClass.getDeclaredMethods();
         final Map<String, Map<ParamList, Map<Class<?>, Method>>> methods = new HashMap<String, Map<ParamList, Map<Class<?>, Method>>>();
         for (Method method : declaredMethods) {
@@ -63,6 +69,14 @@ public final class ClassReflectionIndex {
             addMethod(methods, method);
         }
         this.methods = methods;
+        // -- constructors --
+        final Constructor<T>[] declaredConstructors = (Constructor<T>[]) indexedClass.getDeclaredConstructors();
+        final Map<ParamList, Constructor<T>> constructors = new HashMap<ParamList, Constructor<T>>();
+        for (Constructor<T> constructor : declaredConstructors) {
+            constructor.setAccessible(true);
+            constructors.put(createParamList(constructor.getParameterTypes()), constructor);
+        }
+        this.constructors = constructors;
     }
 
     private static final ParamList EMPTY = new ParamList(new Class<?>[0]);
@@ -74,7 +88,7 @@ public final class ClassReflectionIndex {
             methods.put(name, nameMap = new HashMap<ParamList, Map<Class<?>, Method>>());
         }
         final Class<?>[] types = method.getParameterTypes();
-        final ParamList list = types.length == 0 ? EMPTY : new ParamList(types);
+        final ParamList list = createParamList(types);
         Map<Class<?>, Method> paramsMap = nameMap.get(list);
         if (paramsMap == null) {
             nameMap.put(list, paramsMap = new HashMap<Class<?>, Method>());
@@ -82,12 +96,16 @@ public final class ClassReflectionIndex {
         paramsMap.put(method.getReturnType(), method);
     }
 
+    private static ParamList createParamList(final Class<?>[] types) {
+        return types == null || types.length == 0 ? EMPTY : new ParamList(types);
+    }
+
     /**
      * Get the class indexed by this object.
      *
      * @return the class
      */
-    public Class<?> getIndexedClass() {
+    public Class<T> getIndexedClass() {
         return indexedClass;
     }
 
@@ -123,7 +141,7 @@ public final class ClassReflectionIndex {
         if (nameMap == null) {
             return null;
         }
-        final Map<Class<?>, Method> paramsMap = nameMap.get(new ParamList(paramTypes));
+        final Map<Class<?>, Method> paramsMap = nameMap.get(createParamList(paramTypes));
         if (paramsMap == null) {
             return null;
         }
@@ -142,7 +160,7 @@ public final class ClassReflectionIndex {
         if (nameMap == null) {
             return Collections.emptySet();
         }
-        final Map<Class<?>, Method> paramsMap = nameMap.get(new ParamList(paramTypes));
+        final Map<Class<?>, Method> paramsMap = nameMap.get(createParamList(paramTypes));
         if (paramsMap == null) {
             return Collections.emptySet();
         }
@@ -181,6 +199,25 @@ public final class ClassReflectionIndex {
             }
         }
         return methods;
+    }
+
+    /**
+     * Get the full collection of constructors declared on this object.
+     *
+     * @return the constructors
+     */
+    public Collection<Constructor<T>> getConstructors() {
+        return Collections.unmodifiableCollection(constructors.values());
+    }
+
+    /**
+     * Get a constructor declared on this class.
+     *
+     * @param paramTypes the constructor argument types
+     * @return the constructor, or {@code null} of no such constructor exists
+     */
+    public Constructor<T> getConstructor(Class<?>... paramTypes) {
+        return constructors.get(createParamList(paramTypes));
     }
 
     private static final class ParamList {

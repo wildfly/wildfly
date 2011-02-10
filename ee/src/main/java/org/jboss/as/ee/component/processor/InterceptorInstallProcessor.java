@@ -73,7 +73,7 @@ public class InterceptorInstallProcessor extends AbstractComponentConfigProcesso
         final List<Method> allMethods = new ArrayList<Method>();
         Class<?> current = componentClass;
         while (current != null) {
-            final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(current);
+            final ClassReflectionIndex<?> classReflectionIndex = deploymentReflectionIndex.getClassIndex(current);
             allMethods.addAll(classReflectionIndex.getMethods());
             current = current.getSuperclass();
         }
@@ -122,7 +122,7 @@ public class InterceptorInstallProcessor extends AbstractComponentConfigProcesso
             throw new DeploymentUnitProcessingException("Failed to load interceptors class " + interceptorConfiguration.getInterceptorClassName(), e);
         }
 
-        final ClassReflectionIndex interceptorReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
+        final ClassReflectionIndex<?> interceptorReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
 
         final Method interceptorMethod = interceptorReflectionIndex.getMethod(Object.class, interceptorConfiguration.getMethodName(), InvocationContext.class);
         if (interceptorMethod == null) {

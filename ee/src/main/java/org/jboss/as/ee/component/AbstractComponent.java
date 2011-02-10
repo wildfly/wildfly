@@ -137,7 +137,7 @@ public abstract class AbstractComponent implements Component {
         final Map<Method, InterceptorFactory> componentToInterceptorFactory = new IdentityHashMap<Method, InterceptorFactory>();
         Class<?> currentClass = componentClass;
         do {
-            final ClassReflectionIndex classIndex = index.getClassIndex(currentClass);
+            final ClassReflectionIndex<?> classIndex = index.getClassIndex(currentClass);
             // Mapping of method identifiers to component (target) methods
             // Mapping of component methods to corresponding instance interceptor factories
             for (Method method : classIndex.getMethods()) {

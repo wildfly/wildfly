@@ -63,7 +63,7 @@ public interface ResourceInjection {
          * @param <V> The value type
          * @return The injection instance
          */
-        public static <V> ResourceInjection create(final ResourceInjectionConfiguration resourceConfiguration, final Class<?> beanClass, final ClassReflectionIndex reflectionIndex, final Value<V> value) {
+        public static <V> ResourceInjection create(final ResourceInjectionConfiguration resourceConfiguration, final Class<?> beanClass, final ClassReflectionIndex<?> reflectionIndex, final Value<V> value) {
             final Class<?> argClass;
             try {
                 argClass = beanClass.getClassLoader().loadClass(resourceConfiguration.getInjectedType());

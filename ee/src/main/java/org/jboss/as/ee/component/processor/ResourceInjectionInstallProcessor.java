@@ -48,7 +48,7 @@ public class ResourceInjectionInstallProcessor extends AbstractComponentConfigPr
         final Class<?> componentClass = componentConfiguration.getComponentClass();
 
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-        final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(componentClass);
+        final ClassReflectionIndex<?> classReflectionIndex = deploymentReflectionIndex.getClassIndex(componentClass);
 
         final ServiceName envContextServiceName = componentConfiguration.getEnvContextServiceName();
 
