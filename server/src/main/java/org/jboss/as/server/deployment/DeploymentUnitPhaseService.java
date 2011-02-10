@@ -22,10 +22,13 @@
 
 package org.jboss.as.server.deployment;
 
+
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.DelegatingServiceRegistry;
@@ -53,6 +56,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     private final InjectedValue<DeploymentUnit> deploymentUnitInjector = new InjectedValue<DeploymentUnit>();
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
+    private final List<AttachedDependency> injectedAttachedDepenendencies = new ArrayList<AttachedDependency>();
 
     private Set<ServiceName> serviceNames;
 
@@ -71,6 +75,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         return create(phase, phase.getPhaseKey());
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized void start(final StartContext context) throws StartException {
         final DeployerChains chains = deployerChainsInjector.getValue();
         final DeploymentUnit deploymentUnit = deploymentUnitInjector.getValue();
@@ -79,6 +84,24 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         final ServiceContainer container = context.getController().getServiceContainer();
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), deploymentUnit, phase);
+
+        // attach any injected values from the last phase
+        for (AttachedDependency attachedDependency : injectedAttachedDepenendencies) {
+            final Attachable target;
+            if (attachedDependency.isDeploymentUnit()) {
+                target = deploymentUnit;
+            } else {
+                target = processorContext;
+            }
+            if (attachedDependency.getAttachmentKey() instanceof ListAttachmentKey) {
+                target.addToAttachmentList((AttachmentKey) attachedDependency.getAttachmentKey(), attachedDependency.getValue()
+                        .getValue());
+            } else {
+                target.putAttachment((AttachmentKey) attachedDependency.getAttachmentKey(), attachedDependency.getValue()
+                        .getValue());
+            }
+        }
+
         while (iterator.hasNext()) {
             final DeploymentUnitProcessor processor = iterator.next();
             try {
@@ -121,6 +144,17 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             final List<ServiceName> nextPhaseDeps = processorContext.getAttachment(Attachments.NEXT_PHASE_DEPS);
             if(nextPhaseDeps != null) {
                 phaseServiceBuilder.addDependencies(nextPhaseDeps);
+            }
+            final List<AttachableDependency> nextPhaseAttachableDeps = processorContext
+                    .getAttachment(Attachments.NEXT_PHASE_ATTACHABLE_DEPS);
+            if (nextPhaseAttachableDeps != null) {
+                for (AttachableDependency attachableDep : nextPhaseAttachableDeps) {
+                    AttachedDependency result = new AttachedDependency(attachableDep.getAttachmentKey(), attachableDep
+                            .isDeploymentUnit());
+                    phaseServiceBuilder.addDependency(attachableDep.getServiceName(), result.getValue());
+                    phaseService.injectedAttachedDepenendencies.add(result);
+
+                }
             }
 
             phaseServiceBuilder.install();
@@ -169,4 +203,5 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     Injector<DeploymentUnit> getDeploymentUnitInjector() {
         return deploymentUnitInjector;
     }
+
 }

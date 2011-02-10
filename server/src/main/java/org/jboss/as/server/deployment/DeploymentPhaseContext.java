@@ -73,4 +73,30 @@ public interface DeploymentPhaseContext extends Attachable {
      * @return the phase
      */
     Phase getPhase();
+
+    /**
+     * Adds a dependency on the service to the next phase service. The service value will be make available as an attachment
+     * under the {@link DeploymentPhaseContext} for the phase.
+     * <p/>
+     * If the attachment represents an {@link AttachmentList} type then the value is added to the attachment list.
+     *
+     * @param <T> The type of the injected value
+     * @param serviceName The service name to add to {@link Attachments#NEXT_PHASE_DEPS}
+     * @param attachmentKey The AttachmentKey to attach the service result under.
+     * @throws IllegalStateException If this is the last phase
+     */
+    <T> void addDependency(ServiceName serviceName, AttachmentKey<T> attachmentKey);
+
+    /**
+     * Adds a dependency on the service to the next phase service. The service value will be make available as an attachment to
+     * the {@link DeploymentUnit}. This attachment will be removed when the phase service for the next phase stops.
+     * <p/>
+     * If the attachment represents an {@link AttachmentList} type then the value is added to the attachment list.
+     *
+     * @param <T> The type of the injected value
+     * @param serviceName The service name to add to {@link Attachments#NEXT_PHASE_DEPS}
+     * @param attachmentKey The AttachmentKey to attach the service result under.
+     * @throws IllegalStateException If this is the last phase
+     */
+    <T> void addDeploymentDependency(ServiceName serviceName, AttachmentKey<T> attachmentKey);
 }

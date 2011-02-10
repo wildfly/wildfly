@@ -50,6 +50,14 @@ public final class Attachments {
      * A list of service dependencies that must be satisfied before the next deployment phase can begin executing.
      */
     public static final AttachmentKey<AttachmentList<ServiceName>> NEXT_PHASE_DEPS = AttachmentKey.createList(ServiceName.class);
+    /**
+     * A list of service dependencies that must be satisfied before the next deployment phase can begin executing.
+     */
+    public static final AttachmentKey<AttachmentList<AttachableDependency>> NEXT_PHASE_ATTACHABLE_DEPS = AttachmentKey.createList(AttachableDependency.class);
+    /**
+     * A list of service dependencies that must be satisfied before the next deployment phase can begin executing.
+     */
+    public static final AttachmentKey<AttachmentList<AttachedDependency>> ATTACHED_DEPENDENCIES = AttachmentKey.createList(AttachedDependency.class);
 
 
     /**

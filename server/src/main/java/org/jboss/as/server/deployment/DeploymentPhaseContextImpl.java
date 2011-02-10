@@ -61,4 +61,14 @@ final class DeploymentPhaseContextImpl extends SimpleAttachable implements Deplo
     public Phase getPhase() {
         return phase;
     }
+
+    @Override
+    public <T> void addDependency(ServiceName serviceName, AttachmentKey<T> attachmentKey) {
+        addToAttachmentList(Attachments.NEXT_PHASE_ATTACHABLE_DEPS, new AttachableDependency(attachmentKey, serviceName, false));
+    }
+
+    @Override
+    public <T> void addDeploymentDependency(ServiceName serviceName, AttachmentKey<T> attachmentKey) {
+        addToAttachmentList(Attachments.NEXT_PHASE_ATTACHABLE_DEPS, new AttachableDependency(attachmentKey, serviceName, true));
+    }
 }
