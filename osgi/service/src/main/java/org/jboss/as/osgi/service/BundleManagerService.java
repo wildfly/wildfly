@@ -34,10 +34,12 @@ import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.jmx.ObjectNameFactory;
 import org.jboss.as.osgi.deployment.DeployerServicePluginIntegration;
 import org.jboss.as.osgi.parser.SubsystemState;
+import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.server.client.impl.ModelControllerServerDeploymentManager;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
@@ -82,7 +84,7 @@ public class BundleManagerService implements Service<BundleManager> {
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<ServerDeploymentManager> injectedDeploymentManager = new InjectedValue<ServerDeploymentManager>();
+    private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
     private final InjectedValue<DeploymentModuleLoader> injectedDeploymentModuleLoader = new InjectedValue<DeploymentModuleLoader>();
     private final InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
     private final SubsystemState subsystemState;
@@ -97,7 +99,7 @@ public class BundleManagerService implements Service<BundleManager> {
         BundleManagerService service = new BundleManagerService(subsystemState);
         ServiceBuilder<?> serviceBuilder = target.addService(BundleManagerService.SERVICE_NAME, service);
         serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
-        serviceBuilder.addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager);
+        serviceBuilder.addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
         serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_MODULE_LOADER, DeploymentModuleLoader.class, service.injectedDeploymentModuleLoader);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
@@ -105,6 +107,7 @@ public class BundleManagerService implements Service<BundleManager> {
         serviceBuilder.install();
     }
 
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         log.debugf("Starting OSGi BundleManager");
         try {
@@ -125,7 +128,8 @@ public class BundleManagerService implements Service<BundleManager> {
             bundleManager.setProperty(Module.class.getName(), frameworkModule);
 
             // Setup the {@link DeployerServicePlugin}
-            ServerDeploymentManager deploymentManager = injectedDeploymentManager.getValue();
+            ServerController serverController = injectedServerController.getValue();
+            ServerDeploymentManager deploymentManager = new ModelControllerServerDeploymentManager(serverController);
             bundleManager.addPlugin(DeployerServicePlugin.class, new DeployerServicePluginIntegration(bundleManager, deploymentManager));
 
             // Register the {@link BundleManagerMBean}
@@ -177,6 +181,7 @@ public class BundleManagerService implements Service<BundleManager> {
         }
     }
 
+    @Override
     public synchronized void stop(StopContext context) {
         log.debugf("Stopping OSGi BundleManager");
         try {
