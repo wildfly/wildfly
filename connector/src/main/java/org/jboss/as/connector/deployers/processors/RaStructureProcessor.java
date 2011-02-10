@@ -69,7 +69,7 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
+        final String deploymentRootName = deploymentRoot.getLowerCaseName();
         if (!deploymentRootName.endsWith(RAR_EXTENSION)) {
             return;
         }

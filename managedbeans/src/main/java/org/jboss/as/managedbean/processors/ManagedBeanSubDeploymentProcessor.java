@@ -20,34 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.structure;
+package org.jboss.as.managedbean.processors;
 
+import java.util.List;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import static org.jboss.as.server.deployment.SubDeploymentMarker.isSubDeployment;
+import static org.jboss.as.server.deployment.SubDeploymentMarker.markRoot;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.Index;
 
 /**
- * Processor responsible for detecting and marking EAR file deployments.
+ * Deployment processor used to determine if a possible sub-deployment contains managed beans.
  *
  * @author John Bailey
  */
-public class EarInitializationProcessor implements DeploymentUnitProcessor {
-    private static final String EAR_EXTENSION = ".ear";
-
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+public class ManagedBeanSubDeploymentProcessor implements DeploymentUnitProcessor {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Boolean earDeployment = deploymentUnit.getAttachment(Attachments.EAR_DEPLOYMENT_MARKER);
+        if(earDeployment == null || !earDeployment) {
+            return;
+        }
 
-        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile virtualFile = resourceRoot.getRoot();
-
-        // Make sure this is an EAR deployment
-        if (virtualFile.getLowerCaseName().endsWith(EAR_EXTENSION)) {
-            //  Let other processors know this is an EAR deployment
-            DeploymentTypeMarker.setType(DeploymentType.EAR, deploymentUnit);
+        final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        for(ResourceRoot resourceRoot : resourceRoots) {
+            if(!isSubDeployment(resourceRoot) && resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
+                final Index annotationIndex = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
+                if(annotationIndex == null) {
+                    continue;
+                }
+                final List<AnnotationInstance> managedBeanAnnotations = annotationIndex.getAnnotations(ManagedBeanAnnotationProcessor.MANAGED_BEAN_ANNOTATION_NAME);
+                if(managedBeanAnnotations != null && !managedBeanAnnotations.isEmpty()) {
+                    markRoot(resourceRoot);
+                }
+            }
         }
     }
 

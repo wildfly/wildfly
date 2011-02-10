@@ -68,7 +68,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
         if(deploymentRoot == null || deploymentRoot.exists() == false)
             return;
 
-        final String deploymentRootName = deploymentRoot.getName();
+        final String deploymentRootName = deploymentRoot.getLowerCaseName();
         VirtualFile beansXmlFile = null;
         if(deploymentRootName.endsWith(".jar")) {
             beansXmlFile = deploymentRoot.getChild("META-INF/jboss-beans.xml");

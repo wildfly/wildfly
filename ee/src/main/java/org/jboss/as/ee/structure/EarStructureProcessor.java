@@ -196,7 +196,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     if (subDeploymentFiles.contains(child)) {
                         continue;
                     }
-                    if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
+                    if (child.getLowerCaseName().toLowerCase().endsWith(JAR_EXTENSION)) {
                         final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
                                 .provider()) : null;
                         final MountHandle mountHandle = new MountHandle(closable);

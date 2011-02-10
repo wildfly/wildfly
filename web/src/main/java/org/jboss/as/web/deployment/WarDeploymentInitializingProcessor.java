@@ -46,7 +46,7 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
             return;
         }
         VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        if(virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
+        if(virtualFile.getLowerCaseName().endsWith(WAR_EXTENSION)) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
         }
     }

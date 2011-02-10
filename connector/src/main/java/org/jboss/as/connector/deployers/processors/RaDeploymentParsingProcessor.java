@@ -65,7 +65,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 
-        final String deploymentRootName = deploymentRoot.getName();
+        final String deploymentRootName = deploymentRoot.getLowerCaseName();
         if (!deploymentRootName.endsWith(".rar")) {
             return;
         }
@@ -84,7 +84,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             }
             File root = deploymentRoot.getPhysicalFile();
             URL url = root.toURI().toURL();
-            String deploymentName = deploymentRoot.getName().substring(0, deploymentRoot.getName().indexOf(".rar"));
+            String deploymentName = deploymentRootName.substring(0, deploymentRootName.indexOf(".rar"));
             ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
             phaseContext.getDeploymentUnit().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
 

@@ -83,7 +83,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         VirtualFile webInf = deploymentRoot.getChild(WEB_INF);
         if (webInf.exists() && webInf.isDirectory()) {
             for (VirtualFile file : webInf.getChildren()) {
-                if (file.isFile() && file.getName().endsWith(TLD)) {
+                if (file.isFile() && file.getLowerCaseName().endsWith(TLD)) {
                     tlds.put("/" + file.getPathNameRelativeTo(deploymentRoot), parseTLD(file));
                 } else if (file.isDirectory() && !CLASSES.equals(file.getName()) && !LIB.equals(file.getName())) {
                     processTlds(deploymentRoot, file.getChildren(), tlds);
@@ -98,7 +98,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private void processTlds(VirtualFile root, List<VirtualFile> files, Map<String, TldMetaData> tlds)
     throws DeploymentUnitProcessingException {
         for (VirtualFile file : files) {
-            if (file.isFile() && file.getName().endsWith(TLD)) {
+            if (file.isFile() && file.getLowerCaseName().endsWith(TLD)) {
                 tlds.put("/" + file.getPathNameRelativeTo(root), parseTLD(file));
             } else if (file.isDirectory()) {
                 processTlds(root, file.getChildren(), tlds);

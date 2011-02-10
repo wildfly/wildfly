@@ -73,7 +73,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
         VirtualFile serviceXmlFile = null;
         if(deploymentRoot.isDirectory()) {
             serviceXmlFile = deploymentRoot.getChild(SERVICE_DESCRIPTOR_PATH);
-        } else if(deploymentRoot.getName().endsWith(SERVICE_DESCRIPTOR_SUFFIX)) {
+        } else if(deploymentRoot.getLowerCaseName().endsWith(SERVICE_DESCRIPTOR_SUFFIX)) {
             serviceXmlFile = deploymentRoot;
         }
         if(serviceXmlFile == null || !serviceXmlFile.exists())
