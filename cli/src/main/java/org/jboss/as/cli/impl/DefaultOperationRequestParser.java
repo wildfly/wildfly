@@ -19,7 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.impl;
+
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.OperationRequestBuilder;
+import org.jboss.as.cli.OperationRequestParser;
 
 
 
@@ -52,12 +56,12 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
     public static final char ARG_SEPARATOR = ',';
     public static final char ARG_NAME_VALUE_SEPARATOR = '=';
 
-    public void parse(String cmd, OperationRequestBuilder requestBuilder) throws CommandFormatException {
+    public void parse(String cmd, OperationRequestBuilder builder) throws CommandFormatException {
 
         if(cmd == null) {
             throw new IllegalArgumentException("The command is null!");
         }
-        if(requestBuilder == null) {
+        if(builder == null) {
             throw new IllegalArgumentException("The request builder is null!");
         }
 
@@ -91,44 +95,46 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
 
                 int nameValueSep = node.indexOf(NODE_TYPE_NAME_SEPARATOR);
                 if (nameValueSep < 0) {
-                    throw new CommandFormatException(
-                            "Couldn't locate node type/name separator in '"
-                                    + node + "' in command '" + cmd + "'");
-                }
+                    // the prefix must end on the node type
+                    builder.addNodeName(node);
+//                    throw new CommandFormatException(
+//                            "Couldn't locate node type/name separator in '"
+//                                    + node + "' in command '" + cmd + "'");
+                } else {
 
-                String nodeType = node.substring(0, nameValueSep).trim();
-                if (nodeType.isEmpty()) {
-                    throw new CommandFormatException(
-                            "The node type is missing for the node '"
-                                    + node
-                                    + "' or the format is wrong for the address string '"
-                                    + address + "'");
-                }
-                if (!isValidIdentifier(nodeType)) {
-                    throw new CommandFormatException(
-                            "The node type is invalid (not a valid Java identifier) '"
-                                    + nodeType
-                                    + "' or the format is wrong for the address string '"
-                                    + address + "'");
-                }
+                    String nodeType = node.substring(0, nameValueSep).trim();
+                    if (nodeType.isEmpty()) {
+                        throw new CommandFormatException(
+                                "The node type is missing for the node '"
+                                        + node
+                                        + "' or the format is wrong for the address string '"
+                                        + address + "'");
+                    }
+                    if (!Util.isValidIdentifier(nodeType)) {
+                        throw new CommandFormatException(
+                                "The node type is not a valid identifier '"
+                                        + nodeType
+                                        + "' or the format is wrong for the address string '"
+                                        + address + "'");
+                    }
 
-                String nodeName = node.substring(nameValueSep + 1).trim();
-                if (nodeName.isEmpty()) {
-                    throw new CommandFormatException(
-                            "The node name is missing for the node '"
-                                    + node
-                                    + "' or the format is wrong for the address string '"
-                                    + address + "'");
+                    String nodeName = node.substring(nameValueSep + 1).trim();
+                    if (nodeName.isEmpty()) {
+                        throw new CommandFormatException(
+                                "The node name is missing for the node '"
+                                        + node
+                                        + "' or the format is wrong for the address string '"
+                                        + address + "'");
+                    }
+                    if (!Util.isValidIdentifier(nodeName)) {
+                        throw new CommandFormatException(
+                                "The node name is not a valid identifier '"
+                                        + nodeName
+                                        + "' or the format is wrong for the address string '"
+                                        + address + "'");
+                    }
+                    builder.addNode(nodeType, nodeName);
                 }
-                if (!isValidIdentifier(nodeName)) {
-                    throw new CommandFormatException(
-                            "The node name is invalid (not a valid Java identifier) '"
-                                    + nodeName
-                                    + "' or the format is wrong for the address string '"
-                                    + address + "'");
-                }
-                requestBuilder.addAddressNode(nodeType, nodeName);
-
                 nodeIndex = slashIndex + 1;
             }
         }
@@ -148,10 +154,10 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
         if(operation.isEmpty()) {
             throw new CommandFormatException("The operation name is missing: '" + cmd + "'");
         }
-        if(!isValidIdentifier(operation)) {
-            throw new CommandFormatException("The operation name is invalid '" + operation + "' or command '" + cmd + "' doesn't follow the format " + FORMAT);
+        if(!Util.isValidIdentifier(operation)) {
+            throw new CommandFormatException("Operation name '" + operation + "' is not valid identifier or command '" + cmd + "' doesn't follow the format " + FORMAT);
         }
-        requestBuilder.setOperationName(operation);
+        builder.setOperationName(operation);
 
         if(argListStartIndex != -1) {
             int argListEndIndex = cmd.indexOf(ARG_LIST_END, argListStartIndex + 1);
@@ -188,11 +194,11 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                             "The argument name is missing or the format is wrong for argument '"
                                     + arg + "'");
                 }
-                if (!isValidIdentifier(argName)) {
+                if (!Util.isValidIdentifier(argName)) {
                     throw new CommandFormatException(
                             "Argument name '"
                                     + argName
-                                    + "' is invalid (not a valid Java identifier) or the format is wrong for the argument list '"
+                                    + "' is not a valid identifier or the format is wrong for the argument list '"
                                     + args + "'");
                 }
                 String argValue = arg.substring(argNameValueSepIndex + 1).trim();
@@ -201,30 +207,10 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                             "The argument value is missing or the format is wrong for argument '"
                                     + arg + "'");
                 }
-                requestBuilder.addArgument(argName, argValue);
+                builder.addArgument(argName, argValue);
 
                 argIndex = argSepIndex + 1;
             }
         }
-    }
-
-    public static final boolean isValidIdentifier(String s) {
-       // an empty or null string cannot be a valid identifier
-       if (s == null || s.length() == 0) {
-          return false;
-       }
-
-       char[] c = s.toCharArray();
-       if (!Character.isJavaIdentifierStart(c[0])) {
-          return false;
-       }
-
-       for (int i = 1; i < c.length; i++) {
-          if (!(Character.isJavaIdentifierPart(c[i]) || c[i] == '-')) {
-             return false;
-          }
-       }
-
-       return true;
     }
 }

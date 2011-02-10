@@ -74,4 +74,28 @@ public interface CommandContext {
      * @param client the model controller client to use for operation requests.
      */
     void setModelControllerClient(ModelControllerClient client);
+
+    /**
+     * Returns the current operation request parser.
+     * @return  current operation request parser.
+     */
+    OperationRequestParser getOperationRequestParser();
+
+    /**
+     * Returns the current prefix.
+     * @return current prefix
+     */
+    Prefix getPrefix();
+
+    /**
+     * Returns the prefix parser.
+     * @return the prefix parser.
+     */
+    PrefixParser getPrefixParser();
+
+    /**
+     * Returns the prefix formatter.
+     * @return the prefix formatter.
+     */
+    PrefixFormatter getPrefixFormatter();
 }

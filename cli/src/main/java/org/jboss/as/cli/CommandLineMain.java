@@ -26,10 +26,15 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
+import org.jboss.as.cli.impl.DefaultOperationRequestParser;
+import org.jboss.as.cli.impl.DefaultPrefix;
+import org.jboss.as.cli.impl.DefaultPrefixFormatter;
+import org.jboss.as.cli.impl.DefaultPrefixParser;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -44,6 +49,7 @@ public class CommandLineMain {
         registerHandler(new HelpHandler(), "help", "h");
         registerHandler(new QuitHandler(), "quit", "q");
         registerHandler(new ConnectHandler(), "connect");
+        registerHandler(new PrefixHandler(), "prefix", "to");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {
@@ -111,6 +117,15 @@ public class CommandLineMain {
         private ModelControllerClient client;
         /** various key/value pairs */
         private Map<String, Object> map = new HashMap<String, Object>();
+        /** operation request parser */
+        private final OperationRequestParser parser = new DefaultOperationRequestParser();
+        /** operation request address prefix */
+        private final Prefix prefix = new DefaultPrefix();
+        /** operation request address prefix parser */
+        private final PrefixParser prefixParser = new DefaultPrefixParser();
+        /** the prefix formatter */
+        private final PrefixFormatter prefixFormatter = new DefaultPrefixFormatter();
+
 
         @Override
         public String getCommandArguments() {
@@ -145,6 +160,27 @@ public class CommandLineMain {
         @Override
         public void setModelControllerClient(ModelControllerClient client) {
             this.client = client;
+        }
+
+        @Override
+        public OperationRequestParser getOperationRequestParser() {
+            return parser;
+        }
+
+        @Override
+        public Prefix getPrefix() {
+            return prefix;
+        }
+
+        @Override
+        public PrefixParser getPrefixParser() {
+            return prefixParser;
+        }
+
+        @Override
+        public PrefixFormatter getPrefixFormatter() {
+
+            return prefixFormatter;
         }
 
     }

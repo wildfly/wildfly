@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.impl;
 
+import org.jboss.as.cli.OperationRequestBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -32,6 +33,8 @@ import org.jboss.dmr.ModelNode;
 public class DefaultOperationRequestBuilder implements OperationRequestBuilder {
 
     private ModelNode request = new ModelNode();
+
+    private String prefixNodeType;
 
     /**
      * Will throw an IllegalArgumentException if the name is null, an empty string or
@@ -50,15 +53,39 @@ public class DefaultOperationRequestBuilder implements OperationRequestBuilder {
      * Will throw an IllegalArgumentException if the type or the name is null, an empty string or
      * a whitespace combination.
      *
-     * @see org.jboss.as.cli.OperationRequestBuilder#addAddressNode(java.lang.String, java.lang.String)
+     * @see org.jboss.as.cli.OperationRequestBuilder#addNode(java.lang.String, java.lang.String)
      */
     @Override
-    public void addAddressNode(String type, String name) {
+    public void addNode(String type, String name) {
+        if(prefixNodeType != null)
+            throw new IllegalStateException("Can't accept node '" + type + "=" + name +
+                    "' since the prefix ended on the node type '" + prefixNodeType + "'");
         if(type == null || type.trim().isEmpty())
             throw new IllegalArgumentException("The node type is not specified: '" + type + "'");
         if(name == null || name.trim().isEmpty())
             throw new IllegalArgumentException("The node name is not specified: '" + name + "'");
         request.get("address").add(type, name);
+    }
+
+    @Override
+    public void addNodeType(String type) {
+
+        if(prefixNodeType != null)
+            throw new IllegalStateException("Can't accept another node type '" + type +
+                    "', the node type has been set to '" + prefixNodeType + "'.");
+
+        this.prefixNodeType = type;
+    }
+
+    @Override
+    public void addNodeName(String name) {
+
+        if(prefixNodeType == null)
+            throw new IllegalArgumentException("Can't accept node name '" + name +
+                    "' since the prefix doesn't appear to end on a node type");
+        String nodeType = prefixNodeType;
+        prefixNodeType = null;
+        addNode(nodeType, name);
     }
 
     /**

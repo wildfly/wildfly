@@ -28,10 +28,9 @@ import java.util.concurrent.CancellationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.DefaultOperationRequestBuilder;
-import org.jboss.as.cli.DefaultOperationRequestParser;
 import org.jboss.as.cli.OperationRequestBuilder;
 import org.jboss.as.cli.OperationRequestParser;
+import org.jboss.as.cli.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -41,8 +40,6 @@ import org.jboss.dmr.ModelNode;
  * @author Alexey Loubyansky
  */
 public class OperationRequestHandler implements CommandHandler {
-
-    private final OperationRequestParser parser = new DefaultOperationRequestParser();
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
@@ -59,7 +56,9 @@ public class OperationRequestHandler implements CommandHandler {
         }
 
         OperationRequestBuilder reqBuilder = new DefaultOperationRequestBuilder();
+        ctx.getPrefix().apply(reqBuilder);
         try {
+           OperationRequestParser parser = ctx.getOperationRequestParser();
            parser.parse(ctx.getCommandArguments(), reqBuilder);
            ModelNode request = reqBuilder.buildRequest();
            ModelNode result = client.execute(request);

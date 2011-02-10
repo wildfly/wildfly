@@ -43,7 +43,20 @@ public interface OperationRequestBuilder {
      * @param type the type of the node
      * @param name the name of the node
      */
-    void addAddressNode(String type, String name);
+    void addNode(String type, String name);
+
+    /**
+     * This method is supposed to be invoked from applying the prefix with ends on a node type.
+     * @param type  the type of the node.
+     */
+    void addNodeType(String type);
+
+    /**
+     * This method assumes there is a non-empty prefix which ends on a node type.
+     * Otherwise, this method will result in an exception.
+     * @param name the name of the node for the type specified by the prefix.
+     */
+    void addNodeName(String name);
 
     /**
      * Adds an argument.
