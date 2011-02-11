@@ -142,9 +142,6 @@ public final class Main {
         initialCommand.add(jvmName);
         initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
 
-        //Hardcode the debugger for now
-        initialCommand.add("-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n");
-
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);

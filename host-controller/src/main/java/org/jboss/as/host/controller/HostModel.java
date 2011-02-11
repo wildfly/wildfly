@@ -57,6 +57,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
+import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.PathAddHandler;
@@ -136,6 +137,10 @@ class HostModel extends BasicModelController {
         //TODO register management description provider
         //TODO register domain controller description provider
         //TODO register jvm description provider
+
+        final ModelNodeRegistration jvms = root.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
+        JVMHandlers.register(jvms);
+
         //TODO register the rest of the root operations?
 
         //Paths
@@ -167,7 +172,8 @@ class HostModel extends BasicModelController {
         serverInterfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
         //TODO register server system properties description provider
         //TODO register server jvm description provider
-
+        final ModelNodeRegistration serverVMs = servers.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
+        JVMHandlers.register(serverVMs);
 
         //TODO register the rest of the server values
 

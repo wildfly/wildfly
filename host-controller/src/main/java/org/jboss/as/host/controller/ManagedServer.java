@@ -177,12 +177,11 @@ class ManagedServer implements ModelController {
         synchronized(lock) {
             setState(ServerState.BOOTING);
 
-            final int portOffSet = bootConfiguration.getPortOffSet();
             final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
 
             processControllerClient.startProcess(serverProcessName);
             ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(serverProcessName, managementSocket);
-            ServerStartTask startTask = new ServerStartTask(serverName, portOffSet, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
+            ServerStartTask startTask = new ServerStartTask(serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
             marshaller.start(Marshalling.createByteOutput(os));
@@ -217,13 +216,6 @@ class ManagedServer implements ModelController {
          * @return the boot updates
          */
         List<ModelNode> getBootUpdates();
-
-        /**
-         * Get the server port offset.
-         *
-         * @return the port offset
-         */
-        int getPortOffSet();
 
         /**
          * Get the server launch environment.

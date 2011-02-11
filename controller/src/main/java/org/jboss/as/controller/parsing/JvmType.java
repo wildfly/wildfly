@@ -29,5 +29,6 @@ package org.jboss.as.controller.parsing;
 // TODO find a better package for this
 public enum JvmType {
     SUN,
-    IBM
+    IBM,
+    OTHER
 }

@@ -68,6 +68,7 @@ public class ModelDescriptionConstants {
     public static final String INET_ADDRESS = "inet-address";
     public static final String INTERFACE = "interface";
     public static final String JVM = "jvm";
+    public static final String JVM_TYPE = "type";
     public static final String LOCAL = "local";
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT = "management";

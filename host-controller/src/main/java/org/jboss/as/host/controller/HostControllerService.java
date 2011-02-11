@@ -23,11 +23,13 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.io.IOException;
 
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -41,6 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class HostControllerService implements Service<HostController> {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final InjectedValue<DomainControllerConnection> connection = new InjectedValue<DomainControllerConnection>();
     private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
     private final HostModel hostModel;
@@ -71,7 +74,13 @@ public class HostControllerService implements Service<HostController> {
             if(rawModel.hasDefined(SERVER)) {
                 final ModelNode servers = rawModel.get(SERVER).clone();
                 for(final String serverName : servers.keys()) {
-                    controller.startServer(serverName);
+                    if(servers.get(serverName, START).asBoolean(true)) {
+                        try {
+                            controller.startServer(serverName);
+                        } catch (Exception e) {
+                            log.errorf(e, "failed to start server (%s)", serverName);
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
@@ -92,7 +101,13 @@ public class HostControllerService implements Service<HostController> {
         if(rawModel.hasDefined(SERVER) ) {
             final ModelNode servers = rawModel.get(SERVER).clone();
             for(final String serverName : servers.keys()) {
-                controller.stopServer(serverName);
+                if(servers.get(serverName, START).asBoolean(true)) {
+                    try {
+                        controller.stopServer(serverName);
+                    } catch (Exception e) {
+                        log.errorf(e, "failed to stop server (%s)", serverName);
+                    }
+                }
             }
         }
     }

@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
@@ -514,7 +515,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         // Handle attributes
         final List<ModelNode> attrUpdates = new ArrayList<ModelNode>();
         String name = null;
-        String type = JvmType.SUN.toString();
+        String type = null;
         String home = null;
         Boolean debugEnabled = null;
         String debugOptions = null;
@@ -592,13 +593,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
-        final ModelNode address = parentAddress.clone().add(ModelDescriptionConstants.JVM, name);
+        final ModelNode address = parentAddress.clone();
+        address.add(ModelDescriptionConstants.JVM, name);
 
         final ModelNode addUpdate = new ModelNode();
         addUpdate.get(OP_ADDR).set(address);
         addUpdate.get(OP).set(ADD);
-        addUpdate.get("name").set(name);
-        addUpdate.get("jvm-type").set(type);
+        addUpdate.get(NAME).set(name);
+        if(type != null) addUpdate.get(JVM_TYPE).set(type);
         updates.add(addUpdate);
 
         // Now we've done the add and we know the address
@@ -677,6 +679,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     private void parseHeap(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
+        String size = null;
+        String maxSize = null;
+
         // Handle attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -687,13 +692,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "heap-size", value);
-                        updates.add(update);
+                        size = value;
                         break;
                     }
                     case MAX_SIZE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "max-heap-size", value);
-                        updates.add(update);
+                        maxSize = value;
                         break;
                     }
                     default:
@@ -701,12 +704,23 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
+
+        if(size != null || maxSize != null) {
+            final ModelNode update = Util.getWriteAttributeOperation(address, "heap", new ModelNode());
+            if(size != null) update.get(VALUE, "size").set(size);
+            if(maxSize != null) update.get(VALUE, "max-size").set(maxSize);
+            updates.add(update);
+        }
+
         // Handle elements
         ParseUtils.requireNoContent(reader);
     }
 
     private void parsePermgen(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
+        String size = null;
+        String maxSize = null;
+
         // Handle attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -717,13 +731,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "permgen-size", value);
-                        updates.add(update);
+                        size = value;
                         break;
                     }
                     case MAX_SIZE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "max-permgen-size", value);
-                        updates.add(update);
+                        maxSize= value;
                         break;
                     }
                     default:
@@ -731,6 +743,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
+
+        if(size != null || maxSize != null) {
+            final ModelNode update = Util.getWriteAttributeOperation(address, "heap", new ModelNode());
+            if(size != null) update.get(VALUE, "size").set(size);
+            if(maxSize != null) update.get(VALUE, "max-size").set(maxSize);
+            updates.add(update);
+        }
+
         // Handle elements
         ParseUtils.requireNoContent(reader);
     }

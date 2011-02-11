@@ -20,42 +20,55 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller.operations;
+package org.jboss.as.controller.operations.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import java.util.Locale;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * {@code OperationHandler} for the jvm resource add operation.
+ *
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupAddHandler implements ModelAddOperationHandler {
+public final class JVMAddHandler implements ModelAddOperationHandler, DescriptionProvider {
 
-    public static final ServerGroupAddHandler INSTANCE = new ServerGroupAddHandler();
+    public static final String OPERATION_NAME = ADD;
+    public static final JVMAddHandler INSTANCE = new JVMAddHandler();
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(PROFILE).set(operation.require(PROFILE));
-        subModel.get(JVM).setEmptyObject();
+    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
+        if(operation.hasDefined(JVM_TYPE)) {
+            context.getSubModel().get(JVM_TYPE).set(operation.get(JVM_TYPE));
+        }
+
         resultHandler.handleResultComplete(compensatingOperation);
 
         return Cancellable.NULL;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ModelNode getModelDescription(final Locale locale) {
+        return JVMDescriptions.getJVMAddDescription(locale);
     }
 
 }

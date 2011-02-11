@@ -25,9 +25,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
@@ -35,8 +37,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +58,7 @@ import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
+import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
 import org.jboss.dmr.ModelNode;
@@ -76,12 +77,13 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         EMPTY.protect();
     }
 
-    final int portOffSet;
     final String serverName;
     final ModelNode domainModel;
     final ModelNode hostModel;
     final ModelNode serverModel;
+    final ModelNode serverGroup;
     final String profileName;
+    final JvmElement jvmElement;
     final HostControllerEnvironment environment;
     final DomainControllerConnection domainControllerConnection;
 
@@ -93,25 +95,59 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         this.domainControllerConnection = domainControllerConnection;
         this.environment = environment;
 
-        String serverGroupName = serverModel.require(GROUP).asString();
-        this.profileName = domainModel.require(SERVER_GROUP).require(serverGroupName).require(PROFILE).asString();
+        final String serverGroupName = serverModel.require(GROUP).asString();
+        this.serverGroup = domainModel.require(SERVER_GROUP).require(serverGroupName);
+        this.profileName = serverGroup.require(PROFILE).asString();
 
-        if (serverModel.hasDefined(SOCKET_BINDING_PORT_OFFSET)){
-            this.portOffSet = serverModel.get(SOCKET_BINDING_PORT_OFFSET).asInt();
-        } else {
-            final ModelNode groupNode = domainModel.require(SERVER_GROUP).require(serverGroupName);
-            this.portOffSet = groupNode.hasDefined(SOCKET_BINDING_PORT_OFFSET) ? groupNode.get(SOCKET_BINDING_PORT_OFFSET).asInt() : 0;
+        String serverVMName = null;
+        ModelNode serverVM = null;
+        if(serverModel.hasDefined(JVM)) {
+            for(final String jvm : serverModel.get(JVM).keys()) {
+                serverVMName = jvm;
+                serverVM = serverModel.get(JVM, jvm);
+                break;
+            }
         }
+        String groupVMName = null;
+        ModelNode groupVM = null;
+        if(serverGroup.hasDefined(JVM)) {
+            for(final String jvm : serverGroup.get(JVM).keys()) {
+                groupVMName = jvm;
+                groupVM = serverGroup.get(JVM, jvm);
+                break;
+            }
+        }
+
+        final String jvmName = serverVMName != null ? serverVMName : groupVMName;
+        if(jvmName == null) {
+            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() +
+                    " nor " + Element.SERVER.getLocalName() + " has declared a JVM configuration; one or the other must");
+        }
+
+        final ModelNode hostVM = hostModel.get(JVM, jvmName);
+        this.jvmElement = new JvmElement(jvmName, hostVM, groupVM, serverVM);
     }
 
     public List<ModelNode> getBootUpdates() {
 
+        int portOffSet = 0;
+        String socketBindingRef = null;
 
-
-        //System.out.println("DOMAIN");
-        //System.out.println(domainModel);
-        //System.out.println("HOST");
-        //System.out.println(hostModel);
+        if(serverGroup.hasDefined(SOCKET_BINDING_GROUP)) {
+            socketBindingRef = serverGroup.get(SOCKET_BINDING_GROUP).asString();
+        }
+        if(serverModel.hasDefined(SOCKET_BINDING_GROUP)) {
+            socketBindingRef = serverModel.get(SOCKET_BINDING_GROUP).asString();
+        }
+        if(serverGroup.hasDefined("socket-binding-port-offset")) {
+            portOffSet = serverGroup.get("socket-binding-port-offset").asInt();
+        }
+        if(serverModel.hasDefined("socket-binding-port-offset")) {
+            portOffSet = serverModel.get("socket-binding-port-offset").asInt();
+        }
+        if(socketBindingRef == null) {
+            throw new IllegalArgumentException("undefined socket binding group for server " + serverName);
+        }
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
         addNamespaces(updates);
@@ -120,15 +156,10 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         addExtensions(updates);
         addPaths(updates);
         addInterfaces(updates);
-        addSocketBindings(updates);
-        //TODO I think it is ok to not do
-        //  management
-        //  domain-controller
+        addSocketBindings(updates, portOffSet, socketBindingRef);
 
         addSubsystems(updates);
         //TODO deployments
-
-        //System.out.println(updates);
 
         return updates;
     }
@@ -139,15 +170,21 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     /** {@inheritDoc} */
-    public int getPortOffSet() {
-        return portOffSet;
-    }
-
-    /** {@inheritDoc} */
     public List<String> getServerLaunchCommand() {
         final List<String> command = new ArrayList<String>();
 
-        command.add(environment.getDefaultJVM().toString());
+        command.add(getJavaCommand());
+
+        JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
+
+        for(Entry<String, String> property : jvmElement.getSystemProperties().entrySet()) {
+            final StringBuilder sb = new StringBuilder("-D");
+            sb.append(property.getKey());
+            sb.append('=');
+            sb.append(property.getValue() == null ? "true" : property.getValue());
+            command.add(sb.toString());
+        }
+
         command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/log/boot.log");
         // TODO: make this better
         command.add("-Dlogging.configuration=file:" + new File("").getAbsolutePath() + "/domain/configuration/logging.properties");
@@ -162,10 +199,28 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         return command;
     }
 
+    private String getJavaCommand() {
+        String javaHome = jvmElement.getJavaHome();
+        if (javaHome == null) {
+            if(environment.getDefaultJVM() != null) {
+                String defaultJvm = environment.getDefaultJVM().getAbsolutePath();
+                if (!defaultJvm.equals("java") || (defaultJvm.equals("java") && System.getenv("JAVA_HOME") != null)) {
+                    return defaultJvm;
+                }
+            }
+            javaHome = DefaultJvmUtils.getCurrentJvmHome();
+        }
+
+        return DefaultJvmUtils.findJavaExecutable(javaHome);
+    }
+
     /** {@inheritDoc} */
     public Map<String, String> getServerLaunchEnvironment() {
         final Map<String, String> env = new HashMap<String, String>();
         addStandardProperties(serverName, environment, env);
+        for(final Entry<String, String> property : jvmElement.getEnvironmentVariables().entrySet()) {
+            env.put(property.getKey(), property.getValue());
+        }
         return env;
     }
 
@@ -263,16 +318,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     static final String SOCKET_BINDING_GROUP_NAME = "default";
 
-    private void addSocketBindings(List<ModelNode> updates) {
-
-        final String socketBindingRef;
-        if (serverModel.hasDefined(SOCKET_BINDING_GROUP)){
-            socketBindingRef = serverModel.get(SOCKET_BINDING_GROUP).asString();
-        } else {
-            final String serverGroupName = serverModel.require(GROUP).asString();
-            socketBindingRef = domainModel.require(SERVER_GROUP).require(serverGroupName).require(SOCKET_BINDING_GROUP).asString();
-        }
-
+    private void addSocketBindings(List<ModelNode> updates, int portOffSet, String bindingRef) {
         final Set<String> processed = new HashSet<String>();
         final Map<String, ModelNode> groups = new LinkedHashMap<String, ModelNode>();
         if(domainModel.hasDefined(SOCKET_BINDING_GROUP)) {
@@ -284,9 +330,14 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 groups.put(prop.getName(), node);
             }
         }
-        final ModelNode group = groups.get(socketBindingRef);
+        final ModelNode group = groups.get(bindingRef);
+        if(group == null) {
+            throw new IllegalArgumentException("undefined socket binding group " + bindingRef);
+        }
         final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME));
-        updates.add(SocketBindingGroupAddHandler.getOperation(groupAddress, group));
+        final ModelNode groupAdd = SocketBindingGroupAddHandler.getOperation(groupAddress, group);
+        groupAdd.get(PORT_OFFSET).set(portOffSet);
+        updates.add(groupAdd);
         mergeBindingGroups(updates, groups, group, processed, group.get(INTERFACE));
     }
 

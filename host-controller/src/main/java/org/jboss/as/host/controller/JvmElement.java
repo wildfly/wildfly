@@ -3,7 +3,14 @@
  */
 package org.jboss.as.host.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.parsing.JvmType;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * A Java Virtual Machine configuration.
@@ -16,7 +23,7 @@ public class JvmElement {
 
     //Attributes
     private final String name;
-    private JvmType type;
+    private JvmType type = JvmType.SUN;
     private String javaHome;
     private Boolean debugEnabled;
     private String debugOptions;
@@ -32,84 +39,82 @@ public class JvmElement {
     private String javaagent;
     private String stack;
     private final JvmOptionsElement jvmOptionsElement = new JvmOptionsElement();
-    private PropertiesElement environmentVariables = new PropertiesElement(Element.VARIABLE, true);
-    private PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
+    private Map<String, String> environmentVariables = new HashMap<String, String>();
+    private Map<String, String> systemProperties = new HashMap<String, String>();
 
-
-    /**
-     */
     public JvmElement(final String name) {
         this.name = name;
     }
 
-    public JvmElement(JvmElement ... toCombine) {
-        // FIXME -- hack Location
-        super();
+    public JvmElement(final String name, ModelNode ... toCombine) {
 
-        this.name = toCombine[0].getName();
+        this.name = name;
 
-        for (JvmElement element : toCombine) {
-            if(element == null)
+        for(final ModelNode node : toCombine) {
+            if(node == null) {
                 continue;
-            if (! this.name.equals(element.getName())) {
-                throw new IllegalArgumentException("Jvm " + element.getName() + " has a different name from the other jvm elements; all must have the same name");
             }
-            if (element.getJavaHome() != null) {
-                this.javaHome = element.getJavaHome();
+
+            if(node.hasDefined(JVMHandlers.JVM_AGENT_LIB)) {
+                agentLib = node.get(JVMHandlers.JVM_AGENT_LIB).asString();
             }
-            if (element.getJvmType() != null) {
-                this.type = element.getJvmType();
+            if(node.hasDefined(JVMHandlers.JVM_AGENT_PATH)) {
+                agentPath = node.get(JVMHandlers.JVM_AGENT_PATH).asString();
             }
-            if (element.getDebugOptions() != null) {
-                this.debugOptions = element.getDebugOptions();
+            if(node.hasDefined(JVMHandlers.JVM_DEBUG_ENABLED)) {
+                debugEnabled = node.get(JVMHandlers.JVM_DEBUG_ENABLED).asBoolean();
             }
-            if (element.isDebugEnabled() != null) {
-                this.debugEnabled = element.isDebugEnabled();
+            if(node.hasDefined(JVMHandlers.JVM_DEBUG_OPTIONS)) {
+                debugOptions = node.get(JVMHandlers.JVM_DEBUG_OPTIONS).asString();
             }
-            if (element.isEnvClasspathIgnored() != null) {
-                this.envClasspathIgnored = element.isEnvClasspathIgnored();
+            if(node.hasDefined(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED)) {
+                envClasspathIgnored = node.get(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED).asBoolean();
             }
-            if (element.getPermgenSize() != null) {
-                this.permgenSize = element.getPermgenSize();
+            if(node.hasDefined(JVMHandlers.JVM_ENV_VARIABLES)) {
+                for(Property property : node.get(JVMHandlers.JVM_ENV_VARIABLES).asPropertyList()) {
+                    environmentVariables.put(property.getName(), property.getValue().asString());
+                }
             }
-            if (element.getMaxPermgen() != null) {
-                this.maxPermgen = element.getMaxPermgen();
+            if(node.hasDefined(JVMHandlers.JVM_HEAP)) {
+                final ModelNode heap = node.get(JVMHandlers.JVM_HEAP);
+                if(heap.hasDefined(JVMHandlers.SIZE)) {
+                    heapSize = heap.get(JVMHandlers.SIZE).asString();
+                }
+                if(heap.hasDefined(JVMHandlers.MAX_SIZE)) {
+                    maxHeap = heap.get(JVMHandlers.MAX_SIZE).asString();
+                }
             }
-            if (element.getHeapSize() != null) {
-                this.heapSize = element.getHeapSize();
+            if(node.hasDefined(JVMHandlers.JVM_JAVA_AGENT)) {
+                javaagent = node.get(JVMHandlers.JVM_JAVA_AGENT).asString();
             }
-            if (element.getMaxHeap() != null) {
-                this.maxHeap = element.getMaxHeap();
+            if(node.hasDefined(JVMHandlers.JVM_JAVA_HOME)) {
+                javaHome = node.get(JVMHandlers.JVM_JAVA_HOME).asString();
             }
-            if (element.getStack() != null) {
-                this.stack = element.getStack();
+            if(node.hasDefined(JVMHandlers.JVM_OPTIONS)) {
+                for(final ModelNode option : node.get(JVMHandlers.JVM_OPTIONS).asList()) {
+                    jvmOptionsElement.addOption(option.asString());
+                }
             }
-            if (element.getAgentLib() != null) {
-                this.agentLib = element.getAgentLib();
+            if(node.hasDefined(JVMHandlers.JVM_PERMGEN)) {
+                final ModelNode permGen = node.get(JVMHandlers.JVM_PERMGEN);
+                if(permGen.hasDefined(JVMHandlers.SIZE)) {
+                    permgenSize = permGen.get(JVMHandlers.SIZE).asString();
+                }
+                if(permGen.hasDefined(JVMHandlers.MAX_SIZE)) {
+                    maxPermgen = permGen.get(JVMHandlers.MAX_SIZE).asString();
+                }
             }
-            if (element.getAgentPath() != null) {
-                this.agentPath = element.getAgentPath();
+            if(node.hasDefined(JVMHandlers.JVM_STACK)) {
+                stack = node.get(JVMHandlers.JVM_STACK).asString();
             }
-            if (element.getJavaagent() != null) {
-                this.javaagent = element.getJavaagent();
+            if(node.hasDefined(JVMHandlers.JVM_SYSTEM_PROPERTIES)) {
+                for(Property property : node.get(JVMHandlers.JVM_SYSTEM_PROPERTIES).asPropertyList()) {
+                    final ModelNode value = property.getValue();
+                    systemProperties.put(property.getName(), isDefined(value) ? value.asString() : "true");
+                }
             }
         }
 
-        PropertiesElement[] combinedEnv = new PropertiesElement[toCombine.length];
-        for (int i = 0; i < toCombine.length; i++) {
-            if(toCombine[i] == null)
-                continue;
-            combinedEnv[i] = toCombine[i].getEnvironmentVariables();
-        }
-        this.environmentVariables = new PropertiesElement(Element.ENVIRONMENT_VARIABLES, true, combinedEnv);
-
-        PropertiesElement[] combinedSysp = new PropertiesElement[toCombine.length];
-        for (int i = 0; i < toCombine.length; i++) {
-            if(toCombine[i] == null)
-                continue;
-            combinedSysp[i] = toCombine[i].getSystemProperties();
-        }
-        this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true, combinedSysp);
     }
 
     public String getJavaHome() {
@@ -200,11 +205,11 @@ public class JvmElement {
         return jvmOptionsElement;
     }
 
-    public PropertiesElement getEnvironmentVariables() {
+    public Map<String, String> getEnvironmentVariables() {
         return environmentVariables;
     }
 
-    public PropertiesElement getSystemProperties() {
+    public Map<String, String> getSystemProperties() {
         return systemProperties;
     }
 
@@ -238,26 +243,8 @@ public class JvmElement {
         this.javaagent = javaagent;
     }
 
-    private interface MinMaxSetter {
-        void setMinMax(String min, String max);
-    }
-
-    private class HeapSetter implements MinMaxSetter {
-
-        @Override
-        public void setMinMax(String min, String max) {
-            heapSize = min;
-            maxHeap = max;
-        }
-    }
-
-    private class PermGenSetter implements MinMaxSetter {
-
-        @Override
-        public void setMinMax(String min, String max) {
-            permgenSize = min;
-            maxHeap = max;
-        }
+    static boolean isDefined(final ModelNode node) {
+        return node.getType() != ModelType.UNDEFINED;
     }
 
 }

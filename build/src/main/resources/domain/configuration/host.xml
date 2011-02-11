@@ -37,19 +37,29 @@
             <any-ipv4-address />
         </interface>
     </interfaces>
-
+ 
+ 	<jvms>
+ 	   <jvm name="default">
+          <heap size="64m" max-size="128m"/>
+       </jvm>
+ 	</jvms>
+ 
     <servers>
         <server name="server-one" group="main-server-group">
             <!-- server-one inherits the default socket-group declared in the server-group -->
+            <jvm name="default" /> 
         </server>
         <server name="server-two" group="main-server-group" start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in 
                  the default socket-group declared in the server-group -->
             <socket-binding-group ref="standard-sockets" port-offset="150"/>
+            <jvm name="default">
+                <heap size="64m" max-size="256m"/>
+            </jvm>
         </server>
-        <server name="server-three" group="other-server-group" start="true">
+        <server name="server-three" group="other-server-group" start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
-                 the default socket-group declared in the server-group -->
+                 the default socket-group declared in the server-group --> 
             <socket-binding-group ref="standard-sockets" port-offset="250"/>
         </server>
     </servers>
