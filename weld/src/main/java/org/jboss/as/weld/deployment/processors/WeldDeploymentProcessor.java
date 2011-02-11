@@ -40,6 +40,7 @@ import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
+import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.WeldService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
@@ -123,6 +124,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName weldServiceName = deploymentUnit.getServiceName().append(WeldService.SERVICE_NAME);
         // add the weld service
         final ServiceBuilder<WeldContainer> weldServiceBuilder = serviceTarget.addService(weldServiceName, weldService);
+
+        weldServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
 
         installEjbInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installEjbService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);

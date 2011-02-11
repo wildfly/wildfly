@@ -38,9 +38,9 @@ import org.jboss.as.weld.deployment.processors.WebIntegrationProcessor;
 import org.jboss.as.weld.deployment.processors.WeldBeanManagerServiceProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDependencyProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDeploymentProcessor;
+import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.weld.bootstrap.api.SingletonProvider;
-import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * The weld subsystem add update handler.
@@ -60,13 +60,17 @@ class WeldSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
 
         if(context instanceof BootOperationContext) {
             final BootOperationContext bootContext = (BootOperationContext) context;
-            SingletonProvider.initialize(new TCCLSingletonProvider());
             bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
             bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());
             bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
             bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_BEAN_ARCHIVE, new BeanArchiveProcessor());
             bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor());
             bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_BEAN_MANAGER, new WeldBeanManagerServiceProcessor());
+
+            TCCLSingletonService singleton = new TCCLSingletonService();
+            bootContext.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(
+                    Mode.ON_DEMAND).install();
+
         }
 
         context.getSubModel().setEmptyObject();
