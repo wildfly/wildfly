@@ -82,6 +82,10 @@ public class RemoteModelControllerSetup implements ConnectionHandler {
         operationHandler.start(null);
     }
 
+    public int getPort() {
+        return server.getBoundAddress().getPort();
+    }
+
     public void stop() {
         server.stop();
     }

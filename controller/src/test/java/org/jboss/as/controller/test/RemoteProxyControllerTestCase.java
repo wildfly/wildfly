@@ -42,7 +42,6 @@ import org.junit.Before;
  */
 public class RemoteProxyControllerTestCase extends AbstractProxyControllerTest {
 
-    private static final int PORT = 12345;
     RemoteModelControllerSetup server;
     ModelController proxyController;
     PathAddress proxyNodeAddress;
@@ -50,9 +49,9 @@ public class RemoteProxyControllerTestCase extends AbstractProxyControllerTest {
 
     @Before
     public void start() throws Exception {
-        server = new RemoteModelControllerSetup(proxyController, PORT);
+        server = new RemoteModelControllerSetup(proxyController, 0);
         server.start();
-        testController.setDelegate(RemoteProxyController.create(InetAddress.getByName("localhost"),PORT, proxyNodeAddress));
+        testController.setDelegate(RemoteProxyController.create(InetAddress.getByName("localhost"), server.getPort(), proxyNodeAddress));
     }
 
     @After
