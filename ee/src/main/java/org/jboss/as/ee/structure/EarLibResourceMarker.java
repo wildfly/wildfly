@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.module;
+package org.jboss.as.ee.structure;
+
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 
 /**
- * An index of available extensions.
+ * Marker class used to mark a resource roots that form part of an ears /lib directory.
+ * <p>
+ * This may also mark resource outside the /lib directory, if they are referenced from the /lib directory with a class-path
+ * entry
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
-public interface ExtensionIndex {
+public class EarLibResourceMarker {
+    private EarLibResourceMarker() {
+    }
 
-    /**
-     * Find an extension, returning {@code null} if no matching extension is available.
-     *
-     * @param name the extension name
-     * @param minSpecVersion the minimum spec version to match, or {@code null} to match any
-     * @param minImplVersion the minimum implementation version to match, or {@code null} to match any
-     * @param requiredVendorId the vendor ID to require, or {@code null} to match any
-     * @return the resource root of the first matched extension
-     */
-    ResourceRoot findExtension(String name, String minSpecVersion, String minImplVersion, String requiredVendorId);
+    public static void markResource(final ResourceRoot context) {
+        context.putAttachment(Attachments.EAR_LIB_RESOURCE_MARKER, true);
+    }
+
+
+    public static boolean isEarLibResource(final ResourceRoot context) {
+        final Boolean result = context.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
+        return result != null && result.booleanValue();
+    }
 }

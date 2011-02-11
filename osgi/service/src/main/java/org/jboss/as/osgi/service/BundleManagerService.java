@@ -40,7 +40,7 @@ import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.impl.ModelControllerServerDeploymentManager;
-import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
@@ -54,12 +54,12 @@ import org.jboss.modules.filter.PathFilters;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManagerMBean;
 import org.jboss.osgi.framework.Constants;
@@ -85,7 +85,8 @@ public class BundleManagerService implements Service<BundleManager> {
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
-    private final InjectedValue<DeploymentModuleLoader> injectedDeploymentModuleLoader = new InjectedValue<DeploymentModuleLoader>();
+    private final InjectedValue<ServerDeploymentManager> injectedDeploymentManager = new InjectedValue<ServerDeploymentManager>();
+    private final InjectedValue<ServiceModuleLoader> injectedServiceModuleLoader = new InjectedValue<ServiceModuleLoader>();
     private final InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
     private final SubsystemState subsystemState;
 
@@ -100,7 +101,9 @@ public class BundleManagerService implements Service<BundleManager> {
         ServiceBuilder<?> serviceBuilder = target.addService(BundleManagerService.SERVICE_NAME, service);
         serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         serviceBuilder.addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
-        serviceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_MODULE_LOADER, DeploymentModuleLoader.class, service.injectedDeploymentModuleLoader);
+        serviceBuilder.addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager);
+        serviceBuilder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class,
+                service.injectedServiceModuleLoader);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.setInitialMode(Mode.ON_DEMAND);
@@ -137,8 +140,8 @@ public class BundleManagerService implements Service<BundleManager> {
                 @Override
                 public long installBundle(ModuleIdentifier identifier) throws BundleException, ModuleLoadException {
                     Bundle bundle;
-                    if (identifier.getName().startsWith("deployment.")) {
-                        ModuleLoader moduleLoader = injectedDeploymentModuleLoader.getValue();
+                    if (identifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
+                        ModuleLoader moduleLoader = injectedServiceModuleLoader.getValue();
                         Module module = moduleLoader.loadModule(identifier);
                         bundle = bundleManager.installBundle(module);
                     }

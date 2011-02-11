@@ -21,14 +21,14 @@
  */
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -51,6 +51,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
             return; // Skip non web deployments
         }
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        final ModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         // Add module dependencies on Java EE apis
 
         deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
@@ -61,6 +62,16 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // JFC hack...
         deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, SYSTEM, false, false, false));
         deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, LOG, false, false, false));
+
+        if(deploymentUnit.getParent() != null) {
+            final DeploymentUnit parent = deploymentUnit.getParent();
+            final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
+            if(parentModule != null) {
+                // access to ear classes
+                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(
+                        deploymentModuleLoader, parentModule, false, false, false));
+            }
+        }
     }
 
     public void undeploy(final DeploymentUnit context) {

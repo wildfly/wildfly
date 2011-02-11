@@ -23,14 +23,14 @@
 package org.jboss.as.server.deployment.annotation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 
@@ -53,7 +53,12 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         if(processChildren == null || processChildren) {
             final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
             if (resourceRoots != null) {
-                allResourceRoots.addAll(resourceRoots);
+                for (ResourceRoot resourceRoot : resourceRoots) {
+                    // do not add child sub deployments to the composite index
+                    if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                        allResourceRoots.add(resourceRoot);
+                    }
+                }
             }
         }
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));

@@ -22,38 +22,148 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+
+import org.jboss.as.server.deployment.Attachable;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * A processor which adds class path entries for each manifest entry.
+ * <p>
+ * This processor examines all class path entries found.
+ * <ul>
+ * <li>
+ * Class-Path entries that are part of ear/lib are handled by {@link EarLibManifestClassPathProcessor}</li>
+ * <li>
+ * If the Class-Path entry is external to the deployment then it is handled by the external jar service.</li>
+ * <li>
+ * If the Class-Path entry points to a jar inside the ear that is not a deployment and not a /lib jar then a reference is added
+ * to this jars {@link AdditionalModule}</li>
+ * </ul>
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
 public final class ManifestClassPathProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
+
+    private static final String[] EMPTY_STRING_ARRAY = {};
 
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Manifest manifest = deploymentUnit.getAttachment(Attachments.MANIFEST);
+        final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
+
+        final DeploymentUnit parent = deploymentUnit.getParent();
+        final DeploymentUnit topLevelDeployment = parent == null ? deploymentUnit : parent;
+        final VirtualFile toplevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final ExternalModuleService externalModuleService = topLevelDeployment.getAttachment(Attachments.EXTERNAL_MODULE_SERVICE);
+        final List<AdditionalModule> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
+        final List<ResourceRoot> topLevelResourceRoots = topLevelDeployment.getAttachment(Attachments.RESOURCE_ROOTS);
+
+        // build a map of the additional module locations
+        final Map<VirtualFile, AdditionalModule> additionalModules;
+        if (additionalModuleList == null) {
+            additionalModules = Collections.emptyMap();
+        } else {
+            additionalModules = new HashMap<VirtualFile, AdditionalModule>();
+            for (AdditionalModule module : additionalModuleList) {
+                additionalModules.put(module.getResourceRoot().getRoot(), module);
+            }
+        }
+        // build a set of ear/lib jars. references to these classes can be ignored as they are already on the class-path
+        final Set<VirtualFile> earLibJars = new HashSet<VirtualFile>();
+        if (topLevelResourceRoots != null) {
+            for (ResourceRoot resourceRoot : topLevelResourceRoots) {
+                final Boolean marker = resourceRoot.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
+                if (marker != null && marker) {
+                    earLibJars.add(resourceRoot.getRoot());
+                }
+            }
+        }
+
+        for (ResourceRoot resourceRoot : resourceRoots) {
+            // if this is an ear/lib resource root it has already been handled
+            final Boolean marker = resourceRoot.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
+            if (marker != null && marker) {
+                continue;
+            }
+            // if this resource root represents an additional module then we need
+            // to add the class path entry to the additional module
+            final Attachable target;
+            if (additionalModules.containsKey(resourceRoot.getRoot())) {
+                target = additionalModules.get(resourceRoot.getRoot());
+            } else {
+                target = deploymentUnit;
+            }
+            final String[] items = getClassPathEntries(resourceRoot);
+            for (String item : items) {
+                final VirtualFile classPathFile = resourceRoot.getRoot().getParent().getChild(item);
+                if (!classPathFile.exists()) {
+                    throw new DeploymentUnitProcessingException("Class Path entry " + item + " in " + resourceRoot.getRoot()
+                            + "  not found. ");
+                }
+                if (isInside(classPathFile, toplevelRoot)) {
+                    if (earLibJars.contains(classPathFile)) {
+                        log.debugf("Class-Path entry %s in %s ignored, as target is in or referenced by /lib", classPathFile,
+                                resourceRoot.getRoot());
+                        continue; // we already have access to ear/lib
+                    } else if(additionalModules.containsKey(classPathFile)) {
+                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, additionalModules.get(classPathFile)
+                                .getModuleIdentifier());
+                    } else {
+                        throw new DeploymentUnitProcessingException("Class Path entry " + item + " in "
+                                + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
+                    }
+                } else {
+                    ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(classPathFile);
+                    target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
+                    log.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
+                }
+            }
+        }
+
+    }
+
+    private static boolean isInside(VirtualFile classPathFile, VirtualFile toplevelRoot) {
+        VirtualFile[] parentPaths = classPathFile.getParentFiles();
+        for (VirtualFile path : parentPaths) {
+            if (path == toplevelRoot) {
+                // inside the deployment
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String[] getClassPathEntries(final ResourceRoot resourceRoot) {
+        final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
         if (manifest == null) {
             // no class path to process!
-            return;
+            return EMPTY_STRING_ARRAY;
         }
         final String classPathString = manifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
         if (classPathString == null) {
             // no entry
-            return;
+            return EMPTY_STRING_ARRAY;
         }
-        final String[] items = classPathString.split("\\s+");
-        for (String item : items) {
-            deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, new ClassPathEntry(item));
-        }
+        return classPathString.split("\\s+");
     }
 
     /** {@inheritDoc} */

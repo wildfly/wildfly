@@ -47,6 +47,8 @@
     <target name="make-dirs">
         <mkdir dir="${output.dir}/domain/content"/>
         <mkdir dir="${output.dir}/standalone/deployments"/>
+        <mkdir dir="${output.dir}/standalone/lib/ext"/>
+        <mkdir dir="${output.dir}/domain/lib/ext"/>
     </target>
 
     <target name="copy-deployments">

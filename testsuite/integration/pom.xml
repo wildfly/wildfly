@@ -37,7 +37,29 @@
     <version>7.0.0.Alpha2-SNAPSHOT</version>
 
     <name>JBoss Application Server: Test Suite: Integration Tests</name>
-    
+
+    <properties>
+        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-managed</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <profiles>
         <!-- Enable the integration-tests profile to execute this module's tests -->
         <profile>
@@ -49,6 +71,30 @@
                 <skipExecUnitTests>false</skipExecUnitTests>
             </properties>
         </profile>
-    </profiles>  
-    
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <enableAssertions>true</enableAssertions>
+                    <systemProperties>
+                        <property>
+                          <name>jboss.home</name>
+                          <value>${jboss.home}</value>
+                        </property>
+                     </systemProperties>
+                    <skipExec>${skipExecUnitTests}</skipExec>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                    <forkMode>once</forkMode>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

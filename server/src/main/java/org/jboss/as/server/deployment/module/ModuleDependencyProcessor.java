@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.List;
 import java.util.jar.Manifest;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -29,6 +30,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -47,34 +50,38 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final Manifest manifest = phaseContext.getDeploymentUnit().getAttachment(Attachments.MANIFEST);
-        if(manifest == null)
-            return;
-
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_MODULE_LOADER);
 
-        final String dependencyString = manifest.getMainAttributes().getValue("Dependencies");
-        if(dependencyString == null)
-            return;
-        final String[] dependencyDefs = dependencyString.split(",");
-        for(String dependencyDef : dependencyDefs) {
-            final String[] dependencyParts = dependencyDef.split(" ");
-            final int dependencyPartsLength = dependencyParts.length;
-            if(dependencyPartsLength == 0)
-                throw new RuntimeException("Invalid dependency: " + dependencyString);
+        List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
+        for (ResourceRoot resourceRoot : allResourceRoots) {
+            final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+            if (manifest == null)
+                continue;
 
-            final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
-            boolean export = parseOptionalExportParams(dependencyParts, "export");
-            boolean optional = parseOptionalExportParams(dependencyParts, "optional");
-            final ModuleLoader dependencyLoader;
-            if(dependencyId.getName().startsWith("deployment.")) {
-                dependencyLoader = deploymentModuleLoader;
-            } else {
-                dependencyLoader = Module.getSystemModuleLoader();
+            final ServiceModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
+
+            final String dependencyString = manifest.getMainAttributes().getValue("Dependencies");
+            if (dependencyString == null)
+                return;
+            final String[] dependencyDefs = dependencyString.split(",");
+            for (String dependencyDef : dependencyDefs) {
+                final String[] dependencyParts = dependencyDef.split(" ");
+                final int dependencyPartsLength = dependencyParts.length;
+                if (dependencyPartsLength == 0)
+                    throw new RuntimeException("Invalid dependency: " + dependencyString);
+
+                final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
+                boolean export = parseOptionalExportParams(dependencyParts, "export");
+                boolean optional = parseOptionalExportParams(dependencyParts, "optional");
+                final ModuleLoader dependencyLoader;
+                if (dependencyId.getName().startsWith("deployment.")) {
+                    dependencyLoader = deploymentModuleLoader;
+                } else {
+                    dependencyLoader = Module.getSystemModuleLoader();
+                }
+                ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, false);
+                phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
             }
-            ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, false);
-            phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
         }
     }
 

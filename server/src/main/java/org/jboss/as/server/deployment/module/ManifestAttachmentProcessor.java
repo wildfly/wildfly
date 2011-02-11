@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment.module;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.jar.Manifest;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -30,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -39,6 +41,7 @@ import org.jboss.vfs.VirtualFile;
  * It does nothing if the manifest is already attached or there is no manifest in the deployment root file.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author Stuart Douglas
  * @since 14-Oct-2010
  */
 public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
@@ -51,22 +54,28 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Do nothing if the manifest is already available
-        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
-        Manifest manifest = deploymentUnitContext.getAttachment(Attachments.MANIFEST);
-        if (manifest != null)
-            return;
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
+        for (ResourceRoot resourceRoot : resourceRoots) {
+            Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+            if (manifest != null)
+                continue;
 
-        final VirtualFile deploymentRoot = deploymentUnitContext.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        try {
-            manifest = VFSUtils.getManifest(deploymentRoot);
-            if (manifest != null) deploymentUnitContext.putAttachment(Attachments.MANIFEST, manifest);
-        } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e);
+            final VirtualFile deploymentRoot = resourceRoot.getRoot();
+            try {
+                manifest = VFSUtils.getManifest(deploymentRoot);
+                if (manifest != null)
+                    resourceRoot.putAttachment(Attachments.MANIFEST, manifest);
+            } catch (IOException e) {
+                throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e);
+            }
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
-        context.removeAttachment(Attachments.MANIFEST);
+        List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(context);
+        for (ResourceRoot resourceRoot : resourceRoots) {
+            resourceRoot.removeAttachment(Attachments.MANIFEST);
+        }
     }
 }

@@ -156,6 +156,16 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
                 }
             }
+            if (deploymentUnit.getParent() != null) {
+                phaseServiceBuilder.addDependencies(deploymentUnit.getParent().getServiceName().append(nextPhase.name()));
+            }
+            List<ServiceName> subdeployments = deploymentUnit.getAttachment(Attachments.SUB_DEPLOYMENTS);
+            if (subdeployments != null) {
+                // make sure all sub deployments have finished this phase before moving to the next one
+                for (ServiceName service : subdeployments) {
+                    phaseServiceBuilder.addDependencies(service.append(phase.name()));
+                }
+            }
 
             phaseServiceBuilder.install();
         }

@@ -25,13 +25,22 @@ package org.jboss.as.ee.structure;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
+import org.jboss.metadata.ear.spec.ModuleMetaData;
 
 /**
  * EE related attachments.
  *
  * @author John Bailey
+ * @author Stuart Douglas
  */
-public class Attachments {
+public final class Attachments {
+
     public static final AttachmentKey<EarMetaData> EAR_METADATA = AttachmentKey.create(EarMetaData.class);
+
     public static final AttachmentKey<JBossAppMetaData> JBOSS_APP_METADATA = AttachmentKey.create(JBossAppMetaData.class);
+
+    public static final AttachmentKey<ModuleMetaData> MODULE_META_DATA = AttachmentKey.create(ModuleMetaData.class);
+
+    private Attachments() {
+    }
 }

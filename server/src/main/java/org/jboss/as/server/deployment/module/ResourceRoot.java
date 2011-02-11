@@ -24,6 +24,7 @@ package org.jboss.as.server.deployment.module;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.vfs.VirtualFile;
@@ -33,6 +34,7 @@ import org.jboss.vfs.VirtualFile;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ResourceRoot extends SimpleAttachable {
+
 
     private final String rootName;
     private final VirtualFile root;
@@ -63,5 +65,15 @@ public final class ResourceRoot extends SimpleAttachable {
 
     public List<PathFilter> getExportFilters() {
         return exportFilters;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ResourceRoot [");
+        if (root != null)
+            builder.append("root=").append(root);
+        builder.append("]");
+        return builder.toString();
     }
 }

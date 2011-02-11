@@ -96,6 +96,10 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
         final DotName webserviceAnnotation = DotName.createSimple(WebService.class.getName());
         final DotName webserviceProviderAnnotation = DotName.createSimple(WebServiceProvider.class.getName());
         final Index index = ASHelper.getRootAnnotationIndex(unit);
+        if (index == null) {
+            // this should only happen with ear modules
+            return false;
+        }
         final List<AnnotationInstance> wsAnnList = index.getAnnotations(webserviceAnnotation);
         final List<AnnotationInstance> wsProvAnnList = index.getAnnotations(webserviceProviderAnnotation);
         return (wsAnnList != null && wsAnnList.size() > 0) || (wsProvAnnList != null && wsProvAnnList.size() > 0);

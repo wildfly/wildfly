@@ -22,54 +22,55 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.List;
+
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Services;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * The processor which adds {@code MANIFEST.MF} {@code Class-Path} entries to the module configuration.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
 public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final AttachmentList<ClassPathEntry> entries = deploymentUnit.getAttachment(Attachments.CLASS_PATH_ENTRIES);
-        if (entries == null || entries.isEmpty()) {
-            return;
-        }
-        final AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        final DeploymentUnit parent = deploymentUnit.getParent();
-        if (parent == null) {
-            // we depend on sibling deployments
-            AttachmentList<ServiceName> deps = phaseContext.getAttachment(Attachments.NEXT_PHASE_DEPS);
-            if (deps == null) phaseContext.putAttachment(Attachments.NEXT_PHASE_DEPS, deps = new AttachmentList<ServiceName>(ServiceName.class));
-            for (ClassPathEntry entry : entries) {
-                final String classPath = entry.getRelativeUrl();
-                final String deploymentName;
-                int firstSlash = classPath.indexOf('/');
-                if (firstSlash != -1) {
-                    // TODO: multi-part relative deployment; find sub-JARs in the referenced sibling
-                    deploymentName = classPath.substring(0, firstSlash);
-                } else {
-                    deploymentName = classPath;
-                }
-                if (deploymentName.equals(".") || deploymentName.equals("..")) {
-                    throw new DeploymentUnitProcessingException("Invalid relative path '" + classPath + "' in class path entry");
-                }
-                deps.add(Services.deploymentUnitName(deploymentName, phaseContext.getPhase()));
-                // TODO: Need to add a resource root with a "future" virtual file root from an injected dependency
-                // resourceRoots.add(new ResourceRoot(classPath, null, null, false));
+
+        final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
+        final AttachmentList<ModuleIdentifier> entries = deploymentUnit.getAttachment(Attachments.CLASS_PATH_ENTRIES);
+        if (entries != null) {
+            for (ModuleIdentifier entry : entries) {
+                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, entry,
+                        false, false, true));
             }
-        } else {
-            // TODO: add support for subdeployment dependencies
-            throw new DeploymentUnitProcessingException("Class-Path on subdeployments not yet supported");
+        }
+
+        final List<AdditionalModule> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
+        if (additionalModules != null) {
+            for (AdditionalModule additionalModule : additionalModules) {
+                final AttachmentList<ModuleIdentifier> dependencies = additionalModule
+                        .getAttachment(Attachments.CLASS_PATH_ENTRIES);
+                if (dependencies == null || dependencies.isEmpty()) {
+                    continue;
+                }
+                // additional modules export any class-path entries
+                // this means that a module that references the additional module
+                // gets access to the transitive closure of its call-path entries
+                for (ModuleIdentifier entry : dependencies) {
+                    additionalModule.addDependency(new ModuleDependency(moduleLoader, entry, false, true, true));
+                }
+                // add a dependency on the top ear itself for good measure
+                additionalModule.addDependency(new ModuleDependency(moduleLoader, deploymentUnit
+                        .getAttachment(Attachments.MODULE_IDENTIFIER), false, false, true));
+            }
         }
     }
 

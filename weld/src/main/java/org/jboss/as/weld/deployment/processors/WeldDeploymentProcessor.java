@@ -89,6 +89,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 .getAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
         deploymentUnit.removeAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
 
+        if (beanDeploymentArchives == null) {
+            return;
+        }
+
         BeanDeploymentArchiveImpl rootBda = deploymentUnit.getAttachment(BeanDeploymentArchiveImpl.ROOT_ARCHIVE_ATTACHMENT_KEY);
 
         // all bean deployment archives are accessible to each other

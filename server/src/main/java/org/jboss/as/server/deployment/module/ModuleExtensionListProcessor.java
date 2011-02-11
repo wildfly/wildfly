@@ -22,14 +22,25 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.Services;
+import org.jboss.as.server.moduleservice.ExtensionIndex;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * A processor which adds extension-list resource roots.
@@ -38,24 +49,68 @@ import org.jboss.msc.service.ServiceController;
  */
 public final class ModuleExtensionListProcessor implements DeploymentUnitProcessor {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.module.module-extension-list-processor");
+
     public ModuleExtensionListProcessor() {
     }
 
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final AttachmentList<ExtensionListEntry> entries = deploymentUnit.getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
-        if (entries == null || entries.isEmpty()) {
-            return;
-        }
+        final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         final ServiceController<?> controller = phaseContext.getServiceRegistry().getRequiredService(Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX);
         final ExtensionIndex index = (ExtensionIndex) controller.getValue();
-        for (ExtensionListEntry entry : entries) {
-            final ResourceRoot extension = index.findExtension(entry.getName(), entry.getSpecificationVersion(), entry.getImplementationVersion(), entry.getImplementationVendorId());
-            if (extension != null) {
-                deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, extension);
+        final List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
+        final Set<ServiceName> nextPhaseDeps = new HashSet<ServiceName>();
+        for (ResourceRoot resourceRoot : allResourceRoots) {
+            if (!ModuleRootMarker.isModuleRoot(resourceRoot))
+                continue;
+            final AttachmentList<ExtensionListEntry> entries = resourceRoot.getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
+            if (entries != null) {
+
+                for (ExtensionListEntry entry : entries) {
+                    final ModuleIdentifier extension = index.findExtension(entry.getName(), entry.getSpecificationVersion(),
+                            entry.getImplementationVersion(), entry.getImplementationVendorId());
+
+                    if (extension != null) {
+                        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader,
+                                extension, false, false, true));
+                        nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
+                        nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
+                    } else {
+                        log.warnf("Could not find Extension-List entry " + entry + " referenced from " + resourceRoot);
+                    }
+                }
             }
         }
+
+        final List<AdditionalModule> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
+        if (additionalModules != null) {
+            for (AdditionalModule additionalModule : additionalModules) {
+                final AttachmentList<ExtensionListEntry> entries = additionalModule.getResourceRoot().getAttachment(
+                        Attachments.EXTENSION_LIST_ENTRIES);
+                if (entries != null) {
+
+                    for (ExtensionListEntry entry : entries) {
+                        final ModuleIdentifier extension = index.findExtension(entry.getName(),
+                                entry.getSpecificationVersion(), entry.getImplementationVersion(), entry
+                                        .getImplementationVendorId());
+                        if (extension != null) {
+                            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(
+                                    moduleLoader, extension, false, false, true));
+                            nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
+                        } else {
+                            log.warnf("Could not find Extension-List entry " + entry + " referenced from "
+                                    + additionalModule.getResourceRoot());
+                        }
+                    }
+                }
+            }
+        }
+        for (ServiceName dep : nextPhaseDeps) {
+            phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, dep);
+        }
+
     }
 
     /** {@inheritDoc} */

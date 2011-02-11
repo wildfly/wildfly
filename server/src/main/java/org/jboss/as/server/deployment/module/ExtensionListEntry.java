@@ -109,4 +109,25 @@ public final class ExtensionListEntry {
     public URI getImplementationUrl() {
         return implementationUrl;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ExtensionListEntry [");
+        if (implementationUrl != null)
+            builder.append("implementationUrl=").append(implementationUrl).append(", ");
+        if (implementationVendorId != null)
+            builder.append("implementationVendorId=").append(implementationVendorId).append(", ");
+        if (implementationVersion != null)
+            builder.append("implementationVersion=").append(implementationVersion).append(", ");
+        if (name != null)
+            builder.append("name=").append(name).append(", ");
+        if (specificationVersion != null)
+            builder.append("specificationVersion=").append(specificationVersion).append(", ");
+        if (title != null)
+            builder.append("title=").append(title);
+        builder.append("]");
+        return builder.toString();
+    }
+
 }

@@ -27,12 +27,13 @@ import java.util.jar.Manifest;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.as.server.deployment.module.ClassPathEntry;
-import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.server.deployment.module.AdditionalModule;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -84,6 +85,11 @@ public final class Attachments {
      */
     public static final AttachmentKey<AttachmentList<ResourceRoot>> RESOURCE_ROOTS = AttachmentKey.createList(ResourceRoot.class);
     /**
+     * Tracks which deployments have access to a given external dependency. External modules will have access to any
+     * dependencies that are added to attached deployment units
+     */
+    public static final AttachmentKey<AttachmentList<DeploymentUnit>> LINKED_DEPLOYMENT_UNITS = AttachmentKey.createList(DeploymentUnit.class);
+    /**
      * The MANIFEST.MF of the deployment unit.
      */
     public static final AttachmentKey<Manifest> MANIFEST = AttachmentKey.create(Manifest.class);
@@ -93,9 +99,9 @@ public final class Attachments {
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
 
     /**
-     * The list of class path entries given in the manifest and structure configurations.
+     * Module identifiers for Class-Path information
      */
-    public static final AttachmentKey<AttachmentList<ClassPathEntry>> CLASS_PATH_ENTRIES = AttachmentKey.createList(ClassPathEntry.class);
+    public static final AttachmentKey<AttachmentList<ModuleIdentifier>> CLASS_PATH_ENTRIES = AttachmentKey.createList(ModuleIdentifier.class);
     /**
      * The list of extensions given in the manifest and structure configurations.
      */
@@ -156,12 +162,23 @@ public final class Attachments {
      * A Marker attachment to identify an EAR deployment.
      */
     public static final AttachmentKey<Boolean> EAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
+    /**
+     * A Marker attachment to identify resource roots that are part of ear/lib
+     */
+    public static final AttachmentKey<Boolean> EAR_LIB_RESOURCE_MARKER = AttachmentKey.create(Boolean.class);
 
     /**
      * A Marker attachment to identify an WAR deployment.
      */
     public static final AttachmentKey<Boolean> WAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
-
+    /**
+     * Sub deployment services
+     */
+    public static final AttachmentKey<AttachmentList<ServiceName>> SUB_DEPLOYMENTS = AttachmentKey.createList(ServiceName.class);
+    /**
+     * Additional modules attached to the top level deployment
+     */
+    public static final AttachmentKey<AttachmentList<AdditionalModule>> ADDITIONAL_MODULES = AttachmentKey.createList(AdditionalModule.class);
 
     //
     // VALIDATE
@@ -199,7 +216,12 @@ public final class Attachments {
     /**
      * The module loader for the deployment
      */
-    public static final AttachmentKey<DeploymentModuleLoader> DEPLOYMENT_MODULE_LOADER = AttachmentKey.create(DeploymentModuleLoader.class);
+    public static final AttachmentKey<ServiceModuleLoader> SERVICE_MODULE_LOADER  = AttachmentKey.create(ServiceModuleLoader.class);
+
+    /**
+     * The extenal module service
+     */
+    public static final AttachmentKey<ExternalModuleService> EXTERNAL_MODULE_SERVICE  = AttachmentKey.create(ExternalModuleService.class);
 
     /**
      * An index of {@link java.util.ServiceLoader}-type services in this deployment unit

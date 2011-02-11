@@ -22,8 +22,10 @@
 
 package org.jboss.as.server.deployment;
 
-import java.util.List;
 import static org.jboss.as.server.deployment.SubDeploymentMarker.isSubDeployment;
+
+import java.util.List;
+
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -54,6 +56,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                         .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();
+                deploymentUnit.addToAttachmentList(Attachments.SUB_DEPLOYMENTS, serviceName);
             }
 
         }

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 import java.io.BufferedReader;
@@ -43,7 +42,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -69,6 +70,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
      */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ServiceModuleLoader loader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         if(!isWarDeployment(deploymentUnit)) {
             return; // Skip non web deployments
         }
@@ -99,7 +101,8 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         for (ModuleDependency dependency : deploymentUnit.getAttachment(Attachments.MODULE_DEPENDENCIES)) {
             ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
-                serviceLoader = Module.loadServiceFromCurrent(dependency.getIdentifier(), ServletContainerInitializer.class);
+                Module depModule = loader.loadModule(dependency.getIdentifier());
+                serviceLoader = depModule.loadService(ServletContainerInitializer.class);
                 for (ServletContainerInitializer service : serviceLoader) {
                     scis.add(service);
                 }

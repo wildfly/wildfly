@@ -22,13 +22,15 @@
 
 package org.jboss.as.ee.structure;
 
-import java.util.ArrayList;
 import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
+
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,6 +44,8 @@ import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.Ear5xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
+import org.jboss.metadata.ear.spec.ModuleMetaData;
+import org.jboss.metadata.ear.spec.ModuleMetaData.ModuleType;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -52,11 +56,19 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  * Deployment processor responsible for detecting EAR deployments and putting setting up the basic structure.
  *
  * @author John Bailey
+ * @author Stuart Douglas
  */
 public class EarStructureProcessor implements DeploymentUnitProcessor {
+
+    private static Closeable NO_OP_CLOSEABLE = new Closeable() {
+        public void close() throws IOException {
+            // NO-OP
+        }
+    };
+
     private static final String JAR_EXTENSION = ".jar";
     private static final String WAR_EXTENSION = ".war";
-    private static final Set<String> CHILD_ARCHIVE_EXTENSIONS = new HashSet<String>();
+    private static final List<String> CHILD_ARCHIVE_EXTENSIONS = new ArrayList<String>();
 
     static {
         CHILD_ARCHIVE_EXTENSIONS.add(JAR_EXTENSION);
@@ -64,6 +76,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     }
 
     private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(CHILD_ARCHIVE_EXTENSIONS, new VisitorAttributes() {
+
         public boolean isLeavesOnly() {
             return false;
         }
@@ -71,11 +84,6 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     private static final String DEFAULT_LIB_DIR = "lib";
 
-    private static Closeable NO_OP_CLOSEABLE = new Closeable() {
-        public void close() throws IOException {
-            // NO-OP
-        }
-    };
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -89,20 +97,17 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         //  Make sure we don't index or add this as a module root
         resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
         ModuleRootMarker.markRoot(resourceRoot, false);
-        // Make sure any annotation deployers run against the EAR deployment.
-        deploymentUnit.putAttachment(Attachments.PROCESS_CHILD_ANNOTATION_INDEX, false);
-        deploymentUnit.putAttachment(Attachments.COMPUTE_COMPOSITE_ANNOTATION_INDEX, false);
 
         String libDirName = DEFAULT_LIB_DIR;
 
         final JBossAppMetaData appMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.JBOSS_APP_METADATA);
+        final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
         if (appMetaData != null) {
             final String xmlLibDirName = appMetaData.getLibraryDirectory();
             if (xmlLibDirName != null) {
                 libDirName = xmlLibDirName;
             }
         } else {
-            final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
             if (earMetaData != null) {
                 if (earMetaData instanceof Ear5xMetaData) {
                     final String xmlLibDirName = Ear5xMetaData.class.cast(earMetaData).getLibraryDirectory();
@@ -115,35 +120,110 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
         // Process all the children
         try {
-            final List<VirtualFile> childArchives = new ArrayList<VirtualFile>(virtualFile.getChildren(CHILD_ARCHIVE_FILTER));
+            final VirtualFile libDir;
+            // process the lib directory
             if (!libDirName.isEmpty()) {
-                final VirtualFile libDir = virtualFile.getChild(libDirName);
+                libDir = virtualFile.getChild(libDirName);
                 if (libDir.exists()) {
-                    childArchives.addAll(libDir.getChildren(CHILD_ARCHIVE_FILTER));
+                    List<VirtualFile> libArchives = libDir.getChildren(CHILD_ARCHIVE_FILTER);
+                    for (final VirtualFile child : libArchives) {
+                        final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
+                                .provider()) : NO_OP_CLOSEABLE;
+                        final MountHandle mountHandle = new MountHandle(closable);
+                        final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
+                        if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
+                            ModuleRootMarker.markRoot(childResource);
+                            EarLibResourceMarker.markResource(childResource);
+                            deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
+                        }
+                    }
+                }
+            } else {
+                libDir = null;
+            }
+            // scan the ear looking for wars and jars
+            final List<VirtualFile> childArchives = new ArrayList<VirtualFile>(virtualFile.getChildren(new SuffixMatchFilter(
+                    CHILD_ARCHIVE_EXTENSIONS, new VisitorAttributes() {
+                        @Override
+                        public boolean isLeavesOnly() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean isRecurse(VirtualFile file) {
+                            // don't recurse into /lib
+                            if (file.equals(libDir)) {
+                                return false;
+                            }
+                            for (String suffix : CHILD_ARCHIVE_EXTENSIONS) {
+                                if (file.getName().endsWith(suffix)) {
+                                    // don't recurse into sub deployments
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                    })));
+
+            // if there is no application.xml then look in the ear root for modules
+            if (earMetaData == null) {
+                for (final VirtualFile child : childArchives) {
+                    final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider())
+                            : NO_OP_CLOSEABLE;
+                    final MountHandle mountHandle = new MountHandle(closable);
+                    final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
+                    deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
+                    if (child.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
+                        SubDeploymentMarker.markRoot(childResource);
+                        childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+                    }
+                }
+            } else {
+                Set<VirtualFile> subDeploymentFiles = new HashSet<VirtualFile>();
+                // otherwise read from application.xml
+                for (ModuleMetaData module : earMetaData.getModules()) {
+
+                    VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
+                    if (!moduleFile.exists()) {
+                        throw new DeploymentUnitProcessingException("Unable to process modules in application.xml for EAR ["
+                                + virtualFile + "], module file " + module.getFileName() + " not found");
+                    }
+                    final Closeable closable = moduleFile.isFile() ? VFS.mountZip(moduleFile, moduleFile,
+                            TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
+                    final MountHandle mountHandle = new MountHandle(closable);
+                    final ResourceRoot childResource = new ResourceRoot(moduleFile, mountHandle);
+                    deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
+                    SubDeploymentMarker.markRoot(childResource);
+                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
+                    subDeploymentFiles.add(moduleFile);
+                    if (module.getType() == ModuleType.Web) {
+                        childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+                    }
+                }
+                // now check the rest of the archive for any other jar files
+                for (final VirtualFile child : childArchives) {
+                    if (subDeploymentFiles.contains(child)) {
+                        continue;
+                    }
+                    if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
+                        final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
+                                .provider()) : NO_OP_CLOSEABLE;
+                        final MountHandle mountHandle = new MountHandle(closable);
+                        final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
+                        deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
+                    }
                 }
             }
 
-            for (final VirtualFile child : childArchives) {
-                final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
-                final MountHandle mountHandle = new MountHandle(closable);
-                final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
-                if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
-                    ModuleRootMarker.markRoot(childResource);
-                } else {
-                    childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
-                    SubDeploymentMarker.markRoot(childResource);
-                }
-                deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
-            }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to process children for EAR [" + virtualFile + "]", e);
         }
     }
 
     public void undeploy(DeploymentUnit context) {
-        final List<ResourceRoot> childRoots = context.removeAttachment(Attachments.RESOURCE_ROOTS);
-        if (childRoots != null) {
-            for (ResourceRoot childRoot : childRoots) {
+        final List<ResourceRoot> children = context.removeAttachment(Attachments.RESOURCE_ROOTS);
+        if (children != null) {
+            for (ResourceRoot childRoot : children) {
                 VFSUtils.safeClose(childRoot.getMountHandle());
             }
         }

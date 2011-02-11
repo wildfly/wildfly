@@ -35,9 +35,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
-import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
+import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
@@ -115,7 +116,8 @@ final class ApplicationServerService implements Service<Void> {
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
         serviceTarget.addDependency(myController.getName());
         ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir());
-        DeploymentModuleLoaderImpl.addService(serviceTarget, configuration.getModuleLoader());
+        ServiceModuleLoader.addService(serviceTarget, configuration);
+        ExternalModuleService.addService(serviceTarget);
         ServerControllerService.addService(serviceTarget, configuration);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override

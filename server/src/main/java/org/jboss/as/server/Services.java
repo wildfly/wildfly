@@ -22,7 +22,8 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.server.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -46,9 +47,14 @@ public final class Services {
     public static final ServiceName JBOSS_SERVER_CONTROLLER = JBOSS_AS.append("server-controller");
 
     /**
-     * The service corresponding to the {@link DeploymentModuleLoader} for this instance.
+     * The service corresponding to the {@link ServiceModuleLoader} for this instance.
      */
-    public static final ServiceName JBOSS_DEPLOYMENT_MODULE_LOADER = JBOSS_AS.append("deployment-module-loader");
+    public static final ServiceName JBOSS_SERVICE_MODULE_LOADER = JBOSS_AS.append("service-module-loader");
+
+    /**
+     * The service corresponding to the {@link ExternalModuleService} for this instance.
+     */
+    public static final ServiceName JBOSS_EXTERNAL_MODULE_SERVICE = JBOSS_AS.append("external-module-service");
 
     /**
      * The internal deployer chains service used by all deployments.

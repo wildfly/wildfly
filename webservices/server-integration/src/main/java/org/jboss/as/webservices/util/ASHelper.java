@@ -397,6 +397,6 @@ public final class ASHelper {
                 return indexes.get(rr);
             }
         }
-        throw new RuntimeException("Could not find root annotation index!");
+        return null;
     }
 }

@@ -73,10 +73,13 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
 
         // Create the module entry in the java:app/ context
         final ServiceName appContextServiceName = deploymentUnit.getAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
-        final ContextService appModuleContextService = new ContextService(deploymentUnit.getName());
-        serviceTarget.addService(appContextServiceName.append(deploymentUnit.getName()), appModuleContextService)
-            .addDependency(appContextServiceName, Context.class, appModuleContextService.getParentContextInjector())
-            .install();
+        if (appContextServiceName != null) {
+            // sub deployments do not install this
+            final ContextService appModuleContextService = new ContextService(deploymentUnit.getName());
+            serviceTarget.addService(appContextServiceName.append(deploymentUnit.getName()), appModuleContextService)
+                    .addDependency(appContextServiceName, Context.class, appModuleContextService.getParentContextInjector())
+                    .install();
+        }
 
         deploymentUnit.putAttachment(Attachments.MODULE_CONTEXT_CONFIG, moduleContextServiceName);
 

@@ -43,6 +43,7 @@ import org.jboss.as.ee.naming.ModuleContextProcessor;
 import org.jboss.as.ee.structure.EarInitializationProcessor;
 import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
 import org.jboss.as.ee.structure.EarStructureProcessor;
+import org.jboss.as.ee.structure.EjbJarDeploymentProcessor;
 import org.jboss.as.ee.structure.JBossAppMetaDataParsingProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
@@ -69,7 +70,6 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
     /** {@inheritDoc} */
     @Override
     public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
         if(context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
             logger.info("Activating EE subsystem");

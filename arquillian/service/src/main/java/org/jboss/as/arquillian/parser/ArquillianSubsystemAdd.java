@@ -36,6 +36,7 @@ import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.as.arquillian.service.ArquillianDependencyProcessor;
 import org.jboss.logging.Logger;
 
 /**
@@ -66,6 +67,8 @@ class ArquillianSubsystemAdd implements ModelAddOperationHandler, BootOperationH
             ArquillianService.addService(bootContext.getServiceTarget());
             bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ARQUILLIAN_RUNWITH, new ArquillianRunWithAnnotationProcessor());
             bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
+            bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_ARQUILLIAN,
+                    new ArquillianDependencyProcessor());
         }
 
         context.getSubModel().setEmptyObject();
