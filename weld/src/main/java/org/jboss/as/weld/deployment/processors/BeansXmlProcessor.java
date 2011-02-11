@@ -25,15 +25,15 @@ import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.ee.structure.EarDeploymentMarker;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.web.deployment.WarDeploymentMarker;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
@@ -87,14 +87,14 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        if (WarDeploymentMarker.isWarDeployment(deploymentUnit)) {
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             // look for WEB-INF/beans.xml
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(WEB_INF_BEANS_XML);
             if (rootBeansXml.isFile()) {
                 log.debugf("Found beans.xml: %s", rootBeansXml);
                 beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser),true));
             }
-        } else if (!EarDeploymentMarker.isEarDeployment(deploymentUnit)) {
+        } else if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(META_INF_BEANS_XML);
             if (rootBeansXml.exists() && rootBeansXml.isFile()) {
                 log.debugf("Found beans.xml: %s", rootBeansXml.toString());

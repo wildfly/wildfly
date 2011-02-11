@@ -33,7 +33,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanDependencyProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanResourceTargetProcessor;
-import org.jboss.as.managedbean.processors.ManagedBeanSubDeploymentProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
@@ -59,7 +58,6 @@ class ManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOperatio
 
         if(context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
-            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_SUB_DEPLOY_CHECK, new ManagedBeanSubDeploymentProcessor());
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new ManagedBeanDependencyProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_RESOURCE_TARGET, new ManagedBeanResourceTargetProcessor());

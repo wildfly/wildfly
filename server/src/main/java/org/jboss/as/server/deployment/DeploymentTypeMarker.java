@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,25 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.server.deployment;
 
 /**
- * Marker used to identify resource roots that are sub-deployments.
+ * Helper class for dealing with the {@link Attachments#RESOURCE_ROOT_TYPE} attachment.
  *
- * @author John Bailey
+ * @author Stuart Douglas
+ *
  */
-public class SubDeploymentMarker {
-    public static void markRoot(final Attachable context) {
-        markRoot(context, true);
+public class DeploymentTypeMarker {
+    public static boolean isType(DeploymentType type, DeploymentUnit deploymentUnit) {
+        DeploymentType marker = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_TYPE);
+        return marker == type;
     }
 
-    public static void markRoot(final Attachable context, boolean isSubDeployment) {
-        context.putAttachment(Attachments.SUB_DEPLOYMENT_MARKER, isSubDeployment);
-    }
-
-    public static boolean isSubDeployment(final Attachable context) {
-        final Boolean result = context.getAttachment(Attachments.SUB_DEPLOYMENT_MARKER);
-        return result != null && result;
+    public static void setType(DeploymentType type, DeploymentUnit deploymentUnit) {
+        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_TYPE, type);
     }
 }

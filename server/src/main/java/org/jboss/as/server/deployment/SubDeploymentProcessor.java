@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.server.deployment.SubDeploymentMarker.isSubDeployment;
-
 import java.util.List;
 
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -46,7 +44,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
         if (childRoots != null) {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             for (final ResourceRoot childRoot : childRoots) {
-                if(!isSubDeployment(childRoot)) {
+                if (!ResourceRootTypeMarker.isSubDeployment(childRoot)) {
                     continue;
                 }
                 final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit);
@@ -67,7 +65,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
         if (childRoots != null) {
             final ServiceRegistry serviceRegistry = deploymentUnit.getServiceRegistry();
             for (final ResourceRoot childRoot : childRoots) {
-                if(!isSubDeployment(childRoot)) {
+                if (!ResourceRootTypeMarker.isSubDeployment(childRoot)) {
                     continue;
                 }
                 final ServiceName serviceName = deploymentUnit.getServiceName().append(childRoot.getRootName());

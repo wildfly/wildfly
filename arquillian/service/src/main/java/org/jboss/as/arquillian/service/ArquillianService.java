@@ -220,7 +220,7 @@ public class ArquillianService implements Service<ArquillianService> {
             waitingTests.put(className, latch);
         }
 
-        long end = System.currentTimeMillis() + 3000;
+        long end = System.currentTimeMillis() + 10000;
         while (true) {
             try {
                 latch.await(end - System.currentTimeMillis(), TimeUnit.MILLISECONDS);

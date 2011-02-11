@@ -22,10 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
-import static org.jboss.as.server.deployment.module.ModuleRootMarker.*;
-import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,9 +29,13 @@ import java.util.List;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
@@ -72,7 +72,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
     /** {@inheritDoc} */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(!isWarDeployment(deploymentUnit)) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
         }
 
@@ -86,8 +86,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib
         deploymentResourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
         // Make sure the root does not end up in the module
-        ModuleRootMarker.markRoot(deploymentResourceRoot, false);
-
+        ResourceRootTypeMarker.setType(ResourceRootType.WAR, deploymentResourceRoot);
 
         // TODO: This needs to be ported to add additional resource roots the standard way
         final MountHandle mountHandle = deploymentResourceRoot.getMountHandle();
@@ -130,7 +129,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // WEB-INF classes
         final ResourceRoot webInfClassesRoot = new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
                 .getChild(WEB_INF_CLASSES), null);
-        markRoot(webInfClassesRoot);
+        ResourceRootTypeMarker.setType(ResourceRootType.MODULE_ROOT, webInfClassesRoot);
         entries.add(webInfClassesRoot);
         // WEB-INF lib
         createWebInfLibResources(deploymentRoot, entries);
@@ -152,7 +151,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                 try {
                     final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
                     final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable));
-                    markRoot(webInfArchiveRoot);
+                    ResourceRootTypeMarker.setType(ResourceRootType.MODULE_ROOT, webInfArchiveRoot);
                     entries.add(webInfArchiveRoot);
                 } catch (IOException e) {
                     throw new DeploymentUnitProcessingException("failed to process " + archive, e);

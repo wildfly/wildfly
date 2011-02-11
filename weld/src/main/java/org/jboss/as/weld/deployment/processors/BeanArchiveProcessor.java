@@ -28,12 +28,13 @@ import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.web.deployment.WarDeploymentMarker;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
@@ -66,7 +67,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return;
         }
-        boolean isolatedModule = WarDeploymentMarker.isWarDeployment(deploymentUnit);
+        boolean isolatedModule = DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit);
         log.info("Processing CDI deployment: " + phaseContext.getDeploymentUnit().getName());
 
         final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);

@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,11 +31,13 @@ import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
@@ -45,7 +45,6 @@ import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.Ear5xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
-import org.jboss.metadata.ear.spec.ModuleMetaData.ModuleType;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -87,7 +86,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!isEarDeployment(deploymentUnit)) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
 
@@ -96,7 +95,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
         //  Make sure we don't index or add this as a module root
         resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
-        ModuleRootMarker.markRoot(resourceRoot, false);
+        ResourceRootTypeMarker.setType(ResourceRootType.EAR, resourceRoot);
 
         String libDirName = DEFAULT_LIB_DIR;
 
@@ -132,8 +131,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         final MountHandle mountHandle = new MountHandle(closable);
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
-                            ModuleRootMarker.markRoot(childResource);
-                            EarLibResourceMarker.markResource(childResource);
+                            ResourceRootTypeMarker.setType(ResourceRootType.EAR_LIB_JAR, childResource);
                             deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
                         }
                     }
@@ -174,7 +172,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
                     if (child.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
-                        SubDeploymentMarker.markRoot(childResource);
+                        ResourceRootTypeMarker.setType(ResourceRootType.WAR, childResource);
                         childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
                     }
                 }
@@ -193,11 +191,28 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     final MountHandle mountHandle = new MountHandle(closable);
                     final ResourceRoot childResource = new ResourceRoot(moduleFile, mountHandle);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
-                    SubDeploymentMarker.markRoot(childResource);
                     childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
                     subDeploymentFiles.add(moduleFile);
-                    if (module.getType() == ModuleType.Web) {
+                    switch (module.getType()) {
+                        case Web:
                         childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+                            ResourceRootTypeMarker.setType(ResourceRootType.WAR, childResource);
+                            break;
+                        case Ejb:
+                            ResourceRootTypeMarker.setType(ResourceRootType.EJB_JAR, childResource);
+                            break;
+                        case Client:
+                            ResourceRootTypeMarker.setType(ResourceRootType.APPLICATION_CLIENT, childResource);
+                            break;
+                        case Connector:
+                            ResourceRootTypeMarker.setType(ResourceRootType.CONNECTOR, childResource);
+                            break;
+                        case Service:
+                            ResourceRootTypeMarker.setType(ResourceRootType.SERVICE, childResource);
+                            break;
+                        default:
+                            throw new DeploymentUnitProcessingException("Unkown sub deployment type: " + module.getType());
+
                     }
                 }
                 // now check the rest of the archive for any other jar files

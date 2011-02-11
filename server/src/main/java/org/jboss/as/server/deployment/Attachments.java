@@ -149,28 +149,14 @@ public final class Attachments {
     public static final AttachmentKey<Boolean> PROCESS_CHILD_ANNOTATION_INDEX = AttachmentKey.create(Boolean.class);
 
     /**
-     * A marker attachment to identify a resource root that should be included as a module root.
+     * A Marker that identifies the a type of resource root
      */
-    public static final AttachmentKey<Boolean> MODULE_ROOT_MARKER = AttachmentKey.create(Boolean.class);
+    public static final AttachmentKey<ResourceRootType> RESOURCE_ROOT_TYPE = AttachmentKey.create(ResourceRootType.class);
+    /**
+     * A Marker that identifies the a type of deployment
+     */
+    public static final AttachmentKey<DeploymentType> DEPLOYMENT_TYPE = AttachmentKey.create(DeploymentType.class);
 
-    /**
-     * A marker attachment to identify a resource root that is also a sub-deployment.
-     */
-    public static final AttachmentKey<Boolean> SUB_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
-
-    /**
-     * A Marker attachment to identify an EAR deployment.
-     */
-    public static final AttachmentKey<Boolean> EAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
-    /**
-     * A Marker attachment to identify resource roots that are part of ear/lib
-     */
-    public static final AttachmentKey<Boolean> EAR_LIB_RESOURCE_MARKER = AttachmentKey.create(Boolean.class);
-
-    /**
-     * A Marker attachment to identify an WAR deployment.
-     */
-    public static final AttachmentKey<Boolean> WAR_DEPLOYMENT_MARKER = AttachmentKey.create(Boolean.class);
     /**
      * Sub deployment services
      */

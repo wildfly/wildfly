@@ -24,11 +24,14 @@ package org.jboss.as.server.deployment.module;
 
 import java.io.Closeable;
 import java.io.IOException;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -73,9 +76,8 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             }
         }
         final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle);
-        ModuleRootMarker.markRoot(resourceRoot);
+        ResourceRootTypeMarker.setType(ResourceRootType.MODULE_ROOT, resourceRoot);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
-
     }
 
     public void undeploy(DeploymentUnit context) {

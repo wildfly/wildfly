@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.moduleservice.ExtensionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -63,7 +64,7 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
         final List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         final Set<ServiceName> nextPhaseDeps = new HashSet<ServiceName>();
         for (ResourceRoot resourceRoot : allResourceRoots) {
-            if (!ModuleRootMarker.isModuleRoot(resourceRoot))
+            if (!ResourceRootTypeMarker.isModuleRoot(resourceRoot))
                 continue;
             final AttachmentList<ExtensionListEntry> entries = resourceRoot.getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
             if (entries != null) {

@@ -23,13 +23,16 @@
 package org.jboss.as.service;
 
 import java.util.List;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import static org.jboss.as.server.deployment.SubDeploymentMarker.isSubDeployment;
-import static org.jboss.as.server.deployment.SubDeploymentMarker.markRoot;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.vfs.VirtualFile;
 
@@ -41,18 +44,17 @@ import org.jboss.vfs.VirtualFile;
 public class SarSubDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Boolean earDeployment = deploymentUnit.getAttachment(Attachments.EAR_DEPLOYMENT_MARKER);
-        if(earDeployment == null || !earDeployment) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
 
         final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         for(ResourceRoot resourceRoot : resourceRoots) {
             final VirtualFile rootFile = resourceRoot.getRoot();
-            if(!isSubDeployment(resourceRoot)) {
+            if (!ResourceRootTypeMarker.isSubDeployment(resourceRoot)) {
                 final VirtualFile sarDescriptor = rootFile.getChild(ServiceDeploymentParsingProcessor.SERVICE_DESCRIPTOR_PATH);
                 if(sarDescriptor.exists()) {
-                    markRoot(resourceRoot);
+                    ResourceRootTypeMarker.setType(ResourceRootType.SAR, resourceRoot);
                 }
             }
         }

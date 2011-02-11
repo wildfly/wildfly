@@ -24,10 +24,11 @@ package org.jboss.as.web.deployment;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -46,7 +47,7 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
         }
         VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         if(virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
-            WarDeploymentMarker.markDeployment(deploymentUnit);
+            DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
         }
     }
 

@@ -23,13 +23,17 @@ package org.jboss.as.ee.structure;
 
 import java.util.List;
 
+import javax.annotation.ManagedBean;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -46,37 +50,39 @@ import org.jboss.vfs.VirtualFile;
  */
 public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private final DotName STATELESS = DotName.createSimple("javax.ejb.Stateless");
-    private final DotName STATEFULL = DotName.createSimple("javax.ejb.Stateful");
-    private final DotName MESSAGE_DRIVEN = DotName.createSimple("javax.ejb.MessageDriven");
-    private final DotName SINGLETON = DotName.createSimple("javax.ejb.Singleton");
+    private static final DotName STATELESS = DotName.createSimple("javax.ejb.Stateless");
+    private static final DotName STATEFULL = DotName.createSimple("javax.ejb.Stateful");
+    private static final DotName MESSAGE_DRIVEN = DotName.createSimple("javax.ejb.MessageDriven");
+    private static final DotName SINGLETON = DotName.createSimple("javax.ejb.Singleton");
+    private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!EarDeploymentMarker.isEarDeployment(deploymentUnit)) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
         // TODO: deal with application clients, we need the manifest information
         List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : potentialSubDeployments) {
-            if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
-                // module roots cannot be
+            if (ResourceRootTypeMarker.isModuleRoot(resourceRoot)) {
+                // module roots cannot be ejb jars
                 continue;
             }
             VirtualFile ejbJarFile = resourceRoot.getRoot().getChild("META-INF/ejb-jar.xml");
             if (ejbJarFile.exists()) {
-                SubDeploymentMarker.markRoot(resourceRoot);
+                ResourceRootTypeMarker.isType(ResourceRootType.EJB_JAR, resourceRoot);
             } else {
                 final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {
                     if(!index.getAnnotations(STATEFULL).isEmpty() ||
                             !index.getAnnotations(STATELESS).isEmpty() ||
                             !index.getAnnotations(MESSAGE_DRIVEN).isEmpty() ||
-                            !index.getAnnotations(SINGLETON).isEmpty()) {
+                            !index.getAnnotations(SINGLETON).isEmpty() ||
+                            !index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME).isEmpty()) {
                         //this is an EJB deployment
                         //TODO: we need to mark EJB sub deployments so the sub deployers know they are EJB deployments
-                        SubDeploymentMarker.markRoot(resourceRoot);
+                        ResourceRootTypeMarker.isType(ResourceRootType.EJB_JAR, resourceRoot);
                     }
                 }
             }

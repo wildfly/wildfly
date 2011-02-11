@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import static org.jboss.as.server.deployment.module.ModuleRootMarker.isModuleRoot;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
@@ -80,12 +79,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
         List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
         // Add internal resource roots
-        if (isModuleRoot(mainRoot)) {
+        if (ResourceRootTypeMarker.isModuleRoot(mainRoot)) {
             resourceRoots.add(mainRoot);
         }
         if (additionalRoots != null)
             for (ResourceRoot additionalRoot : additionalRoots) {
-                if (isModuleRoot(additionalRoot)) {
+                if (ResourceRootTypeMarker.isModuleRoot(additionalRoot)) {
                     resourceRoots.add(additionalRoot);
                 }
             }

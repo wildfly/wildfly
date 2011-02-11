@@ -25,10 +25,13 @@ package org.jboss.as.server.deployment.module;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
 
@@ -42,18 +45,16 @@ public final class AdditionalModuleProcessor implements DeploymentUnitProcessor 
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Boolean ear = deploymentUnit.getAttachment(Attachments.EAR_DEPLOYMENT_MARKER);
-        if (ear == null || !ear) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : resourceRoots) {
-            Boolean earLib = resourceRoot.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
-            if (earLib != null && earLib) {
+            if (ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, resourceRoot)) {
                 continue;
             }
-            if (SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+            if (ResourceRootTypeMarker.isSubDeployment(resourceRoot)) {
                 continue;
             }
             String pathName = resourceRoot.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot());

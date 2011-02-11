@@ -38,6 +38,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
@@ -91,8 +93,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         final Set<VirtualFile> earLibJars = new HashSet<VirtualFile>();
         if (topLevelResourceRoots != null) {
             for (ResourceRoot resourceRoot : topLevelResourceRoots) {
-                final Boolean marker = resourceRoot.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
-                if (marker != null && marker) {
+                if (ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, resourceRoot)) {
                     earLibJars.add(resourceRoot.getRoot());
                 }
             }
@@ -100,8 +101,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
         for (ResourceRoot resourceRoot : resourceRoots) {
             // if this is an ear/lib resource root it has already been handled
-            final Boolean marker = resourceRoot.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
-            if (marker != null && marker) {
+            if (ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, resourceRoot)) {
                 continue;
             }
             // if this resource root represents an additional module then we need

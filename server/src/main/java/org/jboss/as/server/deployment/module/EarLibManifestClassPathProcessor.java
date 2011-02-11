@@ -32,11 +32,14 @@ import java.util.jar.Manifest;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.ResourceRootType;
+import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
@@ -60,8 +63,7 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
 
-        final Boolean ear = deploymentUnit.getAttachment(Attachments.EAR_DEPLOYMENT_MARKER);
-        if (ear == null || !ear) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
 
@@ -77,8 +79,7 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
         final Deque<ResourceRoot> libResourceRoots = new ArrayDeque<ResourceRoot>();
         // scan /lib entries for class-path items
         for (ResourceRoot resourceRoot : resourceRoots) {
-            final Boolean marker = resourceRoot.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
-            if (marker != null && marker) {
+            if (ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, resourceRoot)) {
                 libResourceRoots.add(resourceRoot);
             }
         }
@@ -97,16 +98,14 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
                                 + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
                     } else {
                         final ResourceRoot target = files.get(classPathFile);
-                        final Boolean marker = target.getAttachment(Attachments.EAR_LIB_RESOURCE_MARKER);
 
-                        if (SubDeploymentMarker.isSubDeployment(target)) {
+                        if (ResourceRootTypeMarker.isSubDeployment(target)) {
                             // for now we do not allow Class-Path references to subdeployments
                             throw new DeploymentUnitProcessingException("Class Path entry " + item + " in "
                                     + resourceRoot.getRoot() + "  may not point to a sub deployment.");
-                        } else if (marker == null || !marker) {
+                        } else if (!ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, target)) {
                             // otherwise just add it to the lib dir
-                            target.putAttachment(Attachments.EAR_LIB_RESOURCE_MARKER, true);
-                            ModuleRootMarker.markRoot(target);
+                            ResourceRootTypeMarker.setType(ResourceRootType.EAR_LIB_JAR, target);
                             libResourceRoots.push(target);
                             log.debugf("Resource %s added to logical lib directory due to Class-Path entry in %s",
                                     classPathFile, target.getRoot());

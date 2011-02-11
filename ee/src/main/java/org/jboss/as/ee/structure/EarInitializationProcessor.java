@@ -22,9 +22,10 @@
 
 package org.jboss.as.ee.structure;
 
-import static org.jboss.as.ee.structure.EarDeploymentMarker.markDeployment;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -48,7 +49,7 @@ public class EarInitializationProcessor implements DeploymentUnitProcessor {
         // Make sure this is an EAR deployment
         if (virtualFile.getName().toLowerCase().endsWith(EAR_EXTENSION)) {
             //  Let other processors know this is an EAR deployment
-            markDeployment(deploymentUnit);
+            DeploymentTypeMarker.setType(DeploymentType.EAR, deploymentUnit);
         }
     }
 

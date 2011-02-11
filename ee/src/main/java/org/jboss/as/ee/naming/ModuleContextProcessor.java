@@ -22,13 +22,13 @@
 
 package org.jboss.as.ee.naming;
 
-import static org.jboss.as.ee.structure.EarDeploymentMarker.isEarDeployment;
-
 import javax.naming.Context;
 
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.ContextService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentType;
+import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -52,7 +52,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (isEarDeployment(deploymentUnit)) {
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
@@ -95,7 +95,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
 
     private String getModuleName(final DeploymentUnit deploymentUnit) {
         final DeploymentUnit parent = deploymentUnit.getParent();
-        if (parent != null && isEarDeployment(parent)) {
+        if (parent != null && DeploymentTypeMarker.isType(DeploymentType.EAR, parent)) {
             return parent.getName() + "/" + deploymentUnit.getName();
         }
         return deploymentUnit.getName();
