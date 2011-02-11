@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -65,6 +66,8 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(firstPhase);
         final ServiceBuilder<?> phaseServiceBuilder = target.addService(serviceName, phaseService);
         phaseServiceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
+        phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService
+                .getDeploymentUnitInjector());
         phaseServiceBuilder.install();
     }
 
