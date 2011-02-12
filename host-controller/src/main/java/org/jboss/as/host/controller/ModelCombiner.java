@@ -20,6 +20,7 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
@@ -94,17 +95,23 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
         String serverGroupName = serverModel.require(GROUP).asString();
         this.profileName = domainModel.require(SERVER_GROUP).require(serverGroupName).require(PROFILE).asString();
-        this.portOffSet = serverModel.get(SOCKET_BINDING_PORT_OFFSET).asInt();
+
+        if (serverModel.hasDefined(SOCKET_BINDING_PORT_OFFSET)){
+            this.portOffSet = serverModel.get(SOCKET_BINDING_PORT_OFFSET).asInt();
+        } else {
+            final ModelNode groupNode = domainModel.require(SERVER_GROUP).require(serverGroupName);
+            this.portOffSet = groupNode.hasDefined(SOCKET_BINDING_PORT_OFFSET) ? groupNode.get(SOCKET_BINDING_PORT_OFFSET).asInt() : 0;
+        }
     }
 
     public List<ModelNode> getBootUpdates() {
+
+
 
         //System.out.println("DOMAIN");
         //System.out.println(domainModel);
         //System.out.println("HOST");
         //System.out.println(hostModel);
-
-        final String socketBindingRef = serverModel.get(SOCKET_BINDING_GROUP).asString();
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
         addNamespaces(updates);
@@ -113,7 +120,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         addExtensions(updates);
         addPaths(updates);
         addInterfaces(updates);
-        addSocketBindings(updates, socketBindingRef);
+        addSocketBindings(updates);
         //TODO I think it is ok to not do
         //  management
         //  domain-controller
@@ -256,15 +263,28 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     static final String SOCKET_BINDING_GROUP_NAME = "default";
 
-    private void addSocketBindings(List<ModelNode> updates, String bindingRef) {
+    private void addSocketBindings(List<ModelNode> updates) {
+
+        final String socketBindingRef;
+        if (serverModel.hasDefined(SOCKET_BINDING_GROUP)){
+            socketBindingRef = serverModel.get(SOCKET_BINDING_GROUP).asString();
+        } else {
+            final String serverGroupName = serverModel.require(GROUP).asString();
+            socketBindingRef = domainModel.require(SERVER_GROUP).require(serverGroupName).require(SOCKET_BINDING_GROUP).asString();
+        }
+
         final Set<String> processed = new HashSet<String>();
         final Map<String, ModelNode> groups = new LinkedHashMap<String, ModelNode>();
         if(domainModel.hasDefined(SOCKET_BINDING_GROUP)) {
             for (Property prop : domainModel.get(SOCKET_BINDING_GROUP).asPropertyList()) {
-                groups.put(prop.getName(), prop.getValue());
+                ModelNode node = prop.getValue().clone();
+                if (portOffSet > 0) {
+                    node.get(PORT_OFFSET).set(portOffSet);
+                }
+                groups.put(prop.getName(), node);
             }
         }
-        final ModelNode group = groups.get(bindingRef);
+        final ModelNode group = groups.get(socketBindingRef);
         final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME));
         updates.add(SocketBindingGroupAddHandler.getOperation(groupAddress, group));
         mergeBindingGroups(updates, groups, group, processed, group.get(INTERFACE));

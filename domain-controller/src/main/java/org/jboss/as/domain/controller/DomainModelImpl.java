@@ -42,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.BasicModelController;
@@ -61,7 +62,9 @@ import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
@@ -153,6 +156,8 @@ class DomainModelImpl extends BasicModelController implements DomainModel {
         final ModelNodeRegistration serverGroups = root.registerSubModel(PathElement.pathElement(SERVER_GROUP), DomainDescriptionProviders.SERVER_GROUP);
         serverGroups.registerOperationHandler(ADD, ServerGroupAddHandler.INSTANCE, DomainDescriptionProviders.SERVER_GROUP_ADD, false);
         serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, DomainDescriptionProviders.SERVER_GROUP_REMOVE, false);
+        serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
+        serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
         // serverGroups.registerReadWriteAttribute(JVM, null, null);
 
         // Deployments

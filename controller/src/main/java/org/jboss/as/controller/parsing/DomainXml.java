@@ -136,7 +136,6 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.PATHS) {
-            System.out.println("Found paths");
             parsePaths(reader, address, list, true);
             element = nextElement(reader);
         }

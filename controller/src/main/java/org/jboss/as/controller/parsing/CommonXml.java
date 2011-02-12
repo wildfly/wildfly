@@ -48,6 +48,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -1103,13 +1105,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         // Handle elements
         ParseUtils.requireNoContent(reader);
 
-        ModelNode update = Util.getWriteAttributeOperation(address, "socket-binding-group", name);
+        ModelNode update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_GROUP, name);
+
         updates.add(update);
 
         if (offset < 0) {
             offset = 0;
         }
-        update = Util.getWriteAttributeOperation(address, "socket-binding-port-offset", offset);
+        update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_PORT_OFFSET, offset);
         updates.add(update);
     }
 

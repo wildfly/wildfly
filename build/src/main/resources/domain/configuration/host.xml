@@ -39,24 +39,18 @@
     </interfaces>
 
     <servers>
-        <!-- 
-        <server name="server-one" group="main-server-group"> -->
+        <server name="server-one" group="main-server-group">
             <!-- server-one inherits the default socket-group declared in the server-group -->
-            <!-- 
-        </server> -->
+        </server>
         <server name="server-two" group="main-server-group" start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in 
                  the default socket-group declared in the server-group -->
             <socket-binding-group ref="standard-sockets" port-offset="150"/>
         </server>
-        <!-- 
         <server name="server-three" group="other-server-group" start="true">
-         -->
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-             <!-- 
             <socket-binding-group ref="standard-sockets" port-offset="250"/>
         </server>
-             -->
     </servers>
 </host>
