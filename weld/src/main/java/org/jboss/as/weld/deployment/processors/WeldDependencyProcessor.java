@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -56,24 +57,25 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return; // Skip if there are no beans.xml files in the deployment
         }
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
-        addDepdenency(deploymentUnit, moduleLoader, JAVAX_PERSISTENCE_API_ID);
-        addDepdenency(deploymentUnit, moduleLoader, JAVAEE_API_ID);
-        addDepdenency(deploymentUnit, moduleLoader, JBOSS_AS_WELD_ID);
-        addDepdenency(deploymentUnit, moduleLoader, JBOSS_INTERCEPTOR_ID);
-        addDepdenency(deploymentUnit, moduleLoader, JBOSS_LOGGING_ID);
-        addDepdenency(deploymentUnit, moduleLoader, JAVASSIST_ID);
-        addDepdenency(deploymentUnit, moduleLoader, WELD_CORE_ID);
-        addDepdenency(deploymentUnit, moduleLoader, WELD_API_ID);
-        addDepdenency(deploymentUnit, moduleLoader, WELD_SPI_ID);
+        addDepdenency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
+        addDepdenency(moduleSpecification, moduleLoader, JAVAEE_API_ID);
+        addDepdenency(moduleSpecification, moduleLoader, JBOSS_AS_WELD_ID);
+        addDepdenency(moduleSpecification, moduleLoader, JBOSS_INTERCEPTOR_ID);
+        addDepdenency(moduleSpecification, moduleLoader, JBOSS_LOGGING_ID);
+        addDepdenency(moduleSpecification, moduleLoader, JAVASSIST_ID);
+        addDepdenency(moduleSpecification, moduleLoader, WELD_CORE_ID);
+        addDepdenency(moduleSpecification, moduleLoader, WELD_API_ID);
+        addDepdenency(moduleSpecification, moduleLoader, WELD_SPI_ID);
     }
 
-    private void addDepdenency(DeploymentUnit deploymentUnit, ModuleLoader moduleLoader, ModuleIdentifier moduleIdentifier) {
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader,
-                moduleIdentifier, false, false, false));
+    private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+            ModuleIdentifier moduleIdentifier) {
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
     }
 
     @Override

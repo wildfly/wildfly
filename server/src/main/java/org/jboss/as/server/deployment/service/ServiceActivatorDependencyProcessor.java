@@ -24,12 +24,13 @@ package org.jboss.as.server.deployment.service;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
@@ -50,11 +51,13 @@ public class ServiceActivatorDependencyProcessor implements DeploymentUnitProces
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ModuleSpecification moduleSpecification = phaseContext.getDeploymentUnit().getAttachment(
+                Attachments.MODULE_SPECIFICATION);
         if(deploymentRoot == null)
             return;
         final ServicesAttachment servicesAttachments = phaseContext.getDeploymentUnit().getAttachment(Attachments.SERVICES);
         if(servicesAttachments != null && !servicesAttachments.getServiceImplementations(ServiceActivator.class.getName()).isEmpty()) {
-            phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, MSC_DEP);
+            moduleSpecification.addDependency(MSC_DEP);
         }
     }
 

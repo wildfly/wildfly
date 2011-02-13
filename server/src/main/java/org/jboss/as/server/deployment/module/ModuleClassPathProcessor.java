@@ -43,13 +43,13 @@ public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         final AttachmentList<ModuleIdentifier> entries = deploymentUnit.getAttachment(Attachments.CLASS_PATH_ENTRIES);
         if (entries != null) {
             for (ModuleIdentifier entry : entries) {
-                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, entry,
-                        false, false, true));
+                moduleSpecification.addDependency(new ModuleDependency(moduleLoader, entry, false, false, true));
             }
         }
 

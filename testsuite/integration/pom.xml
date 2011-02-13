@@ -50,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-managed</artifactId>
+            <artifactId>jboss-as-arquillian-container-remote</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

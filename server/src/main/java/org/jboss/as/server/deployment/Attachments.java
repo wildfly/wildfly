@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModule;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
@@ -80,6 +81,10 @@ public final class Attachments {
      * The primary deployment root.
      */
     public static final AttachmentKey<ResourceRoot> DEPLOYMENT_ROOT = AttachmentKey.create(ResourceRoot.class);
+    /**
+     * Information used to build up the deployments Module
+     */
+    public static final AttachmentKey<ModuleSpecification> MODULE_SPECIFICATION = AttachmentKey.create(ModuleSpecification.class);
     /**
      * The additional resource roots of the deployment unit.
      */
@@ -177,10 +182,6 @@ public final class Attachments {
     //
     // DEPENDENCIES
     //
-    /**
-     * The list of module dependencies.
-     */
-    public static final AttachmentKey<AttachmentList<ModuleDependency>> MODULE_DEPENDENCIES = AttachmentKey.createList(ModuleDependency.class);
 
     //
     // CONFIGURE

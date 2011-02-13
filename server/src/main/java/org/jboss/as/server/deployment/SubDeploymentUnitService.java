@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.ServiceContainer;
@@ -45,6 +46,7 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
     protected DeploymentUnit createAndInitializeDeploymentUnit(ServiceContainer container) {
         final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, deploymentRoot.getRootName(), new DelegatingServiceRegistry(container));
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, deploymentRoot);
+        deploymentUnit.putAttachment(Attachments.MODULE_SPECIFICATION, new ModuleSpecification());
         return deploymentUnit;
     }
 }

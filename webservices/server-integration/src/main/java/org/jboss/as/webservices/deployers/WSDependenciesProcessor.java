@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
@@ -65,23 +66,24 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isWSDeployment(deploymentUnit)) {
             final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+            final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
             // FIXME see if/how we can or should avoid (or at least limit) exposing the whole server stack code
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAXB_IMPL, false, false, true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_SPI, false, false, true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_COMMON, false, false, true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_CXF_CLIENT, false, false, true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_CXF_FACTORIES, false, false, true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WS_CXF_SERVER, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAXB_IMPL, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_SPI, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_COMMON, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_CLIENT, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_FACTORIES, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_SERVER, false, false, true));
 
             ModuleDependency apacheCxfDep = new ModuleDependency(moduleLoader, APACHE_CXF, false, false, true);
             apacheCxfDep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/cxf"), true)); //to include bus extensions in META-INF
             apacheCxfDep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/spring.*"), true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, apacheCxfDep);
+            moduleSpecification.addDependency(apacheCxfDep);
 
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WEBSERVICES, false, false, true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, SAAJ_IMPL, false, false, true));
-            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, WSDL4J, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEBSERVICES, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SAAJ_IMPL, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, WSDL4J, false, false, true));
         }
     }
 

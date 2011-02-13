@@ -25,6 +25,7 @@ package org.jboss.as.service;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -51,13 +52,14 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final JBossServiceXmlDescriptor serviceXmlDescriptor = deploymentUnit.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
         if(serviceXmlDescriptor == null) {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(Module.getSystemModuleLoader(), JBOSS_LOGGING_ID, false, false, false));
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(Module.getSystemModuleLoader(), JBOSS_MODULES_ID, false, false, false));
+        moduleSpecification.addDependency( new ModuleDependency(Module.getSystemModuleLoader(), JBOSS_LOGGING_ID, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(Module.getSystemModuleLoader(), JBOSS_MODULES_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

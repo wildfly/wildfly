@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
@@ -60,6 +61,7 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
@@ -71,7 +73,7 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
         }
 
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

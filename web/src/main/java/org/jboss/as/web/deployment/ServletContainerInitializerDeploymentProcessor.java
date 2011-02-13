@@ -44,6 +44,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -70,6 +71,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
      */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ServiceModuleLoader loader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
@@ -98,7 +100,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         // FIXME: for now, look in all dependencies for SCIs
-        for (ModuleDependency dependency : deploymentUnit.getAttachment(Attachments.MODULE_DEPENDENCIES)) {
+        for (ModuleDependency dependency : moduleSpecification.getDependencies()) {
             ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 Module depModule = loader.loadModule(dependency.getIdentifier());

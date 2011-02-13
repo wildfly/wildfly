@@ -51,6 +51,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         for (ResourceRoot resourceRoot : allResourceRoots) {
@@ -80,7 +81,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
                     dependencyLoader = Module.getSystemModuleLoader();
                 }
                 ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, false);
-                phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.MODULE_DEPENDENCIES, dependency);
+                moduleSpecification.addDependency(dependency);
             }
         }
     }

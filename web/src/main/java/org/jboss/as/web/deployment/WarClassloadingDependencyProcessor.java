@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -47,6 +48,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
         }
@@ -54,22 +56,22 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         final ModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         // Add module dependencies on Java EE apis
 
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
         // JFC hack...
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, SYSTEM, false, false, false));
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader, LOG, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SYSTEM, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, LOG, false, false, false));
 
         if(deploymentUnit.getParent() != null) {
             final DeploymentUnit parent = deploymentUnit.getParent();
             final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
             if(parentModule != null) {
                 // access to ear classes
-                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(
-                        deploymentModuleLoader, parentModule, false, false, false));
+                moduleSpecification.addDependency(new ModuleDependency(deploymentModuleLoader, parentModule, false, false,
+                        false));
             }
         }
     }

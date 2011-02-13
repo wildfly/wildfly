@@ -78,6 +78,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
         final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle);
         ResourceRootTypeMarker.setType(ResourceRootType.MODULE_ROOT, resourceRoot);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
+        deploymentUnit.putAttachment(Attachments.MODULE_SPECIFICATION, new ModuleSpecification());
     }
 
     public void undeploy(DeploymentUnit context) {

@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -40,16 +41,17 @@ public class ArquillianDependencyProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (deploymentUnit.getAttachment(ArquillianConfig.KEY) != null) {
-            addDepdenency(deploymentUnit, moduleLoader, ARQUILLIAN_JUNIT_ID);
-            addDepdenency(deploymentUnit, moduleLoader, SHRINKWRAP_ID);
-            addDepdenency(deploymentUnit, moduleLoader, JUNIT_ID);
+            addDepdenency(moduleSpecification, moduleLoader, ARQUILLIAN_JUNIT_ID);
+            addDepdenency(moduleSpecification, moduleLoader, SHRINKWRAP_ID);
+            addDepdenency(moduleSpecification, moduleLoader, JUNIT_ID);
         }
     }
 
-    private void addDepdenency(DeploymentUnit deploymentUnit, ModuleLoader moduleLoader, ModuleIdentifier moduleIdentifier) {
-        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader,
-                moduleIdentifier, false, false, false));
+    private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+            ModuleIdentifier moduleIdentifier) {
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
     }
 
     @Override

@@ -58,6 +58,7 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         final ServiceController<?> controller = phaseContext.getServiceRegistry().getRequiredService(Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX);
         final ExtensionIndex index = (ExtensionIndex) controller.getValue();
@@ -74,8 +75,7 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
                             entry.getImplementationVersion(), entry.getImplementationVendorId());
 
                     if (extension != null) {
-                        deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(moduleLoader,
-                                extension, false, false, true));
+                        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, extension, false, false, true));
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                     } else {
@@ -97,7 +97,8 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
                                 entry.getSpecificationVersion(), entry.getImplementationVersion(), entry
                                         .getImplementationVendorId());
                         if (extension != null) {
-                            deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(
+                            moduleSpecification
+                                    .addDependency(new ModuleDependency(
                                     moduleLoader, extension, false, false, true));
                             nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                         } else {

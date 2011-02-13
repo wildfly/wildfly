@@ -89,7 +89,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 }
             }
 
-        final List<ModuleDependency> dependencies = deploymentUnit.getAttachment(Attachments.MODULE_DEPENDENCIES);
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (moduleIdentifier == null) {
@@ -99,7 +99,8 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         // create the module servce and set it to attach to the deployment in the next phase
         ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots,
-                dependencies, moduleIdentifier);
+ moduleSpecification,
+                moduleIdentifier);
         phaseContext.addDeploymentDependency(moduleServiceName, Attachments.MODULE);
 
         final List<AdditionalModule> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
@@ -107,24 +108,30 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             return;
         }
         for (AdditionalModule module : additionalModules) {
+            // temp hack, the specification should be built up in the deployment processors
+            ModuleSpecification additionalModuleSpecification = new ModuleSpecification();
+            for (ModuleDependency dep : module.getDependencies()) {
+                additionalModuleSpecification.addDependency(dep);
+            }
+
             ServiceName additionalModuleServiceName = createModuleService(phaseContext, deploymentUnit, Collections
-                    .<ResourceRoot> singletonList(module.getResourceRoot()), module.getDependencies(), module
+                    .<ResourceRoot> singletonList(module.getResourceRoot()), additionalModuleSpecification, module
                     .getModuleIdentifier());
             phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, additionalModuleServiceName);
         }
     }
 
     private ServiceName createModuleService(DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
-            final List<ResourceRoot> resourceRoots, final List<ModuleDependency> dependencies,
+            final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
+        final List<ModuleDependency> dependencies = moduleSpecification.getDependencies();
 
         for (ResourceRoot resourceRoot : resourceRoots) {
             addResourceRoot(specBuilder, resourceRoot);
         }
 
-        final boolean childFirst = false;
-        if (childFirst) {
+        if (moduleSpecification.isChildFirst()) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         }
         if (dependencies != null)
@@ -164,7 +171,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                             .getIdentifier()));
                 }
             }
-        if (!childFirst) {
+        if (!moduleSpecification.isChildFirst()) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         }
         final ModuleSpec moduleSpec = specBuilder.create();

@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ResourceRootType;
 import org.jboss.as.server.deployment.ResourceRootTypeMarker;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
@@ -76,12 +77,19 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             return; // Skip non web deployments
         }
 
-        final ResourceRoot deploymentResourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
         if(deploymentRoot == null) {
             return;
         }
+
+        // set the child first behavoiur
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (moduleSpecification == null) {
+            return;
+        }
+        moduleSpecification.setChildFirst(true);
 
         // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib
         deploymentResourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);

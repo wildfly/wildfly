@@ -22,15 +22,18 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import java.util.List;
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
+
+import java.util.List;
+
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
@@ -53,6 +56,8 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final ModuleSpecification moduleSpecification = phaseContext.getDeploymentUnit().getAttachment(
+                Attachments.MODULE_SPECIFICATION);
 
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 
@@ -77,7 +82,8 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                                 Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(Module.getSystemModuleLoader(), jdbcIdentifier, false, false, false));
+                                moduleSpecification.addDependency(new ModuleDependency(Module.getSystemModuleLoader(),
+                                        jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", ds.getJndiName());
                             }
@@ -100,7 +106,8 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                                 Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                deploymentUnit.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(Module.getSystemModuleLoader(), jdbcIdentifier, false, false, false));
+                                moduleSpecification.addDependency(new ModuleDependency(Module.getSystemModuleLoader(),
+                                        jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", xads.getJndiName());
                             }
