@@ -30,15 +30,21 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Handles removal of a deployment from the model.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, RuntimeOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -56,15 +62,33 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public Cancellable execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) {
         try {
-            ModelNode model = context.getSubModel();
+            final ModelNode model = context.getSubModel();
             if (model.get(START).asBoolean()) {
                 String msg = String.format("Deployment %s must be undeployed before being removed", model.get(NAME).asString());
                 resultHandler.handleFailed(new ModelNode().set(msg));
             }
             else {
-                resultHandler.handleResultComplete(DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model));
+                final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
+                if (context instanceof RuntimeOperationContext) {
+                    RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
+                    String deploymentUnitName = model.require(NAME).asString();
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
+                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                    controller.addListener(new AbstractServiceListener<Object>() {
+                        @Override
+                        public void serviceRemoved(ServiceController<? extends Object> controller) {
+                            resultHandler.handleResultComplete(compensatingOp);
+                            controller.removeListener(this);
+                        }
+                    });
+                    controller.setMode(ServiceController.Mode.REMOVE);
+                }
+                else {
+                    resultHandler.handleResultComplete(compensatingOp);
+                }
             }
         }
         catch (Exception e) {

@@ -85,12 +85,11 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, R
             String deploymentUnitName = model.require(NAME).asString();
             final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
             final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
-
             final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-
             controller.addListener(new AbstractServiceListener<Object>() {
                 public void serviceRemoved(ServiceController<?> controller) {
                     resultHandler.handleResultComplete(compensatingOp);
+                    controller.removeListener(this);
                 }
             });
             controller.setMode(ServiceController.Mode.NEVER);
@@ -98,6 +97,5 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, R
         else {
             resultHandler.handleResultComplete(compensatingOp);
         }
-
     }
 }
