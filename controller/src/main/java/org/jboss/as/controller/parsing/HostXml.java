@@ -125,9 +125,12 @@ public class HostXml extends CommonXml {
         if (modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
         }
-
         if (modelNode.hasDefined(JVM)) {
-            //TODO
+            writer.writeStartElement(Element.JVMS.getLocalName());
+            for(final Property jvm : modelNode.get(JVM).asPropertyList()) {
+                writeJVMElement(writer, jvm.getName(), jvm.getValue());
+            }
+            writer.writeEndElement();
         }
 
         if (modelNode.hasDefined(SERVER)) {
@@ -566,7 +569,10 @@ public class HostXml extends CommonXml {
                 writeInterfaces(writer, server.get(INTERFACE));
             }
             if (server.hasDefined(JVM)){
-                //TODO
+                for(final Property jvm : server.get(JVM).asPropertyList()) {
+                    writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                    break; // TODO just write the first !?
+                }
             }
             if (server.hasDefined(SOCKET_BINDING_GROUP)) {
                 writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
