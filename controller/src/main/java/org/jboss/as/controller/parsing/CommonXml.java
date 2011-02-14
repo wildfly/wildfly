@@ -51,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -79,6 +80,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
@@ -1361,6 +1363,84 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected static boolean hasDefinedChild(ModelNode node, String child) {
         return node.has(child) && node.get(child).isDefined();
+    }
+
+    protected void writeJVMElement(final XMLExtendedStreamWriter writer, final String jvmName, final ModelNode jvmElement) throws XMLStreamException {
+        writer.writeStartElement(Element.JVM.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), jvmName);
+
+        if(jvmElement.hasDefined(JVM_TYPE)) {
+            writer.writeAttribute(Attribute.TYPE.getLocalName(), jvmElement.get(JVM_TYPE).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_JAVA_HOME)) {
+            writer.writeAttribute(Attribute.JAVA_HOME.getLocalName(), jvmElement.get(JVMHandlers.JVM_JAVA_HOME).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_DEBUG_ENABLED)) {
+            writer.writeAttribute(Attribute.DEBUG_ENABLED.getLocalName(), jvmElement.get(JVMHandlers.JVM_DEBUG_ENABLED).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_DEBUG_OPTIONS)) {
+            writer.writeAttribute(Attribute.DEBUG_OPTIONS.getLocalName(), jvmElement.get(JVMHandlers.JVM_DEBUG_OPTIONS).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED)) {
+            writer.writeAttribute(Attribute.ENV_CLASSPATH_IGNORED.getLocalName(), jvmElement.get(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED).asString());
+        }
+
+        if(jvmElement.hasDefined(JVMHandlers.JVM_HEAP)) {
+            final ModelNode heap = jvmElement.get(JVMHandlers.JVM_HEAP);
+            if(heap.hasDefined(JVMHandlers.SIZE) || heap.hasDefined(JVMHandlers.MAX_SIZE)) {
+                writer.writeEmptyElement(Element.HEAP.getLocalName());
+                if(heap.hasDefined(JVMHandlers.SIZE)) writer.writeAttribute(Attribute.SIZE.getLocalName(), heap.get(JVMHandlers.SIZE).asString());
+                if(heap.hasDefined(JVMHandlers.MAX_SIZE)) writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), heap.get(JVMHandlers.MAX_SIZE).asString());
+            }
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_PERMGEN)) {
+            final ModelNode permGen = jvmElement.get(JVMHandlers.JVM_PERMGEN);
+            if(permGen.hasDefined(JVMHandlers.SIZE) || permGen.hasDefined(JVMHandlers.MAX_SIZE)) {
+                writer.writeEmptyElement(Element.HEAP.getLocalName());
+                if(permGen.hasDefined(JVMHandlers.SIZE)) writer.writeAttribute(Attribute.SIZE.getLocalName(), permGen.get(JVMHandlers.SIZE).asString());
+                if(permGen.hasDefined(JVMHandlers.MAX_SIZE)) writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), permGen.get(JVMHandlers.MAX_SIZE).asString());
+            }
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_STACK)) {
+            writer.writeEmptyElement(Element.STACK.getLocalName());
+            writer.writeAttribute(Attribute.SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_STACK).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_AGENT_LIB)) {
+            writer.writeEmptyElement(Element.AGENT_LIB.getLocalName());
+            writer.writeAttribute(Attribute.VALUE.getLocalName(), jvmElement.get(JVMHandlers.JVM_AGENT_LIB).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_AGENT_PATH)) {
+            writer.writeEmptyElement(Element.AGENT_PATH.getLocalName());
+            writer.writeAttribute(Attribute.VALUE.getLocalName(), jvmElement.get(JVMHandlers.JVM_AGENT_PATH).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_JAVA_AGENT)) {
+            writer.writeEmptyElement(Element.JAVA_AGENT.getLocalName());
+            writer.writeAttribute(Attribute.VALUE.getLocalName(), jvmElement.get(JVMHandlers.JVM_JAVA_AGENT).asString());
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_OPTIONS)) {
+            writer.writeStartElement(Element.JVM_OPTIONS.getLocalName());
+            for(final ModelNode option : jvmElement.get(JVMHandlers.JVM_OPTIONS).asList()) {
+                writer.writeEmptyElement(Element.OPTION.getLocalName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), option.asString());
+            }
+            writer.writeEndElement();
+        }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_ENV_VARIABLES)) {
+            writer.writeStartElement(Element.ENVIRONMENT_VARIABLES.getLocalName());
+            for(final Property variable : jvmElement.get(JVMHandlers.JVM_ENV_VARIABLES).asPropertyList()) {
+                writer.writeEmptyElement(Element.VARIABLE.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), variable.getValue().asString());
+            }
+            writer.writeEndElement();
+        }
+
+        // System properties
+        if(jvmElement.hasDefined(SYSTEM_PROPERTIES)) {
+            writeProperties(writer, jvmElement, Element.SYSTEM_PROPERTIES);
+        }
+
+        writer.writeEndElement();
     }
 
 }

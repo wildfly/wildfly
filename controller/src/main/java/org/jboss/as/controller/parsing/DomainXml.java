@@ -25,15 +25,25 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -49,14 +59,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -81,16 +94,47 @@ public class DomainXml extends CommonXml {
         ModelNode modelNode = context.getModelNode();
 
         writer.writeStartDocument();
-        writer.writeStartElement(Element.SERVER.getLocalName());
+        writer.writeStartElement(Element.DOMAIN.getLocalName());
 
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
+
         if (hasDefinedChild(modelNode, EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
         }
         if(hasDefinedChild(modelNode, PATH)) {
             writePaths(writer, modelNode.get(PATH));
+        }
+        if(hasDefinedChild(modelNode, PROFILE)) {
+            writer.writeStartElement(Element.PROFILES.getLocalName());
+            for(final Property profile : modelNode.get(PROFILE).asPropertyList()) {
+                writeProfile(writer, profile.getName(), profile.getValue(), context);
+            }
+            writer.writeEndElement();
+        }
+        if(hasDefinedChild(modelNode, INTERFACE)) {
+            writeInterfaces(writer, modelNode);
+        }
+        if(hasDefinedChild(modelNode, SOCKET_BINDING_GROUP)) {
+            writer.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
+            for(final Property property : modelNode.get(SOCKET_BINDING_GROUP).asPropertyList()) {
+                writeSocketBindingGroup(writer, property.getValue(), false);
+            }
+            writer.writeEndElement();
+        }
+        if(hasDefinedChild(modelNode, SYSTEM_PROPERTIES)) {
+            writeProperties(writer, modelNode, Element.SYSTEM_PROPERTIES);
+        }
+        if(hasDefinedChild(modelNode, DEPLOYMENT)) {
+            writeDomainDeployments(writer, modelNode);
+        }
+        if(hasDefinedChild(modelNode, SERVER_GROUP)) {
+            writer.writeStartElement(Element.SERVER_GROUPS.getLocalName());
+            for(final Property property : modelNode.get(SERVER_GROUP).asPropertyList()) {
+                writeServerGroup(writer, property.getName(), property.getValue());
+            }
+            writer.writeEndElement();
         }
 
         writer.writeEndElement();
@@ -524,6 +568,85 @@ public class DomainXml extends CommonXml {
                 throw new XMLStreamException("Profile has no subsystem configurations", reader.getLocation());
             }
         }
+    }
 
+    private void writeProfile(final XMLExtendedStreamWriter writer, final String profileName, final ModelNode profileNode, final ModelMarshallingContext context) throws XMLStreamException {
+
+        writer.writeStartElement(Element.PROFILE.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), profileName);
+        Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
+        if (subsystemNames.size() > 0) {
+            String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
+            for (String subsystemName : subsystemNames) {
+                try {
+                    ModelNode subsystem = profileNode.get(SUBSYSTEM, subsystemName);
+                    XMLElementWriter<SubsystemMarshallingContext> subsystemWriter = context.getSubsystemWriter(subsystemName);
+                    if (subsystemWriter != null) { // FIXME -- remove when extensions are doing the registration
+                        subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
+                    }
+                }
+                finally {
+                    writer.setDefaultNamespace(defaultNamespace);
+                }
+            }
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeDomainDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+
+        final Set<String> deploymentNames = modelNode.keys();
+        if (deploymentNames.size() > 0) {
+            writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            for (String uniqueName : deploymentNames) {
+                final ModelNode deployment = modelNode.get(uniqueName);
+                final String runtimeName = deployment.get(RUNTIME_NAME).asString();
+                final String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
+                writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                writeAttribute(writer, Attribute.NAME, uniqueName);
+                writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
+                writeAttribute(writer, Attribute.SHA1, sha1);
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeServerGroup(final XMLExtendedStreamWriter writer, final String groupName, final ModelNode group) throws XMLStreamException {
+        writer.writeStartElement(Element.SERVER_GROUP.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), groupName);
+        writer.writeAttribute(Attribute.PROFILE.getLocalName(), group.get(PROFILE).asString());
+
+        // JVM
+        if(group.hasDefined(JVM)) {
+            for(final Property jvm : group.get(JVM).asPropertyList()) {
+                writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                break; // TODO just write the first !?
+            }
+        }
+        // Socket binding ref
+        final ModelNode bindingGroup = group.get(SOCKET_BINDING_GROUP);
+        writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+        ModelNode attr = bindingGroup.get(NAME);
+        writeAttribute(writer, Attribute.NAME, attr.asString());
+        if(bindingGroup.hasDefined(DEFAULT_INTERFACE)) {
+            attr = bindingGroup.get(DEFAULT_INTERFACE);
+            writeAttribute(writer, Attribute.DEFAULT_INTERFACE, attr.asString());
+        }
+        if (bindingGroup.hasDefined(PORT_OFFSET) && bindingGroup.get(PORT_OFFSET).asInt() != 0) {
+            attr = bindingGroup.get(PORT_OFFSET);
+            writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
+        }
+        writer.writeEndElement();
+
+        if(group.hasDefined(DEPLOYMENT)) {
+            writeDomainDeployments(writer, group);
+        }
+        // System properties
+        if(group.hasDefined(SYSTEM_PROPERTIES)) {
+            writeProperties(writer, group, Element.SYSTEM_PROPERTIES);
+        }
+
+        writer.writeEndElement();
     }
 }
