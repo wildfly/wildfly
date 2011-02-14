@@ -50,7 +50,7 @@ public class ConfigurationPersisterFactory {
 
     public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir) {
         HostXml hostXml = new HostXml(Module.getSystemModuleLoader());
-        return new TempHackConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
+        return new BackupXmlConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
     }
 
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {

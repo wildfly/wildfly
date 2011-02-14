@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -139,11 +140,11 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         if(serverModel.hasDefined(SOCKET_BINDING_GROUP)) {
             socketBindingRef = serverModel.get(SOCKET_BINDING_GROUP).asString();
         }
-        if(serverGroup.hasDefined("socket-binding-port-offset")) {
-            portOffSet = serverGroup.get("socket-binding-port-offset").asInt();
+        if(serverGroup.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+            portOffSet = serverGroup.get(SOCKET_BINDING_PORT_OFFSET).asInt();
         }
-        if(serverModel.hasDefined("socket-binding-port-offset")) {
-            portOffSet = serverModel.get("socket-binding-port-offset").asInt();
+        if(serverModel.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+            portOffSet = serverModel.get(SOCKET_BINDING_PORT_OFFSET).asInt();
         }
         if(socketBindingRef == null) {
             throw new IllegalArgumentException("undefined socket binding group for server " + serverName);

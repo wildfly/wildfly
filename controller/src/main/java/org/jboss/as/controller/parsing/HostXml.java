@@ -24,12 +24,26 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -48,6 +62,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -75,10 +90,10 @@ public class HostXml extends CommonXml {
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
 
-        ModelNode modelNode = context.getModelNode();
+        final ModelNode modelNode = context.getModelNode();
 
         writer.writeStartDocument();
-        writer.writeStartElement(Element.SERVER.getLocalName());
+        writer.writeStartElement(Element.HOST.getLocalName());
 
         if (hasDefinedChild(modelNode, NAME)) {
             writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
@@ -87,11 +102,36 @@ public class HostXml extends CommonXml {
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
-        if (hasDefinedChild(modelNode, EXTENSION)) {
+        if (modelNode.hasDefined(EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
         }
-        if(hasDefinedChild(modelNode, PATH)) {
+        if (modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
+        }
+
+        if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES);
+        }
+
+        if (modelNode.hasDefined(MANAGEMENT)) {
+            writeManagement(writer, modelNode.get(MANAGEMENT));
+        }
+
+        //TODO Domain controller
+        if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
+            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER));
+        }
+
+        if (modelNode.hasDefined(INTERFACE)) {
+            writeInterfaces(writer, modelNode.get(INTERFACE));
+        }
+
+        if (modelNode.hasDefined(JVM)) {
+            //TODO
+        }
+
+        if (modelNode.hasDefined(SERVER)) {
+            writeServers(writer, modelNode.get(SERVER));
         }
 
         writer.writeEndElement();
@@ -306,8 +346,8 @@ public class HostXml extends CommonXml {
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address);
         update.get(OP).set("write-remote-domain-controller");
-        update.get("host-name").set(host);
-        update.get("port").set(port);
+        update.get(HOST).set(host);
+        update.get(PORT).set(port);
         list.add(update);
 
         reader.discardRemainder();
@@ -466,4 +506,81 @@ public class HostXml extends CommonXml {
         final ModelNode startUpdate = Util.getWriteAttributeOperation(address, "start", isStart);
         list.add(startUpdate);
     }
+
+    private void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writer.writeStartElement(Element.MANAGEMENT.getLocalName());
+        if (modelNode.has(NATIVE_API)) {
+            //TODO decide if this should have the same format in host.xml as in standalone.xml
+            final ModelNode nativeApi = modelNode.get(NATIVE_API);
+            if (nativeApi.hasDefined(INTERFACE)) {
+                writeAttribute(writer, Attribute.INTERFACE, nativeApi.get(INTERFACE).asString());
+            }
+            if (nativeApi.hasDefined(PORT)) {
+                writeAttribute(writer, Attribute.PORT, nativeApi.get(PORT).asString());
+            }
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writer.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
+        if (modelNode.has(LOCAL)) {
+            writer.writeEmptyElement(Element.LOCAL.getLocalName());
+        }
+        if (modelNode.has(REMOTE)) {
+            writer.writeStartElement(Element.REMOTE.getLocalName());
+            final ModelNode remote = modelNode.get(REMOTE);
+            if (remote.has(HOST)) {
+                writeAttribute(writer, Attribute.HOST, remote.get(HOST).asString());
+            }
+            if (remote.has(PORT)) {
+                writeAttribute(writer, Attribute.PORT, remote.get(PORT).asString());
+            }
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeServers(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        writer.writeStartElement(Element.SERVERS.getLocalName());
+
+        for (Property prop : modelNode.asPropertyList()) {
+            final ModelNode server = prop.getValue();
+
+            writer.writeStartElement(Element.SERVER.getLocalName());
+
+            writeAttribute(writer, Attribute.NAME, prop.getName());
+            if (server.hasDefined(GROUP)) {
+                writeAttribute(writer, Attribute.GROUP, server.get(GROUP).asString());
+            }
+            if (server.hasDefined(START)) {
+                writeAttribute(writer, Attribute.START, server.get(START).asString());
+            }
+            if (server.hasDefined(PATH)) {
+                writePaths(writer, server.get(PATH));
+            }
+            if (server.hasDefined(SYSTEM_PROPERTY)) {
+                writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES);
+            }
+            if (server.hasDefined(INTERFACE)) {
+                writeInterfaces(writer, server.get(INTERFACE));
+            }
+            if (server.hasDefined(JVM)){
+                //TODO
+            }
+            if (server.hasDefined(SOCKET_BINDING_GROUP)) {
+                writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+                writeAttribute(writer, Attribute.REF, server.get(SOCKET_BINDING_GROUP).asString());
+                if (server.has(SOCKET_BINDING_PORT_OFFSET)) {
+                    writeAttribute(writer, Attribute.PORT_OFFSET, server.get(SOCKET_BINDING_PORT_OFFSET).asString());
+                }
+                writer.writeEndElement();
+            }
+
+            writer.writeEndElement();
+        }
+
+        writer.writeEndElement();
+    }
+
 }

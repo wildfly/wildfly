@@ -114,6 +114,7 @@ public class ModelDescriptionConstants {
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String RELATIVE_TO = "relative-to";
     public static final String REMOVE = "remove";
+    public static final String REMOTE = "remote";
     public static final String REMOVE_OPERATION = "remove-operation";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
