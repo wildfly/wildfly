@@ -53,7 +53,7 @@ import org.jboss.logging.Logger;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-class ModelControllerOperationHandlerImpl extends AbstractMessageHandler implements ModelControllerOperationHandler {
+public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler implements ModelControllerOperationHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.server.management");
 
@@ -67,7 +67,7 @@ class ModelControllerOperationHandlerImpl extends AbstractMessageHandler impleme
 
     private final MessageHandler initiatingHandler;
 
-    public ModelControllerOperationHandlerImpl(ModelControllerClient.Type type, ModelController modelController, MessageHandler initiatingHandler) {
+    protected ModelControllerOperationHandlerImpl(ModelControllerClient.Type type, ModelController modelController, MessageHandler initiatingHandler) {
         this.type = type;
         this.modelController = modelController;
         this.initiatingHandler = initiatingHandler;
@@ -94,6 +94,14 @@ class ModelControllerOperationHandlerImpl extends AbstractMessageHandler impleme
         return type.getHandlerId();
     }
 
+    protected ModelController getController() {
+        return modelController;
+    }
+
+    protected MessageHandler getInitiatingHandler() {
+        return initiatingHandler;
+    }
+
     public ManagementResponse operationFor(final byte commandByte) {
         switch (commandByte) {
             case ModelControllerClientProtocol.EXECUTE_ASYNCHRONOUS_REQUEST:
@@ -117,7 +125,7 @@ class ModelControllerOperationHandlerImpl extends AbstractMessageHandler impleme
         ModelNode operation;
 
         ExecuteOperation() {
-            super(initiatingHandler);
+            super(getInitiatingHandler());
         }
 
         @Override

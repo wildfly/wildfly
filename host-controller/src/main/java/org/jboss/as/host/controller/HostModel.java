@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -76,6 +77,8 @@ import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.host.controller.operations.ExtensionRemoveHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
 import org.jboss.as.host.controller.operations.SpecifiedInterfaceAddHandler;
@@ -114,6 +117,7 @@ class HostModel extends BasicModelController {
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
+        root.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
         // Management API protocols
         ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT, NATIVE_API), CommonProviders.MANAGEMENT_PROVIDER);
         managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
@@ -124,6 +128,8 @@ class HostModel extends BasicModelController {
         //root.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, LocalDomainControllerAddHandler.INSTANCE, LocalDomainControllerAddHandler.INSTANCE, false);
         root.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
+        root.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, RemoteDomainControllerAddHandler.INSTANCE, RemoteDomainControllerAddHandler.INSTANCE, false);
+        root.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
         //root.registerOperationHandler(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML, ReadConfigAsXmlHandler.INSTANCE, ReadConfigAsXmlHandler.INSTANCE, false);
 
         //Extensions

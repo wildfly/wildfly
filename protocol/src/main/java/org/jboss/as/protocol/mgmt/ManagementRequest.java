@@ -22,6 +22,9 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,11 +38,9 @@ import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote host controller
@@ -80,6 +81,8 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         ByteDataOutput output = null;
         try {
             final Connection connection = connectionStrategy.getConnection();
+            connection.backupMessageHandler();
+
             connection.setMessageHandler(initiatingMessageHandler);
             dataOutput = connection.writeMessage();
             output = new SimpleByteDataOutput(dataOutput);
@@ -220,7 +223,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             try {
-                connection.setMessageHandler(MessageHandler.NULL);
+                connection.restoreMessageHandler();
                 expectHeader(input, ManagementProtocol.RESPONSE_END);
                 synchronized (resultLock) {
                     future.set(result);

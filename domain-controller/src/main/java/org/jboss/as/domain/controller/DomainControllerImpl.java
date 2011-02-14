@@ -38,11 +38,11 @@ import org.jboss.logging.Logger;
 /**
  * @author Emanuel Muckenhuber
  */
-class DomainControllerImpl implements DomainController {
+public class DomainControllerImpl implements DomainController {
 
     private final DomainModelImpl domainModel;
 
-    DomainControllerImpl(final ExtensibleConfigurationPersister configurationPersister) {
+    public DomainControllerImpl(final ExtensibleConfigurationPersister configurationPersister) {
         this.domainModel = new DomainModelImpl(configurationPersister);
     }
 

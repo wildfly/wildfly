@@ -63,6 +63,8 @@ final class ConnectionImpl implements Connection {
 
     private volatile Object attachment;
 
+    private volatile MessageHandler backupHandler;
+
     ConnectionImpl(final Socket socket, final MessageHandler handler, final Executor readExecutor) {
         this.socket = socket;
         messageHandler = handler;
@@ -154,6 +156,17 @@ final class ConnectionImpl implements Connection {
 
     public Object getAttachment() {
         return attachment;
+    }
+
+    @Override
+    public void backupMessageHandler() {
+        backupHandler = messageHandler;
+    }
+
+    @Override
+    public void restoreMessageHandler() {
+        MessageHandler handler = backupHandler;
+        setMessageHandler(handler == null ? MessageHandler.NULL : handler);
     }
 
     Runnable getReadTask() {

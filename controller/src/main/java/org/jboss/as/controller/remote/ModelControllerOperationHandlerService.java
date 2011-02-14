@@ -67,8 +67,8 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
     @Override
     public void start(StartContext context) throws StartException {
         final ModelController modelController = modelControllerValue.getValue();
-        final MessageHandler messageHandler = getInitialMessageHandler();
-        this.handler = new ModelControllerOperationHandlerImpl(type, modelController, messageHandler);
+        final MessageHandler initialMessageHandler = getInitialMessageHandler();
+        this.handler = createOperationHandler(type, modelController, initialMessageHandler);
     }
 
     /** {@inheritDoc} */
@@ -89,5 +89,9 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
 
     protected MessageHandler getInitialMessageHandler() {
         return MessageHandler.NULL;
+    }
+
+    protected ModelControllerOperationHandler createOperationHandler(ModelControllerClient.Type type, ModelController modelController, MessageHandler initialMessageHandler) {
+        return new ModelControllerOperationHandlerImpl(type, modelController, initialMessageHandler);
     }
 }

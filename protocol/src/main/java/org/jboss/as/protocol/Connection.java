@@ -76,4 +76,17 @@ public interface Connection extends Closeable {
     void attach(Object attachment);
 
     Object getAttachment();
+
+    /**
+     * Records the current message handler, which can be reset using
+     * {@link #resetMessageHandler()}
+     */
+    void backupMessageHandler();
+
+    /**
+     * Resets the message handler to any that was backed up using
+     * {@link #backupMessageHandler()}. If no backup was done, {@link MessageHandler#NULL}
+     * is used
+     */
+    void restoreMessageHandler();
 }

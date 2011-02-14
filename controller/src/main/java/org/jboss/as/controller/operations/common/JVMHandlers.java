@@ -135,7 +135,7 @@ public final class JVMHandlers {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             // TODO Auto-generated method stub
-            return null;
+            return new ModelNode();
         }
 
     }
@@ -177,7 +177,7 @@ public final class JVMHandlers {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             // TODO Auto-generated method stub
-            return null;
+            return new ModelNode();
         }
 
     }

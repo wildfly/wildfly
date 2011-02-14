@@ -117,7 +117,6 @@ public class HostXml extends CommonXml {
             writeManagement(writer, modelNode.get(MANAGEMENT));
         }
 
-        //TODO Domain controller
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
             writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER));
         }

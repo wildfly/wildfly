@@ -24,15 +24,20 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -238,7 +243,26 @@ public class HostControllerBootstrap {
     }
 
     static void installRemoteDomainControllerConnection(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {
-        // TODO
+
+        String name;
+        try {
+            name = host.require(NAME).asString();
+        } catch (NoSuchElementException e1) {
+            throw new IllegalArgumentException("A host connecting to a remote domain controller must have its name attribute set");
+        }
+
+        final ModelNode dc = host.require(DOMAIN_CONTROLLER).require(REMOTE);
+        InetAddress addr;
+        try {
+            addr = InetAddress.getByName(dc.require(HOST).asString());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        int port = dc.require(PORT).asInt();
+        final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port);
+        serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, service)
+            .setInitialMode(Mode.ACTIVE)
+            .install();
     }
 
     /**

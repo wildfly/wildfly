@@ -55,6 +55,7 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
 
         final ModelNode result = new ModelNode();
         final ModelNode profile = context.getSubModel();
+        result.setEmptyList();
 
         if (profile.hasDefined(INCLUDES)) {
 
