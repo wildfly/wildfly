@@ -49,30 +49,31 @@ import org.jboss.msc.value.InjectedValue;
 final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
-    private final InjectedValue<DeploymentUnit> deploymentUnitInjector = new InjectedValue<DeploymentUnit>();
+    private final DeploymentUnit deploymentUnit;
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
     private final List<AttachedDependency> injectedAttachedDepenendencies = new ArrayList<AttachedDependency>();
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
-    private DeploymentUnitPhaseService(final Phase phase, final AttachmentKey<T> valueKey) {
+    private DeploymentUnitPhaseService(final DeploymentUnit deploymentUnit, final Phase phase, final AttachmentKey<T> valueKey) {
+        this.deploymentUnit = deploymentUnit;
         this.phase = phase;
         this.valueKey = valueKey;
     }
 
-    private static <T> DeploymentUnitPhaseService<T> create(final Phase phase, AttachmentKey<T> valueKey) {
-        return new DeploymentUnitPhaseService<T>(phase, valueKey);
+    private static <T> DeploymentUnitPhaseService<T> create(final DeploymentUnit deploymentUnit, final Phase phase, AttachmentKey<T> valueKey) {
+        return new DeploymentUnitPhaseService<T>(deploymentUnit, phase, valueKey);
     }
 
-    static DeploymentUnitPhaseService<?> create(final Phase phase) {
-        return create(phase, phase.getPhaseKey());
+    static DeploymentUnitPhaseService<?> create(final DeploymentUnit deploymentUnit, final Phase phase) {
+        return create(deploymentUnit, phase, phase.getPhaseKey());
     }
 
     @SuppressWarnings("unchecked")
     public synchronized void start(final StartContext context) throws StartException {
         final DeployerChains chains = deployerChainsInjector.getValue();
-        final DeploymentUnit deploymentUnit = deploymentUnitInjector.getValue();
+        final DeploymentUnit deploymentUnit = this.deploymentUnit;
         final List<DeploymentUnitProcessor> list = chains.getChain(phase);
         final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator();
         final ServiceContainer container = context.getController().getServiceContainer();
@@ -113,9 +114,8 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             final String name = deploymentUnit.getName();
             final DeploymentUnit parent = deploymentUnit.getParent();
             final ServiceName serviceName = parent == null ? Services.deploymentUnitName(name, nextPhase) : Services.deploymentUnitName(parent.getName(), name, nextPhase);
-            final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(nextPhase);
+            final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(deploymentUnit, nextPhase);
             final ServiceBuilder<?> phaseServiceBuilder = serviceTarget.addService(serviceName, phaseService);
-            phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService.getDeploymentUnitInjector());
             phaseServiceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
             phaseServiceBuilder.addDependency(context.getController().getName());
 
@@ -150,7 +150,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     }
 
     public synchronized void stop(final StopContext context) {
-        final DeploymentUnit deploymentUnitContext = deploymentUnitInjector.getValue();
+        final DeploymentUnit deploymentUnitContext = this.deploymentUnit;
         final DeployerChains chains = deployerChainsInjector.getValue();
         final List<DeploymentUnitProcessor> list = chains.getChain(phase);
         final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator(list.size());
@@ -169,15 +169,10 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     }
 
     public synchronized T getValue() throws IllegalStateException, IllegalArgumentException {
-        return deploymentUnitInjector.getValue().getAttachment(valueKey);
+        return deploymentUnit.getAttachment(valueKey);
     }
 
     InjectedValue<DeployerChains> getDeployerChainsInjector() {
         return deployerChainsInjector;
     }
-
-    Injector<DeploymentUnit> getDeploymentUnitInjector() {
-        return deploymentUnitInjector;
-    }
-
 }

@@ -34,6 +34,7 @@ import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -78,8 +79,7 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, R
         return Cancellable.NULL;
     }
 
-    private void undeploy(ModelNode model, OperationContext context, ResultHandler resultHandler,
-            ModelNode compensatingOp) {
+    private void undeploy(ModelNode model, OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context instanceof RuntimeOperationContext) {
             RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
             String deploymentUnitName = model.require(NAME).asString();
@@ -87,9 +87,13 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, R
             final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
 
             final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+
+            controller.addListener(new AbstractServiceListener<Object>() {
+                public void serviceRemoved(ServiceController<?> controller) {
+                    resultHandler.handleResultComplete(compensatingOp);
+                }
+            });
             controller.setMode(ServiceController.Mode.NEVER);
-            // TODO - connect to service lifecycle properly
-            resultHandler.handleResultComplete(compensatingOp);
         }
         else {
             resultHandler.handleResultComplete(compensatingOp);

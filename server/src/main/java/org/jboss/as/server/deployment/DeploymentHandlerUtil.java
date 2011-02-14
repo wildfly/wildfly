@@ -18,6 +18,8 @@
  */
 package org.jboss.as.server.deployment;
 
+import java.util.Map;
+import java.util.Set;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -32,6 +34,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartException;
 
 /**
  * Utility methods used by operation handlers involved with deployment.
@@ -41,11 +44,11 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class DeploymentHandlerUtil {
 
+
     private DeploymentHandlerUtil() {
     }
 
-    public static void deploy(ModelNode deploymentModel, OperationContext context, ResultHandler resultHandler,
-            ModelNode compensatingOp) {
+    public static void deploy(ModelNode deploymentModel, OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context instanceof RuntimeOperationContext) {
             RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
             String deploymentUnitName = deploymentModel.require(NAME).asString();
@@ -58,16 +61,28 @@ public class DeploymentHandlerUtil {
                 final ServiceTarget serviceTarget = updateContext.getServiceTarget();
                 final String runtimeName = deploymentModel.require(RUNTIME_NAME).asString();
                 final byte[] hash = deploymentModel.require(HASH).asBytes();
-                final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, hash, null);
+                final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, hash, null, new AbstractDeploymentUnitService.DeploymentCompletionCallback() {
+                    public void handleComplete() {
+                        resultHandler.handleResultComplete(compensatingOp);
+                    }
+
+                    public void handleFailure(Map<ServiceName, StartException> startExceptions, Set<ServiceName> failedDependencies) {
+                        final StringBuilder failure = new StringBuilder("Deployment failed.  ");
+                        if(!startExceptions.isEmpty()) {
+                            failure.append("Service failures: ").append(startExceptions.values());
+                        }
+                        if(!failedDependencies.isEmpty()) {
+                            failure.append("Failed Dependencies: ").append(failedDependencies);
+                        }
+                        resultHandler.handleFailed(new ModelNode().set(failure.toString()));
+                    }
+                });
                 serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
             }
-
-            // TODO - connect to service lifecycle properly
-            resultHandler.handleResultComplete(compensatingOp);
         }
         else {
             resultHandler.handleResultComplete(compensatingOp);

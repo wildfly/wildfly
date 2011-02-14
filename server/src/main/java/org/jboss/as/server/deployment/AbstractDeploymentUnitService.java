@@ -22,6 +22,10 @@
 
 package org.jboss.as.server.deployment;
 
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.logging.Logger;
@@ -50,12 +54,22 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
     private static final String FIRST_PHASE_NAME = Phase.values()[0].name();
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
+    private final DeploymentCompletionCallback callback;
+
     private DeploymentUnit deploymentUnit;
+
+    protected AbstractDeploymentUnitService() {
+        this(NO_OP_CALLBACK);
+    }
+
+    protected AbstractDeploymentUnitService(DeploymentCompletionCallback callback) {
+        this.callback = callback;
+    }
 
     public synchronized void start(final StartContext context) throws StartException {
         ServiceTarget target = context.getChildTarget();
         final String deploymentName = context.getController().getName().getSimpleName();
-        final DeploymentServiceListener listener = new DeploymentServiceListener(System.nanoTime(), target, deploymentName);
+        final DeploymentServiceListener listener = new DeploymentServiceListener(System.nanoTime(), target, deploymentName, callback);
         log.infof("Starting deployment of \"%s\"", deploymentName);
         // Create the first phase deployer
         target.addListener(listener);
@@ -63,11 +77,9 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
-        final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(firstPhase);
+        final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(deploymentUnit, firstPhase);
         final ServiceBuilder<?> phaseServiceBuilder = target.addService(serviceName, phaseService);
         phaseServiceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
-        phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService
-                .getDeploymentUnitInjector());
         phaseServiceBuilder.install();
     }
 
@@ -106,11 +118,16 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         private final ServiceTarget target;
         private final String deploymentName;
         private final AtomicInteger count = new AtomicInteger();
+        private final Map<ServiceName, StartException> startExceptions = new IdentityHashMap<ServiceName, StartException>();
+        private final Set<ServiceName> failedDependencies = new HashSet<ServiceName>();
+        private final DeploymentCompletionCallback callback;
 
-        public DeploymentServiceListener(final long time, final ServiceTarget target, final String deploymentName) {
+
+        public DeploymentServiceListener(final long time, final ServiceTarget target, final String deploymentName, final DeploymentCompletionCallback callback) {
             startTime = time;
             this.target = target;
             this.deploymentName = deploymentName;
+            this.callback = callback;
         }
 
         public void listenerAdded(final ServiceController<? extends Object> controller) {
@@ -129,6 +146,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
         public void serviceFailed(final ServiceController<? extends Object> controller, final StartException reason) {
             controller.removeListener(this);
+            startExceptions.put(controller.getName(), reason);
             tick();
         }
 
@@ -139,6 +157,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
         public void dependencyFailed(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
+            failedDependencies.add(controller.getName());
             tick();
         }
 
@@ -150,8 +169,47 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         private void tick() {
             if (count.decrementAndGet() == 0) {
                 target.removeListener(this);
-                log.infof("Completed deployment of \"%s\" in %d ms", deploymentName, Long.valueOf((System.nanoTime() - startTime) / 1000000L));
+                if(startExceptions.isEmpty() && failedDependencies.isEmpty()) {
+                    log.infof("Completed deployment of \"%s\" in %d ms", deploymentName, Long.valueOf((System.nanoTime() - startTime) / 1000000L));
+                    callback.handleComplete();
+                } else {
+                    final StringBuilder builder = new StringBuilder("Deployment  \"%s\" failed in %d ms.  ");
+                    if(!startExceptions.isEmpty()) {
+                        builder.append("Service failures: ").append(startExceptions.values());
+                    }
+                    if(!failedDependencies.isEmpty()) {
+                        builder.append("Failed Dependencies: ").append(failedDependencies);
+                    }
+                    log.infof(builder.toString(), deploymentName, Long.valueOf((System.nanoTime() - startTime) / 1000000L));
+                    callback.handleFailure(startExceptions, failedDependencies);
+                }
             }
         }
+    }
+
+    private static final DeploymentCompletionCallback NO_OP_CALLBACK = new DeploymentCompletionCallback() {
+        public void handleComplete() {
+        }
+
+        public void handleFailure(Map<ServiceName, StartException> startExceptions, Set<ServiceName> failedDependencies) {
+        }
+    };
+
+    /**
+     * Callback used to alert the deployment unit creator when the deployment and all its child services have been fully deployed.
+     */
+    static interface DeploymentCompletionCallback {
+        /**
+         * Handle the deployment success case.
+         */
+        void handleComplete();
+
+        /**
+         * Handle the case where the deployment is complete but there are either failed service starts or failed dependencies.
+         *
+         * @param startExceptions The child service failures
+         * @param failedDependencies The failed dependencies
+         */
+        void handleFailure(final Map<ServiceName, StartException> startExceptions, final Set<ServiceName> failedDependencies);
     }
 }
