@@ -77,7 +77,7 @@ public class ModuleApplicationProcessorTestCase {
         Node node = archive.get(MANIFEST);
         Assert.assertNotNull(node);
 
-        Manifest mf = processor.getOrCreateManifest(archive);
+        Manifest mf = ManifestUtils.getOrCreateManifest(archive);
         Attributes attributes = mf.getMainAttributes();
         String value = attributes.getValue("Dependencies");
         Set<String> deps = new HashSet<String>();
