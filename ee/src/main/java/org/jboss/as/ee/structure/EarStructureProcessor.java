@@ -59,12 +59,6 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  */
 public class EarStructureProcessor implements DeploymentUnitProcessor {
 
-    private static Closeable NO_OP_CLOSEABLE = new Closeable() {
-        public void close() throws IOException {
-            // NO-OP
-        }
-    };
-
     private static final String JAR_EXTENSION = ".jar";
     private static final String WAR_EXTENSION = ".war";
     private static final List<String> CHILD_ARCHIVE_EXTENSIONS = new ArrayList<String>();
@@ -127,7 +121,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     List<VirtualFile> libArchives = libDir.getChildren(CHILD_ARCHIVE_FILTER);
                     for (final VirtualFile child : libArchives) {
                         final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
-                                .provider()) : NO_OP_CLOSEABLE;
+                                .provider()) : null;
                         final MountHandle mountHandle = new MountHandle(closable);
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
@@ -167,7 +161,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             if (earMetaData == null) {
                 for (final VirtualFile child : childArchives) {
                     final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider())
-                            : NO_OP_CLOSEABLE;
+                            : null;
                     final MountHandle mountHandle = new MountHandle(closable);
                     final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
@@ -187,7 +181,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                                 + virtualFile + "], module file " + module.getFileName() + " not found");
                     }
                     final Closeable closable = moduleFile.isFile() ? VFS.mountZip(moduleFile, moduleFile,
-                            TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
+                            TempFileProviderService.provider()) : null;
                     final MountHandle mountHandle = new MountHandle(closable);
                     final ResourceRoot childResource = new ResourceRoot(moduleFile, mountHandle);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
@@ -222,7 +216,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     }
                     if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
                         final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
-                                .provider()) : NO_OP_CLOSEABLE;
+                                .provider()) : null;
                         final MountHandle mountHandle = new MountHandle(closable);
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);

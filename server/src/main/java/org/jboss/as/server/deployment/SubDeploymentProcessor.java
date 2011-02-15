@@ -54,7 +54,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                         .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();
-                deploymentUnit.addToAttachmentList(Attachments.SUB_DEPLOYMENTS, serviceName);
+                phaseContext.addDeploymentDependency(serviceName, Attachments.SUB_DEPLOYMENTS);
             }
 
         }

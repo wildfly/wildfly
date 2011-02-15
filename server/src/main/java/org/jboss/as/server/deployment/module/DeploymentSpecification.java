@@ -21,43 +21,20 @@
  */
 package org.jboss.as.server.deployment.module;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+public class DeploymentSpecification extends ModuleSpecification {
 
-import org.jboss.as.server.deployment.SimpleAttachable;
+    private String deployment;
 
-/**
- * Information used to build a module.
- *
- * @author Stuart Douglas
- *
- */
-public class ModuleSpecification extends SimpleAttachable {
-
-    private final List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
-
-    private Boolean childFirst;
-
-    public Boolean getChildFirst() {
-        return childFirst;
+    private DeploymentSpecification(String deployment) {
+        this.deployment = deployment;
     }
 
-    public void setChildFirst(Boolean childFirst) {
-        this.childFirst = childFirst;
+    public String getDeployment() {
+        return deployment;
     }
 
-    public void addDependency(ModuleDependency dependency) {
-        this.dependencies.add(dependency);
-    }
-
-    public void addDependencies(Collection<ModuleDependency> dependencies) {
-        this.dependencies.addAll(dependencies);
-    }
-
-    public List<ModuleDependency> getDependencies() {
-        return Collections.unmodifiableList(dependencies);
+    public void setDeployment(String deployment) {
+        this.deployment = deployment;
     }
 
 }

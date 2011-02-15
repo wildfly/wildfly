@@ -53,9 +53,9 @@ public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final List<AdditionalModule> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
+        final List<AdditionalModuleSpecification> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
         if (additionalModules != null) {
-            for (AdditionalModule additionalModule : additionalModules) {
+            for (AdditionalModuleSpecification additionalModule : additionalModules) {
                 final AttachmentList<ModuleIdentifier> dependencies = additionalModule
                         .getAttachment(Attachments.CLASS_PATH_ENTRIES);
                 if (dependencies == null || dependencies.isEmpty()) {

@@ -27,7 +27,7 @@ import java.util.jar.Manifest;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.as.server.deployment.module.AdditionalModule;
+import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -165,11 +165,11 @@ public final class Attachments {
     /**
      * Sub deployment services
      */
-    public static final AttachmentKey<AttachmentList<ServiceName>> SUB_DEPLOYMENTS = AttachmentKey.createList(ServiceName.class);
+    public static final AttachmentKey<AttachmentList<DeploymentUnit>> SUB_DEPLOYMENTS = AttachmentKey.createList(DeploymentUnit.class);
     /**
      * Additional modules attached to the top level deployment
      */
-    public static final AttachmentKey<AttachmentList<AdditionalModule>> ADDITIONAL_MODULES = AttachmentKey.createList(AdditionalModule.class);
+    public static final AttachmentKey<AttachmentList<AdditionalModuleSpecification>> ADDITIONAL_MODULES = AttachmentKey.createList(AdditionalModuleSpecification.class);
 
     //
     // VALIDATE

@@ -89,7 +89,10 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         if (moduleSpecification == null) {
             return;
         }
-        moduleSpecification.setChildFirst(true);
+        if (moduleSpecification.getChildFirst() == null) {
+            // if this has not been overriden by jboss-structure.xml
+            moduleSpecification.setChildFirst(true);
+        }
 
         // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib
         deploymentResourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);

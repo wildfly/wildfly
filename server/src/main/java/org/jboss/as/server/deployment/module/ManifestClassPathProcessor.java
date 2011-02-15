@@ -56,7 +56,7 @@ import org.jboss.vfs.VirtualFile;
  * If the Class-Path entry is external to the deployment then it is handled by the external jar service.</li>
  * <li>
  * If the Class-Path entry points to a jar inside the ear that is not a deployment and not a /lib jar then a reference is added
- * to this jars {@link AdditionalModule}</li>
+ * to this jars {@link AdditionalModuleSpecification}</li>
  * </ul>
  *
  * @author Stuart Douglas
@@ -76,17 +76,19 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         final DeploymentUnit topLevelDeployment = parent == null ? deploymentUnit : parent;
         final VirtualFile toplevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final ExternalModuleService externalModuleService = topLevelDeployment.getAttachment(Attachments.EXTERNAL_MODULE_SERVICE);
-        final List<AdditionalModule> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
+        final List<AdditionalModuleSpecification> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
         final List<ResourceRoot> topLevelResourceRoots = topLevelDeployment.getAttachment(Attachments.RESOURCE_ROOTS);
 
         // build a map of the additional module locations
-        final Map<VirtualFile, AdditionalModule> additionalModules;
+        final Map<VirtualFile, AdditionalModuleSpecification> additionalModules;
         if (additionalModuleList == null) {
             additionalModules = Collections.emptyMap();
         } else {
-            additionalModules = new HashMap<VirtualFile, AdditionalModule>();
-            for (AdditionalModule module : additionalModuleList) {
-                additionalModules.put(module.getResourceRoot().getRoot(), module);
+            additionalModules = new HashMap<VirtualFile, AdditionalModuleSpecification>();
+            for (AdditionalModuleSpecification module : additionalModuleList) {
+                for (ResourceRoot additionalModuleResourceRoot : module.getResourceRoots()) {
+                    additionalModules.put(additionalModuleResourceRoot.getRoot(), module);
+                }
             }
         }
         // build a set of ear/lib jars. references to these classes can be ignored as they are already on the class-path

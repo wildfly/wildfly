@@ -65,11 +65,7 @@ public class WarInEarChildFirstClassLoadingTestCase {
 
     private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {
         if (cl != null) {
-            try {
-                return Class.forName(name, false, cl);
-            } catch (ClassNotFoundException ex) {
-                return Class.forName(name);
-            }
+            return Class.forName(name, false, cl);
         } else
             return Class.forName(name);
     }

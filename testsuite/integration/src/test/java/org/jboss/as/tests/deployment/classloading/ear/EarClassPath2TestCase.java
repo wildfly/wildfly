@@ -65,11 +65,7 @@ public class EarClassPath2TestCase {
     private static Class<?> loadClass(String name) throws ClassNotFoundException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         if (cl != null) {
-            try {
-                return Class.forName(name, false, cl);
-            } catch (ClassNotFoundException ex) {
-                return Class.forName(name);
-            }
+            return Class.forName(name, false, cl);
         } else
             return Class.forName(name);
     }

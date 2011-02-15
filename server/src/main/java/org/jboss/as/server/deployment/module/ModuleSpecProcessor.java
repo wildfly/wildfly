@@ -24,7 +24,6 @@ package org.jboss.as.server.deployment.module;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -98,25 +97,18 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
 
         // create the module servce and set it to attach to the deployment in the next phase
-        ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots,
- moduleSpecification,
+        ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpecification,
                 moduleIdentifier);
         phaseContext.addDeploymentDependency(moduleServiceName, Attachments.MODULE);
 
-        final List<AdditionalModule> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
+        final List<AdditionalModuleSpecification> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
         if (additionalModules == null) {
             return;
         }
-        for (AdditionalModule module : additionalModules) {
-            // temp hack, the specification should be built up in the deployment processors
-            ModuleSpecification additionalModuleSpecification = new ModuleSpecification();
-            for (ModuleDependency dep : module.getDependencies()) {
-                additionalModuleSpecification.addDependency(dep);
-            }
+        for (AdditionalModuleSpecification module : additionalModules) {
 
-            ServiceName additionalModuleServiceName = createModuleService(phaseContext, deploymentUnit, Collections
-                    .<ResourceRoot> singletonList(module.getResourceRoot()), additionalModuleSpecification, module
-                    .getModuleIdentifier());
+            ServiceName additionalModuleServiceName = createModuleService(phaseContext, deploymentUnit, module
+                    .getResourceRoots(), module, module.getModuleIdentifier());
             phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, additionalModuleServiceName);
         }
     }
@@ -130,8 +122,14 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         for (ResourceRoot resourceRoot : resourceRoots) {
             addResourceRoot(specBuilder, resourceRoot);
         }
+        final boolean childFirst;
+        if (moduleSpecification.getChildFirst() == null) {
+            childFirst = false;
+        } else {
+            childFirst = moduleSpecification.getChildFirst();
+        }
 
-        if (moduleSpecification.isChildFirst()) {
+        if (childFirst) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         }
         if (dependencies != null)
@@ -167,11 +165,10 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 final String depName = dependency.getIdentifier().getName();
                 if (depName.startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
                     phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, ServiceModuleLoader
-                            .moduleSpecServiceName(dependency
-                            .getIdentifier()));
+                            .moduleSpecServiceName(dependency.getIdentifier()));
                 }
             }
-        if (!moduleSpecification.isChildFirst()) {
+        if (!childFirst) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         }
         final ModuleSpec moduleSpec = specBuilder.create();
@@ -181,8 +178,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
                 deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
                 Mode.ON_DEMAND).install();
-        return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier,
-                dependencies);
+        return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier, dependencies);
     }
 
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)

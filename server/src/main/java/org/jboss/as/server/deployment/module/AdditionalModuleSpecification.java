@@ -21,6 +21,9 @@
  */
 package org.jboss.as.server.deployment.module;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.server.deployment.Attachable;
@@ -33,26 +36,39 @@ import org.jboss.modules.ModuleIdentifier;
  * @author Stuart Douglas
  *
  */
-public interface AdditionalModule extends Attachable {
+public class AdditionalModuleSpecification extends ModuleSpecification implements Attachable {
 
-    /**
-     * @return The modules dependencies
-     */
-    List<ModuleDependency> getDependencies();
+    private final ModuleIdentifier moduleIdentifier;
 
-    /**
-     * @return Adds a dependency to this module
-     */
-    void addDependency(ModuleDependency dependency);
+    private final List<ResourceRoot> resourceRoots;
 
-    /**
-     * @return The root of the module
-     */
-    ResourceRoot getResourceRoot();
+    public AdditionalModuleSpecification(ModuleIdentifier moduleIdentifier, ResourceRoot resourceRoot) {
+        this.moduleIdentifier = moduleIdentifier;
+        this.resourceRoots = new ArrayList<ResourceRoot>();
+        this.resourceRoots.add(resourceRoot);
+    }
 
-    /**
-     * @return The module identifier
-     */
-    ModuleIdentifier getModuleIdentifier();
+    public AdditionalModuleSpecification(ModuleIdentifier moduleIdentifier, Collection<ResourceRoot> resourceRoots) {
+        this.moduleIdentifier = moduleIdentifier;
+        this.resourceRoots = new ArrayList<ResourceRoot>(resourceRoots);
+    }
 
+    public ModuleIdentifier getModuleIdentifier() {
+        return moduleIdentifier;
+    }
+
+
+    public void addResourceRoot(ResourceRoot resourceRoot) {
+        this.resourceRoots.add(resourceRoot);
+    }
+
+
+    public void addResourceRoots(Collection<ResourceRoot> resourceRoots) {
+        this.resourceRoots.addAll(resourceRoots);
+    }
+
+
+    public List<ResourceRoot> getResourceRoots() {
+        return Collections.unmodifiableList(resourceRoots);
+    }
 }

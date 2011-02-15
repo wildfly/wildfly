@@ -60,7 +60,7 @@ public final class AdditionalModuleProcessor implements DeploymentUnitProcessor 
             String pathName = resourceRoot.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot());
             ModuleIdentifier identifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + deploymentUnit.getName()
                     + "." + pathName);
-            AdditionalModuleImpl module = new AdditionalModuleImpl(identifier, resourceRoot);
+            AdditionalModuleSpecification module = new AdditionalModuleSpecification(identifier, resourceRoot);
             deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, module);
         }
     }

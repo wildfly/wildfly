@@ -85,25 +85,25 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
             }
         }
 
-        final List<AdditionalModule> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
+        final List<AdditionalModuleSpecification> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
         if (additionalModules != null) {
-            for (AdditionalModule additionalModule : additionalModules) {
-                final AttachmentList<ExtensionListEntry> entries = additionalModule.getResourceRoot().getAttachment(
-                        Attachments.EXTENSION_LIST_ENTRIES);
-                if (entries != null) {
+            for (AdditionalModuleSpecification additionalModule : additionalModules) {
+                for (ResourceRoot resourceRoot : additionalModule.getResourceRoots()) {
+                    final AttachmentList<ExtensionListEntry> entries = resourceRoot
+                            .getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
+                    if (entries != null) {
 
-                    for (ExtensionListEntry entry : entries) {
-                        final ModuleIdentifier extension = index.findExtension(entry.getName(),
-                                entry.getSpecificationVersion(), entry.getImplementationVersion(), entry
-                                        .getImplementationVendorId());
-                        if (extension != null) {
-                            moduleSpecification
-                                    .addDependency(new ModuleDependency(
-                                    moduleLoader, extension, false, false, true));
-                            nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
-                        } else {
-                            log.warnf("Could not find Extension-List entry " + entry + " referenced from "
-                                    + additionalModule.getResourceRoot());
+                        for (ExtensionListEntry entry : entries) {
+                            final ModuleIdentifier extension = index.findExtension(entry.getName(), entry
+                                    .getSpecificationVersion(), entry.getImplementationVersion(), entry
+                                    .getImplementationVendorId());
+                            if (extension != null) {
+                                moduleSpecification.addDependency(new ModuleDependency(moduleLoader, extension, false, false,
+                                        true));
+                                nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
+                            } else {
+                                log.warnf("Could not find Extension-List entry " + entry + " referenced from " + resourceRoot);
+                            }
                         }
                     }
                 }

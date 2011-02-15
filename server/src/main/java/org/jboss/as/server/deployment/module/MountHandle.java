@@ -22,16 +22,18 @@
 
 package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.vfs.VFSUtils;
-
 import java.io.Closeable;
+
+import org.jboss.vfs.VFSUtils;
 
 /**
  * Wrapper object to hold onto and close a VFS mount handle.
  *
+ * If the provided mount handle is null then no action will be taken.
+ *
  * @author John E. Bailey
  * @author Jason T. Greene
+ * @author Stuart Douglas
  */
 public class MountHandle implements Closeable {
     private final Closeable handle;
@@ -49,12 +51,16 @@ public class MountHandle implements Closeable {
      * Forcefully close this handle. Use with caution.
      */
     public void close() {
-        VFSUtils.safeClose(handle);
+        if (handle != null) {
+            VFSUtils.safeClose(handle);
+        }
     }
 
     @Override
     protected void finalize() throws Throwable {
-        VFSUtils.safeClose(handle);
+        if (handle != null) {
+            VFSUtils.safeClose(handle);
+        }
         super.finalize();
     }
 }

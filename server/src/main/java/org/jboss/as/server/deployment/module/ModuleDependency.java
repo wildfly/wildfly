@@ -25,8 +25,10 @@ package org.jboss.as.server.deployment.module;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilter;
 
 /**
  * @author John E. Bailey
@@ -77,8 +79,16 @@ public final class ModuleDependency implements Serializable {
         return export;
     }
 
+    public void addImportFilter(PathFilter pathFilter, boolean include) {
+        importFilters.add(new FilterSpecification(pathFilter, include));
+    }
+
     public List<FilterSpecification> getImportFilters() {
         return importFilters;
+    }
+
+    public void addExportFilter(PathFilter pathFilter, boolean include) {
+        exportFilters.add(new FilterSpecification(pathFilter, include));
     }
 
     public List<FilterSpecification> getExportFilters() {
