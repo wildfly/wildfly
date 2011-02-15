@@ -28,6 +28,8 @@ import java.util.jar.Manifest;
 import org.jboss.arquillian.spi.ApplicationArchiveProcessor;
 import org.jboss.arquillian.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 
@@ -53,7 +55,6 @@ public class ModuleApplicationArchiveProcessor extends AbstractApplicationArchiv
 
     @Override
     public void process(Archive<?> appArchive, TestClass testClass) {
-
         if (appArchive instanceof ManifestContainer<?> == false)
             throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
 
@@ -68,16 +69,17 @@ public class ModuleApplicationArchiveProcessor extends AbstractApplicationArchiv
         attributes.putValue("Dependencies", moduleDeps.toString());
 
         // Add the manifest to the archive
-        ((ManifestContainer<?>) appArchive).setManifest(new Asset() {
-            public InputStream openStream() {
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    manifest.write(baos);
-                    return new ByteArrayInputStream(baos.toByteArray());
-                } catch (IOException ex) {
-                    throw new IllegalStateException("Cannot write manifest", ex);
+        ArchivePath path = ArchivePaths.create("META-INF", "MANIFEST.MF");
+        appArchive.add(new Asset() {
+                public InputStream openStream() {
+                    try {
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        manifest.write(baos);
+                        return new ByteArrayInputStream(baos.toByteArray());
+                    } catch (IOException ex) {
+                        throw new IllegalStateException("Cannot write manifest", ex);
+                    }
                 }
-            }
-        });
+            }, path);
     }
 }
