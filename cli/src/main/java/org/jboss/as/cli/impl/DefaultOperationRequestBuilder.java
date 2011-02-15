@@ -101,7 +101,14 @@ public class DefaultOperationRequestBuilder implements OperationRequestBuilder {
             throw new IllegalArgumentException("The argument name is not specified: '" + name + "'");
         if(value == null || value.trim().isEmpty())
             throw new IllegalArgumentException("The argument value is not specified: '" + value + "'");
-        request.get(name).set(value);
+        ModelNode toSet = null;
+        try {
+            toSet = ModelNode.fromString(value);
+        } catch (Exception e) {
+            // just use the string
+            toSet = new ModelNode().set(value);
+        }
+        request.get(name).set(toSet);
     }
 
     /**
