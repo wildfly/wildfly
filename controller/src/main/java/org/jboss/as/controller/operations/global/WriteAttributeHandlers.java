@@ -91,22 +91,31 @@ public class WriteAttributeHandlers {
         }
     }
 
+    /**
+     * WriteAttributeOperationHandler that uses a ModelTypeValidator to validate the operation's
+     * value attribute. The parameters in the constructors are passed to the equivalent
+     * constructor in {@link ModelTypeValidator}.
+     */
     public static class ModelTypeValidatingHandler extends WriteAttributeOperationHandler {
 
         public ModelTypeValidatingHandler(final ModelType type) {
-            this(false, false, type);
+            this(false, false, false, type);
         }
 
         public ModelTypeValidatingHandler(final ModelType type, final boolean nullable) {
-            this(nullable, false, type);
+            this(nullable, false, false, type);
         }
 
         public ModelTypeValidatingHandler(final ModelType type, final boolean nullable, final boolean allowExpressions) {
-            this(nullable, allowExpressions, type);
+            this(nullable, allowExpressions, false, type);
         }
 
-        public ModelTypeValidatingHandler(final boolean nullable, final boolean allowExpressions, ModelType firstValidType, ModelType... otherValidTypes) {
-            super(new ModelTypeValidator(nullable, allowExpressions, firstValidType, otherValidTypes));
+        public ModelTypeValidatingHandler(final ModelType type, final boolean nullable, final boolean allowExpressions, final boolean strict) {
+            this(nullable, allowExpressions, strict, type);
+        }
+
+        public ModelTypeValidatingHandler(final boolean nullable, final boolean allowExpressions, final boolean strict, ModelType firstValidType, ModelType... otherValidTypes) {
+            super(new ModelTypeValidator(nullable, allowExpressions, strict, firstValidType, otherValidTypes));
         }
     }
 

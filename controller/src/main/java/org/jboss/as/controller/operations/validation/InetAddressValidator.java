@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelType;
 public class InetAddressValidator extends ModelTypeValidator {
 
     public InetAddressValidator(final boolean nullable, final boolean allowExpressions) {
-        super(ModelType.STRING, nullable, allowExpressions);
+        super(ModelType.STRING, nullable, allowExpressions, true);
     }
 
     /**

@@ -39,7 +39,7 @@ public class IntRangeValidator extends ModelTypeValidator {
     }
 
     public IntRangeValidator(final int min, final int max, final boolean nullable, final boolean allowExpressions) {
-        super(nullable, allowExpressions, ModelType.INT, ModelType.BIG_DECIMAL, ModelType.BIG_INTEGER, ModelType.DOUBLE, ModelType.LONG, ModelType.STRING);
+        super(ModelType.INT, nullable, allowExpressions, false);
         this.min = min;
         this.max = max;
     }

@@ -39,7 +39,7 @@ public class StringLengthValidator extends ModelTypeValidator {
     }
 
     public StringLengthValidator(final int min, final int max, final boolean nullable, final boolean allowExpressions) {
-        super(ModelType.STRING, nullable, allowExpressions);
+        super(ModelType.STRING, nullable, allowExpressions, false);
         this.min = min;
         this.max = max;
     }
