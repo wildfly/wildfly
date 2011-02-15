@@ -136,7 +136,7 @@ public class WSDeploymentAspectParser {
         } catch (Exception e) {
             throw new IllegalStateException("Could not create a deploymeny aspect of class: " + deploymentAspectClass, e);
         }
-        String priority = reader.getAttributeValue("", PRIORITY);
+        String priority = reader.getAttributeValue(null, PRIORITY);
         if (priority != null) {
             deploymentAspect.setRelativeOrder(Integer.parseInt(priority.trim()));
         }
