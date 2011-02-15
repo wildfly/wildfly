@@ -17,10 +17,15 @@
 package org.jboss.as.arquillian.container.common;
 
 import java.util.Collection;
+import java.util.jar.Manifest;
 
 import org.jboss.arquillian.spi.DeploymentPackager;
 import org.jboss.arquillian.spi.TestDeployment;
+import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * A {@link DeploymentPackager} that for AS7 test deployments.
@@ -34,15 +39,29 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
     @Override
     public Archive<?> generateDeployment(TestDeployment testDeployment) {
 
-        // Arquillian generates auxiliary archives that aren't bundles
-        Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
-        // auxArchives.clear();
+        final Manifest manifest = ManifestUtils.getOrCreateManifest(testDeployment.getApplicationArchive());
+        final Archive<?> appArchive = testDeployment.getApplicationArchive();
+        final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
+        if (BundleInfo.isValidateBundleManifest(manifest)) {
+            // Arquillian generates auxiliary archives that aren't bundles
+            // auxArchives.clear();
+            merge(appArchive, auxArchives);
+        } else {
+            if (appArchive instanceof WebArchive) {
+                final ArchivePath webInfLib = ArchivePaths.create("WEB-INF", "lib");
+                for (Archive<?> aux : auxArchives) {
+                    appArchive.add(aux, webInfLib);
+                }
+            } else {
+                merge(appArchive, auxArchives);
+            }
+        }
+        return appArchive;
+    }
 
-        Archive<?> appArchive = testDeployment.getApplicationArchive();
+    private void merge(Archive<?> appArchive, Collection<Archive<?>> auxArchives) {
         for (Archive<?> aux : auxArchives) {
             appArchive.merge(aux);
         }
-
-        return appArchive;
     }
 }

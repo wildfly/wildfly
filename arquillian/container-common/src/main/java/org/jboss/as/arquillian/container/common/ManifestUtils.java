@@ -50,4 +50,22 @@ class ManifestUtils {
             throw new IllegalStateException("Cannot obtain manifest", ex);
         }
     }
+
+    static Manifest getOrCreateManifest(Archive<?> archive) {
+        Manifest manifest;
+        try {
+            Node node = archive.get(JarFile.MANIFEST_NAME);
+            if (node == null) {
+                manifest = new Manifest();
+                Attributes attributes = manifest.getMainAttributes();
+                attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
+            } else {
+                manifest = new Manifest(node.getAsset().openStream());
+            }
+            return manifest;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Cannot obtain manifest", ex);
+        }
+    }
+
 }

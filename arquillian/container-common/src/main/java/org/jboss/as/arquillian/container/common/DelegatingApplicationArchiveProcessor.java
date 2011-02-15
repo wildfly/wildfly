@@ -32,7 +32,7 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author Kabir Khan
  * @since 17-Nov-2010
  */
-public class DelegatingApplicationArchiveProcessor extends AbstractApplicationArchiveProcessor {
+public class DelegatingApplicationArchiveProcessor implements ApplicationArchiveProcessor {
 
     @Override
     public void process(Archive<?> appArchive, TestClass testClass) {
@@ -53,7 +53,7 @@ public class DelegatingApplicationArchiveProcessor extends AbstractApplicationAr
             return true;
 
         // Check if the archive contains a valid OSGi manifest
-        Manifest manifest = getOrCreateManifest(appArchive);
+        Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
         if (BundleInfo.isValidateBundleManifest(manifest))
             return true;
 

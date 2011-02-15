@@ -40,7 +40,7 @@ import org.jboss.shrinkwrap.api.container.ManifestContainer;
  * @author Kabir Khan
  * @since 17-Nov-2010
  */
-public class ModuleApplicationArchiveProcessor extends AbstractApplicationArchiveProcessor {
+public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProcessor {
 
     static List<String> defaultDependencies = new ArrayList<String>();
     static {
@@ -58,7 +58,7 @@ public class ModuleApplicationArchiveProcessor extends AbstractApplicationArchiv
         if (appArchive instanceof ManifestContainer<?> == false)
             throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
 
-        final Manifest manifest = getOrCreateManifest(appArchive);
+        final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
         Attributes attributes = manifest.getMainAttributes();
         String value = attributes.getValue("Dependencies");
         StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value : "org.jboss.modules");
