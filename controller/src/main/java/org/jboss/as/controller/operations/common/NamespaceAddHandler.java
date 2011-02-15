@@ -36,6 +36,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Handler for the root resource add-namespace operation.
@@ -48,7 +49,7 @@ public class NamespaceAddHandler implements ModelUpdateOperationHandler, Descrip
 
     public static final NamespaceAddHandler INSTANCE = new NamespaceAddHandler();
 
-    public static ModelNode getAddNamespaceOperation(ModelNode address, ModelNode namespace) {
+    public static ModelNode getAddNamespaceOperation(ModelNode address, Property namespace) {
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
@@ -74,7 +75,8 @@ public class NamespaceAddHandler implements ModelUpdateOperationHandler, Descrip
             ModelNode namespaces = context.getSubModel().get(NAMESPACES);
             String failure = validate(param, namespaces);
             if (failure == null) {
-                namespaces.add(param);
+                Property prop = param.asProperty();
+                namespaces.add(prop.getName(), prop.getValue());
                 ModelNode compensating = NamespaceRemoveHandler.getRemoveNamespaceOperation(operation.get(OP_ADDR), param.asProperty().getName());
                 resultHandler.handleResultComplete(compensating);
             }

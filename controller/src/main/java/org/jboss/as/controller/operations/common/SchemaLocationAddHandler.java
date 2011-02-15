@@ -36,6 +36,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Handler for the root resource add-schema-location operation.
@@ -48,7 +49,7 @@ public class SchemaLocationAddHandler implements ModelUpdateOperationHandler, De
 
     public static final SchemaLocationAddHandler INSTANCE = new SchemaLocationAddHandler();
 
-    public static ModelNode getAddSchemaLocationOperation(ModelNode address, ModelNode schemaLocation) {
+    public static ModelNode getAddSchemaLocationOperation(ModelNode address, Property schemaLocation) {
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
@@ -74,7 +75,8 @@ public class SchemaLocationAddHandler implements ModelUpdateOperationHandler, De
             ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
             String failure = validate(param, locations);
             if (failure == null) {
-                locations.add(param);
+                Property loc = param.asProperty();
+                locations.add(loc.getName(), loc.getValue());
                 ModelNode compensating = SchemaLocationRemoveHandler.getRemoveSchemaLocationOperation(operation.get(OP_ADDR), param.asProperty().getName());
                 resultHandler.handleResultComplete(compensating);
             }

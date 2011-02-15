@@ -72,17 +72,19 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
     public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             ModelNode param = operation.get(NAMESPACE);
-            ModelNode namespaces = context.getSubModel().get(NAMESPACES);
-            ModelNode toRemove = null;
             String failure = typeValidator.validateParameter(NAMESPACE, param);
             if (failure == null) {
+                ModelNode namespaces = context.getSubModel().get(NAMESPACES);
+                Property toRemove = null;
                 ModelNode newList = new ModelNode().setEmptyList();
-                String prefix = param.asProperty().getName();
+                String prefix = param.asString();
                 if (namespaces.isDefined()) {
                     for (Property namespace : namespaces.asPropertyList()) {
-                        if (!prefix.equals(namespace.getName())) {
-                            toRemove = newList.add(namespace.getName(), namespace.getValue());
-                            break;
+                        if (prefix.equals(namespace.getName())) {
+                            toRemove = namespace;
+                        }
+                        else {
+                            newList.add(namespace.getName(), namespace.getValue());
                         }
                     }
                 }
@@ -93,7 +95,7 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
                     resultHandler.handleResultComplete(compensating);
                 }
                 else {
-                    failure = "No namespace with URI " + prefix + "found";
+                    failure = "No namespace with URI " + prefix + " found";
                 }
             }
 

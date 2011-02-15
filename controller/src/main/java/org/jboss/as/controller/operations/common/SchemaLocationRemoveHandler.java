@@ -72,17 +72,19 @@ public class SchemaLocationRemoveHandler implements ModelUpdateOperationHandler,
     public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         try {
             ModelNode param = operation.get(SCHEMA_LOCATION);
-            ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
-            ModelNode toRemove = null;
             String failure = typeValidator.validateParameter(SCHEMA_LOCATION, param);
             if (failure == null) {
+                ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
+                Property toRemove = null;
                 ModelNode newList = new ModelNode().setEmptyList();
-                String uri = param.asProperty().getName();
+                String uri = param.asString();
                 if (locations.isDefined()) {
                     for (Property location : locations.asPropertyList()) {
-                        if (!uri.equals(location.getName())) {
-                            toRemove = newList.add(location.getName(), location.getValue());
-                            break;
+                        if (uri.equals(location.getName())) {
+                            toRemove = location;
+                        }
+                        else {
+                            newList.add(location.getName(), location.getValue());
                         }
                     }
                 }
@@ -93,7 +95,7 @@ public class SchemaLocationRemoveHandler implements ModelUpdateOperationHandler,
                     resultHandler.handleResultComplete(compensating);
                 }
                 else {
-                    failure = "No schema location with URI " + uri + "found";
+                    failure = "No schema location with URI " + uri + " found";
                 }
             }
 

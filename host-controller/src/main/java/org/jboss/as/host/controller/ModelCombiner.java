@@ -129,6 +129,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         this.jvmElement = new JvmElement(jvmName, hostVM, groupVM, serverVM);
     }
 
+    @Override
     public List<ModelNode> getBootUpdates() {
 
         int portOffSet = 0;
@@ -166,11 +167,13 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     /** {@inheritDoc} */
+    @Override
     public HostControllerEnvironment getHostControllerEnvironment() {
         return environment;
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<String> getServerLaunchCommand() {
         final List<String> command = new ArrayList<String>();
 
@@ -216,6 +219,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Map<String, String> getServerLaunchEnvironment() {
         final Map<String, String> env = new HashMap<String, String>();
         addStandardProperties(serverName, environment, env);
@@ -235,9 +239,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private void addNamespaces(Map<String, ModelNode> map, ModelNode namespaces) {
         if (namespaces.isDefined()) {
             for (Property prop : namespaces.asPropertyList()) {
-                final ModelNode ns = new ModelNode();
-                ns.get(prop.getName()).set(prop.getValue());
-                map.put(prop.getName(), NamespaceAddHandler.getAddNamespaceOperation(EMPTY, ns));
+                map.put(prop.getName(), NamespaceAddHandler.getAddNamespaceOperation(EMPTY, prop));
             }
         }
     }
@@ -256,9 +258,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private void addSchemaLocations(Map<String, ModelNode> map, ModelNode namespaces) {
         if (namespaces.isDefined()) {
             for (Property prop : namespaces.asPropertyList()) {
-                final ModelNode sl = new ModelNode();
-                sl.get(prop.getName()).set(prop.getValue());
-                map.put(prop.getName(), SchemaLocationAddHandler.getAddSchemaLocationOperation(EMPTY, sl));
+                map.put(prop.getName(), SchemaLocationAddHandler.getAddSchemaLocationOperation(EMPTY, prop));
             }
         }
     }
