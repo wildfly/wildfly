@@ -17,6 +17,8 @@
 package org.jboss.as.arquillian.container.common;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.Manifest;
 
 import org.jboss.arquillian.spi.DeploymentPackager;
@@ -36,6 +38,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  */
 public class JBossASDeploymentPackager implements DeploymentPackager {
 
+    private static final Set<String> excludedAuxillaryArchives = new HashSet<String>();
+
+    static {
+        excludedAuxillaryArchives.add("arquillian-core.jar");
+        excludedAuxillaryArchives.add("arquillian-junit.jar");
+    }
+
     @Override
     public Archive<?> generateDeployment(TestDeployment testDeployment) {
 
@@ -50,7 +59,11 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
             if (appArchive instanceof WebArchive) {
                 final ArchivePath webInfLib = ArchivePaths.create("WEB-INF", "lib");
                 for (Archive<?> aux : auxArchives) {
-                    appArchive.add(aux, webInfLib);
+                    // we don't want to include the arquillian-core.jar and arquillian-junit.jar
+                    // auxillary archives, as these are already part of the container
+                    if (!excludedAuxillaryArchives.contains(aux.getName())) {
+                        appArchive.add(aux, webInfLib);
+                    }
                 }
             } else {
                 merge(appArchive, auxArchives);
@@ -61,7 +74,11 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
 
     private void merge(Archive<?> appArchive, Collection<Archive<?>> auxArchives) {
         for (Archive<?> aux : auxArchives) {
-            appArchive.merge(aux);
+            // we don't want to include the arquillian-core.jar and arquillian-junit.jar
+            // auxillary archives, as these are already part of the container
+            if (!excludedAuxillaryArchives.contains(aux.getName())) {
+                appArchive.merge(aux);
+            }
         }
     }
 }
