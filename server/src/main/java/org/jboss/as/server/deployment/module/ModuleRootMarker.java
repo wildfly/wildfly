@@ -19,33 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.deployment;
+package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
- * Helper class for dealing with the {@link Attachments#RESOURCE_ROOT_TYPE} attachment.
+ * Marker for module roots. These are resource roots that are added to the module.
  *
  * @author Stuart Douglas
  *
  */
-public class ResourceRootTypeMarker {
-    public static boolean isType(ResourceRootType type, ResourceRoot resourceRoot) {
-        ResourceRootType marker = resourceRoot.getAttachment(Attachments.RESOURCE_ROOT_TYPE);
-        return marker == type;
+public class ModuleRootMarker {
+    private static final AttachmentKey<Boolean> MODULE_ROOT_MARKER = AttachmentKey.create(Boolean.class);
+
+    public static void mark(ResourceRoot attachable) {
+        attachable.putAttachment(MODULE_ROOT_MARKER, true);
     }
 
-    public static boolean isSubDeployment(ResourceRoot resourceRoot) {
-        ResourceRootType marker = resourceRoot.getAttachment(Attachments.RESOURCE_ROOT_TYPE);
-        return marker != null && marker.isSubdeployment();
+    public static void mark(ResourceRoot attachable, boolean value) {
+        attachable.putAttachment(MODULE_ROOT_MARKER, value);
     }
 
     public static boolean isModuleRoot(ResourceRoot resourceRoot) {
-        ResourceRootType marker = resourceRoot.getAttachment(Attachments.RESOURCE_ROOT_TYPE);
-        return marker != null && marker.isModuleRoot();
+        Boolean res = resourceRoot.getAttachment(MODULE_ROOT_MARKER);
+        return res != null && res;
     }
 
-    public static void setType(ResourceRootType type, ResourceRoot resourceRoot) {
-        resourceRoot.putAttachment(Attachments.RESOURCE_ROOT_TYPE, type);
+    private ModuleRootMarker() {
+
     }
 }

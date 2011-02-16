@@ -30,8 +30,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.ResourceRootType;
-import org.jboss.as.server.deployment.ResourceRootTypeMarker;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -63,13 +63,13 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
         // TODO: deal with application clients, we need the manifest information
         List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : potentialSubDeployments) {
-            if (ResourceRootTypeMarker.isModuleRoot(resourceRoot)) {
+            if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
                 // module roots cannot be ejb jars
                 continue;
             }
             VirtualFile ejbJarFile = resourceRoot.getRoot().getChild("META-INF/ejb-jar.xml");
             if (ejbJarFile.exists()) {
-                ResourceRootTypeMarker.isType(ResourceRootType.EJB_JAR, resourceRoot);
+                SubDeploymentMarker.mark(resourceRoot);
             } else {
                 final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {
@@ -80,7 +80,7 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
                             !index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME).isEmpty()) {
                         //this is an EJB deployment
                         //TODO: we need to mark EJB sub deployments so the sub deployers know they are EJB deployments
-                        ResourceRootTypeMarker.isType(ResourceRootType.EJB_JAR, resourceRoot);
+                        SubDeploymentMarker.mark(resourceRoot);
                     }
                 }
             }

@@ -153,11 +153,6 @@ public final class Attachments {
     public static final AttachmentKey<Boolean> PROCESS_CHILD_ANNOTATION_INDEX = AttachmentKey.create(Boolean.class);
 
     /**
-     * A Marker that identifies the a type of resource root
-     */
-    public static final AttachmentKey<ResourceRootType> RESOURCE_ROOT_TYPE = AttachmentKey.create(ResourceRootType.class);
-
-    /**
      * Sub deployment services
      */
     public static final AttachmentKey<AttachmentList<DeploymentUnit>> SUB_DEPLOYMENTS = AttachmentKey.createList(DeploymentUnit.class);

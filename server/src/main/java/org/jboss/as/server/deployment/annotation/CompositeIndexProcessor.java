@@ -30,7 +30,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.ResourceRootTypeMarker;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 
@@ -55,7 +55,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
             if (resourceRoots != null) {
                 for (ResourceRoot resourceRoot : resourceRoots) {
                     // do not add child sub deployments to the composite index
-                    if (!ResourceRootTypeMarker.isSubDeployment(resourceRoot)) {
+                    if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
                         allResourceRoots.add(resourceRoot);
                     }
                 }

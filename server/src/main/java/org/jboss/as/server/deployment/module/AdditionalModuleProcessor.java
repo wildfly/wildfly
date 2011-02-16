@@ -28,8 +28,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.ResourceRootType;
-import org.jboss.as.server.deployment.ResourceRootTypeMarker;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
 
@@ -50,10 +49,10 @@ public final class AdditionalModuleProcessor implements DeploymentUnitProcessor 
         final AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         if (resourceRoots != null) {
             for (ResourceRoot resourceRoot : resourceRoots) {
-                if (ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, resourceRoot)) {
+                if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
                     continue;
                 }
-                if (ResourceRootTypeMarker.isSubDeployment(resourceRoot)) {
+                if (SubDeploymentMarker.isSubDeployment(resourceRoot)) {
                     continue;
                 }
                 String pathName = resourceRoot.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot());

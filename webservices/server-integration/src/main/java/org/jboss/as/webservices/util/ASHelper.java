@@ -32,7 +32,7 @@ import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.ResourceRootTypeMarker;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
@@ -393,7 +393,7 @@ public final class ASHelper {
     public static Index getRootAnnotationIndex(final DeploymentUnit unit) {
         Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(unit);
         for (ResourceRoot rr : indexes.keySet()) {
-            if (ResourceRootTypeMarker.isModuleRoot(rr)) {
+            if (ModuleRootMarker.isModuleRoot(rr)) {
                 return indexes.get(rr);
             }
         }

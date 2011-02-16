@@ -30,8 +30,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.ResourceRootType;
-import org.jboss.as.server.deployment.ResourceRootTypeMarker;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -76,7 +74,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             }
         }
         final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle);
-        ResourceRootTypeMarker.setType(ResourceRootType.MODULE_ROOT, resourceRoot);
+        ModuleRootMarker.mark(resourceRoot);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
         deploymentUnit.putAttachment(Attachments.MODULE_SPECIFICATION, new ModuleSpecification());
     }

@@ -29,8 +29,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.ResourceRootType;
-import org.jboss.as.server.deployment.ResourceRootTypeMarker;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.vfs.VirtualFile;
 
@@ -49,10 +48,10 @@ public class SarSubDeploymentProcessor implements DeploymentUnitProcessor {
         final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         for(ResourceRoot resourceRoot : resourceRoots) {
             final VirtualFile rootFile = resourceRoot.getRoot();
-            if (!ResourceRootTypeMarker.isSubDeployment(resourceRoot)) {
+            if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
                 final VirtualFile sarDescriptor = rootFile.getChild(ServiceDeploymentParsingProcessor.SERVICE_DESCRIPTOR_PATH);
                 if(sarDescriptor.exists()) {
-                    ResourceRootTypeMarker.setType(ResourceRootType.SAR, resourceRoot);
+                    SubDeploymentMarker.mark(resourceRoot);
                 }
             }
         }
