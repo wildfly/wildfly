@@ -22,17 +22,21 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.logging.Level;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -50,7 +54,7 @@ class RootLoggerAdd implements ModelUpdateOperationHandler, RuntimeOperationHand
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
@@ -59,37 +63,38 @@ class RootLoggerAdd implements ModelUpdateOperationHandler, RuntimeOperationHand
         final String level = operation.require(CommonAttributes.LEVEL).asString();
         final ModelNode handlers = operation.get(CommonAttributes.HANDLERS);
 
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceTarget target = runtimeContext.getServiceTarget();
-            try {
-                final RootLoggerService service = new RootLoggerService();
-                service.setLevel(Level.parse(level));
-                target.addService(LogServices.ROOT_LOGGER, service)
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-            } catch (Throwable t) {
-                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
-                return Cancellable.NULL;
-            }
-            try {
-                // install logger handler services
-                if(handlers.getType() != ModelType.UNDEFINED) {
-                    LogServices.installLoggerHandlers(target, "", handlers);
-                }
-            } catch (Throwable t) {
-                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
-                return Cancellable.NULL;
-            }
-        }
-
         final ModelNode subModel = context.getSubModel();
         subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
         subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS).set(handlers);
 
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    try {
+                        final RootLoggerService service = new RootLoggerService();
+                        service.setLevel(Level.parse(level));
+                        target.addService(LogServices.ROOT_LOGGER, service)
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .install();
+                    } catch (Throwable t) {
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    }
+                    try {
+                        // install logger handler services
+                        if (handlers.getType() != ModelType.UNDEFINED) {
+                            LogServices.installLoggerHandlers(target, "", handlers);
+                        }
+                        resultHandler.handleResultComplete();
+                    } catch (Throwable t) {
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
+        }
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

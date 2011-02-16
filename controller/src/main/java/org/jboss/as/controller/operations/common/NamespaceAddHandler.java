@@ -19,6 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -69,25 +71,24 @@ public class NamespaceAddHandler implements ModelUpdateOperationHandler, Descrip
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode param = operation.get(NAMESPACE);
             ModelNode namespaces = context.getSubModel().get(NAMESPACES);
             String failure = validate(param, namespaces);
-            if (failure == null) {
-                Property prop = param.asProperty();
-                namespaces.add(prop.getName(), prop.getValue());
-                ModelNode compensating = NamespaceRemoveHandler.getRemoveNamespaceOperation(operation.get(OP_ADDR), param.asProperty().getName());
-                resultHandler.handleResultComplete(compensating);
+            if (failure != null) {
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
-            else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
-            }
+
+            Property prop = param.asProperty();
+            namespaces.add(prop.getName(), prop.getValue());
+            ModelNode compensating = NamespaceRemoveHandler.getRemoveNamespaceOperation(operation.get(OP_ADDR), param.asProperty().getName());
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override

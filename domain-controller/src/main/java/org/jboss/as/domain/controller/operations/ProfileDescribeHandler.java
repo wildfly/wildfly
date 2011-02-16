@@ -18,13 +18,14 @@
  */
 package org.jboss.as.domain.controller.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -50,7 +51,7 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
 
 
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
 
         final ModelNode result = new ModelNode();
@@ -69,8 +70,7 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
                         result.add(op);
                     }
                 } catch (OperationFailedException e) {
-                    resultHandler.handleFailed(Util.createErrorResult(e));
-                    return Cancellable.NULL;
+                    throw new OperationFailedException(Util.createErrorResult(e));
                 }
             }
         }
@@ -86,14 +86,13 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
                         result.add(op);
                     }
                 } catch (OperationFailedException e) {
-                    resultHandler.handleFailed(Util.createErrorResult(e));
-                    return Cancellable.NULL;
+                    throw new OperationFailedException(Util.createErrorResult(e));
                 }
             }
         }
 
         resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete(new ModelNode());
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult();
     }
 }

@@ -19,6 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -71,35 +73,33 @@ public class SystemPropertyAddHandler implements ModelUpdateOperationHandler, De
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             String failure = validator.validate(operation);
-            if (failure == null) {
-                String name = operation.get(NAME).asString();
-                String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
-                ModelNode node = context.getSubModel().get(SYSTEM_PROPERTIES, name);
-                if (value == null) {
-                    node.set(new ModelNode());
-                }
-                else {
-                    node.set(value);
-                }
-                ModelNode compensating = SystemPropertyRemoveHandler.getOperation(operation.get(OP_ADDR), name);
-                updateSystemProperty(name, value, context, resultHandler, compensating);
+            if (failure != null) {
+                throw new OperationFailedException(new ModelNode().set(failure));
+            }
+
+            String name = operation.get(NAME).asString();
+            String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
+            ModelNode node = context.getSubModel().get(SYSTEM_PROPERTIES, name);
+            if (value == null) {
+                node.set(new ModelNode());
             }
             else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                node.set(value);
             }
+            ModelNode compensating = SystemPropertyRemoveHandler.getOperation(operation.get(OP_ADDR), name);
+            return updateSystemProperty(name, value, context, resultHandler, compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
-    protected void updateSystemProperty(String name, String value, OperationContext context,
-            ResultHandler resultHandler, ModelNode compensating) {
-        resultHandler.handleResultComplete(compensating);
+    protected OperationResult updateSystemProperty(String name, String value, OperationContext context, ResultHandler resultHandler, ModelNode compensating) {
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensating);
     }
 
     @Override

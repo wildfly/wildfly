@@ -61,7 +61,6 @@ public class BasicModelController implements ModelController {
     private final ModelNode model;
     private final NewConfigurationPersister configurationPersister;
 
-
     /**
      * Construct a new instance.
      *
@@ -133,7 +132,7 @@ public class BasicModelController implements ModelController {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
+    public OperationResult execute(final ModelNode operation, final ResultHandler handler) {
         try {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
 
@@ -172,17 +171,8 @@ public class BasicModelController implements ModelController {
                 }
 
                 @Override
-                public void handleResultComplete(final ModelNode compensatingOperation) {
-                    final ModelNode model = BasicModelController.this.model;
-                    synchronized (model) {
-                        if (operationHandler instanceof ModelRemoveOperationHandler) {
-                            address.remove(model);
-                        } else {
-                            address.navigate(model, true).set(subModel);
-                        }
-                        persistConfiguration(model);
-                    }
-                    handler.handleResultComplete(compensatingOperation);
+                public void handleResultComplete() {
+                    handler.handleResultComplete();
                 }
 
                 @Override
@@ -195,11 +185,28 @@ public class BasicModelController implements ModelController {
                     handler.handleCancellation();
                 }
             } : handler;
-            return doExecute(context, operation, operationHandler, useHandler);
+            try {
+                final OperationResult result = doExecute(context, operation, operationHandler, useHandler);
+                if(operationHandler instanceof ModelUpdateOperationHandler) {
+                    final ModelNode model = this.model;
+                    synchronized (model) {
+                        if (operationHandler instanceof ModelRemoveOperationHandler) {
+                            address.remove(model);
+                        } else {
+                            address.navigate(model, true).set(subModel);
+                        }
+                        persistConfiguration(model);
+                    }
+                }
+                return result;
+            } catch (OperationFailedException e) {
+                useHandler.handleFailed(e.getFailureDescription());
+                return new BasicOperationResult();
+            }
         } catch (final Throwable t) {
             log.errorf(t, "operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
             handler.handleFailed(getFailureResult(t));
-            return Cancellable.NULL;
+            return new BasicOperationResult();
         }
     }
 
@@ -257,7 +264,7 @@ public class BasicModelController implements ModelController {
      * @param resultHandler the result handler for this operation
      * @return a handle which can be used to asynchronously cancel the operation
      */
-    protected Cancellable doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
+    protected OperationResult doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) throws OperationFailedException {
         return operationHandler.execute(context, operation, resultHandler);
     }
 
@@ -276,7 +283,7 @@ public class BasicModelController implements ModelController {
         final ModelNode finalResult = new ModelNode();
         // Ensure there is a "result" child even if we receive no fragments
         finalResult.get(RESULT);
-        final Cancellable handle = execute(operation, new ResultHandler() {
+        final OperationResult handlerResult = execute(operation, new ResultHandler() {
             @Override
             public void handleResultFragment(final String[] location, final ModelNode fragment) {
                 synchronized (finalResult) {
@@ -287,12 +294,9 @@ public class BasicModelController implements ModelController {
             }
 
             @Override
-            public void handleResultComplete(final ModelNode compensatingOperation) {
+            public void handleResultComplete() {
                 synchronized (finalResult) {
                     if (status.compareAndSet(0, 1)) {
-                        if(compensatingOperation != null) {
-                            finalResult.get(COMPENSATING_OPERATION).set(compensatingOperation);
-                        }
                     }
                     finalResult.notify();
                 }
@@ -327,6 +331,9 @@ public class BasicModelController implements ModelController {
                         final int s = status.get();
                         switch (s) {
                             case 1: finalResult.get(OUTCOME).set("success");
+                                if(handlerResult.getCompensatingOperation() != null) {
+                                   finalResult.get(COMPENSATING_OPERATION).set(handlerResult.getCompensatingOperation());
+                                }
                                 return finalResult;
                             case 2: finalResult.get(OUTCOME).set("cancelled");
                                 throw new CancellationException();
@@ -336,7 +343,7 @@ public class BasicModelController implements ModelController {
                         finalResult.wait();
                     } catch (final InterruptedException e) {
                         intr = true;
-                        handle.cancel();
+                        handlerResult.getCancellable().cancel();
                     }
                 }
             }
@@ -395,7 +402,7 @@ public class BasicModelController implements ModelController {
         }
 
         @Override
-        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
             try {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try {
@@ -409,12 +416,12 @@ public class BasicModelController implements ModelController {
                 String xml = new String(baos.toByteArray());
                 ModelNode result = new ModelNode().set(xml);
                 resultHandler.handleResultFragment(EMPTY, result);
-                resultHandler.handleResultComplete(null);
             } catch (Exception e) {
                 e.printStackTrace();
                 resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
             }
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         private void safeClose(final Closeable closeable) {

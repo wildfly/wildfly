@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.client.impl;
 
+import org.jboss.as.controller.client.OperationResult;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
@@ -44,7 +45,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.client.Cancellable;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.as.domain.client.api.DomainClient;
@@ -96,7 +96,7 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public Cancellable execute(ModelNode operation, ResultHandler handler) {
+    public OperationResult execute(ModelNode operation, ResultHandler handler) {
         return delegate.execute(operation, handler);
     }
 

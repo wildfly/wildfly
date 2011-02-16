@@ -18,12 +18,14 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -31,6 +33,8 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -60,35 +64,35 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, Ru
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode model = context.getSubModel();
             ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
-            redeploy(model, context, resultHandler, compensatingOp);
+            redeploy(model, context, resultHandler);
+
+            return new BasicOperationResult(compensatingOp);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
-    private void redeploy(ModelNode model, OperationContext context, ResultHandler resultHandler,
-            ModelNode compensatingOp) {
+    private void redeploy(final ModelNode model, OperationContext context, ResultHandler resultHandler) {
         if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            String deploymentUnitName = model.require(NAME).asString();
-            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-            final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    String deploymentUnitName = model.require(NAME).asString();
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
 
-            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-            controller.setMode(ServiceController.Mode.NEVER);
-            controller.setMode(ServiceController.Mode.ACTIVE);
-            // TODO - connect to service lifecycle properly
-            resultHandler.handleResultComplete(compensatingOp);
+                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                    controller.setMode(ServiceController.Mode.NEVER);
+                    controller.setMode(ServiceController.Mode.ACTIVE);
+                    controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
-        }
-
     }
 }

@@ -19,6 +19,9 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -30,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -69,7 +71,7 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         try {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
@@ -78,12 +80,12 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
             model.get(NAME).set(name);
             model.get(GROUP).set(operation.require(GROUP));
             final ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-            resultHandler.handleResultComplete(compensating);
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     private void createCoreModel(ModelNode root) {

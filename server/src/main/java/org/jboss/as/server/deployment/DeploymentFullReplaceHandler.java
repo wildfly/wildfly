@@ -18,6 +18,9 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -75,57 +77,54 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             byte[] hash = null;
             String failure = validator.validate(operation);
-            if (failure == null) {
-                hash = operation.get(HASH).asBytes();
-                if (!deploymentRepository.hasDeploymentContent(hash)) {
-                    failure = String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
-                }
-            }
-            if (failure == null) {
-                ModelNode rootModel = context.getSubModel();
-                ModelNode deployments = rootModel.get(DEPLOYMENT);
-                String name = operation.require(NAME).asString();
-
-                ModelNode replaceNode = has(deployments, name) ? deployments.get(name) : null;
-                if (replaceNode == null) {
-                    failure = String.format("No deployment with name %s found", name);
-                }
-                if (failure == null) {
-                    boolean start = replaceNode.get(START).asBoolean();
-                    String runtimeName = has(operation, RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
-                    ModelNode deployNode = new ModelNode();
-                    deployNode.get(NAME).set(name);
-                    deployNode.get(RUNTIME_NAME).set(runtimeName);
-                    deployNode.get(HASH).set(hash);
-                    deployNode.get(START).set(start);
-
-                    deployments.get(name).set(deployNode);
-
-                    ModelNode compensatingOp = operation.clone();
-                    compensatingOp.get(HASH).set(replaceNode.get(HASH));
-                    compensatingOp.get(START).set(start);
-
-                    if (start) {
-                        DeploymentHandlerUtil.replace(deployNode, name, context, resultHandler, compensatingOp);
-                    }
-                    else {
-                        resultHandler.handleResultComplete(compensatingOp);
-                    }
-                }
-            }
-
             if (failure != null) {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                throw new OperationFailedException(new ModelNode().set(failure));
+            }
+
+            hash = operation.get(HASH).asBytes();
+            if (!deploymentRepository.hasDeploymentContent(hash)) {
+                throw new OperationFailedException(new ModelNode().set(String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash))));
+            }
+
+            ModelNode rootModel = context.getSubModel();
+            ModelNode deployments = rootModel.get(DEPLOYMENT);
+            String name = operation.require(NAME).asString();
+
+            ModelNode replaceNode = has(deployments, name) ? deployments.get(name) : null;
+            if (replaceNode == null) {
+                throw new OperationFailedException(new ModelNode().set(String.format("No deployment with name %s found", name)));
+            }
+
+            boolean start = replaceNode.get(START).asBoolean();
+            String runtimeName = has(operation, RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+            ModelNode deployNode = new ModelNode();
+            deployNode.get(NAME).set(name);
+            deployNode.get(RUNTIME_NAME).set(runtimeName);
+            deployNode.get(HASH).set(hash);
+            deployNode.get(START).set(start);
+
+            deployments.get(name).set(deployNode);
+
+            ModelNode compensatingOp = operation.clone();
+            compensatingOp.get(HASH).set(replaceNode.get(HASH));
+            compensatingOp.get(START).set(start);
+
+            if (start) {
+                DeploymentHandlerUtil.replace(deployNode, name, context, resultHandler, compensatingOp);
+            }
+            else {
+                resultHandler.handleResultComplete();
+                return new BasicOperationResult(compensatingOp);
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
+        return new BasicOperationResult();
     }
 
     private static boolean has(ModelNode node, String child) {

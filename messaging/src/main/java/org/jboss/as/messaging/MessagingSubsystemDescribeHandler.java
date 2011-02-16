@@ -22,11 +22,12 @@
 
 package org.jboss.as.messaging;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -43,7 +44,7 @@ class MessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode subsystemAdd = new ModelNode();
         final ModelNode subModel = context.getSubModel();
@@ -59,8 +60,8 @@ class MessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
         final ModelNode result = new ModelNode();
         result.add(subsystemAdd);
         resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete(new ModelNode());
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult();
     }
 
 }

@@ -68,6 +68,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOUR
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -80,7 +82,6 @@ import java.util.Map;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.DataSourcesAttachmentProcessor;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -123,7 +124,7 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
@@ -192,10 +193,8 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                 }
             }
         }
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
     private DataSources buildDataSourcesObject(ModelNode operation) {

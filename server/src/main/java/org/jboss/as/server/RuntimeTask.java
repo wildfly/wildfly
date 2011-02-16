@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,38 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.client;
+package org.jboss.as.server;
 
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ResultHandler;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * A controller runtime task.  This can be used to perform any runtime tasks associated with a {@link org.jboss.as.controller.OperationHandler}.
+ *
+ * @author John Bailey
  */
-public interface ResultHandler {
-
+public interface RuntimeTask {
     /**
-     * Add a result fragment to the final result.
+     * Execute the task.
      *
-     * @param location the location of the fragment within the final result
-     * @param result the result fragment to insert
+     * @param context The runtime task context
+     * @param resultHandler The task's result handler
+     * @throws OperationFailedException If any problems occur
      */
-    void handleResultFragment(String[] location, ModelNode result);
-
-    /**
-     * Handle operation completion.  The compensating update for the completed update
-     * is passed in; if there is no such possible update, the value is {@code undefined}.
-     */
-    void handleResultComplete();
-
-    /**
-     * Signify that this operation was cancelled.
-     */
-    void handleCancellation();
-
-    /**
-     * An exception occurred talking to the remote host
-     *
-     * @param e the exception
-     */
-    void handleException(Exception e);
+    void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException;
 }

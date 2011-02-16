@@ -21,8 +21,13 @@
  */
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
@@ -33,7 +38,6 @@ import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -44,7 +48,6 @@ import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Removes a bounded queue thread pool.
@@ -57,24 +60,11 @@ public class BoundedQueueThreadPoolRemove implements RuntimeOperationHandler, Mo
     static final OperationHandler INSTANCE = new BoundedQueueThreadPoolRemove();
 
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
-
-        if (context instanceof RuntimeOperationContext) {
-
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry(). getService(ThreadsServices.threadFactoryName(name));
-            if (controller == null) {
-                resultHandler.handleResultComplete(null);
-                return Cancellable.NULL;
-            } else {
-                //controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
-                controller.setMode(Mode.REMOVE);
-            }
-        }
 
         // Compensating is add
         final ModelNode model = context.getSubModel();
@@ -107,8 +97,20 @@ public class BoundedQueueThreadPoolRemove implements RuntimeOperationHandler, Mo
             compensating.get(HANDOFF_EXECUTOR).set(model.get(HANDOFF_EXECUTOR));
         }
 
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
+        }
+        return new BasicOperationResult(compensating);
     }
 }

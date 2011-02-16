@@ -21,10 +21,12 @@
  */
 package org.jboss.as.controller.operations.global;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -60,8 +62,7 @@ public class WriteAttributeHandlers {
 
 
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-            Cancellable cancellable = Cancellable.NULL;
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final String name = operation.require(NAME).asString();
                 // Don't require VALUE. Let validateValue decide if it's bothered
@@ -70,17 +71,17 @@ public class WriteAttributeHandlers {
 
                 String error = validateValue(name, value);
                 if (error != null) {
-                    resultHandler.handleFailed(new ModelNode().set(error));
+                    throw new OperationFailedException(new ModelNode().set(error));
                 } else {
                     context.getSubModel().get(name).set(value);
                     // FIXME there should be a compensating operation generated
-                    resultHandler.handleResultComplete(null);
+                    resultHandler.handleResultComplete();
+                    return new BasicOperationResult();
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                throw new OperationFailedException(new ModelNode().set(e.getMessage()));
             }
-            return cancellable;
         }
 
         protected String validateValue(String name, ModelNode value) {

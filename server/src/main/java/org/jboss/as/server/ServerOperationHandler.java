@@ -22,9 +22,10 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -42,10 +43,11 @@ public interface ServerOperationHandler extends OperationHandler {
      * Execute an operation, also applying it to the runtime environment.  This method <b>must</b> invoke one of the
      * completion methods on {@code resultHandler} regardless of the outcome of the operation.
      *
+     *
      * @param context the context for this operation
      * @param operation the operation being executed
      * @param resultHandler the result handler to invoke when the operation is complete
-     * @return a handle which may be used to asynchronously cancel this operation
+     * @return a handle which may be used to asynchronously cancel this operation or to retrieve the compensating operation
      */
-    Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler);
+    OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException;
 }

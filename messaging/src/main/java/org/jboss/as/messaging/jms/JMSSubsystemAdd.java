@@ -22,9 +22,10 @@
 
 package org.jboss.as.messaging.jms;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -44,7 +45,7 @@ class JMSSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandl
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
@@ -63,10 +64,8 @@ class JMSSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandl
         node.get(CommonAttributes.CONNECTION_FACTORY).setEmptyObject();
         node.get(CommonAttributes.QUEUE).setEmptyObject();
         node.get(CommonAttributes.TOPIC).setEmptyObject();
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

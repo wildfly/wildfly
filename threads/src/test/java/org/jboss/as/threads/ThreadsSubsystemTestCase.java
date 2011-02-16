@@ -275,19 +275,19 @@ public class ThreadsSubsystemTestCase {
 
         checkFullTreadFactory();
 
-        ModelNode compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("thread-factory").has("test-factory"));
-
-        compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-        assertNull(handler.failureDescription);
-        checkFullTreadFactory();
+//        ModelNode compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("thread-factory").has("test-factory"));
+//
+//        compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//        assertNull(handler.failureDescription);
+//        checkFullTreadFactory();
     }
 
     private void checkFullTreadFactory() {
@@ -380,19 +380,19 @@ public class ThreadsSubsystemTestCase {
 
         checkFullUnboundedThreadPool();
 
-        ModelNode compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("unbounded-queue-thread-pool").has("test-pool"));
-
-        compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        checkFullUnboundedThreadPool();
+//        ModelNode compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("unbounded-queue-thread-pool").has("test-pool"));
+//
+//        compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        checkFullUnboundedThreadPool();
     }
 
     private void checkFullUnboundedThreadPool() throws Exception {
@@ -486,19 +486,19 @@ public class ThreadsSubsystemTestCase {
 
         checkFullScheduledThreadPool();
 
-        ModelNode compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("scheduled-thread-pool").has("test-pool"));
-
-        compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        checkFullScheduledThreadPool();
+//        ModelNode compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("scheduled-thread-pool").has("test-pool"));
+//
+//        compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        checkFullScheduledThreadPool();
     }
 
     private void checkFullScheduledThreadPool() throws Exception {
@@ -593,19 +593,19 @@ public class ThreadsSubsystemTestCase {
 
         checkFullQueuelessThreadPool();
 
-        ModelNode compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("queueless-thread-pool").has("test-pool"));
-
-        compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        checkFullQueuelessThreadPool();
+//        ModelNode compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("queueless-thread-pool").has("test-pool"));
+//
+//        compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        checkFullQueuelessThreadPool();
     }
 
     private void checkFullQueuelessThreadPool() throws Exception {
@@ -707,19 +707,19 @@ public class ThreadsSubsystemTestCase {
 
         checkFullBoundedQueueThreadPool();
 
-        ModelNode compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("bounded-queue-thread-pool").has("test-pool"));
-
-        compensating = handler.getCompensatingOperation();
-        assertNotNull(compensating);
-        handler.clear();
-        controller.execute(compensating, handler);
-
-        checkFullBoundedQueueThreadPool();
+//        ModelNode compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("bounded-queue-thread-pool").has("test-pool"));
+//
+//        compensating = handler.getCompensatingOperation();
+//        assertNotNull(compensating);
+//        handler.clear();
+//        controller.execute(compensating, handler);
+//
+//        checkFullBoundedQueueThreadPool();
     }
 
     private void checkFullBoundedQueueThreadPool() throws Exception {
@@ -906,26 +906,17 @@ public class ThreadsSubsystemTestCase {
 
     static class TestResultHandler implements ResultHandler {
         ModelNode failureDescription;
-        ModelNode compensatingOperation;
 
         @Override
         public void handleResultFragment(String[] location, ModelNode result) {
         }
 
         @Override
-        public void handleResultComplete(ModelNode compensatingOperation) {
-            this.compensatingOperation = compensatingOperation;
+        public void handleResultComplete() {
         }
 
         @Override
         public void handleCancellation() {
-        }
-
-        ModelNode getCompensatingOperation() throws Exception {
-            if (failureDescription != null) {
-                throw new Exception(failureDescription.toString());
-            }
-            return compensatingOperation;
         }
 
         @Override
@@ -934,7 +925,6 @@ public class ThreadsSubsystemTestCase {
         }
 
         void clear() {
-            compensatingOperation = null;
             failureDescription = null;
         }
 

@@ -18,6 +18,9 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -27,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -79,7 +81,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             String failure = validator.validate(operation);
             if (failure == null) {
@@ -94,20 +96,20 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
                     subModel.get(RUNTIME_NAME).set(runtimeName);
                     subModel.get(HASH).set(hash);
                     subModel.get(START).set(operation.has(START) && operation.get(START).asBoolean()); // TODO consider starting
-                    resultHandler.handleResultComplete(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
                 }
                 else {
                     failure = String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
                 }
             }
             if (failure != null) {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
     }
 
     private static boolean has(ModelNode node, String child) {

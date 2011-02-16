@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -64,7 +66,6 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -516,7 +517,7 @@ public class RemotingExtension implements Extension {
     private static class RemotingSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final RemotingSubsystemDescribeHandler INSTANCE = new RemotingSubsystemDescribeHandler();
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             final ModelNode result = new ModelNode();
             final ModelNode model = context.getSubModel();
 
@@ -544,8 +545,8 @@ public class RemotingExtension implements Extension {
             }
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete(new ModelNode());
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         @Override

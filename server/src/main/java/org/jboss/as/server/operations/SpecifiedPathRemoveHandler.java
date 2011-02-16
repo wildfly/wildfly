@@ -18,11 +18,16 @@
  */
 package org.jboss.as.server.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.PathRemoveHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -37,18 +42,22 @@ public class SpecifiedPathRemoveHandler extends PathRemoveHandler implements Run
     public static SpecifiedPathRemoveHandler INSTANCE = new SpecifiedPathRemoveHandler();
 
     @Override
-    protected void uninstallPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult uninstallPath(final String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(AbstractPathService.pathNameOf(name));
-            if(controller == null) {
-                resultHandler.handleResultComplete(compensatingOp);
-            } else {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler, compensatingOp));
-            }
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(AbstractPathService.pathNameOf(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            }, resultHandler);
+
+        } else {
+            resultHandler.handleResultComplete();
         }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
-        }
+        return new BasicOperationResult(compensatingOp);
     }
 }

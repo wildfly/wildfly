@@ -22,13 +22,15 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
 
 import java.util.concurrent.Executor;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -36,6 +38,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.CastingInjector;
@@ -55,9 +59,9 @@ class RemotingSubsystemAdd implements ModelAddOperationHandler, RuntimeOperation
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        String threadPoolName = operation.require(THREAD_POOL).asString();
+        final String threadPoolName = operation.require(THREAD_POOL).asString();
         context.getSubModel().get(THREAD_POOL).set(threadPoolName);
         // initialize the connectors
         context.getSubModel().get(CONNECTOR).setEmptyObject();
@@ -66,21 +70,25 @@ class RemotingSubsystemAdd implements ModelAddOperationHandler, RuntimeOperation
         final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
         if (context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            // create endpoint
-            final EndpointService endpointService = new EndpointService();
-            // todo configure option map
-            endpointService.setOptionMap(OptionMap.EMPTY);
-            final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    // create endpoint
+                    final EndpointService endpointService = new EndpointService();
+                    // todo configure option map
+                    endpointService.setOptionMap(OptionMap.EMPTY);
+                    final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
 
-            updateContext.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
-                .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+                    context.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
+                            .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                            .install();
+                }
+            }, resultHandler);
+
+        } else {
+            resultHandler.handleResultComplete();
         }
-
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 }

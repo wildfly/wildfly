@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,38 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.client;
+package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Basic implementation of {@link OperationResult}.
+ *
+ * @author John Bailey
  */
-public interface ResultHandler {
+public class BasicOperationResult implements OperationResult {
+    private final Cancellable cancellable;
+    private final ModelNode compensatingOperation;
 
-    /**
-     * Add a result fragment to the final result.
-     *
-     * @param location the location of the fragment within the final result
-     * @param result the result fragment to insert
-     */
-    void handleResultFragment(String[] location, ModelNode result);
+    public BasicOperationResult(final Cancellable cancellable, final ModelNode compensatingOperation) {
+        this.cancellable = cancellable;
+        this.compensatingOperation = compensatingOperation;
+    }
 
-    /**
-     * Handle operation completion.  The compensating update for the completed update
-     * is passed in; if there is no such possible update, the value is {@code undefined}.
-     */
-    void handleResultComplete();
+     public BasicOperationResult(final ModelNode compensatingOperation) {
+        this(Cancellable.NULL, compensatingOperation);
+    }
 
-    /**
-     * Signify that this operation was cancelled.
-     */
-    void handleCancellation();
+    public BasicOperationResult() {
+        this(new ModelNode());
+    }
 
-    /**
-     * An exception occurred talking to the remote host
-     *
-     * @param e the exception
-     */
-    void handleException(Exception e);
+    public Cancellable getCancellable() {
+        return cancellable;
+    }
+
+    public ModelNode getCompensatingOperation() {
+        return compensatingOperation;
+    }
 }

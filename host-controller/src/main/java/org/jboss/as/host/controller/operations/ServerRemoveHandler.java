@@ -19,6 +19,9 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -55,15 +57,15 @@ public class ServerRemoveHandler implements ModelAddOperationHandler, Descriptio
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode compensating = ServerAddHandler.getAddServerOperation(operation.get(OP_ADDR), operation.get(NAME), operation.get(GROUP));
-            resultHandler.handleResultComplete(compensating);
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override

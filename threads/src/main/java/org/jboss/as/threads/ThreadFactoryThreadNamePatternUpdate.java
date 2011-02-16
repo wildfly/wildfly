@@ -22,10 +22,12 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -34,6 +36,8 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -55,24 +59,22 @@ public final class ThreadFactoryThreadNamePatternUpdate implements RuntimeOperat
     }
 
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         String failure = validator.validate(operation);
         if (failure != null) {
-            resultHandler.handleFailed(new ModelNode().set(failure));
-            return Cancellable.NULL;
+            throw new OperationFailedException(new ModelNode().set(failure));
         }
 
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
 
         ModelNode model = context.getSubModel();
         if (!model.isDefined()) {
-            resultHandler.handleFailed(notConfigured(name));
-            return Cancellable.NULL;
+            throw new OperationFailedException(notConfigured(name));
         }
 
         ModelNode oldValue = model.get(CommonAttributes.THREAD_NAME_PATTERN);
-        String newNamePattern = null;
+        final String newNamePattern;
         ModelNode newValue;
         if (operation.hasDefined(VALUE)) {
             newValue = operation.get(VALUE);
@@ -80,28 +82,31 @@ public final class ThreadFactoryThreadNamePatternUpdate implements RuntimeOperat
         }
         else {
             newValue = new ModelNode();
+            newNamePattern = null;
         }
 
         model.get(CommonAttributes.THREAD_NAME_PATTERN).set(newValue);
 
         if (context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            final ServiceController<?> service = updateContext.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
-            if (service == null) {
-                resultHandler.handleFailed(notConfigured(name));
-                return Cancellable.NULL;
-            } else {
-                final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
-                threadFactoryService.setNamePattern(newNamePattern);
-            }
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
+                    if (service == null) {
+                        throw new OperationFailedException(notConfigured(name));
+                    } else {
+                        final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
+                        threadFactoryService.setNamePattern(newNamePattern);
+                    }
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
 
         final ModelNode compensatingOp = operation.clone();
         compensatingOp.get(VALUE).set(oldValue);
-
-        resultHandler.handleResultComplete(compensatingOp);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensatingOp);
     }
 
     private ModelNode notConfigured(String name) {

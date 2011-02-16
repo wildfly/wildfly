@@ -22,6 +22,8 @@
 
 package org.jboss.as.security;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
@@ -37,7 +39,6 @@ import javax.naming.Context;
 import javax.naming.Reference;
 import javax.security.auth.login.Configuration;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -106,7 +107,7 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
     }
 
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         // Create the compensating operation
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
@@ -216,9 +217,8 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                     ServiceController.Mode.ACTIVE).install();
         }
 
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

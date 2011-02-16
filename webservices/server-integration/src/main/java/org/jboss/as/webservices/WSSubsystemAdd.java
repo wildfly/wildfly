@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.webservices.CommonAttributes.MODIFY_SOAP_ADDRESS;
@@ -32,7 +34,6 @@ import java.net.UnknownHostException;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -80,7 +81,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
     }
 
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         // Create the compensating operation
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
@@ -104,9 +105,9 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             //add the DUP for dealing with WS deployments
             WSDeploymentActivator.activate(updateContext);
         }
-        resultHandler.handleResultComplete(compensatingOperation);
 
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
     private static void addConfigService(ServiceTarget serviceTarget, ModelNode configuration) {

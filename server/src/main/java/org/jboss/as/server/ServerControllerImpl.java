@@ -22,6 +22,10 @@
 
 package org.jboss.as.server;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
@@ -53,7 +57,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.ExtensionContext;
@@ -108,6 +111,7 @@ import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.threads.OrderedExecutor;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -124,6 +128,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
     private final ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final DeploymentRepository deploymentRepository;
     private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
+    private final Executor runtimeExecutor = new OrderedExecutor(Executors.newCachedThreadPool());
 
     ServerControllerImpl(final ServiceContainer container, final ServiceTarget serviceTarget, final ServerEnvironment serverEnvironment, final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository) {
         super(createCoreModel(), configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
@@ -286,7 +291,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
 
     /** {@inheritDoc} */
     @Override
-    protected Cancellable doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) {
+    protected OperationResult doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) throws OperationFailedException {
         if (context instanceof BootOperationContext) {
             return ((BootOperationHandler)operationHandler).execute(context, operation, resultHandler);
         } else if (context instanceof RuntimeOperationContext) {
@@ -318,16 +323,6 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         @Override
         public ServerController getController() {
             return (ServerController) super.getController();
-        }
-
-        @Override
-        public ServiceTarget getServiceTarget() {
-            return serviceTarget;
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry() {
-            return serviceRegistry;
         }
 
         @Override
@@ -379,12 +374,47 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
             }
             deployers.get(phase).add(new RegisteredProcessor(priority, processor));
         }
+
+        public ServiceTarget getServiceTarget() {
+            return serviceTarget;
+        }
+
+        public ServiceRegistry getServiceRegistry() {
+            return serviceRegistry;
+        }
     }
 
     private class RuntimeContextImpl extends ServerOperationContextImpl implements RuntimeOperationContext {
 
         private RuntimeContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
             super(ServerControllerImpl.this, registry, subModel);
+        }
+
+        public void executeRuntimeTask(final RuntimeTask runtimeTask, final ResultHandler resultHandler) {
+            final RuntimeTaskContext taskContext = new RuntimeTaskContextImpl();
+            runtimeExecutor.execute(new Runnable() {
+                public void run() {
+                    try {
+                        runtimeTask.execute(taskContext,resultHandler);
+                    } catch (OperationFailedException e) {
+                        resultHandler.handleFailed(e.getFailureDescription());
+                    } catch (Throwable t) {
+                        resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                    }
+                }
+            });
+        }
+    }
+
+    private class RuntimeTaskContextImpl implements RuntimeTaskContext {
+        @Override
+        public ServiceTarget getServiceTarget() {
+            return serviceTarget;
+        }
+
+        @Override
+        public ServiceRegistry getServiceRegistry() {
+            return serviceRegistry;
         }
     }
 

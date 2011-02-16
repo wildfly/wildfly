@@ -22,15 +22,19 @@
 
 package org.jboss.as.jmx;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -47,28 +51,33 @@ class JMXConnectorAdd implements ModelUpdateOperationHandler, RuntimeOperationHa
         //
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
         final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
 
-        final ModelNode compensatingOperation = Util.getEmptyOperation(JMXConnectorRemove.OPERATION_NAME, operation.require(OP_ADDR));
-
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-
-            final ServiceTarget target = runtimeContext.getServiceTarget();
-            JMXConnectorService.addService(target, serverBinding, registryBinding);
-        }
-
         context.getSubModel().get(CommonAttributes.SERVER_BINDING).set(serverBinding);
         context.getSubModel().get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
 
-        resultHandler.handleResultComplete(compensatingOperation);
+        final ModelNode compensatingOperation = Util.getEmptyOperation(JMXConnectorRemove.OPERATION_NAME, operation.require(OP_ADDR));
 
-        return Cancellable.NULL;
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    JMXConnectorService.addService(target, serverBinding, registryBinding);
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
+        }
+
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

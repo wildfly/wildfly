@@ -22,13 +22,14 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -43,7 +44,7 @@ public class ProfileAddHandler implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
 
         final ModelNode compensatingOperation = new ModelNode();
@@ -55,9 +56,8 @@ public class ProfileAddHandler implements ModelAddOperationHandler {
         }
         context.getSubModel().get(SUBSYSTEM).setEmptyObject(); // initialize the subsystems
 
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

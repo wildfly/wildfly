@@ -22,6 +22,9 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -29,13 +32,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -60,7 +64,7 @@ public class WebVirtualHostAdd implements ModelAddOperationHandler, RuntimeOpera
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -69,34 +73,38 @@ public class WebVirtualHostAdd implements ModelAddOperationHandler, RuntimeOpera
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
-            final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation));
-            final ServiceBuilder<?> serviceBuilder =  serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
-                .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
-                .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
-            if(operation.has(CommonAttributes.ACCESS_LOG)) {
-                final ModelNode accessLog = operation.get(CommonAttributes.ACCESS_LOG);
-                service.setAccessLog(accessLog.clone());
-                // Create the access log service
-                accessLogService(name, accessLog, serviceTarget);
-                serviceBuilder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name, CommonAttributes.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
-            }
-            if(operation.has(CommonAttributes.REWRITE)) {
-                service.setRewrite(operation.get(CommonAttributes.REWRITE).clone());
-            }
-            serviceBuilder.install();
-        }
-
         final ModelNode subModel = context.getSubModel();
         subModel.get(CommonAttributes.ALIAS).set(operation.get(CommonAttributes.ALIAS));
         subModel.get(CommonAttributes.ACCESS_LOG).set(operation.get(CommonAttributes.ACCESS_LOG));
         subModel.get(CommonAttributes.REWRITE).set(operation.get(CommonAttributes.REWRITE));
 
-        resultHandler.handleResultComplete(compensatingOperation);
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation));
+                    final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
+                            .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
+                            .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
+                    if (operation.hasDefined(CommonAttributes.ACCESS_LOG)) {
+                        final ModelNode accessLog = operation.get(CommonAttributes.ACCESS_LOG);
+                        service.setAccessLog(accessLog.clone());
+                        // Create the access log service
+                        accessLogService(name, accessLog, serviceTarget);
+                        serviceBuilder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name, CommonAttributes.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
+                    }
+                    if (operation.hasDefined(CommonAttributes.REWRITE)) {
+                        service.setRewrite(operation.get(CommonAttributes.REWRITE).clone());
+                    }
+                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                    serviceBuilder.install();
+                }
+            }, resultHandler);
 
-        return Cancellable.NULL;
+        } else {
+            resultHandler.handleResultComplete();
+        }
+        return new BasicOperationResult(compensatingOperation);
     }
 
     static String[] aliases(final ModelNode node) {

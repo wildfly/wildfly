@@ -18,6 +18,9 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -25,16 +28,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -62,38 +65,37 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Run
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        final ModelNode model = context.getSubModel();
+        final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
         try {
-            final ModelNode model = context.getSubModel();
             if (model.get(START).asBoolean()) {
                 String msg = String.format("Deployment %s must be undeployed before being removed", model.get(NAME).asString());
-                resultHandler.handleFailed(new ModelNode().set(msg));
+                throw new OperationFailedException(new ModelNode().set(msg));
             }
             else {
-                final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
                 if (context instanceof RuntimeOperationContext) {
-                    RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-                    String deploymentUnitName = model.require(NAME).asString();
-                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                    final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
-                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                    controller.addListener(new AbstractServiceListener<Object>() {
-                        @Override
-                        public void serviceRemoved(ServiceController<? extends Object> controller) {
-                            resultHandler.handleResultComplete(compensatingOp);
-                            controller.removeListener(this);
+                    RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                        public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                            String deploymentUnitName = model.require(NAME).asString();
+                            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                            final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                            if(controller != null) {
+                                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                            } else {
+                                resultHandler.handleResultComplete();
+                            }
                         }
-                    });
-                    controller.setMode(ServiceController.Mode.REMOVE);
-                }
-                else {
-                    resultHandler.handleResultComplete(compensatingOp);
+                    }, resultHandler);
+                } else {
+                    resultHandler.handleResultComplete();
                 }
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.toString()));
+            throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensatingOp);
     }
 }

@@ -26,6 +26,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -67,7 +69,6 @@ import java.util.Random;
 import java.util.Set;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -923,7 +924,7 @@ public class GlobalOperationsTestCase {
             profileSub1Reg.registerOperationHandler("testA1-1",
                     new OperationHandler() {
                         @Override
-                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },
@@ -942,7 +943,7 @@ public class GlobalOperationsTestCase {
                     new OperationHandler() {
 
                         @Override
-                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },
@@ -963,7 +964,7 @@ public class GlobalOperationsTestCase {
                     new OperationHandler() {
 
                         @Override
-                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },
@@ -1014,10 +1015,10 @@ public class GlobalOperationsTestCase {
             profileCSub5Reg.registerReadOnlyAttribute("name", new OperationHandler() {
 
                 @Override
-                public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                     resultHandler.handleResultFragment(new String[0], new ModelNode().set("Overridden by special read handler"));
-                    resultHandler.handleResultComplete(null);
-                    return Cancellable.NULL;
+                    resultHandler.handleResultComplete();
+                    return new BasicOperationResult();
                 }
             }, AttributeAccess.Storage.CONFIGURATION);
 
@@ -1046,10 +1047,10 @@ public class GlobalOperationsTestCase {
         static final TestMetricHandler INSTANCE = new TestMetricHandler();
         private static final Random random = new Random();
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             resultHandler.handleResultFragment(new String[0], new ModelNode().set(random.nextInt()));
-            resultHandler.handleResultComplete(null);
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
     }

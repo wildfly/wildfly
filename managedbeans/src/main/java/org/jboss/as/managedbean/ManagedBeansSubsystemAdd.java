@@ -22,11 +22,12 @@
 
 package org.jboss.as.managedbean;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -54,7 +55,7 @@ class ManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOperatio
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         if(context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
@@ -68,11 +69,8 @@ class ManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOperatio
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         context.getSubModel().setEmptyObject();
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

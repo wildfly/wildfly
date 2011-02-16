@@ -21,6 +21,7 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
@@ -29,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -145,7 +145,7 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         }
 
         @Override
-        public Cancellable execute(ModelNode operation, ResultHandler handler) {
+        public OperationResult execute(ModelNode operation, ResultHandler handler) {
             System.out.println("===== RHCC execute()");
             return remote.execute(operation, handler);
         }

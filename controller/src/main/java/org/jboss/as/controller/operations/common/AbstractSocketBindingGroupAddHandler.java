@@ -19,13 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -58,35 +60,32 @@ public abstract class AbstractSocketBindingGroupAddHandler implements ModelAddOp
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = address.getLastElement().getValue();
             ModelNode model = context.getSubModel();
             model.get(NAME).set(name);
-
+            ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
             String failure = validator.validate(operation);
-            if (failure == null) {
-                model.get(DEFAULT_INTERFACE).set(operation.get(DEFAULT_INTERFACE));
-                populateModel(model, operation);
-                model.get(SOCKET_BINDING);
-                ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-                installSocketBindingGroup(name, operation, context, resultHandler, compensating);
-            }
             if (failure != null) {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
+            model.get(DEFAULT_INTERFACE).set(operation.get(DEFAULT_INTERFACE));
+            populateModel(model, operation);
+            model.get(SOCKET_BINDING);
+            return installSocketBindingGroup(name, operation, context, resultHandler, compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     protected abstract void populateModel(ModelNode model, ModelNode operation);
 
-    protected void installSocketBindingGroup(String name, ModelNode operation, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete(compensatingOp);
+    protected OperationResult installSocketBindingGroup(String name, ModelNode operation, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) throws OperationFailedException {
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

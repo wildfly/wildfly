@@ -19,13 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -55,19 +57,18 @@ public class InterfaceRemoveHandler implements ModelRemoveOperationHandler, Desc
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = address.getLastElement().getValue();
             ModelNode model = context.getSubModel();
             ModelNode criteriaNode = model.get(CRITERIA);
             ModelNode compensating = InterfaceAddHandler.getAddInterfaceOperation(operation.get(OP_ADDR), criteriaNode);
-            uninstallInterface(name, criteriaNode, context, resultHandler, compensating);
+            return uninstallInterface(name, criteriaNode, context, resultHandler, compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override
@@ -75,8 +76,9 @@ public class InterfaceRemoveHandler implements ModelRemoveOperationHandler, Desc
         return InterfaceDescription.getInterfaceRemoveOperation(locale);
     }
 
-    protected void uninstallInterface(String name, ModelNode criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete(compensatingOp);
+    protected OperationResult uninstallInterface(String name, ModelNode criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

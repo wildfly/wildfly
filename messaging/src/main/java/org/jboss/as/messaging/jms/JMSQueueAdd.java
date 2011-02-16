@@ -22,6 +22,9 @@
 
 package org.jboss.as.messaging.jms;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
@@ -32,7 +35,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -40,6 +42,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -74,7 +78,7 @@ class JMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -82,11 +86,13 @@ class JMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
-        String selector = null;
+        final String selector;
         final ModelNode subModel = context.getSubModel();
         if (operation.hasDefined(SELECTOR)) {
             selector = operation.get(SELECTOR).asString();
             subModel.get(SELECTOR).set(selector);
+        } else {
+            selector = null;
         }
         if (operation.hasDefined(DURABLE)) {
             subModel.get(DURABLE).set(operation.get(DURABLE));
@@ -95,21 +101,23 @@ class JMSQueueAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
             subModel.get(ENTRIES).set(operation.get(ENTRIES));
         }
 
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-
-            final JMSQueueService service = new JMSQueueService(name, selector,
-                    operation.get(DURABLE).asBoolean(true), jndiBindings(operation));
-            final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
-            runtimeContext.getServiceTarget().addService(serviceName, service)
-                    .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
-                    .setInitialMode(Mode.ACTIVE)
-                    .install();
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final JMSQueueService service = new JMSQueueService(name, selector,
+                            operation.get(DURABLE).asBoolean(true), jndiBindings(operation));
+                    final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
+                    context.getServiceTarget().addService(serviceName, service)
+                            .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                            .setInitialMode(Mode.ACTIVE)
+                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                            .install();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensatingOperation);
     }
 
     static String[] jndiBindings(final ModelNode node) {

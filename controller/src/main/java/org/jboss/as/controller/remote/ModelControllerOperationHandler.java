@@ -21,9 +21,10 @@
  */
 package org.jboss.as.controller.remote;
 
+import org.jboss.as.protocol.MessageHandler;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 
 /**
@@ -57,5 +58,5 @@ public interface ModelControllerOperationHandler extends MessageHandler, Managem
             }
             return new ModelControllerOperationHandlerImpl(type, modelController, initialMessageHandler);
         }
-}
+    }
 }

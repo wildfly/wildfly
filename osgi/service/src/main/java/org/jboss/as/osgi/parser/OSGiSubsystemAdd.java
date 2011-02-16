@@ -21,6 +21,8 @@
  */
 package org.jboss.as.osgi.parser;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -35,7 +37,6 @@ import static org.jboss.as.osgi.parser.CommonAttributes.START;
 import java.util.Hashtable;
 import java.util.Set;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -75,7 +76,7 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
     }
 
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         log.infof("Activating OSGi Subsystem");
 
         // Create the compensating operation
@@ -111,9 +112,9 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
         }
 
         populateSubModel(context.getSubModel(), operation);
-        resultHandler.handleResultComplete(compensatingOperation);
 
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
     // TODO - This conversion should be reviewed, initially this is to simplify

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,33 +25,22 @@ package org.jboss.as.controller.client;
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Interface for capturing th results of a model operation.
+ *
+ * @author John Bailey
  */
-public interface ResultHandler {
-
+public interface OperationResult {
     /**
-     * Add a result fragment to the final result.
+     * Get a handle which will allow a task to be canceled.
      *
-     * @param location the location of the fragment within the final result
-     * @param result the result fragment to insert
+     * @return The handle
      */
-    void handleResultFragment(String[] location, ModelNode result);
+    Cancellable getCancellable();
 
     /**
-     * Handle operation completion.  The compensating update for the completed update
-     * is passed in; if there is no such possible update, the value is {@code undefined}.
-     */
-    void handleResultComplete();
-
-    /**
-     * Signify that this operation was cancelled.
-     */
-    void handleCancellation();
-
-    /**
-     * An exception occurred talking to the remote host
+     * Get the compensating operation for the operation run.
      *
-     * @param e the exception
+     * @return the compensating operation
      */
-    void handleException(Exception e);
+    ModelNode getCompensatingOperation();
 }

@@ -18,6 +18,8 @@
  */
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
@@ -39,7 +41,6 @@ import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -61,7 +62,7 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
     static final LoggingDescribeHandler INSTANCE = new LoggingDescribeHandler();
 
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         final ModelNode model = context.getSubModel();
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
@@ -110,8 +111,8 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
         }
 
         resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete(new ModelNode());
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult();
     }
 
     private ModelNode defineAsynchHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {

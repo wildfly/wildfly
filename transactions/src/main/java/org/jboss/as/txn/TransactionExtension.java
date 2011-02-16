@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -54,7 +56,6 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -347,7 +348,7 @@ public class TransactionExtension implements Extension {
     private static class TransactionDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final TransactionDescribeHandler INSTANCE = new TransactionDescribeHandler();
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
             ModelNode add = createEmptyAddOperation();
 
@@ -371,8 +372,8 @@ public class TransactionExtension implements Extension {
             result.add(add);
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete(new ModelNode());
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         @Override

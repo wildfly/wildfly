@@ -25,6 +25,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -60,7 +61,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -563,7 +563,7 @@ public abstract class AbstractProxyControllerTest {
                     new OperationHandler() {
 
                         @Override
-                        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
                             return null;
                         }
                     },

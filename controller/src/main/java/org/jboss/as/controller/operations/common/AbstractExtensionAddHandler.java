@@ -19,13 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -61,25 +63,22 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode opAddr = operation.get(OP_ADDR);
             PathAddress address = PathAddress.pathAddress(opAddr);
             String module = address.getLastElement().getValue();
             context.getSubModel().get(ExtensionDescription.MODULE).set(module);
             String failure = installExtension(module, context);
-            if (failure == null) {
-                ModelNode compensating = AbstractExtensionRemoveHandler.getRemoveExtensionOperation(opAddr);
-                resultHandler.handleResultComplete(compensating);
+            if (failure != null) {
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
-            else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
-            }
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(AbstractExtensionRemoveHandler.getRemoveExtensionOperation(opAddr));
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override

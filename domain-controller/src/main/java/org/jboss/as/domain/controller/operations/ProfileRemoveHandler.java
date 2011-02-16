@@ -22,12 +22,14 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -42,20 +44,18 @@ public class ProfileRemoveHandler implements ModelRemoveOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(ADD);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         if(context.getSubModel().get(SUBSYSTEM).keys().size() > 0) { // TODO replace with a reasonable check
-            resultHandler.handleFailed(new ModelNode().set("subsytems are not empty"));
-            return Cancellable.NULL;
+            throw new OperationFailedException(new ModelNode().set("subsytems are not empty"));
         }
 
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 

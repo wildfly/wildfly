@@ -18,13 +18,15 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -32,6 +34,8 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -66,36 +70,41 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, R
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode model = context.getSubModel();
             model.get(START).set(false);
             ModelNode compensatingOp = DeploymentDeployHandler.getOperation(operation.get(OP_ADDR));
-            undeploy(model, context, resultHandler, compensatingOp);
+            undeploy(model, context, resultHandler);
+            return new BasicOperationResult(compensatingOp);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
-    private void undeploy(ModelNode model, OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
+    private void undeploy(final ModelNode model, OperationContext context, ResultHandler resultHandler) {
         if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            String deploymentUnitName = model.require(NAME).asString();
-            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-            final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
-            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-            controller.addListener(new AbstractServiceListener<Object>() {
-                public void serviceRemoved(ServiceController<?> controller) {
-                    resultHandler.handleResultComplete(compensatingOp);
-                    controller.removeListener(this);
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    String deploymentUnitName = model.require(NAME).asString();
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                    controller.addListener(new AbstractServiceListener<Object>() {
+                        public void listenerAdded(ServiceController<? extends Object> serviceController) {
+                            controller.setMode(ServiceController.Mode.NEVER);
+                        }
+
+                        public void serviceStopped(ServiceController<? extends Object> controller) {
+                            controller.removeListener(this);
+                            resultHandler.handleResultComplete();
+                        }
+                    });
                 }
-            });
-            controller.setMode(ServiceController.Mode.NEVER);
-        }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
     }
 }

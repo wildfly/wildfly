@@ -28,6 +28,7 @@ import java.util.concurrent.CancellationException;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.Connection;
@@ -64,8 +65,8 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
     }
 
     @Override
-    public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
-        return new CancellableAdapter(client.execute(operation, new ResultHandlerAdapter(handler)));
+    public OperationResult execute(final ModelNode operation, final ResultHandler handler) {
+        return new OperationHandlerResultAdapter(client.execute(operation, new ResultHandlerAdapter(handler)));
     }
 
     @Override
@@ -77,17 +78,25 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
         }
     }
 
-    private static class CancellableAdapter implements Cancellable {
-        private final org.jboss.as.controller.client.Cancellable delegate;
+    private static class OperationHandlerResultAdapter implements OperationResult, Cancellable {
+        private final org.jboss.as.controller.client.OperationResult delegate;
 
-        CancellableAdapter(org.jboss.as.controller.client.Cancellable delegate){
+        OperationHandlerResultAdapter(org.jboss.as.controller.client.OperationResult delegate){
             this.delegate = delegate;
+        }
+
+        public Cancellable getCancellable() {
+            return this;
+        }
+
+        public ModelNode getCompensatingOperation() {
+            return delegate.getCompensatingOperation();
         }
 
         @Override
         public boolean cancel() {
             try {
-                return delegate.cancel();
+                return delegate.getCancellable().cancel();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -107,8 +116,8 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
         }
 
         @Override
-        public void handleResultComplete(final ModelNode compensatingOperation) {
-            delegate.handleResultComplete(compensatingOperation);
+        public void handleResultComplete() {
+            delegate.handleResultComplete();
         }
 
         @Override

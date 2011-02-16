@@ -28,6 +28,8 @@ import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALI
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -38,7 +40,6 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
 import org.jboss.as.connector.workmanager.WorkManagerService;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -66,7 +67,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
         String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
@@ -118,6 +119,9 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                             connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
             new RaDeploymentActivator().activate(updateContext);
+            resultHandler.handleResultComplete(); // TODO: Listener
+        } else {
+            resultHandler.handleResultComplete();
         }
 
         // Apply to the model
@@ -149,9 +153,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         compensating.get(OP_ADDR).set(operation.require(ADDRESS));
         compensating.get(OP).set("remove");
 
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 
 }

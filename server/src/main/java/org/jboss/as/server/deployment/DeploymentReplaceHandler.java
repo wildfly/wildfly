@@ -18,6 +18,9 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
@@ -25,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -68,7 +70,7 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, Ru
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             String failure = validator.validate(operation);
             if (failure == null) {
@@ -101,13 +103,13 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, Ru
             }
 
             if (failure != null) {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
+        return new BasicOperationResult();
     }
 
     private static boolean has(ModelNode node, String child) {

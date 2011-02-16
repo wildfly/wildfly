@@ -21,14 +21,18 @@
  */
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -39,7 +43,6 @@ import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Removes an unbounded queue thread pool.
@@ -53,23 +56,25 @@ public class UnboundedQueueThreadPoolRemove implements RuntimeOperationHandler, 
     static final OperationHandler INSTANCE = new UnboundedQueueThreadPoolRemove();
 
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         final ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
         if (context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry(). getService(ThreadsServices.threadFactoryName(name));
-            if (controller == null) {
-                resultHandler.handleResultComplete(null);
-                return Cancellable.NULL;
-            } else {
-                //controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
-                controller.setMode(Mode.REMOVE);
-            }
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-
 
         // Compensating is add
         final ModelNode model = context.getSubModel();
@@ -86,9 +91,6 @@ public class UnboundedQueueThreadPoolRemove implements RuntimeOperationHandler, 
         if (model.hasDefined(KEEPALIVE_TIME)) {
             compensating.get(KEEPALIVE_TIME).set(model.get(KEEPALIVE_TIME));
         }
-
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 }

@@ -22,13 +22,14 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -87,7 +88,7 @@ public class LoggingExtension implements Extension {
 
         /** {@inheritDoc} */
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
             final ModelNode compensatingOperation = new ModelNode();
             compensatingOperation.get(OP).set(REMOVE);
@@ -97,9 +98,8 @@ public class LoggingExtension implements Extension {
             subModel.get(CommonAttributes.LOGGER).setEmptyObject();
             subModel.get(CommonAttributes.HANDLER).setEmptyObject();
 
-            resultHandler.handleResultComplete(compensatingOperation);
-
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensatingOperation);
         }
 
         static ModelNode createOperation(ModelNode address) {

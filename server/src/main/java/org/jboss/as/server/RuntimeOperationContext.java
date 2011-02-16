@@ -22,8 +22,12 @@
 
 package org.jboss.as.server;
 
+import java.util.concurrent.Executor;
+import org.jboss.as.controller.ResultHandler;
+
 /**
 * The operation context for run time operations.
 */
 public interface RuntimeOperationContext extends ServerOperationContext {
+    void executeRuntimeTask(RuntimeTask runtimeTask, ResultHandler resultHandler);
 }

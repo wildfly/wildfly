@@ -21,7 +21,12 @@
  */
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
@@ -34,7 +39,6 @@ import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
 import java.util.concurrent.Executor;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -60,8 +64,8 @@ public class BoundedQueueThreadPoolAdd implements RuntimeOperationHandler, Model
     static final OperationHandler INSTANCE = new BoundedQueueThreadPoolAdd();
 
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(operation);
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        final BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(operation);
 
         //Apply to the model
         final ModelNode model = context.getSubModel();
@@ -96,25 +100,30 @@ public class BoundedQueueThreadPoolAdd implements RuntimeOperationHandler, Model
         final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
 
         if (context instanceof RuntimeOperationContext) {
-            ServiceTarget target = ((RuntimeOperationContext)context).getServiceTarget();
-            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-            final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
-                    params.getCoreThreads().getScaledCount(),
-                    params.getMaxThreads().getScaledCount(),
-                    params.getQueueLength().getScaledCount(),
-                    params.isBlocking(),
-                    params.getKeepAliveTime(),
-                    params.isAllowCoreTimeout());
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
 
-            //TODO add the handoffExceutor injection
+                    ServiceTarget target = context.getServiceTarget();
+                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+                    final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
+                            params.getCoreThreads().getScaledCount(),
+                            params.getMaxThreads().getScaledCount(),
+                            params.getQueueLength().getScaledCount(),
+                            params.isBlocking(),
+                            params.getKeepAliveTime(),
+                            params.isAllowCoreTimeout());
 
-            final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
-            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-            serviceBuilder.install();
+                    //TODO add the handoffExceutor injection
+
+                    final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
+                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                    serviceBuilder.install();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 }

@@ -22,16 +22,20 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -51,7 +55,7 @@ class DeploymentScannerDisable implements ModelUpdateOperationHandler, RuntimeOp
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -63,26 +67,27 @@ class DeploymentScannerDisable implements ModelUpdateOperationHandler, RuntimeOp
         // update the model
         context.getSubModel().get(CommonAttributes.SCAN_ENABLED).set(false);
 
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = updateContext.getServiceRegistry().getService(DeploymentScannerService.getServiceName(name));
-            if(controller == null) {
-                resultHandler.handleFailed(new ModelNode().set("scanner not configured"));
-            } else {
-                try {
-                    final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
-                    scanner.stopScanner();
-                    resultHandler.handleResultComplete(compensatingOperation);
-                } catch (Throwable t) {
-                    resultHandler.handleFailed(getFailureResult(t));
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(name));
+                    if (controller == null) {
+                        throw new OperationFailedException(new ModelNode().set("scanner not configured"));
+                    } else {
+                        try {
+                            final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
+                            scanner.stopScanner();
+                            resultHandler.handleResultComplete();
+                        } catch (Throwable t) {
+                            throw new OperationFailedException(getFailureResult(t));
+                        }
+                    }
                 }
-            }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-        else {
-            resultHandler.handleResultComplete(compensatingOperation);
-        }
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensatingOperation);
     }
 
     protected ModelNode getFailureResult(Throwable t) {

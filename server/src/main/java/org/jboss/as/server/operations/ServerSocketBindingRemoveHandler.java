@@ -18,15 +18,19 @@
  */
 package org.jboss.as.server.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Handler for the server socket-binding resource's remove operation.
@@ -42,23 +46,23 @@ public class ServerSocketBindingRemoveHandler extends SocketBindingRemoveHandler
     }
 
     @Override
-    protected void uninstallSocketBinding(String name, ModelNode model, OperationContext context,
+    protected OperationResult uninstallSocketBinding(final String name, ModelNode model, OperationContext context,
             ResultHandler resultHandler, ModelNode compensatingOp) {
         if (context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
-            if(controller == null) {
-                resultHandler.handleResultComplete(compensatingOp);
-            }
-            else {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler, compensatingOp));
-                controller.setMode(Mode.REMOVE);
-            }
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
-        }
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

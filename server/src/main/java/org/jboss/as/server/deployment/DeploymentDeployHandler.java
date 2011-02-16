@@ -18,12 +18,14 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -60,12 +62,12 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Run
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
         ModelNode model = context.getSubModel();
         model.get(START).set(true);
         ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
         DeploymentHandlerUtil.deploy(model, context, resultHandler, compensatingOp);
-        return Cancellable.NULL;
+        return new BasicOperationResult();
     }
 }

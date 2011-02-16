@@ -18,13 +18,15 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
@@ -58,7 +60,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             String failure = validator.validate(operation);
             if (failure == null) {
@@ -68,20 +70,20 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
                 try {
                     byte[] hash = deploymentRepository.addDeploymentContent(name, runtimeName, is);
                     resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
-                    resultHandler.handleResultComplete(null);
                 }
                 finally {
                     safeClose(is);
                 }
             }
             else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
         }
         catch (IOException e) {
-            resultHandler.handleFailed(new ModelNode().set(e.toString()));
+            throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult();
     }
 
     protected abstract InputStream getContentInputStream(ModelNode operation);

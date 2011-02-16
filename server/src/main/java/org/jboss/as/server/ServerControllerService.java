@@ -140,7 +140,7 @@ final class ServerControllerService implements Service<ServerController> {
             }
 
             @Override
-            public void handleResultComplete(final ModelNode compensatingOperation) {
+            public void handleResultComplete() {
                 if (count.decrementAndGet() == 0) {
                     // some action
                 }

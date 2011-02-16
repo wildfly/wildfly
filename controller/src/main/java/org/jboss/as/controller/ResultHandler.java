@@ -41,12 +41,9 @@ public interface ResultHandler {
     void handleResultFragment(String[] location, ModelNode result);
 
     /**
-     * Handle operation completion.  The compensating update for the completed update
-     * is passed in; if there is no such possible update, the value is {@code undefined}.
-     *
-     * @param compensatingOperation the compensating operation object
+     * Handle operation completion.
      */
-    void handleResultComplete(ModelNode compensatingOperation);
+    void handleResultComplete();
 
     /**
      * Handle an operation failure.
@@ -66,11 +63,9 @@ public interface ResultHandler {
      */
     class ServiceRemoveListener extends AbstractServiceListener<Object> {
         private final ResultHandler resultHandler;
-        private final ModelNode compensatingOperation;
 
-        public ServiceRemoveListener(final ResultHandler resultHandler, final ModelNode compensatingOperation) {
+        public ServiceRemoveListener(final ResultHandler resultHandler) {
             this.resultHandler = resultHandler;
-            this.compensatingOperation = compensatingOperation;
         }
 
         @Override
@@ -80,7 +75,7 @@ public interface ResultHandler {
 
         @Override
         public void serviceRemoved(final ServiceController<?> controller) {
-            resultHandler.handleResultComplete(compensatingOperation);
+            resultHandler.handleResultComplete();
         }
     }
 
@@ -91,17 +86,15 @@ public interface ResultHandler {
      */
     class ServiceStartListener extends AbstractServiceListener<Object> {
         private final ResultHandler resultHandler;
-        private final ModelNode compensatingOperation;
 
-        public ServiceStartListener(final ResultHandler resultHandler, final ModelNode compensatingOperation) {
+        public ServiceStartListener(final ResultHandler resultHandler) {
             this.resultHandler = resultHandler;
-            this.compensatingOperation = compensatingOperation;
         }
 
         @Override
         public void serviceStarted(final ServiceController<?> controller) {
             try {
-                resultHandler.handleResultComplete(compensatingOperation);
+                resultHandler.handleResultComplete();
             } finally {
                 controller.removeListener(this);
             }

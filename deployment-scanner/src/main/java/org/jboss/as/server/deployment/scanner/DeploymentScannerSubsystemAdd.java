@@ -22,9 +22,10 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -46,18 +47,18 @@ public class DeploymentScannerSubsystemAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         // Initialize the scanner
         context.getSubModel().get(CommonAttributes.DEPLOYMENT_SCANNER).setEmptyObject();
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
 
-        resultHandler.handleResultComplete(compensatingOperation);
+        resultHandler.handleResultComplete();
 
         context.getSubModel().setEmptyObject();
 
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

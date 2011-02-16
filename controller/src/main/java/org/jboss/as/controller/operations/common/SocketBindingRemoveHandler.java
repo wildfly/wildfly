@@ -19,12 +19,13 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -54,16 +55,17 @@ public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, 
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         String name = address.getLastElement().getValue();
         ModelNode model = context.getSubModel();
-        ModelNode compensating = SocketBindingAddHandler.getOperation(opAddr, model);
-        uninstallSocketBinding(name, model, context, resultHandler, compensating);
 
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+
+        ModelNode compensating = SocketBindingAddHandler.getOperation(opAddr, model);
+        return uninstallSocketBinding(name, model, context, resultHandler, compensating);
     }
 
     @Override
@@ -71,8 +73,8 @@ public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, 
         return SocketBindingGroupDescription.getSocketBindingRemoveOperation(locale);
     }
 
-    protected void uninstallSocketBinding(String name, ModelNode model, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete(compensatingOp);
+    protected OperationResult uninstallSocketBinding(String name, ModelNode model, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

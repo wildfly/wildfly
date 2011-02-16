@@ -68,6 +68,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOUR
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -80,7 +82,6 @@ import java.util.Map.Entry;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -577,7 +578,7 @@ public class DataSourcesExtension implements Extension {
     private static class DataSourcesSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final DataSourcesSubsystemDescribeHandler INSTANCE = new DataSourcesSubsystemDescribeHandler();
         @Override
-        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
             ModelNode add = createEmptyAddSubsystemOperation();
 
@@ -587,8 +588,8 @@ public class DataSourcesExtension implements Extension {
             result.add(add);
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete(new ModelNode());
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         @Override

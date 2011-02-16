@@ -22,19 +22,23 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -54,28 +58,23 @@ class DeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperation
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String path = operation.require(CommonAttributes.PATH).asString();
         final boolean enabled = operation.get(CommonAttributes.SCAN_ENABLED).asBoolean(true);
         final int interval = operation.get(CommonAttributes.SCAN_INTERVAL).asInt(5000);
-        String relativeTo = null;
+        final String relativeTo;
         if(operation.has(CommonAttributes.RELATIVE_TO)) {
             relativeTo = operation.get(CommonAttributes.RELATIVE_TO).asString();
+        } else {
+            relativeTo = null;
         }
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-
-            final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
-            DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
-        }
 
         final ModelNode subModel = context.getSubModel();
         subModel.get(CommonAttributes.PATH).set(path);
@@ -83,9 +82,18 @@ class DeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperation
         subModel.get(CommonAttributes.SCAN_INTERVAL).set(interval);
         if(relativeTo != null) subModel.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
 
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        if(context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
+        }
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

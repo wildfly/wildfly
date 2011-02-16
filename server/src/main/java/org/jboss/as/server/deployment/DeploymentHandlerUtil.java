@@ -20,6 +20,7 @@ package org.jboss.as.server.deployment;
 
 import java.util.Map;
 import java.util.Set;
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -27,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -48,67 +51,78 @@ public class DeploymentHandlerUtil {
     private DeploymentHandlerUtil() {
     }
 
-    public static void deploy(ModelNode deploymentModel, OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
+    public static void deploy(final ModelNode deploymentModel, OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) throws OperationFailedException {
         if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            String deploymentUnitName = deploymentModel.require(NAME).asString();
-            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-            final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
-            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-            if(controller != null) {
-                controller.setMode(ServiceController.Mode.ACTIVE);
-            } else {
-                final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-                final String runtimeName = deploymentModel.require(RUNTIME_NAME).asString();
-                final byte[] hash = deploymentModel.require(HASH).asBytes();
-                final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, hash, null, new AbstractDeploymentUnitService.DeploymentCompletionCallback() {
-                    public void handleComplete() {
-                        resultHandler.handleResultComplete(compensatingOp);
-                    }
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    String deploymentUnitName = deploymentModel.require(NAME).asString();
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                    if (controller != null) {
+                        controller.setMode(ServiceController.Mode.ACTIVE);
+                    } else {
+                        final ServiceTarget serviceTarget = context.getServiceTarget();
+                        final String runtimeName = deploymentModel.require(RUNTIME_NAME).asString();
+                        final byte[] hash = deploymentModel.require(HASH).asBytes();
+                        final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, hash, null, new AbstractDeploymentUnitService.DeploymentCompletionCallback() {
+                            public void handleComplete() {
+                                resultHandler.handleResultComplete();
+                            }
 
-                    public void handleFailure(Map<ServiceName, StartException> startExceptions, Set<ServiceName> failedDependencies) {
-                        final StringBuilder failure = new StringBuilder("Deployment failed.  ");
-                        if(!startExceptions.isEmpty()) {
-                            failure.append("Service failures: ").append(startExceptions.values());
-                        }
-                        if(!failedDependencies.isEmpty()) {
-                            failure.append("Failed Dependencies: ").append(failedDependencies);
-                        }
-                        resultHandler.handleFailed(new ModelNode().set(failure.toString()));
+                            public void handleFailure(Map<ServiceName, StartException> startExceptions, Set<ServiceName> failedDependencies) {
+                                final StringBuilder failure = new StringBuilder("Deployment failed.  ");
+                                if (!startExceptions.isEmpty()) {
+                                    failure.append("Service failures: ").append(startExceptions.values());
+                                }
+                                if (!failedDependencies.isEmpty()) {
+                                    failure.append("Failed Dependencies: ").append(failedDependencies);
+                                }
+                                resultHandler.handleFailed(new ModelNode().set(failure.toString()));
+                            }
+                        });
+                        serviceTarget.addService(deploymentUnitServiceName, service)
+                                .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
+                                .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .install();
                     }
-                });
-                serviceTarget.addService(deploymentUnitServiceName, service)
-                    .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
-                    .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-            }
-        }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
     }
 
-    public static void replace(final ModelNode deploymentModel, final String toReplace, final OperationContext context, final ResultHandler resultHandler,
-            final ModelNode compensatingOp) {
+        public static void replace(final ModelNode deploymentModel, final String toReplace, final OperationContext operationContext, final ResultHandler resultHandler,
+            final ModelNode compensatingOp) throws OperationFailedException {
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = updateContext.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(toReplace));
-            if(controller != null) {
-                controller.addListener(new AbstractServiceListener<Object>() {
-                    @Override
-                    public void serviceRemoved(ServiceController<? extends Object> serviceController) {
-                        deploy(deploymentModel, context, resultHandler, compensatingOp);
+            if (operationContext instanceof RuntimeOperationContext) {
+                RuntimeOperationContext.class.cast(operationContext).executeRuntimeTask(new RuntimeTask() {
+                    public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                        final ServiceController<?> controller = context.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(toReplace));
+                        if (controller != null) {
+                            controller.addListener(new AbstractServiceListener<Object>() {
+
+                                public void listenerAdded(ServiceController<? extends Object> serviceController) {
+                                    controller.setMode(ServiceController.Mode.REMOVE);
+                                }
+
+                                public void serviceRemoved(ServiceController<? extends Object> serviceController) {
+                                    try {
+                                        deploy(deploymentModel, operationContext, resultHandler, compensatingOp);
+                                    } catch (OperationFailedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            });
+                        } else {
+                            deploy(deploymentModel, operationContext, resultHandler, compensatingOp);
+                        }
                     }
-                });
-                controller.setMode(ServiceController.Mode.REMOVE);
+                }, resultHandler);
             } else {
-                deploy(deploymentModel, context, resultHandler, compensatingOp);
+                resultHandler.handleResultComplete();
             }
-        }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
-        }
     }
 }

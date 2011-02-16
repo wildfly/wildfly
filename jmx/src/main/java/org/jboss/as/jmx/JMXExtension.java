@@ -22,6 +22,8 @@
 
 package org.jboss.as.jmx;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -35,7 +37,6 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -178,7 +179,7 @@ public class JMXExtension implements Extension {
     private static class JMXDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final JMXDescribeHandler INSTANCE = new JMXDescribeHandler();
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             final ModelNode model = context.getSubModel();
 
             final ModelNode node = new ModelNode();
@@ -186,8 +187,8 @@ public class JMXExtension implements Extension {
             node.add(createAddConnectorOperation(model.require(CommonAttributes.SERVER_BINDING).asString(), model.require(CommonAttributes.REGISTRY_BINDING).asString()));
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, node);
-            resultHandler.handleResultComplete(new ModelNode());
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         @Override

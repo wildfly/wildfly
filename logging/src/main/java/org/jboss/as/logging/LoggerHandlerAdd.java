@@ -22,9 +22,10 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -41,7 +42,7 @@ class LoggerHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHand
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final String handlerType = operation.require(HANDLER_TYPE).asString();
         final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
         switch(type) {
@@ -56,11 +57,9 @@ class LoggerHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHand
             }case SIZE_ROTATING_FILE_HANDLER: {
                 return SizeRotatingFileHandlerAdd.INSTANCE.execute(context, operation, resultHandler);
             } default: {
-                resultHandler.handleFailed(new ModelNode().set("unknown log handler type"));
+                throw new OperationFailedException(new ModelNode().set("unknown log handler type"));
             }
         }
-        return Cancellable.NULL;
     }
-
 
 }

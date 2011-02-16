@@ -21,6 +21,10 @@
  */
 package org.jboss.as.server.operations;
 
+import java.util.ArrayDeque;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -31,7 +35,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -42,12 +45,12 @@ import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.RuntimeOperationContext;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Handler for multi-step operations that have to be performed atomically.
@@ -74,7 +77,7 @@ public class ServerCompositeOperationHandler
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         // The type of the context tells us whether we are allowed to make
         // runtime updates
@@ -103,7 +106,7 @@ public class ServerCompositeOperationHandler
                     }
                 }
                 resultHandler.handleResultFragment(EMPTY, testResults);
-                resultHandler.handleFailed(testFailure);
+                throw new OperationFailedException(testFailure);
             }
             else {
                 // Operations tested out ok against model; now execute for real
@@ -115,13 +118,13 @@ public class ServerCompositeOperationHandler
             }
         }
         catch (final Exception e) {
-//            e.printStackTrace(System.out);
-            resultHandler.handleFailed(new ModelNode().set(e.toString()));
+            throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
-        return Cancellable.NULL;
+
+        return new BasicOperationResult();
     }
 
-    private void validateAgainstModel(final OperationContext context, final ModelNode operation, final ModelNode testResult, final ModelNode testFailure) {
+    private void validateAgainstModel(final OperationContext context, final ModelNode operation, final ModelNode testResult, final ModelNode testFailure) throws OperationFailedException {
 
         // This is the key bit -- clone the "submodel" and then execute
         // the operations against the clone
@@ -159,7 +162,7 @@ public class ServerCompositeOperationHandler
             }
 
             @Override
-            public void handleResultComplete(final ModelNode compensatingOperation) {
+            public void handleResultComplete() {
                 synchronized (done) {
                     done.set(true);
                 }
@@ -195,12 +198,38 @@ public class ServerCompositeOperationHandler
         }
     }
 
+    protected void executeStepHandlers(CompositeOperationContext context, List<ModelNode> steps, StepHandlerContext stepHandlerContext) {
+        super.executeStepHandlers(context, steps, stepHandlerContext);
+
+        if(stepHandlerContext.hasFailures()) {
+            return; // Skip the runtime tasks if there are model failures
+        }
+
+        if(context instanceof RuntimeCompositeOperationContext) {
+            final RuntimeCompositeOperationContext runtimeContext = RuntimeCompositeOperationContext.class.cast(context);
+            runtimeContext.overallRuntimeContext.executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    for(RuntimeCompositeOperationContext.QueuedTask queuedTask : runtimeContext.runtimeTasks) {
+                        try {
+                            queuedTask.task.execute(context, queuedTask.resultHandler);
+                        } catch (OperationFailedException e) {
+                            queuedTask.resultHandler.handleFailed(e.getFailureDescription());
+                        } catch (Throwable t) {
+                            queuedTask.resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                        }
+                    }
+                }
+            }, null);
+        }
+    }
+
     private static class RuntimeCompositeOperationContext extends CompositeOperationContext {
 
         private final boolean rollbackOnRuntimeFailure;
         private final RuntimeOperationContext overallRuntimeContext;
         private boolean modelOnly = false;
         private final Map<Integer, Boolean> modelOnlyStates = new HashMap<Integer, Boolean>();
+        private final ArrayDeque<QueuedTask> runtimeTasks = new ArrayDeque<QueuedTask>();
 
         private RuntimeCompositeOperationContext(final RuntimeOperationContext overallContext, final ResultHandler resultHandler,
                 final boolean rollbackOnRuntimeFailure) {
@@ -235,43 +264,54 @@ public class ServerCompositeOperationHandler
         }
 
         private OperationContext getRuntimeOperationContext(final ModelNode stepModel) {
-            return new RuntimeOperationContext() {
+            return new StepRuntimeOperationContext(stepModel);
+        }
 
-                @Override
-                public ModelNode getSubModel() throws IllegalArgumentException {
-                    return stepModel;
-                }
+        private class StepRuntimeOperationContext implements RuntimeOperationContext {
+            private ModelNode stepModel;
 
-                @Override
-                public ModelNodeRegistration getRegistry() {
-                    return overallRuntimeContext.getRegistry();
-                }
+            private StepRuntimeOperationContext(ModelNode stepModel) {
+                this.stepModel = stepModel;
+            }
 
-                @Override
-                public ServerController getController() {
-                    return overallRuntimeContext.getController();
-                }
+            @Override
+            public ModelNode getSubModel() throws IllegalArgumentException {
+                return stepModel;
+            }
 
-                @Override
-                public ServiceTarget getServiceTarget() {
-                    return overallRuntimeContext.getServiceTarget();
-                }
+            @Override
+            public ModelNodeRegistration getRegistry() {
+                return overallRuntimeContext.getRegistry();
+            }
 
-                @Override
-                public ServiceRegistry getServiceRegistry() {
-                    return overallRuntimeContext.getServiceRegistry();
-                }
+            @Override
+            public ServerController getController() {
+                return overallRuntimeContext.getController();
+            }
 
-                @Override
-                public void restartRequired() {
-                    overallRuntimeContext.restartRequired();
-                }
+            @Override
+            public void restartRequired() {
+                overallRuntimeContext.restartRequired();
+            }
 
-                @Override
-                public void revertRestartRequired() {
-                    overallRuntimeContext.revertRestartRequired();
-                }
-            };
+            @Override
+            public void revertRestartRequired() {
+                overallRuntimeContext.revertRestartRequired();
+            }
+
+            public void executeRuntimeTask(RuntimeTask runtimeTask, ResultHandler resultHandler) {
+                runtimeTasks.add(new QueuedTask(runtimeTask, resultHandler));
+            }
+        }
+
+        private class QueuedTask {
+            private final RuntimeTask task;
+            private final ResultHandler resultHandler;
+
+            private QueuedTask(RuntimeTask task, ResultHandler resultHandler) {
+                this.task = task;
+                this.resultHandler = resultHandler;
+            }
         }
 
         @Override
@@ -300,7 +340,7 @@ public class ServerCompositeOperationHandler
 
                 getResultHandler().handleResultFragment(EMPTY, results);
 
-                getResultHandler().handleResultComplete(compensatingOp);
+                getResultHandler().handleResultComplete(); //TODO:  Make sure we somehow handle the comp op
             }
         }
 
@@ -346,7 +386,7 @@ public class ServerCompositeOperationHandler
                         }
 
                         @Override
-                        public void handleResultComplete(final ModelNode compensatingOperation) {
+                        public void handleResultComplete() {
                             result.get(ROLLED_BACK).set(true);
                             handlerLatch.countDown();
                         }
@@ -362,7 +402,12 @@ public class ServerCompositeOperationHandler
                             handleFailed(new ModelNode().set("Rollback cancelled"));
                         }
                     };
-                    stepHandler.execute(stepRollbackContext, compStep, stepRollbackHandler);
+                    try {
+                        stepHandler.execute(stepRollbackContext, compStep, stepRollbackHandler);
+                    } catch (OperationFailedException e) {
+                        // TODO:  This seems wrong.
+                        stepRollbackHandler.handleFailed(e.getFailureDescription());
+                    }
                 }
                 else {
                     handlerLatch.countDown();

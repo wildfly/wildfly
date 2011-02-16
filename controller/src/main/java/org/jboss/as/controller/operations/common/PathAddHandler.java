@@ -19,6 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -28,7 +31,6 @@ import static org.jboss.as.controller.descriptions.common.PathDescription.RELATI
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -83,7 +85,7 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             String failure = validator.validate(operation);
             if (failure == null) {
@@ -99,16 +101,15 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
                 ModelNode compensating = PathRemoveHandler.getRemovePathOperation(operation.get(OP_ADDR));
                 String path = pathNode.isDefined() ? pathNode.asString() : null;
                 String relativeTo = relNode.isDefined() ? relNode.asString() : null;
-                installPath(name, path, relativeTo, context, resultHandler, compensating);
+                return installPath(name, path, relativeTo, context, resultHandler, compensating);
             }
             else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override
@@ -116,8 +117,9 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
         return specified ? PathDescription.getSpecifiedPathAddOperation(locale) : PathDescription.getNamedPathAddOperation(locale);
     }
 
-    protected void installPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete(compensatingOp);
+    protected OperationResult installPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

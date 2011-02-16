@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.operations.common;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -30,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -50,7 +51,7 @@ public final class JVMRemoveHandler implements ModelRemoveOperationHandler, Desc
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(ADD);
@@ -61,9 +62,9 @@ public final class JVMRemoveHandler implements ModelRemoveOperationHandler, Desc
             compensatingOperation.get(JVM_TYPE).set(subModel.get(JVM_TYPE));
         }
 
-        resultHandler.handleResultComplete(compensatingOperation);
+        resultHandler.handleResultComplete();
 
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensatingOperation);
     }
 
     /** {@inheritDoc} */

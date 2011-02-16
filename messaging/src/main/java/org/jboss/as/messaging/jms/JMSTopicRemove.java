@@ -22,18 +22,21 @@
 
 package org.jboss.as.messaging.jms;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Update handler removing a topic from the JMS subsystem. The
@@ -47,7 +50,7 @@ class JMSTopicRemove implements ModelRemoveOperationHandler, RuntimeOperationHan
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -56,17 +59,21 @@ class JMSTopicRemove implements ModelRemoveOperationHandler, RuntimeOperationHan
         final ModelNode subModel = context.getSubModel();
         final ModelNode compensatingOperation = JMSTopicAdd.getOperation(opAddr, subModel);
 
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> service = runtimeContext.getServiceRegistry().getService(JMSServices.JMS_TOPIC_BASE.append(name));
-            if(service != null) {
-                service.setMode(Mode.REMOVE);
-            }
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_TOPIC_BASE.append(name));
+                    if (service != null) {
+                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

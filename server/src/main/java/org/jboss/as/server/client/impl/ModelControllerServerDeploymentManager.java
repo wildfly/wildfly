@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
@@ -52,8 +53,8 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
     @Override
     protected Future<ModelNode> executeOperation(ModelNode operation) {
         Handler handler = new Handler();
-        Cancellable c = client.execute(operation, handler.resultHandler);
-        handler.setCancellable(c);
+        OperationResult c = client.execute(operation, handler.resultHandler);
+        handler.setCancellable(c.getCancellable());
         return handler;
     }
 
@@ -77,7 +78,7 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
             }
 
             @Override
-            public void handleResultComplete(ModelNode compensatingOperation) {
+            public void handleResultComplete() {
                 state.compareAndSet(State.RUNNING, State.DONE);
                 synchronized (Handler.this) {
                     Handler.this.notifyAll();

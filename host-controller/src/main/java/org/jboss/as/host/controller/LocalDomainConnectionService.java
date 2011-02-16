@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -31,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -134,7 +134,7 @@ class LocalDomainConnectionService implements DomainControllerConnection, Servic
 
         /** {@inheritDoc} */
         @Override
-        public Cancellable execute(ModelNode operation, ResultHandler handler) {
+        public OperationResult execute(ModelNode operation, ResultHandler handler) {
             return this.controller.execute(operation, handler);
         }
 

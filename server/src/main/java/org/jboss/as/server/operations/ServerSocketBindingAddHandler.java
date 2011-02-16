@@ -18,6 +18,9 @@
  */
 package org.jboss.as.server.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
@@ -37,6 +40,8 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.server.services.net.SocketBinding;
@@ -69,47 +74,46 @@ public class ServerSocketBindingAddHandler extends SocketBindingAddHandler imple
     }
 
     @Override
-    protected void installSocketBinding(String name, ModelNode operation, OperationContext context,
-            ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult installSocketBinding(final String name, final ModelNode operation, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) throws OperationFailedException {
         if (context instanceof RuntimeOperationContext) {
-
-            // Resolve any expressions and re-validate
-            final ModelNode resolvedOp = operation.resolve();
-            final String failure = runtimeValidator.validate(resolvedOp);
-            if (failure == null) {
-
-                final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-                final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
-
-
-                final String intf = resolvedOp.get(INTERFACE).isDefined() ? resolvedOp.get(INTERFACE).asString() : null;
-                final int port = resolvedOp.get(PORT).asInt();
-                final boolean fixedPort = resolvedOp.get(FIXED_PORT).asBoolean(false);
-                final String mcastAddr = resolvedOp.get(MULTICAST_ADDRESS).isDefined() ? resolvedOp.get(MULTICAST_ADDRESS).asString() : null;
-                final int mcastPort = resolvedOp.get(MULTICAST_PORT).isDefined() ? resolvedOp.get(MULTICAST_PORT).asInt() : 0;
-                try {
-                    InetAddress mcastInet = mcastAddr == null ? null : InetAddress.getByName(mcastAddr);
-
-                    final SocketBindingService service = new SocketBindingService(name, port, fixedPort, mcastInet, mcastPort);
-                    final ServiceBuilder<SocketBinding> builder = serviceTarget.addService(SocketBinding.JBOSS_BINDING_NAME.append(name), service);
-                    if (intf != null) {
-                        builder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(intf), NetworkInterfaceBinding.class, service.getInterfaceBinding());
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    // Resolve any expressions and re-validate
+                    final ModelNode resolvedOp = operation.resolve();
+                    final String failure = runtimeValidator.validate(resolvedOp);
+                    if (failure != null) {
+                        throw new OperationFailedException(new ModelNode().set(failure));
                     }
-                    builder.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
-                        .setInitialMode(Mode.ON_DEMAND)
-                        .install();
-                    resultHandler.handleResultComplete(compensatingOp);
-                } catch (UnknownHostException e) {
-                    resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+
+                    final String intf = resolvedOp.get(INTERFACE).isDefined() ? resolvedOp.get(INTERFACE).asString() : null;
+                    final int port = resolvedOp.get(PORT).asInt();
+                    final boolean fixedPort = resolvedOp.get(FIXED_PORT).asBoolean(false);
+                    final String mcastAddr = resolvedOp.get(MULTICAST_ADDRESS).isDefined() ? resolvedOp.get(MULTICAST_ADDRESS).asString() : null;
+                    final int mcastPort = resolvedOp.get(MULTICAST_PORT).isDefined() ? resolvedOp.get(MULTICAST_PORT).asInt() : 0;
+                    try {
+                        InetAddress mcastInet = mcastAddr == null ? null : InetAddress.getByName(mcastAddr);
+
+                        final SocketBindingService service = new SocketBindingService(name, port, fixedPort, mcastInet, mcastPort);
+                        final ServiceBuilder<SocketBinding> builder = serviceTarget.addService(SocketBinding.JBOSS_BINDING_NAME.append(name), service);
+                        if (intf != null) {
+                            builder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(intf), NetworkInterfaceBinding.class, service.getInterfaceBinding());
+                        }
+                        builder.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
+                                .setInitialMode(Mode.ON_DEMAND)
+                                .install();
+
+                        resultHandler.handleResultComplete();
+                    } catch (UnknownHostException e) {
+                        throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+                    }
                 }
-            }
-            else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
-            }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
-        }
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

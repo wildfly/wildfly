@@ -3,6 +3,9 @@
  */
 package org.jboss.as.messaging;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -14,7 +17,6 @@ import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import java.util.Locale;
 
 import org.hornetq.core.server.HornetQServer;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -26,6 +28,8 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -63,17 +67,17 @@ public class QueueAdd implements ModelAddOperationHandler, RuntimeOperationHandl
     }
 
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
         String failure = validator.validate(operation);
         if (failure == null) {
             ModelNode opAddr = operation.require(OP_ADDR);
             ModelNode compensatingOp = Util.getResourceRemoveOperation(opAddr);
             PathAddress address = PathAddress.pathAddress(opAddr);
-            String name = address.getLastElement().getValue();
-            String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
-            String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
-            Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
+            final String name = address.getLastElement().getValue();
+            final String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
+            final String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
+            final Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
 
             ModelNode model = context.getSubModel();
             model.get(NAME).set(name);
@@ -87,24 +91,25 @@ public class QueueAdd implements ModelAddOperationHandler, RuntimeOperationHandl
                 model.get(DURABLE).set(durable);
             }
             if (context instanceof RuntimeOperationContext) {
-                RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-                final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
-                updateContext.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
-                    .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
-                    .addListener(new ResultHandler.ServiceStartListener(resultHandler, compensatingOp))
-                    .setInitialMode(Mode.ACTIVE)
-                    .install();
+                RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                    public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                        final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
+                        context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
+                                .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
+                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                                .setInitialMode(Mode.ACTIVE)
+                                .install();
 
+                    }
+                }, resultHandler);
+            } else {
+                resultHandler.handleResultComplete();
             }
-            else {
-                resultHandler.handleResultComplete(compensatingOp);
-            }
+            return new BasicOperationResult(compensatingOp);
         }
         else {
-            resultHandler.handleFailed(new ModelNode().set(failure));
+            throw new OperationFailedException(new ModelNode().set(failure));
         }
-
-        return Cancellable.NULL;
     }
 
     @Override

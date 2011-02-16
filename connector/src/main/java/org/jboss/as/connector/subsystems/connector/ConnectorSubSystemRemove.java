@@ -27,6 +27,9 @@ import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALI
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -34,13 +37,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -54,25 +58,24 @@ public class ConnectorSubSystemRemove implements RuntimeOperationHandler, ModelR
     static final OperationHandler INSTANCE = new ConnectorSubSystemRemove();
 
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         // Apply to the model
         final ModelNode model = context.getSubModel();
         final String name = model.require(NAME).asString();
 
         if (context instanceof RuntimeOperationContext) {
-
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(
-                    ConnectorServices.CONNECTOR_CONFIG_SERVICE);
-            if (controller == null) {
-                resultHandler.handleResultComplete(null);
-                return Cancellable.NULL;
-            } else {
-                // controller.addListener(new
-                // UpdateResultHandler.ServiceRemoveListener<P>(handler,
-                // param));
-                controller.setMode(Mode.REMOVE);
-            }
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(
+                            ConnectorServices.CONNECTOR_CONFIG_SERVICE);
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                        controller.setMode(Mode.REMOVE);
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
 
         // Compensating is add
@@ -100,9 +103,6 @@ public class ConnectorSubSystemRemove implements RuntimeOperationHandler, ModelR
             compensating.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(
                     model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
         }
-
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 }

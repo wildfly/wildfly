@@ -19,6 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -69,7 +71,7 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode param = operation.get(NAMESPACE);
             String failure = typeValidator.validateParameter(NAMESPACE, param);
@@ -91,8 +93,9 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
 
                 if (toRemove != null) {
                     namespaces.set(newList);
+                    resultHandler.handleResultComplete();
                     ModelNode compensating = NamespaceAddHandler.getAddNamespaceOperation(operation.get(OP_ADDR), toRemove);
-                    resultHandler.handleResultComplete(compensating);
+                    return new BasicOperationResult(compensating);
                 }
                 else {
                     failure = "No namespace with URI " + prefix + " found";
@@ -100,13 +103,13 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
             }
 
             if (failure != null) {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
+        return new BasicOperationResult();
     }
 
     @Override

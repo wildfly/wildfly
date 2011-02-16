@@ -21,14 +21,18 @@
  */
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -53,7 +57,7 @@ public class ThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOperat
     static final OperationHandler INSTANCE = new ThreadFactoryAdd();
 
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         final ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -67,27 +71,6 @@ public class ThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOperat
             throw new IllegalArgumentException(PRIORITY + " is out of range " + priority); //TODO i18n
         }
         final ModelNode properties = operation.hasDefined(PROPERTIES) ? operation.get(PROPERTIES) : null;
-
-        if (context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceTarget target = runtimeContext.getServiceTarget();
-            final ThreadFactoryService service = new ThreadFactoryService();
-            service.setNamePattern(threadNamePattern);
-            service.setPriority(priority);
-            service.setThreadGroupName(groupName);
-            //TODO What about the properties?
-            //final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(handler, param);
-            try {
-                target.addService(ThreadsServices.threadFactoryName(name), service)
-                    //.addListener(listener)
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-            } catch (ServiceRegistryException e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
-            }
-
-        }
-
         //Apply to the model
         final ModelNode model = context.getSubModel();
         model.get(NAME).set(name);
@@ -104,11 +87,31 @@ public class ThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOperat
             model.get(PROPERTIES).set(properties);
         }
 
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    final ThreadFactoryService service = new ThreadFactoryService();
+                    service.setNamePattern(threadNamePattern);
+                    service.setPriority(priority);
+                    service.setThreadGroupName(groupName);
+                    //TODO What about the properties?
+                    try {
+                        target.addService(ThreadsServices.threadFactoryName(name), service)
+                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .install();
+                    } catch (ServiceRegistryException e) {
+                        throw new OperationFailedException(new ModelNode().set(e.getMessage()));
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
+        }
         // Compensating is remove
         final ModelNode compensating = Util.getResourceRemoveOperation(opAddr);
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 
 }

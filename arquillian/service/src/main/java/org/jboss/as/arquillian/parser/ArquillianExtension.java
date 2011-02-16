@@ -22,6 +22,8 @@
 
 package org.jboss.as.arquillian.parser;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -33,7 +35,6 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -111,13 +112,13 @@ public class ArquillianExtension implements Extension {
     private static class ArquillianSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final ArquillianSubsystemDescribeHandler INSTANCE = new ArquillianSubsystemDescribeHandler();
         @Override
-        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
             ModelNode node = new ModelNode();
             node.add(createAddSubSystemOperation());
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, node);
-            resultHandler.handleResultComplete(new ModelNode());
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         @Override

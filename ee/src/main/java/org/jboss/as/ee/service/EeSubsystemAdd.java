@@ -22,11 +22,12 @@
 
 package org.jboss.as.ee.service;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -70,8 +71,8 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-        if(context instanceof BootOperationContext) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+       if(context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
             logger.info("Activating EE subsystem");
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
@@ -101,9 +102,8 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
         context.getSubModel().setEmptyObject();
 
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

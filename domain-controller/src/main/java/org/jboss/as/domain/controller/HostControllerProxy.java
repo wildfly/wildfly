@@ -24,8 +24,8 @@ package org.jboss.as.domain.controller;
 
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
@@ -56,7 +56,7 @@ class HostControllerProxy implements ProxyController {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(ModelNode operation, ResultHandler handler) {
+    public OperationResult execute(ModelNode operation, ResultHandler handler) {
         return host.execute(operation, handler);
     }
 

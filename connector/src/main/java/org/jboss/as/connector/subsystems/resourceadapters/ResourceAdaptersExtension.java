@@ -56,6 +56,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -67,7 +69,6 @@ import java.util.Map.Entry;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -469,7 +470,7 @@ public class ResourceAdaptersExtension implements Extension {
         static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
 
         @Override
-        public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
             ModelNode add = createAddSubsystemOperation();
 
@@ -479,8 +480,8 @@ public class ResourceAdaptersExtension implements Extension {
             result.add(add);
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete(new ModelNode());
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         @Override

@@ -19,6 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -27,7 +30,6 @@ import static org.jboss.as.controller.descriptions.common.PathDescription.RELATI
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -64,7 +66,7 @@ public class PathRemoveHandler implements ModelRemoveOperationHandler, Descripti
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = address.getLastElement().getValue();
@@ -74,12 +76,11 @@ public class PathRemoveHandler implements ModelRemoveOperationHandler, Descripti
             ModelNode relNode = model.get(RELATIVE_TO);
             String relativeTo = relNode.isDefined() ? pathNode.asString() : null;
             ModelNode compensating = PathAddHandler.getAddPathOperation(operation.get(OP_ADDR), pathNode, relNode);
-            uninstallPath(name, path, relativeTo, context, resultHandler, compensating);
+            return uninstallPath(name, path, relativeTo, context, resultHandler, compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override
@@ -87,8 +88,9 @@ public class PathRemoveHandler implements ModelRemoveOperationHandler, Descripti
         return PathDescription.getPathRemoveOperation(locale);
     }
 
-    protected void uninstallPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete(compensatingOp);
+    protected OperationResult uninstallPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

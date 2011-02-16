@@ -32,22 +32,7 @@ import org.jboss.msc.service.ServiceTarget;
 public interface ServerOperationContext extends OperationContext {
 
     /** {@inheritDoc} */
-    @Override
     ServerController getController();
-
-    /**
-     * Get the target to which new services may be added.
-     *
-     * @return the service target
-     */
-    ServiceTarget getServiceTarget();
-
-    /**
-     * Get the service registry.
-     *
-     * @return the service registry.
-     */
-    ServiceRegistry getServiceRegistry();
 
     /**
      * Changes {@link ServerController#getState() the server controller state}

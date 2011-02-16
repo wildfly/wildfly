@@ -21,6 +21,8 @@
  */
 package org.jboss.as.controller.operations.global;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -43,7 +45,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -84,7 +85,7 @@ public class GlobalOperationHandlers {
      */
     public static class ReadResourceHandler implements ModelQueryOperationHandler {
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
                 final ModelNode result;
@@ -136,7 +137,7 @@ public class GlobalOperationHandlers {
                                     public void handleResultFragment(final String[] location, final ModelNode attributeResult) {
                                         result.get(attributeName).set(attributeResult);
                                     }
-                                    public void handleResultComplete(final ModelNode compensatingOperation) {
+                                    public void handleResultComplete() {
                                         // TODO
                                     }
                                     public void handleFailed(ModelNode failureDescription) {
@@ -153,11 +154,11 @@ public class GlobalOperationHandlers {
                     }
                 }
                 resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                resultHandler.handleResultComplete(null);
+                resultHandler.handleResultComplete();
             } catch (final Exception e) {
-                resultHandler.handleFailed(Util.createErrorResult(e));
+                throw new OperationFailedException(Util.createErrorResult(e));
             }
-            return Cancellable.NULL;
+            return new BasicOperationResult();
         }
 
         void addProxyNodes(final PathAddress address, final ModelNode result, final ModelNodeRegistration registry) throws Exception {
@@ -191,8 +192,8 @@ public class GlobalOperationHandlers {
      */
     public static class ReadAttributeHandler implements ModelQueryOperationHandler {
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-            Cancellable cancellable = Cancellable.NULL;
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+            OperationResult handlerResult = null;
             try {
                 final String attributeName = operation.require(NAME).asString();
                 final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
@@ -201,15 +202,16 @@ public class GlobalOperationHandlers {
                 } else if (attributeAccess.getReadHandler() == null) {
                     final ModelNode result = context.getSubModel().get(attributeName).clone();
                     resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                    resultHandler.handleResultComplete(null);
+                    resultHandler.handleResultComplete();
+                    handlerResult = new BasicOperationResult();
                 } else {
-                    cancellable = attributeAccess.getReadHandler().execute(context, operation, resultHandler);
+                    handlerResult = attributeAccess.getReadHandler().execute(context, operation, resultHandler);
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(Util.createErrorResult(e));
+                throw new OperationFailedException(Util.createErrorResult(e));
             }
-            return cancellable;
+            return handlerResult;
         }
     };
 
@@ -218,23 +220,23 @@ public class GlobalOperationHandlers {
      */
     public static class WriteAttributeHandler implements ModelUpdateOperationHandler {
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-            Cancellable cancellable = Cancellable.NULL;
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+            OperationResult handlerResult = null;
             try {
                 final String attributeName = operation.require(NAME).asString();
                 final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
                 if (attributeAccess == null) {
-                    resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
+                    throw new OperationFailedException(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
                 } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
-                    resultHandler.handleFailed(new ModelNode().set("Attribute " + attributeName + " is not writeable")); // TODO i18n
+                    throw new OperationFailedException(new ModelNode().set("Attribute " + attributeName + " is not writeable")); // TODO i18n
                 } else {
-                    cancellable = attributeAccess.getWriteHandler().execute(context, operation, resultHandler);
+                    handlerResult = attributeAccess.getWriteHandler().execute(context, operation, resultHandler);
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(Util.createErrorResult(e));
+                throw new OperationFailedException(Util.createErrorResult(e));
             }
-            return cancellable;
+            return handlerResult;
         }
     };
 
@@ -243,7 +245,7 @@ public class GlobalOperationHandlers {
      */
     public static final ModelQueryOperationHandler READ_CHILDREN_NAMES = new ModelQueryOperationHandler() {
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 String childName = operation.require(CHILD_TYPE).asString();
 
@@ -252,7 +254,7 @@ public class GlobalOperationHandlers {
                     final ModelNode result = new ModelNode();
                     result.setEmptyList();
                     resultHandler.handleResultFragment(new String[0], result);
-                    resultHandler.handleResultComplete(null);
+                    resultHandler.handleResultComplete();
                 } else {
 
                     final Set<String> childNames = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.require(ADDRESS)));
@@ -271,16 +273,15 @@ public class GlobalOperationHandlers {
                                 result.add(node);
                             }
                         }
-
                         resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                        resultHandler.handleResultComplete(null);
+                        resultHandler.handleResultComplete();
                     }
                 }
 
             } catch (final Exception e) {
-                resultHandler.handleFailed(Util.createErrorResult(e));
+                throw new OperationFailedException(Util.createErrorResult(e));
             }
-            return Cancellable.NULL;
+            return new BasicOperationResult();
         }
     };
 
@@ -290,7 +291,7 @@ public class GlobalOperationHandlers {
     public static final ModelQueryOperationHandler READ_OPERATION_NAMES = new ModelQueryOperationHandler() {
 
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final ModelNodeRegistration registry = context.getRegistry();
                 final Map<String, DescriptionProvider> descriptionProviders = registry.getOperationDescriptions(PathAddress.pathAddress(operation.require(ADDRESS)));
@@ -303,13 +304,12 @@ public class GlobalOperationHandlers {
                 } else {
                     result.setEmptyList();
                 }
-
                 resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                resultHandler.handleResultComplete(null);
+                resultHandler.handleResultComplete();
             } catch (final Exception e) {
-                resultHandler.handleFailed(Util.createErrorResult(e));
+                throw new OperationFailedException(Util.createErrorResult(e));
             }
-            return Cancellable.NULL;
+            return new BasicOperationResult();
         }
     };
 
@@ -319,7 +319,7 @@ public class GlobalOperationHandlers {
     public static final ModelQueryOperationHandler READ_OPERATION_DESCRIPTION = new ModelQueryOperationHandler() {
 
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 String operationName = operation.require(NAME).asString();
 
@@ -329,11 +329,11 @@ public class GlobalOperationHandlers {
                 final ModelNode result = descriptionProvider == null ? new ModelNode() : descriptionProvider.getModelDescription(getLocale(operation));
 
                 resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                resultHandler.handleResultComplete(null);
+                resultHandler.handleResultComplete();
             } catch (final Exception e) {
-                resultHandler.handleFailed(Util.createErrorResult(e));
+                throw new OperationFailedException(Util.createErrorResult(e));
             }
-            return Cancellable.NULL;
+            return new BasicOperationResult();
         }
     };
 
@@ -343,7 +343,7 @@ public class GlobalOperationHandlers {
     public static final ModelQueryOperationHandler READ_RESOURCE_DESCRIPTION = new ModelQueryOperationHandler() {
 
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final boolean operations = operation.get(OPERATIONS).isDefined() ? operation.get(OPERATIONS).asBoolean() : false;
                 final boolean recursive = operation.get(RECURSIVE).isDefined() ? operation.get(RECURSIVE).asBoolean() : false;
@@ -361,12 +361,11 @@ public class GlobalOperationHandlers {
 //                }
 
                 resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                resultHandler.handleResultComplete(null);
+                resultHandler.handleResultComplete();
             } catch (final Exception e) {
-                e.printStackTrace();
-                resultHandler.handleFailed(Util.createErrorResult(e));
+                throw new OperationFailedException(Util.createErrorResult(e));
             }
-            return Cancellable.NULL;
+            return new BasicOperationResult();
         }
 
 //        void addProxyNodes(final PathAddress address, final ModelNode result, final boolean operations, final Locale locale, final ModelNodeRegistration registry) throws Exception {

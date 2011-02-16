@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.remote;
 
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.StreamUtils.readByte;
 
@@ -89,7 +90,6 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
     }
 
     /** {@inheritDoc} */
-    @Override
     public byte getIdentifier() {
         return type.getHandlerId();
     }
@@ -166,8 +166,11 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
             final CountDownLatch completeLatch = new CountDownLatch(1);
-            final IOExceptionHolder holder = new IOExceptionHolder();
-            Cancellable result = modelController.execute(operation, new ResultHandler() {
+            final IOExceptionHolder exceptionHolder = new IOExceptionHolder();
+            final FailureHolder failureHolder = new FailureHolder();
+            final AtomicInteger status = new AtomicInteger(0);
+
+            OperationResult result = modelController.execute(operation, new ResultHandler() {
                 @Override
                 public void handleResultFragment(String[] location, ModelNode fragment) {
                     try {
@@ -183,62 +186,37 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                             outputStream.flush();
                         }
                     } catch (IOException e) {
-                        handleIOException(e);
+                        asynchOperations.remove(asynchronousRequestId);
+                        exceptionHolder.setException(e);
+                        completeLatch.countDown();
                     }
                 }
 
                 @Override
-                public void handleResultComplete(ModelNode compensatingOperation) {
-                    try {
-                        asynchOperations.remove(asynchronousRequestId);
-                        synchronized (outputStream) {
-                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
-                            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                            if (compensatingOperation == null) {
-                                new ModelNode().writeExternal(outputStream);
-                            } else {
-                                compensatingOperation.writeExternal(outputStream);
-                            }
-                        }
-                        completeLatch.countDown();
-                    } catch (IOException e) {
-                        handleIOException(e);
+                public void handleResultComplete() {
+                    asynchOperations.remove(asynchronousRequestId);
+                    if(!status.compareAndSet(0, 1)) {
+                        throw new RuntimeException("Result already set");
                     }
+                    completeLatch.countDown();
                 }
 
                 @Override
                 public void handleFailed(final ModelNode failureDescription) {
-                    try {
-                        asynchOperations.remove(asynchronousRequestId);
-                        synchronized (outputStream) {
-                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
-                            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                            failureDescription.writeExternal(outputStream);
-                            //outputStream.flush();
-                        }
-                        completeLatch.countDown();
-                    } catch (IOException e) {
-                        handleIOException(e);
+                    asynchOperations.remove(asynchronousRequestId);
+                    if(!status.compareAndSet(0, 2)) {
+                        throw new RuntimeException("Result already set");
                     }
+                    failureHolder.setFailure(failureDescription);
+                    completeLatch.countDown();
                 }
 
                 @Override
                 public void handleCancellation() {
-                    try {
-                        asynchOperations.remove(asynchronousRequestId);
-                        synchronized (outputStream) {
-                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION);
-                            //outputStream.flush();
-                        }
-                        completeLatch.countDown();
-                    } catch (IOException e) {
-                        handleIOException(e);
-                    }
-                }
-
-                private void handleIOException(IOException e) {
                     asynchOperations.remove(asynchronousRequestId);
-                    holder.setException(e);
+                    if(!status.compareAndSet(0, 3)) {
+                        throw new RuntimeException("Result already set");
+                    }
                     completeLatch.countDown();
                 }
             });
@@ -247,7 +225,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                 //It was handled synchronously or has completed by now
             } else {
                 //It was handled asynchronously
-                asynchOperations.put(Integer.valueOf(asynchronousRequestId), result);
+                asynchOperations.put(Integer.valueOf(asynchronousRequestId), result.getCancellable());
                 synchronized (outputStream) {
                     outputStream.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
                     StreamUtils.writeInt(outputStream, asynchronousRequestId);
@@ -261,9 +239,40 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                     } catch (InterruptedException e) {
                     }
                 }
+            }
 
-                if (holder.getException() != null) {
-                    throw holder.getException();
+            if (exceptionHolder.getException() != null) {
+                throw exceptionHolder.getException();
+            }
+
+            switch (status.get()) {
+                case 1: {
+                    synchronized (outputStream) {
+                        outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
+                        outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                        result.getCompensatingOperation().writeExternal(outputStream);
+                        outputStream.flush();
+                    }
+                    break;
+                }
+                case 2: {
+                    synchronized (outputStream) {
+                        outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
+                        outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                        failureHolder.getFailure().writeExternal(outputStream);
+                        outputStream.flush();
+                    }
+                    break;
+                }
+                case 3: {
+                    synchronized (outputStream) {
+                        outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION);
+                        outputStream.flush();
+                    }
+                    break;
+                }
+                default: {
+                    throw new IOException("Unknown status type " + status.get());
                 }
             }
         }
@@ -290,6 +299,18 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
             StreamUtils.writeBoolean(outputStream, cancelled);
+        }
+    }
+
+    private final class FailureHolder {
+        ModelNode failure;
+
+        public ModelNode getFailure() {
+            return failure;
+        }
+
+        public void setFailure(ModelNode failure) {
+            this.failure = failure;
         }
     }
 

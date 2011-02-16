@@ -21,6 +21,9 @@
  */
 package org.jboss.as.controller.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -30,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -68,22 +70,35 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         try {
             final List<ModelNode> steps = operation.require(STEPS).asList();
             executeSteps(new CompositeOperationContext(context, resultHandler), steps);
         }
         catch (final Exception e) {
-//            e.printStackTrace(System.out);
-            resultHandler.handleFailed(new ModelNode().set(e.toString()));
+            throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
-        return Cancellable.NULL;
+        return new BasicOperationResult();
     }
 
     protected void executeSteps(final CompositeOperationContext context, final List<ModelNode> steps) {
 
         final StepHandlerContext stepHandlerContext = new StepHandlerContext(steps.size());
+
+        executeStepHandlers(context, steps, stepHandlerContext);
+
+        final ModelNode results = stepHandlerContext.getResults();
+
+        if (stepHandlerContext.hasFailures()) {
+            context.handleFailures(stepHandlerContext, results);
+        }
+        else {
+            context.handleSuccess(stepHandlerContext, results);
+        }
+    }
+
+    protected void executeStepHandlers(final CompositeOperationContext context, final List<ModelNode> steps, final StepHandlerContext stepHandlerContext) {
         for (int i = 0; i < steps.size(); i++) {
             final ModelNode step = steps.get(i);
             if (stepHandlerContext.hasFailures()) {
@@ -96,21 +111,29 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
 
                 final Integer id = Integer.valueOf(i);
                 final OperationContext stepContext = context.getStepOperationContext(id, address, stepHandler);
-                final boolean remove = (stepHandler instanceof ModelRemoveOperationHandler);
-                final ResultHandler stepResultHandler = new StepResultHandler(id, stepHandlerContext, address, context.getSubModel(), stepContext.getSubModel(), remove);
+                final ResultHandler stepResultHandler = new StepResultHandler(id, stepHandlerContext);
 
-                stepHandler.execute(stepContext, step, stepResultHandler);
-//                System.out.println("Executed " + step);
+                try {
+                    final OperationResult result = stepHandler.execute(stepContext, step, stepResultHandler);
+                    stepHandlerContext.setRollbackOp(id, result.getCompensatingOperation());
+
+                    final ModelNode overallModel = context.getSubModel();
+                    final ModelNode stepModel = stepContext.getSubModel();
+                    if (stepModel != null) {
+                        synchronized (overallModel) {
+                            if (stepHandler instanceof ModelRemoveOperationHandler) {
+                                address.remove(overallModel);
+                            } else {
+                                address.navigate(overallModel, true).set(stepModel);
+                            }
+                        }
+                    }
+                } catch (OperationFailedException e) {
+                    stepResultHandler.handleFailed(e.getFailureDescription());
+                } catch (Throwable t) {
+                    stepResultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                }
             }
-        }
-
-        final ModelNode results = stepHandlerContext.getResults();
-
-        if (stepHandlerContext.hasFailures()) {
-            context.handleFailures(stepHandlerContext, results);
-        }
-        else {
-            context.handleSuccess(stepHandlerContext, results);
         }
     }
 
@@ -185,7 +208,7 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
 
             resultHandler.handleResultFragment(EMPTY, results);
 
-            resultHandler.handleResultComplete(compensatingOp);
+            resultHandler.handleResultComplete();
 
         }
 
@@ -248,15 +271,19 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
             this.resultsNode.setEmptyList();
         }
 
-        public void recordResult(final Integer id, final ModelNode result, final ModelNode compensatingOperation) {
+        public void setRollbackOp(final Integer id, final ModelNode compensatingOperation) {
+            synchronized(rollbackOps) {
+                rollbackOps.put(id, compensatingOperation);
+            }
+        }
+
+        public void recordResult(final Integer id, final ModelNode result) {
 //            if (result.isDefined()) {
                 synchronized (resultsNode) {
                     resultsNode.get(id).get(RESULT).set(result);
                 }
 //            }
-            synchronized(rollbackOps) {
-                rollbackOps.put(id, compensatingOperation);
-            }
+
             latch.countDown();
         }
 
@@ -279,7 +306,7 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
             latch.countDown();
         }
 
-        private boolean hasFailures() {
+        public boolean hasFailures() {
             synchronized (resultsNode) {
                 return hasFailures;
             }
@@ -308,18 +335,9 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
         private final Integer id;
         private final ModelNode stepResult = new ModelNode();
         private final StepHandlerContext stepContext;
-        private final PathAddress address;
-        private final ModelNode overallModel;
-        private final ModelNode stepModel;
-        private final boolean remove;
 
-        public StepResultHandler(final Integer id, final StepHandlerContext stepContext, final PathAddress address,
-                final ModelNode overallModel, final ModelNode stepModel, final boolean remove) {
+        public StepResultHandler(final Integer id, final StepHandlerContext stepContext) {
             this.id = id;
-            this.address = address;
-            this.overallModel = overallModel;
-            this.stepModel = stepModel;
-            this.remove = remove;
             this.stepContext = stepContext;
         }
 
@@ -329,17 +347,8 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
         }
 
         @Override
-        public void handleResultComplete(final ModelNode compensatingOperation) {
-            stepContext.recordResult(id, stepResult, compensatingOperation);
-            if (stepModel != null) {
-                synchronized (overallModel) {
-                    if (remove) {
-                        address.remove(overallModel);
-                    } else {
-                        address.navigate(overallModel, true).set(stepModel);
-                    }
-                }
-            }
+        public void handleResultComplete() {
+            stepContext.recordResult(id, stepResult);
         }
 
         @Override

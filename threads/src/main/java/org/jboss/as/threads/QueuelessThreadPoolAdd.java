@@ -21,7 +21,12 @@
  */
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
@@ -31,7 +36,6 @@ import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -57,8 +61,8 @@ public class QueuelessThreadPoolAdd implements RuntimeOperationHandler, ModelAdd
     static final OperationHandler INSTANCE = new QueuelessThreadPoolAdd();
 
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        QueuelessOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolOperationParameters(operation);
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        final QueuelessOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolOperationParameters(operation);
         //Apply to the model
         final ModelNode model = context.getSubModel();
         model.get(NAME).set(params.getName());
@@ -80,22 +84,25 @@ public class QueuelessThreadPoolAdd implements RuntimeOperationHandler, ModelAdd
         }
 
         if (context instanceof RuntimeOperationContext) {
-            ServiceTarget target = ((RuntimeOperationContext)context).getServiceTarget();
-            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-            final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    ServiceTarget target = context.getServiceTarget();
+                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+                    final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
 
-            //TODO add the handoffExceutor injection
+                    //TODO add the handoffExceutor injection
 
-            final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
-            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-            serviceBuilder.install();
-
+                    final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                    serviceBuilder.install();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-
         // Compensating is remove
         final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 }

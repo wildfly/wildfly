@@ -22,6 +22,9 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -35,13 +38,14 @@ import javax.management.ReflectionException;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -58,34 +62,35 @@ class WebConnectorMetrics implements ModelQueryOperationHandler, RuntimeOperatio
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
-        if(context instanceof RuntimeOperationContext) {
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String name = address.getLastElement().getValue();
-            final String attributeName = operation.require(NAME).asString();
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                    final String name = address.getLastElement().getValue();
+                    final String attributeName = operation.require(NAME).asString();
 
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
-            if(controller != null) {
-                try {
-                    final Connector connector = (Connector) controller.getValue();
-                    final int port = connector.getPort();
-                    final ModelNode result = new ModelNode();
-                    result.set("" + getAttribute("http-" + port, attributeName));
-                    resultHandler.handleResultFragment(new String[0], result);
-                    resultHandler.handleResultComplete(null);
-                    return Cancellable.NULL;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    resultHandler.handleFailed(new ModelNode().set("failed to get metrics" + e.getMessage()));
-                    return Cancellable.NULL;
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
+                    if (controller != null) {
+                        try {
+                            final Connector connector = (Connector) controller.getValue();
+                            final int port = connector.getPort();
+                            final ModelNode result = new ModelNode();
+                            result.set("" + getAttribute("http-" + port, attributeName));
+                            resultHandler.handleResultFragment(new String[0], result);
+                            resultHandler.handleResultComplete();
+                        } catch (Exception e) {
+                            throw new OperationFailedException(new ModelNode().set("failed to get metrics" + e.getMessage()));
+                        }
+                    }
                 }
-            }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultFragment(NO_LOCATION, new ModelNode().set("no metrics available"));
+            resultHandler.handleResultComplete();
         }
-        resultHandler.handleResultFragment(NO_LOCATION, new ModelNode().set("no metrics available"));
-        resultHandler.handleResultComplete(null);
-        return Cancellable.NULL;
+        return new BasicOperationResult();
     }
 
     static final ObjectName createObjectName(final String name) throws MalformedObjectNameException {

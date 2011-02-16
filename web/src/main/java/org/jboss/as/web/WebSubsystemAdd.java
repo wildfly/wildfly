@@ -22,13 +22,15 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -69,7 +71,7 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext updateContext, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext updateContext, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode config = operation.get(CommonAttributes.CONTAINER_CONFIG);
 
         final ModelNode compensatingOperation = new ModelNode();
@@ -90,8 +92,7 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
                     .setInitialMode(Mode.ON_DEMAND)
                     .install();
             } catch (Throwable t) {
-                resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
-                return Cancellable.NULL;
+                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
             }
 
             final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
@@ -115,9 +116,8 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
         subModel.get(CommonAttributes.CONNECTOR).setEmptyObject();
         subModel.get(CommonAttributes.VIRTUAL_SERVER).setEmptyObject();
 
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

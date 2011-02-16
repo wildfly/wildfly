@@ -19,6 +19,9 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -61,17 +63,17 @@ public class LocalDomainControllerAddHandler implements ModelUpdateOperationHand
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         try {
             final ModelNode model = context.getSubModel();
             model.get(DOMAIN_CONTROLLER).get(LOCAL).setEmptyObject();
             ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-            resultHandler.handleResultComplete(compensating);
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override

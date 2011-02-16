@@ -22,7 +22,12 @@
 
 package org.jboss.as.txn;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.txn.CommonAttributes.BINDING;
 import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
@@ -31,7 +36,6 @@ import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
 import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -66,44 +70,19 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, RuntimeOperat
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-        String bindingName = operation.get(CORE_ENVIRONMENT).require(BINDING).asString();
-        String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
-        String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
-        String nodeIdentifier = operation.get(CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
-        boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean(false);
-        String objectStorePathRef = "jboss.server.data.dir";
-        String objectStorePath = "tx-object-store";
-        int maxPorts = 10;
-        int coordinatorDefaultTimeout = 300;
-
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            final ServiceTarget target = updateContext.getServiceTarget();
-
-            // XATerminator has no deps, so just add it in there
-            final XATerminatorService xaTerminatorService = new XATerminatorService();
-            target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install();
-
-            final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
-            target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
-                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, transactionManagerService.getRecoveryBindingInjector())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, transactionManagerService.getStatusBindingInjector())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector())
-                .addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, transactionManagerService.getPathInjector())
-                .setInitialMode(Mode.ACTIVE)
-                .install();
-
-            TransactionManagerService.addService(target);
-            UserTransactionService.addService(target);
-
-            RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
-        }
+        final String bindingName = operation.get(CORE_ENVIRONMENT).require(BINDING).asString();
+        final String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
+        final String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
+        final String nodeIdentifier = operation.get(CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
+        final boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean(false);
+        final String objectStorePathRef = "jboss.server.data.dir";
+        final String objectStorePath = "tx-object-store";
+        final int maxPorts = 10;
+        final int coordinatorDefaultTimeout = 300;
 
         final ModelNode subModel = context.getSubModel();
         subModel.get(CORE_ENVIRONMENT, BINDING).set(operation.get(CORE_ENVIRONMENT).require(BINDING));
@@ -112,9 +91,39 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, RuntimeOperat
         subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
         subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
 
-        resultHandler.handleResultComplete(compensatingOperation);
 
-        return Cancellable.NULL;
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+
+                    // XATerminator has no deps, so just add it in there
+                    final XATerminatorService xaTerminatorService = new XATerminatorService();
+                    target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install();
+
+                    final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
+                    target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
+                            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
+                            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, transactionManagerService.getRecoveryBindingInjector())
+                            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, transactionManagerService.getStatusBindingInjector())
+                            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector())
+                            .addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, transactionManagerService.getPathInjector())
+                            .setInitialMode(Mode.ACTIVE)
+                            .install();
+
+                    TransactionManagerService.addService(target);
+                    UserTransactionService.addService(target);
+
+                    RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
+        }
+
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

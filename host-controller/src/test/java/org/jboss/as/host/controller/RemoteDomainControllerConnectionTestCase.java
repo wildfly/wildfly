@@ -34,8 +34,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ServerSocketFactory;
 
-import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
@@ -177,12 +178,12 @@ public class RemoteDomainControllerConnectionTestCase {
     private class TestHostController implements HostController {
 
         @Override
-        public Cancellable execute(ModelNode operation, ResultHandler handler) {
+        public OperationResult execute(ModelNode operation, ResultHandler handler) {
             ModelNode node = new ModelNode();
             node.get("test").set("hello");
             handler.handleResultFragment(new String[0], node);
-            handler.handleResultComplete(null);
-            return Cancellable.NULL;
+            handler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
         @Override

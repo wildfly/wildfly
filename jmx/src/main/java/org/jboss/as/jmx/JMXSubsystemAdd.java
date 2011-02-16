@@ -22,15 +22,19 @@
 
 package org.jboss.as.jmx;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,21 +52,23 @@ class JMXSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandl
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext bootContext = (RuntimeOperationContext) context;
-            // Add the MBean service
-            MBeanServerService.addService(bootContext.getServiceTarget());
-        }
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         context.getSubModel().get(CommonAttributes.SERVER_BINDING);
         context.getSubModel().get(CommonAttributes.REGISTRY_BINDING);
 
-        // TODO add a remove handler
-        resultHandler.handleResultComplete(Util.getResourceRemoveOperation(operation.require(OP_ADDR)));
-
-        return Cancellable.NULL;
+        if(context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    // Add the MBean service
+                    MBeanServerService.addService(context.getServiceTarget());
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
+        }
+        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.require(OP_ADDR)));
     }
 
 }

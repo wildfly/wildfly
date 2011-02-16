@@ -23,13 +23,19 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Set;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.host.controller.HostOperationContext;
+import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -52,17 +58,21 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler implements
     }
 
     @Override
-    protected void installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult installInterface(final String name, final ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         if (context instanceof HostOperationContext) {
-            HostOperationContext runtimeContext = (HostOperationContext) context;
-            final ServiceTarget target = runtimeContext.getServiceTarget();
-            ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));
-            // This doesn't work -- the service is ON_DEMAND so there will be no callback, and the model will not get updated
-//                .addListener(new ResultHandler.ServiceStartListener(resultHandler, compensatingOp))
-             builder.setInitialMode(Mode.ON_DEMAND)
-                .install();
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));
+                    builder.setInitialMode(Mode.ON_DEMAND)
+                    .install();
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-        resultHandler.handleResultComplete(compensatingOp);
+        return new BasicOperationResult(compensatingOp);
     }
 
     /**

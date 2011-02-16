@@ -22,9 +22,10 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -46,7 +47,7 @@ public class SarSubsystemAdd implements ModelAddOperationHandler, BootOperationH
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         if(context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
@@ -59,10 +60,8 @@ public class SarSubsystemAdd implements ModelAddOperationHandler, BootOperationH
         context.getSubModel().setEmptyObject();
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

@@ -22,6 +22,9 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -29,7 +32,6 @@ import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -37,10 +39,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -55,7 +57,7 @@ public class ConnectorRemove implements RuntimeOperationHandler, ModelRemoveOper
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -71,25 +73,23 @@ public class ConnectorRemove implements RuntimeOperationHandler, ModelRemoveOper
 
         // connector.clear();
 
-        if(context instanceof RuntimeOperationContext) {
-            ServiceName connectorServiceName = RemotingServices.connectorServiceName(name);
-            final ServiceController<?> controller = ((RuntimeOperationContext)context).getServiceRegistry().getService(connectorServiceName);
-            if(controller != null) {
-                controller.addListener(new AbstractServiceListener<Object>() {
-                    @Override
-                    public void listenerAdded(final ServiceController<? extends Object> controller) {
-                        controller.setMode(Mode.REMOVE);
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    ServiceName connectorServiceName = RemotingServices.connectorServiceName(name);
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(connectorServiceName);
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
                     }
-                    @Override
-                    public void serviceRemoved(final ServiceController<? extends Object> controller) {
-                        //
-                    }
-                });
-            }
-        }
-        resultHandler.handleResultComplete(compensating);
+                }
+            }, resultHandler);
 
-        return Cancellable.NULL;
+        } else {
+            resultHandler.handleResultComplete();
+        }
+        return new BasicOperationResult(compensating);
     }
 
 }

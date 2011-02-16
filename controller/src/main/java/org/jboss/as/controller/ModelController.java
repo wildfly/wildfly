@@ -38,7 +38,7 @@ public interface ModelController {
      * @param handler the result handler
      * @return a handle which may be used to cancel the operation
      */
-    Cancellable execute(ModelNode operation, ResultHandler handler);
+    OperationResult execute(ModelNode operation, ResultHandler handler);
 
     /**
      * Execute an operation synchronously.

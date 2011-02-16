@@ -26,10 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
@@ -48,7 +48,7 @@ public class DomainControllerImpl implements DomainController {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
+    public OperationResult execute(final ModelNode operation, final ResultHandler handler) {
         return domainModel.execute(operation, handler);
     }
 

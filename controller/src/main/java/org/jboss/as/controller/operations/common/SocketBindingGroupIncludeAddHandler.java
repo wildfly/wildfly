@@ -19,13 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -66,24 +68,22 @@ public class SocketBindingGroupIncludeAddHandler implements ModelUpdateOperation
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode param = operation.get(INCLUDE);
             ModelNode includes = context.getSubModel().get(INCLUDE);
             String failure = typeValidator.validateParameter(INCLUDE, param);
-            if (failure == null) {
-                includes.add(param);
-                ModelNode compensating = SocketBindingGroupIncludeRemoveHandler.getOperation(operation.get(OP_ADDR), param.asString());
-                resultHandler.handleResultComplete(compensating);
+            if (failure != null) {
+                throw new OperationFailedException(new ModelNode().set(failure));
             }
-            else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
-            }
+            includes.add(param);
+            resultHandler.handleResultComplete();
+            ModelNode compensating = SocketBindingGroupIncludeRemoveHandler.getOperation(operation.get(OP_ADDR), param.asString());
+            return new BasicOperationResult(compensating);
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override

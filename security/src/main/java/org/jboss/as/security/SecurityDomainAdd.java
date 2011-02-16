@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,9 @@
 
 package org.jboss.as.security;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -38,7 +41,6 @@ import java.util.Set;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -47,9 +49,12 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.security.acl.config.ACLProviderEntry;
 import org.jboss.security.audit.config.AuditProviderEntry;
 import org.jboss.security.auth.container.config.AuthModuleEntry;
@@ -90,28 +95,31 @@ class SecurityDomainAdd implements ModelAddOperationHandler, RuntimeOperationHan
     }
 
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         ModelNode opAddr = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         String securityDomain = address.getLastElement().getValue();
 
-        // Create the compensating operation
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
-
         Util.copyParamsToModel(operation, context.getSubModel());
 
-        ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, operation);
+        final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, operation);
 
         if (context instanceof RuntimeOperationContext) {
             final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            // add parsed security domain to the Configuration
-            final ApplicationPolicyRegistration loginConfig = getConfiguration(updateContext);
-            loginConfig.addApplicationPolicy(applicationPolicy.getName(), applicationPolicy);
+            updateContext.executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    // add parsed security domain to the Configuration
+                    final ApplicationPolicyRegistration loginConfig = getConfiguration(context.getServiceRegistry());
+                    loginConfig.addApplicationPolicy(applicationPolicy.getName(), applicationPolicy);
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-
-        resultHandler.handleResultComplete(compensatingOperation);
-
-        return Cancellable.NULL;
+        // Create the compensating operation
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
+        return new BasicOperationResult(compensatingOperation);
     }
 
     private ApplicationPolicy createApplicationPolicy(String securityDomain, ModelNode operation) {
@@ -317,8 +325,8 @@ class SecurityDomainAdd implements ModelAddOperationHandler, RuntimeOperationHan
         return applicationPolicy;
     }
 
-    private synchronized ApplicationPolicyRegistration getConfiguration(RuntimeOperationContext updateContext) {
-        ServiceController<?> controller = updateContext.getServiceRegistry().getRequiredService(
+    private synchronized ApplicationPolicyRegistration getConfiguration(ServiceRegistry serviceRegistry) {
+        ServiceController<?> controller = serviceRegistry.getRequiredService(
                 JaasConfigurationService.SERVICE_NAME);
         return (ApplicationPolicyRegistration) controller.getValue();
     }

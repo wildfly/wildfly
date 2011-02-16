@@ -22,6 +22,8 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
@@ -29,7 +31,6 @@ import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -50,7 +51,7 @@ class ThreadsSubsystemAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         context.getSubModel().get(BOUNDED_QUEUE_THREAD_POOL).setEmptyObject();
         context.getSubModel().get(QUEUELESS_THREAD_POOL).setEmptyObject();
@@ -60,9 +61,7 @@ class ThreadsSubsystemAdd implements ModelAddOperationHandler {
 
         // Compensating is remove
         final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(ADDRESS));
-
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensating);
     }
 }

@@ -19,13 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -65,45 +67,42 @@ public class SystemPropertyRemoveHandler implements ModelUpdateOperationHandler,
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             ModelNode param = operation.get(NAME);
             String failure = typeValidator.validateParameter(NAME, param);
-            if (failure == null) {
-                ModelNode properties = context.getSubModel().get(SYSTEM_PROPERTIES);
-                ModelNode toRemove = null;
-                ModelNode newMap = new ModelNode().setEmptyObject();
-                String name = param.asString();
-                if (properties.isDefined()) {
-                    for (Property property : properties.asPropertyList()) {
-                        if (!name.equals(property.getName())) {
-                            toRemove = newMap.get(property.getName()).set(property.getValue());
-                        }
-                        else {
-                            toRemove = property.getValue();
-                        }
-                    }
-                }
+            if (failure != null) {
+                throw new OperationFailedException(new ModelNode().set(failure));
+            }
 
-                if (toRemove != null) {
-                    properties.set(newMap);
-                    String value = toRemove.isDefined() ? toRemove.asString() : null;
-                    ModelNode compensating = SystemPropertyAddHandler.getOperation(operation.get(OP_ADDR), name, value);
-                    removeSystemProperty(name, context, resultHandler, compensating);
-                }
-                else {
-                    failure = "No property with " + name + "found";
+            ModelNode properties = context.getSubModel().get(SYSTEM_PROPERTIES);
+            ModelNode toRemove = null;
+            ModelNode newMap = new ModelNode().setEmptyObject();
+            String name = param.asString();
+            if (properties.isDefined()) {
+                for (Property property : properties.asPropertyList()) {
+                    if (!name.equals(property.getName())) {
+                        toRemove = newMap.get(property.getName()).set(property.getValue());
+                    }
+                    else {
+                        toRemove = property.getValue();
+                    }
                 }
             }
 
-            if (failure != null) {
-                resultHandler.handleFailed(new ModelNode().set(failure));
+            if (toRemove != null) {
+                properties.set(newMap);
+                String value = toRemove.isDefined() ? toRemove.asString() : null;
+                ModelNode compensating = SystemPropertyAddHandler.getOperation(operation.get(OP_ADDR), name, value);
+                return removeSystemProperty(name, context, resultHandler, compensating);
+            }
+            else {
+                throw new OperationFailedException(new ModelNode().set("No property with " + name + "found"));
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override
@@ -111,9 +110,10 @@ public class SystemPropertyRemoveHandler implements ModelUpdateOperationHandler,
         return CommonDescriptions.getRemoveSystemPropertyOperation(locale);
     }
 
-    protected void removeSystemProperty(String name, OperationContext context,
+    protected OperationResult removeSystemProperty(String name, OperationContext context,
             ResultHandler resultHandler, ModelNode compensating) {
-        resultHandler.handleResultComplete(compensating);
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensating);
     }
 
 }

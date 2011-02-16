@@ -18,6 +18,9 @@
  */
 package org.jboss.as.server.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
@@ -34,6 +37,8 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.server.services.net.SocketBindingManager;
@@ -92,34 +97,33 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
     }
 
     @Override
-    protected void installSocketBindingGroup(String name, ModelNode operation, OperationContext context,
-            ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult installSocketBindingGroup(String name, final ModelNode operation, final OperationContext context,
+            ResultHandler resultHandler, ModelNode compensatingOp) throws OperationFailedException {
         if (context instanceof RuntimeOperationContext) {
-            // Resolve any expressions and re-validate
-            ModelNode resolvedOp = operation.resolve();
-            String failure = runtimeValidator.validate(resolvedOp);
-            if (failure == null) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    // Resolve any expressions and re-validate
+                    ModelNode resolvedOp = operation.resolve();
+                    String failure = runtimeValidator.validate(resolvedOp);
+                    if (failure != null) {
+                        throw new OperationFailedException(new ModelNode().set(failure));
+                    }
+                    int portOffset = resolvedOp.get(PORT_OFFSET).isDefined() ? resolvedOp.get(PORT_OFFSET).asInt() : 0;
+                    String defaultInterface = resolvedOp.require(DEFAULT_INTERFACE).asString();
 
-                int portOffset = resolvedOp.get(PORT_OFFSET).isDefined() ? resolvedOp.get(PORT_OFFSET).asInt() : 0;
-                String defaultInterface = resolvedOp.require(DEFAULT_INTERFACE).asString();
-
-                RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-                SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
-                final ServiceTarget serviceTarget = runtimeContext.getServiceTarget();
-                serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBinding())
-                        .install();
-                // FIXME -- it's preferable to listen on the service for service start, but that's too fragile
-                resultHandler.handleResultComplete(compensatingOp);
-            }
-            else {
-                resultHandler.handleFailed(new ModelNode().set(failure));
-            }
+                    SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
+                            .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBinding())
+                            .install();
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
-        }
+        return new BasicOperationResult(compensatingOp);
     }
 
 }

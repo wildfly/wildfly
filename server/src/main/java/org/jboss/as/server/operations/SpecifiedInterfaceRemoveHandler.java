@@ -18,11 +18,16 @@
  */
 package org.jboss.as.server.operations;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -37,19 +42,22 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler impl
     public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
 
     @Override
-    protected void uninstallInterface(String name, ModelNode criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult uninstallInterface(final String name, ModelNode criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
-            if(controller == null) {
-                resultHandler.handleResultComplete(compensatingOp);
-            }
-            else {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler, compensatingOp));
-            }
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+                    RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
-        else {
-            resultHandler.handleResultComplete(compensatingOp);
-        }
+        return new BasicOperationResult(compensatingOp);
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -37,7 +39,6 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -101,15 +102,14 @@ public class DeploymentScannerExtension implements Extension {
 
         /** {@inheritDoc} */
         @Override
-        public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             final ModelNode compensatingOperation = new ModelNode();
             compensatingOperation.set(OP).set(REMOVE);
             compensatingOperation.set(OP_ADDR).set(operation.get(OP_ADDR));
             // create the scanner root
             context.getSubModel().get("scanner");
-
-            resultHandler.handleResultComplete(compensatingOperation);
-            return Cancellable.NULL;
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensatingOperation);
         }
     }
 

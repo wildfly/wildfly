@@ -19,6 +19,9 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
@@ -54,16 +56,16 @@ public class RemoteDomainControllerRemoveHandler implements ModelUpdateOperation
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         try {
-            final ModelNode compensating = RemoteDomainControllerAddHandler.getAddDomainControllerOperation(operation.get(OP_ADDR), context.getSubModel().get(HOST).asString(), context.getSubModel().get(PORT).asInt());
             context.getSubModel().get(DOMAIN_CONTROLLER).setEmptyObject();
-            resultHandler.handleResultComplete(compensating);
+            resultHandler.handleResultComplete();
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
+        final ModelNode compensating = RemoteDomainControllerAddHandler.getAddDomainControllerOperation(operation.get(OP_ADDR), context.getSubModel().get(HOST).asString(), context.getSubModel().get(PORT).asInt());
+        return new BasicOperationResult(compensating);
     }
 
     @Override

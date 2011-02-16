@@ -58,7 +58,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     }
 
     @Override
-    public Cancellable execute(final ModelNode operation, final ResultHandler handler) {
+    public OperationResult execute(final ModelNode operation, final ResultHandler handler) {
         if (operation == null) {
             throw new IllegalArgumentException("Null operation");
         }
@@ -90,7 +90,15 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                 }
             }
         });
-        return result;
+        return new OperationResult() {
+            public Cancellable getCancellable() {
+                return result;
+            }
+
+            public ModelNode getCompensatingOperation() {
+                return null;
+            }
+        };
     }
 
     @Override
@@ -230,8 +238,8 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:{
                             expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
-                            ModelNode node = readNode(input);
-                            handler.handleResultComplete(node);
+                            ModelNode node = readNode(input); // TODO: Where does this go
+                            handler.handleResultComplete();
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_REQUEST_ID:{

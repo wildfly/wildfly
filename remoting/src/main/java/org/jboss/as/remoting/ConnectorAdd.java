@@ -22,6 +22,9 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
@@ -42,7 +45,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
@@ -51,6 +53,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -76,43 +80,46 @@ public class ConnectorAdd implements RuntimeOperationHandler, ModelAddOperationH
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
+        // Apply to model
+        applyToModel(context.getSubModel(), operation);
+
         // Create the service.
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceTarget target = runtimeContext.getServiceTarget();
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
 
-            final ConnectorService connectorService = new ConnectorService();
-            connectorService.setOptionMap(createOptionMap(operation));
+                    final ConnectorService connectorService = new ConnectorService();
+                    connectorService.setOptionMap(createOptionMap(operation));
 
-            // Register the service with the container and inject dependencies.
-            final ServiceName connectorName = RemotingServices.connectorServiceName(name);
-            try {
-                target.addService(connectorName, connectorService)
-                    .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
-                    .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
+                    // Register the service with the container and inject dependencies.
+                    final ServiceName connectorName = RemotingServices.connectorServiceName(name);
+                    try {
+                        target.addService(connectorName, connectorService)
+                                .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
+                                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                                .install();
 
-            // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-            } catch (ServiceRegistryException e) {
-                resultHandler.handleFailed(null);
-            }
+                        // TODO create XNIO connector service from socket-binding, with dependency on connectorName
+                    } catch (ServiceRegistryException e) {
+                        throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+                    }
+                }
+            }, resultHandler);
+        } else {
+            resultHandler.handleResultComplete();
         }
 
         // Compensating is remove
         final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-
-        // Apply to model
-        applyToModel(context.getSubModel(), operation);
-
-        resultHandler.handleResultComplete(compensating);
-
-        return Cancellable.NULL;
+        return new BasicOperationResult(compensating);
     }
 
     static void applyToModel(final ModelNode subModel, final ModelNode parameters) {

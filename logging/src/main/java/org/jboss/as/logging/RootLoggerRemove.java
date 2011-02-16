@@ -22,15 +22,19 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.RuntimeTask;
+import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -47,7 +51,7 @@ class RootLoggerRemove implements ModelUpdateOperationHandler, RuntimeOperationH
 
     /** {@inheritDoc} */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode subModel = context.getSubModel();
         final ModelNode compensatingOperation = new ModelNode();
@@ -56,23 +60,27 @@ class RootLoggerRemove implements ModelUpdateOperationHandler, RuntimeOperationH
         compensatingOperation.get(CommonAttributes.LEVEL).set(subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL));
         compensatingOperation.get(CommonAttributes.HANDLERS).set(subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
 
-        if(context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceRegistry registry = runtimeContext.getServiceRegistry();
-            final ServiceController<?> controller = runtimeContext.getServiceRegistry().getService(LogServices.ROOT_LOGGER);
-            if(controller != null) {
-                controller.setMode(ServiceController.Mode.REMOVE);
-            }
-            if(subModel.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
-                LogServices.uninstallLoggerHandlers(registry, "", subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
-            }
-        }
-
         subModel.get(CommonAttributes.ROOT_LOGGER).clear();
 
-        resultHandler.handleResultComplete(compensatingOperation);
+        if (context instanceof RuntimeOperationContext) {
+            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+                    final ServiceRegistry registry = context.getServiceRegistry();
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(LogServices.ROOT_LOGGER);
+                    if (controller != null) {
+                        controller.setMode(ServiceController.Mode.REMOVE);
+                    }
+                    if (subModel.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
+                        LogServices.uninstallLoggerHandlers(registry, "", subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
+                    }
+                    resultHandler.handleResultComplete();
+                }
+            }, resultHandler);
 
-        return Cancellable.NULL;
+        } else {
+            resultHandler.handleResultComplete();
+        }
+        return new BasicOperationResult(compensatingOperation);
     }
 
 }

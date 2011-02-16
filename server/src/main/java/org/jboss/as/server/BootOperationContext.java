@@ -24,11 +24,26 @@ package org.jboss.as.server;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * The server controller boot context.
  */
 public interface BootOperationContext extends ServerOperationContext {
+    /**
+     * Get the target to which new services may be added.
+     *
+     * @return the service target
+     */
+    ServiceTarget getServiceTarget();
+
+    /**
+     * Get the service registry.
+     *
+     * @return the service registry.
+     */
+    ServiceRegistry getServiceRegistry();
 
     /**
      * Add a deployment processor.

@@ -19,6 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -26,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -68,7 +70,7 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
      * {@inheritDoc}
      */
     @Override
-    public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = address.getLastElement().getValue();
@@ -80,16 +82,15 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
             if (parsed.getFailureMessage() == null) {
                 model.get(CRITERIA).set(criteriaNode);
                 ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-                installInterface(name, parsed, context, resultHandler, compensating);
+                return installInterface(name, parsed, context, resultHandler, compensating);
             }
             else {
-                resultHandler.handleFailed(new ModelNode().set(parsed.getFailureMessage()));
+                throw new OperationFailedException(new ModelNode().set(parsed.getFailureMessage()));
             }
         }
         catch (Exception e) {
-            resultHandler.handleFailed(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
-        return Cancellable.NULL;
     }
 
     @Override
@@ -97,8 +98,9 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
         return specified ? InterfaceDescription.getSpecifiedInterfaceAddOperation(locale) : InterfaceDescription.getNamedInterfaceAddOperation(locale);
     }
 
-    protected void installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete(compensatingOp);
+    protected OperationResult installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensatingOp);
     }
 
     private ParsedInterfaceCriteria parseCriteria(ModelNode criteria) {
