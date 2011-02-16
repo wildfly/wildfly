@@ -34,6 +34,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
@@ -139,6 +140,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // WEB-INF classes
         final ResourceRoot webInfClassesRoot = new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
                 .getChild(WEB_INF_CLASSES), null);
+        IgnoreMetaInfMarker.mark(webInfClassesRoot);
         ModuleRootMarker.mark(webInfClassesRoot);
         entries.add(webInfClassesRoot);
         // WEB-INF lib

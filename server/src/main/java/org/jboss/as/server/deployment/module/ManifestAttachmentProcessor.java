@@ -57,6 +57,9 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         for (ResourceRoot resourceRoot : resourceRoots) {
+            if (IgnoreMetaInfMarker.isIgnoreMetaInf(resourceRoot)) {
+                continue;
+            }
             Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
             if (manifest != null)
                 continue;
