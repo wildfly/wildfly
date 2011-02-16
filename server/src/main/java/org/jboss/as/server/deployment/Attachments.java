@@ -29,7 +29,6 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
-import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -157,10 +156,6 @@ public final class Attachments {
      * A Marker that identifies the a type of resource root
      */
     public static final AttachmentKey<ResourceRootType> RESOURCE_ROOT_TYPE = AttachmentKey.create(ResourceRootType.class);
-    /**
-     * A Marker that identifies the a type of deployment
-     */
-    public static final AttachmentKey<DeploymentType> DEPLOYMENT_TYPE = AttachmentKey.create(DeploymentType.class);
 
     /**
      * Sub deployment services

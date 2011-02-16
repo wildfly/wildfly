@@ -26,8 +26,6 @@ import java.util.List;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentType;
-import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -43,8 +41,8 @@ import org.jboss.vfs.VirtualFile;
  */
 public class SarSubDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-       final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (deploymentUnit.getParent() == null) {
             return;
         }
 

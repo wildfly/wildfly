@@ -24,11 +24,11 @@ package org.jboss.as.ee.naming;
 
 import javax.naming.Context;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.ContextService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentType;
-import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;

@@ -25,8 +25,6 @@ package org.jboss.as.server.deployment.module;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentType;
-import org.jboss.as.server.deployment.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -45,23 +43,25 @@ public final class AdditionalModuleProcessor implements DeploymentUnitProcessor 
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+        if (deploymentUnit.getParent() != null) {
             return;
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        for (ResourceRoot resourceRoot : resourceRoots) {
-            if (ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, resourceRoot)) {
-                continue;
+        if (resourceRoots != null) {
+            for (ResourceRoot resourceRoot : resourceRoots) {
+                if (ResourceRootTypeMarker.isType(ResourceRootType.EAR_LIB_JAR, resourceRoot)) {
+                    continue;
+                }
+                if (ResourceRootTypeMarker.isSubDeployment(resourceRoot)) {
+                    continue;
+                }
+                String pathName = resourceRoot.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot());
+                ModuleIdentifier identifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX
+                        + deploymentUnit.getName() + "." + pathName);
+                AdditionalModuleSpecification module = new AdditionalModuleSpecification(identifier, resourceRoot);
+                deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, module);
             }
-            if (ResourceRootTypeMarker.isSubDeployment(resourceRoot)) {
-                continue;
-            }
-            String pathName = resourceRoot.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot());
-            ModuleIdentifier identifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + deploymentUnit.getName()
-                    + "." + pathName);
-            AdditionalModuleSpecification module = new AdditionalModuleSpecification(identifier, resourceRoot);
-            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, module);
         }
     }
 

@@ -41,6 +41,11 @@ public final class Attachments {
 
     public static final AttachmentKey<ModuleMetaData> MODULE_META_DATA = AttachmentKey.create(ModuleMetaData.class);
 
+    /**
+     * A Marker that identifies the a type of deployment
+     */
+    public static final AttachmentKey<DeploymentType> DEPLOYMENT_TYPE = AttachmentKey.create(DeploymentType.class);
+
     private Attachments() {
     }
 }
