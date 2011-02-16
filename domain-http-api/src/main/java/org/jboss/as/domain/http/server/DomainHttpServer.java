@@ -2,8 +2,10 @@ package org.jboss.as.domain.http.server;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -70,7 +72,10 @@ public class DomainHttpServer implements HttpHandler {
     public void handle(HttpExchange http) throws IOException {
         URI request = http.getRequestURI();
 
-        if (! http.getRequestMethod().equals("GET")) {
+        String requestMethod = http.getRequestMethod();
+
+        boolean isGet = "GET".equals(requestMethod);
+        if (! isGet && ! "POST".equals(requestMethod)) {
             http.sendResponseHeaders(405, -1);
             return;
         }
@@ -84,7 +89,7 @@ public class DomainHttpServer implements HttpHandler {
                          "application/dmr-encoded".equals(requestHeaders.getFirst("Content-Type"));
 
         try {
-            dmr = convertToRequest(request);
+            dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
             response = modelController.execute(dmr);
         } catch (OperationFailedException e) {
             response = e.getFailureDescription();
@@ -101,28 +106,32 @@ public class DomainHttpServer implements HttpHandler {
         http.sendResponseHeaders(status, 0);
 
         OutputStream out = http.getResponseBody();
-        PrintStream print = new PrintStream(out);
+        PrintWriter print = new PrintWriter(out);
 
-        // Successful responses are wrapped in a result field to allow for an outcome,
-        // which is already represented in the HTTP status, unwrap it.
-        if (status == 200)
+        // GET (read) operations will never have a compensating update, and the status is already
+        // available via the http response status code, so unwrap them.
+        if (isGet && status == 200)
             response = response.get("result");
 
         try {
             if (encode) {
                 response.writeBase64(out);
             } else {
-                // TODO: Change DMR to stream JSON output
-                print.println(response.toJSONString(false));
+                response.outputJSONString(print, false);
             }
         } finally {
-            out.flush();
             print.flush();
+            out.flush();
             print.close();
+            out.close();
         }
     }
 
-    private ModelNode convertToRequest(URI request) {
+    private ModelNode convertPostRequest(InputStream stream, boolean encode) throws IOException {
+        return encode ? ModelNode.fromBase64(stream) : ModelNode.fromJSONStream(stream);
+    }
+
+    private ModelNode convertGetRequest(URI request) {
         ArrayList<String> pathSegments = decodePath(request.getRawPath());
         Map<String, String> queryParameters = decodeQuery(request.getRawQuery());
 
