@@ -1,6 +1,7 @@
 package org.jboss.as.domain.http.server;
 
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -100,6 +101,8 @@ public class DomainHttpServer implements HttpHandler {
             return;
         }
 
+        boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
+
         Headers responseHeaders = http.getResponseHeaders();
         responseHeaders.add("Content-Type", encode ? "application/dmr-encoded" : "application/json");
         responseHeaders.add("Access-Control-Allow-Origin", "*");
@@ -117,13 +120,20 @@ public class DomainHttpServer implements HttpHandler {
             if (encode) {
                 response.writeBase64(out);
             } else {
-                response.outputJSONString(print, false);
+                response.writeJSONString(print, !pretty);
             }
         } finally {
             print.flush();
             out.flush();
-            print.close();
-            out.close();
+            safeClose(print);
+            safeClose(out);
+        }
+    }
+
+    private void safeClose(Closeable close) {
+        try {
+            close.close();
+        } catch (Throwable eat) {
         }
     }
 
