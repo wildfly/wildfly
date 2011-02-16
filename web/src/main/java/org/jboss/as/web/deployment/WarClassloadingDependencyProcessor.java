@@ -43,7 +43,6 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
     private static final ModuleIdentifier JAVAX_EE_API = ModuleIdentifier.create("javaee.api");
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
-    private static final ModuleIdentifier SYSTEM = ModuleIdentifier.create("system");
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -61,8 +60,6 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
-        // JFC hack...
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SYSTEM, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, LOG, false, false, false));
 
         if(deploymentUnit.getParent() != null) {
