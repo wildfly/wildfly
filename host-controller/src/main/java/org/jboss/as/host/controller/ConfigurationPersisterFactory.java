@@ -22,7 +22,6 @@
 package org.jboss.as.host.controller;
 
 import java.io.File;
-import java.util.List;
 
 import javax.xml.namespace.QName;
 
@@ -30,13 +29,8 @@ import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  *
@@ -55,7 +49,7 @@ public class ConfigurationPersisterFactory {
 
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
         DomainXml domainXml = new DomainXml(Module.getSystemModuleLoader());
-        return new TempHackConfigurationPersister(getFile(configDir, DOMAIN_XML), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        return new BackupXmlConfigurationPersister(getFile(configDir, DOMAIN_XML), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }
 
     private static File getFile(final File configDir, final String file) {
@@ -75,20 +69,4 @@ public class ConfigurationPersisterFactory {
         return configFile;
 
     }
-
-    /** Disables store() until marshallers are written */
-    private static class TempHackConfigurationPersister extends BackupXmlConfigurationPersister {
-
-        public TempHackConfigurationPersister(final File fileName, final QName rootElement,
-                XMLElementReader<List<ModelNode>> rootParser, XMLElementWriter<ModelMarshallingContext> rootDeparser) {
-            super(fileName, rootElement, rootParser, rootDeparser);
-        }
-
-        @Override
-        public void store(ModelNode model) throws ConfigurationPersistenceException {
-            return;
-        }
-
-    }
-
 }

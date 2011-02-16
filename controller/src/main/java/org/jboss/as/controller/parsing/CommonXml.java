@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
@@ -1309,35 +1310,41 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             attr = bindingGroup.get(PORT_OFFSET);
             writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
         }
-        if (!fromServer) {
-            // FIXME includes
-            throw new UnsupportedOperationException("Marshall includes");
+        if (!fromServer && bindingGroup.hasDefined(INCLUDE)) {
+            for (ModelNode include : bindingGroup.get(INCLUDE).asList()) {
+                writer.writeStartElement(Element.INCLUDE.getLocalName());
+                writeAttribute(writer, Attribute.SOCKET_BINDING_GROUP, include.asString());
+                writer.writeEndElement();
+            }
         }
-        ModelNode bindings = bindingGroup.get(SOCKET_BINDING);
-        for (String bindingName: bindings.keys()) {
-            ModelNode binding = bindings.get(bindingName);
-            writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
-            writeAttribute(writer, Attribute.NAME, bindingName);
-            attr = binding.get(PORT);
-            writeAttribute(writer, Attribute.PORT, attr.asString());
 
-            attr = binding.get(FIXED_PORT);
-            if (attr.isDefined() && attr.asBoolean()) {
-                writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
+        if (bindingGroup.hasDefined(SOCKET_BINDING)) {
+            ModelNode bindings = bindingGroup.get(SOCKET_BINDING);
+            for (String bindingName: bindings.keys()) {
+                ModelNode binding = bindings.get(bindingName);
+                writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
+                writeAttribute(writer, Attribute.NAME, bindingName);
+                attr = binding.get(PORT);
+                writeAttribute(writer, Attribute.PORT, attr.asString());
+
+                attr = binding.get(FIXED_PORT);
+                if (attr.isDefined() && attr.asBoolean()) {
+                    writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
+                }
+                attr = binding.get(INTERFACE);
+                if (attr.isDefined()) {
+                    writeAttribute(writer, Attribute.INTERFACE, attr.asString());
+                }
+                attr = binding.get(MULTICAST_ADDRESS);
+                if (attr.isDefined()) {
+                    writeAttribute(writer, Attribute.MULTICAST_ADDRESS, attr.asString());
+                }
+                attr = binding.get(MULTICAST_PORT);
+                if (attr.isDefined()) {
+                    writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
+                }
+                writer.writeEndElement();
             }
-            attr = binding.get(INTERFACE);
-            if (attr.isDefined()) {
-                writeAttribute(writer, Attribute.INTERFACE, attr.asString());
-            }
-            attr = binding.get(MULTICAST_ADDRESS);
-            if (attr.isDefined()) {
-                writeAttribute(writer, Attribute.MULTICAST_ADDRESS, attr.asString());
-            }
-            attr = binding.get(MULTICAST_PORT);
-            if (attr.isDefined()) {
-                writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
-            }
-            writer.writeEndElement();
         }
 
         writer.writeEndElement();

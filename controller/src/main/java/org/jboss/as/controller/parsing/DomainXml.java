@@ -32,16 +32,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -114,7 +113,7 @@ public class DomainXml extends CommonXml {
             writer.writeEndElement();
         }
         if(hasDefinedChild(modelNode, INTERFACE)) {
-            writeInterfaces(writer, modelNode);
+            writeInterfaces(writer, modelNode.get(INTERFACE));
         }
         if(hasDefinedChild(modelNode, SOCKET_BINDING_GROUP)) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
@@ -624,20 +623,20 @@ public class DomainXml extends CommonXml {
                 break; // TODO just write the first !?
             }
         }
+
         // Socket binding ref
-        final ModelNode bindingGroup = group.get(SOCKET_BINDING_GROUP);
-        writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-        ModelNode attr = bindingGroup.get(NAME);
-        writeAttribute(writer, Attribute.NAME, attr.asString());
-        if(bindingGroup.hasDefined(DEFAULT_INTERFACE)) {
-            attr = bindingGroup.get(DEFAULT_INTERFACE);
-            writeAttribute(writer, Attribute.DEFAULT_INTERFACE, attr.asString());
+        String bindingGroupRef = group.hasDefined(SOCKET_BINDING_GROUP) ? group.get(SOCKET_BINDING_GROUP).asString() : null;
+        String portOffset = group.hasDefined(SOCKET_BINDING_PORT_OFFSET) ? group.get(SOCKET_BINDING_PORT_OFFSET).asString() : null;
+        if (bindingGroupRef != null || portOffset != null) {
+            writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+            if (bindingGroupRef != null) {
+                writeAttribute(writer, Attribute.REF, bindingGroupRef);
+            }
+            if (portOffset != null) {
+                writeAttribute(writer, Attribute.PORT_OFFSET, portOffset);
+            }
+            writer.writeEndElement();
         }
-        if (bindingGroup.hasDefined(PORT_OFFSET) && bindingGroup.get(PORT_OFFSET).asInt() != 0) {
-            attr = bindingGroup.get(PORT_OFFSET);
-            writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
-        }
-        writer.writeEndElement();
 
         if(group.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, group);
