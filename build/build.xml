@@ -597,6 +597,8 @@
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-impl-base"/>
         </module-def>
 
+    	  <module-def name="org.jboss.surefire.arquillian-deps"/>
+    	
         <module-def name="org.jboss.staxmapper">
             <maven-resource group="org.jboss" artifact="staxmapper"/>
         </module-def>

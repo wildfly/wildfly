@@ -76,7 +76,6 @@
                         <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
                     </includes>
                 </configuration>
-
                 <executions>
                     <execution>
                         <!-- (Legacy) Tests not using arquillian  -->
@@ -88,45 +87,54 @@
                             </includes>
                         </configuration>
                     </execution>
-                    <execution>
-                        <!-- Tests that run using arquillian + embedded AS-->
-                        <id>arquillian</id>
-                        <phase>test</phase>
-                        <goals>
-                             <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <skipTests>false</skipTests>
-                            <includes>
-                                <include>org/jboss/as/test/embedded/demos/sar/*TestCase.java</include>
-                                <include>org/jboss/as/test/embedded/demos/serviceloader/*TestCase.java</include>
-                                <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
-                                <include>org/jboss/as/test/embedded/demos/war/*TestCase.java</include>
-                                <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
-                                <include>org/jboss/as/test/embedded/demos/web/connector/*TestCase.java</include>
-                                <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
-                                <!--  The other demos don't work -->
-                                <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
+                </executions>             
             </plugin>
             <plugin>
                 <groupId>org.jboss.maven.surefire.modular</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>1.0.0.Alpha1</version>
+                <version>1.0.0.Alpha2</version>
                 <executions>
                     <execution>
+                       <id>modular-arquillian</id>
+                        <phase>test</phase>
 	                    <goals>
 	                        <goal>test</goal>
 	                    </goals>
+                       <configuration>
+                           <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/arquillian-module-def.xml</moduleDefinitionFile>
+                           <includes>
+                              <include>org/jboss/as/test/embedded/demos/sar/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/serviceloader/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/war/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/web/connector/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
+                              <!--  The other demos don't work -->
+                              <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
+                           </includes>
+                           <!-- arquillianAs>true</arquillianAs -->
+                       </configuration>
+                    </execution>
+                    <execution>
+                       <id>modular-serverfactory</id>
+                        <phase>test</phase>
+                       <goals>
+                           <goal>test</goal>
+                       </goals>
+                       <configuration>
+                           <!-- By default this uses src/test/resorces/modules/module-def.xml -->
+                           <includes>
+                               <include>org/jboss/as/test/surefire/**/*TestCase.java</include>
+                           </includes>
+                       </configuration>
                     </execution>
                 </executions>
                 <configuration>
                     <skipTests>false</skipTests>
                     <!--  standard surefire options -->
-                    <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>
@@ -140,6 +148,10 @@
                         <property>
                           <name>org.jboss.boot.log.file</name>
                           <value>${jboss.home}/standalone/log/boot.log</value>
+                        </property>
+                        <property>
+                           <name>jboss.embedded.root</name>
+                           <value>target/temp-config</value>
                         </property>
                     </systemProperties>
                     <includes>

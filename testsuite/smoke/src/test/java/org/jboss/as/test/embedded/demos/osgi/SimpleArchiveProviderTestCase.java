@@ -26,18 +26,15 @@ import org.jboss.arquillian.osgi.OSGiContainer;
 import org.jboss.as.test.embedded.demos.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.embedded.demos.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.osgi.framework.Bundle;
 
 /**
  * Test the arquillian callback to a client provided archive
- * 
+ *
  * @author thomas.diesler@jboss.com
  * @since 09-Sep-2010
  */
@@ -49,24 +46,25 @@ public class SimpleArchiveProviderTestCase {
 
     @Test
     public void testBundleInjection() throws Exception {
+        throw new IllegalStateException("Test has been commented out due to changes in API");
 
-        Archive<?> archive = container.getTestArchive("example-archive-provider");
-        Bundle bundle = container.installBundle(archive);
-        try {
-            // Assert that the bundle is in state INSTALLED
-            OSGiTestHelper.assertBundleState(Bundle.INSTALLED, bundle.getState());
-
-            // Start the bundle
-            bundle.start();
-            OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
-
-            // Stop the bundle
-            bundle.stop();
-            OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-        } finally {
-            bundle.uninstall();
-            OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
-        }
+//        Archive<?> archive = container.getTestArchive("example-archive-provider");
+//        Bundle bundle = container.installBundle(archive);
+//        try {
+//            // Assert that the bundle is in state INSTALLED
+//            OSGiTestHelper.assertBundleState(Bundle.INSTALLED, bundle.getState());
+//
+//            // Start the bundle
+//            bundle.start();
+//            OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
+//
+//            // Stop the bundle
+//            bundle.stop();
+//            OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+//        } finally {
+//            bundle.uninstall();
+//            OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
+//        }
     }
 
     @ArchiveProvider

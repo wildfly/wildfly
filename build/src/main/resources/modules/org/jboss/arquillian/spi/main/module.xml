@@ -28,7 +28,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.arquillian.api"/>
-        <module name="org.jboss.shrinkwrap.api"/>
+        <module name="org.jboss.arquillian.api" export="true"/>
+        <module name="org.jboss.shrinkwrap.api" export="true"/>
     </dependencies>
 </module>

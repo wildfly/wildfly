@@ -46,7 +46,7 @@ public class ServiceLoaderTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createJavaArchive("demos/serviceloader-example.jar", ServiceLoaderTestCase.class.getPackage(), TestService.class.getPackage());
+        return ShrinkWrapUtils.createJavaArchive("demos/serviceloader-example.jar", ServiceLoaderTestCase.class.getPackage(), TestService.class.getPackage(), ShrinkWrapUtils.class.getPackage());
     }
 
     @Test

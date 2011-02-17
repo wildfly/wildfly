@@ -42,6 +42,8 @@ import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
@@ -79,8 +81,9 @@ public class MessagingTestCase {
 
     @Before
     public void start() throws Exception {
+        System.out.println("CLASSLOADER " + this.getClass().getClassLoader());
         //FIXME Arquillian Alpha bug - it also wants to execute this on the client despite this test being IN_CONTAINER
-        if (this.getClass().getClassLoader() == ClassLoader.getSystemClassLoader()) {
+        if (!isInContainer()) {
             return;
         }
 
@@ -126,7 +129,7 @@ public class MessagingTestCase {
     @After
     public void stop() throws Exception {
         //FIXME Arquillian Alpha bug - it also wants to execute this on the client despite this test being IN_CONTAINER
-        if (this.getClass().getClassLoader() == ClassLoader.getSystemClassLoader()) {
+        if (!isInContainer()) {
             return;
         }
 
@@ -154,4 +157,16 @@ public class MessagingTestCase {
         producer.send(message);
     }
 
+    private boolean isInContainer() {
+        ClassLoader cl = this.getClass().getClassLoader();
+        if (cl instanceof ModuleClassLoader == false) {
+            return false;
+        }
+        ModuleClassLoader mcl = (ModuleClassLoader)cl;
+        ModuleIdentifier surefireModule = ModuleIdentifier.fromString("jboss.surefire.module");
+        if (surefireModule.equals(mcl.getModule().getIdentifier())) {
+            return false;
+        }
+        return true;
+    }
 }

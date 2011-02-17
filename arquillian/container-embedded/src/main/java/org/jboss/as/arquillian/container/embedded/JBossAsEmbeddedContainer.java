@@ -25,8 +25,8 @@ import java.util.Properties;
 import javax.management.MBeanServerConnection;
 
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
-import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
+import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
@@ -67,7 +67,8 @@ public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
             sysprops.setProperty("logging.configuration", "file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
             sysprops.setProperty("org.jboss.boot.log.file", jbossHomeDir + "/standalone/log/boot.log");
 
-            server = EmbeddedServerFactory.create(jbossHomeDir, sysprops, System.getenv(), "org.jboss.logmanager");
+
+            server = EmbeddedServerFactory.create(jbossHomeDir, sysprops, System.getenv(), getSystemPackages(sysprops, "org.jboss.logmanager"));
             server.start();
 
             waitForMBean(JMXTestRunnerMBean.OBJECT_NAME, 5000);
@@ -75,6 +76,14 @@ public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
         } catch (Throwable th) {
             throw handleStartThrowable(th);
         }
+    }
+
+    private String[] getSystemPackages(Properties props, String...packages) {
+        if (Boolean.valueOf(props.getProperty("org.jboss.surefire.modular", Boolean.FALSE.toString()))){
+            //The forked surefire plugin passes in this property, so we don't need system packages to work
+            return new String[0];
+        }
+        return packages;
     }
 
     @Override
