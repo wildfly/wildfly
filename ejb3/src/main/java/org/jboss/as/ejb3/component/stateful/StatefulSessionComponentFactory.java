@@ -19,40 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
+package org.jboss.as.ejb3.component.stateful;
 
-import javax.naming.InitialContext;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
 /**
- * For the moment there is no remoting, so we need to call the EJB from within.
- *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class Test implements TestMBean {
+public class StatefulSessionComponentFactory extends AbstractSessionComponentFactory {
     @Override
-    public Object exec(Class<?> cls) throws Exception {
-        Callable<?> callable = (Callable<?>) cls.newInstance();
-        return callable.call();
+    public Component createComponent(DeploymentUnit deploymentUnit, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+        ClassLoader cl = getClassLoader(deploymentUnit);
+        DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
+        return new StatefulSessionComponent((EJBComponentConfiguration) componentConfiguration, cl, reflectionIndex);
     }
-
-    @Override
-   public Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception {
-      InitialContext ctx = new InitialContext();
-      Object bean = ctx.lookup(name);
-      Method method = bean.getClass().getMethod(methodName, parameterTypes);
-      try {
-         return method.invoke(bean, params);
-      }
-      catch(InvocationTargetException e) {
-         Throwable t = e.getTargetException();
-         if (t instanceof Exception)
-            throw (Exception) t;
-         if (t instanceof Error)
-            throw (Error) t;
-         throw e;
-      }
-   }
 }

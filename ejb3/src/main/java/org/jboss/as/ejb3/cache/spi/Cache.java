@@ -19,14 +19,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
+package org.jboss.as.ejb3.cache.spi;
 
-import java.util.concurrent.Callable;
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface TestMBean {
-   Object exec(Class<?> cls) throws Exception;
-   Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception;
+public interface Cache<T extends Identifiable> {
+    /**
+     * Creates and caches a new instance of <code>T</code>.
+     *
+     * @return a new <code>T</code>
+     */
+    T create();
+
+    /**
+     * Discard the specified object from cache.
+     *
+     * @param key    the identifier of the object
+     */
+    void discard(Serializable key);
+
+    /**
+     * Get the specified object from cache. This will mark
+     * the object as being in use.
+     *
+     * @param key    the identifier of the object
+     * @return       the object
+     * @throws javax.ejb.NoSuchEJBException    if the object does not exist
+     */
+    T get(Serializable key) throws NoSuchEJBException;
+
+    /**
+     * Release the object from use.
+     *
+     * @param obj    the object
+     */
+    void release(T obj);
+
+    /**
+     * Associate the cache with a stateful object factory.
+     *
+     * @param factory   the factory this cache should use.
+     */
+    void setStatefulObjectFactory(StatefulObjectFactory<T> factory);
 }

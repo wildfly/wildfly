@@ -21,38 +21,21 @@
  */
 package org.jboss.as.demos.ejb3.mbean;
 
+import org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal;
+
 import javax.naming.InitialContext;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
 /**
- * For the moment there is no remoting, so we need to call the EJB from within.
- *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class Test implements TestMBean {
+public class ExerciseStateful implements Callable<String> {
     @Override
-    public Object exec(Class<?> cls) throws Exception {
-        Callable<?> callable = (Callable<?>) cls.newInstance();
-        return callable.call();
+    public String call() throws Exception {
+        InitialContext ctx = new InitialContext();
+        String name = "java:global/ejb3-example/SimpleStatefulSessionBean!" + SimpleStatefulSessionLocal.class.getName();
+        SimpleStatefulSessionLocal bean = (SimpleStatefulSessionLocal) ctx.lookup(name);
+        bean.setState("42");
+        return bean.echo("the answer");
     }
-
-    @Override
-   public Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception {
-      InitialContext ctx = new InitialContext();
-      Object bean = ctx.lookup(name);
-      Method method = bean.getClass().getMethod(methodName, parameterTypes);
-      try {
-         return method.invoke(bean, params);
-      }
-      catch(InvocationTargetException e) {
-         Throwable t = e.getTargetException();
-         if (t instanceof Exception)
-            throw (Exception) t;
-         if (t instanceof Error)
-            throw (Error) t;
-         throw e;
-      }
-   }
 }

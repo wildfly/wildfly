@@ -5,6 +5,12 @@
          version="3.1">
    <enterprise-beans>
       <session>
+         <ejb-name>SimpleStatefulSessionBean</ejb-name>
+         <business-local>org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal</business-local>
+         <ejb-class>org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionBean</ejb-class>
+         <session-type>Stateful</session-type>
+      </session>
+      <session>
          <ejb-name>SimpleStatelessSessionBean</ejb-name>
          <business-local>org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal</business-local>
          <ejb-class>org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean</ejb-class>

@@ -19,40 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
-
-import javax.naming.InitialContext;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
+package org.jboss.as.demos.ejb3.archive;
 
 /**
- * For the moment there is no remoting, so we need to call the EJB from within.
- *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class Test implements TestMBean {
-    @Override
-    public Object exec(Class<?> cls) throws Exception {
-        Callable<?> callable = (Callable<?>) cls.newInstance();
-        return callable.call();
+public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
+    private String state;
+
+    public String echo(String msg) {
+        System.out.println("Called echo on " + this);
+        return "Echo " + msg + ":" + state;
     }
 
-    @Override
-   public Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception {
-      InitialContext ctx = new InitialContext();
-      Object bean = ctx.lookup(name);
-      Method method = bean.getClass().getMethod(methodName, parameterTypes);
-      try {
-         return method.invoke(bean, params);
-      }
-      catch(InvocationTargetException e) {
-         Throwable t = e.getTargetException();
-         if (t instanceof Exception)
-            throw (Exception) t;
-         if (t instanceof Error)
-            throw (Error) t;
-         throw e;
-      }
-   }
+    public void setState(String s) {
+        System.out.println("Called setState on " + this);
+        this.state = s;
+    }
 }

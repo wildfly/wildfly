@@ -19,14 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
+package org.jboss.as.ejb3.cache.spi;
 
-import java.util.concurrent.Callable;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface TestMBean {
-   Object exec(Class<?> cls) throws Exception;
-   Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception;
+public interface Identifiable {
+    Serializable getId();
 }

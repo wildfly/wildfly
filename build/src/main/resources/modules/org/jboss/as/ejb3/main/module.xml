@@ -29,6 +29,7 @@
     <dependencies>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
+        <module name="javax.ejb.api"/>
         <module name="javax.interceptor.api"/>
         <!--
         <module name="org.javassist"/>
@@ -40,6 +41,7 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.managed-beans"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.common-core"/>
         <!--
         <module name="org.jboss.as.naming"/>
         -->

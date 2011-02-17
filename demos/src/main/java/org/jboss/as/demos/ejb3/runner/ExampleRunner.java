@@ -24,10 +24,13 @@ package org.jboss.as.demos.ejb3.runner;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
+import org.jboss.as.demos.ejb3.mbean.ExerciseStateful;
 import org.jboss.as.demos.ejb3.mbean.Test;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
@@ -35,6 +38,17 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class ExampleRunner {
+   private static <T> T createProxy(MBeanServerConnection mbeanServer, String lookupName, Class<T> intf) {
+       final InvocationHandler handler = new TestMBeanInvocationHandler(mbeanServer, lookupName);
+       final Class<?>[] interfaces = { intf };
+       return intf.cast(Proxy.newProxyInstance(intf.getClassLoader(), interfaces, handler));
+   }
+
+   private static void doStatefulMagic(MBeanServerConnection server) throws Exception {
+       String msg = (String) server.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "exec", new Object[] { ExerciseStateful.class }, new String[] { Class.class.getName() });
+       System.out.println(msg);
+   }
+
    public static void main(String[] args) throws Exception {
       DeploymentUtils utils = new DeploymentUtils("ejb3-example.jar", SimpleStatelessSessionBean.class.getPackage());
       try {
@@ -48,12 +62,11 @@ public class ExampleRunner {
          */
          MBeanServerConnection mbeanServer = utils.getConnection();
 
-         ObjectName name = new ObjectName("jboss:name=ejb3-test,type=service");
-         Class[] parameterTypes = new Class[] { String.class };
-         Object[] parameters = new Object[] { "Hello world" };
-         Object[] params = { "java:global/ejb3-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName(), "echo", parameterTypes, parameters };
-         String msg = (String) mbeanServer.invoke(name, "invoke", params, new String[] { String.class.getName(), String.class.getName(), new Class[0].getClass().getName(), new Object[0].getClass().getName() });
+         SimpleStatelessSessionLocal bean = createProxy(mbeanServer, "java:global/ejb3-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName(), SimpleStatelessSessionLocal.class);
+         String msg = bean.echo("Hello world");
          System.out.println(msg);
+
+         doStatefulMagic(mbeanServer);
       } finally {
          utils.undeploy();
          safeClose(utils);

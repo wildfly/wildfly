@@ -19,14 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
-
-import java.util.concurrent.Callable;
+package org.jboss.as.ejb3.cache.spi;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface TestMBean {
-   Object exec(Class<?> cls) throws Exception;
-   Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception;
+public interface StatefulObjectFactory<T> {
+    /**
+     * Create a new instance of this component.  This may be invoked by a component interceptor, a client interceptor,
+     * or in the course of creating a new client, or in the case of an "eager" singleton, at component start.  This
+     * method will block until the component is available.  If the component fails to start then a runtime exception
+     * will be thrown.
+     *
+     * @return the component instance
+     */
+    T createInstance();
+
+    /**
+     * Destroy an instance of the component.  This method causes all uninjection and pre-destroy lifecycle invocations
+     * to occur.
+     *
+     * @param instance the instance to destroy
+     */
+    void destroyInstance(T instance);
 }

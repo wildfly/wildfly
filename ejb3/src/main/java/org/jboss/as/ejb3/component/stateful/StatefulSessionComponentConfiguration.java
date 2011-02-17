@@ -19,40 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
+package org.jboss.as.ejb3.component.stateful;
 
-import javax.naming.InitialContext;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
+import org.jboss.as.ee.component.ComponentFactory;
+import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
- * For the moment there is no remoting, so we need to call the EJB from within.
- *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class Test implements TestMBean {
-    @Override
-    public Object exec(Class<?> cls) throws Exception {
-        Callable<?> callable = (Callable<?>) cls.newInstance();
-        return callable.call();
+public class StatefulSessionComponentConfiguration extends EJBComponentConfiguration {
+    public StatefulSessionComponentConfiguration(final String name, final String componentClassName) {
+        this(name, componentClassName, new StatefulSessionComponentFactory());
     }
 
-    @Override
-   public Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception {
-      InitialContext ctx = new InitialContext();
-      Object bean = ctx.lookup(name);
-      Method method = bean.getClass().getMethod(methodName, parameterTypes);
-      try {
-         return method.invoke(bean, params);
-      }
-      catch(InvocationTargetException e) {
-         Throwable t = e.getTargetException();
-         if (t instanceof Exception)
-            throw (Exception) t;
-         if (t instanceof Error)
-            throw (Error) t;
-         throw e;
-      }
-   }
+    /**
+     * Construct a new instance.
+     *
+     * @param name               the EE component name
+     * @param componentClassName the class name for the component
+     * @param componentFactory   the component factory to use to create the actual component
+     */
+    protected StatefulSessionComponentConfiguration(final String name, final String componentClassName, final ComponentFactory componentFactory) {
+        super(name, componentClassName, componentFactory);
+
+        addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));
+    }
 }
