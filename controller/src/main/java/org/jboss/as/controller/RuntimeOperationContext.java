@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.controller;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * A controller runtime task.  This can be used to perform any runtime tasks associated with a {@link org.jboss.as.controller.OperationHandler}.
- *
- * @author John Bailey
+ * The operation context for run time operations.
  */
-public interface RuntimeTask {
+public interface RuntimeOperationContext {
     /**
-     * Execute the task.
+     * Get the target to which new services may be added.
      *
-     * @param context The runtime task context
-     * @param resultHandler The task's result handler
-     * @throws OperationFailedException If any problems occur
+     * @return the service target
      */
-    void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException;
+    ServiceTarget getServiceTarget();
+
+    /**
+     * Get the service registry.
+     *
+     * @return the service registry.
+     */
+    ServiceRegistry getServiceRegistry();
 }

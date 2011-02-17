@@ -23,7 +23,6 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -33,10 +32,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.security.service.JaasConfigurationService;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.security.config.ApplicationPolicyRegistration;
@@ -47,7 +42,7 @@ import org.jboss.security.config.ApplicationPolicyRegistration;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Brian Stansberry
  */
-class SecurityDomainRemove implements ModelAddOperationHandler, RuntimeOperationHandler {
+class SecurityDomainRemove implements ModelAddOperationHandler {
 
     static final String OPERATION_NAME = REMOVE;
 
@@ -67,20 +62,15 @@ class SecurityDomainRemove implements ModelAddOperationHandler, RuntimeOperation
         // Create the compensating operation
         final ModelNode compensatingOperation = SecurityDomainAdd.getRecreateOperation(opAddr, context.getSubModel());
 
-        if (context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    // remove security domain
-                    final ServiceController<?> jaasConfigurationService = context.getServiceRegistry().getService(
-                            JaasConfigurationService.SERVICE_NAME);
-                    if (jaasConfigurationService != null) {
-                        ApplicationPolicyRegistration config = (ApplicationPolicyRegistration) jaasConfigurationService.getValue();
-                        config.removeApplicationPolicy(securityDomain);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            // remove security domain
+            final ServiceController<?> jaasConfigurationService = context.getRuntimeContext().getServiceRegistry().getService(
+                    JaasConfigurationService.SERVICE_NAME);
+            if (jaasConfigurationService != null) {
+                ApplicationPolicyRegistration config = (ApplicationPolicyRegistration) jaasConfigurationService.getValue();
+                config.removeApplicationPolicy(securityDomain);
+            }
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

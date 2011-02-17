@@ -31,7 +31,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -40,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentDeployHandler implements ModelUpdateOperationHandler, RuntimeOperationHandler, DescriptionProvider {
+public class DeploymentDeployHandler implements ModelUpdateOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "deploy";
 

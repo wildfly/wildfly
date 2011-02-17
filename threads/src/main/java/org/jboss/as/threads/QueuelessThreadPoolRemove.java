@@ -22,12 +22,9 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
@@ -41,8 +38,6 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -53,7 +48,7 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class QueuelessThreadPoolRemove implements RuntimeOperationHandler, ModelRemoveOperationHandler {
+public class QueuelessThreadPoolRemove implements ModelRemoveOperationHandler {
 
     static final OperationHandler INSTANCE = new QueuelessThreadPoolRemove();
 
@@ -64,17 +59,14 @@ public class QueuelessThreadPoolRemove implements RuntimeOperationHandler, Model
         final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
-                    if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
-                    }
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
+                    .getService(ThreadsServices.threadFactoryName(name));
+            if (controller != null) {
+                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+            } else {
+                resultHandler.handleResultComplete();
+            }
         } else {
             resultHandler.handleResultComplete();
         }

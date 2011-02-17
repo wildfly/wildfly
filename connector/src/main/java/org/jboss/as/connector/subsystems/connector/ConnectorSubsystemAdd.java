@@ -67,18 +67,40 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        final String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
+        final String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
+        final boolean beanValidationEnabled = ParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
+        final boolean archiveValidationEnabled = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
+        final boolean failOnError = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);
+        final boolean failOnWarn = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN, false);
 
-        String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
-        String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
-        boolean beanValidationEnabled = ParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
-        boolean archiveValidationEnabled = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
-        boolean failOnError = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);
-        boolean failOnWarn = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN, false);
+        // Apply to the model
+        final ModelNode model = context.getSubModel();
+
+        if (shortRunningThreadPool != null) {
+            model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(shortRunningThreadPool);
+
+        }
+        if (longRunningThreadPool != null) {
+            model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(longRunningThreadPool);
+
+        }
+        if (ParamsUtils.has(operation, BEAN_VALIDATION_ENABLED)) {
+            model.get(BEAN_VALIDATION_ENABLED).set(beanValidationEnabled);
+        }
+        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_ENABLED)) {
+            model.get(ARCHIVE_VALIDATION_ENABLED).set(archiveValidationEnabled);
+        }
+        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
+            model.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(failOnError);
+        }
+        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
+            model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(failOnWarn);
+        }
 
         if (context instanceof BootOperationContext) {
-            BootOperationContext updateContext = (BootOperationContext) context;
-            ServiceTarget serviceTarget = updateContext.getServiceTarget();
+            ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
             WorkManager wm = new WorkManagerImpl();
 
             final WorkManagerService wmService = new WorkManagerService(wm);
@@ -112,40 +134,15 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             config.setBeanValidation(false);
 
             final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-
             serviceTarget
                     .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
                     .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class,
                             connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
-            new RaDeploymentActivator().activate(updateContext);
+            new RaDeploymentActivator().activate(BootOperationContext.class.cast(context), serviceTarget);
             resultHandler.handleResultComplete(); // TODO: Listener
         } else {
             resultHandler.handleResultComplete();
-        }
-
-        // Apply to the model
-        final ModelNode model = context.getSubModel();
-
-        if (shortRunningThreadPool != null) {
-            model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(shortRunningThreadPool);
-
-        }
-        if (longRunningThreadPool != null) {
-            model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(longRunningThreadPool);
-
-        }
-        if (ParamsUtils.has(operation, BEAN_VALIDATION_ENABLED)) {
-            model.get(BEAN_VALIDATION_ENABLED).set(beanValidationEnabled);
-        }
-        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_ENABLED)) {
-            model.get(ARCHIVE_VALIDATION_ENABLED).set(archiveValidationEnabled);
-        }
-        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
-            model.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(failOnError);
-        }
-        if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
-            model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(failOnWarn);
         }
 
         // Compensating is remove

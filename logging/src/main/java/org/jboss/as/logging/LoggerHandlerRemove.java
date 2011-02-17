@@ -32,10 +32,6 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -45,7 +41,7 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class LoggerHandlerRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
+class LoggerHandlerRemove implements ModelRemoveOperationHandler {
 
     static final LoggerHandlerRemove INSTANCE = new LoggerHandlerRemove();
 
@@ -64,20 +60,16 @@ class LoggerHandlerRemove implements ModelRemoveOperationHandler, RuntimeOperati
             compensatingOperation.get(property.getName()).set(property.getValue());
         }
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
-                    try {
-                        final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
-                        if (controller != null) {
-                            controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                        }
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
+        if (context.getRuntimeContext() != null) {
+            final ServiceRegistry registry = context.getRuntimeContext().getServiceRegistry();
+            try {
+                final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
+                if (controller != null) {
+                    controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
                 }
-            }, resultHandler);
+            } catch (Throwable t) {
+                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+            }
         } else {
             resultHandler.handleResultComplete();
         }

@@ -23,7 +23,6 @@
 package org.jboss.as.messaging;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -119,10 +118,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -136,7 +131,7 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author Emanuel Muckenhuber
  */
-class MessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class MessagingSubsystemAdd implements ModelAddOperationHandler {
 
     private static final String DEFAULT_PATH = "jboss.server.data.dir";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
@@ -165,46 +160,42 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler, RuntimeOperatio
         }
         subModel.get(QUEUE);
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    // Create the HornetQ Service
-                    final HornetQService hqService = new HornetQService();
-                    // Transform the configuration
-                    final Configuration configuration = transformConfig(operation);
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            // Create the HornetQ Service
+            final HornetQService hqService = new HornetQService();
+            // Transform the configuration
+            final Configuration configuration = transformConfig(operation);
 
-                    // Add the HornetQ Service
-                    final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
-                            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
-                    // Create path services
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
+            // Add the HornetQ Service
+            final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
+                    .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
+            // Create path services
+            serviceBuilder.addDependency(createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget),
+                    String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
+            serviceBuilder.addDependency(createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget),
+                    String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
+            serviceBuilder.addDependency(createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget),
+                    String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
+            serviceBuilder.addDependency(createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget),
+                    String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
 
-                    // Proccess acceptors and connectors
-                    final Set<String> socketBindings = new HashSet<String>();
-                    processAcceptors(configuration, operation, socketBindings);
-                    processConnectors(configuration, operation, socketBindings);
-                    for (final String socketBinding : socketBindings) {
-                        final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
-                        serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
-                    }
-                    hqService.setConfiguration(configuration);
+            // Proccess acceptors and connectors
+            final Set<String> socketBindings = new HashSet<String>();
+            processAcceptors(configuration, operation, socketBindings);
+            processConnectors(configuration, operation, socketBindings);
+            for (final String socketBinding : socketBindings) {
+                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
+                serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
+            }
+            hqService.setConfiguration(configuration);
 
-                    // Install the HornetQ Service
-                    serviceBuilder.install();
+            // Install the HornetQ Service
+            serviceBuilder.install();
 
-                    // TODO this should be added by the jms subsystem itself
-                    JMSService.addService(serviceTarget);
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+            // TODO this should be added by the jms subsystem itself
+            JMSService.addService(serviceTarget);
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

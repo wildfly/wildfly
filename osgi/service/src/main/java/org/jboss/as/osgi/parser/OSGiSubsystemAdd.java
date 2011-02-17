@@ -76,19 +76,15 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
         log.infof("Activating OSGi Subsystem");
 
-        // Create the compensating operation
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        populateSubModel(context.getSubModel(), operation);
 
         if (context instanceof BootOperationContext) {
             log.infof("Activating OSGi Subsystem");
-
             final BootOperationContext updateContext = (BootOperationContext) context;
-            final ServiceTarget target = updateContext.getServiceTarget();
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
 
             SubsystemState subsystemState = createSubsystemState(operation);
 
@@ -109,11 +105,15 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             ConfigAdminServiceImpl.addService(target, subsystemState);
 
             new OSGiDeploymentActivator().activate(updateContext);
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
         }
 
-        populateSubModel(context.getSubModel(), operation);
-
-        resultHandler.handleResultComplete();
+        // Create the compensating operation
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
     }
 

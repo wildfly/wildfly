@@ -24,7 +24,6 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.server.RuntimeOperationHandler;
 
 /**
  * Server specific {@link OperationHanlder}s which get registered at the {@link ServerController} to
@@ -40,15 +39,15 @@ public class ServerOperationHandlers {
 
     static final String[] NO_LOCATION = new String[0];
 
-    static class ReadResourceHandler extends GlobalOperationHandlers.ReadResourceHandler implements RuntimeOperationHandler {
+    static class ReadResourceHandler extends GlobalOperationHandlers.ReadResourceHandler {
         //
     }
 
-    static class ReadAttributeHandler extends GlobalOperationHandlers.ReadAttributeHandler implements RuntimeOperationHandler {
+    static class ReadAttributeHandler extends GlobalOperationHandlers.ReadAttributeHandler {
         //
     }
 
-    static class WriteAttributeHandler extends GlobalOperationHandlers.WriteAttributeHandler implements RuntimeOperationHandler {
+    static class WriteAttributeHandler extends GlobalOperationHandlers.WriteAttributeHandler {
         //
     }
 

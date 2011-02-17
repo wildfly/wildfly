@@ -24,7 +24,6 @@ package org.jboss.as.demos.domain.rar.runner;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
-import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.DomainDeploymentUtils;
 import org.jboss.as.demos.rar.archive.HelloWorldConnection;
 import org.jboss.as.demos.rar.mbean.Test;

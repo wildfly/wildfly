@@ -23,7 +23,6 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -32,10 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -43,7 +38,7 @@ import org.jboss.msc.service.ServiceRegistry;
 /**
  * @author Emanuel Muckenhuber
  */
-class LoggerRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
+class LoggerRemove implements ModelRemoveOperationHandler {
 
     static final LoggerRemove INSTANCE = new LoggerRemove();
 
@@ -60,20 +55,16 @@ class LoggerRemove implements ModelRemoveOperationHandler, RuntimeOperationHandl
         compensatingOperation.get(CommonAttributes.LEVEL).set(subModel.get(CommonAttributes.LEVEL));
         compensatingOperation.get(CommonAttributes.HANDLERS).set(subModel.get(CommonAttributes.HANDLERS));
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(LogServices.loggerName(name));
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    if (subModel.has(CommonAttributes.HANDLERS)) {
-                        LogServices.uninstallLoggerHandlers(registry, name, subModel.get(CommonAttributes.HANDLERS));
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceRegistry registry = context.getRuntimeContext().getServiceRegistry();
+            final ServiceController<?> controller = registry.getService(LogServices.loggerName(name));
+            if (controller != null) {
+                controller.setMode(ServiceController.Mode.REMOVE);
+            }
+            if (subModel.has(CommonAttributes.HANDLERS)) {
+                LogServices.uninstallLoggerHandlers(registry, name, subModel.get(CommonAttributes.HANDLERS));
+            }
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

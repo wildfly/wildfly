@@ -108,9 +108,6 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
 
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-        // Create the compensating operation
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-
         String authenticationManagerClassName = "default";
         String callbackHandlerClassName = "default";
         boolean deepCopySubject = DEFAULT_DEEP_COPY_OPERATION_MODE;
@@ -128,11 +125,16 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         if (operation.hasDefined(DEEP_COPY_SUBJECT_MODE)) {
             deepCopySubject = operation.get(DEEP_COPY_SUBJECT_MODE).asBoolean();
             subModel.get(DEEP_COPY_SUBJECT_MODE).set(deepCopySubject);
+        } else {
+            deepCopySubject = DEFAULT_DEEP_COPY_OPERATION_MODE;
         }
         if (operation.hasDefined(DEFAULT_CALLBACK_HANDLER_CLASS_NAME)) {
             callbackHandlerClassName = operation.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).asString();
             subModel.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).set(callbackHandlerClassName);
+        } else {
+            callbackHandlerClassName = CALLBACK_HANDLER;
         }
+
         if (operation.hasDefined(SUBJECT_FACTORY_CLASS_NAME)) {
             subjectFactoryClassName = operation.get(SUBJECT_FACTORY_CLASS_NAME).asString();
             subModel.get(SUBJECT_FACTORY_CLASS_NAME).set(subjectFactoryClassName);
@@ -161,7 +163,7 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE,
                     new SecurityDependencyProcessor());
 
-            final ServiceTarget target = updateContext.getServiceTarget();
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
 
             // add bootstrap service
             final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
@@ -200,10 +202,6 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
             target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService).setInitialMode(
                     ServiceController.Mode.ACTIVE).install();
 
-            // add subject factory service
-            if ("default".equals(subjectFactoryClassName))
-                subjectFactoryClassName = SUBJECT_FACTORY;
-
             final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(subjectFactoryClassName);
             target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService).addDependency(
                     SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
@@ -215,9 +213,14 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
             final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
             target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService).setInitialMode(
                     ServiceController.Mode.ACTIVE).install();
+
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
         }
 
-        resultHandler.handleResultComplete();
+        // Create the compensating operation
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
     }
 

@@ -31,10 +31,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -46,7 +42,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRedeployHandler implements ModelQueryOperationHandler, RuntimeOperationHandler, DescriptionProvider {
+public class DeploymentRedeployHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "redeploy";
 
@@ -78,19 +74,15 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, Ru
     }
 
     private void redeploy(final ModelNode model, OperationContext context, ResultHandler resultHandler) {
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    String deploymentUnitName = model.require(NAME).asString();
-                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+        if (context.getRuntimeContext() != null) {
+            String deploymentUnitName = model.require(NAME).asString();
+            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+            final ServiceRegistry serviceRegistry = context.getRuntimeContext().getServiceRegistry();
 
-                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                    controller.setMode(ServiceController.Mode.NEVER);
-                    controller.setMode(ServiceController.Mode.ACTIVE);
-                    controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                }
-            }, resultHandler);
+            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+            controller.setMode(ServiceController.Mode.NEVER);
+            controller.setMode(ServiceController.Mode.ACTIVE);
+            controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
         } else {
             resultHandler.handleResultComplete();
         }

@@ -28,7 +28,6 @@ import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDAT
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
@@ -41,10 +40,6 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -53,7 +48,7 @@ import org.jboss.msc.service.ServiceController.Mode;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class ConnectorSubSystemRemove implements RuntimeOperationHandler, ModelRemoveOperationHandler {
+public class ConnectorSubSystemRemove implements ModelRemoveOperationHandler {
 
     static final OperationHandler INSTANCE = new ConnectorSubSystemRemove();
 
@@ -63,17 +58,12 @@ public class ConnectorSubSystemRemove implements RuntimeOperationHandler, ModelR
         final ModelNode model = context.getSubModel();
         final String name = model.require(NAME).asString();
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(
-                            ConnectorServices.CONNECTOR_CONFIG_SERVICE);
-                    if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                        controller.setMode(Mode.REMOVE);
-                    }
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry().getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
+            if (controller != null) {
+                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                controller.setMode(Mode.REMOVE);
+            }
         } else {
             resultHandler.handleResultComplete();
         }

@@ -63,33 +63,32 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+        context.getSubModel().setEmptyObject();
 
-        if(context instanceof BootOperationContext) {
+        if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
-
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
 
             log.info("Activating Naming Subsystem");
 
-            ObjectFactoryBuilder.INSTANCE.setServiceRegistry(updateContext.getServiceRegistry());
+            ObjectFactoryBuilder.INSTANCE.setServiceRegistry(context.getRuntimeContext().getServiceRegistry());
 
             NamingContext.initializeNamingManager();
 
             // Create the Naming Service
-            final ServiceTarget target = updateContext.getServiceTarget();
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
             target.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
 
             // Create java: context service
             final JavaContextService javaContextService = new JavaContextService();
             target.addService(JavaContextService.SERVICE_NAME, javaContextService)
-                .addDependency(NamingService.SERVICE_NAME)
-                .install();
+                    .addDependency(NamingService.SERVICE_NAME)
+                    .install();
 
             final ContextService globalContextService = new ContextService("global");
             target.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
-                 .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
-                 .install();
+                    .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
+                    .install();
 
             addContextFactory(target, "app");
             addContextFactory(target, "module");
@@ -100,13 +99,15 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
 
             final JndiView jndiView = new JndiView();
             target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
-                .install();
+                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
+                    .install();
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
         }
 
-        context.getSubModel().setEmptyObject();
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-        resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);
     }
 

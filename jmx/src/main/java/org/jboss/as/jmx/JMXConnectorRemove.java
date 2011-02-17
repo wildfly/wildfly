@@ -23,7 +23,6 @@
 package org.jboss.as.jmx;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -31,17 +30,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class JMXConnectorRemove implements ModelUpdateOperationHandler, RuntimeOperationHandler {
+class JMXConnectorRemove implements ModelUpdateOperationHandler {
 
     static final JMXConnectorRemove INSTANCE = new JMXConnectorRemove();
 
@@ -66,15 +61,12 @@ class JMXConnectorRemove implements ModelUpdateOperationHandler, RuntimeOperatio
         subModel.get(CommonAttributes.SERVER_BINDING).clear();
         subModel.get(CommonAttributes.REGISTRY_BINDING).clear();
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry().getService(JMXConnectorService.SERVICE_NAME);
-                    if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    }
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry()
+                    .getService(JMXConnectorService.SERVICE_NAME);
+            if (service != null) {
+                service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+            }
         } else {
             resultHandler.handleResultComplete();
         }

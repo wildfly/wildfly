@@ -38,7 +38,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
@@ -49,7 +48,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler, RuntimeOperationHandler, DescriptionProvider {
+public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "full-replace-deployment";
 

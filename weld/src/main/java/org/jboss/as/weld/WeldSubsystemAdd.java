@@ -53,14 +53,17 @@ class WeldSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
 
     static final WeldSubsystemAdd INSTANCE = new WeldSubsystemAdd();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+        context.getSubModel().setEmptyObject();
 
-        if(context instanceof BootOperationContext) {
+        if (context instanceof BootOperationContext) {
             final BootOperationContext bootContext = (BootOperationContext) context;
+
             bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
             bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());
             bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
@@ -69,13 +72,14 @@ class WeldSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_BEAN_MANAGER, new WeldBeanManagerServiceProcessor());
 
             TCCLSingletonService singleton = new TCCLSingletonService();
-            bootContext.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(
+            context.getRuntimeContext().getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(
                     Mode.ON_DEMAND).install();
-
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
         }
 
-        context.getSubModel().setEmptyObject();
-        resultHandler.handleResultComplete();
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
     }
 

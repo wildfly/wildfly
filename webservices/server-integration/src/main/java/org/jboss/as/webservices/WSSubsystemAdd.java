@@ -82,11 +82,8 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-        // Create the compensating operation
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-
         operationValidator.validate(operation);
-        ModelNode config = operation.require(CONFIGURATION);
+        final ModelNode config = operation.require(CONFIGURATION);
         configValidator.validate(config);
 
         final ModelNode subModel = context.getSubModel();
@@ -94,19 +91,22 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
-
             log.info("Activating WebServices Extension");
-            WSServices.saveContainerRegistry(updateContext.getServiceRegistry());
+            WSServices.saveContainerRegistry(context.getRuntimeContext().getServiceRegistry());
 
-            ServiceTarget serviceTarget = updateContext.getServiceTarget();
+            ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
             addConfigService(serviceTarget, config);
             addRegistryService(serviceTarget);
 
             //add the DUP for dealing with WS deployments
             WSDeploymentActivator.activate(updateContext);
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
         }
 
-        resultHandler.handleResultComplete();
+        // Create the compensating operation
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
     }
 

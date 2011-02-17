@@ -35,10 +35,6 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -47,7 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class LoggerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class LoggerAdd implements ModelAddOperationHandler {
 
     static final LoggerAdd INSTANCE = new LoggerAdd();
 
@@ -69,32 +65,28 @@ class LoggerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
         subModel.get(CommonAttributes.LEVEL).set(level);
         subModel.get(CommonAttributes.HANDLERS).set(handlers);
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-                    final String loggerName = name;
-                    try {
-                        // Install logger service
-                        final LoggerService service = new LoggerService(loggerName);
-                        service.setLevel(Level.parse(level));
-                        target.addService(LogServices.loggerName(loggerName), service)
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                    try {
-                        // install logger handler services
-                        if (handlers.isDefined()) {
-                            LogServices.installLoggerHandlers(target, loggerName, handlers);
-                        }
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                    resultHandler.handleResultComplete();
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
+            final String loggerName = name;
+            try {
+                // Install logger service
+                final LoggerService service = new LoggerService(loggerName);
+                service.setLevel(Level.parse(level));
+                target.addService(LogServices.loggerName(loggerName), service)
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+            } catch (Throwable t) {
+                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+            }
+            try {
+                // install logger handler services
+                if (handlers.isDefined()) {
+                    LogServices.installLoggerHandlers(target, loggerName, handlers);
                 }
-            }, resultHandler);
+            } catch (Throwable t) {
+                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+            }
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

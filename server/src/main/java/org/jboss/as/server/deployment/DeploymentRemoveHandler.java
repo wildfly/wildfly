@@ -32,10 +32,6 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -47,7 +43,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, RuntimeOperationHandler, DescriptionProvider {
+public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -74,20 +70,16 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Run
                 throw new OperationFailedException(new ModelNode().set(msg));
             }
             else {
-                if (context instanceof RuntimeOperationContext) {
-                    RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                        public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                            String deploymentUnitName = model.require(NAME).asString();
-                            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                            final ServiceRegistry serviceRegistry = context.getServiceRegistry();
-                            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                            if(controller != null) {
-                                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                            } else {
-                                resultHandler.handleResultComplete();
-                            }
-                        }
-                    }, resultHandler);
+                if (context.getRuntimeContext() != null) {
+                    String deploymentUnitName = model.require(NAME).asString();
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    final ServiceRegistry serviceRegistry = context.getRuntimeContext().getServiceRegistry();
+                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                    if(controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
                 } else {
                     resultHandler.handleResultComplete();
                 }

@@ -23,7 +23,6 @@
 package org.jboss.as.jmx;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -31,10 +30,6 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  * @author Thomas.Diesler@jboss.com
  * @author Emanuel Muckenhuber
  */
-class JMXSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class JMXSubsystemAdd implements ModelAddOperationHandler {
 
     static final JMXSubsystemAdd INSTANCE = new JMXSubsystemAdd();
 
@@ -57,14 +52,10 @@ class JMXSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandl
         context.getSubModel().get(CommonAttributes.SERVER_BINDING);
         context.getSubModel().get(CommonAttributes.REGISTRY_BINDING);
 
-        if(context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    // Add the MBean service
-                    MBeanServerService.addService(context.getServiceTarget());
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if(context.getRuntimeContext() != null) {
+            // Add the MBean service
+            MBeanServerService.addService(context.getRuntimeContext().getServiceTarget());
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

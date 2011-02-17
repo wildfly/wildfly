@@ -30,8 +30,6 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-class JMSSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandler{
+class JMSSubsystemAdd implements ModelAddOperationHandler {
 
     static final JMSSubsystemAdd INSTANCE = new JMSSubsystemAdd();
 
@@ -49,7 +47,7 @@ class JMSSubsystemAdd implements ModelAddOperationHandler, RuntimeOperationHandl
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-        if(context instanceof RuntimeOperationContext) {
+        if(context.getRuntimeContext() != null) {
             // FIXME the JMSServer is started as part of the messaging subsystem for now
             // final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
             // final BatchBuilder builder = runtimeContext.getBatchBuilder();

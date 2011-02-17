@@ -26,10 +26,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -40,7 +36,7 @@ import org.jboss.msc.service.ServiceController.Mode;
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class QueueAdd implements ModelAddOperationHandler, RuntimeOperationHandler, DescriptionProvider {
+public class QueueAdd implements ModelAddOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -90,18 +86,13 @@ public class QueueAdd implements ModelAddOperationHandler, RuntimeOperationHandl
             if (durable != null) {
                 model.get(DURABLE).set(durable);
             }
-            if (context instanceof RuntimeOperationContext) {
-                RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                    public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                        final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
-                        context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
-                                .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
-                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                                .setInitialMode(Mode.ACTIVE)
-                                .install();
-
-                    }
-                }, resultHandler);
+            if (context.getRuntimeContext() != null) {
+                final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
+                context.getRuntimeContext().getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
+                        .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
+                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                        .setInitialMode(Mode.ACTIVE)
+                        .install();
             } else {
                 resultHandler.handleResultComplete();
             }

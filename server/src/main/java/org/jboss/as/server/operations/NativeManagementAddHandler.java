@@ -23,7 +23,6 @@
 package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -37,10 +36,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.ManagementCommunicationService;
 import org.jboss.as.server.mgmt.ServerControllerOperationHandlerService;
@@ -54,7 +49,7 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NativeManagementAddHandler implements ModelAddOperationHandler, RuntimeOperationHandler, DescriptionProvider {
+public class NativeManagementAddHandler implements ModelAddOperationHandler, DescriptionProvider {
 
     public static final NativeManagementAddHandler INSTANCE = new NativeManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
@@ -74,32 +69,28 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Run
         subModel.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
         subModel.get(ModelDescriptionConstants.PORT).set(port);
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
 
-                    Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);
+            Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);
 
-                    final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
-                    serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
-                            .addDependency(
-                                    NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                                    NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
-                            .addInjection(managementCommunicationService.getPortInjector(), port)
-                            .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool())
-                            .addInjection(managementCommunicationService.getThreadFactoryInjector(), Executors.defaultThreadFactory())
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
+            final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
+            serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
+                    .addDependency(
+                            NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
+                            NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
+                    .addInjection(managementCommunicationService.getPortInjector(), port)
+                    .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool())
+                    .addInjection(managementCommunicationService.getThreadFactoryInjector(), Executors.defaultThreadFactory())
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
 
-                    ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
-                    serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
-                            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
-                            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, operationHandlerService.getModelControllerValue())
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
-                }
-            }, resultHandler);
+            ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
+            serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
+                    .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
+                    .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, operationHandlerService.getModelControllerValue())
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
         } else {
             resultHandler.handleResultComplete();
         }

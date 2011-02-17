@@ -22,11 +22,8 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
@@ -44,8 +41,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedOperationParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -59,7 +54,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class BoundedQueueThreadPoolAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
+public class BoundedQueueThreadPoolAdd implements ModelAddOperationHandler {
 
     static final OperationHandler INSTANCE = new BoundedQueueThreadPoolAdd();
 
@@ -99,28 +94,23 @@ public class BoundedQueueThreadPoolAdd implements RuntimeOperationHandler, Model
         // Compensating is remove
         final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
+        if (context.getRuntimeContext() != null) {
+            ServiceTarget target = context.getRuntimeContext().getServiceTarget();
+            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+            final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
+                    params.getCoreThreads().getScaledCount(),
+                    params.getMaxThreads().getScaledCount(),
+                    params.getQueueLength().getScaledCount(),
+                    params.isBlocking(),
+                    params.getKeepAliveTime(),
+                    params.isAllowCoreTimeout());
 
-                    ServiceTarget target = context.getServiceTarget();
-                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-                    final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
-                            params.getCoreThreads().getScaledCount(),
-                            params.getMaxThreads().getScaledCount(),
-                            params.getQueueLength().getScaledCount(),
-                            params.isBlocking(),
-                            params.getKeepAliveTime(),
-                            params.isAllowCoreTimeout());
+            //TODO add the handoffExceutor injection
 
-                    //TODO add the handoffExceutor injection
-
-                    final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
-                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                    serviceBuilder.install();
-                }
-            }, resultHandler);
+            final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
+            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+            serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+            serviceBuilder.install();
         } else {
             resultHandler.handleResultComplete();
         }

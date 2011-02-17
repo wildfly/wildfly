@@ -20,13 +20,8 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,7 +29,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SystemPropertyRemoveHandler extends org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler implements RuntimeOperationHandler {
+public class SystemPropertyRemoveHandler extends org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler {
 
     public static final SystemPropertyRemoveHandler INSTANCE = new SystemPropertyRemoveHandler();
 
@@ -43,13 +38,9 @@ public class SystemPropertyRemoveHandler extends org.jboss.as.controller.operati
 
     @Override
     protected OperationResult removeSystemProperty(final String name, OperationContext context, ResultHandler resultHandler, ModelNode compensating) {
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    System.clearProperty(name);
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            System.clearProperty(name);
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

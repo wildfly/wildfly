@@ -23,7 +23,6 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -78,10 +77,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -92,7 +87,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-class ConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class ConnectionFactoryAdd implements ModelAddOperationHandler {
 
     static final ConnectionFactoryAdd INSTANCE = new ConnectionFactoryAdd();
     private static final String[] NO_BINDINGS = new String[0];
@@ -114,19 +109,15 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler, RuntimeOperation
             }
         }
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
-                    final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
-                    final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);
-                    context.getServiceTarget().addService(serviceName, service)
-                            .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
-                            .setInitialMode(Mode.ACTIVE)
-                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                            .install();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
+            final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
+            final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);
+            context.getRuntimeContext().getServiceTarget().addService(serviceName, service)
+                    .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                    .setInitialMode(Mode.ACTIVE)
+                    .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                    .install();
         } else {
             resultHandler.handleResultComplete();
         }

@@ -20,14 +20,9 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.PathAddHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -38,7 +33,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SpecifiedPathAddHandler extends PathAddHandler implements RuntimeOperationHandler {
+public class SpecifiedPathAddHandler extends PathAddHandler {
 
     public static SpecifiedPathAddHandler INSTANCE = new SpecifiedPathAddHandler();
 
@@ -48,19 +43,15 @@ public class SpecifiedPathAddHandler extends PathAddHandler implements RuntimeOp
 
     @Override
     protected OperationResult installPath(final String name, final String path, final String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget().subTarget();
-                    target.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                    if (relativeTo == null) {
-                        AbsolutePathService.addService(name, path, target);
-                    } else {
-                        RelativePathService.addService(name, path, relativeTo, target);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget().subTarget();
+            target.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+            if (relativeTo == null) {
+                AbsolutePathService.addService(name, path, target);
+            } else {
+                RelativePathService.addService(name, path, relativeTo, target);
+            }
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

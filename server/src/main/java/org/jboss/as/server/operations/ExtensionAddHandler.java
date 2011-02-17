@@ -22,7 +22,6 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -33,7 +32,7 @@ import org.jboss.modules.ModuleLoadException;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 // TODO this could likely be folded into the superclass
-public class ExtensionAddHandler extends AbstractExtensionAddHandler implements RuntimeOperationHandler {
+public class ExtensionAddHandler extends AbstractExtensionAddHandler {
 
     private final ExtensionContext extensionContext;
 

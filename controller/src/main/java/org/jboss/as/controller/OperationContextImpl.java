@@ -66,4 +66,8 @@ public class OperationContextImpl implements OperationContext {
         }
         return subModel;
     }
+
+    public RuntimeOperationContext getRuntimeContext() {
+        return null;
+    }
 }

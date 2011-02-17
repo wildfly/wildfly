@@ -26,8 +26,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
@@ -39,8 +37,6 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
@@ -52,7 +48,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
+public class ThreadFactoryAdd implements ModelAddOperationHandler {
 
     static final OperationHandler INSTANCE = new ThreadFactoryAdd();
 
@@ -87,25 +83,21 @@ public class ThreadFactoryAdd implements RuntimeOperationHandler, ModelAddOperat
             model.get(PROPERTIES).set(properties);
         }
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-                    final ThreadFactoryService service = new ThreadFactoryService();
-                    service.setNamePattern(threadNamePattern);
-                    service.setPriority(priority);
-                    service.setThreadGroupName(groupName);
-                    //TODO What about the properties?
-                    try {
-                        target.addService(ThreadsServices.threadFactoryName(name), service)
-                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
-                    } catch (ServiceRegistryException e) {
-                        throw new OperationFailedException(new ModelNode().set(e.getMessage()));
-                    }
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
+            final ThreadFactoryService service = new ThreadFactoryService();
+            service.setNamePattern(threadNamePattern);
+            service.setPriority(priority);
+            service.setThreadGroupName(groupName);
+            //TODO What about the properties?
+            try {
+                target.addService(ThreadsServices.threadFactoryName(name), service)
+                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+            } catch (ServiceRegistryException e) {
+                throw new OperationFailedException(new ModelNode().set(e.getMessage()));
+            }
         } else {
             resultHandler.handleResultComplete();
         }

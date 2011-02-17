@@ -61,18 +61,20 @@ class ArquillianSubsystemAdd implements ModelAddOperationHandler, BootOperationH
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+        context.getSubModel().setEmptyObject();
 
         if(context instanceof BootOperationContext) {
             log.infof("Activating Arquillian Subsystem");
-            final BootOperationContext bootContext = (BootOperationContext) context;
-            ArquillianService.addService(bootContext.getServiceTarget());
-            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ARQUILLIAN_RUNWITH, new ArquillianRunWithAnnotationProcessor());
-            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
-            bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_ARQUILLIAN,
-                    new ArquillianDependencyProcessor());
+                final BootOperationContext bootContext = (BootOperationContext) context;
+                ArquillianService.addService(context.getRuntimeContext().getServiceTarget());
+                bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ARQUILLIAN_RUNWITH, new ArquillianRunWithAnnotationProcessor());
+                bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
+                bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_ARQUILLIAN,
+                        new ArquillianDependencyProcessor());
+                resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
         }
-        resultHandler.handleResultComplete();
-        context.getSubModel().setEmptyObject();
         return new BasicOperationResult(compensatingOperation);
     }
 

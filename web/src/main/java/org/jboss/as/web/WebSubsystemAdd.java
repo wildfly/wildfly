@@ -71,14 +71,15 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext updateContext, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(OperationContext updateContext, final ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode config = operation.get(CommonAttributes.CONTAINER_CONFIG);
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode subModel = updateContext.getSubModel();
+        subModel.get(CommonAttributes.CONTAINER_CONFIG).set(config);
+        subModel.get(CommonAttributes.CONNECTOR).setEmptyObject();
+        subModel.get(CommonAttributes.VIRTUAL_SERVER).setEmptyObject();
 
-        if(updateContext instanceof BootOperationContext) {
+        if (updateContext instanceof BootOperationContext) {
             final BootOperationContext ctx = (BootOperationContext) updateContext;
 
             final String defaultHost = operation.has(CommonAttributes.DEFAULT_HOST) ?
@@ -86,11 +87,11 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
             try {
                 final WebServerService service = new WebServerService(defaultHost);
-                ctx.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
-                    .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
-                    .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
-                    .setInitialMode(Mode.ON_DEMAND)
-                    .install();
+                updateContext.getRuntimeContext().getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
+                        .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
+                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
+                        .setInitialMode(Mode.ON_DEMAND)
+                        .install();
             } catch (Throwable t) {
                 throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
             }
@@ -109,14 +110,14 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
             ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
             ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_METADATA, new WarMetaDataProcessor());
             ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultHost));
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
         }
 
-        final ModelNode subModel = updateContext.getSubModel();
-        subModel.get(CommonAttributes.CONTAINER_CONFIG).set(config);
-        subModel.get(CommonAttributes.CONNECTOR).setEmptyObject();
-        subModel.get(CommonAttributes.VIRTUAL_SERVER).setEmptyObject();
-
-        resultHandler.handleResultComplete();
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
     }
 

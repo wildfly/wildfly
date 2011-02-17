@@ -124,24 +124,7 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        if (context instanceof BootOperationContext) {
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-
-            DataSources datasources = buildDataSourcesObject(operation);
-            serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
-                    .setInitialMode(Mode.ACTIVE).install();
-
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES,
-                        new DataSourcesAttachmentProcessor(datasources));
-        }
-
+    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
         // Populate subModel
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
@@ -193,7 +176,25 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                 }
             }
         }
-        resultHandler.handleResultComplete();
+
+        if (context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = BootOperationContext.class.cast(context);
+            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+
+            DataSources datasources = buildDataSourcesObject(operation);
+            serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
+                    .setInitialMode(Mode.ACTIVE).install();
+
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES,
+                    new DataSourcesAttachmentProcessor(datasources));
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
+        }
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
     }
 

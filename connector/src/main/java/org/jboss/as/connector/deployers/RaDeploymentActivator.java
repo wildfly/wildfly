@@ -48,9 +48,7 @@ public class RaDeploymentActivator {
      * Activate the services required for service deployments.
      * @param updateContext The update context
      */
-    public void activate(final BootOperationContext updateContext) {
-        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-
+    public void activate(final BootOperationContext updateContext, final ServiceTarget serviceTarget) {
         // add resources here
         MdrService mdrService = new MdrService();
         serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService).install();

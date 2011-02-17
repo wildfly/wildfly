@@ -52,4 +52,7 @@ public interface OperationContext {
      * @throws IllegalArgumentException if no sub-model is associated with this operation
      */
     ModelNode getSubModel() throws IllegalArgumentException;
+
+
+    RuntimeOperationContext getRuntimeContext();
 }

@@ -32,20 +32,6 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public interface BootOperationContext extends ServerOperationContext {
     /**
-     * Get the target to which new services may be added.
-     *
-     * @return the service target
-     */
-    ServiceTarget getServiceTarget();
-
-    /**
-     * Get the service registry.
-     *
-     * @return the service registry.
-     */
-    ServiceRegistry getServiceRegistry();
-
-    /**
      * Add a deployment processor.
      *
      * @param phase the processor phase install into (must not be {@code null})

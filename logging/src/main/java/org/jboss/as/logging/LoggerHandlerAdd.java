@@ -29,14 +29,13 @@ import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class LoggerHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class LoggerHandlerAdd implements ModelAddOperationHandler {
 
     static final LoggerHandlerAdd INSTANCE = new LoggerHandlerAdd();
 

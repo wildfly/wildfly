@@ -25,6 +25,7 @@ import java.util.ArrayDeque;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeOperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -44,13 +45,12 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.ServerController;
-import org.jboss.as.server.RuntimeOperationHandler;
+import org.jboss.as.server.ServerOperationContext;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Handler for multi-step operations that have to be performed atomically.
@@ -59,7 +59,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServerCompositeOperationHandler
     extends BaseCompositeOperationHandler
-    implements RuntimeOperationHandler, DescriptionProvider {
+    implements DescriptionProvider {
 
     public static final String OPERATION_NAME = COMPOSITE;
 
@@ -81,7 +81,7 @@ public class ServerCompositeOperationHandler
 
         // The type of the context tells us whether we are allowed to make
         // runtime updates
-        if (!(context instanceof RuntimeOperationContext)) {
+        if (!(context.getRuntimeContext() != null)) {
             // The server's in model-only mode; just use the superclass logic
             return super.execute(context, operation, resultHandler);
         }
@@ -113,7 +113,7 @@ public class ServerCompositeOperationHandler
                 final ModelNode rorf = operation.get(ROLLBACK_ON_RUNTIME_FAILURE);
                 final boolean rollback = !rorf.isDefined() || rorf.asBoolean();
 
-                final RuntimeCompositeOperationContext compositeContext = new RuntimeCompositeOperationContext((RuntimeOperationContext) context, resultHandler, rollback);
+                final RuntimeCompositeOperationContext compositeContext = new RuntimeCompositeOperationContext((ServerOperationContext)context, resultHandler, rollback);
                 executeSteps(compositeContext, steps);
             }
         }
@@ -144,6 +144,10 @@ public class ServerCompositeOperationHandler
             @Override
             public ModelController getController() {
                 return context.getController();
+            }
+
+            public RuntimeOperationContext getRuntimeContext() {
+                return null;
             }
         };
 
@@ -198,40 +202,14 @@ public class ServerCompositeOperationHandler
         }
     }
 
-    protected void executeStepHandlers(CompositeOperationContext context, List<ModelNode> steps, StepHandlerContext stepHandlerContext) {
-        super.executeStepHandlers(context, steps, stepHandlerContext);
-
-        if(stepHandlerContext.hasFailures()) {
-            return; // Skip the runtime tasks if there are model failures
-        }
-
-        if(context instanceof RuntimeCompositeOperationContext) {
-            final RuntimeCompositeOperationContext runtimeContext = RuntimeCompositeOperationContext.class.cast(context);
-            runtimeContext.overallRuntimeContext.executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    for(RuntimeCompositeOperationContext.QueuedTask queuedTask : runtimeContext.runtimeTasks) {
-                        try {
-                            queuedTask.task.execute(context, queuedTask.resultHandler);
-                        } catch (OperationFailedException e) {
-                            queuedTask.resultHandler.handleFailed(e.getFailureDescription());
-                        } catch (Throwable t) {
-                            queuedTask.resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
-                        }
-                    }
-                }
-            }, null);
-        }
-    }
-
     private static class RuntimeCompositeOperationContext extends CompositeOperationContext {
 
         private final boolean rollbackOnRuntimeFailure;
-        private final RuntimeOperationContext overallRuntimeContext;
+        private final ServerOperationContext overallRuntimeContext;
         private boolean modelOnly = false;
         private final Map<Integer, Boolean> modelOnlyStates = new HashMap<Integer, Boolean>();
-        private final ArrayDeque<QueuedTask> runtimeTasks = new ArrayDeque<QueuedTask>();
 
-        private RuntimeCompositeOperationContext(final RuntimeOperationContext overallContext, final ResultHandler resultHandler,
+        private RuntimeCompositeOperationContext(final ServerOperationContext overallContext, final ResultHandler resultHandler,
                 final boolean rollbackOnRuntimeFailure) {
             super(overallContext, resultHandler);
             this.overallRuntimeContext = overallContext;
@@ -243,22 +221,18 @@ public class ServerCompositeOperationHandler
             modelOnlyStates.put(index, Boolean.valueOf(modelOnly));
             OperationContext stepOperationContext;
             if (modelOnly) {
-//                System.out.println("we're model only");
                 stepOperationContext = super.getStepOperationContext(index, address, stepHandler);
             }
-            else if (stepHandler instanceof BootOperationHandler) {
+            else if(stepHandler instanceof BootOperationHandler) {
                 // The ModelController needs to be informed that it now shouldn't execute runtime ops
                 overallRuntimeContext.restartRequired();
                 modelOnly = true;
                 modelOnlyStates.put(index, Boolean.TRUE);
                 stepOperationContext = super.getStepOperationContext(index, address, stepHandler);
             }
-            else if (stepHandler instanceof RuntimeOperationHandler){
-                final ModelNode stepModel = getStepSubModel(address, stepHandler);
-                return getRuntimeOperationContext(stepModel);
-            }
             else {
-                stepOperationContext = super.getStepOperationContext(index, address, stepHandler);
+                final ModelNode stepModel = getStepSubModel(address, stepHandler);
+                stepOperationContext = getRuntimeOperationContext(stepModel);
             }
             return stepOperationContext;
         }
@@ -267,7 +241,7 @@ public class ServerCompositeOperationHandler
             return new StepRuntimeOperationContext(stepModel);
         }
 
-        private class StepRuntimeOperationContext implements RuntimeOperationContext {
+        private class StepRuntimeOperationContext implements ServerOperationContext {
             private ModelNode stepModel;
 
             private StepRuntimeOperationContext(ModelNode stepModel) {
@@ -299,18 +273,8 @@ public class ServerCompositeOperationHandler
                 overallRuntimeContext.revertRestartRequired();
             }
 
-            public void executeRuntimeTask(RuntimeTask runtimeTask, ResultHandler resultHandler) {
-                runtimeTasks.add(new QueuedTask(runtimeTask, resultHandler));
-            }
-        }
-
-        private class QueuedTask {
-            private final RuntimeTask task;
-            private final ResultHandler resultHandler;
-
-            private QueuedTask(RuntimeTask task, ResultHandler resultHandler) {
-                this.task = task;
-                this.resultHandler = resultHandler;
+            public RuntimeOperationContext getRuntimeContext() {
+                return overallRuntimeContext.getRuntimeContext();
             }
         }
 
@@ -369,13 +333,8 @@ public class ServerCompositeOperationHandler
                             // Controller needs to know that the change that put us in restart mode has been reverted
                             overallRuntimeContext.revertRestartRequired();
                         }
-                        if (stepHandler instanceof RuntimeOperationContext) {
-                            final ModelNode stepModel = getStepSubModel(address, stepHandler);
-                            stepRollbackContext = getRuntimeOperationContext(stepModel);
-                        }
-                        else {
-                            stepRollbackContext = super.getStepOperationContext(Integer.valueOf(i), address, stepHandler);
-                        }
+                        final ModelNode stepModel = getStepSubModel(address, stepHandler);
+                        stepRollbackContext = getRuntimeOperationContext(stepModel);
                     }
 
                     final ResultHandler stepRollbackHandler = new ResultHandler() {

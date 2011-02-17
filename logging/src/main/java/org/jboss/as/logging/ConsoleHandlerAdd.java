@@ -42,10 +42,6 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -55,7 +51,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class ConsoleHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class ConsoleHandlerAdd implements ModelAddOperationHandler {
 
     static final ConsoleHandlerAdd INSTANCE = new ConsoleHandlerAdd();
 
@@ -86,27 +82,22 @@ class ConsoleHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHan
         subModel.get(LEVEL).set(operation.get(LEVEL));
         subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    try {
-                        final ConsoleHandlerService service = new ConsoleHandlerService();
-                        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                        final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
-                        if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                        if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                        if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
-                        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                        serviceBuilder.install();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                }
-            }, resultHandler);
-
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            try {
+                final ConsoleHandlerService service = new ConsoleHandlerService();
+                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+                if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                serviceBuilder.install();
+            } catch (Throwable t) {
+                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+            }
         } else {
             resultHandler.handleResultComplete();
         }

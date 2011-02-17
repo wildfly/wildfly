@@ -24,6 +24,7 @@ package org.jboss.as.controller.operations;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeOperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -164,6 +165,10 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                 @Override
                 public ModelController getController() {
                     return overallContext.getController();
+                }
+
+                public RuntimeOperationContext getRuntimeContext() {
+                    return overallContext.getRuntimeContext();
                 }
             };
         }

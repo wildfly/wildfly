@@ -34,10 +34,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -46,7 +42,7 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry
  */
-public final class ThreadFactoryThreadNamePatternUpdate implements RuntimeOperationHandler, ModelUpdateOperationHandler {
+public final class ThreadFactoryThreadNamePatternUpdate implements ModelUpdateOperationHandler {
 
     private static final long serialVersionUID = 4253625376544201028L;
 
@@ -87,19 +83,16 @@ public final class ThreadFactoryThreadNamePatternUpdate implements RuntimeOperat
 
         model.get(CommonAttributes.THREAD_NAME_PATTERN).set(newValue);
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
-                    if (service == null) {
-                        throw new OperationFailedException(notConfigured(name));
-                    } else {
-                        final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
-                        threadFactoryService.setNamePattern(newNamePattern);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry()
+                .getService(ThreadsServices.threadFactoryName(name));
+            if (service == null) {
+                throw new OperationFailedException(notConfigured(name));
+            } else {
+                final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
+                threadFactoryService.setNamePattern(newNamePattern);
+            }
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

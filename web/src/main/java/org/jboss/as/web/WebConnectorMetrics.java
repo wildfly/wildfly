@@ -42,17 +42,13 @@ import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class WebConnectorMetrics implements ModelQueryOperationHandler, RuntimeOperationHandler {
+class WebConnectorMetrics implements ModelQueryOperationHandler {
 
     static WebConnectorMetrics INSTANCE = new WebConnectorMetrics();
 
@@ -64,28 +60,25 @@ class WebConnectorMetrics implements ModelQueryOperationHandler, RuntimeOperatio
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-                    final String name = address.getLastElement().getValue();
-                    final String attributeName = operation.require(NAME).asString();
+        if (context.getRuntimeContext() != null) {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String name = address.getLastElement().getValue();
+            final String attributeName = operation.require(NAME).asString();
 
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
-                    if (controller != null) {
-                        try {
-                            final Connector connector = (Connector) controller.getValue();
-                            final int port = connector.getPort();
-                            final ModelNode result = new ModelNode();
-                            result.set("" + getAttribute("http-" + port, attributeName));
-                            resultHandler.handleResultFragment(new String[0], result);
-                            resultHandler.handleResultComplete();
-                        } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set("failed to get metrics" + e.getMessage()));
-                        }
-                    }
+            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
+                .getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
+            if (controller != null) {
+                try {
+                    final Connector connector = (Connector) controller.getValue();
+                    final int port = connector.getPort();
+                    final ModelNode result = new ModelNode();
+                    result.set("" + getAttribute("http-" + port, attributeName));
+                    resultHandler.handleResultFragment(new String[0], result);
+                    resultHandler.handleResultComplete();
+                } catch (Exception e) {
+                    throw new OperationFailedException(new ModelNode().set("failed to get metrics" + e.getMessage()));
                 }
-            }, resultHandler);
+            }
         } else {
             resultHandler.handleResultFragment(NO_LOCATION, new ModelNode().set("no metrics available"));
             resultHandler.handleResultComplete();

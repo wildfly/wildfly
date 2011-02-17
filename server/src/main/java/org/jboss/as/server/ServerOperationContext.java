@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 

@@ -20,14 +20,9 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -38,7 +33,7 @@ import org.jboss.msc.service.ServiceController;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
  */
-public class ServerSocketBindingRemoveHandler extends SocketBindingRemoveHandler implements RuntimeOperationHandler {
+public class ServerSocketBindingRemoveHandler extends SocketBindingRemoveHandler {
 
     public static final ServerSocketBindingRemoveHandler INSTANCE = new ServerSocketBindingRemoveHandler();
 
@@ -48,17 +43,14 @@ public class ServerSocketBindingRemoveHandler extends SocketBindingRemoveHandler
     @Override
     protected OperationResult uninstallSocketBinding(final String name, ModelNode model, OperationContext context,
             ResultHandler resultHandler, ModelNode compensatingOp) {
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
-                    if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
-                    }
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
+                    .getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
+            if (controller != null) {
+                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+            } else {
+                resultHandler.handleResultComplete();
+            }
         } else {
             resultHandler.handleResultComplete();
         }

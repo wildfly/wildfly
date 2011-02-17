@@ -99,24 +99,7 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        if (context instanceof BootOperationContext) {
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            final ServiceTarget serviceTarget = updateContext.getServiceTarget();
-
-            ResourceAdapters resourceAdapters = buildResourceAdaptersObject(operation);
-            serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
-                    .setInitialMode(Mode.ACTIVE).install();
-
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS,
-                    new ResourceAdaptersAttachingProcessor(resourceAdapters));
-        }
-
+    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
         // Populate subModel
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
@@ -132,7 +115,6 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             }
         } else {
             if (operation.hasDefined(RESOURCEADAPTERS)) {
-
                 for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
                     for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
                         subModel.get(CONFIG_PROPERTIES, property.asProperty().getName()).set(property.asString());
@@ -145,7 +127,24 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
                 }
             }
         }
-        resultHandler.handleResultComplete();
+
+        if (context instanceof BootOperationContext) {
+            final BootOperationContext updateContext = (BootOperationContext) context;
+            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+
+            ResourceAdapters resourceAdapters = buildResourceAdaptersObject(operation);
+            serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
+                    .setInitialMode(Mode.ACTIVE).install();
+
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS, new ResourceAdaptersAttachingProcessor(resourceAdapters));
+            resultHandler.handleResultComplete();
+        } else {
+            resultHandler.handleResultComplete();
+        }
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(REMOVE);
+        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
     }
 

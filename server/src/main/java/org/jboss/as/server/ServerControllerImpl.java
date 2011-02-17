@@ -24,8 +24,7 @@ package org.jboss.as.server;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeOperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
@@ -65,7 +64,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContextImpl;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
@@ -128,7 +126,6 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
     private final ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final DeploymentRepository deploymentRepository;
     private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
-    private final Executor runtimeExecutor = new OrderedExecutor(Executors.newCachedThreadPool());
 
     ServerControllerImpl(final ServiceContainer container, final ServiceTarget serviceTarget, final ServerEnvironment serverEnvironment, final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository) {
         super(createCoreModel(), configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
@@ -282,22 +279,10 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
                 state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
                 return super.getOperationContext(subModel, operation, operationHandler);
             }
-        } else if (operationHandler instanceof RuntimeOperationHandler && ! (getState() == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
-            return new RuntimeContextImpl(subModel, getRegistry());
+        } else if (!(getState() == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
+            return new ServerOperationContextImpl(this, getRegistry(), subModel);
         } else {
             return super.getOperationContext(subModel, operation, operationHandler);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected OperationResult doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) throws OperationFailedException {
-        if (context instanceof BootOperationContext) {
-            return ((BootOperationHandler)operationHandler).execute(context, operation, resultHandler);
-        } else if (context instanceof RuntimeOperationContext) {
-            return ((RuntimeOperationHandler)operationHandler).execute(context, operation, resultHandler);
-        } else {
-            return super.doExecute(context, operation, operationHandler, resultHandler);
         }
     }
 
@@ -310,8 +295,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         }
     }
 
-    private class ServerOperationContextImpl extends OperationContextImpl implements ServerOperationContext {
-
+    private class ServerOperationContextImpl extends OperationContextImpl implements ServerOperationContext, RuntimeOperationContext {
         // -1 as initial value ensures the CAS in revertRestartRequired()
         // will never succeed unless restartRequired() is called
         private int ourStamp = -1;
@@ -347,9 +331,20 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         public synchronized void revertRestartRequired() {
             // If 'state' still has the state we last set in restartRequired(), change to RUNNING
             ServerControllerImpl.this.state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING,
-                        ourStamp, ServerControllerImpl.this.stamp.incrementAndGet());
+                    ourStamp, ServerControllerImpl.this.stamp.incrementAndGet());
         }
 
+        public RuntimeOperationContext getRuntimeContext() {
+            return this;
+        }
+
+        public ServiceTarget getServiceTarget() {
+            return serviceTarget;
+        }
+
+        public ServiceRegistry getServiceRegistry() {
+            return serviceRegistry;
+        }
     }
 
     private class BootContextImpl extends ServerOperationContextImpl implements BootOperationContext {
@@ -379,40 +374,6 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
             return serviceTarget;
         }
 
-        public ServiceRegistry getServiceRegistry() {
-            return serviceRegistry;
-        }
-    }
-
-    private class RuntimeContextImpl extends ServerOperationContextImpl implements RuntimeOperationContext {
-
-        private RuntimeContextImpl(final ModelNode subModel, final ModelNodeRegistration registry) {
-            super(ServerControllerImpl.this, registry, subModel);
-        }
-
-        public void executeRuntimeTask(final RuntimeTask runtimeTask, final ResultHandler resultHandler) {
-            final RuntimeTaskContext taskContext = new RuntimeTaskContextImpl();
-            runtimeExecutor.execute(new Runnable() {
-                public void run() {
-                    try {
-                        runtimeTask.execute(taskContext,resultHandler);
-                    } catch (OperationFailedException e) {
-                        resultHandler.handleFailed(e.getFailureDescription());
-                    } catch (Throwable t) {
-                        resultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                }
-            });
-        }
-    }
-
-    private class RuntimeTaskContextImpl implements RuntimeTaskContext {
-        @Override
-        public ServiceTarget getServiceTarget() {
-            return serviceTarget;
-        }
-
-        @Override
         public ServiceRegistry getServiceRegistry() {
             return serviceRegistry;
         }

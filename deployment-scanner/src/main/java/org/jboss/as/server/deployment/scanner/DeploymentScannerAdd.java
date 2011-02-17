@@ -23,7 +23,6 @@
 package org.jboss.as.server.deployment.scanner;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -35,10 +34,6 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -48,7 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author John E. Bailey
  * @author Emanuel Muckenhuber
  */
-class DeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class DeploymentScannerAdd implements ModelAddOperationHandler {
 
     static final DeploymentScannerAdd INSTANCE = new DeploymentScannerAdd();
 
@@ -82,14 +77,10 @@ class DeploymentScannerAdd implements ModelAddOperationHandler, RuntimeOperation
         subModel.get(CommonAttributes.SCAN_INTERVAL).set(interval);
         if(relativeTo != null) subModel.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
 
-        if(context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if(context.getRuntimeContext() != null) {
+            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

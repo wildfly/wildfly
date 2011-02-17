@@ -22,11 +22,8 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
@@ -41,8 +38,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.QueuelessOperationParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -56,7 +51,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class QueuelessThreadPoolAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
+public class QueuelessThreadPoolAdd implements ModelAddOperationHandler {
 
     static final OperationHandler INSTANCE = new QueuelessThreadPoolAdd();
 
@@ -83,21 +78,17 @@ public class QueuelessThreadPoolAdd implements RuntimeOperationHandler, ModelAdd
             model.get(HANDOFF_EXECUTOR).set(params.getHandoffExecutor());
         }
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    ServiceTarget target = context.getServiceTarget();
-                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-                    final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
+        if (context.getRuntimeContext() != null) {
+            ServiceTarget target = context.getRuntimeContext().getServiceTarget();
+            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+            final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
 
-                    //TODO add the handoffExceutor injection
+            //TODO add the handoffExceutor injection
 
-                    final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
-                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                    serviceBuilder.install();
-                }
-            }, resultHandler);
+            final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+            serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+            serviceBuilder.install();
         } else {
             resultHandler.handleResultComplete();
         }

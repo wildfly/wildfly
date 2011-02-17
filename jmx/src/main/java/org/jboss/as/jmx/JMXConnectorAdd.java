@@ -23,7 +23,6 @@
 package org.jboss.as.jmx;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -31,17 +30,13 @@ import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class JMXConnectorAdd implements ModelUpdateOperationHandler, RuntimeOperationHandler {
+class JMXConnectorAdd implements ModelUpdateOperationHandler {
 
     static final JMXConnectorAdd INSTANCE = new JMXConnectorAdd();
 
@@ -65,18 +60,13 @@ class JMXConnectorAdd implements ModelUpdateOperationHandler, RuntimeOperationHa
 
         final ModelNode compensatingOperation = Util.getEmptyOperation(JMXConnectorRemove.OPERATION_NAME, operation.require(OP_ADDR));
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-                    JMXConnectorService.addService(target, serverBinding, registryBinding);
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
+            JMXConnectorService.addService(target, serverBinding, registryBinding);
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }
-
         return new BasicOperationResult(compensatingOperation);
     }
 

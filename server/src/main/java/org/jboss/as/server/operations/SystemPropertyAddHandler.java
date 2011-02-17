@@ -20,13 +20,8 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,8 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  */
 public class SystemPropertyAddHandler
-    extends org.jboss.as.controller.operations.common.SystemPropertyAddHandler
-    implements RuntimeOperationHandler {
+    extends org.jboss.as.controller.operations.common.SystemPropertyAddHandler {
 
     public static final SystemPropertyAddHandler INSTANCE = new SystemPropertyAddHandler();
 
@@ -46,13 +40,9 @@ public class SystemPropertyAddHandler
 
     @Override
     protected OperationResult updateSystemProperty(final String name, final String value, OperationContext context, ResultHandler resultHandler, ModelNode compensating) {
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    System.setProperty(name, value);
-                    resultHandler.handleResultComplete();
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            System.setProperty(name, value);
+            resultHandler.handleResultComplete();
         } else {
             resultHandler.handleResultComplete();
         }

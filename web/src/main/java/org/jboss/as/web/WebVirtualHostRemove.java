@@ -23,7 +23,6 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -31,17 +30,13 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class WebVirtualHostRemove implements ModelRemoveOperationHandler, RuntimeOperationHandler {
+class WebVirtualHostRemove implements ModelRemoveOperationHandler {
 
     static final WebVirtualHostRemove INSTANCE = new WebVirtualHostRemove();
 
@@ -59,17 +54,14 @@ class WebVirtualHostRemove implements ModelRemoveOperationHandler, RuntimeOperat
         final ModelNode subModel = context.getSubModel();
         final ModelNode compensatingOperation = WebVirtualHostAdd.getAddOperation(operation.require(OP_ADDR), subModel);
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, final ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
-                    if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
-                    }
-                }
-            }, resultHandler);
+        if (context.getRuntimeContext() != null) {
+            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry()
+                .getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
+            if (service != null) {
+                service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+            } else {
+                resultHandler.handleResultComplete();
+            }
         } else {
             resultHandler.handleResultComplete();
         }

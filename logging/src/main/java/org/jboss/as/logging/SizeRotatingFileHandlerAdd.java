@@ -46,10 +46,6 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -60,7 +56,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler {
 
     static final SizeRotatingFileHandlerAdd INSTANCE = new SizeRotatingFileHandlerAdd();
 
@@ -95,36 +91,32 @@ class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler, RuntimeOpe
         subModel.get(MAX_BACKUP_INDEX).set(operation.get(MAX_BACKUP_INDEX));
         subModel.get(ROTATE_SIZE).set(operation.get(ROTATE_SIZE));
 
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    try {
-                        final SizeRotatingFileHandlerService service = new SizeRotatingFileHandlerService();
-                        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                        if (operation.has(FILE)) {
-                            if (operation.get(FILE).has(RELATIVE_TO)) {
-                                serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
-                            }
-                            service.setPath(operation.get(FILE, PATH).asString());
-                        }
-                        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                        final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
-                        if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                        if (operation.has(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                        if (operation.has(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
-                        if (operation.has(MAX_BACKUP_INDEX))
-                            service.setMaxBackupIndex(operation.get(MAX_BACKUP_INDEX).asInt());
-                        if (operation.has(ROTATE_SIZE))
-                            service.setRotateSize(operation.get(ROTATE_SIZE).asLong(DEFAULT_ROTATE_SIZE));
-                        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                        serviceBuilder.install();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            try {
+                final SizeRotatingFileHandlerService service = new SizeRotatingFileHandlerService();
+                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                if (operation.has(FILE)) {
+                    if (operation.get(FILE).has(RELATIVE_TO)) {
+                        serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
                     }
+                    service.setPath(operation.get(FILE, PATH).asString());
                 }
-            }, resultHandler);
+                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+                if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+                if (operation.has(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                if (operation.has(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                if (operation.has(MAX_BACKUP_INDEX))
+                    service.setMaxBackupIndex(operation.get(MAX_BACKUP_INDEX).asInt());
+                if (operation.has(ROTATE_SIZE))
+                    service.setRotateSize(operation.get(ROTATE_SIZE).asLong(DEFAULT_ROTATE_SIZE));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                serviceBuilder.install();
+            } catch (Throwable t) {
+                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+            }
         } else {
             resultHandler.handleResultComplete();
         }

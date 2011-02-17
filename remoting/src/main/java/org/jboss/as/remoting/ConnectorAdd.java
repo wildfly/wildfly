@@ -51,10 +51,6 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -74,7 +70,7 @@ import org.jboss.xnio.Sequence;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-public class ConnectorAdd implements RuntimeOperationHandler, ModelAddOperationHandler {
+public class ConnectorAdd implements ModelAddOperationHandler {
 
     static final OperationHandler INSTANCE = new ConnectorAdd();
 
@@ -89,30 +85,26 @@ public class ConnectorAdd implements RuntimeOperationHandler, ModelAddOperationH
         applyToModel(context.getSubModel(), operation);
 
         // Create the service.
-        if (context instanceof RuntimeOperationContext) {
-            RuntimeOperationContext.class.cast(context).executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
+        if (context.getRuntimeContext() != null) {
+            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
 
-                    final ConnectorService connectorService = new ConnectorService();
-                    connectorService.setOptionMap(createOptionMap(operation));
+            final ConnectorService connectorService = new ConnectorService();
+            connectorService.setOptionMap(createOptionMap(operation));
 
-                    // Register the service with the container and inject dependencies.
-                    final ServiceName connectorName = RemotingServices.connectorServiceName(name);
-                    try {
-                        target.addService(connectorName, connectorService)
-                                .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
-                                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                                .install();
+            // Register the service with the container and inject dependencies.
+            final ServiceName connectorName = RemotingServices.connectorServiceName(name);
+            try {
+                target.addService(connectorName, connectorService)
+                        .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
+                        .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                        .install();
 
-                        // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-                    } catch (ServiceRegistryException e) {
-                        throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-                    }
-                }
-            }, resultHandler);
+                // TODO create XNIO connector service from socket-binding, with dependency on connectorName
+            } catch (ServiceRegistryException e) {
+                throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+            }
         } else {
             resultHandler.handleResultComplete();
         }
