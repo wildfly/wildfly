@@ -16,3 +16,4 @@ test-output
 transaction.log
 # vim files
 *.swp
+/.gitk-tmp.*
