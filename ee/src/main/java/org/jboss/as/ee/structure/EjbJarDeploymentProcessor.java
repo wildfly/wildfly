@@ -70,6 +70,7 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
             VirtualFile ejbJarFile = resourceRoot.getRoot().getChild("META-INF/ejb-jar.xml");
             if (ejbJarFile.exists()) {
                 SubDeploymentMarker.mark(resourceRoot);
+                ModuleRootMarker.mark(resourceRoot);
             } else {
                 final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {
@@ -81,6 +82,7 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
                         //this is an EJB deployment
                         //TODO: we need to mark EJB sub deployments so the sub deployers know they are EJB deployments
                         SubDeploymentMarker.mark(resourceRoot);
+                        ModuleRootMarker.mark(resourceRoot);
                     }
                 }
             }

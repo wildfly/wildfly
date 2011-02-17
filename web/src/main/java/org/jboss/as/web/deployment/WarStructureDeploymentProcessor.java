@@ -34,6 +34,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -93,6 +94,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             // if this has not been overriden by jboss-structure.xml
             moduleSpecification.setChildFirst(true);
         }
+
+        // other sub deployments should not have access to classes in the war module
+        PrivateSubDeploymentMarker.mark(deploymentUnit);
 
         // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib
         deploymentResourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);

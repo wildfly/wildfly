@@ -46,12 +46,15 @@ public class SarSubDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        for(ResourceRoot resourceRoot : resourceRoots) {
-            final VirtualFile rootFile = resourceRoot.getRoot();
-            if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
-                final VirtualFile sarDescriptor = rootFile.getChild(ServiceDeploymentParsingProcessor.SERVICE_DESCRIPTOR_PATH);
-                if(sarDescriptor.exists()) {
-                    SubDeploymentMarker.mark(resourceRoot);
+        if (resourceRoots != null) {
+            for (ResourceRoot resourceRoot : resourceRoots) {
+                final VirtualFile rootFile = resourceRoot.getRoot();
+                if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                    final VirtualFile sarDescriptor = rootFile
+                            .getChild(ServiceDeploymentParsingProcessor.SERVICE_DESCRIPTOR_PATH);
+                    if (sarDescriptor.exists()) {
+                        SubDeploymentMarker.mark(resourceRoot);
+                    }
                 }
             }
         }

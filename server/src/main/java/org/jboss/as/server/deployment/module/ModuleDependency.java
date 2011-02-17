@@ -36,6 +36,19 @@ import org.jboss.modules.filter.PathFilter;
  */
 public final class ModuleDependency implements Serializable {
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ModuleDependency [");
+        if (identifier != null)
+            builder.append("identifier=").append(identifier).append(", ");
+        if (moduleLoader != null)
+            builder.append("moduleLoader=").append(moduleLoader).append(", ");
+        builder.append("export=").append(export).append(", optional=").append(optional).append(", importServices=").append(
+                importServices).append("]");
+        return builder.toString();
+    }
+
     private static final long serialVersionUID = 2749276798703740853L;
 
     private final ModuleLoader moduleLoader;

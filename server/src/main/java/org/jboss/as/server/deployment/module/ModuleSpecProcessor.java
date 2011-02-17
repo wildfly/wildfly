@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
@@ -82,7 +83,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
         if (additionalRoots != null)
             for (ResourceRoot additionalRoot : additionalRoots) {
-                if (ModuleRootMarker.isModuleRoot(additionalRoot)) {
+                if (ModuleRootMarker.isModuleRoot(additionalRoot) && !SubDeploymentMarker.isSubDeployment(additionalRoot)) {
                     resourceRoots.add(additionalRoot);
                 }
             }
@@ -148,7 +149,11 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 importBuilder.addFilter(PathFilters.getMetaInfFilter(), false);
                 importFilter = importBuilder.create();
                 if (exportFilters.isEmpty()) {
-                    exportFilter = PathFilters.acceptAll();
+                    if (dependency.isExport()) {
+                        exportFilter = PathFilters.acceptAll();
+                    } else {
+                        exportFilter = PathFilters.rejectAll();
+                    }
                 } else {
                     final MultiplePathFilterBuilder exportBuilder = PathFilters
                             .multiplePathFilterBuilder(dependency.isExport());
