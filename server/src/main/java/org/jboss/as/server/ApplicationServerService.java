@@ -42,7 +42,6 @@ import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -108,8 +107,8 @@ final class ApplicationServerService implements Service<Void> {
         } else {
             this.startTime = -1;
         }
-        final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime);
-        container.addListener(bootstrapListener);
+        final BootstrapListener bootstrapListener = new BootstrapListener(startTime, serviceTarget);
+        serviceTarget.addListener(bootstrapListener);
         myController.addListener(bootstrapListener);
         ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir());
         ServiceModuleLoader.addService(serviceTarget, configuration);
@@ -176,14 +175,14 @@ final class ApplicationServerService implements Service<Void> {
         private final AtomicBoolean done = new AtomicBoolean();
         private final AtomicInteger missingDeps = new AtomicInteger();
         private final EnumMap<ServiceController.Mode, AtomicInteger> map;
-        private final ServiceContainer serviceContainer;
+        private final ServiceTarget serviceTarget;
         private final long startTime;
         private final Set<ServiceName> missingDepsSet = Collections.synchronizedSet(new TreeSet<ServiceName>());
         private volatile boolean cancelLikely;
 
-        public BootstrapListener(final ServiceContainer serviceContainer, final long startTime) {
-            this.serviceContainer = serviceContainer;
+        public BootstrapListener(final long startTime, final ServiceTarget serviceTarget) {
             this.startTime = startTime;
+            this.serviceTarget = serviceTarget;
             final EnumMap<ServiceController.Mode, AtomicInteger> map = new EnumMap<ServiceController.Mode, AtomicInteger>(ServiceController.Mode.class);
             for (ServiceController.Mode mode : ServiceController.Mode.values()) {
                 map.put(mode, new AtomicInteger());
@@ -206,20 +205,20 @@ final class ApplicationServerService implements Service<Void> {
         public void serviceStarted(final ServiceController<?> controller) {
             started.incrementAndGet();
             controller.removeListener(this);
-            tick(controller.getServiceContainer());
+            tick();
         }
 
         @Override
         public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
             failed.incrementAndGet();
             controller.removeListener(this);
-            tick(controller.getServiceContainer());
+            tick();
         }
 
         @Override
         public void dependencyFailed(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
-            tick(controller.getServiceContainer());
+            tick();
         }
 
         @Override
@@ -240,29 +239,29 @@ final class ApplicationServerService implements Service<Void> {
         public void serviceRemoved(final ServiceController<?> controller) {
             cancelLikely = true;
             controller.removeListener(this);
-            tick(controller.getServiceContainer());
+            tick();
         }
 
         private void check() {
             int outstanding = this.outstanding.get();
             if (outstanding == missingDeps.get()) {
-                finish(serviceContainer, outstanding);
+                finish(outstanding);
             }
         }
 
-        private void tick(final ServiceContainer container) {
+        private void tick() {
             int outstanding = this.outstanding.decrementAndGet();
             if (outstanding != missingDeps.get()) {
                 return;
             }
-            finish(container, outstanding);
+            finish(outstanding);
         }
 
-        private void finish(final ServiceContainer container, final int outstanding) {
+        private void finish(final int outstanding) {
             if (done.getAndSet(true)) {
                 return;
             }
-            container.removeListener(this);
+            serviceTarget.removeListener(this);
             if (cancelLikely) {
                 return;
             }
