@@ -27,6 +27,8 @@ import java.util.Map;
 
 /**
  * A simple implementation of {@link Attachable} which may be used as a base class or on a standalone basis.
+ * <p>
+ * This class is thread safe, as all methods are synchronized.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -34,7 +36,7 @@ public class SimpleAttachable implements Attachable {
     private final Map<AttachmentKey<?>, Object> attachments = new HashMap<AttachmentKey<?>, Object>();
 
     /** {@inheritDoc} */
-    public boolean hasAttachment(AttachmentKey<?> key) {
+    public synchronized boolean hasAttachment(AttachmentKey<?> key) {
         if (key == null) {
             return false;
         }
@@ -42,7 +44,7 @@ public class SimpleAttachable implements Attachable {
     }
 
     /** {@inheritDoc} */
-    public <T> T getAttachment(final AttachmentKey<T> key) {
+    public synchronized <T> T getAttachment(final AttachmentKey<T> key) {
         if (key == null) {
             return null;
         }
@@ -50,7 +52,7 @@ public class SimpleAttachable implements Attachable {
     }
 
     /** {@inheritDoc} */
-    public <T> T putAttachment(final AttachmentKey<T> key, final T value) {
+    public synchronized <T> T putAttachment(final AttachmentKey<T> key, final T value) {
         if (key == null) {
             throw new IllegalArgumentException("key is null");
         }
@@ -58,7 +60,7 @@ public class SimpleAttachable implements Attachable {
     }
 
     /** {@inheritDoc} */
-    public <T> T removeAttachment(final AttachmentKey<T> key) {
+    public synchronized <T> T removeAttachment(final AttachmentKey<T> key) {
         if (key == null) {
             return null;
         }
@@ -66,7 +68,7 @@ public class SimpleAttachable implements Attachable {
     }
 
     /** {@inheritDoc} */
-    public <T> void addToAttachmentList(final AttachmentKey<AttachmentList<T>> key, final T value) {
+    public synchronized <T> void addToAttachmentList(final AttachmentKey<AttachmentList<T>> key, final T value) {
         if (key != null) {
             final Map<AttachmentKey<?>, Object> attachments = this.attachments;
             final AttachmentList<T> list = key.cast(attachments.get(key));
