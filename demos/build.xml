@@ -21,8 +21,12 @@
   -->
 
 <project name="as-examples" basedir="." default="example">
+    <target name="use-maven" unless="mvn.run">
+        <fail>You must use maven to run the demos. Run 'mvn install' for further help.</fail>
+        
+    </target>
 
-    <target name="usage" unless="example">
+    <target name="usage" unless="example" depends="use-maven">
         <echo>To run an example:</echo>
         <echo>1) In a separate console window,start either a standalone JBoss AS instance or a JBoss AS domain</echo>
         <echo>2) Run mvn package -Dexample=&lt;example.name&gt; where "exammple.name is the name of the example</echo>

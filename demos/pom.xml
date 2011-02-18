@@ -129,6 +129,10 @@
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
   </dependencies>
+  
+  <properties>
+     <mvn.run>true</mvn.run>
+  </properties>
 
   <build>
     <plugins>
