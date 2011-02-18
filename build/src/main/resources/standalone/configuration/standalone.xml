@@ -136,11 +136,11 @@
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <jaas>
-                <application-policy name="other">
+                <security-domain name="other">
                     <authentication>
                         <login-module code="UsersRoles" flag="required"/>
                     </authentication>
-                </application-policy>
+                </security-domain>
             </jaas>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>

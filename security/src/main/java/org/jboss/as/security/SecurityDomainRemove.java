@@ -25,14 +25,11 @@ package org.jboss.as.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.server.RuntimeOperationContext;
 import org.jboss.as.server.RuntimeOperationHandler;
@@ -41,43 +38,38 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.security.config.ApplicationPolicyRegistration;
 
 /**
- * Add JAAS Application Policy Operation.
+ * Remove a security domain configuration.
  *
+ * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Brian Stansberry
  */
-class JaasApplicationPolicyRemove implements ModelAddOperationHandler, RuntimeOperationHandler, DescriptionProvider {
+class SecurityDomainRemove implements ModelAddOperationHandler, RuntimeOperationHandler {
 
     static final String OPERATION_NAME = REMOVE;
 
-    static final JaasApplicationPolicyRemove INSTANCE = new JaasApplicationPolicyRemove();
+    static final SecurityDomainRemove INSTANCE = new SecurityDomainRemove();
 
     /** Private to ensure a singleton. */
-    private JaasApplicationPolicyRemove() {
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return SecuritySubsystemDescriptions.getJaasApplicationPolicyRemove(locale);
+    private SecurityDomainRemove() {
     }
 
     @Override
     public Cancellable execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
         ModelNode opAddr = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
-        String policyName = address.getLastElement().getValue();
+        String securityDomain = address.getLastElement().getValue();
 
         // Create the compensating operation
-        final ModelNode compensatingOperation = JaasApplicationPolicyAdd.getRecreateOperation(opAddr, context.getSubModel());
+        final ModelNode compensatingOperation = SecurityDomainAdd.getRecreateOperation(opAddr, context.getSubModel());
 
         if (context instanceof RuntimeOperationContext) {
             final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-         // remove jaas configuration service
+            // remove security domain
             final ServiceController<?> jaasConfigurationService = updateContext.getServiceRegistry().getService(
                     JaasConfigurationService.SERVICE_NAME);
             if (jaasConfigurationService != null) {
                 ApplicationPolicyRegistration config = (ApplicationPolicyRegistration) jaasConfigurationService.getValue();
-                config.removeApplicationPolicy(policyName);
+                config.removeApplicationPolicy(securityDomain);
             }
         }
 

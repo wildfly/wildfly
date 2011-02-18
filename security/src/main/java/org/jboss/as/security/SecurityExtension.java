@@ -31,8 +31,6 @@ import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLAS
 import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
 import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -41,8 +39,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -51,7 +47,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * The security extension
+ * The security extension.
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -68,28 +64,23 @@ public class SecurityExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-
         log.debug("Initializing Security Extension");
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return SecuritySubsystemDescriptions.getSubsystemRoot(locale);
-            }
-        });
-        registration.registerOperationHandler(ADD, SecuritySubsystemAdd.INSTANCE, SecuritySubsystemAdd.INSTANCE,
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemDescriptions.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, SecuritySubsystemAdd.INSTANCE, SecuritySubsystemDescriptions.SUBSYSTEM_ADD,
                 false);
+        registration.registerOperationHandler(DESCRIBE, SecurityDescribeHandler.INSTANCE,
+                SecuritySubsystemDescriptions.SUBSYSTEM_DESCRIBE, false);
 
-        final ModelNodeRegistration jaas = registration.registerSubModel(PathElement.pathElement(CommonAttributes.JAAS_APPLICATION_POLICY), new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return SecuritySubsystemDescriptions.getJaasApplicationPolicy(locale);
-            }
-        });
-        jaas.registerOperationHandler(JaasApplicationPolicyAdd.OPERATION_NAME, JaasApplicationPolicyAdd.INSTANCE, JaasApplicationPolicyAdd.INSTANCE, false);
-        jaas.registerOperationHandler(JaasApplicationPolicyRemove.OPERATION_NAME, JaasApplicationPolicyRemove.INSTANCE, JaasApplicationPolicyRemove.INSTANCE, false);
-        registration.registerOperationHandler(DESCRIBE, SecurityDescribeHandler.INSTANCE, SecurityDescribeHandler.INSTANCE, false);
+        // security domains
+        final ModelNodeRegistration securityDomain = registration.registerSubModel(PathElement
+                .pathElement(CommonAttributes.SECURITY_DOMAIN), SecuritySubsystemDescriptions.SECURITY_DOMAIN);
+        securityDomain.registerOperationHandler(SecurityDomainAdd.OPERATION_NAME, SecurityDomainAdd.INSTANCE,
+                SecuritySubsystemDescriptions.SECURITY_DOMAIN_ADD, false);
+        securityDomain.registerOperationHandler(SecurityDomainRemove.OPERATION_NAME, SecurityDomainRemove.INSTANCE,
+                SecuritySubsystemDescriptions.SECURITY_DOMAIN_REMOVE, false);
+
         subsystem.registerXMLElementWriter(PARSER);
     }
 
@@ -98,8 +89,9 @@ public class SecurityExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), PARSER);
     }
 
-    private static class SecurityDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class SecurityDescribeHandler implements ModelQueryOperationHandler {
         static final SecurityDescribeHandler INSTANCE = new SecurityDescribeHandler();
+
         @Override
         public Cancellable execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             final ModelNode model = context.getSubModel();
@@ -125,11 +117,6 @@ public class SecurityExtension implements Extension {
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
             resultHandler.handleResultComplete(null);
             return Cancellable.NULL;
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
 
     }

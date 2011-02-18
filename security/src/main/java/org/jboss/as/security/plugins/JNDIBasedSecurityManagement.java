@@ -56,11 +56,17 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private transient ConcurrentHashMap<String, SecurityDomainContext> securityMgrMap = new ConcurrentHashMap<String, SecurityDomainContext>();
     private transient ConcurrentHashMap<String, AuthenticationManager> authMgrMap = new ConcurrentHashMap<String, AuthenticationManager>();
     private transient ConcurrentHashMap<String, AuthorizationManager> authzMgrMap = new ConcurrentHashMap<String, AuthorizationManager>();
+    private transient ConcurrentHashMap<String, AuditManager> auditMgrMap = new ConcurrentHashMap<String, AuditManager>();
+    private transient ConcurrentHashMap<String, IdentityTrustManager> idmMgrMap = new ConcurrentHashMap<String, IdentityTrustManager>();
+    private transient ConcurrentHashMap<String, MappingManager> mappingMgrMap = new ConcurrentHashMap<String, MappingManager>();
 
     private String authenticationManagerClassName;
     private boolean deepCopySubjectMode;
     private String callbackHandlerClassName;
     private String authorizationManagerClassName;
+    private String auditManagerClassName;
+    private String identityTrustManagerClassName;
+    private String mappingManagerClassName;
 
     // creating a singleton
     private JNDIBasedSecurityManagement() {
@@ -76,8 +82,17 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     public AuditManager getAuditManager(String securityDomain) {
-        // TODO Auto-generated method stub
-        return null;
+        AuditManager am = null;
+        try {
+            am = auditMgrMap.get(securityDomain);
+            if (am == null) {
+                am = (AuditManager) lookUpJNDI(securityDomain + "/auditMgr");
+                auditMgrMap.put(securityDomain, am);
+            }
+        } catch (Exception e) {
+            log.trace("Exception getting AuditManager for domain=" + securityDomain, e);
+        }
+        return am;
     }
 
     /** {@inheritDoc} */
@@ -99,10 +114,10 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     public AuthorizationManager getAuthorizationManager(String securityDomain) {
         AuthorizationManager am = null;
         try {
-            am = this.authzMgrMap.get(securityDomain);
+            am = authzMgrMap.get(securityDomain);
             if (am == null) {
                 am = (AuthorizationManager) lookUpJNDI(securityDomain + "/authorizationMgr");
-                this.authzMgrMap.put(securityDomain, am);
+                authzMgrMap.put(securityDomain, am);
             }
         } catch (Exception e) {
             log.trace("Exception getting AuthorizationManager for domain=", e);
@@ -112,14 +127,32 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     public IdentityTrustManager getIdentityTrustManager(String securityDomain) {
-        // TODO Auto-generated method stub
-        return null;
+        IdentityTrustManager itm = null;
+        try {
+            itm = idmMgrMap.get(securityDomain);
+            if (itm == null) {
+                itm = (IdentityTrustManager) lookUpJNDI(securityDomain + "/identityTrustMgr");
+                idmMgrMap.put(securityDomain, itm);
+            }
+        } catch (Exception e) {
+            log.trace("Exception getting IdentityTrustManager for domain=" + securityDomain, e);
+        }
+        return itm;
     }
 
     /** {@inheritDoc} */
     public MappingManager getMappingManager(String securityDomain) {
-        // TODO Auto-generated method stub
-        return null;
+        MappingManager mm = null;
+        try {
+            mm = mappingMgrMap.get(securityDomain);
+            if (mm == null) {
+                mm = (MappingManager) lookUpJNDI(securityDomain + "/mappingMgr");
+                mappingMgrMap.put(securityDomain, mm);
+            }
+        } catch (Exception e) {
+            log.trace("Exception getting MappingManager for domain=" + securityDomain, e);
+        }
+        return mm;
     }
 
     public String getAuthenticationManagerClassName() {
@@ -152,6 +185,30 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     public void setAuthorizationManagerClassName(String authorizationManagerClassName) {
         this.authorizationManagerClassName = authorizationManagerClassName;
+    }
+
+    public String getAuditManagerClassName() {
+        return auditManagerClassName;
+    }
+
+    public void setAuditManagerClassName(String auditManagerClassName) {
+        this.auditManagerClassName = auditManagerClassName;
+    }
+
+    public String getIdentityTrustManagerClassName() {
+        return identityTrustManagerClassName;
+    }
+
+    public void setIdentityTrustManagerClassName(String identityTrustManagerClassName) {
+        this.identityTrustManagerClassName = identityTrustManagerClassName;
+    }
+
+    public String getMappingManagerClassName() {
+        return mappingManagerClassName;
+    }
+
+    public void setMappingManagerClassName(String mappingManagerClassName) {
+        this.mappingManagerClassName = mappingManagerClassName;
     }
 
     /**
@@ -196,6 +253,9 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
         SecurityDomainContext securityDomainContext = new SecurityDomainContext(am, null);
 
         securityDomainContext.setAuthorizationManager(createAuthorizationManager(securityDomain));
+        securityDomainContext.setAuditMgr(createAuditManager(securityDomain));
+        securityDomainContext.setIdentityTrustMgr(createIdentityTrustManager(securityDomain));
+        securityDomainContext.setMappingMgr(createMappingManager(securityDomain));
         return securityDomainContext;
     }
 
@@ -241,6 +301,60 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
         Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
         return (AuthorizationManager) ctr.newInstance(new Object[] { securityDomain });
+    }
+
+    /**
+     * Creates an {@code AuditManager}
+     *
+     * @param securityDomain name of the security domain
+     * @return an instance of {@code AuditManager}
+     * @throws Exception if creation fails
+     */
+    private AuditManager createAuditManager(String securityDomain) throws Exception {
+        int i = auditManagerClassName.lastIndexOf(":");
+        if (i == -1)
+            throw new IllegalArgumentException("Missing module name for the audit manager class");
+        String moduleSpec = auditManagerClassName.substring(0, i);
+        String className = auditManagerClassName.substring(i + 1);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
+        return (AuditManager) ctr.newInstance(new Object[] { securityDomain });
+    }
+
+    /**
+     * Creates an {@code IdentityTrustManager}
+     *
+     * @param securityDomain name of the security domain
+     * @return an instance of {@code IdentityTrustManager}
+     * @throws Exception if creation fails
+     */
+    private IdentityTrustManager createIdentityTrustManager(String securityDomain) throws Exception {
+        int i = identityTrustManagerClassName.lastIndexOf(":");
+        if (i == -1)
+            throw new IllegalArgumentException("Missing module name for the identity trust manager class");
+        String moduleSpec = identityTrustManagerClassName.substring(0, i);
+        String className = identityTrustManagerClassName.substring(i + 1);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
+        return (IdentityTrustManager) ctr.newInstance(new Object[] { securityDomain });
+    }
+
+    /**
+     * Creates an {@code MappingManager}
+     *
+     * @param securityDomain name of the security domain
+     * @return an instance of {@code MappingManager}
+     * @throws Exception if creation fails
+     */
+    private MappingManager createMappingManager(String securityDomain) throws Exception {
+        int i = mappingManagerClassName.lastIndexOf(":");
+        if (i == -1)
+            throw new IllegalArgumentException("Missing module name for the mapping manager class");
+        String moduleSpec = mappingManagerClassName.substring(0, i);
+        String className = mappingManagerClassName.substring(i + 1);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
+        return (MappingManager) ctr.newInstance(new Object[] { securityDomain });
     }
 
     /**

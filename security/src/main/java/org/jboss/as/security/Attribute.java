@@ -34,14 +34,20 @@ public enum Attribute {
     // must be first
     UNKNOWN(null),
 
+    AUDIT_MANAGER_CLASS_NAME("audit-manager-class-name"),
     AUTHENTICATION_MANAGER_CLASS_NAME("authentication-manager-class-name"),
+    AUTHORIZATION_MANAGER_CLASS_NAME("authorization-manager-class-name"),
     CODE("code"),
     DEEP_COPY_SUBJECT_MODE("deep-copy-subject-mode"),
     DEFAULT_CALLBACK_HANDLER_CLASS_NAME("default-callback-handler-class-name"),
     EXTENDS("extends"),
     FLAG("flag"),
+    IDENTITY_TRUST_MANAGER_CLASS_NAME("identity-trust-manager-class-name"),
+    LOGIN_MODULE_STACK_REF("login-module-stack-ref"),
+    MAPPING_MANAGER_CLASS_NAME("mapping-manager-class-name"),
     NAME("name"),
     SUBJECT_FACTORY_CLASS_NAME("subject-factory-class-name"),
+    TYPE("type"),
     VALUE("value");
 
     private final String name;

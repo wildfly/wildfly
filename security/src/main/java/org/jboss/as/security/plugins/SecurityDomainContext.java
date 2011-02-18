@@ -84,11 +84,11 @@ public class SecurityDomainContext {
         else if (name.equals(AUTHORIZATION_MGR))
             binding = getAuthorizationManager();
         else if (name.equals(AUDIT_MGR))
-            binding = this.getAuditMgr();
+            binding = getAuditMgr();
         else if (name.equals(MAPPING_MGR))
-            binding = this.getMappingMgr();
+            binding = getMappingMgr();
         else if (name.equals(IDENTITY_TRUST_MGR))
-            binding = this.getIdentityTrustMgr();
+            binding = getIdentityTrustMgr();
         else if (name.equals(AUTH_CACHE))
             binding = authenticationCache;
         else if (name.equals(DOMAIN_CONTEXT))

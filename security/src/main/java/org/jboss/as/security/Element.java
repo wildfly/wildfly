@@ -35,18 +35,25 @@ enum Element {
     UNKNOWN(null),
 
     ACL("acl"),
-    APPLICATION_POLICY("application-policy"),
+    ACL_MODULE("acl-module"),
     AUDIT("audit"),
+    AUTH_MODULE("auth-module"),
     AUTHENTICATION("authentication"),
     AUTHENTICATION_JASPI("authentication-jaspi"),
     AUTHORIZATION("authorization"),
     IDENTITY_TRUST("identity-trust"),
     JAAS("jaas"),
     LOGIN_MODULE("login-module"),
+    LOGIN_MODULE_STACK("login-module-stack"),
     MAPPING("mapping"),
+    MAPPING_MODULE("mapping-module"),
     MODULE_OPTION("module-option"),
+    POLICY_MODULE("policy-module"),
+    PROVIDER_MODULE("provider-module"),
+    SECURITY_DOMAIN("security-domain"),
     SECURITY_MANAGEMENT("security-management"),
-    SUBJECT_FACTORY("subject-factory");
+    SUBJECT_FACTORY("subject-factory"),
+    TRUST_MODULE("trust-module");
 
     private final String name;
 

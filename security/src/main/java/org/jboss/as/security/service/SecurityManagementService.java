@@ -51,14 +51,24 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     private final String authorizationManagerClassName;
 
+    private final String auditManagerClassName;
+
+    private final String identityTrustManagerClassName;
+
+    private final String mappingManagerClassName;
+
     private ISecurityManagement securityManagement;
 
     public SecurityManagementService(String authenticationManagerClassName, boolean deepCopySubjectMode,
-            String callbackHandlerClassName, String authorizationManagerClassName) {
+            String callbackHandlerClassName, String authorizationManagerClassName, String auditManagerClassName,
+            String identityTrustManagerClassName, String mappingManagerClassName) {
         this.authenticationManagerClassName = authenticationManagerClassName;
         this.deepCopySubjectMode = deepCopySubjectMode;
         this.callbackHandlerClassName = callbackHandlerClassName;
         this.authorizationManagerClassName = authorizationManagerClassName;
+        this.auditManagerClassName = auditManagerClassName;
+        this.identityTrustManagerClassName = identityTrustManagerClassName;
+        this.mappingManagerClassName = mappingManagerClassName;
     }
 
     /** {@inheritDoc} */
@@ -72,6 +82,9 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
         securityManagement.setDeepCopySubjectMode(deepCopySubjectMode);
         securityManagement.setCallbackHandlerClassName(callbackHandlerClassName);
         securityManagement.setAuthorizationManagerClassName(authorizationManagerClassName);
+        securityManagement.setAuditManagerClassName(auditManagerClassName);
+        securityManagement.setIdentityTrustManagerClassName(identityTrustManagerClassName);
+        securityManagement.setMappingManagerClassName(mappingManagerClassName);
         this.securityManagement = securityManagement;
     }
 

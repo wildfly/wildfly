@@ -23,13 +23,15 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.AUTHORIZATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
 import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.JAAS_APPLICATION_POLICY;
+import static org.jboss.as.security.CommonAttributes.IDENTITY_TRUST_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.MAPPING_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.SECURITY_DOMAIN;
 import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
-
-import java.util.Locale;
 
 import javax.naming.Context;
 import javax.naming.Reference;
@@ -39,7 +41,6 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.service.JavaContextService;
 import org.jboss.as.security.context.SecurityDomainObjectFactory;
@@ -61,7 +62,10 @@ import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.login.XMLLoginConfigImpl;
 import org.jboss.security.plugins.JBossAuthorizationManager;
 import org.jboss.security.plugins.JBossSecuritySubjectFactory;
+import org.jboss.security.plugins.audit.JBossAuditManager;
 import org.jboss.security.plugins.auth.JaasSecurityManagerBase;
+import org.jboss.security.plugins.identitytrust.JBossIdentityTrustManager;
+import org.jboss.security.plugins.mapping.JBossMappingManager;
 
 /**
  * Add Security Subsystem Operation.
@@ -70,8 +74,7 @@ import org.jboss.security.plugins.auth.JaasSecurityManagerBase;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry
  */
-class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHandler, DescriptionProvider {
-
+class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     private static final String AUTHENTICATION_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot()
             + ":" + JaasSecurityManagerBase.class.getName();
@@ -81,6 +84,16 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
 
     private static final String AUTHORIZATION_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot()
             + ":" + JBossAuthorizationManager.class.getName();
+
+    private static final String AUDIT_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot() + ":"
+            + JBossAuditManager.class.getName();
+
+    private static final String IDENTITY_TRUST_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot()
+            + ":" + JBossIdentityTrustManager.class.getName();
+
+    private static final String MAPPING_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot() + ":"
+            + JBossMappingManager.class.getName();
+
     private static final boolean DEFAULT_DEEP_COPY_OPERATION_MODE = false;
 
     private static final String SUBJECT_FACTORY = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot() + ":"
@@ -88,8 +101,8 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
 
     static final SecuritySubsystemAdd INSTANCE = new SecuritySubsystemAdd();
 
+    /** Private to ensure singleton. */
     private SecuritySubsystemAdd() {
-        // Private to ensure a singleton.
     }
 
     @Override
@@ -97,15 +110,19 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         // Create the compensating operation
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-        String authManagerClassName = "default";
+        String authenticationManagerClassName = "default";
         String callbackHandlerClassName = "default";
         boolean deepCopySubject = DEFAULT_DEEP_COPY_OPERATION_MODE;
         String subjectFactoryClassName = "default";
+        String authorizationManagerClassName = "default";
+        String auditManagerClassName = "default";
+        String identityTrustManagerClassName = "default";
+        String mappingManagerClassName = "default";
 
         final ModelNode subModel = context.getSubModel();
         if (operation.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
-            authManagerClassName = operation.get(AUTHENTICATION_MANAGER_CLASS_NAME).asString();
-            subModel.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(authManagerClassName);
+            authenticationManagerClassName = operation.get(AUTHENTICATION_MANAGER_CLASS_NAME).asString();
+            subModel.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(authenticationManagerClassName);
         }
         if (operation.hasDefined(DEEP_COPY_SUBJECT_MODE)) {
             deepCopySubject = operation.get(DEEP_COPY_SUBJECT_MODE).asBoolean();
@@ -117,41 +134,70 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         }
         if (operation.hasDefined(SUBJECT_FACTORY_CLASS_NAME)) {
             subjectFactoryClassName = operation.get(SUBJECT_FACTORY_CLASS_NAME).asString();
-            subModel.get(SUBJECT_FACTORY_CLASS_NAME).set(SUBJECT_FACTORY_CLASS_NAME);
+            subModel.get(SUBJECT_FACTORY_CLASS_NAME).set(subjectFactoryClassName);
         }
-        subModel.get(JAAS_APPLICATION_POLICY).setEmptyObject();
+        if (operation.hasDefined(AUTHORIZATION_MANAGER_CLASS_NAME)) {
+            authorizationManagerClassName = operation.get(AUTHORIZATION_MANAGER_CLASS_NAME).asString();
+            subModel.get(AUTHORIZATION_MANAGER_CLASS_NAME).set(authorizationManagerClassName);
+        }
+        if (operation.hasDefined(AUDIT_MANAGER_CLASS_NAME)) {
+            auditManagerClassName = operation.get(AUDIT_MANAGER_CLASS_NAME).asString();
+            subModel.get(AUDIT_MANAGER_CLASS_NAME).set(auditManagerClassName);
+        }
+        if (operation.hasDefined(IDENTITY_TRUST_MANAGER_CLASS_NAME)) {
+            identityTrustManagerClassName = operation.get(IDENTITY_TRUST_MANAGER_CLASS_NAME).asString();
+            subModel.get(IDENTITY_TRUST_MANAGER_CLASS_NAME).set(identityTrustManagerClassName);
+        }
+        if (operation.hasDefined(MAPPING_MANAGER_CLASS_NAME)) {
+            mappingManagerClassName = operation.get(MAPPING_MANAGER_CLASS_NAME).asString();
+            subModel.get(MAPPING_MANAGER_CLASS_NAME).set(mappingManagerClassName);
+        }
+        subModel.get(SECURITY_DOMAIN).setEmptyObject();
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
 
-            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE, new SecurityDependencyProcessor());
+            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE,
+                    new SecurityDependencyProcessor());
 
             final ServiceTarget target = updateContext.getServiceTarget();
 
             // add bootstrap service
             final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
-            target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService).setInitialMode(
+                    ServiceController.Mode.ACTIVE).install();
 
             // add service to bind SecurityDomainObjectFactory to JNDI
             final Reference reference = SecurityDomainObjectFactory.createReference("JSM");
             final JaasBinderService binderService = new JaasBinderService(Values.immediateValue(reference));
-            target.addService(JaasBinderService.SERVICE_NAME, binderService)
-                    .addDependency(JavaContextService.SERVICE_NAME, Context.class, binderService.getContextInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            target.addService(JaasBinderService.SERVICE_NAME, binderService).addDependency(JavaContextService.SERVICE_NAME,
+                    Context.class, binderService.getContextInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // add security management service
-            if ("default".equals(authManagerClassName)) {
-                authManagerClassName = AUTHENTICATION_MANAGER;
+            if ("default".equals(authenticationManagerClassName)) {
+                authenticationManagerClassName = AUTHENTICATION_MANAGER;
             }
             if ("default".equals(callbackHandlerClassName)) {
                 callbackHandlerClassName = CALLBACK_HANDLER;
             }
+            if ("default".equals(authorizationManagerClassName)) {
+                authorizationManagerClassName = AUTHORIZATION_MANAGER;
+            }
+            if ("default".equals(auditManagerClassName)) {
+                auditManagerClassName = AUDIT_MANAGER;
+            }
+            if ("default".equals(identityTrustManagerClassName)) {
+                identityTrustManagerClassName = IDENTITY_TRUST_MANAGER;
+            }
+            if ("default".equals(mappingManagerClassName)) {
+                mappingManagerClassName = MAPPING_MANAGER;
+            }
 
             final SecurityManagementService securityManagementService = new SecurityManagementService(
-                    authManagerClassName, deepCopySubject, callbackHandlerClassName, AUTHORIZATION_MANAGER);
-            target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                    authenticationManagerClassName, deepCopySubject, callbackHandlerClassName, authorizationManagerClassName,
+                    auditManagerClassName, identityTrustManagerClassName, mappingManagerClassName);
+            target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService).setInitialMode(
+                    ServiceController.Mode.ACTIVE).install();
 
             // add subject factory service
             if ("default".equals(subjectFactoryClassName))
@@ -160,7 +206,8 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
             final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(subjectFactoryClassName);
             target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService).addDependency(
                     SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                    subjectFactoryService.getSecurityManagementInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
+                    subjectFactoryService.getSecurityManagementInjector()).setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
 
             // add jaas configuration service
             Configuration loginConfig = XMLLoginConfigImpl.getInstance();
@@ -174,8 +221,4 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         return Cancellable.NULL;
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return SecuritySubsystemDescriptions.getSubsystemAdd(locale);
-    }
 }

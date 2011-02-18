@@ -29,10 +29,16 @@ package org.jboss.as.security;
  */
 interface CommonAttributes {
 
+    String AUDIT_MANAGER_CLASS_NAME = "audit-manager-class-name";
     String AUTHENTICATION_MANAGER_CLASS_NAME = "authentication-manager-class-name";
+    String AUTHORIZATION_MANAGER_CLASS_NAME = "authorization-manager-class-name";
     String DEEP_COPY_SUBJECT_MODE = "deep-copy-subject-mode";
     String DEFAULT_CALLBACK_HANDLER_CLASS_NAME = "default-callback-handler-class-name";
-    String JAAS_APPLICATION_POLICY = "jaas-application-policy";
+    String IDENTITY_TRUST_MANAGER_CLASS_NAME = "identity-trust-manager-class-name";
+    String MAPPING_MANAGER_CLASS_NAME = "mapping-manager-class-name";
     String MODULE_OPTIONS = "module-options";
+    String SECURITY_MANAGEMENT = "security-management";
+    String SECURITY_DOMAIN = "security-domain";
+    String SUBJECT_FACTORY = "subject-factory";
     String SUBJECT_FACTORY_CLASS_NAME = "subject-factory-class-name";
 }

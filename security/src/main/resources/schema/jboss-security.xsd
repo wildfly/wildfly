@@ -64,12 +64,28 @@
                     The optional "default-callback-handler-class-name" specifies a global class name for the
                     CallbackHandler implementation to be used with login modules. To use the container default set the
                     value to "default".
+                    
+                    The optional "authorization-manager-class-name" attribute specifies the AuthorizationManager
+                    implementation class name to use. To use the container default set the value to "default".
+                    
+                    The optional "audit-manager-class-name" attribute specifies the AuditManager
+                    implementation class name to use. To use the container default set the value to "default".
+                    
+                    The optional "identity-trust-manager-class-name" attribute specifies the IdentityTrustManager
+                    implementation class name to use. To use the container default set the value to "default".
+                    
+                    The optional "mapping-manager-class-name" attribute specifies the MappingManager
+                    implementation class name to use. To use the container default set the value to "default".
                 ]]>
          </xs:documentation>
       </xs:annotation>
       <xs:attribute name="authentication-manager-class-name" type="xs:string" use="optional"/>
       <xs:attribute name="deep-copy-subject-mode" type="xs:boolean" use="optional"/>
       <xs:attribute name="default-callback-handler-class-name" type="xs:string" use="optional"/>
+      <xs:attribute name="authorization-manager-class-name" type="xs:string" use="optional"/>
+      <xs:attribute name="audit-manager-class-name" type="xs:string" use="optional"/>
+      <xs:attribute name="identity-trust-manager-class-name" type="xs:string" use="optional"/>
+      <xs:attribute name="mapping-manager-class-name" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <!-- The subject factory element -->
@@ -362,7 +378,7 @@
       <xs:annotation>
          <xs:documentation>
                <![CDATA[
-                    Auudit module configuration.
+                    Audit module configuration.
                 ]]>
          </xs:documentation>
       </xs:annotation>

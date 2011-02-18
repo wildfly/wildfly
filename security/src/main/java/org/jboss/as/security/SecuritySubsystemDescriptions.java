@@ -25,11 +25,14 @@ package org.jboss.as.security;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Subsystem descriptions for the security subsystem.
  *
+ * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry
  */
@@ -37,45 +40,67 @@ class SecuritySubsystemDescriptions {
 
     static final String RESOURCE_NAME = SecuritySubsystemDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelNode getSubsystemRoot(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
-        final ModelNode node = new ModelNode();
-        // TODO
-        return node;
-    }
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
 
-    static final ModelNode getSubsystemAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode subsystem = new ModelNode();
 
-        final ModelNode node = new ModelNode();
-        // TODO
-        return node;
-    }
+            return subsystem;
+        }
+    };
 
-    static final ModelNode getJaasApplicationPolicy(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
-        final ModelNode node = new ModelNode();
-        // TODO
-        return node;
-    }
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
 
-    static final ModelNode getJaasApplicationPolicyAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode subsystem = new ModelNode();
 
-        final ModelNode node = new ModelNode();
-        // TODO
-        return node;
-    }
+            return subsystem;
+        }
+    };
 
-    static final ModelNode getJaasApplicationPolicyRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
 
-        final ModelNode node = new ModelNode();
-        // TODO
-        return node;
-    }
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+    };
+
+    static final DescriptionProvider SECURITY_DOMAIN = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode subsystem = new ModelNode();
+
+            return subsystem;
+        }
+    };
+
+    static final DescriptionProvider SECURITY_DOMAIN_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode subsystem = new ModelNode();
+
+            return subsystem;
+        }
+    };
+
+    static final DescriptionProvider SECURITY_DOMAIN_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode subsystem = new ModelNode();
+
+            return subsystem;
+        }
+    };
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
