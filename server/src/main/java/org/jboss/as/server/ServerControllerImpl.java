@@ -93,6 +93,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
+import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.as.server.operations.ServerCompositeOperationHandler;
 import org.jboss.as.server.operations.ServerOperationHandlers;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
@@ -170,6 +171,9 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
         root.registerOperationHandler(ServerCompositeOperationHandler.OPERATION_NAME, ServerCompositeOperationHandler.INSTANCE, ServerCompositeOperationHandler.INSTANCE, false);
+
+        // Runtime operations
+        root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, ServerReloadHandler.INSTANCE, ServerReloadHandler.INSTANCE, false);
 
         // Management API protocols
         ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT, NATIVE_API), CommonProviders.MANAGEMENT_PROVIDER);
