@@ -20,8 +20,11 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -41,16 +44,19 @@ public class ServerSocketBindingRemoveHandler extends SocketBindingRemoveHandler
     }
 
     @Override
-    protected OperationResult uninstallSocketBinding(final String name, ModelNode model, OperationContext context,
-            ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult uninstallSocketBinding(final String name, final ModelNode model, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
-                    .getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
-            if (controller != null) {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            } else {
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry()
+                            .getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

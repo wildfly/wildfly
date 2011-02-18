@@ -25,6 +25,8 @@ package org.jboss.as.security;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -47,10 +49,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.service.JaasConfigurationService;
-import org.jboss.as.server.RuntimeOperationContext;
-import org.jboss.as.server.RuntimeOperationHandler;
-import org.jboss.as.server.RuntimeTask;
-import org.jboss.as.server.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -80,7 +78,7 @@ import org.jboss.security.mapping.config.MappingModuleEntry;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Brian Stansberry
  */
-class SecurityDomainAdd implements ModelAddOperationHandler, RuntimeOperationHandler {
+class SecurityDomainAdd implements ModelAddOperationHandler {
 
     static final String OPERATION_NAME = ADD;
 
@@ -95,7 +93,7 @@ class SecurityDomainAdd implements ModelAddOperationHandler, RuntimeOperationHan
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         ModelNode opAddr = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         String securityDomain = address.getLastElement().getValue();
@@ -104,16 +102,15 @@ class SecurityDomainAdd implements ModelAddOperationHandler, RuntimeOperationHan
 
         final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, operation);
 
-        if (context instanceof RuntimeOperationContext) {
-            final RuntimeOperationContext updateContext = (RuntimeOperationContext) context;
-            updateContext.executeRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context, ResultHandler resultHandler) throws OperationFailedException {
+        if (context.getRuntimeContext() != null) {
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     // add parsed security domain to the Configuration
                     final ApplicationPolicyRegistration loginConfig = getConfiguration(context.getServiceRegistry());
                     loginConfig.addApplicationPolicy(applicationPolicy.getName(), applicationPolicy);
                     resultHandler.handleResultComplete();
                 }
-            }, resultHandler);
+            });
         } else {
             resultHandler.handleResultComplete();
         }

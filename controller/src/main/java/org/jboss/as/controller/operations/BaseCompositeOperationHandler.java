@@ -21,10 +21,13 @@
  */
 package org.jboss.as.controller.operations;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -32,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelController;
@@ -85,21 +87,8 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
 
     protected void executeSteps(final CompositeOperationContext context, final List<ModelNode> steps) {
 
-        final StepHandlerContext stepHandlerContext = new StepHandlerContext(steps.size());
+        final StepHandlerContext stepHandlerContext = new StepHandlerContext(context, steps.size());
 
-        executeStepHandlers(context, steps, stepHandlerContext);
-
-        final ModelNode results = stepHandlerContext.getResults();
-
-        if (stepHandlerContext.hasFailures()) {
-            context.handleFailures(stepHandlerContext, results);
-        }
-        else {
-            context.handleSuccess(stepHandlerContext, results);
-        }
-    }
-
-    protected void executeStepHandlers(final CompositeOperationContext context, final List<ModelNode> steps, final StepHandlerContext stepHandlerContext) {
         for (int i = 0; i < steps.size(); i++) {
             final ModelNode step = steps.get(i);
             if (stepHandlerContext.hasFailures()) {
@@ -108,12 +97,11 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
             else {
                 final PathAddress address = PathAddress.pathAddress(step.require(OP_ADDR));
                 final String operationName = step.require(OP).asString();
-                final OperationHandler stepHandler = context.getRegistry().getOperationHandler(address, operationName);
 
                 final Integer id = Integer.valueOf(i);
+                final OperationHandler stepHandler = context.getRegistry().getOperationHandler(address, operationName);
                 final OperationContext stepContext = context.getStepOperationContext(id, address, stepHandler);
                 final ResultHandler stepResultHandler = new StepResultHandler(id, stepHandlerContext);
-
                 try {
                     final OperationResult result = stepHandler.execute(stepContext, step, stepResultHandler);
                     stepHandlerContext.setRollbackOp(id, result.getCompensatingOperation());
@@ -132,10 +120,23 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                 } catch (OperationFailedException e) {
                     stepResultHandler.handleFailed(e.getFailureDescription());
                 } catch (Throwable t) {
-                    stepResultHandler.handleFailed(new ModelNode().set(t.getLocalizedMessage()));
+                    final String message = t.getLocalizedMessage() != null ? t.getLocalizedMessage() : t.getMessage();
+                    stepResultHandler.handleFailed(new ModelNode().set(message));
                 }
             }
         }
+        stepHandlerContext.setModelComplete();
+
+        if(!stepHandlerContext.hasFailures() && context.overallContext.getRuntimeContext() != null) {
+            final RuntimeTask runtimeTask = getRuntimeTasks(context);
+            if(runtimeTask != null) {
+                context.overallContext.getRuntimeContext().setRuntimeTask(runtimeTask);
+            }
+        }
+    }
+
+    protected RuntimeTask getRuntimeTasks(CompositeOperationContext context) {
+        return null;
     }
 
     protected static class CompositeOperationContext {
@@ -269,11 +270,15 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
         private final ModelNode resultsNode = new ModelNode();
         private final Map<Integer, ModelNode> rollbackOps = new HashMap<Integer, ModelNode>();
         private boolean hasFailures = false;
-        private final CountDownLatch latch;
+        private final AtomicInteger count;
+        private AtomicBoolean modelComplete = new AtomicBoolean(false);
+        private final CompositeOperationContext context;
 
-        private StepHandlerContext(final int count) {
-            this.latch = new CountDownLatch(count);
+
+        private StepHandlerContext(final CompositeOperationContext context, final int count) {
+            this.count = new AtomicInteger(count);
             this.resultsNode.setEmptyList();
+            this.context = context;
         }
 
         public void setRollbackOp(final Integer id, final ModelNode compensatingOperation) {
@@ -289,7 +294,9 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                 }
 //            }
 
-            latch.countDown();
+            if(count.decrementAndGet() == 0 && modelComplete.get()) {
+                processComplete();
+            }
         }
 
         public void recordFailure(final Integer id, final ModelNode failureDescription) {
@@ -298,7 +305,9 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                 resultsNode.get(id).get(FAILURE_DESCRIPTION).set(failureDescription);
                 hasFailures = true;
             }
-            latch.countDown();
+            if(count.decrementAndGet() == 0 && modelComplete.get()) {
+                processComplete();
+            }
         }
 
         public void recordCancellation(final Integer id) {
@@ -308,7 +317,9 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                     resultsNode.get(id).get(CANCELLED).set(true);
                 }
             }
-            latch.countDown();
+            if(count.decrementAndGet() == 0 && modelComplete.get()) {
+                processComplete();
+            }
         }
 
         public boolean hasFailures() {
@@ -317,20 +328,23 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
             }
         }
 
-        private ModelNode getResults() {
-            try {
-                latch.await();
+        private void processComplete() {
+            if (hasFailures()) {
+                context.handleFailures(this, resultsNode);
+            } else {
+                context.handleSuccess(this, resultsNode);
             }
-            catch (final InterruptedException e) {
-                // FIXME cancel, etc
-                Thread.currentThread().interrupt();
-            }
-            return resultsNode;
         }
 
         public ModelNode getCompensatingOperation(final Integer id) {
             synchronized (rollbackOps) {
                 return rollbackOps.get(id);
+            }
+        }
+
+        public void setModelComplete() {
+            if(modelComplete.compareAndSet(false,true) && count.get() == 0) {
+                processComplete();
             }
         }
     }

@@ -21,6 +21,8 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
@@ -93,25 +95,29 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
     }
 
     @Override
-    protected OperationResult installSocketBindingGroup(String name, final ModelNode operation, final OperationContext context,
-            ResultHandler resultHandler, ModelNode compensatingOp) throws OperationFailedException {
+    protected OperationResult installSocketBindingGroup(final String name, final ModelNode operation, final OperationContext context,
+            final ResultHandler resultHandler, final ModelNode compensatingOp) throws OperationFailedException {
         if (context.getRuntimeContext() != null) {
-            // Resolve any expressions and re-validate
-            ModelNode resolvedOp = operation.resolve();
-            String failure = runtimeValidator.validate(resolvedOp);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-            int portOffset = resolvedOp.get(PORT_OFFSET).isDefined() ? resolvedOp.get(PORT_OFFSET).asInt() : 0;
-            String defaultInterface = resolvedOp.require(DEFAULT_INTERFACE).asString();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    // Resolve any expressions and re-validate
+                    ModelNode resolvedOp = operation.resolve();
+                    String failure = runtimeValidator.validate(resolvedOp);
+                    if (failure != null) {
+                        throw new OperationFailedException(new ModelNode().set(failure));
+                    }
+                    int portOffset = resolvedOp.get(PORT_OFFSET).isDefined() ? resolvedOp.get(PORT_OFFSET).asInt() : 0;
+                    String defaultInterface = resolvedOp.require(DEFAULT_INTERFACE).asString();
 
-            SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
-            serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBinding())
-                    .install();
-            resultHandler.handleResultComplete();
+                    SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
+                            .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBinding())
+                            .install();
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

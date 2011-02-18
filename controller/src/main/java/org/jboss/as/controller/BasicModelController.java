@@ -186,19 +186,7 @@ public class BasicModelController implements ModelController {
                 }
             } : handler;
             try {
-                final OperationResult result = doExecute(context, operation, operationHandler, useHandler);
-                if(operationHandler instanceof ModelUpdateOperationHandler) {
-                    final ModelNode model = this.model;
-                    synchronized (model) {
-                        if (operationHandler instanceof ModelRemoveOperationHandler) {
-                            address.remove(model);
-                        } else {
-                            address.navigate(model, true).set(subModel);
-                        }
-                        persistConfiguration(model);
-                    }
-                }
-                return result;
+                return doExecute(context, operation, operationHandler, useHandler, address, subModel);
             } catch (OperationFailedException e) {
                 useHandler.handleFailed(e.getFailureDescription());
                 return new BasicOperationResult();
@@ -258,14 +246,28 @@ public class BasicModelController implements ModelController {
      * method, applying the operation to the relevant submodel.  If this method throws an exception, the result handler
      * will automatically be notified.  If the operation completes successfully, any configuration change will be persisted.
      *
+     *
      * @param context the context for the operation
      * @param operation the operation itself
      * @param operationHandler the operation handler which will run the operation
      * @param resultHandler the result handler for this operation
-     * @return a handle which can be used to asynchronously cancel the operation
+     * @param address
+     *@param subModel @return a handle which can be used to asynchronously cancel the operation
      */
-    protected OperationResult doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler) throws OperationFailedException {
-        return operationHandler.execute(context, operation, resultHandler);
+    protected OperationResult doExecute(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler, PathAddress address, ModelNode subModel) throws OperationFailedException {
+        final OperationResult result = operationHandler.execute(context, operation, resultHandler);
+        if (operationHandler instanceof ModelUpdateOperationHandler) {
+            final ModelNode model = this.model;
+            synchronized (model) {
+                if (operationHandler instanceof ModelRemoveOperationHandler) {
+                    address.remove(model);
+                } else {
+                    address.navigate(model, true).set(subModel);
+                }
+                persistConfiguration(model);
+            }
+        }
+        return result;
     }
 
     protected ModelNodeRegistration getRegistry() {

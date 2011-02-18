@@ -22,7 +22,10 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
@@ -74,13 +77,17 @@ public class ScheduledThreadPoolAdd implements ModelAddOperationHandler {
         }
 
         if (context.getRuntimeContext() != null) {
-            ServiceTarget target = context.getRuntimeContext().getServiceTarget();
-            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-            final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
-            final ServiceBuilder<ScheduledExecutorService> serviceBuilder = target.addService(serviceName, service);
-            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-            serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-            serviceBuilder.install();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    ServiceTarget target = context.getServiceTarget();
+                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+                    final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
+                    final ServiceBuilder<ScheduledExecutorService> serviceBuilder = target.addService(serviceName, service);
+                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                    serviceBuilder.install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

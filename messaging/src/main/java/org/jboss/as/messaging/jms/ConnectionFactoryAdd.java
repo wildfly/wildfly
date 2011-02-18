@@ -23,7 +23,10 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -110,14 +113,18 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
         }
 
         if (context.getRuntimeContext() != null) {
-            final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
-            final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
-            final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);
-            context.getRuntimeContext().getServiceTarget().addService(serviceName, service)
-                    .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
-                    .setInitialMode(Mode.ACTIVE)
-                    .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                    .install();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
+                    final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
+                    final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);
+                    context.getServiceTarget().addService(serviceName, service)
+                            .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                            .setInitialMode(Mode.ACTIVE)
+                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                            .install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

@@ -23,7 +23,10 @@
 package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -70,27 +73,31 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Des
         subModel.get(ModelDescriptionConstants.PORT).set(port);
 
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
 
-            Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);
+                    Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);
 
-            final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
-            serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
-                    .addDependency(
-                            NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                            NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
-                    .addInjection(managementCommunicationService.getPortInjector(), port)
-                    .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool())
-                    .addInjection(managementCommunicationService.getThreadFactoryInjector(), Executors.defaultThreadFactory())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
+                    final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
+                    serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
+                            .addDependency(
+                                    NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
+                                    NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
+                            .addInjection(managementCommunicationService.getPortInjector(), port)
+                            .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool())
+                            .addInjection(managementCommunicationService.getThreadFactoryInjector(), Executors.defaultThreadFactory())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
 
-            ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
-            serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
-                    .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
-                    .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, operationHandlerService.getModelControllerValue())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
+                    ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
+                    serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
+                            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
+                            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, operationHandlerService.getModelControllerValue())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

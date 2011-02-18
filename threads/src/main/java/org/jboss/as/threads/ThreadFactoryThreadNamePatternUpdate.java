@@ -25,6 +25,8 @@ package org.jboss.as.threads;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -84,15 +86,19 @@ public final class ThreadFactoryThreadNamePatternUpdate implements ModelUpdateOp
         model.get(CommonAttributes.THREAD_NAME_PATTERN).set(newValue);
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry()
-                .getService(ThreadsServices.threadFactoryName(name));
-            if (service == null) {
-                throw new OperationFailedException(notConfigured(name));
-            } else {
-                final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
-                threadFactoryService.setNamePattern(newNamePattern);
-            }
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry()
+                            .getService(ThreadsServices.threadFactoryName(name));
+                    if (service == null) {
+                        throw new OperationFailedException(notConfigured(name));
+                    } else {
+                        final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
+                        threadFactoryService.setNamePattern(newNamePattern);
+                    }
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

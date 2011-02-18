@@ -23,7 +23,10 @@
 package org.jboss.as.jmx;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -48,7 +51,7 @@ class JMXConnectorRemove implements ModelUpdateOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode subModel = context.getSubModel();
 
@@ -62,11 +65,16 @@ class JMXConnectorRemove implements ModelUpdateOperationHandler {
         subModel.get(CommonAttributes.REGISTRY_BINDING).clear();
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry()
-                    .getService(JMXConnectorService.SERVICE_NAME);
-            if (service != null) {
-                service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry().getService(JMXConnectorService.SERVICE_NAME);
+                    if (service != null) {
+                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

@@ -22,9 +22,13 @@
 
 package org.jboss.as.server;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
@@ -109,7 +113,6 @@ import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.OrderedExecutor;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -286,6 +289,25 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         }
     }
 
+    protected OperationResult doExecute(OperationContext context, ModelNode operation, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelNode subModel) throws OperationFailedException {
+        final OperationResult result = super.doExecute(context, operation, operationHandler, resultHandler, address, subModel);
+        if(context instanceof ServerOperationContextImpl) {
+            final ServerOperationContextImpl serverOperationContext = ServerOperationContextImpl.class.cast(context);
+            if(serverOperationContext.getRuntimeTask() != null) {
+                serverOperationContext.getRuntimeTask().execute(new RuntimeTaskContext() {
+                    public ServiceTarget getServiceTarget() {
+                        return serviceTarget;
+                    }
+
+                    public ServiceRegistry getServiceRegistry() {
+                        return serviceRegistry;
+                    }
+                });
+            }
+        }
+        return result;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void persistConfiguration(final ModelNode model) {
@@ -299,6 +321,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         // -1 as initial value ensures the CAS in revertRestartRequired()
         // will never succeed unless restartRequired() is called
         private int ourStamp = -1;
+        private RuntimeTask runtimeTask;
 
         public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel) {
             super(controller, registry, subModel);
@@ -338,12 +361,12 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
             return this;
         }
 
-        public ServiceTarget getServiceTarget() {
-            return serviceTarget;
+        public RuntimeTask getRuntimeTask() {
+            return runtimeTask;
         }
 
-        public ServiceRegistry getServiceRegistry() {
-            return serviceRegistry;
+        public void setRuntimeTask(RuntimeTask runtimeTask) {
+            this.runtimeTask = runtimeTask;
         }
     }
 
@@ -368,14 +391,6 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
                 throw new IllegalArgumentException("priority is invalid (must be >= 0)");
             }
             deployers.get(phase).add(new RegisteredProcessor(priority, processor));
-        }
-
-        public ServiceTarget getServiceTarget() {
-            return serviceTarget;
-        }
-
-        public ServiceRegistry getServiceRegistry() {
-            return serviceRegistry;
         }
     }
 

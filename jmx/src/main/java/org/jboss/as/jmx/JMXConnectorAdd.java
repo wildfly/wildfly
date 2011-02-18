@@ -23,7 +23,10 @@
 package org.jboss.as.jmx;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.ModelUpdateOperationHandler;
@@ -50,7 +53,7 @@ class JMXConnectorAdd implements ModelUpdateOperationHandler {
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
         final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
@@ -61,9 +64,13 @@ class JMXConnectorAdd implements ModelUpdateOperationHandler {
         final ModelNode compensatingOperation = Util.getEmptyOperation(JMXConnectorRemove.OPERATION_NAME, operation.require(OP_ADDR));
 
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
-            JMXConnectorService.addService(target, serverBinding, registryBinding);
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    JMXConnectorService.addService(target, serverBinding, registryBinding);
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

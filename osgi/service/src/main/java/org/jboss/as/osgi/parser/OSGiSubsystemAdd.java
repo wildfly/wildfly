@@ -22,7 +22,10 @@
 package org.jboss.as.osgi.parser;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -76,7 +79,7 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
     }
 
     @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         log.infof("Activating OSGi Subsystem");
 
         populateSubModel(context.getSubModel(), operation);
@@ -84,28 +87,32 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
         if (context instanceof BootOperationContext) {
             log.infof("Activating OSGi Subsystem");
             final BootOperationContext updateContext = (BootOperationContext) context;
-            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
 
-            SubsystemState subsystemState = createSubsystemState(operation);
+                    SubsystemState subsystemState = createSubsystemState(operation);
 
-            // TODO: Hack, which registers the framework module with the {@link ModularURLStreamHandlerFactory}
-            // TODO - use an actually secure sys prop security action method
-            String value = SecurityActions.getSystemProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
-            if (!value.equals("org.jboss.osgi.framework"))
-                value = value + "|org.jboss.osgi.framework";
-            SecurityActions.setSystemProperty("jboss.protocol.handler.modules", value);
+                    // TODO: Hack, which registers the framework module with the {@link ModularURLStreamHandlerFactory}
+                    // TODO - use an actually secure sys prop security action method
+                    String value = SecurityActions.getSystemProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
+                    if (!value.equals("org.jboss.osgi.framework"))
+                        value = value + "|org.jboss.osgi.framework";
+                    SecurityActions.setSystemProperty("jboss.protocol.handler.modules", value);
 
-            Activation policy = subsystemState.getActivationPolicy();
-            BundleManagerService.addService(target, subsystemState);
-            FrameworkService.addService(target, subsystemState);
-            BundleContextService.addService(target, policy);
-            PackageAdminService.addService(target);
-            StartLevelService.addService(target);
+                    Activation policy = subsystemState.getActivationPolicy();
+                    BundleManagerService.addService(target, subsystemState);
+                    FrameworkService.addService(target, subsystemState);
+                    BundleContextService.addService(target, policy);
+                    PackageAdminService.addService(target);
+                    StartLevelService.addService(target);
 
-            ConfigAdminServiceImpl.addService(target, subsystemState);
+                    ConfigAdminServiceImpl.addService(target, subsystemState);
 
-            new OSGiDeploymentActivator().activate(updateContext);
-            resultHandler.handleResultComplete();
+                    new OSGiDeploymentActivator().activate(updateContext);
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

@@ -25,6 +25,8 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -86,31 +88,34 @@ class AsyncHandlerAdd implements ModelAddOperationHandler, DescriptionProvider {
         subModel.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
 
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
-            try {
-                final AsyncHandlerService service = new AsyncHandlerService();
-                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
-                for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
-                    final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
-                    serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
-                    list.add(injectedValue);
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    try {
+                        final AsyncHandlerService service = new AsyncHandlerService();
+                        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                        final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
+                        for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
+                            final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
+                            serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
+                            list.add(injectedValue);
+                        }
+                        service.addHandlers(list);
+                        if (operation.hasDefined(QUEUE_LENGTH))
+                            service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
+                        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                        service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
+                        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                        serviceBuilder.install();
+                    } catch (Throwable t) {
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    }
                 }
-                service.addHandlers(list);
-                if (operation.hasDefined(QUEUE_LENGTH))
-                    service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
-                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
-                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                serviceBuilder.install();
-            } catch (Throwable t) {
-                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-            }
+            });
         } else {
             resultHandler.handleResultComplete();
         }
-
         return new BasicOperationResult(compensatingOperation);
     }
 

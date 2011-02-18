@@ -21,6 +21,8 @@ package org.jboss.as.server.deployment;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -61,7 +63,7 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode model = context.getSubModel();
         final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
         try {
@@ -71,15 +73,20 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
             }
             else {
                 if (context.getRuntimeContext() != null) {
-                    String deploymentUnitName = model.require(NAME).asString();
-                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                    final ServiceRegistry serviceRegistry = context.getRuntimeContext().getServiceRegistry();
-                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                    if(controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
-                    }
+                    context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                        public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                            String deploymentUnitName = model.require(NAME).asString();
+                            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                            final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                            if (controller != null) {
+                                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                            } else {
+                                resultHandler.handleResultComplete();
+                            }
+                        }
+                    });
+
                 } else {
                     resultHandler.handleResultComplete();
                 }

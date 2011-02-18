@@ -20,8 +20,11 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,10 +42,14 @@ public class SystemPropertyAddHandler
     }
 
     @Override
-    protected OperationResult updateSystemProperty(final String name, final String value, OperationContext context, ResultHandler resultHandler, ModelNode compensating) {
+    protected OperationResult updateSystemProperty(final String name, final String value, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensating) {
         if (context.getRuntimeContext() != null) {
-            System.setProperty(name, value);
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    System.setProperty(name, value);
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

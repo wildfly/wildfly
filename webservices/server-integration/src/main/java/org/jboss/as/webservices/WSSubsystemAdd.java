@@ -22,7 +22,10 @@
 package org.jboss.as.webservices;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.webservices.CommonAttributes.MODIFY_SOAP_ADDRESS;
@@ -81,7 +84,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         operationValidator.validate(operation);
         final ModelNode config = operation.require(CONFIGURATION);
         configValidator.validate(config);
@@ -91,16 +94,20 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
-            log.info("Activating WebServices Extension");
-            WSServices.saveContainerRegistry(context.getRuntimeContext().getServiceRegistry());
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    log.info("Activating WebServices Extension");
+                    WSServices.saveContainerRegistry(context.getServiceRegistry());
 
-            ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
-            addConfigService(serviceTarget, config);
-            addRegistryService(serviceTarget);
+                    ServiceTarget serviceTarget = context.getServiceTarget();
+                    addConfigService(serviceTarget, config);
+                    addRegistryService(serviceTarget);
 
-            //add the DUP for dealing with WS deployments
-            WSDeploymentActivator.activate(updateContext);
-            resultHandler.handleResultComplete();
+                    //add the DUP for dealing with WS deployments
+                    WSDeploymentActivator.activate(updateContext);
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

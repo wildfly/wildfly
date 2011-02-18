@@ -6,6 +6,8 @@ package org.jboss.as.messaging;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -63,7 +65,7 @@ public class QueueAdd implements ModelAddOperationHandler, DescriptionProvider {
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         String failure = validator.validate(operation);
         if (failure == null) {
@@ -87,12 +89,16 @@ public class QueueAdd implements ModelAddOperationHandler, DescriptionProvider {
                 model.get(DURABLE).set(durable);
             }
             if (context.getRuntimeContext() != null) {
-                final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
-                context.getRuntimeContext().getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
-                        .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
-                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                        .setInitialMode(Mode.ACTIVE)
-                        .install();
+                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                    public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                        final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
+                        context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
+                                .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
+                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                                .setInitialMode(Mode.ACTIVE)
+                                .install();
+                    }
+                });
             } else {
                 resultHandler.handleResultComplete();
             }

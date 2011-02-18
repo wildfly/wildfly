@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,17 +22,17 @@
 
 package org.jboss.as.controller;
 
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
-
 /**
- * The operation context for run time operations.
+ * A controller runtime task.  This can be used to perform any runtime tasks associated with a {@link org.jboss.as.controller.OperationHandler}.
+ *
+ * @author John Bailey
  */
-public interface RuntimeOperationContext {
+public interface RuntimeTask {
     /**
-     * Set the runtime task for this operation.
+     * Execute the task.
      *
-     * @param runtimeTask
+     * @param context The runtime task context
+     * @throws OperationFailedException If any problems occur
      */
-    void setRuntimeTask(final RuntimeTask runtimeTask);
+    void execute(RuntimeTaskContext context) throws OperationFailedException;
 }

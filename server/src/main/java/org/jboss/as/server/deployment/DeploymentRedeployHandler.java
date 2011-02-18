@@ -21,6 +21,8 @@ package org.jboss.as.server.deployment;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -73,16 +75,20 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, De
         }
     }
 
-    private void redeploy(final ModelNode model, OperationContext context, ResultHandler resultHandler) {
+    private void redeploy(final ModelNode model, final OperationContext context, final ResultHandler resultHandler) {
         if (context.getRuntimeContext() != null) {
-            String deploymentUnitName = model.require(NAME).asString();
-            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-            final ServiceRegistry serviceRegistry = context.getRuntimeContext().getServiceRegistry();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    String deploymentUnitName = model.require(NAME).asString();
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
 
-            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-            controller.setMode(ServiceController.Mode.NEVER);
-            controller.setMode(ServiceController.Mode.ACTIVE);
-            controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                    controller.setMode(ServiceController.Mode.NEVER);
+                    controller.setMode(ServiceController.Mode.ACTIVE);
+                    controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

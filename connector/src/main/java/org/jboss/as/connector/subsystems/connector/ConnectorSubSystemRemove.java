@@ -28,7 +28,10 @@ import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDAT
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -42,7 +45,6 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -59,11 +61,16 @@ public class ConnectorSubSystemRemove implements ModelRemoveOperationHandler {
         final String name = model.require(NAME).asString();
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry().getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
-            if (controller != null) {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                controller.setMode(Mode.REMOVE);
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

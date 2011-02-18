@@ -22,7 +22,10 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
@@ -79,16 +82,20 @@ public class QueuelessThreadPoolAdd implements ModelAddOperationHandler {
         }
 
         if (context.getRuntimeContext() != null) {
-            ServiceTarget target = context.getRuntimeContext().getServiceTarget();
-            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-            final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    ServiceTarget target = context.getServiceTarget();
+                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+                    final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
 
-            //TODO add the handoffExceutor injection
+                    //TODO add the handoffExceutor injection
 
-            final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
-            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-            serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-            serviceBuilder.install();
+                    final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                    serviceBuilder.install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

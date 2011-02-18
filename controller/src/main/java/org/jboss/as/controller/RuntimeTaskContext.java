@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,42 +22,26 @@
 
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Context object for executing a {@link RuntimeTask}.
+ *
+ * @author John Bailey
  */
-public interface OperationContext {
+public interface RuntimeTaskContext {
+    /**
+     * Get the target to which new services may be added.
+     *
+     * @return the service target
+     */
+    ServiceTarget getServiceTarget();
 
     /**
-     * Get the model controller performing this update.
+     * Get the service registry.
      *
-     * @return the controller
+     * @return the service registry.
      */
-    ModelController getController();
-
-    /**
-     * Get the model node registry
-     *
-     * @return the registry
-     */
-    ModelNodeRegistration getRegistry();
-
-    /**
-     * Get the a view of the sub-model that this operation affects, if it does affect
-     * a model element.
-     *
-     * @return the sub-model view
-     * @throws IllegalArgumentException if no sub-model is associated with this operation
-     */
-    ModelNode getSubModel() throws IllegalArgumentException;
-
-
-    /**
-     * Get access to the runtime context for this operation
-     *
-     * @return The runtime context if this operation is running in a runtime capable state, otherwise null.
-     */
-    RuntimeOperationContext getRuntimeContext();
+    ServiceRegistry getServiceRegistry();
 }

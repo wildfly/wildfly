@@ -50,7 +50,10 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_F
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -99,7 +102,7 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         // Populate subModel
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
@@ -130,14 +133,18 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
 
-            ResourceAdapters resourceAdapters = buildResourceAdaptersObject(operation);
-            serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
-                    .setInitialMode(Mode.ACTIVE).install();
+                    ResourceAdapters resourceAdapters = buildResourceAdaptersObject(operation);
+                    serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
+                            .setInitialMode(Mode.ACTIVE).install();
 
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS, new ResourceAdaptersAttachingProcessor(resourceAdapters));
-            resultHandler.handleResultComplete();
+                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS, new ResourceAdaptersAttachingProcessor(resourceAdapters));
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

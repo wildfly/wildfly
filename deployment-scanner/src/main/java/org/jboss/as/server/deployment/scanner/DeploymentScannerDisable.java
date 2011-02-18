@@ -25,6 +25,8 @@ package org.jboss.as.server.deployment.scanner;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -51,7 +53,7 @@ class DeploymentScannerDisable implements ModelUpdateOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -64,19 +66,23 @@ class DeploymentScannerDisable implements ModelUpdateOperationHandler {
         context.getSubModel().get(CommonAttributes.SCAN_ENABLED).set(false);
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
-                    .getService(DeploymentScannerService.getServiceName(name));
-            if (controller == null) {
-                throw new OperationFailedException(new ModelNode().set("scanner not configured"));
-            } else {
-                try {
-                    final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
-                    scanner.stopScanner();
-                    resultHandler.handleResultComplete();
-                } catch (Throwable t) {
-                    throw new OperationFailedException(getFailureResult(t));
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry()
+                            .getService(DeploymentScannerService.getServiceName(name));
+                    if (controller == null) {
+                        throw new OperationFailedException(new ModelNode().set("scanner not configured"));
+                    } else {
+                        try {
+                            final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
+                            scanner.stopScanner();
+                            resultHandler.handleResultComplete();
+                        } catch (Throwable t) {
+                            throw new OperationFailedException(getFailureResult(t));
+                        }
+                    }
                 }
-            }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

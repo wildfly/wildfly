@@ -22,7 +22,10 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
@@ -95,22 +98,26 @@ public class BoundedQueueThreadPoolAdd implements ModelAddOperationHandler {
         final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
 
         if (context.getRuntimeContext() != null) {
-            ServiceTarget target = context.getRuntimeContext().getServiceTarget();
-            final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-            final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
-                    params.getCoreThreads().getScaledCount(),
-                    params.getMaxThreads().getScaledCount(),
-                    params.getQueueLength().getScaledCount(),
-                    params.isBlocking(),
-                    params.getKeepAliveTime(),
-                    params.isAllowCoreTimeout());
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    ServiceTarget target = context.getServiceTarget();
+                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
+                    final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
+                            params.getCoreThreads().getScaledCount(),
+                            params.getMaxThreads().getScaledCount(),
+                            params.getQueueLength().getScaledCount(),
+                            params.isBlocking(),
+                            params.getKeepAliveTime(),
+                            params.isAllowCoreTimeout());
 
-            //TODO add the handoffExceutor injection
+                    //TODO add the handoffExceutor injection
 
-            final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
-            ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
-            serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-            serviceBuilder.install();
+                    final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
+                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                    serviceBuilder.install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

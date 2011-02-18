@@ -25,6 +25,8 @@ package org.jboss.as.remoting;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
@@ -76,7 +78,7 @@ public class ConnectorAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -86,25 +88,29 @@ public class ConnectorAdd implements ModelAddOperationHandler {
 
         // Create the service.
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
 
-            final ConnectorService connectorService = new ConnectorService();
-            connectorService.setOptionMap(createOptionMap(operation));
+                    final ConnectorService connectorService = new ConnectorService();
+                    connectorService.setOptionMap(createOptionMap(operation));
 
-            // Register the service with the container and inject dependencies.
-            final ServiceName connectorName = RemotingServices.connectorServiceName(name);
-            try {
-                target.addService(connectorName, connectorService)
-                        .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
-                        .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                        .install();
+                    // Register the service with the container and inject dependencies.
+                    final ServiceName connectorName = RemotingServices.connectorServiceName(name);
+                    try {
+                        target.addService(connectorName, connectorService)
+                                .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
+                                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                                .install();
 
-                // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-            } catch (ServiceRegistryException e) {
-                throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-            }
+                        // TODO create XNIO connector service from socket-binding, with dependency on connectorName
+                    } catch (ServiceRegistryException e) {
+                        throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

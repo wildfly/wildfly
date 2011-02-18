@@ -24,7 +24,10 @@ package org.jboss.as.web;
 
 import org.apache.catalina.connector.Connector;
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.web.CommonAttributes.ENABLED;
@@ -85,7 +88,7 @@ class WebConnectorAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -109,30 +112,34 @@ class WebConnectorAdd implements ModelAddOperationHandler {
         if(operation.hasDefined(MAX_SAVE_POST_SIZE)) subModel.get(MAX_SAVE_POST_SIZE).set(operation.get(MAX_SAVE_POST_SIZE).asInt());
 
         if (context.getRuntimeContext() != null) {
-            final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
-            final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
-            if (operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
-            if (operation.hasDefined(ENABLE_LOOKUPS))
-                service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
-            if (operation.hasDefined(PROXY_NAME)) service.setProxyName(operation.get(PROXY_NAME).asString());
-            if (operation.hasDefined(PROXY_PORT)) service.setProxyPort(operation.get(PROXY_PORT).asInt());
-            if (operation.hasDefined(REDIRECT_PORT))
-                service.setRedirectPort(operation.get(REDIRECT_PORT).asInt());
-            if (operation.hasDefined(MAX_POST_SIZE))
-                service.setMaxPostSize(operation.get(MAX_POST_SIZE).asInt());
-            if (operation.hasDefined(MAX_SAVE_POST_SIZE))
-                service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
-            final ServiceBuilder<Connector> serviceBuilder = context.getRuntimeContext().getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
-                    .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
-                    .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                    .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
-            if(enabled) {
-                serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                serviceBuilder.install();
-            } else {
-                serviceBuilder.install();
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
+                    final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
+                    if (operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
+                    if (operation.hasDefined(ENABLE_LOOKUPS))
+                        service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
+                    if (operation.hasDefined(PROXY_NAME)) service.setProxyName(operation.get(PROXY_NAME).asString());
+                    if (operation.hasDefined(PROXY_PORT)) service.setProxyPort(operation.get(PROXY_PORT).asInt());
+                    if (operation.hasDefined(REDIRECT_PORT))
+                        service.setRedirectPort(operation.get(REDIRECT_PORT).asInt());
+                    if (operation.hasDefined(MAX_POST_SIZE))
+                        service.setMaxPostSize(operation.get(MAX_POST_SIZE).asInt());
+                    if (operation.hasDefined(MAX_SAVE_POST_SIZE))
+                        service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
+                    final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
+                            .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
+                            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
+                            .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
+                    if (enabled) {
+                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                        serviceBuilder.install();
+                    } else {
+                        serviceBuilder.install();
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

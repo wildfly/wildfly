@@ -23,7 +23,10 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
@@ -73,7 +76,7 @@ class JMSQueueAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -97,14 +100,18 @@ class JMSQueueAdd implements ModelAddOperationHandler {
         }
 
         if (context.getRuntimeContext() != null) {
-            final JMSQueueService service = new JMSQueueService(name, selector,
-                    operation.get(DURABLE).asBoolean(true), jndiBindings(operation));
-            final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
-            context.getRuntimeContext().getServiceTarget().addService(serviceName, service)
-                    .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
-                    .setInitialMode(Mode.ACTIVE)
-                    .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                    .install();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final JMSQueueService service = new JMSQueueService(name, selector,
+                            operation.get(DURABLE).asBoolean(true), jndiBindings(operation));
+                    final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
+                    context.getServiceTarget().addService(serviceName, service)
+                            .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                            .setInitialMode(Mode.ACTIVE)
+                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                            .install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

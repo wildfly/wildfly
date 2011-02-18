@@ -69,7 +69,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOUR
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -124,7 +127,7 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         // Populate subModel
         final ModelNode subModel = context.getSubModel();
         subModel.setEmptyObject();
@@ -179,15 +182,19 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = BootOperationContext.class.cast(context);
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
 
-            DataSources datasources = buildDataSourcesObject(operation);
-            serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
-                    .setInitialMode(Mode.ACTIVE).install();
+                    DataSources datasources = buildDataSourcesObject(operation);
+                    serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
+                            .setInitialMode(Mode.ACTIVE).install();
 
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES,
-                    new DataSourcesAttachmentProcessor(datasources));
-            resultHandler.handleResultComplete();
+                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES,
+                            new DataSourcesAttachmentProcessor(datasources));
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

@@ -24,6 +24,8 @@ package org.jboss.as.threads;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
@@ -84,20 +86,24 @@ public class ThreadFactoryAdd implements ModelAddOperationHandler {
         }
 
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
-            final ThreadFactoryService service = new ThreadFactoryService();
-            service.setNamePattern(threadNamePattern);
-            service.setPriority(priority);
-            service.setThreadGroupName(groupName);
-            //TODO What about the properties?
-            try {
-                target.addService(ThreadsServices.threadFactoryName(name), service)
-                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
-            } catch (ServiceRegistryException e) {
-                throw new OperationFailedException(new ModelNode().set(e.getMessage()));
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    final ThreadFactoryService service = new ThreadFactoryService();
+                    service.setNamePattern(threadNamePattern);
+                    service.setPriority(priority);
+                    service.setThreadGroupName(groupName);
+                    //TODO What about the properties?
+                    try {
+                        target.addService(ThreadsServices.threadFactoryName(name), service)
+                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .install();
+                    } catch (ServiceRegistryException e) {
+                        throw new OperationFailedException(new ModelNode().set(e.getMessage()));
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

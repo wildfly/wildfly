@@ -23,7 +23,10 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -46,7 +49,7 @@ class RootLoggerRemove implements ModelUpdateOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode subModel = context.getSubModel();
         final ModelNode compensatingOperation = new ModelNode();
@@ -58,15 +61,19 @@ class RootLoggerRemove implements ModelUpdateOperationHandler {
         subModel.get(CommonAttributes.ROOT_LOGGER).clear();
 
         if (context.getRuntimeContext() != null) {
-            final ServiceRegistry registry = context.getRuntimeContext().getServiceRegistry();
-            final ServiceController<?> controller = registry.getService(LogServices.ROOT_LOGGER);
-            if (controller != null) {
-                controller.setMode(ServiceController.Mode.REMOVE);
-            }
-            if (subModel.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
-                LogServices.uninstallLoggerHandlers(registry, "", subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
-            }
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceRegistry registry = context.getServiceRegistry();
+                    final ServiceController<?> controller = registry.getService(LogServices.ROOT_LOGGER);
+                    if (controller != null) {
+                        controller.setMode(ServiceController.Mode.REMOVE);
+                    }
+                    if (subModel.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
+                        LogServices.uninstallLoggerHandlers(registry, "", subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
+                    }
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

@@ -25,6 +25,8 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -61,15 +63,21 @@ class LoggerHandlerRemove implements ModelRemoveOperationHandler {
         }
 
         if (context.getRuntimeContext() != null) {
-            final ServiceRegistry registry = context.getRuntimeContext().getServiceRegistry();
-            try {
-                final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
-                if (controller != null) {
-                    controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceRegistry registry = context.getServiceRegistry();
+                    try {
+                        final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
+                        if (controller != null) {
+                            controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                        } else {
+                            resultHandler.handleResultComplete();
+                        }
+                    } catch (Throwable t) {
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    }
                 }
-            } catch (Throwable t) {
-                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-            }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

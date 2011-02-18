@@ -29,7 +29,10 @@ import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDAT
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -67,7 +70,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         final String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
         final String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
         final boolean beanValidationEnabled = ParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
@@ -100,47 +103,53 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         }
 
         if (context instanceof BootOperationContext) {
-            ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
-            WorkManager wm = new WorkManagerImpl();
+            final BootOperationContext bootContext = BootOperationContext.class.cast(context);
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    ServiceTarget serviceTarget = context.getServiceTarget();
+                    WorkManager wm = new WorkManagerImpl();
 
-            final WorkManagerService wmService = new WorkManagerService(wm);
-            serviceTarget
-                    .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
-                    .addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class,
-                            wmService.getExecutorShortInjector())
-                    .addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class,
-                            wmService.getExecutorLongInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
-                            wmService.getXaTerminatorInjector()).setInitialMode(Mode.ACTIVE).install();
+                    final WorkManagerService wmService = new WorkManagerService(wm);
+                    serviceTarget
+                            .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
+                            .addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class,
+                                    wmService.getExecutorShortInjector())
+                            .addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class,
+                                    wmService.getExecutorLongInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
+                                    wmService.getXaTerminatorInjector()).setInitialMode(Mode.ACTIVE).install();
 
-            CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
-            final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
-            serviceTarget
-                    .addService(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService)
-                    .addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class,
-                            defaultBootCtxService.getWorkManagerValueInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
-                            defaultBootCtxService.getXaTerminatorInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER,
-                            com.arjuna.ats.jbossatx.jta.TransactionManagerService.class,
-                            defaultBootCtxService.getTxManagerInjector()).setInitialMode(Mode.ACTIVE).install();
-            final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
+                    CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
+                    final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
+                    serviceTarget
+                            .addService(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService)
+                            .addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class,
+                                    defaultBootCtxService.getWorkManagerValueInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
+                                    defaultBootCtxService.getXaTerminatorInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER,
+                                    com.arjuna.ats.jbossatx.jta.TransactionManagerService.class,
+                                    defaultBootCtxService.getTxManagerInjector()).setInitialMode(Mode.ACTIVE).install();
+                    final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
 
-            config.setArchiveValidation(archiveValidationEnabled);
-            config.setArchiveValidationFailOnError(failOnError);
-            config.setArchiveValidationFailOnWarn(failOnWarn);
+                    config.setArchiveValidation(archiveValidationEnabled);
+                    config.setArchiveValidationFailOnError(failOnError);
+                    config.setArchiveValidationFailOnWarn(failOnWarn);
 
-            // FIXME Bean validation currently not used
-            config.setBeanValidation(false);
+                    // FIXME Bean validation currently not used
+                    config.setBeanValidation(false);
 
-            final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-            serviceTarget
-                    .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
-                    .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class,
-                            connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
+                    final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
+                    serviceTarget
+                            .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
+                            .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class,
+                                    connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
-            new RaDeploymentActivator().activate(BootOperationContext.class.cast(context), serviceTarget);
-            resultHandler.handleResultComplete(); // TODO: Listener
+                    new RaDeploymentActivator().activate(bootContext, serviceTarget);
+                    resultHandler.handleResultComplete(); // TODO: Listener
+                }
+            });
+
         } else {
             resultHandler.handleResultComplete();
         }
@@ -149,7 +158,6 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         final ModelNode compensating = new ModelNode();
         compensating.get(OP_ADDR).set(operation.require(ADDRESS));
         compensating.get(OP).set("remove");
-
         return new BasicOperationResult(compensating);
     }
 

@@ -25,6 +25,8 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -89,27 +91,31 @@ class FileHandlerAdd implements ModelAddOperationHandler {
 
 
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
-            try {
-                final FileHandlerService service = new FileHandlerService();
-                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                if (operation.hasDefined(FILE)) {
-                    if (operation.get(FILE).hasDefined(RELATIVE_TO)) {
-                        serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    try {
+                        final FileHandlerService service = new FileHandlerService();
+                        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                        if (operation.hasDefined(FILE)) {
+                            if (operation.get(FILE).hasDefined(RELATIVE_TO)) {
+                                serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
+                            }
+                            service.setPath(operation.get(FILE, PATH).asString());
+                        }
+                        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                        final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+                        if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+                        if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                        if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                        serviceBuilder.install();
+                    } catch (Throwable t) {
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }
-                    service.setPath(operation.get(FILE, PATH).asString());
                 }
-                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
-                if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
-                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                serviceBuilder.install();
-            } catch (Throwable t) {
-                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-            }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

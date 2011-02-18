@@ -23,7 +23,10 @@
 package org.jboss.as.naming.service;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.management.MBeanServer;
@@ -67,41 +70,46 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
-            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
 
-            log.info("Activating Naming Subsystem");
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
 
-            ObjectFactoryBuilder.INSTANCE.setServiceRegistry(context.getRuntimeContext().getServiceRegistry());
+                    log.info("Activating Naming Subsystem");
 
-            NamingContext.initializeNamingManager();
+                    ObjectFactoryBuilder.INSTANCE.setServiceRegistry(context.getServiceRegistry());
 
-            // Create the Naming Service
-            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
-            target.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
+                    NamingContext.initializeNamingManager();
 
-            // Create java: context service
-            final JavaContextService javaContextService = new JavaContextService();
-            target.addService(JavaContextService.SERVICE_NAME, javaContextService)
-                    .addDependency(NamingService.SERVICE_NAME)
-                    .install();
+                    // Create the Naming Service
+                    final ServiceTarget target = context.getServiceTarget();
+                    target.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
 
-            final ContextService globalContextService = new ContextService("global");
-            target.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
-                    .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
-                    .install();
+                    // Create java: context service
+                    final JavaContextService javaContextService = new JavaContextService();
+                    target.addService(JavaContextService.SERVICE_NAME, javaContextService)
+                            .addDependency(NamingService.SERVICE_NAME)
+                            .install();
 
-            addContextFactory(target, "app");
-            addContextFactory(target, "module");
-            addContextFactory(target, "comp");
+                    final ContextService globalContextService = new ContextService("global");
+                    target.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
+                            .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
+                            .install();
 
-            // Provide the {@link InitialContext} as OSGi service
-            InitialContextFactoryService.addService(target);
+                    addContextFactory(target, "app");
+                    addContextFactory(target, "module");
+                    addContextFactory(target, "comp");
 
-            final JndiView jndiView = new JndiView();
-            target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
-                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
-                    .install();
-            resultHandler.handleResultComplete();
+                    // Provide the {@link InitialContext} as OSGi service
+                    InitialContextFactoryService.addService(target);
+
+                    final JndiView jndiView = new JndiView();
+                    target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
+                            .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
+                            .install();
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

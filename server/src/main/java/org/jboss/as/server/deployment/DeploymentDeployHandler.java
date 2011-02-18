@@ -66,7 +66,7 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Des
         ModelNode model = context.getSubModel();
         model.get(START).set(true);
         ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
-        DeploymentHandlerUtil.deploy(model, context, resultHandler, compensatingOp);
-        return new BasicOperationResult();
+        DeploymentHandlerUtil.deploy(model, context, resultHandler);
+        return new BasicOperationResult(compensatingOp);
     }
 }

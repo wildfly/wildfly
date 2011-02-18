@@ -23,7 +23,10 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.ModelRemoveOperationHandler;
@@ -45,7 +48,7 @@ class JMSTopicRemove implements ModelRemoveOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -55,12 +58,16 @@ class JMSTopicRemove implements ModelRemoveOperationHandler {
         final ModelNode compensatingOperation = JMSTopicAdd.getOperation(opAddr, subModel);
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry().getService(JMSServices.JMS_TOPIC_BASE.append(name));
-            if (service != null) {
-                service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            } else {
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_TOPIC_BASE.append(name));
+                    if (service != null) {
+                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

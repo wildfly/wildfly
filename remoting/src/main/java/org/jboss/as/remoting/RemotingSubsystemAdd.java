@@ -23,7 +23,10 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
@@ -54,7 +57,7 @@ class RemotingSubsystemAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final String threadPoolName = operation.require(THREAD_POOL).asString();
         context.getSubModel().get(THREAD_POOL).set(threadPoolName);
@@ -65,17 +68,21 @@ class RemotingSubsystemAdd implements ModelAddOperationHandler {
         final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
         if (context.getRuntimeContext() != null) {
-            // create endpoint
-            final EndpointService endpointService = new EndpointService();
-            // todo configure option map
-            endpointService.setOptionMap(OptionMap.EMPTY);
-            final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    // create endpoint
+                    final EndpointService endpointService = new EndpointService();
+                    // todo configure option map
+                    endpointService.setOptionMap(OptionMap.EMPTY);
+                    final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
 
-            context.getRuntimeContext().getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
-                    .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                    .install();
+                    context.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
+                            .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                            .install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

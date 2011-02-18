@@ -23,7 +23,10 @@
 package org.jboss.as.arquillian.parser;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.arquillian.service.ArquillianDeploymentProcessor;
@@ -58,20 +61,24 @@ class ArquillianSubsystemAdd implements ModelAddOperationHandler, BootOperationH
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
         context.getSubModel().setEmptyObject();
 
         if(context instanceof BootOperationContext) {
             log.infof("Activating Arquillian Subsystem");
-                final BootOperationContext bootContext = (BootOperationContext) context;
-                ArquillianService.addService(context.getRuntimeContext().getServiceTarget());
-                bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ARQUILLIAN_RUNWITH, new ArquillianRunWithAnnotationProcessor());
-                bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
-                bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_ARQUILLIAN,
-                        new ArquillianDependencyProcessor());
-                resultHandler.handleResultComplete();
+            final BootOperationContext bootContext = (BootOperationContext) context;
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    ArquillianService.addService(context.getServiceTarget());
+                    bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ARQUILLIAN_RUNWITH, new ArquillianRunWithAnnotationProcessor());
+                    bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ARQUILLIAN_DEPLOYMENT, new ArquillianDeploymentProcessor());
+                    bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_ARQUILLIAN,
+                            new ArquillianDependencyProcessor());
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

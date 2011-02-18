@@ -23,7 +23,10 @@
 package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -71,21 +74,25 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
         subModel.get(ModelDescriptionConstants.PORT).set(port);
 
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
 
-            Logger.getLogger("org.jboss.as").infof("creating http management service using network interface (%s) port (%s)", interfaceName, port);
+                    Logger.getLogger("org.jboss.as").infof("creating http management service using network interface (%s) port (%s)", interfaceName, port);
 
-            final HttpManagementService service = new HttpManagementService();
-            serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
-                    .addDependency(
-                            NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                            NetworkInterfaceBinding.class, service.getInterfaceInjector())
-                    .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
-                    .addInjection(service.getPortInjector(), port)
-                    .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                    .install();
+                    final HttpManagementService service = new HttpManagementService();
+                    serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
+                            .addDependency(
+                                    NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
+                                    NetworkInterfaceBinding.class, service.getInterfaceInjector())
+                            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
+                            .addInjection(service.getPortInjector(), port)
+                            .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                            .install();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

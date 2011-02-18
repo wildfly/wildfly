@@ -22,10 +22,13 @@
 package org.jboss.as.server.operations;
 
 import java.util.ArrayDeque;
+import java.util.Deque;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -49,8 +52,6 @@ import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerOperationContext;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Handler for multi-step operations that have to be performed atomically.
@@ -202,12 +203,29 @@ public class ServerCompositeOperationHandler
         }
     }
 
+    protected RuntimeTask getRuntimeTasks(final CompositeOperationContext context) {
+        if(context instanceof RuntimeCompositeOperationContext) {
+            final RuntimeCompositeOperationContext runtimeCompositeContext = RuntimeCompositeOperationContext.class.cast(context);
+            if(!runtimeCompositeContext.runtimeTasks.isEmpty()) {
+                return new RuntimeTask() {
+                    public void execute(final RuntimeTaskContext context) throws OperationFailedException {
+                        for(RuntimeTask runtimeTask : runtimeCompositeContext.runtimeTasks) {
+                            runtimeTask.execute(context);
+                        }
+                    }
+                };
+            }
+        }
+        return null;
+    }
+
     private static class RuntimeCompositeOperationContext extends CompositeOperationContext {
 
         private final boolean rollbackOnRuntimeFailure;
         private final ServerOperationContext overallRuntimeContext;
         private boolean modelOnly = false;
         private final Map<Integer, Boolean> modelOnlyStates = new HashMap<Integer, Boolean>();
+        private Deque<RuntimeTask> runtimeTasks = new ArrayDeque<RuntimeTask>();
 
         private RuntimeCompositeOperationContext(final ServerOperationContext overallContext, final ResultHandler resultHandler,
                 final boolean rollbackOnRuntimeFailure) {
@@ -241,7 +259,7 @@ public class ServerCompositeOperationHandler
             return new StepRuntimeOperationContext(stepModel);
         }
 
-        private class StepRuntimeOperationContext implements ServerOperationContext {
+        private class StepRuntimeOperationContext implements ServerOperationContext, RuntimeOperationContext {
             private ModelNode stepModel;
 
             private StepRuntimeOperationContext(ModelNode stepModel) {
@@ -274,7 +292,11 @@ public class ServerCompositeOperationHandler
             }
 
             public RuntimeOperationContext getRuntimeContext() {
-                return overallRuntimeContext.getRuntimeContext();
+                return this;
+            }
+
+            public void setRuntimeTask(RuntimeTask runtimeTask) {
+                runtimeTasks.push(runtimeTask);
             }
         }
 

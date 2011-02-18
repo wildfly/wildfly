@@ -25,6 +25,8 @@ package org.jboss.as.web;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -71,7 +73,7 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext updateContext, final ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext updateContext, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode config = operation.get(CommonAttributes.CONTAINER_CONFIG);
 
         final ModelNode subModel = updateContext.getSubModel();
@@ -81,36 +83,39 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
         if (updateContext instanceof BootOperationContext) {
             final BootOperationContext ctx = (BootOperationContext) updateContext;
+            updateContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final String defaultHost = operation.has(CommonAttributes.DEFAULT_HOST) ?
+                            operation.get(CommonAttributes.DEFAULT_HOST).asString() : DEFAULT_HOST;
 
-            final String defaultHost = operation.has(CommonAttributes.DEFAULT_HOST) ?
-                    operation.get(CommonAttributes.DEFAULT_HOST).asString() : DEFAULT_HOST;
+                    try {
+                        final WebServerService service = new WebServerService(defaultHost);
+                        context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
+                                .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
+                                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
+                                .setInitialMode(Mode.ON_DEMAND)
+                                .install();
+                    } catch (Throwable t) {
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    }
 
-            try {
-                final WebServerService service = new WebServerService(defaultHost);
-                updateContext.getRuntimeContext().getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
-                        .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
-                        .setInitialMode(Mode.ON_DEMAND)
-                        .install();
-            } catch (Throwable t) {
-                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-            }
+                    final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
+                    final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
 
-            final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
-            final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
-
-            ctx.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
-            ctx.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()));
-            ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
-            ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
-            ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());
-            ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TLD_DEPLOYMENT, new TldParsingDeploymentProcessor());
-            ctx.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
-            ctx.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_ANNOTATION_WAR, new WarAnnotationDeploymentProcessor());
-            ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
-            ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_METADATA, new WarMetaDataProcessor());
-            ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultHost));
-            resultHandler.handleResultComplete();
+                    ctx.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
+                    ctx.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()));
+                    ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
+                    ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
+                    ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());
+                    ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TLD_DEPLOYMENT, new TldParsingDeploymentProcessor());
+                    ctx.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
+                    ctx.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_ANNOTATION_WAR, new WarAnnotationDeploymentProcessor());
+                    ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
+                    ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_METADATA, new WarMetaDataProcessor());
+                    ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultHost));
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

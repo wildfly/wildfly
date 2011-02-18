@@ -23,7 +23,10 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -43,11 +46,16 @@ class JMSSubsystemAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
         if(context.getRuntimeContext() != null) {
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+
+                }
+            });
             // FIXME the JMSServer is started as part of the messaging subsystem for now
             // final RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
             // final BatchBuilder builder = runtimeContext.getBatchBuilder();

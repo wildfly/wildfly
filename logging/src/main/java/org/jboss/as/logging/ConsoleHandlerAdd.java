@@ -25,6 +25,8 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -83,21 +85,25 @@ class ConsoleHandlerAdd implements ModelAddOperationHandler {
         subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
 
         if (context.getRuntimeContext() != null) {
-            final ServiceTarget serviceTarget = context.getRuntimeContext().getServiceTarget();
-            try {
-                final ConsoleHandlerService service = new ConsoleHandlerService();
-                final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
-                if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
-                serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                serviceBuilder.install();
-            } catch (Throwable t) {
-                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    try {
+                        final ConsoleHandlerService service = new ConsoleHandlerService();
+                        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+                        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+                        final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+                        if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+                        if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+                        if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+                        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                        serviceBuilder.install();
+                    } catch (Throwable t) {
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

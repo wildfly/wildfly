@@ -25,8 +25,11 @@ import java.util.Set;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -53,13 +56,17 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
     }
 
     @Override
-    protected OperationResult installInterface(final String name, final ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult installInterface(final String name, final ParsedInterfaceCriteria criteria, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context instanceof HostOperationContext) {
-            final ServiceTarget target = context.getRuntimeContext().getServiceTarget();
-            ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));
-            builder.setInitialMode(Mode.ON_DEMAND)
-                .install();
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));
+                    builder.setInitialMode(Mode.ON_DEMAND)
+                            .install();
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

@@ -23,7 +23,10 @@
 package org.jboss.as.jmx;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -47,15 +50,19 @@ class JMXSubsystemAdd implements ModelAddOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         context.getSubModel().get(CommonAttributes.SERVER_BINDING);
         context.getSubModel().get(CommonAttributes.REGISTRY_BINDING);
 
         if(context.getRuntimeContext() != null) {
-            // Add the MBean service
-            MBeanServerService.addService(context.getRuntimeContext().getServiceTarget());
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    // Add the MBean service
+                    MBeanServerService.addService(context.getServiceTarget());
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

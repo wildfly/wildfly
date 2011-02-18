@@ -97,7 +97,7 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
                     compensatingOp.get(NAME).set(toReplace);
                     compensatingOp.get(TO_REPLACE).set(name);
 
-                    DeploymentHandlerUtil.replace(deployNode, toReplace, context, resultHandler, compensatingOp);
+                    DeploymentHandlerUtil.replace(deployNode, toReplace, context, resultHandler);
                 }
             }
 

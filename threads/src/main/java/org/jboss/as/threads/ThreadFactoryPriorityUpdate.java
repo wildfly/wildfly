@@ -25,6 +25,8 @@ package org.jboss.as.threads;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -82,15 +84,19 @@ public final class ThreadFactoryPriorityUpdate implements ModelUpdateOperationHa
         model.get(CommonAttributes.PRIORITY).set(newValue);
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry()
-                .getService(ThreadsServices.threadFactoryName(name));
-            if (service == null) {
-                throw new OperationFailedException(notConfigured(name));
-            } else {
-                final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
-                threadFactoryService.setPriority(newPriority);
-            }
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry()
+                            .getService(ThreadsServices.threadFactoryName(name));
+                    if (service == null) {
+                        throw new OperationFailedException(notConfigured(name));
+                    } else {
+                        final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
+                        threadFactoryService.setPriority(newPriority);
+                    }
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

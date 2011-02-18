@@ -23,7 +23,10 @@
 package org.jboss.as.server.deployment.scanner;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -50,7 +53,7 @@ class DeploymentScannerRemove implements ModelRemoveOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -66,13 +69,17 @@ class DeploymentScannerRemove implements ModelRemoveOperationHandler {
         compensatingOperation.get(CommonAttributes.RELATIVE_TO).set(subModel.get(CommonAttributes.RELATIVE_TO));
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
-                    .getService(DeploymentScannerService.getServiceName(name));
-            if (controller != null) {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            } else {
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry()
+                            .getService(DeploymentScannerService.getServiceName(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

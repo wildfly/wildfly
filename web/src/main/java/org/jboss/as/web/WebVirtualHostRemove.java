@@ -23,7 +23,10 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.ModelRemoveOperationHandler;
@@ -46,7 +49,7 @@ class WebVirtualHostRemove implements ModelRemoveOperationHandler {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -55,13 +58,17 @@ class WebVirtualHostRemove implements ModelRemoveOperationHandler {
         final ModelNode compensatingOperation = WebVirtualHostAdd.getAddOperation(operation.require(OP_ADDR), subModel);
 
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> service = context.getRuntimeContext().getServiceRegistry()
-                .getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
-            if (service != null) {
-                service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            } else {
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry()
+                            .getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
+                    if (service != null) {
+                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

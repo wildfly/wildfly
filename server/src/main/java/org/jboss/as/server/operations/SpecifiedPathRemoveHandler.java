@@ -20,8 +20,11 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.PathRemoveHandler;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
@@ -37,15 +40,19 @@ public class SpecifiedPathRemoveHandler extends PathRemoveHandler {
     public static SpecifiedPathRemoveHandler INSTANCE = new SpecifiedPathRemoveHandler();
 
     @Override
-    protected OperationResult uninstallPath(final String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult uninstallPath(final String name, final String path, final String relativeTo, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context.getRuntimeContext() != null) {
-            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
-                    .getService(AbstractPathService.pathNameOf(name));
-            if (controller != null) {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            } else {
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry()
+                            .getService(AbstractPathService.pathNameOf(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

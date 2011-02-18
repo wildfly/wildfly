@@ -23,7 +23,10 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -56,15 +59,19 @@ class LoggerRemove implements ModelRemoveOperationHandler {
         compensatingOperation.get(CommonAttributes.HANDLERS).set(subModel.get(CommonAttributes.HANDLERS));
 
         if (context.getRuntimeContext() != null) {
-            final ServiceRegistry registry = context.getRuntimeContext().getServiceRegistry();
-            final ServiceController<?> controller = registry.getService(LogServices.loggerName(name));
-            if (controller != null) {
-                controller.setMode(ServiceController.Mode.REMOVE);
-            }
-            if (subModel.has(CommonAttributes.HANDLERS)) {
-                LogServices.uninstallLoggerHandlers(registry, name, subModel.get(CommonAttributes.HANDLERS));
-            }
-            resultHandler.handleResultComplete();
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceRegistry registry = context.getServiceRegistry();
+                    final ServiceController<?> controller = registry.getService(LogServices.loggerName(name));
+                    if (controller != null) {
+                        controller.setMode(ServiceController.Mode.REMOVE);
+                    }
+                    if (subModel.has(CommonAttributes.HANDLERS)) {
+                        LogServices.uninstallLoggerHandlers(registry, name, subModel.get(CommonAttributes.HANDLERS));
+                    }
+                    resultHandler.handleResultComplete();
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

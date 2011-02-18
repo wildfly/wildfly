@@ -20,9 +20,12 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -38,16 +41,20 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
     public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
 
     @Override
-    protected OperationResult uninstallInterface(final String name, ModelNode criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+    protected OperationResult uninstallInterface(final String name, final ModelNode criteria, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context.getRuntimeContext() != null) {
-            RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
-            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry()
-                    .getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
-            if (controller != null) {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            } else {
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+                    final ServiceController<?> controller = context.getServiceRegistry()
+                            .getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }

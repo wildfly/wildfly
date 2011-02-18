@@ -23,7 +23,10 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -69,13 +72,17 @@ public class ConnectorRemove implements ModelRemoveOperationHandler {
         // connector.clear();
 
         if (context.getRuntimeContext() != null) {
-            ServiceName connectorServiceName = RemotingServices.connectorServiceName(name);
-            final ServiceController<?> controller = context.getRuntimeContext().getServiceRegistry().getService(connectorServiceName);
-            if (controller != null) {
-                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-            } else {
-                resultHandler.handleResultComplete();
-            }
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    ServiceName connectorServiceName = RemotingServices.connectorServiceName(name);
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(connectorServiceName);
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
+                }
+            });
         } else {
             resultHandler.handleResultComplete();
         }
