@@ -80,7 +80,7 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getSystemModuleLoader());
-                bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
+                bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
                 return;
             }
         } catch (Throwable t) {

@@ -78,7 +78,7 @@ public class WSTestCase {
     private static String performCall(String params, String request) throws Exception {
         URL url = new URL("http://localhost:8080/ws-example/" + params);
         UrlConnectionTask task = new UrlConnectionTask(url, request);
-        PollingUtils.retryWithTimeout(1500, task);
+        PollingUtils.retryWithTimeout(10000, task);
         return task.getResponse();
     }
 }

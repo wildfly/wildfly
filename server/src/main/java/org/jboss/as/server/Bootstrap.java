@@ -42,6 +42,7 @@ import org.jboss.threads.AsyncFuture;
  * The application server bootstrap interface.  Get a new instance via {@link Factory#newInstance()}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Thomas.Diesler@jboss.com
  */
 public interface Bootstrap {
 
@@ -55,16 +56,25 @@ public interface Bootstrap {
      * @param extraServices additional services to start and stop with the server instance
      * @return the future service container
      */
-    AsyncFuture<ServiceContainer> start(Configuration configuration, List<ServiceActivator> extraServices);
+    AsyncFuture<ServiceContainer> bootstrap(Configuration configuration, List<ServiceActivator> extraServices);
+
+    /**
+     * Calls {@link #bootstrap(Configuration, List)} to bootstrap the container. The value for the returned future
+     * becomes available when all installed services have been started/failed.
+     *
+     * @param configuration the server configuration
+     * @param extraServices additional services to start and stop with the server instance
+     * @return the future service container
+     */
+    AsyncFuture<ServiceContainer> startup(Configuration configuration, List<ServiceActivator> extraServices);
 
     /**
      * The configuration for server bootstrap.
      */
     final class Configuration {
 
-        private int portOffset;
         private ServerEnvironment serverEnvironment;
-        private ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        private ModuleLoader moduleLoader = Module.getBootModuleLoader();
         private ExtensibleConfigurationPersister configurationPersister;
         private long startTime = Module.getStartTime();
 
@@ -77,7 +87,6 @@ public interface Bootstrap {
             if (portOffset < 0) {
                 throw new IllegalArgumentException("portOffset may not be less than 0");
             }
-            this.portOffset = portOffset;
         }
 
         /**
@@ -128,7 +137,7 @@ public interface Bootstrap {
                 }
                 else {
                     QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-                    StandaloneXml parser = new StandaloneXml(Module.getSystemModuleLoader());
+                    StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader());
                     configurationPersister = new BackupXmlConfigurationPersister(new File(serverEnvironment.getServerConfigurationDir(), "standalone.xml"), rootElement, parser, parser);
                 }
             }

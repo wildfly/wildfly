@@ -70,7 +70,7 @@ public class RarTestCase {
         InitialContext context = new InitialContext();
         //HelloWorldConnectionFactory factory = (HelloWorldConnectionFactory)context.lookup(JNDI_NAME);
         JndiLookupTask task = new JndiLookupTask(context, JNDI_NAME);
-        PollingUtils.retryWithTimeout(3000, task);
+        PollingUtils.retryWithTimeout(10000, task);
         HelloWorldConnectionFactory factory = task.getResult(HelloWorldConnectionFactory.class);
 
         HelloWorldConnection conn = factory.getConnection();

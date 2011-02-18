@@ -18,11 +18,8 @@ package org.jboss.as.test.embedded.demos.osgi;
 
 import java.io.InputStream;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.api.ArchiveProvider;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.osgi.OSGiContainer;
 import org.jboss.as.test.embedded.demos.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.embedded.demos.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
@@ -41,8 +38,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SimpleArchiveProviderTestCase {
 
-    @Inject
-    public OSGiContainer container;
+//    @Inject
+//    public OSGiContainer container;
 
     @Test
     public void testBundleInjection() throws Exception {

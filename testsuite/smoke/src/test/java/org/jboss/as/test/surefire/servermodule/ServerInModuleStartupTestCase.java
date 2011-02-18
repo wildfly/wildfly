@@ -55,7 +55,7 @@ public class ServerInModuleStartupTestCase {
         configuration.setModuleLoader(Module.getSystemModuleLoader());
         configuration.setPortOffset(0);
 
-        final ServiceContainer container = bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
+        final ServiceContainer container = bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
         Assert.assertNotNull(container);
         container.shutdown();
         container.awaitTermination();

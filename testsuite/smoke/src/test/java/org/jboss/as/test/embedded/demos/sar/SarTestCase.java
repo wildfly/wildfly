@@ -57,7 +57,7 @@ public class SarTestCase {
         MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
         ObjectName objectName = new ObjectName("jboss:name=test,type=config");
 
-        PollingUtils.retryWithTimeout(2000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
+        PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
 
         Object o = mbeanServer.getAttribute(objectName, "IntervalSeconds");
         mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));

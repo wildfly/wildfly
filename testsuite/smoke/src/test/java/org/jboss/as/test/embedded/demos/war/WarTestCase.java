@@ -67,7 +67,7 @@ public class WarTestCase {
     private static String performCall(String urlPattern, String param) throws Exception {
         URL url = new URL("http://localhost:8080/war-example/" + urlPattern + "?input=" + param);
         UrlConnectionTask task = new UrlConnectionTask(url);
-        PollingUtils.retryWithTimeout(1000, task);
+        PollingUtils.retryWithTimeout(10000, task);
         return task.getResponse();
     }
 }

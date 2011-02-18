@@ -29,7 +29,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -61,10 +61,10 @@ public class PollingUtils {
     }
 
     public static class WaitForMBeanTask implements Task {
-        private final MBeanServer server;
+        private final MBeanServerConnection server;
         private final ObjectName name;
 
-        public WaitForMBeanTask(MBeanServer server, ObjectName name) {
+        public WaitForMBeanTask(MBeanServerConnection server, ObjectName name) {
             this.server = server;
             this.name = name;
         }

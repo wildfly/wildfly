@@ -53,17 +53,22 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
+import org.jboss.threads.JBossExecutors;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ApplicationServerService implements Service<Void> {
+final class ApplicationServerService implements Service<AsyncFuture<ServiceContainer>> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as");
     private static final Logger configLog = Logger.getLogger("org.jboss.as.config");
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
+    private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
+
 
     ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
         this.extraServices = extraServices;
@@ -101,13 +106,15 @@ final class ApplicationServerService implements Service<Void> {
         final ServiceTarget serviceTarget = context.getChildTarget();
         final ServiceController<?> myController = context.getController();
         final ServiceContainer container = myController.getServiceContainer();
+        futureContainer = new FutureServiceContainer(container);
+
         long startTime = this.startTime;
         if (startTime == -1) {
             startTime = System.currentTimeMillis();
         } else {
             this.startTime = -1;
         }
-        final BootstrapListener bootstrapListener = new BootstrapListener(startTime, serviceTarget);
+        final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer);
         serviceTarget.addListener(bootstrapListener);
         myController.addListener(bootstrapListener);
         ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir());
@@ -163,8 +170,8 @@ final class ApplicationServerService implements Service<Void> {
     }
 
     @Override
-    public Void getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
+    public AsyncFuture<ServiceContainer> getValue() throws IllegalStateException, IllegalArgumentException {
+        return futureContainer;
     }
 
     private static class BootstrapListener extends AbstractServiceListener<Object> {
@@ -176,11 +183,15 @@ final class ApplicationServerService implements Service<Void> {
         private final AtomicInteger missingDeps = new AtomicInteger();
         private final EnumMap<ServiceController.Mode, AtomicInteger> map;
         private final ServiceTarget serviceTarget;
+        private final ServiceContainer serviceContainer;
+        private final FutureServiceContainer futureContainer;
         private final long startTime;
         private final Set<ServiceName> missingDepsSet = Collections.synchronizedSet(new TreeSet<ServiceName>());
         private volatile boolean cancelLikely;
 
-        public BootstrapListener(final long startTime, final ServiceTarget serviceTarget) {
+        public BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget, final FutureServiceContainer futureContainer) {
+            this.serviceContainer = serviceContainer;
+            this.futureContainer = futureContainer;
             this.startTime = startTime;
             this.serviceTarget = serviceTarget;
             final EnumMap<ServiceController.Mode, AtomicInteger> map = new EnumMap<ServiceController.Mode, AtomicInteger>(ServiceController.Mode.class);
@@ -245,7 +256,7 @@ final class ApplicationServerService implements Service<Void> {
         private void check() {
             int outstanding = this.outstanding.get();
             if (outstanding == missingDeps.get()) {
-                finish(outstanding);
+                finish(serviceContainer, outstanding);
             }
         }
 
@@ -254,10 +265,10 @@ final class ApplicationServerService implements Service<Void> {
             if (outstanding != missingDeps.get()) {
                 return;
             }
-            finish(outstanding);
+            finish(serviceContainer, outstanding);
         }
 
-        private void finish(final int outstanding) {
+        private void finish(final ServiceContainer container, final int outstanding) {
             if (done.getAndSet(true)) {
                 return;
             }
@@ -265,6 +276,7 @@ final class ApplicationServerService implements Service<Void> {
             if (cancelLikely) {
                 return;
             }
+            futureContainer.done(container);
             final int failed = this.failed.get() + outstanding;
             final long elapsedTime = Math.max(System.currentTimeMillis() - startTime, 0L);
             final Logger log = Logger.getLogger("org.jboss.as");
@@ -288,6 +300,17 @@ final class ApplicationServerService implements Service<Void> {
                 }
                 log.error(b);
             }
+        }
+    }
+
+    private static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
+
+        public FutureServiceContainer(final ServiceContainer container) {
+            super(JBossExecutors.directExecutor());
+        }
+
+        void done(final ServiceContainer container) {
+            setResult(container);
         }
     }
 }

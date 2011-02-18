@@ -54,6 +54,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
+import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -179,6 +180,7 @@ public class JmsClientTestCase {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
+        PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
         return expected.cast(o);
     }

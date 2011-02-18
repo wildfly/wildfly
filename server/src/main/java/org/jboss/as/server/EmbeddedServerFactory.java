@@ -140,7 +140,7 @@ public class EmbeddedServerFactory {
                     setModuleLoaderMethod.invoke(configuration, moduleLoader);
 
                     Class<?> bootstrapClass = serverModuleClassLoader.loadClass(Bootstrap.class.getName());
-                    Method bootstrapStartMethod = bootstrapClass.getMethod("start", configurationClass, List.class);
+                    Method bootstrapStartMethod = bootstrapClass.getMethod("startup", configurationClass, List.class);
                     Object future = bootstrapStartMethod.invoke(bootstrap, configuration, Collections.<ServiceActivator>emptyList());
 
                     Class<?> asyncFutureClass = serverModuleClassLoader.loadClass(AsyncFuture.class.getName());

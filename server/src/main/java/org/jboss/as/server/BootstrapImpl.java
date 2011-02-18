@@ -47,7 +47,7 @@ final class BootstrapImpl implements Bootstrap {
     private final ServiceContainer container = ServiceContainer.Factory.create("jboss-as");
 
     @Override
-    public AsyncFuture<ServiceContainer> start(final Configuration configuration, final List<ServiceActivator> extraServices) {
+    public AsyncFuture<ServiceContainer> bootstrap(final Configuration configuration, final List<ServiceActivator> extraServices) {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
@@ -114,6 +114,19 @@ final class BootstrapImpl implements Bootstrap {
         return future;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public AsyncFuture<ServiceContainer> startup(Configuration configuration, List<ServiceActivator> extraServices) {
+        try {
+            ServiceContainer container = bootstrap(configuration, extraServices).get();
+            ServiceController<?> controller = container.getRequiredService(Services.JBOSS_AS);
+            AsyncFuture<ServiceContainer> startupFuture = (AsyncFuture<ServiceContainer>) controller.getValue();
+            return startupFuture;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Cannot start server", ex);
+        }
+    }
+
     private static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
         private final ServiceContainer container;
 
@@ -139,10 +152,6 @@ final class BootstrapImpl implements Bootstrap {
 
         void failed(Throwable t) {
             setFailed(t);
-        }
-
-        void failed(final int failed) {
-            setFailed(new Exception(String.format("Server failed to start (%d services failed)", Integer.valueOf(failed))));
         }
     }
 }

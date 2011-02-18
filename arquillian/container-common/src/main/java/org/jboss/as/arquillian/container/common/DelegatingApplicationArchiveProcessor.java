@@ -21,7 +21,6 @@ import java.util.jar.Manifest;
 import org.jboss.arquillian.osgi.OSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.spi.ApplicationArchiveProcessor;
 import org.jboss.arquillian.spi.TestClass;
-import org.jboss.arquillian.testenricher.osgi.OSGiTestEnricher;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
 
@@ -47,11 +46,6 @@ public class DelegatingApplicationArchiveProcessor implements ApplicationArchive
     }
 
     private boolean isBundleArchive(TestClass testClass, Archive<?> appArchive) {
-
-        // Check if the test class is a valid OSGi injection target
-        if (OSGiTestEnricher.isInjectionTarget(testClass.getJavaClass()))
-            return true;
-
         // Check if the archive contains a valid OSGi manifest
         Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
         if (BundleInfo.isValidateBundleManifest(manifest))

@@ -81,7 +81,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                 return updates;
             }
         });
-        bootstrap.start(configuration, startServices);
+        bootstrap.bootstrap(configuration, startServices);
     }
 
     @Override
