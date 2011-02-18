@@ -36,6 +36,8 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
@@ -99,16 +101,34 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
      * @return
      */
     private boolean isWSDeployment(DeploymentUnit unit) {
-        final DotName webserviceAnnotation = DotName.createSimple(WebService.class.getName());
         final DotName webserviceProviderAnnotation = DotName.createSimple(WebServiceProvider.class.getName());
         final Index index = ASHelper.getRootAnnotationIndex(unit);
         if (index == null) {
             // this should only happen with ear modules
             return false;
         }
-        final List<AnnotationInstance> wsAnnList = index.getAnnotations(webserviceAnnotation);
         final List<AnnotationInstance> wsProvAnnList = index.getAnnotations(webserviceProviderAnnotation);
-        return (wsAnnList != null && wsAnnList.size() > 0) || (wsProvAnnList != null && wsProvAnnList.size() > 0);
+
+        return hasWebServiceImpl(index) || (wsProvAnnList != null && wsProvAnnList.size() > 0);
+    }
+
+    private boolean hasWebServiceImpl(Index index) {
+        final DotName webserviceAnnotation = DotName.createSimple(WebService.class.getName());
+        final List<AnnotationInstance> wsAnnList = index.getAnnotations(webserviceAnnotation);
+        if (wsAnnList != null) {
+            for (AnnotationInstance ai : wsAnnList) {
+                AnnotationTarget target = ai.target();
+                if (target instanceof ClassInfo) {
+                    short flags = ((ClassInfo) target).flags();
+                    // Interfaces have 0x200 and 0x400 flags ON
+                    // http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html
+                    if (flags < 0x600) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void undeploy(final DeploymentUnit context) {
