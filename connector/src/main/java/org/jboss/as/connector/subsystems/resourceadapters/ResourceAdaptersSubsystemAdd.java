@@ -165,10 +165,10 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
                 for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
                     configProperties.put(property.asProperty().getName(), property.asString());
                 }
-                String archive = operation.get(ARCHIVE).asString();
-                TransactionSupportEnum transactionSupport = TransactionSupportEnum.valueOf(operation.get(TRANSACTIONSUPPORT)
-                        .asString());
-                String bootstrapContext = operation.get(BOOTSTRAPCONTEXT).asString();
+                String archive = getStringIfSetOrGetDefault(operation, ARCHIVE, null);
+                TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTIONSUPPORT) ? TransactionSupportEnum
+                        .valueOf(operation.get(TRANSACTIONSUPPORT).asString()) : null;
+                String bootstrapContext = getStringIfSetOrGetDefault(operation, BOOTSTRAPCONTEXT, null);
                 List<String> beanValidationGroups = new ArrayList<String>(operation.get(BEANVALIDATIONGROUPS).asList().size());
                 for (ModelNode beanValidtion : operation.get(BEANVALIDATIONGROUPS).asList()) {
                     beanValidationGroups.add(beanValidtion.asString());
@@ -195,32 +195,33 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             for (ModelNode property : conDefNode.get(CONFIG_PROPERTIES).asList()) {
                 configProperties.put(property.asProperty().getName(), property.asString());
             }
-            String className = conDefNode.get(CLASS_NAME).asString();
-            String jndiName = conDefNode.get(JNDI_NAME).asString();
-            String poolName = conDefNode.get(POOLNAME).asString();
-            boolean enabled = conDefNode.get(ENABLED).asBoolean();
-            boolean useJavaContext = conDefNode.get(USE_JAVA_CONTEXT).asBoolean();
+            String className = getStringIfSetOrGetDefault(conDefNode, CLASS_NAME, null);
+            String jndiName = getStringIfSetOrGetDefault(conDefNode, JNDI_NAME, null);
+            String poolName = getStringIfSetOrGetDefault(conDefNode, POOLNAME, null);
+            boolean enabled = getBooleanIfSetOrGetDefault(conDefNode, ENABLED, false);
+            boolean useJavaContext = getBooleanIfSetOrGetDefault(conDefNode, USE_JAVA_CONTEXT, false);
 
-            Integer maxPoolSize = conDefNode.get(MAX_POOL_SIZE).asInt();
-            Integer minPoolSize = conDefNode.get(MIN_POOL_SIZE).asInt();
-            boolean prefill = conDefNode.get(POOL_PREFILL).asBoolean();
-            boolean useStrictMin = conDefNode.get(POOL_USE_STRICT_MIN).asBoolean();
+            Integer maxPoolSize = getIntIfSetOrGetDefault(conDefNode, MAX_POOL_SIZE, null);
+            Integer minPoolSize = getIntIfSetOrGetDefault(conDefNode, MIN_POOL_SIZE, null);
+            boolean prefill = getBooleanIfSetOrGetDefault(conDefNode, POOL_PREFILL, false);
+            boolean useStrictMin = getBooleanIfSetOrGetDefault(conDefNode, POOL_USE_STRICT_MIN, false);
 
-            Integer allocationRetry = conDefNode.get(ALLOCATION_RETRY).asInt();
-            Long allocationRetryWaitMillis = conDefNode.get(ALLOCATION_RETRY_WAIT_MILLIS).asLong();
-            Long blockingTimeoutMillis = conDefNode.get(BLOCKING_TIMEOUT_WAIT_MILLIS).asLong();
-            Long idleTimeoutMinutes = conDefNode.get(IDLETIMEOUTMINUTES).asLong();
-            Integer xaResourceTimeout = conDefNode.get(XA_RESOURCE_TIMEOUT).asInt();
+            Integer allocationRetry = getIntIfSetOrGetDefault(conDefNode, ALLOCATION_RETRY, null);
+            Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(conDefNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
+            Long blockingTimeoutMillis = getLongIfSetOrGetDefault(conDefNode, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
+            Long idleTimeoutMinutes = getLongIfSetOrGetDefault(conDefNode, IDLETIMEOUTMINUTES, null);
+            Integer xaResourceTimeout = getIntIfSetOrGetDefault(conDefNode, XA_RESOURCE_TIMEOUT, null);
             CommonTimeOut timeOut = new CommonTimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                     allocationRetryWaitMillis, xaResourceTimeout);
             CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin);
 
-            CommonSecurity security = new CommonSecurityImpl(conDefNode.get(USERNAME).asString(), conDefNode.get(PASSWORD)
-                    .asString());
+            String username = getStringIfSetOrGetDefault(conDefNode, USERNAME, null);
+            String password = getStringIfSetOrGetDefault(conDefNode, PASSWORD, null);
+            CommonSecurity security = new CommonSecurityImpl(username, password);
 
-            Long backgroundValidationMinutes = conDefNode.get(BACKGROUNDVALIDATIONMINUTES).asLong();
-            boolean backgroundValidation = conDefNode.get(BACKGROUNDVALIDATION).asBoolean();
-            boolean useFastFail = conDefNode.get(USE_FAST_FAIL).asBoolean();
+            Long backgroundValidationMinutes = getLongIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATIONMINUTES, null);
+            boolean backgroundValidation = getBooleanIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATION, false);
+            boolean useFastFail = getBooleanIfSetOrGetDefault(conDefNode, USE_FAST_FAIL, false);
             CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMinutes,
                     useFastFail);
 
@@ -235,17 +236,17 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
     private List<CommonAdminObject> buildAdminObjects(ModelNode parentNode) {
         List<CommonAdminObject> adminObjets = new ArrayList<CommonAdminObject>();
 
-        for (ModelNode conDefNode : parentNode.get(ADMIN_OBJECTS).asList()) {
-            Map<String, String> configProperties = new HashMap<String, String>(conDefNode.get(CONFIG_PROPERTIES).asList()
+        for (ModelNode adminObject : parentNode.get(ADMIN_OBJECTS).asList()) {
+            Map<String, String> configProperties = new HashMap<String, String>(adminObject.get(CONFIG_PROPERTIES).asList()
                     .size());
-            for (ModelNode property : conDefNode.get(CONFIG_PROPERTIES).asList()) {
+            for (ModelNode property : adminObject.get(CONFIG_PROPERTIES).asList()) {
                 configProperties.put(property.asProperty().getName(), property.asString());
             }
-            String className = conDefNode.get(CLASS_NAME).asString();
-            String jndiName = conDefNode.get(JNDI_NAME).asString();
-            String poolName = conDefNode.get(POOLNAME).asString();
-            boolean enabled = conDefNode.get(ENABLED).asBoolean();
-            boolean useJavaContext = conDefNode.get(USE_JAVA_CONTEXT).asBoolean();
+            String className = getStringIfSetOrGetDefault(adminObject, CLASS_NAME, null);
+            String jndiName = getStringIfSetOrGetDefault(adminObject, JNDI_NAME, null);
+            String poolName = getStringIfSetOrGetDefault(adminObject, POOLNAME, null);
+            boolean enabled = getBooleanIfSetOrGetDefault(adminObject, ENABLED, false);
+            boolean useJavaContext = getBooleanIfSetOrGetDefault(adminObject, USE_JAVA_CONTEXT, false);
 
             CommonAdminObject adminObjet = new CommonAdminObjectImpl(configProperties, className, jndiName, poolName, enabled,
                     useJavaContext);
@@ -253,5 +254,37 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             adminObjets.add(adminObjet);
         }
         return adminObjets;
+    }
+
+    private Long getLongIfSetOrGetDefault(ModelNode dataSourceNode, String key, Long defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asLong();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private Integer getIntIfSetOrGetDefault(ModelNode dataSourceNode, String key, Integer defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asInt();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private boolean getBooleanIfSetOrGetDefault(ModelNode dataSourceNode, String key, boolean defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asBoolean();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private String getStringIfSetOrGetDefault(ModelNode dataSourceNode, String key, String defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asString();
+        } else {
+            return defaultValue;
+        }
     }
 }

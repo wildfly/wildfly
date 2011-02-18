@@ -117,7 +117,6 @@ import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Handler for adding the datasource subsystem.
- *
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
@@ -221,57 +220,55 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                 } else {
                     connectionProperties = Collections.EMPTY_MAP;
                 }
-                String connectionUrl = dataSourceNode.get(CONNECTION_URL).asString();
-                String driverClass = dataSourceNode.get(DRIVER_CLASS).asString();
-                String jndiName = dataSourceNode.get(JNDINAME).asString();
-                String module = dataSourceNode.get(MODULE).asString();
-                String newConnectionSql = dataSourceNode.get(NEW_CONNECTION_SQL).asString();
-                String poolName = dataSourceNode.get(POOLNAME).asString();
-                String urlDelimiter = dataSourceNode.get(URL_DELIMITER).asString();
-                String urlSelectorStrategyClassName = dataSourceNode.get(URL_SELECTOR_STRATEGY_CLASS_NAME).asString();
-                boolean useJavaContext = dataSourceNode.get(USE_JAVA_CONTEXT).asBoolean();
-                boolean enabled = dataSourceNode.get(ENABLED).asBoolean();
-                Integer maxPoolSize = dataSourceNode.has(MAX_POOL_SIZE) ? dataSourceNode.get(MAX_POOL_SIZE).asInt() : null;
-                Integer minPoolSize = dataSourceNode.has(MIN_POOL_SIZE) ? dataSourceNode.get(MIN_POOL_SIZE).asInt() : null;
-                boolean prefill = dataSourceNode.get(POOL_PREFILL).asBoolean();
-                boolean useStrictMin = dataSourceNode.get(POOL_USE_STRICT_MIN).asBoolean();
+                String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
+                String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DRIVER_CLASS, null);
+                String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
+                String module = getStringIfSetOrGetDefault(dataSourceNode, MODULE, null);
+                String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
+                String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
+                String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
+                String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
+                        URL_SELECTOR_STRATEGY_CLASS_NAME, null);
+                boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
+                boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, false);
+                Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, null);
+                Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
+                boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
+                boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, false);
                 CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin);
-                CommonSecurity security = new CommonSecurityImpl(dataSourceNode.get(USERNAME).asString(), dataSourceNode.get(
-                        PASSWORD).asString());
-                boolean sharePreparedStatements = dataSourceNode.get(SHAREPREPAREDSTATEMENTS).asBoolean();
-                Long preparedStatementsCacheSize = dataSourceNode.has(PREPAREDSTATEMENTSCACHESIZE) ? dataSourceNode.get(
-                        PREPAREDSTATEMENTSCACHESIZE).asLong() : null;
-                TrackStatementsEnum trackStatements = dataSourceNode.has(TRACKSTATEMENTS) ? TrackStatementsEnum
+
+                String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
+                String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
+                CommonSecurity security = new CommonSecurityImpl(username, password);
+
+                boolean sharePreparedStatements = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
+                Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
+                TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS) ? TrackStatementsEnum
                         .valueOf(dataSourceNode.get(TRACKSTATEMENTS).asString()) : TrackStatementsEnum.NOWARN;
                 Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
-                Integer allocationRetry = dataSourceNode.has(ALLOCATION_RETRY) ? dataSourceNode.get(ALLOCATION_RETRY).asInt()
-                        : null;
-                Long allocationRetryWaitMillis = dataSourceNode.has(ALLOCATION_RETRY_WAIT_MILLIS) ? dataSourceNode.get(
-                        ALLOCATION_RETRY_WAIT_MILLIS).asLong() : null;
-                Long blockingTimeoutMillis = dataSourceNode.has(BLOCKING_TIMEOUT_WAIT_MILLIS) ? dataSourceNode.get(
-                        BLOCKING_TIMEOUT_WAIT_MILLIS).asLong() : null;
-                Long idleTimeoutMinutes = dataSourceNode.has(IDLETIMEOUTMINUTES) ? dataSourceNode.get(IDLETIMEOUTMINUTES)
-                        .asLong() : null;
-                Long queryTimeout = dataSourceNode.has(QUERYTIMEOUT) ? dataSourceNode.get(QUERYTIMEOUT).asLong() : null;
-                Integer xaResourceTimeout = dataSourceNode.has(XA_RESOURCE_TIMEOUT) ? dataSourceNode.get(XA_RESOURCE_TIMEOUT)
-                        .asInt() : null;
-                Long useTryLock = dataSourceNode.has(USETRYLOCK) ? dataSourceNode.get(USETRYLOCK).asLong() : null;
-                Boolean setTxQuertTimeout = dataSourceNode.has(SETTXQUERTTIMEOUT) ? dataSourceNode.get(SETTXQUERTTIMEOUT)
-                        .asBoolean() : null;
+                Integer allocationRetry = getIntIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY, null);
+                Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
+                Long blockingTimeoutMillis = getLongIfSetOrGetDefault(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
+                Long idleTimeoutMinutes = getLongIfSetOrGetDefault(dataSourceNode, IDLETIMEOUTMINUTES, null);
+                Long queryTimeout = getLongIfSetOrGetDefault(dataSourceNode, QUERYTIMEOUT, null);
+                Integer xaResourceTimeout = getIntIfSetOrGetDefault(dataSourceNode, XA_RESOURCE_TIMEOUT, null);
+                Long useTryLock = getLongIfSetOrGetDefault(dataSourceNode, USETRYLOCK, null);
+                boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERTTIMEOUT, false);
                 TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                         allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
                 TransactionIsolation transactionIsolation = dataSourceNode.has(TRANSACTION_ISOLOATION) ? TransactionIsolation
                         .valueOf(dataSourceNode.get(TRANSACTION_ISOLOATION).asString()) : null;
-                String checkValidConnectionSql = dataSourceNode.get(CHECKVALIDCONNECTIONSQL).asString();
-                String exceptionSorterClassName = dataSourceNode.get(EXCEPTIONSORTERCLASSNAME).asString();
-                String staleConnectionCheckerClassName = dataSourceNode.get(STALECONNECTIONCHECKERCLASSNAME).asString();
-                String validConnectionCheckerClassName = dataSourceNode.get(VALIDCONNECTIONCHECKERCLASSNAME).asString();
-                Long backgroundValidationMinutes = dataSourceNode.has(BACKGROUNDVALIDATIONMINUTES) ? dataSourceNode.get(
-                        BACKGROUNDVALIDATIONMINUTES).asLong() : null;
-                boolean backgroundValidation = dataSourceNode.get(BACKGROUNDVALIDATION).asBoolean();
-                boolean useFastFail = dataSourceNode.get(USE_FAST_FAIL).asBoolean();
-                boolean validateOnMatch = dataSourceNode.get(VALIDATEONMATCH).asBoolean();
+                String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
+                String exceptionSorterClassName = getStringIfSetOrGetDefault(dataSourceNode, EXCEPTIONSORTERCLASSNAME, null);
+                String staleConnectionCheckerClassName = getStringIfSetOrGetDefault(dataSourceNode,
+                        STALECONNECTIONCHECKERCLASSNAME, null);
+                String validConnectionCheckerClassName = getStringIfSetOrGetDefault(dataSourceNode,
+                        VALIDCONNECTIONCHECKERCLASSNAME, null);
+                Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES, null);
+                boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
+                boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
+                boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
                 Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
                         validConnectionCheckerClassName, checkValidConnectionSql, validateOnMatch,
                         staleConnectionCheckerClassName, exceptionSorterClassName);
@@ -289,54 +286,60 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                 for (ModelNode property : dataSourceNode.get(XADATASOURCEPROPERTIES).asList()) {
                     xaDataSourceProperty.put(property.asProperty().getName(), property.asString());
                 }
-                String xaDataSourceClass = dataSourceNode.get(XADATASOURCECLASS).asString();
-                String jndiName = dataSourceNode.get(JNDINAME).asString();
-                String module = dataSourceNode.get(MODULE).asString();
-                String newConnectionSql = dataSourceNode.get(NEW_CONNECTION_SQL).asString();
-                String poolName = dataSourceNode.get(POOLNAME).asString();
-                String urlDelimiter = dataSourceNode.get(URL_DELIMITER).asString();
-                String urlSelectorStrategyClassName = dataSourceNode.get(URL_SELECTOR_STRATEGY_CLASS_NAME).asString();
-                boolean useJavaContext = dataSourceNode.get(USE_JAVA_CONTEXT).asBoolean();
-                boolean enabled = dataSourceNode.get(ENABLED).asBoolean();
-                Integer maxPoolSize = dataSourceNode.get(MAX_POOL_SIZE).asInt();
-                Integer minPoolSize = dataSourceNode.get(MIN_POOL_SIZE).asInt();
-                boolean prefill = dataSourceNode.get(POOL_PREFILL).asBoolean();
-                boolean useStrictMin = dataSourceNode.get(POOL_USE_STRICT_MIN).asBoolean();
-                boolean interleaving = dataSourceNode.get(INTERLIVING).asBoolean();
-                boolean noTxSeparatePool = dataSourceNode.get(NOTXSEPARATEPOOL).asBoolean();
-                boolean padXid = dataSourceNode.get(PAD_XID).asBoolean();
-                boolean isSameRmOverride = dataSourceNode.get(SAME_RM_OVERRIDE).asBoolean();
-                boolean wrapXaDataSource = dataSourceNode.get(WRAP_XA_DATASOURCE).asBoolean();
+                String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
+                String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
+                String module = getStringIfSetOrGetDefault(dataSourceNode, MODULE, null);
+                String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
+                String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
+                String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
+                String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
+                        URL_SELECTOR_STRATEGY_CLASS_NAME, null);
+                boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
+                boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, false);
+                Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, null);
+                Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
+                boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
+                boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, false);
+                boolean interleaving = getBooleanIfSetOrGetDefault(dataSourceNode, INTERLIVING, false);
+                boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(dataSourceNode, NOTXSEPARATEPOOL, false);
+                boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, false);
+                boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, false);
+                boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_DATASOURCE, false);
                 CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, isSameRmOverride,
                         interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
-                CommonSecurity security = new CommonSecurityImpl(dataSourceNode.get(USERNAME).asString(), dataSourceNode.get(
-                        PASSWORD).asString());
-                boolean sharePreparedStatements = dataSourceNode.get(SHAREPREPAREDSTATEMENTS).asBoolean();
+                String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
+                String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
+
+                CommonSecurity security = new CommonSecurityImpl(username, password);
+                boolean sharePreparedStatements = dataSourceNode.has(SHAREPREPAREDSTATEMENTS) ? dataSourceNode.get(
+                        SHAREPREPAREDSTATEMENTS).asBoolean() : false;
                 Long preparedStatementsCacheSize = dataSourceNode.get(PREPAREDSTATEMENTSCACHESIZE).asLong();
                 TrackStatementsEnum trackStatements = TrackStatementsEnum.valueOf(dataSourceNode.get(TRACKSTATEMENTS)
                         .asString());
                 Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
-                Integer allocationRetry = dataSourceNode.get(ALLOCATION_RETRY).asInt();
-                Long allocationRetryWaitMillis = dataSourceNode.get(ALLOCATION_RETRY_WAIT_MILLIS).asLong();
-                Long blockingTimeoutMillis = dataSourceNode.get(BLOCKING_TIMEOUT_WAIT_MILLIS).asLong();
-                Long idleTimeoutMinutes = dataSourceNode.get(IDLETIMEOUTMINUTES).asLong();
-                Long queryTimeout = dataSourceNode.get(QUERYTIMEOUT).asLong();
-                Integer xaResourceTimeout = dataSourceNode.get(XA_RESOURCE_TIMEOUT).asInt();
-                Long useTryLock = dataSourceNode.get(USETRYLOCK).asLong();
-                Boolean setTxQuertTimeout = dataSourceNode.get(SETTXQUERTTIMEOUT).asBoolean();
+                Integer allocationRetry = getIntIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY, null);
+                Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
+                Long blockingTimeoutMillis = getLongIfSetOrGetDefault(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
+                Long idleTimeoutMinutes = getLongIfSetOrGetDefault(dataSourceNode, IDLETIMEOUTMINUTES, null);
+                Long queryTimeout = getLongIfSetOrGetDefault(dataSourceNode, QUERYTIMEOUT, null);
+                Integer xaResourceTimeout = getIntIfSetOrGetDefault(dataSourceNode, XA_RESOURCE_TIMEOUT, null);
+                Long useTryLock = getLongIfSetOrGetDefault(dataSourceNode, USETRYLOCK, null);
+                boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERTTIMEOUT, false);
                 TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                         allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
-                TransactionIsolation transactionIsolation = TransactionIsolation.valueOf(dataSourceNode.get(
-                        TRANSACTION_ISOLOATION).asString());
-                String checkValidConnectionSql = dataSourceNode.get(CHECKVALIDCONNECTIONSQL).asString();
-                String exceptionSorterClassName = dataSourceNode.get(EXCEPTIONSORTERCLASSNAME).asString();
-                String staleConnectionCheckerClassName = dataSourceNode.get(STALECONNECTIONCHECKERCLASSNAME).asString();
-                String validConnectionCheckerClassName = dataSourceNode.get(VALIDCONNECTIONCHECKERCLASSNAME).asString();
-                Long backgroundValidationMinutes = dataSourceNode.get(BACKGROUNDVALIDATIONMINUTES).asLong();
-                boolean backgroundValidation = dataSourceNode.get(BACKGROUNDVALIDATION).asBoolean();
-                boolean useFastFail = dataSourceNode.get(USE_FAST_FAIL).asBoolean();
-                boolean validateOnMatch = dataSourceNode.get(VALIDATEONMATCH).asBoolean();
+                TransactionIsolation transactionIsolation = dataSourceNode.has(TRANSACTION_ISOLOATION) ? TransactionIsolation
+                        .valueOf(dataSourceNode.get(TRANSACTION_ISOLOATION).asString()) : null;
+                String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
+                String exceptionSorterClassName = getStringIfSetOrGetDefault(dataSourceNode, EXCEPTIONSORTERCLASSNAME, null);
+                String staleConnectionCheckerClassName = getStringIfSetOrGetDefault(dataSourceNode,
+                        STALECONNECTIONCHECKERCLASSNAME, null);
+                String validConnectionCheckerClassName = getStringIfSetOrGetDefault(dataSourceNode,
+                        VALIDCONNECTIONCHECKERCLASSNAME, null);
+                Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES, null);
+                boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
+                boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
+                boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
                 Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
                         validConnectionCheckerClassName, checkValidConnectionSql, validateOnMatch,
                         staleConnectionCheckerClassName, exceptionSorterClassName);
@@ -350,5 +353,37 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
 
         return new DatasourcesImpl(datasourceList, xadatasourceList);
 
+    }
+
+    private Long getLongIfSetOrGetDefault(ModelNode dataSourceNode, String key, Long defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asLong();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private Integer getIntIfSetOrGetDefault(ModelNode dataSourceNode, String key, Integer defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asInt();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private boolean getBooleanIfSetOrGetDefault(ModelNode dataSourceNode, String key, boolean defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asBoolean();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private String getStringIfSetOrGetDefault(ModelNode dataSourceNode, String key, String defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return dataSourceNode.get(key).asString();
+        } else {
+            return defaultValue;
+        }
     }
 }

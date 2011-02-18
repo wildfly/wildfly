@@ -273,6 +273,7 @@ public enum Phase {
     public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1600;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1700;
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1800;
+    public static final int INSTALL_JDBC_DRIVER                         = 0x1600;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;

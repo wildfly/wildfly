@@ -157,7 +157,7 @@
             <core-environment socket-binding="txn-socket-process-id"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:connector:1.0">
-            <archive-validation enabled="true" />
+            <archive-validation enabled="false" />
             <bean-validation enabled="false" />
             <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
         </subsystem>               
@@ -166,7 +166,7 @@
                 <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver-class>org.h2.Driver</driver-class>
-                    <module>com.h2database.h2</module>
+                    <module>org.h2.Driver#1.2</module>
                     <pool></pool>
                     <security> 
                         <user-name>sa</user-name>

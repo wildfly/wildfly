@@ -1,0 +1,91 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.connector.deployers.processors;
+
+import java.lang.reflect.Constructor;
+import java.sql.Driver;
+import java.util.List;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ServicesAttachment;
+import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
+
+/**
+ * Deploy any JDBC drivers in a deployment unit.
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ */
+public final class DriverProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployers.jdbc");
+
+    /** {@inheritDoc} */
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        final ServicesAttachment servicesAttachment = deploymentUnit.getAttachment(Attachments.SERVICES);
+        if (module != null && servicesAttachment != null) {
+            final ModuleClassLoader classLoader = module.getClassLoader();
+            final List<String> driverNames = servicesAttachment.getServiceImplementations(Driver.class.getName());
+            for (String driverName : driverNames) {
+                try {
+                    final Class<? extends Driver> driverClass = classLoader.loadClass(driverName).asSubclass(Driver.class);
+                    final Constructor<? extends Driver> constructor = driverClass.getConstructor();
+                    final Driver driver = constructor.newInstance();
+                    final int majorVersion = driver.getMajorVersion();
+                    final int minorVersion = driver.getMinorVersion();
+                    final boolean compliant = driver.jdbcCompliant();
+                    if (compliant) {
+                        log.infof("Deploying JDBC-compliant driver %s (version %d.%d)", driverClass,
+                                Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
+                    } else {
+                        log.infof("Deploying non-JDBC-compliant driver %s (version %d.%d)", driverClass,
+                                Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
+                    }
+                    phaseContext
+                            .getServiceTarget()
+                            .addService(
+                                    ServiceName.JBOSS.append("jdbc-driver", driverName, Integer.toString(majorVersion),
+                                            Integer.toString(minorVersion)),
+                                    new ValueService<Driver>(new ImmediateValue<Driver>(driver))).setInitialMode(Mode.ACTIVE)
+                            .install();
+
+                } catch (Exception e) {
+                    log.warnf("Unable to instantiate driver class \"%s\": %s", driverName, e);
+                }
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void undeploy(final DeploymentUnit context) {
+    }
+}

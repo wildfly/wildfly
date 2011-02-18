@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.metadata.deployment;
 
-import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -31,10 +30,13 @@ import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.transaction.TransactionManager;
+
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
+import org.jboss.as.connector.services.JndiService;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -52,17 +54,23 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 
 /**
  * A ResourceAdapterDeploymentService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class ResourceAdapterDeploymentService extends AbstractResourceAdapterDeploymentService implements Service<ResourceAdapterDeployment> {
+public final class ResourceAdapterDeploymentService extends AbstractResourceAdapterDeploymentService implements
+        Service<ResourceAdapterDeployment> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
 
@@ -74,7 +82,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txm = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
-    public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd, final IronJacamar ijmd, final Module module) {
+    public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd,
+            final IronJacamar ijmd, final Module module) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.cmd = cmd;
         this.ijmd = ijmd;
@@ -83,7 +92,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
     @Override
     public void start(StartContext context) throws StartException {
-        final AS7RaDeployer raDeployer = new AS7RaDeployer();
+        final ServiceContainer container = context.getController().getServiceContainer();
+        final AS7RaDeployer raDeployer = new AS7RaDeployer(container);
         raDeployer.setConfiguration(config.getValue());
         final URL url = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getUrl();
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
@@ -98,7 +108,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         value = new ResourceAdapterDeployment(module.getIdentifier(), raDeployment);
         registry.getValue().registerResourceAdapterDeployment(value);
 
-        log.debugf("Starting sevice %s", ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+        log.debugf("Starting sevice %s",
+                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
     }
 
     /**
@@ -130,10 +141,12 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private class AS7RaDeployer extends AbstractResourceAdapterDeployer {
 
         private String deploymentName;
+        private final ServiceContainer serviceContainer;
 
-        public AS7RaDeployer() {
+        public AS7RaDeployer(ServiceContainer serviceContainer) {
             // validate at class level
             super(true, ParsedRaDeploymentProcessor.log);
+            this.serviceContainer = serviceContainer;
         }
 
         public CommonDeployment doDeploy(URL url, String deploymentName, File root, ClassLoader cl, Connector cmd,
@@ -165,6 +178,11 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
             log.infof("Bound connection factory at %s", jndi);
 
+            final JndiService jndiService = new JndiService(cf, jndi);
+            ServiceBuilder<?> serviceBuilder = serviceContainer.addService(JndiService.SERVICE_NAME_BASE.append(jndi),
+                    jndiService).setInitialMode(ServiceController.Mode.ACTIVE);
+            serviceBuilder.install();
+
             return result;
         }
 
@@ -182,6 +200,11 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             mdr.getValue().registerJndiMapping(url.toExternalForm(), ao.getClass().getName(), jndi);
 
             log.infof("Bound admin object at %s", jndi);
+
+            final JndiService jndiService = new JndiService(ao, jndi);
+            ServiceBuilder<?> serviceBuilder = serviceContainer.addService(JndiService.SERVICE_NAME_BASE.append(jndi),
+                    jndiService).setInitialMode(ServiceController.Mode.ACTIVE);
+            serviceBuilder.install();
 
             return result;
         }

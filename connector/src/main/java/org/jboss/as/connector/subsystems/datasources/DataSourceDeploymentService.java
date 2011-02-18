@@ -22,13 +22,15 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
+
 import javax.transaction.TransactionManager;
+
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.as.connector.services.JndiService;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
@@ -41,6 +43,9 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -48,9 +53,10 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
+import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
+
 /**
  * Service responsible for deploying a datasource instance.
- *
  * @author John Bailey
  */
 public class DataSourceDeploymentService implements Service<Void> {
@@ -68,7 +74,8 @@ public class DataSourceDeploymentService implements Service<Void> {
     private final DataSources datasources;
     private final Module module;
 
-    public DataSourceDeploymentService(String deploymentName, String uniqueJdbcLocalId, String uniqueJdbcXAId, DataSources datasources, Module module) {
+    public DataSourceDeploymentService(String deploymentName, String uniqueJdbcLocalId, String uniqueJdbcXAId,
+            DataSources datasources, Module module) {
         this.deploymentName = deploymentName;
         this.uniqueJdbcLocalId = uniqueJdbcLocalId;
         this.uniqueJdbcXAId = uniqueJdbcXAId;
@@ -79,10 +86,12 @@ public class DataSourceDeploymentService implements Service<Void> {
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
         try {
-            AS7Deployer deployer = new AS7Deployer(jndiStrategy.getValue(), module.getClassLoader(), log);
+            final ServiceContainer container = context.getController().getServiceContainer();
+            AS7Deployer deployer = new AS7Deployer(jndiStrategy.getValue(), module.getClassLoader(), log, container);
             deployer.setTransactionManager(getTransactionManager());
             deployer.setMetadataRepository(mdr.getValue());
-            deployer.doDeploy(new URL("file://DataSourceDeployment"), deploymentName, uniqueJdbcLocalId, uniqueJdbcXAId, datasources, module.getClassLoader());
+            CommonDeployment deployment = deployer.doDeploy(new URL("file://DataSourceDeployment"), deploymentName,
+                    uniqueJdbcLocalId, uniqueJdbcXAId, datasources, module.getClassLoader());
         } catch (Throwable t) {
             throw new StartException("Failed to deploy dataSource", t);
         }
@@ -101,20 +110,23 @@ public class DataSourceDeploymentService implements Service<Void> {
 
         private JndiStrategy js;
         private ClassLoader cl;
+        private final ServiceContainer serviceContainer;
 
-        public AS7Deployer(JndiStrategy js, ClassLoader cl, Logger log) {
+        public AS7Deployer(JndiStrategy js, ClassLoader cl, Logger log, ServiceContainer serviceContainer) {
             super(log);
             this.js = js;
             this.cl = cl;
+            this.serviceContainer = serviceContainer;
         }
 
-        public AS7Deployer(ClassLoader cl, Logger log) {
+        public AS7Deployer(ClassLoader cl, Logger log, ServiceContainer serviceContainer) {
             super(log);
             this.cl = cl;
+            this.serviceContainer = serviceContainer;
         }
 
         public CommonDeployment doDeploy(URL url, String deploymentName, String uniqueJdbcLocalId, String uniqueJdbcXaId,
-                                         DataSources dataSources, ClassLoader parentClassLoader) throws DeployException {
+                DataSources dataSources, ClassLoader parentClassLoader) throws DeployException {
 
             return createObjectsAndInjectValue(url, deploymentName, uniqueJdbcLocalId, uniqueJdbcXaId, dataSources,
                     parentClassLoader);
@@ -127,13 +139,19 @@ public class DataSourceDeploymentService implements Service<Void> {
 
         @Override
         protected String[] bindConnectionFactory(String deployment, String jndi, Object cf) throws Throwable {
-            String[] result = js.bindConnectionFactories(deployment, new Object[]{cf}, new String[]{jndi});
+            String[] result = js.bindConnectionFactories(deployment, new Object[] { cf }, new String[] { jndi });
             log.infof("Bound Data Source at %s", jndi);
+            final JndiService jndiService = new JndiService(cf, jndi);
+            ServiceBuilder<?> serviceBuilder = serviceContainer.addService(JndiService.SERVICE_NAME_BASE.append(jndi),
+                    jndiService).setInitialMode(ServiceController.Mode.ACTIVE);
+            serviceBuilder.install();
+
             return result;
         }
 
         @Override
-        protected Object initAndInject(String className, List<? extends ConfigProperty> configs, ClassLoader cl) throws DeployException {
+        protected Object initAndInject(String className, List<? extends ConfigProperty> configs, ClassLoader cl)
+                throws DeployException {
             try {
                 Class clz = Class.forName(className, true, cl);
                 Object o = clz.newInstance();
@@ -170,7 +188,6 @@ public class DataSourceDeploymentService implements Service<Void> {
         return txm;
     }
 
-
     public Injector<MetadataRepository> getMdrInjector() {
         return mdr;
     }
@@ -188,7 +205,8 @@ public class DataSourceDeploymentService implements Service<Void> {
     }
 
     protected TransactionManager getTransactionManager() {
-        AccessController.doPrivileged(new SetContextLoaderAction(com.arjuna.ats.jbossatx.jta.TransactionManagerService.class.getClassLoader()));
+        AccessController.doPrivileged(new SetContextLoaderAction(com.arjuna.ats.jbossatx.jta.TransactionManagerService.class
+                .getClassLoader()));
         try {
             return getTxm().getValue().getTransactionManager();
         } finally {

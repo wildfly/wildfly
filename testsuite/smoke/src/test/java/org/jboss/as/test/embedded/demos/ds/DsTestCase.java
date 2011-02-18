@@ -39,17 +39,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Ignore("Ignored until connector better supports adding datasources programatically (since the ds is commented out in standalone.xml).")
+@Ignore("We need Arquillian support for multiple test deployments because we need to deploy jdbc-driver and local-jdbc.rar before the test itself")
 public class DsTestCase {
     private static final String JNDI_NAME = "java:/H2DS";
 
     @Deployment
-    public static Archive<?> getDeployment(){
+    public static Archive<?> getDeployment() {
         JavaArchive archive = ShrinkWrapUtils.createJavaArchive("demos/ds-example.jar");
         archive.addClass(DsTestCase.class);
         return archive;
