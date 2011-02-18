@@ -21,9 +21,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- 
-  Set these VM properties in your IDE debugger 
-  
+<!--
+  Set these VM properties in your IDE debugger
+
     -Djava.util.logging.manager=org.jboss.logmanager.LogManager
     -Djboss.home=../../build/target/jboss-7.0.0.Alpha2
 -->
@@ -43,14 +43,12 @@
     <version>7.0.0.Alpha2-SNAPSHOT</version>
 
     <name>JBoss Application Server: Test Suite: Smoke Tests</name>
-    
+
     <properties>
         <!-- This part of the testuite we want to execute by default. -->
-        <!--  Temporarily disabled in the detyped2 branch -->
-        <skipExecUnitTests>true</skipExecUnitTests>
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
-    </properties>    
-    
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -58,7 +56,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skipTests>false</skipTests>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>
@@ -78,8 +76,8 @@
                         <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
                     </includes>
                 </configuration>
-                
-                <executions> 
+
+                <executions>
                     <execution>
                         <!-- (Legacy) Tests not using arquillian  -->
                         <id>default-test</id>
@@ -90,7 +88,7 @@
                             </includes>
                         </configuration>
                     </execution>
-                    <execution> 
+                    <execution>
                         <!-- Tests that run using arquillian + embedded AS-->
                         <id>arquillian</id>
                         <phase>test</phase>
@@ -112,7 +110,7 @@
                             </includes>
                         </configuration>
                     </execution>
-                </executions>             
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jboss.maven.surefire.modular</groupId>
@@ -128,7 +126,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <!--  standard surefire options -->
-                    <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->                    
+                    <!-- redirectTestOutputToFile>true</redirectTestOutputToFile -->
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>
@@ -154,10 +152,10 @@
                         <root>${jboss.home}/modules</root>
                     </roots>
                 </configuration>
-            </plugin>      
+            </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
@@ -175,5 +173,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
 </project>

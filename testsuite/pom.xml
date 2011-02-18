@@ -39,10 +39,7 @@
     <name>JBoss Application Server: Test Suite: Aggregator</name>
 
     <modules>
-        <module>integration</module>
         <module>smoke</module>
-        <module>stress</module>
-        <module>benchmark</module>
         <!-- Exclude protocol tests from build until PM to Server comm is fixed
              following JBAS-8448 work
         <module>protocol</module>
@@ -50,24 +47,19 @@
     </modules>
 
     <packaging>pom</packaging>
-    
+
     <properties>
-        <!-- By default, we (and child modules that don't override this setting) 
-             don't execute unit tests; the "all-tests" profile needs to be 
-             enabled to execute them -->
-        <skipExecUnitTests>true</skipExecUnitTests>
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipExec>${skipExecUnitTests}</skipExec>
                     <argLine>${surefire.system.args}</argLine>
                     <includes>
                         <include>**/*TestCase.java</include>
@@ -76,21 +68,50 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>all-tests</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <properties>
-                <skipExecUnitTests>false</skipExecUnitTests>
-            </properties>
+            <modules>
+                <module>stress</module>
+                <module>benchmark</module>
+                <module>integration</module>
+            </modules>
         </profile>
-        
-        <!-- 
-            Name: jpda 
-            Descr: Enable JPDA remote debuging 
+        <!-- Enable the integration-tests profile to execute this module's tests -->
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>integration</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>stress-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>stress</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>benchmark-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>benchmark</module>
+            </modules>
+        </profile>
+        <!--
+            Name: jpda
+            Descr: Enable JPDA remote debuging
         -->
         <profile>
           <id>jpda</id>
@@ -103,9 +124,9 @@
             <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
           </properties>
         </profile>
-    </profiles>    
-    
-    <dependencies>  
+    </profiles>
+
+    <dependencies>
         <dependency>
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>
