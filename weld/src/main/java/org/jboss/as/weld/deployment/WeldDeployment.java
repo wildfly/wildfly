@@ -65,11 +65,6 @@ public class WeldDeployment implements Deployment {
      */
     private final BeanDeploymentArchiveImpl additionalBeanDeploymentArchive;
 
-    /**
-     * This bean deployment archive does not expose any classes, however it has visibility to every BDA in the deployment
-     */
-    private final BeanDeploymentArchiveImpl topLevelBeanDeploymentArchive;
-
     private final Set<Metadata<Extension>> extensions;
 
     private final ServiceRegistry serviceRegistry;
@@ -83,13 +78,11 @@ public class WeldDeployment implements Deployment {
      */
     private final Map<String, BeanDeploymentArchiveImpl> beanDeploymentsByClassName;
 
-    public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, BeanDeploymentArchiveImpl rootBda,
-            Set<Metadata<Extension>> extensions,
+    public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
             Module module) {
         this.additionalBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
                 BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ADDITIONAL_CLASSES_BDA_SUFFIX, false);
 
-        this.topLevelBeanDeploymentArchive = rootBda;
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
@@ -109,8 +102,6 @@ public class WeldDeployment implements Deployment {
             }
         }
         additionalBeanDeploymentArchive.addBeanDeploymentArchives(this.beanDeploymentArchives);
-        topLevelBeanDeploymentArchive.addBeanDeploymentArchives(this.beanDeploymentArchives);
-        this.beanDeploymentArchives.add(topLevelBeanDeploymentArchive);
     }
 
     /** {@inheritDoc} */
@@ -141,10 +132,6 @@ public class WeldDeployment implements Deployment {
 
     public BeanDeploymentArchiveImpl getAdditionalBeanDeploymentArchive() {
         return additionalBeanDeploymentArchive;
-    }
-
-    public BeanDeploymentArchiveImpl getTopLevelBeanDeploymentArchive() {
-        return topLevelBeanDeploymentArchive;
     }
 
     public Module getModule() {

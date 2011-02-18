@@ -242,7 +242,8 @@ public enum Phase {
     public static final int POST_MODULE_ANNOTATION_WAR                  = 0x100;
     public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x200;
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x300;
-    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x400;
+    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x400;
+    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x500;
 
     // INSTALL
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;

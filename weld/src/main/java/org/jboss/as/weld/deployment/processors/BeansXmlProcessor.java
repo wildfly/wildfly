@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
@@ -73,16 +74,18 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
 
         if (structure != null) {
             for (ResourceRoot resourceRoot : structure) {
-                if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
-                    VirtualFile beansXml = resourceRoot.getRoot().getChild(META_INF_BEANS_XML);
-                    if (beansXml.exists() && beansXml.isFile()) {
-                        log.debugf("Found beans.xml: %s", beansXml.toString());
-                        beanArchiveMetadata.add(new BeanArchiveMetadata(beansXml, resourceRoot,
-                                parseBeansXml(beansXml, parser), false));
+                if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
+                    if (resourceRoot.getRootName().equals("classes")) {
+                        // hack for dealing with war modules
+                        classesRoot = resourceRoot;
+                    } else {
+                        VirtualFile beansXml = resourceRoot.getRoot().getChild(META_INF_BEANS_XML);
+                        if (beansXml.exists() && beansXml.isFile()) {
+                            log.debugf("Found beans.xml: %s", beansXml.toString());
+                            beanArchiveMetadata.add(new BeanArchiveMetadata(beansXml, resourceRoot, parseBeansXml(beansXml,
+                                    parser), false));
+                        }
                     }
-                } else if (resourceRoot.getRootName().equals("classes")) {
-                    // hack for dealing with war modules
-                    classesRoot = resourceRoot;
                 }
             }
         }

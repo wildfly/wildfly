@@ -61,7 +61,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return; // Skip if there are no beans.xml files in the deployment
         }
-        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDepdenency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
         addDepdenency(moduleSpecification, moduleLoader, JAVAEE_API_ID);
         addDepdenency(moduleSpecification, moduleLoader, JBOSS_AS_WELD_ID);

@@ -22,8 +22,8 @@
 package org.jboss.as.weld.deployment.processors;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.inject.spi.Extension;
 import javax.transaction.TransactionManager;
@@ -34,11 +34,14 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.UserTransactionService;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
+import org.jboss.as.weld.deployment.BeanDeploymentModule;
+import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.WeldService;
@@ -57,7 +60,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.util.ServiceLoader;
 
 /**
  * Deployment processor that installs the weld services and all other required services
@@ -86,37 +88,43 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
-        final List<BeanDeploymentArchiveImpl> beanDeploymentArchives = deploymentUnit
-                .getAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
-        deploymentUnit.removeAttachment(BeanDeploymentArchiveImpl.ATTACHMENT_KEY);
+        final Set<BeanDeploymentModule> beanDeploymentModules = new HashSet<BeanDeploymentModule>();
+        final Set<BeanDeploymentModule> globalBeanDeploymentModules = new HashSet<BeanDeploymentModule>();
+        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
 
-        if (beanDeploymentArchives == null) {
-            return;
-        }
+        // the root module only has access to itself. For most deployments this will be the only module
+        // for ear deployments this represents the ear/lib directory.
+        // ejb jar sub deployments have access to the root module and other ejb jars.
+        // war deployments have access to the root level and all ejb jars
+        final BeanDeploymentModule rootBeanDeploymentModule = deploymentUnit.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
 
-        BeanDeploymentArchiveImpl rootBda = deploymentUnit.getAttachment(BeanDeploymentArchiveImpl.ROOT_ARCHIVE_ATTACHMENT_KEY);
-
-        // all bean deployment archives are accessible to each other
-        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
-            for (BeanDeploymentArchiveImpl accessableBda : beanDeploymentArchives) {
-                if (accessableBda.isIsolatedModule() && !accessableBda.getModule().equals(bda.getModule())) {
-                    continue;
+        globalBeanDeploymentModules.add(rootBeanDeploymentModule);
+        beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
+        final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+        for (DeploymentUnit subDeployment : subDeployments) {
+            final BeanDeploymentModule bdm = subDeployment.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
+            // add the modules bdas to the global set of bdas
+            beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
+            if (bdm != null) {
+                beanDeploymentModules.add(bdm);
+                if (!PrivateSubDeploymentMarker.isPrivate(subDeployment)) {
+                    globalBeanDeploymentModules.add(bdm);
                 }
-                bda.addBeanDeploymentArchive(accessableBda);
             }
         }
 
-        // now load extensions
-        final ServiceLoader<Extension> loader = ServiceLoader.load(Extension.class, module.getClassLoader());
-        final HashSet<Metadata<Extension>> extensions = new HashSet<Metadata<Extension>>();
-        final Iterator<Metadata<Extension>> iterator = loader.iterator();
-        while (iterator.hasNext()) {
-            Metadata<Extension> extension = iterator.next();
-            extensions.add(extension);
+        for (BeanDeploymentModule bdm : beanDeploymentModules) {
+            if (bdm == rootBeanDeploymentModule) {
+                continue; // the root module only has access to itself
+            }
+            // otherwise add all globally accessible modules to the module
+            // this will include the root module and ejb jars
+            bdm.addBeanDeploymentModules(globalBeanDeploymentModules);
         }
 
-        final WeldDeployment deployment = new WeldDeployment(new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives),
-                rootBda, extensions, module);
+        final List<Metadata<Extension>> extensions = deploymentUnit.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
+
+        final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module);
 
         final WeldContainer weldContainer = new WeldContainer(deployment, Environments.EE_INJECT);
 
@@ -136,7 +144,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         installValidationService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
 
         weldServiceBuilder.install();
-
 
     }
 

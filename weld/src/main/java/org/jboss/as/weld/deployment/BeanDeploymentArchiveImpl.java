@@ -28,11 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.WeldModuleResourceLoader;
-import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
@@ -51,12 +47,6 @@ import org.jboss.weld.resources.spi.ResourceLoader;
  */
 public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
-    public static final AttachmentKey<AttachmentList<BeanDeploymentArchiveImpl>> ATTACHMENT_KEY = AttachmentKey
-            .createList(BeanDeploymentArchiveImpl.class);
-
-    public static final AttachmentKey<BeanDeploymentArchiveImpl> ROOT_ARCHIVE_ATTACHMENT_KEY = AttachmentKey
-            .create(BeanDeploymentArchiveImpl.class);
-
     private final Set<String> beanClasses;
 
     private final Set<BeanDeploymentArchive> beanDeploymentArchives;
@@ -71,11 +61,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private final WeldModuleResourceLoader resourceLoader;
 
-    /**
-     * If this is true this BDA is not accessible to other BDA's outside the module
-     */
-    private final boolean isolatedModule;
-
     public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id,
             boolean isolatedModule) {
         this.beanClasses = new ConcurrentSkipListSet<String>(beanClasses);
@@ -86,35 +71,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         this.resourceLoader = new WeldModuleResourceLoader(module);
         this.serviceRegistry.add(ResourceLoader.class, resourceLoader);
         this.module = module;
-        this.isolatedModule = isolatedModule;
     }
 
     /**
-     * Attaches a BeanDeploymentArchive to the top level DeploymentUnit
-     *
-     * @param delpoymentUnit
-     */
-    public static void attachToDeployment(final DeploymentUnit deploymentUnit, final BeanDeploymentArchiveImpl archive) {
-        DeploymentUnit parent = deploymentUnit;
-        while (parent.getParent() != null) {
-            parent = parent.getParent();
-        }
-        parent.addToAttachmentList(ATTACHMENT_KEY, archive);
-    }
-
-    /**
-     * Attaches the BDA for the root of the deployment to the deployment. This is the BDA that is bound to the
-     * {@link BeanManagerService} for this deployment
-     */
-    public static void attachRootArchiveToDeployment(final DeploymentUnit deploymentUnit,
-            final BeanDeploymentArchiveImpl archive) {
-        deploymentUnit.putAttachment(ROOT_ARCHIVE_ATTACHMENT_KEY, archive);
-    }
-
-    /**
-     * Adds an accessible {@link BeanDeploymentArchive}
+     * Adds an accessible {@link BeanDeploymentArchive}.
      */
     public void addBeanDeploymentArchive(BeanDeploymentArchive archive) {
+        if (archive == this) {
+            return;
+        }
         beanDeploymentArchives.add(archive);
     }
 
@@ -122,7 +87,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
      * Adds multiple accessible {@link BeanDeploymentArchive}s
      */
     public void addBeanDeploymentArchives(Collection<? extends BeanDeploymentArchive> archives) {
-        beanDeploymentArchives.addAll(archives);
+        for (BeanDeploymentArchive bda : archives) {
+            if (bda != this) {
+                beanDeploymentArchives.add(bda);
+            }
+        }
     }
 
     public void addBeanClass(String clazz) {
@@ -175,9 +144,4 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     public Module getModule() {
         return module;
     }
-
-    public boolean isIsolatedModule() {
-        return isolatedModule;
-    }
-
 }

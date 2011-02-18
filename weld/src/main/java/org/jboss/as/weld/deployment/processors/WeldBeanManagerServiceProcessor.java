@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
+import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
 import org.jboss.msc.service.ServiceController;
@@ -58,11 +59,12 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         if (!WeldDeploymentMarker.isWeldDeployment(topLevelDeployment)) {
             return;
         }
-        BeanDeploymentArchiveImpl rootBda = deploymentUnit.getAttachment(BeanDeploymentArchiveImpl.ROOT_ARCHIVE_ATTACHMENT_KEY);
+        BeanDeploymentArchiveImpl rootBda = deploymentUnit
+                .getAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE);
         if (rootBda == null) {
             // this archive is not actually a bean archive.
             // then use the top level root bda
-            rootBda = topLevelDeployment.getAttachment(BeanDeploymentArchiveImpl.ROOT_ARCHIVE_ATTACHMENT_KEY);
+            rootBda = topLevelDeployment.getAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE);
         }
         if (rootBda == null) {
             throw new RuntimeException("Could not find BeanManager for deployment " + deploymentUnit.getName());

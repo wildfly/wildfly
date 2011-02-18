@@ -38,6 +38,8 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
+import org.jboss.as.weld.deployment.BeanDeploymentModule;
+import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
@@ -67,6 +69,9 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return;
         }
+
+        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
+
         boolean isolatedModule = DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit);
         log.info("Processing CDI deployment: " + phaseContext.getDeploymentUnit().getName());
 
@@ -80,19 +85,21 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             for (BeanArchiveMetadata beanArchiveMetadata : cdiDeploymentMetadata.getBeanArchiveMetadata()) {
                 BeanDeploymentArchiveImpl bda = createBeanDeploymentArchive(indexes.get(beanArchiveMetadata.getResourceRoot()),
                         beanArchiveMetadata, module, isolatedModule);
-                BeanDeploymentArchiveImpl.attachToDeployment(deploymentUnit, bda);
+                beanDeploymentArchives.add(bda);
                 if (beanArchiveMetadata.isDeploymentRoot()) {
                     rootArchiveFound = true;
-                    BeanDeploymentArchiveImpl.attachRootArchiveToDeployment(deploymentUnit, bda);
+                    deploymentUnit.putAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE, bda);
                 }
             }
         }
         if (!rootArchiveFound) {
             BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
                     BeansXml.EMPTY_BEANS_XML, module, deploymentUnit.getName(), isolatedModule);
-            BeanDeploymentArchiveImpl.attachToDeployment(deploymentUnit, bda);
-            BeanDeploymentArchiveImpl.attachRootArchiveToDeployment(deploymentUnit, bda);
+            beanDeploymentArchives.add(bda);
+            deploymentUnit.putAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE, bda);
         }
+
+        deploymentUnit.putAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE, new BeanDeploymentModule(beanDeploymentArchives));
     }
 
     private BeanDeploymentArchiveImpl createBeanDeploymentArchive(final Index index,
