@@ -66,7 +66,6 @@
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
         <version.javax.ws.rs.jsr311-api>1.0</version.javax.ws.rs.jsr311-api>
         <version.javax.xml.jaxrpc-api>1.1</version.javax.xml.jaxrpc-api>
-        <version.jboss.web>7.0.0.Beta1</version.jboss.web>
         <version.junit>4.8.1</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
@@ -100,9 +99,9 @@
         <version.org.jboss.logmanager.jboss-logmanager-log4j>1.0.0.CR3</version.org.jboss.logmanager.jboss-logmanager-log4j>
         <version.org.jboss.marshalling.jboss-marshalling>1.3.0.CR8</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.CR8</version.org.jboss.marshalling.jboss-marshalling-river>
-        <version.org.jboss.metadata.common>7.0.0.Alpha4</version.org.jboss.metadata.common>
-        <version.org.jboss.metadata.ear>7.0.0.Alpha4</version.org.jboss.metadata.ear>
-        <version.org.jboss.metadata.web>7.0.0.Alpha4</version.org.jboss.metadata.web>
+        <version.org.jboss.metadata.common>7.0.0.Alpha5</version.org.jboss.metadata.common>
+        <version.org.jboss.metadata.ear>7.0.0.Alpha5</version.org.jboss.metadata.ear>
+        <version.org.jboss.metadata.web>7.0.0.Alpha5</version.org.jboss.metadata.web>
         <version.org.jboss.modules.jboss-modules>1.0.0.Beta14</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta6</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
@@ -134,6 +133,7 @@
         <version.org.jboss.staxmapper>1.0.0.Beta4</version.org.jboss.staxmapper>
         <version.org.jboss.stdio.jboss-stdio>1.0.0.CR3</version.org.jboss.stdio.jboss-stdio>
         <version.org.jboss.threads.jboss-threads>2.0.0.CR8</version.org.jboss.threads.jboss-threads>
+        <version.org.jboss.web>7.0.0.Beta1</version.org.jboss.web>
         <version.org.jboss.weld.weld>1.1.0.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.0.Alpha1</version.org.jboss.ws.api>
@@ -2414,13 +2414,13 @@
             <dependency>
                 <groupId>org.jboss.web</groupId>
                 <artifactId>jasper-jdt</artifactId>
-                <version>${version.jboss.web}</version>
+                <version>${version.org.jboss.web}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.web</groupId>
                 <artifactId>jbossweb</artifactId>
-                <version>${version.jboss.web}</version>
+                <version>${version.org.jboss.web}</version>
             </dependency>
 
             <dependency>
