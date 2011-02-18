@@ -22,7 +22,9 @@
 
 package org.jboss.as.server.deployment;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,6 +51,18 @@ public class SimpleAttachable implements Attachable {
             return null;
         }
         return key.cast(attachments.get(key));
+    }
+
+    /** {@inheritDoc} */
+    public <T> List<T> getAttachmentList(AttachmentKey<? extends List<T>> key) {
+        if (key == null) {
+            return null;
+        }
+        List<T> list = key.cast(attachments.get(key));
+        if (list == null) {
+            return Collections.emptyList();
+        }
+        return list;
     }
 
     /** {@inheritDoc} */

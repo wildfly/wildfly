@@ -36,8 +36,9 @@ public abstract class AttachmentKey<T> {
      * @param <T> the list value type
      * @return the new instance
      */
-    public static <T> AttachmentKey<AttachmentList<T>> createList(final Class<T> valueClass) {
-        return new ListAttachmentKey<T>(valueClass);
+    @SuppressWarnings("unchecked")
+    public static <T> AttachmentKey<AttachmentList<T>> createList(final Class<? super T> valueClass) {
+        return new ListAttachmentKey(valueClass);
     }
 }
 
