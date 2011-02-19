@@ -340,10 +340,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-scanner"/>
         </module-def>
 
-        <module-def name="org.jboss.as.domain">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
-        </module-def>
-
         <module-def name="org.jboss.as.domain-http-api">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-api"/>
         </module-def>

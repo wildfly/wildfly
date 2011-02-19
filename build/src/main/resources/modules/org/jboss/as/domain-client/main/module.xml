@@ -31,7 +31,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.as.domain"/>
+        <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.logging"/>

@@ -166,7 +166,6 @@
         <module>demos</module>
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
-        <module>domain</module>
         <module>domain-client</module>
         <module>domain-controller</module>
         <module>domain-http-api</module>
@@ -1190,18 +1189,6 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain-http-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-connector</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1245,6 +1232,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-domain-controller</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-domain-http-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
