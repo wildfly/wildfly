@@ -80,6 +80,10 @@
             <maven-resource group="com.sun.httpserver" artifact="httpserver"/>
         </module-def>
 
+        <module-def name="com.sun.jsf-impl">
+            <maven-resource group="com.sun.faces" artifact="jsf-impl"/>
+        </module-def>
+
         <module-def name="com.sun.xml.bind">
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-impl"/>
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-xjc"/>
@@ -118,7 +122,7 @@
         </module-def>
 
         <module-def name="javax.faces.api">
-            <maven-resource group="javax.faces" artifact="jsf-api"/>
+            <maven-resource group="com.sun.faces" artifact="jsf-api"/>
         </module-def>
 
         <module-def name="javax.inject.api">

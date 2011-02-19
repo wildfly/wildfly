@@ -59,7 +59,7 @@
         <version.com.sun.httpserver>20100812-JBoss</version.com.sun.httpserver>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
-        <version.javax.faces.jsf-api>2.0.2-FCS</version.javax.faces.jsf-api>
+        <version.javax.faces.jsf-api>2.0.4-b09</version.javax.faces.jsf-api>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail.mail>1.4.2</version.javax.mail.mail>
@@ -1434,6 +1434,19 @@
             </dependency>
 
             <dependency>
+                <groupId>com.sun.faces</groupId>
+                <artifactId>jsf-api</artifactId>
+                <version>${version.javax.faces.jsf-api}</version>
+            </dependency>
+
+            <!-- impl should have the same version as api -->
+            <dependency>
+                <groupId>com.sun.faces</groupId>
+                <artifactId>jsf-impl</artifactId>
+                <version>${version.javax.faces.jsf-api}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-impl</artifactId>
                 <version>${version.sun.jaxb}</version>
@@ -1488,12 +1501,6 @@
                         <artifactId>jsr250-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>jsf-api</artifactId>
-                <version>${version.javax.faces.jsf-api}</version>
             </dependency>
 
             <dependency>
