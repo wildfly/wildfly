@@ -19,17 +19,17 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
@@ -70,37 +70,30 @@ public class SocketBindingGroupIncludeRemoveHandler implements ModelUpdateOperat
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode param = operation.get(INCLUDE);
-            ModelNode includes = context.getSubModel().get(INCLUDE);
-            ModelNode toRemove = null;
-            String failure = typeValidator.validateParameter(INCLUDE, param);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-            ModelNode newList = new ModelNode().setEmptyList();
-            String group = param.asString();
-            if (includes.isDefined()) {
-                for (ModelNode included : includes.asList()) {
-                    if (!group.equals(included.asString())) {
-                        toRemove = newList.add(included);
-                        break;
-                    }
+        ModelNode param = operation.get(INCLUDE);
+        ModelNode includes = context.getSubModel().get(INCLUDE);
+        ModelNode toRemove = null;
+        typeValidator.validateParameter(INCLUDE, param);
+
+        ModelNode newList = new ModelNode().setEmptyList();
+        String group = param.asString();
+        if (includes.isDefined()) {
+            for (ModelNode included : includes.asList()) {
+                if (!group.equals(included.asString())) {
+                    toRemove = newList.add(included);
+                    break;
                 }
             }
-
-            if (toRemove != null) {
-                includes.set(newList);
-                resultHandler.handleResultComplete();
-                ModelNode compensating = SocketBindingGroupIncludeAddHandler.getOperation(operation.get(OP_ADDR), group);
-                return new BasicOperationResult(compensating);
-            }
-            else {
-                throw new OperationFailedException(new ModelNode().set("No included group with name " + group + "found"));
-            }
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+
+        if (toRemove != null) {
+            ModelNode compensating = SocketBindingGroupIncludeAddHandler.getOperation(operation.get(OP_ADDR), group);
+            includes.set(newList);
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensating);
+        }
+        else {
+            throw new OperationFailedException(new ModelNode().set("No included group with name " + group + "found"));
         }
     }
 

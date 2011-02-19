@@ -18,9 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -30,9 +27,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -82,37 +82,26 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            String failure = validator.validate(operation);
-            if (failure == null) {
-                byte[] hash = operation.get(HASH).asBytes();
-                if (deploymentRepository.hasDeploymentContent(hash)) {
-                    ModelNode opAddr = operation.get(OP_ADDR);
-                    PathAddress address = PathAddress.pathAddress(opAddr);
-                    String name = address.getLastElement().getValue();
-                    String runtimeName = has(operation, RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
-                    ModelNode subModel = context.getSubModel();
-                    subModel.get(NAME).set(name);
-                    subModel.get(RUNTIME_NAME).set(runtimeName);
-                    subModel.get(HASH).set(hash);
-                    subModel.get(START).set(operation.has(START) && operation.get(START).asBoolean()); // TODO consider starting
-                }
-                else {
-                    failure = String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
-                }
-            }
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
+
+        validator.validate(operation);
+
+        byte[] hash = operation.get(HASH).asBytes();
+        if (deploymentRepository.hasDeploymentContent(hash)) {
+            ModelNode opAddr = operation.get(OP_ADDR);
+            PathAddress address = PathAddress.pathAddress(opAddr);
+            String name = address.getLastElement().getValue();
+            String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+            ModelNode subModel = context.getSubModel();
+            subModel.get(NAME).set(name);
+            subModel.get(RUNTIME_NAME).set(runtimeName);
+            subModel.get(HASH).set(hash);
+            subModel.get(START).set(operation.has(START) && operation.get(START).asBoolean()); // TODO consider starting
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+        else {
+            throw new OperationFailedException(new ModelNode().set(String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash))));
         }
+
         resultHandler.handleResultComplete();
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
-    }
-
-    private static boolean has(ModelNode node, String child) {
-        return node.has(child) && node.get(child).isDefined();
     }
 }

@@ -19,17 +19,17 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
@@ -69,21 +69,14 @@ public class SocketBindingGroupIncludeAddHandler implements ModelUpdateOperation
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode param = operation.get(INCLUDE);
-            ModelNode includes = context.getSubModel().get(INCLUDE);
-            String failure = typeValidator.validateParameter(INCLUDE, param);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-            includes.add(param);
-            resultHandler.handleResultComplete();
-            ModelNode compensating = SocketBindingGroupIncludeRemoveHandler.getOperation(operation.get(OP_ADDR), param.asString());
-            return new BasicOperationResult(compensating);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        ModelNode param = operation.get(INCLUDE);
+        ModelNode includes = context.getSubModel().get(INCLUDE);
+        typeValidator.validateParameter(INCLUDE, param);
+
+        includes.add(param);
+        resultHandler.handleResultComplete();
+        ModelNode compensating = SocketBindingGroupIncludeRemoveHandler.getOperation(operation.get(OP_ADDR), param.asString());
+        return new BasicOperationResult(compensating);
     }
 
     @Override

@@ -18,12 +18,12 @@
  */
 package org.jboss.as.controller.operation.validation;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -211,10 +211,21 @@ public class ModelTypeValidatorUnitTestCase {
     }
 
     private static void assertOk(ModelTypeValidator validator, ModelNode toTest) {
-        assertNull(validator.validateParameter("test", toTest));
+        try {
+            validator.validateParameter("test", toTest);
+        }
+        catch (OperationFailedException e) {
+            fail("Validation should have passed but received " + e.getFailureDescription().toString());
+        }
     }
 
     private static void assertInvalid(ModelTypeValidator validator, ModelNode toTest) {
-        assertNotNull(validator.validateParameter("test", toTest));
+        try {
+            validator.validateParameter("test", toTest);
+            fail("Validation should have failed ");
+        }
+        catch (OperationFailedException e) {
+            // good
+        }
     }
 }

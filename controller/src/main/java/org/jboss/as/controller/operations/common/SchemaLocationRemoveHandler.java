@@ -19,9 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
@@ -29,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -72,38 +72,31 @@ public class SchemaLocationRemoveHandler implements ModelUpdateOperationHandler,
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode param = operation.get(SCHEMA_LOCATION);
-            String failure = typeValidator.validateParameter(SCHEMA_LOCATION, param);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-            ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
-            Property toRemove = null;
-            ModelNode newList = new ModelNode().setEmptyList();
-            String uri = param.asString();
-            if (locations.isDefined()) {
-                for (Property location : locations.asPropertyList()) {
-                    if (uri.equals(location.getName())) {
-                        toRemove = location;
-                    }
-                    else {
-                       newList.add(location.getName(), location.getValue());
-                    }
+        ModelNode param = operation.get(SCHEMA_LOCATION);
+        typeValidator.validateParameter(SCHEMA_LOCATION, param);
+
+        ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
+        Property toRemove = null;
+        ModelNode newList = new ModelNode().setEmptyList();
+        String uri = param.asString();
+        if (locations.isDefined()) {
+            for (Property location : locations.asPropertyList()) {
+                if (uri.equals(location.getName())) {
+                    toRemove = location;
+                }
+                else {
+                   newList.add(location.getName(), location.getValue());
                 }
             }
-            if (toRemove != null) {
-                locations.set(newList);
-                resultHandler.handleResultComplete();
-                ModelNode compensating = SchemaLocationAddHandler.getAddSchemaLocationOperation(operation.get(OP_ADDR), toRemove);
-                return new BasicOperationResult(compensating);
-            }
-            else {
-                throw new OperationFailedException(new ModelNode().set("No schema location with URI " + uri + "found"));
-            }
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+        if (toRemove != null) {
+            ModelNode compensating = SchemaLocationAddHandler.getAddSchemaLocationOperation(operation.get(OP_ADDR), toRemove);
+            locations.set(newList);
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensating);
+        }
+        else {
+            throw new OperationFailedException(new ModelNode().set("No schema location with URI " + uri + "found"));
         }
     }
 

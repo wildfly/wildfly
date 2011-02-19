@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -60,11 +61,9 @@ implements DescriptionProvider {
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(ModelNode operation) {
-        String msg = urlValidator.validate(operation);
-        if (msg != null) {
-            throw new IllegalStateException(msg);
-        }
+    protected InputStream getContentInputStream(ModelNode operation) throws OperationFailedException {
+        urlValidator.validate(operation);
+
         String urlSpec = operation.get(URL).asString();
         try {
             URL url = new URL(urlSpec);

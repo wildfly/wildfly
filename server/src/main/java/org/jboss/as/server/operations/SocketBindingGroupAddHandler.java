@@ -18,19 +18,19 @@
  */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupAddHandler;
 import org.jboss.as.controller.operations.common.Util;
@@ -98,14 +98,14 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
     protected OperationResult installSocketBindingGroup(final String name, final ModelNode operation, final OperationContext context,
             final ResultHandler resultHandler, final ModelNode compensatingOp) throws OperationFailedException {
         if (context.getRuntimeContext() != null) {
+            // Resolve any expressions and re-validate
+            final ModelNode resolvedOp = operation.resolve();
+            runtimeValidator.validate(resolvedOp);
+
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    // Resolve any expressions and re-validate
-                    ModelNode resolvedOp = operation.resolve();
-                    String failure = runtimeValidator.validate(resolvedOp);
-                    if (failure != null) {
-                        throw new OperationFailedException(new ModelNode().set(failure));
-                    }
+
                     int portOffset = resolvedOp.get(PORT_OFFSET).isDefined() ? resolvedOp.get(PORT_OFFSET).asInt() : 0;
                     String defaultInterface = resolvedOp.require(DEFAULT_INTERFACE).asString();
 

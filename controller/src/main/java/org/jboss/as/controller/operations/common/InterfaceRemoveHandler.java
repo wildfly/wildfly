@@ -19,17 +19,17 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -58,17 +58,12 @@ public class InterfaceRemoveHandler implements ModelRemoveOperationHandler, Desc
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            String name = address.getLastElement().getValue();
-            ModelNode model = context.getSubModel();
-            ModelNode criteriaNode = model.get(CRITERIA);
-            ModelNode compensating = InterfaceAddHandler.getAddInterfaceOperation(operation.get(OP_ADDR), criteriaNode);
-            return uninstallInterface(name, criteriaNode, context, resultHandler, compensating);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        ModelNode model = context.getSubModel();
+        ModelNode criteriaNode = model.get(CRITERIA);
+        ModelNode compensating = InterfaceAddHandler.getAddInterfaceOperation(operation.get(OP_ADDR), criteriaNode);
+        return uninstallInterface(name, criteriaNode, context, resultHandler, compensating);
     }
 
     @Override

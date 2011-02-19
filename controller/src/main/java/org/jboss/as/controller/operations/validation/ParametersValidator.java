@@ -21,6 +21,7 @@ package org.jboss.as.controller.operations.validation;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,15 +45,19 @@ public class ParametersValidator {
         validators.put(parameterName, validator);
     }
 
-    public String validate(ModelNode operation) {
+    public void validate(ModelNode operation) throws OperationFailedException {
         for (Map.Entry<String, ParameterValidator> entry : validators.entrySet()) {
             String paramName = entry.getKey();
             ModelNode paramVal = operation.has(paramName) ? operation.get(paramName) : new ModelNode();
-            String failure = entry.getValue().validateParameter(paramName, paramVal);
-            if (failure != null) {
-                return failure;
-            }
+            entry.getValue().validateParameter(paramName, paramVal);
         }
-        return null;
+    }
+
+    public void validateResolved(ModelNode operation) throws OperationFailedException {
+        for (Map.Entry<String, ParameterValidator> entry : validators.entrySet()) {
+            String paramName = entry.getKey();
+            ModelNode paramVal = operation.has(paramName) ? operation.get(paramName) : new ModelNode();
+            entry.getValue().validateResolvedParameter(paramName, paramVal);
+        }
     }
 }

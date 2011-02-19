@@ -18,9 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
@@ -28,8 +25,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -70,48 +70,39 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            String failure = validator.validate(operation);
-            if (failure == null) {
-                ModelNode deployments = context.getSubModel().get(DEPLOYMENT);
-                String name = operation.require(NAME).asString();
-                String toReplace = operation.require(TO_REPLACE).asString();
 
-                ModelNode deployNode = has(deployments, name) ? deployments.get(name) : null;
-                ModelNode replaceNode = has(deployments, toReplace) ? deployments.get(toReplace) : null;
-                if (deployNode == null) {
-                    failure = String.format("No deployment with name %s found", name);
-                }
-                else if (deployNode.get(START).asBoolean()) {
-                    failure = String.format("Deployment %s is already started", toReplace);
-                }
-                else if (replaceNode == null) {
-                    failure = String.format("No deployment with name %s found", toReplace);
-                }
-                if (failure == null) {
-                    // Update model
-                    deployNode.get(START).set(true);
-                    replaceNode.get(START).set(false);
+        validator.validate(operation);
 
-                    ModelNode compensatingOp = operation.clone();
-                    compensatingOp.get(NAME).set(toReplace);
-                    compensatingOp.get(TO_REPLACE).set(name);
+        ModelNode deployments = context.getSubModel().get(DEPLOYMENT);
+        String name = operation.require(NAME).asString();
+        String toReplace = operation.require(TO_REPLACE).asString();
 
-                    DeploymentHandlerUtil.replace(deployNode, toReplace, context, resultHandler);
-                }
-            }
-
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
+        ModelNode deployNode = deployments.hasDefined(name) ? deployments.get(name) : null;
+        ModelNode replaceNode = deployments.hasDefined(toReplace) ? deployments.get(toReplace) : null;
+        if (deployNode == null) {
+            throw operationFailed(String.format("No deployment with name %s found", name));
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+        else if (deployNode.get(START).asBoolean()) {
+            throw operationFailed(String.format("Deployment %s is already started", toReplace));
         }
+        else if (replaceNode == null) {
+            throw operationFailed(String.format("No deployment with name %s found", toReplace));
+        }
+
+        // Update model
+        deployNode.get(START).set(true);
+        replaceNode.get(START).set(false);
+
+        ModelNode compensatingOp = operation.clone();
+        compensatingOp.get(NAME).set(toReplace);
+        compensatingOp.get(TO_REPLACE).set(name);
+
+        DeploymentHandlerUtil.replace(deployNode, toReplace, context, resultHandler);
+
         return new BasicOperationResult();
     }
 
-    private static boolean has(ModelNode node, String child) {
-        return node.has(child) && node.get(child).isDefined();
+    private static OperationFailedException operationFailed(String msg) {
+        return new OperationFailedException(new ModelNode().set(msg));
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -48,23 +49,17 @@ public class IntRangeValidator extends ModelTypeValidator {
      * {@inheritDoc}
      */
     @Override
-    public String validateParameter(String parameterName, ModelNode value) {
-        String result = super.validateParameter(parameterName, value);
-        if (result == null && value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-            try {
-                int val = value.asInt();
-                if (val < min) {
-                    result = val + " is an invalid value for parameter " + parameterName + ". A minimum value of " + min + " is required";
-                }
-                else if (val > max) {
-                    result = val + " is an invalid value for parameter " + parameterName + ". A maximum value of " + max + " is required";
+    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        super.validateParameter(parameterName, value);
+        if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
+            int val = value.asInt();
+            if (val < min) {
+                throw new OperationFailedException(new ModelNode().set(val + " is an invalid value for parameter " + parameterName + ". A minimum value of " + min + " is required"));
             }
-            }
-            catch (Exception e) {
-                result = value + " is an invalid value for parameter " + parameterName + ". " + e.getLocalizedMessage();
+            else if (val > max) {
+                throw new OperationFailedException(new ModelNode().set(val + " is an invalid value for parameter " + parameterName + ". A maximum value of " + max + " is required"));
             }
         }
-        return result;
     }
 
 }

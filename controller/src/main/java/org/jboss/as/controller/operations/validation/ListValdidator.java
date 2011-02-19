@@ -20,6 +20,7 @@ package org.jboss.as.controller.operations.validation;
 
 import java.util.List;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -63,28 +64,23 @@ public class ListValdidator extends ModelTypeValidator implements ParameterValid
     }
 
     @Override
-    public String validateParameter(String parameterName, ModelNode value) {
-        String result = super.validateParameter(parameterName, value);
-        if (result == null && value.isDefined()) {
+    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        super.validateParameter(parameterName, value);
+        if (value.isDefined()) {
             List<ModelNode> list = value.asList();
             int size = list.size();
             if (size < min) {
-                result = size + " is an invalid size for parameter " + parameterName + ". A minimum length of " + min + " is required";
+                throw new OperationFailedException(new ModelNode().set(size + " is an invalid size for parameter " + parameterName + ". A minimum length of " + min + " is required"));
             }
             else if (size > max) {
-                result = size + " is an invalid size for parameter " + parameterName + ". A maximum length of " + max + " is required";
+                throw new OperationFailedException(new ModelNode().set(size + " is an invalid size for parameter " + parameterName + ". A maximum length of " + max + " is required"));
             }
             else {
                 for (ModelNode element : list) {
-                    // FIXME. Bogus message here. Switch all this validation to an exception-based mechanism
-                    result = elementValidator.validateParameter(parameterName, element);
-                    if (result != null) {
-                        break;
-                    }
+                    elementValidator.validateParameter(parameterName, element);
                 }
             }
         }
-        return result;
     }
 
 }

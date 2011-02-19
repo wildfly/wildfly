@@ -19,9 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -29,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -72,44 +72,32 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode param = operation.get(NAMESPACE);
-            String failure = typeValidator.validateParameter(NAMESPACE, param);
-            if (failure == null) {
-                ModelNode namespaces = context.getSubModel().get(NAMESPACES);
-                Property toRemove = null;
-                ModelNode newList = new ModelNode().setEmptyList();
-                String prefix = param.asString();
-                if (namespaces.isDefined()) {
-                    for (Property namespace : namespaces.asPropertyList()) {
-                        if (prefix.equals(namespace.getName())) {
-                            toRemove = namespace;
-                        }
-                        else {
-                            newList.add(namespace.getName(), namespace.getValue());
-                        }
-                    }
-                }
-
-                if (toRemove != null) {
-                    namespaces.set(newList);
-                    resultHandler.handleResultComplete();
-                    ModelNode compensating = NamespaceAddHandler.getAddNamespaceOperation(operation.get(OP_ADDR), toRemove);
-                    return new BasicOperationResult(compensating);
+        ModelNode param = operation.get(NAMESPACE);
+        typeValidator.validateParameter(NAMESPACE, param);
+        ModelNode namespaces = context.getSubModel().get(NAMESPACES);
+        Property toRemove = null;
+        ModelNode newList = new ModelNode().setEmptyList();
+        String prefix = param.asString();
+        if (namespaces.isDefined()) {
+            for (Property namespace : namespaces.asPropertyList()) {
+                if (prefix.equals(namespace.getName())) {
+                    toRemove = namespace;
                 }
                 else {
-                    failure = "No namespace with URI " + prefix + " found";
+                    newList.add(namespace.getName(), namespace.getValue());
                 }
             }
+        }
 
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
+        if (toRemove != null) {
+            ModelNode compensating = NamespaceAddHandler.getAddNamespaceOperation(operation.get(OP_ADDR), toRemove);
+            namespaces.set(newList);
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult(compensating);
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+        else {
+            throw new OperationFailedException(new ModelNode().set("No namespace with URI " + prefix + " found"));
         }
-        return new BasicOperationResult();
     }
 
     @Override

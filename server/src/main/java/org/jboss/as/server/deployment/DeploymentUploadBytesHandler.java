@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Locale;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -59,11 +60,8 @@ public class DeploymentUploadBytesHandler
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(ModelNode operation) {
-        String msg = bytesValidator.validate(operation);
-        if (msg != null) {
-            throw new IllegalStateException(msg);
-        }
+    protected InputStream getContentInputStream(ModelNode operation) throws OperationFailedException {
+        bytesValidator.validate(operation);
         byte[] bytes = operation.get(BYTES).asBytes();
         return new ByteArrayInputStream(bytes);
     }

@@ -20,6 +20,7 @@ package org.jboss.as.controller.operations.validation;
 
 import java.util.EnumSet;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -118,9 +119,10 @@ public class ModelTypeValidator implements ParameterValidator {
      * {@inheritDoc}
      */
     @Override
-    public String validateParameter(String parameterName, ModelNode value) {
+    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         if (!value.isDefined()) {
-            return nullable ? null : "Parameter " + parameterName + " may not be null "; //TODO i18n
+            if (!nullable)
+                throw new OperationFailedException(new ModelNode().set("Parameter " + parameterName + " may not be null ")); //TODO i18n
         } else  {
             boolean matched = false;
             if (strictType) {
@@ -133,8 +135,17 @@ public class ModelTypeValidator implements ParameterValidator {
                     }
                 }
             }
-            return matched ? null : "Wrong type for " + parameterName + ". Expected " + validTypes.toString() + " but was " + value.getType(); //TODO i18n
+            if  (!matched)
+                throw new OperationFailedException(new ModelNode().set("Wrong type for " + parameterName + ". Expected " + validTypes.toString() + " but was " + value.getType())); //TODO i18n
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        validateParameter(parameterName, value.resolve());
     }
 
     private boolean matches(ModelNode value, ModelType validType) {

@@ -19,9 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -30,8 +27,11 @@ import static org.jboss.as.controller.descriptions.common.PathDescription.RELATI
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -67,20 +67,15 @@ public class PathRemoveHandler implements ModelRemoveOperationHandler, Descripti
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            String name = address.getLastElement().getValue();
-            ModelNode model = context.getSubModel();
-            ModelNode pathNode = model.get(PATH);
-            String path = pathNode.isDefined() ? pathNode.asString() : null;
-            ModelNode relNode = model.get(RELATIVE_TO);
-            String relativeTo = relNode.isDefined() ? pathNode.asString() : null;
-            ModelNode compensating = PathAddHandler.getAddPathOperation(operation.get(OP_ADDR), pathNode, relNode);
-            return uninstallPath(name, path, relativeTo, context, resultHandler, compensating);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        ModelNode model = context.getSubModel();
+        ModelNode pathNode = model.get(PATH);
+        String path = pathNode.isDefined() ? pathNode.asString() : null;
+        ModelNode relNode = model.get(RELATIVE_TO);
+        String relativeTo = relNode.isDefined() ? pathNode.asString() : null;
+        ModelNode compensating = PathAddHandler.getAddPathOperation(operation.get(OP_ADDR), pathNode, relNode);
+        return uninstallPath(name, path, relativeTo, context, resultHandler, compensating);
     }
 
     @Override

@@ -18,6 +18,7 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -33,7 +34,18 @@ public interface ParameterValidator {
      * @param parameterName the name of the parameter. Cannot be {@code null}
      * @param value the parameter value. Cannot be {@code null}
      *
-     * @return {@code null} if the value is valid; an error message if not
+     * @throws OperationFailedException if the value is not valid
      */
-    String validateParameter(String parameterName, ModelNode value);
+    void validateParameter(String parameterName, ModelNode value) throws OperationFailedException;
+
+    /**
+     * Validate the parameter with the given name, after first
+     * {@link ModelNode#resolve() resolving} the given {@code value}.
+     *
+     * @param parameterName the name of the parameter. Cannot be {@code null}
+     * @param value the parameter value. Cannot be {@code null}
+     *
+     * @throws OperationFailedException if the value is not valid
+     */
+    void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException;
 }

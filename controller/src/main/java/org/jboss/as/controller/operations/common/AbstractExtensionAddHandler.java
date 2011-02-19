@@ -19,17 +19,17 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -64,21 +64,13 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode opAddr = operation.get(OP_ADDR);
-            PathAddress address = PathAddress.pathAddress(opAddr);
-            String module = address.getLastElement().getValue();
-            context.getSubModel().get(ExtensionDescription.MODULE).set(module);
-            String failure = installExtension(module, context);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(AbstractExtensionRemoveHandler.getRemoveExtensionOperation(opAddr));
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        ModelNode opAddr = operation.get(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
+        String module = address.getLastElement().getValue();
+        context.getSubModel().get(ExtensionDescription.MODULE).set(module);
+        installExtension(module, context);
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(AbstractExtensionRemoveHandler.getRemoveExtensionOperation(opAddr));
     }
 
     @Override
@@ -86,6 +78,6 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
         return ExtensionDescription.getExtensionAddOperation(locale);
     }
 
-    protected abstract String installExtension(String module, OperationContext context);
+    protected abstract void installExtension(String module, OperationContext context) throws OperationFailedException;
 
 }

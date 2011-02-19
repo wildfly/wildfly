@@ -21,11 +21,6 @@
  */
 package org.jboss.as.webservices;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.webservices.CommonAttributes.MODIFY_SOAP_ADDRESS;
@@ -37,9 +32,14 @@ import java.net.UnknownHostException;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -84,7 +84,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
     }
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         operationValidator.validate(operation);
         final ModelNode config = operation.require(CONFIGURATION);
         configValidator.validate(config);
@@ -95,6 +95,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     log.info("Activating WebServices Extension");
                     WSServices.saveContainerRegistry(context.getServiceRegistry());

@@ -19,17 +19,17 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -63,19 +63,11 @@ public abstract class AbstractExtensionRemoveHandler implements ModelRemoveOpera
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            String module = address.getLastElement().getValue();
-            String failure = uninstallExtension(module, context);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(AbstractExtensionAddHandler.getAddExtensionOperation(operation.get(OP_ADDR)));
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String module = address.getLastElement().getValue();
+        uninstallExtension(module, context);
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(AbstractExtensionAddHandler.getAddExtensionOperation(operation.get(OP_ADDR)));
     }
 
     @Override
@@ -83,6 +75,6 @@ public abstract class AbstractExtensionRemoveHandler implements ModelRemoveOpera
         return ExtensionDescription.getExtensionRemoveOperation(locale);
     }
 
-    protected abstract String uninstallExtension(String module, OperationContext context);
+    protected abstract void uninstallExtension(String module, OperationContext context) throws OperationFailedException;
 
 }

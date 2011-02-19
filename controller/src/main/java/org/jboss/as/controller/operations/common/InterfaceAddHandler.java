@@ -19,9 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -29,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -71,26 +71,19 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            String name = address.getLastElement().getValue();
-            ModelNode model = context.getSubModel();
-            model.get(NAME).set(name);
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        ModelNode model = context.getSubModel();
+        model.get(NAME).set(name);
 
-            ModelNode criteriaNode = operation.get(CRITERIA);
-            ParsedInterfaceCriteria parsed = parseCriteria(criteriaNode.clone());
-            if (parsed.getFailureMessage() == null) {
-                model.get(CRITERIA).set(criteriaNode);
-                ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-                return installInterface(name, parsed, context, resultHandler, compensating);
-            }
-            else {
-                throw new OperationFailedException(new ModelNode().set(parsed.getFailureMessage()));
-            }
+        ModelNode criteriaNode = operation.get(CRITERIA);
+        ParsedInterfaceCriteria parsed = ParsedInterfaceCriteria.parse(criteriaNode.clone(), specified);
+        if (parsed.getFailureMessage() != null) {
+            throw new OperationFailedException(new ModelNode().set(parsed.getFailureMessage()));
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        model.get(CRITERIA).set(criteriaNode);
+        ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
+        return installInterface(name, parsed, context, resultHandler, compensating);
     }
 
     @Override
@@ -101,10 +94,6 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
     protected OperationResult installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOp);
-    }
-
-    private ParsedInterfaceCriteria parseCriteria(ModelNode criteria) {
-        return ParsedInterfaceCriteria.parse(criteria, specified);
     }
 
 }

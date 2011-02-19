@@ -21,15 +21,15 @@
  */
 package org.jboss.as.controller.operations.global;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -63,32 +63,24 @@ public class WriteAttributeHandlers {
 
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-            try {
-                final String name = operation.require(NAME).asString();
-                // Don't require VALUE. Let validateValue decide if it's bothered
-                // by and undefined value
-                final ModelNode value = operation.get(VALUE);
 
-                String error = validateValue(name, value);
-                if (error != null) {
-                    throw new OperationFailedException(new ModelNode().set(error));
-                } else {
-                    context.getSubModel().get(name).set(value);
-                    // FIXME there should be a compensating operation generated
-                    resultHandler.handleResultComplete();
-                    return new BasicOperationResult();
-                }
+            final String name = operation.require(NAME).asString();
+            // Don't require VALUE. Let validateValue decide if it's bothered
+            // by and undefined value
+            final ModelNode value = operation.get(VALUE);
 
-            } catch (final Exception e) {
-                throw new OperationFailedException(new ModelNode().set(e.getMessage()));
-            }
+            validateValue(name, value);
+
+            context.getSubModel().get(name).set(value);
+            // FIXME there should be a compensating operation generated
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
         }
 
-        protected String validateValue(String name, ModelNode value) {
+        protected void validateValue(String name, ModelNode value) throws OperationFailedException {
             if (validator != null) {
-                return validator.validateParameter(name, value);
+                validator.validateParameter(name, value);
             }
-            return null;
         }
     }
 

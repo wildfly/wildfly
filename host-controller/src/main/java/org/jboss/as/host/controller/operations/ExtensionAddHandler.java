@@ -21,7 +21,9 @@ package org.jboss.as.host.controller.operations;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -47,14 +49,13 @@ public class ExtensionAddHandler extends AbstractExtensionAddHandler {
      * {@inheritDoc}
      */
     @Override
-    protected String installExtension(String module, OperationContext context) {
+    protected void installExtension(String module, OperationContext context) throws OperationFailedException {
         try {
             for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(module), Extension.class)) {
                 extension.initialize(extensionContext);
             }
-            return null;
         } catch (ModuleLoadException e) {
-            return e.getLocalizedMessage();
+            throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
     }
 

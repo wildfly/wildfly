@@ -22,17 +22,17 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -57,10 +57,7 @@ public final class ThreadFactoryPriorityUpdate implements ModelUpdateOperationHa
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
-        String failure = validator.validate(operation);
-        if (failure != null) {
-            throw new OperationFailedException(new ModelNode().set(failure));
-        }
+        validator.validate(operation);
 
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
 
@@ -85,6 +82,7 @@ public final class ThreadFactoryPriorityUpdate implements ModelUpdateOperationHa
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceController<?> service = context.getServiceRegistry()
                             .getService(ThreadsServices.threadFactoryName(name));

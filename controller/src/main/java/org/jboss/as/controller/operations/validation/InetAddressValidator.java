@@ -21,6 +21,7 @@ package org.jboss.as.controller.operations.validation;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -39,17 +40,16 @@ public class InetAddressValidator extends ModelTypeValidator {
      * {@inheritDoc}
      */
     @Override
-    public String validateParameter(String parameterName, ModelNode value) {
-        String result = super.validateParameter(parameterName, value);
-        if (result == null && value.isDefined() && value.getType() != ModelType.EXPRESSION) {
+    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        super.validateParameter(parameterName, value);
+        if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
             String str = value.asString();
             try {
                 InetAddress.getByName(str);
             } catch (UnknownHostException e) {
-                result = e.getLocalizedMessage();
+                throw new OperationFailedException(new ModelNode().set(e.toString()));
             }
         }
-        return result;
     }
 
 }

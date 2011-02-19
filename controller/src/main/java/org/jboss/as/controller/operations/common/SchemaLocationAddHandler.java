@@ -19,9 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
@@ -29,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -72,23 +72,13 @@ public class SchemaLocationAddHandler implements ModelUpdateOperationHandler, De
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode param = operation.get(SCHEMA_LOCATION);
-            ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
-            String failure = validate(param, locations);
-            if (failure == null) {
-                Property loc = param.asProperty();
-                locations.add(loc.getName(), loc.getValue());
-                ModelNode compensating = SchemaLocationRemoveHandler.getRemoveSchemaLocationOperation(operation.get(OP_ADDR), param.asProperty().getName());
-                return new BasicOperationResult(compensating);
-            }
-            else {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        ModelNode param = operation.get(SCHEMA_LOCATION);
+        ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
+        validate(param, locations);
+        Property loc = param.asProperty();
+        locations.add(loc.getName(), loc.getValue());
+        ModelNode compensating = SchemaLocationRemoveHandler.getRemoveSchemaLocationOperation(operation.get(OP_ADDR), param.asProperty().getName());
+        return new BasicOperationResult(compensating);
     }
 
     @Override
@@ -96,17 +86,16 @@ public class SchemaLocationAddHandler implements ModelUpdateOperationHandler, De
         return CommonDescriptions.getAddSchemaLocationOperation(locale);
     }
 
-    private String validate(ModelNode param, ModelNode locations) {
-        String failure = typeValidator.validateParameter(SCHEMA_LOCATION, param);
-        String uri = param.asProperty().getName();
-        if (failure == null && locations.isDefined()) {
+    private void validate(ModelNode param, ModelNode locations) throws OperationFailedException {
+        typeValidator.validateParameter(SCHEMA_LOCATION, param);
+        if (locations.isDefined()) {
+            String uri = param.asProperty().getName();
             for (ModelNode node : locations.asList()) {
                 if (uri.equals(node.asProperty().getName())) {
-                    failure = "Schema with URI " + uri + " already registered with location " + node.asProperty().getValue().asString();
+                    throw new OperationFailedException(new ModelNode().set("Schema with URI " + uri + " already registered with location " + node.asProperty().getValue().asString()));
                 }
             }
         }
-        return failure;
     }
 
 }

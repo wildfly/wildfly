@@ -19,9 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -34,8 +31,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -97,27 +97,20 @@ public class SocketBindingAddHandler implements ModelAddOperationHandler, Descri
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            String failure = validator.validate(operation);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            String name = address.getLastElement().getValue();
-            ModelNode model = context.getSubModel();
-            model.get(NAME).set(name);
-            model.get(INTERFACE).set(operation.get(INTERFACE));
-            model.get(PORT).set(operation.get(PORT));
-            model.get(FIXED_PORT).set(operation.get(FIXED_PORT));
-            model.get(MULTICAST_ADDRESS).set(operation.get(MULTICAST_ADDRESS));
-            model.get(MULTICAST_PORT).set(operation.get(MULTICAST_PORT));
+        validator.validate(operation);
 
-            ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-            return installSocketBinding(name, operation, context, resultHandler, compensating);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        ModelNode model = context.getSubModel();
+        model.get(NAME).set(name);
+        model.get(INTERFACE).set(operation.get(INTERFACE));
+        model.get(PORT).set(operation.get(PORT));
+        model.get(FIXED_PORT).set(operation.get(FIXED_PORT));
+        model.get(MULTICAST_ADDRESS).set(operation.get(MULTICAST_ADDRESS));
+        model.get(MULTICAST_PORT).set(operation.get(MULTICAST_PORT));
+
+        ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
+        return installSocketBinding(name, operation, context, resultHandler, compensating);
     }
 
     @Override

@@ -18,17 +18,17 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -62,21 +62,17 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
         try {
-            String failure = validator.validate(operation);
-            if (failure == null) {
-                String name = operation.get(NAME).asString();
-                String runtimeName = has(operation, RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
-                InputStream is = getContentInputStream(operation);
-                try {
-                    byte[] hash = deploymentRepository.addDeploymentContent(name, runtimeName, is);
-                    resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
-                }
-                finally {
-                    safeClose(is);
-                }
+            validator.validate(operation);
+
+            String name = operation.get(NAME).asString();
+            String runtimeName = has(operation, RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+            InputStream is = getContentInputStream(operation);
+            try {
+                byte[] hash = deploymentRepository.addDeploymentContent(name, runtimeName, is);
+                resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
             }
-            else {
-                throw new OperationFailedException(new ModelNode().set(failure));
+            finally {
+                safeClose(is);
             }
         }
         catch (IOException e) {
@@ -86,7 +82,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
         return new BasicOperationResult();
     }
 
-    protected abstract InputStream getContentInputStream(ModelNode operation);
+    protected abstract InputStream getContentInputStream(ModelNode operation) throws OperationFailedException;
 
     private static boolean has(ModelNode node, String child) {
         return node.has(child) && node.get(child).isDefined();

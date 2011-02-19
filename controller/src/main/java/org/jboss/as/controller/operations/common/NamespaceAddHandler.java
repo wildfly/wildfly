@@ -19,9 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -29,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -72,23 +72,15 @@ public class NamespaceAddHandler implements ModelUpdateOperationHandler, Descrip
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode param = operation.get(NAMESPACE);
-            ModelNode namespaces = context.getSubModel().get(NAMESPACES);
-            String failure = validate(param, namespaces);
-            if (failure != null) {
-                throw new OperationFailedException(new ModelNode().set(failure));
-            }
+        ModelNode param = operation.get(NAMESPACE);
+        ModelNode namespaces = context.getSubModel().get(NAMESPACES);
+        validate(param, namespaces);
 
-            Property prop = param.asProperty();
-            namespaces.add(prop.getName(), prop.getValue());
-            ModelNode compensating = NamespaceRemoveHandler.getRemoveNamespaceOperation(operation.get(OP_ADDR), param.asProperty().getName());
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensating);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        Property prop = param.asProperty();
+        namespaces.add(prop.getName(), prop.getValue());
+        ModelNode compensating = NamespaceRemoveHandler.getRemoveNamespaceOperation(operation.get(OP_ADDR), param.asProperty().getName());
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensating);
     }
 
     @Override
@@ -96,17 +88,16 @@ public class NamespaceAddHandler implements ModelUpdateOperationHandler, Descrip
         return CommonDescriptions.getAddNamespaceOperation(locale);
     }
 
-    private String validate(ModelNode param, ModelNode namespaces) {
-        String failure = typeValidator.validateParameter(NAMESPACE, param);
+    private void validate(ModelNode param, ModelNode namespaces) throws OperationFailedException {
+        typeValidator.validateParameter(NAMESPACE, param);
         String name = param.asProperty().getName();
-        if (failure == null && namespaces.isDefined()) {
+        if (namespaces.isDefined()) {
             for (ModelNode node : namespaces.asList()) {
                 if (name.equals(node.asProperty().getName())) {
-                    failure = "Namespace with prefix " + name + " already registered with schema URI " + node.asProperty().getValue().asString();
+                    throw new OperationFailedException(new ModelNode().set("Namespace with prefix " + name + " already registered with schema URI " + node.asProperty().getValue().asString()));
                 }
             }
         }
-        return failure;
     }
 
 }
