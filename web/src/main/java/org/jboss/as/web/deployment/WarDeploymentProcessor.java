@@ -45,10 +45,10 @@ import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.security.JBossWebRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
@@ -178,7 +178,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (NamingException e1) {
             throw new RuntimeException(e1);
         } finally {
-            if (tcl != null)
                 SecurityActions.setContextClassLoader(tcl);
         }
 
