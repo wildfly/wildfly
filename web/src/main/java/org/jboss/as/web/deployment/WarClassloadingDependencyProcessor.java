@@ -42,6 +42,7 @@ import org.jboss.modules.ModuleLoader;
 public class WarClassloadingDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier JAVAX_EE_API = ModuleIdentifier.create("javaee.api");
+    private static final ModuleIdentifier APACHE_XERCES = ModuleIdentifier.create("org.apache.xerces");
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
@@ -56,6 +57,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // Add module dependencies on Java EE apis
 
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals

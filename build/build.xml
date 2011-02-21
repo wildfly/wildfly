@@ -207,8 +207,17 @@
             <maven-resource group="org.apache.aries" artifact="org.apache.aries.util"/>
         </module-def>
 
-    	<module-def name="org.apache.commons.logging"/>
-    	
+        <module-def name="org.apache.commons.logging"/>
+
+        <module-def name="org.apache.xalan">
+            <maven-resource group="apache-xalan" artifact="serializer"/>
+            <maven-resource group="apache-xalan" artifact="xalan"/>
+        </module-def>
+
+        <module-def name="org.apache.xerces">
+            <maven-resource group="xerces" artifact="xercesImpl"/>
+        </module-def>
+
         <module-def name="org.apache.cxf">
             <maven-resource group="org.apache.cxf" artifact="cxf-api"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-common-schemas"/>

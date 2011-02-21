@@ -149,6 +149,8 @@
                     <path name="org/w3c/dom"/>
                     <path name="org/w3c/dom/bootstrap"/>
                     <path name="org/w3c/dom/events"/>
+                    <path name="org/w3c/dom/ranges"/>
+                    <path name="org/w3c/dom/traversal"/>
                     <path name="org/w3c/dom/ls"/>
                     <path name="org/xml/sax"/>
                     <path name="org/xml/sax/ext"/>

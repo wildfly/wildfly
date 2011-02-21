@@ -145,6 +145,21 @@
         </dependency>
 
         <dependency>
+            <groupId>apache-xalan</groupId>
+            <artifactId>serializer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>apache-xalan</groupId>
+            <artifactId>xalan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.aries.jmx</groupId>
             <artifactId>org.apache.aries.jmx</artifactId>
         </dependency>

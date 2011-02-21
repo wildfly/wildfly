@@ -52,6 +52,8 @@ import org.jboss.modules.filter.PathFilters;
 public class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier APACHE_CXF = ModuleIdentifier.create("org.apache.cxf");
+    private static final ModuleIdentifier APACHE_XALAN = ModuleIdentifier.create("org.apache.xalan");
+    private static final ModuleIdentifier APACHE_XERCES = ModuleIdentifier.create("org.apache.xerces");
     private static final ModuleIdentifier JAXB_IMPL = ModuleIdentifier.create("com.sun.xml.bind");
     private static final ModuleIdentifier JBOSS_WS_COMMON = ModuleIdentifier.create("org.jboss.ws.common");
     private static final ModuleIdentifier JBOSS_WS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
@@ -80,6 +82,8 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
             apacheCxfDep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/cxf"), true)); //to include bus extensions in META-INF
             apacheCxfDep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/spring.*"), true));
             moduleSpecification.addDependency(apacheCxfDep);
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XALAN, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
 
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEBSERVICES, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SAAJ_IMPL, false, false, true));
