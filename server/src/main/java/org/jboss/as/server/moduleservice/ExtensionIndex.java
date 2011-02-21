@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.moduleservice;
 
+import org.jboss.as.server.deployment.module.ExtensionInfo;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -41,4 +42,21 @@ public interface ExtensionIndex {
      * @return the resource root of the first matched extension
      */
     ModuleIdentifier findExtension(String name, String minSpecVersion, String minImplVersion, String requiredVendorId);
+
+    /**
+     * Adds an extension that has been deployed to the server
+     *
+     * @param identifier The module identifier of the extension
+     * @param extensionInfo The extension data
+     */
+    void addDeployedExtension(ModuleIdentifier identifier, ExtensionInfo extensionInfo);
+
+    /**
+     * Removes extension information that has been deployed to the server
+     *
+     * @param name The extension name
+     * @param identifier The extension Identifier
+     * @return true if the extension was found and removed
+     */
+    boolean removeDeployedExtension(String name, ModuleIdentifier identifier);
 }

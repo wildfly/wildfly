@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
+import org.jboss.as.server.deployment.module.ExtensionInfo;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -110,6 +111,10 @@ public final class Attachments {
      * The list of extensions given in the manifest and structure configurations.
      */
     public static final AttachmentKey<AttachmentList<ExtensionListEntry>> EXTENSION_LIST_ENTRIES = AttachmentKey.createList(ExtensionListEntry.class);
+    /**
+     * Information about extensions in a jar library deployment.
+     */
+    public static final AttachmentKey<ExtensionInfo> EXTENSION_INFORMATION = AttachmentKey.create(ExtensionInfo.class);
 
     /**
      * The server deployment repository

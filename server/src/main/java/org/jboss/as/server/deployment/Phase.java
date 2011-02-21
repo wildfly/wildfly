@@ -198,27 +198,28 @@ public enum Phase {
     public static final int PARSE_ADDITIONAL_MODULES                    = 0x0400;
     public static final int PARSE_CLASS_PATH                            = 0x0500;
     public static final int PARSE_EXTENSION_LIST                        = 0x0600;
-    public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0700;
-    public static final int PARSE_OSGI_PROPERTIES                       = 0x0800;
-    public static final int PARSE_WEB_DEPLOYMENT                        = 0x0900;
-    public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0A00;
-    public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0B00;
-    public static final int PARSE_TLD_DEPLOYMENT                        = 0x0C00;
-    public static final int PARSE_RA_DEPLOYMENT                         = 0x0D00;
-    public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x0E00;
-    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x0F00;
-    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x1000;
-    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x1100;
-    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x1200;
-    public static final int PARSE_DATA_SOURCES                          = 0x1300;
-    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1400;
-    public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1500;
-    public static final int PARSE_BEAN_LIEFCYCLE_ANNOTATION             = 0x1600;
-    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x1700;
-    public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1800;
-    public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1900;
-    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1A00;
-    public static final int PARSE_WEBSERVICES_XML                       = 0x1B00;
+    public static final int PARSE_EXTENSION_NAME                        = 0x0700;
+    public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0800;
+    public static final int PARSE_OSGI_PROPERTIES                       = 0x0900;
+    public static final int PARSE_WEB_DEPLOYMENT                        = 0x0A00;
+    public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0B00;
+    public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0C00;
+    public static final int PARSE_TLD_DEPLOYMENT                        = 0x0D00;
+    public static final int PARSE_RA_DEPLOYMENT                         = 0x0E00;
+    public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x0F00;
+    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x1000;
+    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x1100;
+    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x1200;
+    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x1300;
+    public static final int PARSE_DATA_SOURCES                          = 0x1400;
+    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1500;
+    public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1600;
+    public static final int PARSE_BEAN_LIEFCYCLE_ANNOTATION             = 0x1700;
+    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x1800;
+    public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1900;
+    public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1A00;
+    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1B00;
+    public static final int PARSE_WEBSERVICES_XML                       = 0x1C00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -244,6 +245,7 @@ public enum Phase {
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x300;
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x400;
     public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x500;
+    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x600;
 
     // INSTALL
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;

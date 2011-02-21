@@ -27,6 +27,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +36,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.jboss.as.server.deployment.module.ExtensionInfo;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
@@ -59,7 +62,7 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.module.extension-index");
 
     private final File[] extensionRoots;
-    private Map<String, Set<ExtensionJar>> extensions = new HashMap<String, Set<ExtensionJar>>();
+    private final Map<String, Set<ExtensionJar>> extensions = new HashMap<String, Set<ExtensionJar>>();
 
     private volatile ServiceContainer serviceContainer;
 
@@ -129,6 +132,32 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
     public synchronized void stop(final StopContext context) {
         extensions.clear();
         serviceContainer = null;
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void addDeployedExtension(ModuleIdentifier identifier, ExtensionInfo extensionInfo) {
+        final ExtensionJar extensionJar = new ExtensionJar(identifier, extensionInfo);
+        Set<ExtensionJar> jars = this.extensions.get(extensionInfo.getName());
+        if (jars == null) {
+            this.extensions.put(extensionInfo.getName(), jars = new HashSet<ExtensionJar>());
+        }
+        jars.add(extensionJar);
+    }
+
+    /** {@inheritDoc} */
+    public synchronized boolean removeDeployedExtension(String name, ModuleIdentifier identifier) {
+        final Set<ExtensionJar> jars = this.extensions.get(name);
+        if (jars != null) {
+            final Iterator<ExtensionJar> it = jars.iterator();
+            while (it.hasNext()) {
+                final ExtensionJar jar = it.next();
+                if (jar.moduleIdentifier.equals(identifier)) {
+                    it.remove();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public synchronized ModuleIdentifier findExtension(final String name, final String minSpecVersion,
@@ -303,6 +332,14 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
             this.implVendorId = implVendorId;
             this.specVersion = specVersion;
             this.path = path;
+            this.moduleIdentifier = moduleIdentifier;
+        }
+
+        ExtensionJar(final ModuleIdentifier moduleIdentifier, final ExtensionInfo info) {
+            this.implVersion = info.getImplVersion();
+            this.implVendorId = info.getImplVendorId();
+            this.specVersion = info.getSpecVersion();
+            this.path = null;
             this.moduleIdentifier = moduleIdentifier;
         }
     }
