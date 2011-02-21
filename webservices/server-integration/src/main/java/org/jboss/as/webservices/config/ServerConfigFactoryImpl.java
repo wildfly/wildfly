@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.config;
 
-import org.jboss.as.webservices.WSServices;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.ioc.IoCContainerProxy;

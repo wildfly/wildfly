@@ -22,8 +22,8 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -56,7 +56,7 @@ final class DeploymentModelBuilderJAXRPC_JSE extends AbstractDeploymentModelBuil
         if (webMetaData != null) {
             dep.addAttachment(JBossWebMetaData.class, webMetaData);
         }
-        final WebservicesMetaData wsMetaData = ASHelper.getOptionalAttachment(unit, AttachmentKeys.WEBSERVICES_METADATA_KEY);
+        final WebservicesMetaData wsMetaData = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
         if (wsMetaData != null) {
             dep.addAttachment(WebservicesMetaData.class, wsMetaData);
         }

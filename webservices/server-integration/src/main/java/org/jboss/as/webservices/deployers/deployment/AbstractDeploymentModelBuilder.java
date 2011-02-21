@@ -31,8 +31,8 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -89,7 +89,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         this.build(dep, unit);
 
         dep.addAttachment(DeploymentUnit.class, unit);
-        unit.putAttachment(AttachmentKeys.DEPLOYMENT_KEY, dep);
+        unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_KEY, dep);
     }
 
     /**
@@ -193,7 +193,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
 
         dep.setRootFile(new VirtualFileAdaptor(root));
         dep.setRuntimeClassLoader(classLoader);
-        final DeploymentType deploymentType = ASHelper.getRequiredAttachment(unit, AttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
         dep.setType(deploymentType);
 
         return dep;

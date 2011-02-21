@@ -20,4 +20,4 @@
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 #
 
-org.jboss.as.webservices.WSExtension
+org.jboss.as.webservices.dmr.WSExtension

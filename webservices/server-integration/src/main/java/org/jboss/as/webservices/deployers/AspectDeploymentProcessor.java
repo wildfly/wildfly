@@ -25,8 +25,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
@@ -73,7 +73,7 @@ public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor imp
                 }
             }
             log.debug(this.aspect + " start: " + unit.getName());
-            final Deployment dep = ASHelper.getRequiredAttachment(unit, AttachmentKeys.DEPLOYMENT_KEY);
+            final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             aspect.start(dep);
         }
     }
@@ -82,7 +82,7 @@ public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor imp
     public void internalUndeploy(org.jboss.as.server.deployment.DeploymentUnit context) {
         if (ASHelper.isWebServiceDeployment(context)) {
             log.debug(this.aspect + " stop: " + context.getName());
-            final Deployment dep = ASHelper.getRequiredAttachment(context, AttachmentKeys.DEPLOYMENT_KEY);
+            final Deployment dep = ASHelper.getRequiredAttachment(context, WSAttachmentKeys.DEPLOYMENT_KEY);
             aspect.stop(dep);
         }
     }

@@ -36,7 +36,6 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -81,7 +80,7 @@ public final class ASHelper {
      * @return true if JAXWS JSE, JAXRPC JSE, JAXWS EJB or JAXRPC EJB deployment, false otherwise.
      */
     public static boolean isWebServiceDeployment(final DeploymentUnit unit) {
-        return ASHelper.getOptionalAttachment(unit, AttachmentKeys.DEPLOYMENT_TYPE_KEY) != null;
+        return ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY) != null;
     }
 
     /**
@@ -91,7 +90,7 @@ public final class ASHelper {
      * @return true if JAXRPC EJB deployment, false otherwise
      */
     public static boolean isJaxrpcEjbDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, AttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
 
         return DeploymentType.JAXRPC_EJB21.equals(deploymentType);
     }
@@ -103,7 +102,7 @@ public final class ASHelper {
      * @return true if JAXRPC JSE deployment, false otherwise
      */
     public static boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, AttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
 
         return DeploymentType.JAXRPC_JSE.equals(deploymentType);
     }
@@ -115,7 +114,7 @@ public final class ASHelper {
      * @return true if JAXWS EJB deployment, false otherwise
      */
     public static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, AttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
 
         return DeploymentType.JAXWS_EJB3.equals(deploymentType);
     }
@@ -127,7 +126,7 @@ public final class ASHelper {
      * @return true if JAXWS JSE deployment, false otherwise
      */
     public static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, AttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
 
         return DeploymentType.JAXWS_JSE.equals(deploymentType);
     }
@@ -211,7 +210,7 @@ public final class ASHelper {
      * @return list of JAXWS EJBs meta data
      */
     public static List<WebServiceDeclaration> getJaxwsEjbs(final DeploymentUnit unit) {
-        final WebServiceDeployment wsDeployment = ASHelper.getRequiredAttachment(unit, AttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+        final WebServiceDeployment wsDeployment = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
         final List<WebServiceDeclaration> endpoints = new ArrayList<WebServiceDeclaration>();
 
         final Iterator<WebServiceDeclaration> ejbIterator = wsDeployment.getServiceEndpoints().iterator();

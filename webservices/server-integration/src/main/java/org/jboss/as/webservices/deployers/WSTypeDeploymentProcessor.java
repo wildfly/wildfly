@@ -25,8 +25,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 
 /**
@@ -41,15 +41,15 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         if (this.isJaxwsJseDeployment(unit)) {
-            unit.putAttachment(AttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
+            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
         } else if (this.isJaxwsEjbDeployment(unit)) {
-            unit.putAttachment(AttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_EJB3);
+            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_EJB3);
         } else if (this.isJaxrpcJseDeployment(unit)) {
-            unit.putAttachment(AttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_JSE);
+            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_JSE);
         } else if (this.isJaxrpcEjbDeployment(unit)) {
-            unit.putAttachment(AttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_EJB21);
+            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_EJB21);
         } else if (this.isJaxwsJmsDeployment(unit)) {
-            unit.putAttachment(AttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JMS);
+            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JMS);
         }
     }
 
@@ -80,7 +80,7 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
      * @return true if JAXRPC JSE, false otherwise
      */
     private boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
-        final boolean hasWebservicesMD = ASHelper.hasAttachment(unit, AttachmentKeys.WEBSERVICES_METADATA_KEY);
+        final boolean hasWebservicesMD = ASHelper.hasAttachment(unit, WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
         final boolean hasJBossWebMD = ASHelper.getJBossWebMetaData(unit) != null;
 
         if (hasWebservicesMD && hasJBossWebMD) {
@@ -97,7 +97,7 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
      * @return true if JAXWS EJB, false otherwise
      */
     private boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        final boolean hasWSDeployment = ASHelper.hasAttachment(unit, AttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+        final boolean hasWSDeployment = ASHelper.hasAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
 
         if (hasWSDeployment) {
             return ASHelper.getJaxwsEjbs(unit).size() > 0;
@@ -129,7 +129,7 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
      * @return true if JAXWS JMS, false otherwise
      */
     private boolean isJaxwsJmsDeployment(final DeploymentUnit unit) {
-        return ASHelper.hasAttachment(unit, AttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+        return ASHelper.hasAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
     }
 
 }

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.ioc;
 
-import org.jboss.as.webservices.WSServices;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.ioc.IoCContainerProxy;

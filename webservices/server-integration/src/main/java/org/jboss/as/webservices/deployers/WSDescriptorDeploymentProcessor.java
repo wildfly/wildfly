@@ -27,7 +27,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.AttachmentKeys;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesFactory;
@@ -47,7 +47,7 @@ public class WSDescriptorDeploymentProcessor implements DeploymentUnitProcessor 
         UnifiedVirtualFile uvf = new VirtualFileAdaptor(deploymentRoot.getRoot());
         WebservicesMetaData wsmd = WebservicesFactory.loadFromVFSRoot(uvf);
         if (wsmd != null) {
-            deploymentUnit.putAttachment(AttachmentKeys.WEBSERVICES_METADATA_KEY, wsmd);
+            deploymentUnit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, wsmd);
         }
     }
 

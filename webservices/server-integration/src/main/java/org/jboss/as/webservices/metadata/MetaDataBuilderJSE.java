@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
@@ -242,7 +242,7 @@ final class MetaDataBuilderJSE {
     private String getContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         final JBossAppMetaData jbossAppMD = unit.getParent() == null ? null : ASHelper.getOptionalAttachment(unit.getParent(),
-                AttachmentKeys.JBOSS_APP_METADATA_KEY);
+                WSAttachmentKeys.JBOSS_APP_METADATA_KEY);
 
         String contextRoot = null;
 

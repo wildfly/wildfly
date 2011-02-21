@@ -22,8 +22,8 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
@@ -49,7 +49,7 @@ public class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getRequiredAttachment(unit, AttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
         dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
         for (JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {
             if (endpoint.getName() == null) {

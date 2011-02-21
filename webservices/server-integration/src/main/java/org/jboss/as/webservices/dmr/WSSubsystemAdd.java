@@ -19,14 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices;
+package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.webservices.CommonAttributes.MODIFY_SOAP_ADDRESS;
-import static org.jboss.as.webservices.CommonAttributes.WEBSERVICE_HOST;
-import static org.jboss.as.webservices.CommonAttributes.WEBSERVICE_PORT;
-import static org.jboss.as.webservices.CommonAttributes.WEBSERVICE_SECURE_PORT;
+import static org.jboss.as.webservices.dmr.CommonAttributes.CONFIGURATION;
+import static org.jboss.as.webservices.dmr.CommonAttributes.MODIFY_SOAP_ADDRESS;
+import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_HOST;
+import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_PORT;
+import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_SECURE_PORT;
 
 import java.net.UnknownHostException;
 
@@ -50,6 +50,7 @@ import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ServerConfigService;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;

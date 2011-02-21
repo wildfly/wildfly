@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.AttachmentKeys;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 
 /**
@@ -71,7 +71,7 @@ public final class WSDeploymentBuilder {
      * @param unit deployment unit
      */
     public void build(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, AttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
 
         if (deploymentType != null) {
             WSDeploymentBuilder.builders.get(deploymentType).newDeploymentModel(unit);

@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,57 +19,52 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices;
+
+package org.jboss.as.webservices.dmr;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * A Element
+ *
  * @author alessio.soldano@jboss.com
- * @since 08-Nov-2010
+ * @since 09-Nov-2010
  */
-enum Namespace {
 
-    // must be first
-    UNKNOWN(null),
-
-    WEBSERVICES_1_0("urn:jboss:domain:webservices:1.0");
-
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = WEBSERVICES_1_0;
+public enum Element {
+    /** always the first **/
+    UNKNOWN(null), SUBSYSTEM("subsystem"), CONFIGURATION("configuration"), WEBSERVICE_HOST("webServiceHost"), MODIFY_SOAP_ADDRESS(
+            "modifySOAPAddress"), WEBSERVICE_SECURE_PORT("webServiceSecurePort"), WEBSERVICE_PORT("webServicePort");
 
     private final String name;
 
-    Namespace(final String name) {
+    Element(final String name) {
         this.name = name;
     }
 
     /**
-     * Get the URI of this namespace.
-     *
-     * @return the URI
+     * Get the local name of this element.
+     * @return the local name
      */
-    public String getUriString() {
+    public String getLocalName() {
         return name;
     }
 
-    private static final Map<String, Namespace> MAP;
+    private static final Map<String, Element> MAP;
 
     static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
             if (name != null)
-                map.put(name, namespace);
+                map.put(name, element);
         }
         MAP = map;
     }
 
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
-
 }
