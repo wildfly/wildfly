@@ -23,11 +23,18 @@ package org.jboss.as.webservices.dmr;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-interface CommonAttributes {
-    String CONFIGURATION = "configuration";
-    String MODIFY_SOAP_ADDRESS = "modify-soap-address";
-    String WEBSERVICE_HOST = "webservice-host";
-    String WEBSERVICE_PORT = "webservice-port";
-    String WEBSERVICE_SECURE_PORT = "webservice-secure-port";
+final class Constants {
+
+    private Constants() {
+        // forbidden inheritance
+    }
+
+    static final String CONFIGURATION = "configuration";
+    static final String MODIFY_SOAP_ADDRESS = "modify-soap-address";
+    static final String WEBSERVICE_HOST = "webservice-host";
+    static final String WEBSERVICE_PORT = "webservice-port";
+    static final String WEBSERVICE_SECURE_PORT = "webservice-secure-port";
+
 }

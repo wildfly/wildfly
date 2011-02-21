@@ -27,7 +27,7 @@ import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.dmr.CommonAttributes.CONFIGURATION;
+import static org.jboss.as.webservices.dmr.Constants.CONFIGURATION;
 
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -39,23 +39,29 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class WSSubsystemDescribe implements ModelQueryOperationHandler {
+final class WSSubsystemDescribe implements ModelQueryOperationHandler {
 
     static final WSSubsystemDescribe INSTANCE = new WSSubsystemDescribe();
 
+    private WSSubsystemDescribe() {
+        // forbidden inheritance
+    }
+
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation,
+            final ResultHandler resultHandler) {
 
         final ModelNode result = new ModelNode();
-        final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
+        final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR))
+                .getLastElement());
         final ModelNode subModel = context.getSubModel();
 
         final ModelNode subsystemAdd = new ModelNode();
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
 
-        if(subModel.hasDefined(CONFIGURATION)) {
+        if (subModel.hasDefined(CONFIGURATION)) {
             subsystemAdd.get(CONFIGURATION).set(subModel.get(CONFIGURATION));
         }
 

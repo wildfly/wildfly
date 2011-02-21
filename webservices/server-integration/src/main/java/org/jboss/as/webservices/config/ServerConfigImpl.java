@@ -39,17 +39,16 @@ import org.jboss.wsf.common.management.AbstractServerConfigMBean;
  */
 public final class ServerConfigImpl extends AbstractServerConfig implements AbstractServerConfigMBean {
 
-    //TODO evaluate if the mbeanServer dependency can be removed for AS7
-    private final InjectedValue<MBeanServer> mbeanServer;
-    private final InjectedValue<ServerEnvironment> serverEnvironment;
+    private static final ServerConfigImpl INSTANCE = new ServerConfigImpl();
+
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
 
     /**
      * Constructor.
      */
-    public ServerConfigImpl(InjectedValue<MBeanServer> mbeanServer, InjectedValue<ServerEnvironment> serverEnvironment) {
-        super();
-        this.mbeanServer = mbeanServer;
-        this.serverEnvironment = serverEnvironment;
+    private ServerConfigImpl() {
+        // forbidden inheritance
     }
 
     /**
@@ -58,7 +57,7 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
      * @return temp directory
      */
     public File getServerTempDir() {
-        return this.getServerEnvironment().getServerTempDir();
+        return getServerEnvironment().getServerTempDir();
     }
 
     /**
@@ -67,7 +66,7 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
      * @return home directory
      */
     public File getHomeDir() {
-        return this.getServerEnvironment().getHomeDir();
+        return getServerEnvironment().getHomeDir();
     }
 
     /**
@@ -76,21 +75,35 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
      * @return data directory
      */
     public File getServerDataDir() {
-        return this.getServerEnvironment().getServerDataDir();
-    }
-
-    private ServerEnvironment getServerEnvironment() {
-        return serverEnvironment.getValue();
+        return getServerEnvironment().getServerDataDir();
     }
 
     @Override
     public MBeanServer getMbeanServer() {
-        return mbeanServer.getValue();
+        return injectedMBeanServer.getValue();
     }
 
     @Override
-    public void setMbeanServer(MBeanServer mbeanServer) {
-        throw new RuntimeException(this.getClass()
-                + " does not support setting MBeanServer instance; the value should have already been automatically injected");
+    public void setMbeanServer(final MBeanServer mbeanServer) {
+        throw new RuntimeException(
+                this.getClass()
+                        + " does not support setting MBeanServer instance; the value should have already been automatically injected");
     }
+
+    public InjectedValue<MBeanServer> getMBeanServerInjector() {
+        return injectedMBeanServer;
+    }
+
+    public InjectedValue<ServerEnvironment> getServerEnvironmentInjector() {
+        return injectedServerEnvironment;
+    }
+
+    private ServerEnvironment getServerEnvironment() {
+        return injectedServerEnvironment.getValue();
+    }
+
+    public static ServerConfigImpl getInstance() {
+        return INSTANCE;
+    }
+
 }

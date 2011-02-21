@@ -53,6 +53,7 @@ public final class ServerConfigFactoryImpl extends ServerConfigFactory {
         final IoCContainerProxyFactory iocContainerFactory = spiProvider.getSPI(IoCContainerProxyFactory.class);
         final IoCContainerProxy iocContainer = iocContainerFactory.getContainer();
 
-        return iocContainer.getBean(WSServices.CONFIG_SERVICE.getCanonicalName(), ServerConfig.class); //TODO!! review IoCContainer spi to avoid conversion to/from String/Service
+        // TODO review IoCContainer spi to avoid conversion to/from String/Service
+        return iocContainer.getBean(WSServices.CONFIG_SERVICE.getCanonicalName(), ServerConfig.class);
     }
 }

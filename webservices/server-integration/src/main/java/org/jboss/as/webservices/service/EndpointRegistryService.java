@@ -23,11 +23,17 @@ package org.jboss.as.webservices.service;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.framework.management.DefaultEndpointRegistry;
 import org.jboss.wsf.framework.management.ManagedEndpointRegistry;
@@ -37,43 +43,52 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
  * The service for the endpoint registry
  *
  * @author alessio.soldano@jboss.com
- * @since 10-Nov-2010
- *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class EndpointRegistryService implements Service<EndpointRegistry> {
+
     private static final Logger log = Logger.getLogger(EndpointRegistryService.class);
+    private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
+    private static final EndpointRegistryService INSTANCE = new EndpointRegistryService();
 
     private EndpointRegistry registry;
-    private InjectedValue<MBeanServer> mbeanServer;
+    private InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
 
-    public EndpointRegistryService() {
-        super();
-    }
-
-    public EndpointRegistryService(InjectedValue<MBeanServer> mbeanServer) {
-        super();
-        this.mbeanServer = mbeanServer;
+    private EndpointRegistryService() {
+        // forbidden inheritance
     }
 
     @Override
-    public EndpointRegistry getValue() throws IllegalStateException {
+    public EndpointRegistry getValue() {
         return registry;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        log.debugf("Starting EndpointRegistryService");
-        if (mbeanServer != null) {
-            registry = new ManagedEndpointRegistry();
-            ((ManagedEndpointRegistry) registry).setMbeanServer(mbeanServer.getValue());
+    public void start(final StartContext context) throws StartException {
+        log.tracef("Starting %s", EndpointRegistryService.class.getName());
+        if (injectedMBeanServer.getValue() != null) {
+            final ManagedEndpointRegistry managedEndpointRegistry = new ManagedEndpointRegistry();
+            managedEndpointRegistry.setMbeanServer(injectedMBeanServer.getValue());
+            registry = managedEndpointRegistry;
         } else {
             registry = new DefaultEndpointRegistry();
         }
     }
 
     @Override
-    public void stop(StopContext context) {
-        log.debugf("Stopping EndpointRegistryService");
+    public void stop(final StopContext context) {
+        log.tracef("Stopping %s", EndpointRegistryService.class.getName());
+    }
+
+    private InjectedValue<MBeanServer> getMBeanServerInjector() {
+        return injectedMBeanServer;
+    }
+
+    public static void install(final ServiceTarget serviceTarget) {
+        final ServiceBuilder<EndpointRegistry> builder = serviceTarget.addService(WSServices.REGISTRY_SERVICE, INSTANCE);
+        builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, INSTANCE.getMBeanServerInjector());
+        builder.setInitialMode(Mode.ACTIVE);
+        builder.install();
     }
 
 }

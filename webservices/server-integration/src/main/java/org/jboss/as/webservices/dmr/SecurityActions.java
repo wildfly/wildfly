@@ -28,17 +28,21 @@ import java.security.PrivilegedAction;
  * Security actions helper.
  *
  * @author alessio.soldano@jboss.com
- * @since 17-Feb-2010
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class SecurityActions {
+final class SecurityActions {
+
+    private SecurityActions() {
+        // forbidden inheritance
+    }
+
     /**
-     * Get context classloader.
+     * Gets context classloader.
      *
      * @return the current context classloader
      */
     static ClassLoader getContextClassLoader() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm == null) {
+        if (System.getSecurityManager() == null) {
             return Thread.currentThread().getContextClassLoader();
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
@@ -50,9 +54,10 @@ class SecurityActions {
     }
 
     /**
-     * Set context classloader.
+     * Sets context classloader.
      *
-     * @param classLoader the classloader
+     * @param classLoader
+     *            the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
         if (System.getSecurityManager() == null) {
@@ -66,4 +71,5 @@ class SecurityActions {
             });
         }
     }
+
 }

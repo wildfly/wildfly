@@ -21,8 +21,19 @@
  */
 package org.jboss.as.webservices.service;
 
+import javax.management.MBeanServer;
+
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.as.webservices.config.ServerConfigImpl;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -30,35 +41,35 @@ import org.jboss.wsf.common.management.AbstractServerConfig;
 import org.jboss.wsf.spi.management.ServerConfig;
 
 /**
- * The service holding WS server config
+ * WS server config service.
  *
  * @author alessio.soldano@jboss.com
- * @since 09-Nov-2010
- *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ServerConfigService implements Service<ServerConfig> {
-    private static final Logger log = Logger.getLogger("org.jboss.as.webservices");
 
-    private final AbstractServerConfig value;
+    private static final Logger log = Logger.getLogger(ServerConfigService.class);
+    private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
+    private final AbstractServerConfig serverConfig;
 
-    public ServerConfigService(AbstractServerConfig value) {
-        super();
-        this.value = value;
+    private ServerConfigService(final AbstractServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
     }
 
     @Override
-    public ServerConfig getValue() throws IllegalStateException {
-        return value;
+    public ServerConfig getValue() {
+        return serverConfig;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        log.debug("Starting ServerConfigService");
-        ClassLoader origClassloader = SecurityActions.getContextClassLoader();
+    public void start(final StartContext context) throws StartException {
+        log.tracef("Starting %s", ServerConfigService.class.getName());
+        final ClassLoader origClassloader = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(this.getClass().getClassLoader());
-            value.create();
-        } catch (Throwable e) {
+            serverConfig.create();
+        } catch (final Exception e) {
+            log.fatal("Error while creating configuration service", e);
             throw new StartException(e);
         } finally {
             SecurityActions.setContextClassLoader(origClassloader);
@@ -66,13 +77,21 @@ public final class ServerConfigService implements Service<ServerConfig> {
     }
 
     @Override
-    public void stop(StopContext context) {
-        log.debug("Stopping ServerConfigService");
+    public void stop(final StopContext context) {
+        log.tracef("Stopping %s", ServerConfigService.class.getName());
         try {
-            value.destroy();
-        } catch (Exception e) {
-            log.error("Error while destroying server config!", e);
+            serverConfig.destroy();
+        } catch (final Exception e) {
+            log.error("Error while destroying configuration service", e);
         }
+    }
+
+    public static void install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig) {
+        final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
+        builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
+        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
+        builder.setInitialMode(Mode.ACTIVE);
+        builder.install();
     }
 
 }

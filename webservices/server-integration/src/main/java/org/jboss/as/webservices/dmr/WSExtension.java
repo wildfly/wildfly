@@ -29,11 +29,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.webservices.dmr.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.webservices.dmr.CommonAttributes.MODIFY_SOAP_ADDRESS;
-import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_HOST;
-import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_PORT;
-import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_SECURE_PORT;
+import static org.jboss.as.webservices.dmr.Constants.CONFIGURATION;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_SOAP_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_SECURE_PORT;
 
 import java.util.EnumSet;
 import java.util.List;

@@ -22,15 +22,13 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.dmr.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.webservices.dmr.CommonAttributes.MODIFY_SOAP_ADDRESS;
-import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_HOST;
-import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_PORT;
-import static org.jboss.as.webservices.dmr.CommonAttributes.WEBSERVICE_SECURE_PORT;
+import static org.jboss.as.webservices.dmr.Constants.CONFIGURATION;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_SOAP_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_SECURE_PORT;
 
 import java.net.UnknownHostException;
-
-import javax.management.MBeanServer;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -45,8 +43,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ServerConfigService;
@@ -54,21 +50,15 @@ import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.wsf.common.management.AbstractServerConfig;
 
 /**
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
- * @since 09-Nov-2010
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
     private static final Logger log = Logger.getLogger("org.jboss.as.webservices");
-
-    private static final ServiceName mbeanServiceName = ServiceName.JBOSS.append("mbean", "server");
 
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
 
@@ -85,7 +75,8 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
     }
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext context, final ModelNode operation,
+            final ResultHandler resultHandler) throws OperationFailedException {
         operationValidator.validate(operation);
         final ModelNode config = operation.require(CONFIGURATION);
         configValidator.validate(config);
@@ -102,10 +93,11 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                     WSServices.saveContainerRegistry(context.getServiceRegistry());
 
                     ServiceTarget serviceTarget = context.getServiceTarget();
-                    addConfigService(serviceTarget, config);
-                    addRegistryService(serviceTarget);
+                    ServerConfigImpl serverConfig = createServerConfig(config);
+                    ServerConfigService.install(serviceTarget, serverConfig);
+                    EndpointRegistryService.install(serviceTarget);
 
-                    //add the DUP for dealing with WS deployments
+                    // add the DUP for dealing with WS deployments
                     WSDeploymentActivator.activate(updateContext);
                     resultHandler.handleResultComplete();
                 }
@@ -119,27 +111,8 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         return new BasicOperationResult(compensatingOperation);
     }
 
-    private static void addConfigService(ServiceTarget serviceTarget, ModelNode configuration) {
-        InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-        InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
-        AbstractServerConfig serverConfig = createServerConfig(configuration, mbeanServer, serverEnvironment);
-        serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig))
-                .addDependency(mbeanServiceName, MBeanServer.class, mbeanServer)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverEnvironment)
-                .setInitialMode(Mode.ACTIVE)
-                .install();
-    }
-
-    private static void addRegistryService(ServiceTarget serviceTarget) {
-        serviceTarget
-                .addService(WSServices.REGISTRY_SERVICE, new EndpointRegistryService())
-                .setInitialMode(Mode.ACTIVE)
-                .install();
-    }
-
-    private static AbstractServerConfig createServerConfig(ModelNode configuration,
-            InjectedValue<MBeanServer> mbeanServer, InjectedValue<ServerEnvironment> serverEnvironment) {
-        AbstractServerConfig config = new ServerConfigImpl(mbeanServer, serverEnvironment);
+    private static ServerConfigImpl createServerConfig(ModelNode configuration) {
+        final ServerConfigImpl config = ServerConfigImpl.getInstance();
         try {
             config.setWebServiceHost(configuration.require(WEBSERVICE_HOST).asString());
         } catch (UnknownHostException e) {
@@ -150,7 +123,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             config.setWebServicePort(configuration.require(WEBSERVICE_PORT).asInt());
         }
         if (configuration.hasDefined(WEBSERVICE_SECURE_PORT)) {
-            config.setWebServicePort(configuration.require(WEBSERVICE_SECURE_PORT).asInt());
+            config.setWebServiceSecurePort(configuration.require(WEBSERVICE_SECURE_PORT).asInt());
         }
         return config;
     }
