@@ -84,8 +84,6 @@
 
             <basename file="${@{group}:@{artifact}:jar}" property="resourcename.@{group}.@{artifact}"/>
 
-            <jar index="true" file="${module.repo.output.dir}/${current.module.path}/${resourcename.@{group}.@{artifact}}" update="true"/>
-
             <!-- Update the resource entry in module.xml -->
             <define-resource-root path="${resourcename.@{group}.@{artifact}}" export-all="@{export-all}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
@@ -109,8 +107,6 @@
             </copy>
 
             <basename file="${@{group}:@{artifact}:jar:@{classifier}}" property="resourcename.@{group}.@{artifact}.@{classifier}"/>
-
-            <jar index="true" file="${module.repo.output.dir}/${current.module.path}/${resourcename.@{group}.@{artifact}.@{classifier}}" update="true"/>
 
             <!-- Update the resource entry in module.xml -->
             <define-resource-root path="${resourcename.@{group}.@{artifact}.@{classifier}}" export-all="@{export-all}"/>
