@@ -143,7 +143,7 @@ public class HostControllerImpl implements HostController {
     }
 
     @Override
-    public void registerDomainController(DomainController domainController) {
+    public void startServers(DomainController domainController) {
         this.domainController = domainController;
         // start servers
         final ModelNode rawModel = hostModel.getHostModel();
@@ -163,7 +163,7 @@ public class HostControllerImpl implements HostController {
     }
 
     @Override
-    public void unregisterDomainController() {
+    public void stopServers() {
         this.domainController = null;
         // stop servers
         final ModelNode rawModel = hostModel.getHostModel();

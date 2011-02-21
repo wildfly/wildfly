@@ -29,8 +29,9 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.TransactionalProxyController;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.ServerStartupTransactionalProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -44,7 +45,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  */
-public class HostControllerService implements Service<TransactionalProxyController> {
+public class HostControllerService implements Service<ServerStartupTransactionalProxyController> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
@@ -53,7 +54,7 @@ public class HostControllerService implements Service<TransactionalProxyControll
     private final String name;
 
     private HostController controller;
-    private TransactionalProxyController proxyController;
+    private ServerStartupTransactionalProxyController proxyController;
 
     HostControllerService(final String name, final HostModel hostModel, final FileRepository repository) {
         this.name = name;
@@ -68,7 +69,7 @@ public class HostControllerService implements Service<TransactionalProxyControll
         final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory, repository);
         serverInventory.setHostController(controller);
         this.controller = controller;
-        this.proxyController = new TransactionalProxyController() {
+        this.proxyController = new ServerStartupTransactionalProxyController() {
 
             @Override
             public OperationResult execute(ModelNode operation, ResultHandler handler, ControllerTransactionContext transaction) {
@@ -89,6 +90,14 @@ public class HostControllerService implements Service<TransactionalProxyControll
             public PathAddress getProxyNodeAddress() {
                 return PathAddress.pathAddress(PathElement.pathElement("host", name));
             }
+
+            public void startServers(DomainController domainController) {
+                controller.startServers(domainController);
+            }
+
+            public void stopServers() {
+                controller.stopServers();
+            }
         };
     }
 
@@ -101,8 +110,8 @@ public class HostControllerService implements Service<TransactionalProxyControll
 
     /** {@inheritDoc} */
     @Override
-    public synchronized TransactionalProxyController getValue() throws IllegalStateException, IllegalArgumentException {
-        final TransactionalProxyController controller = this.proxyController;
+    public synchronized ServerStartupTransactionalProxyController getValue() throws IllegalStateException, IllegalArgumentException {
+        final ServerStartupTransactionalProxyController controller = this.proxyController;
         if(controller == null) {
             throw new IllegalArgumentException();
         }

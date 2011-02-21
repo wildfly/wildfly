@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -37,6 +38,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author Emanuel Muckenhuber
  */
 class ServerInventoryService implements Service<ServerInventory> {
+    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
@@ -55,6 +57,7 @@ class ServerInventoryService implements Service<ServerInventory> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
+        log.debug("Starting Host Controller Server Inventory");
         final ServerInventory serverInventory;
         try {
             final NetworkInterfaceBinding interfaceBinding = iFace.getValue();

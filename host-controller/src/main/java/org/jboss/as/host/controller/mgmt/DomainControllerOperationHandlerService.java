@@ -27,6 +27,7 @@ import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.protocol.MessageHandler;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -38,6 +39,7 @@ import org.jboss.msc.value.InjectedValue;
  * @version $Revision: 1.1 $
  */
 public class DomainControllerOperationHandlerService extends ModelControllerOperationHandlerService {
+    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
 
@@ -49,6 +51,8 @@ public class DomainControllerOperationHandlerService extends ModelControllerOper
 
     @Override
     public void start(StartContext context) throws StartException {
+        log.info("Starting Domain Controller Operation Handler");
+
         super.start(context);
         managementCommunicationService.getValue().addHandler(getValue());
     }

@@ -99,7 +99,7 @@ public interface HostController extends TransactionalModelController {
      */
     void unregisterRunningServer(String serverName);
 
-    void registerDomainController(DomainController domainController);
+    void startServers(DomainController domainController);
 
-    void unregisterDomainController();
+    void stopServers();
 }

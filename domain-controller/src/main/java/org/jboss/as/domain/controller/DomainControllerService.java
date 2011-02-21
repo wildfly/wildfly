@@ -27,7 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -47,7 +46,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private final ExtensibleConfigurationPersister configurationPersister;
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
     private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
-    private final InjectedValue<TransactionalProxyController> hostController = new InjectedValue<TransactionalProxyController>();
+    private final InjectedValue<ServerStartupTransactionalProxyController> hostController = new InjectedValue<ServerStartupTransactionalProxyController>();
     private final String localHostName;
     private DomainController controller;
 
@@ -61,11 +60,13 @@ public final class DomainControllerService implements Service<DomainController> 
     public synchronized void start(final StartContext context) throws StartException {
         MasterDomainControllerClient masterClient = masterDomainControllerClient.getOptionalValue();
         this.controller = masterClient == null ? startMasterDomainController() : startSlaveDomainController(masterClient);
+        hostController.getValue().startServers(controller);
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(final StopContext context) {
+        hostController.getValue().stopServers();
         this.controller = null;
     }
 
@@ -83,7 +84,7 @@ public final class DomainControllerService implements Service<DomainController> 
         return scheduledExecutorService;
     }
 
-    public Injector<TransactionalProxyController> getHostControllerServiceInjector() {
+    public Injector<ServerStartupTransactionalProxyController> getHostControllerServiceInjector() {
         return hostController;
     }
 

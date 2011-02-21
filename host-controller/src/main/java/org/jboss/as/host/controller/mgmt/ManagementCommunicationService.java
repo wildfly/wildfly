@@ -38,6 +38,7 @@ import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -54,6 +55,8 @@ import org.jboss.msc.value.InjectedValue;
  * @author John E. Bailey
  */
 public class ManagementCommunicationService implements Service<ManagementCommunicationService>, ConnectionHandler {
+    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
+
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "management", "communication");
 
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
@@ -71,6 +74,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
      */
     @Override
     public synchronized void start(StartContext context) throws StartException {
+        log.debug("Starting Management Communication Service");
         final ExecutorService executorService = executorServiceValue.getValue();
         final ThreadFactory threadFactory = threadFactoryValue.getValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
