@@ -28,7 +28,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -36,15 +48,23 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClient.Type;
+import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerImpl;
 import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.domain.client.impl.DomainClientImpl;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
+import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.dmr.ModelNode;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
 
 /**
  * Standard ModelController operation handler that also has the operations for HC->DC.
@@ -52,6 +72,15 @@ import org.jboss.dmr.ModelNode;
  * @version $Revision: 1.1 $
  */
 public class DomainControllerOperationHandlerImpl extends ModelControllerOperationHandlerImpl {
+
+    public static final byte HANDLER_ID = (byte)0x10;
+    public static final byte EXECUTE_TRANSACTIONAL_REQUEST = (byte)0x21;
+    public static final byte EXECUTE_TRANSACTIONAL_RESPONSE = (byte)0x22;
+    public static final byte TRANSACTION_COMMIT_REQUEST = (byte)0x23;
+    public static final byte TRANSACTION_COMMIT_RESPONSE = (byte)0x24;
+    public static final byte TRANSACTION_ROLLBACK_REQUEST = (byte)0x25;
+    public static final byte TRANSACTION_ROLLBACK_RESPONSE = (byte)0x26;
+    public static final byte TRANSACTION_ID = (byte)0x30;
 
     public DomainControllerOperationHandlerImpl(Type type, DomainController modelController, MessageHandler initiatingHandler) {
         super(type, modelController, initiatingHandler);
@@ -124,18 +153,31 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
     }
 
 
-    private class RemoteHostControllerClient implements HostControllerClient {
+    private static class RemoteHostControllerClient implements HostControllerClient {
+        private static final MarshallingConfiguration CONFIG;
+        static {
+            CONFIG = new MarshallingConfiguration();
+            CONFIG.setClassResolver(new SimpleClassResolver(DomainClientImpl.class.getClassLoader()));
+        }
+
+        private static Marshaller getMarshaller() throws IOException {
+            return ProtocolUtils.getMarshaller(CONFIG);
+        }
 
         final ProxyController remote;
         final Connection connection;
         final String hostId;
         final PathAddress proxyNodeAddress;
+        final ManagementRequestConnectionStrategy connectionStrategy;
+        final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+        final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
         public RemoteHostControllerClient(String hostId, Connection connection) {
             this.hostId = hostId;
             this.connection = connection;
             this.proxyNodeAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, getId()));
             this.remote = RemoteProxyController.create(ModelControllerClient.Type.HOST, connection, proxyNodeAddress);
+            this.connectionStrategy = new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection);
         }
 
         @Override
@@ -155,6 +197,57 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         }
 
         @Override
+        public OperationResult execute(final ModelNode operation, final ResultHandler handler,
+                final ControllerTransactionContext transaction) {
+
+            if (operation == null) {
+                throw new IllegalArgumentException("Null operation");
+            }
+            if (handler == null) {
+                throw new IllegalArgumentException("Null handler");
+            }
+            if (transaction == null) {
+                throw new IllegalArgumentException("Null transaction");
+            }
+
+            final AsynchronousOperation result = new AsynchronousOperation();
+            executorService.execute (new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Future<Void> f = new ExecuteTransactionalRequest(result, operation, handler, transaction.getTransactionId()).execute(connectionStrategy);
+
+                        while (true) {
+                            try {
+                                //Avoid this thread hanging forever if the client gets shut down
+                                f.get(500, TimeUnit.MILLISECONDS);
+                                break;
+                            } catch (TimeoutException e) {
+                                if (executorService.isShutdown()) {
+                                    break;
+                                }
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to execute operation ", e);
+                    }
+                }
+            });
+            return new OperationResult() {
+                @Override
+                public Cancellable getCancellable() {
+                    return result;
+                }
+
+                @Override
+                public ModelNode getCompensatingOperation() {
+                    return null;
+                }
+            };
+        }
+
+        @Override
         public String getId() {
             return hostId;
         }
@@ -164,5 +257,239 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
             return connection.getPeerAddress() != null;
         }
 
+        private ModelNode readNode(InputStream in) throws IOException {
+            ModelNode node = new ModelNode();
+            node.readExternal(in);
+            return node;
+        }
+
+        private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
+            @Override
+            protected byte getHandlerId() {
+                return HANDLER_ID;
+            }
+        }
+
+        private class AsynchronousOperation implements Cancellable {
+            SimpleFuture<Integer> asynchronousId = new SimpleFuture<Integer>();
+
+            @Override
+            public boolean cancel() {
+                try {
+                    int i = asynchronousId.get().intValue();
+                    if (i >= 0) {
+                        return new CancelAsynchronousOperationRequest(i).executeForResult(connectionStrategy);
+                    }
+                    else return false;
+                } catch (Exception e) {
+                    throw new RuntimeException("Could not cancel request ", e);
+                }
+            }
+
+            void setAsynchronousId(int i) {
+                asynchronousId.set(Integer.valueOf(i));
+            }
+        }
+
+        private class ExecuteTransactionalRequest extends ModelControllerRequest<Void> {
+
+            private final AsynchronousOperation result;
+            private final ModelNode operation;
+            private final ResultHandler handler;
+            private final ModelNode transactionId;
+
+            ExecuteTransactionalRequest(AsynchronousOperation result, ModelNode operation, ResultHandler handler, ModelNode transactionId) {
+                this.result = result;
+                this.operation = operation;
+                this.handler = handler;
+                this.transactionId = transactionId;
+            }
+
+            @Override
+            protected byte getRequestCode() {
+                return EXECUTE_TRANSACTIONAL_REQUEST;
+            }
+
+            @Override
+            protected byte getResponseCode() {
+                return EXECUTE_TRANSACTIONAL_RESPONSE;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+                output.write(TRANSACTION_ID);
+                transactionId.writeExternal(output);
+                output.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                operation.writeExternal(output);
+            }
+
+
+            /** {@inheritDoc} */
+            @Override
+            protected Void receiveResponse(InputStream input) throws IOException {
+                try {
+                    LOOP:
+                    while (true) {
+                        int command = input.read();
+                        switch (command) {
+                            case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT:{
+                                expectHeader(input, ModelControllerClientProtocol.PARAM_LOCATION);
+                                int length = StreamUtils.readInt(input);
+                                String[] location = new String[length];
+                                for (int i = 0 ; i < length ; i++) {
+                                    location[i] = StreamUtils.readUTFZBytes(input);
+                                }
+                                expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+                                ModelNode node = readNode(input);
+                                handler.handleResultFragment(location, node);
+                                break;
+                            }
+                            case ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION:{
+                                handler.handleCancellation();
+                                break LOOP;
+                            }
+                            case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED:{
+                                expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+                                ModelNode node = readNode(input);
+                                // FIXME need some sort of translation
+                                handler.handleFailed(node);
+                                break LOOP;
+                            }
+                            case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:{
+                                expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+                                ModelNode node = readNode(input); // TODO: Where does this go
+                                handler.handleResultComplete();
+                                break LOOP;
+                            }
+                            case ModelControllerClientProtocol.PARAM_REQUEST_ID:{
+                                result.setAsynchronousId(StreamUtils.readInt(input));
+                                break;
+                            }
+                            default:{
+                                throw new IllegalStateException("Unknown response code " + command);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    handler.handleFailed(new ModelNode().set(e.toString()));
+                }
+                return null;
+            }
+        }
+
+        private class CancelAsynchronousOperationRequest extends ModelControllerRequest<Boolean> {
+
+            private final int asynchronousId;
+
+            CancelAsynchronousOperationRequest(int asynchronousId) {
+                this.asynchronousId = asynchronousId;
+            }
+
+            @Override
+            protected byte getRequestCode() {
+                return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_REQUEST;
+            }
+
+            @Override
+            protected byte getResponseCode() {
+                return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_RESPONSE;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+                output.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
+                StreamUtils.writeInt(output, asynchronousId);
+            }
+
+
+            /** {@inheritDoc} */
+            @Override
+            protected Boolean receiveResponse(InputStream input) throws IOException {
+                return StreamUtils.readBoolean(input);
+            }
+        }
+
+    }
+
+    private static class SimpleFuture<V> implements Future<V> {
+
+        private V value;
+        private volatile boolean done;
+        private final Lock lock = new ReentrantLock();
+        private final Condition hasValue = lock.newCondition();
+
+        /**
+         * Always returns <code>false</code>
+         *
+         * @return <code>false</code>
+         */
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public V get() throws InterruptedException, ExecutionException {
+
+            lock.lock();
+            try {
+                while (!done) {
+                    hasValue.await();
+                }
+                return value;
+            }
+            finally {
+                lock.unlock();
+            }
+        }
+
+        @Override
+        public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+
+            long deadline = unit.toMillis(timeout) + System.currentTimeMillis();
+            lock.lock();
+            try {
+                while (!done) {
+                    long remaining = deadline - System.currentTimeMillis();
+                    if (remaining <= 0) {
+                        throw new TimeoutException();
+                    }
+                    hasValue.await(remaining, TimeUnit.MILLISECONDS);
+                }
+                return value;
+            }
+            finally {
+                lock.unlock();
+            }
+        }
+
+        /**
+         * Always returns <code>false</code>
+         *
+         * @return <code>false</code>
+         */
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return done;
+        }
+
+        public void set(V value) {
+            lock.lock();
+            try {
+                this.value = value;
+                done = true;
+                hasValue.signalAll();
+            }
+            finally {
+                lock.unlock();
+            }
+        }
     }
 }

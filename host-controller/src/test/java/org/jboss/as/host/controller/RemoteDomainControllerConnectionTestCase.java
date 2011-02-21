@@ -44,9 +44,11 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerImpl;
+import org.jboss.as.domain.controller.DomainControllerSlave;
+import org.jboss.as.domain.controller.DomainModel;
+import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerImpl;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
@@ -79,7 +81,7 @@ public class RemoteDomainControllerConnectionTestCase {
 
     @Before
     public void start() throws Exception {
-        domainController = new DomainControllerImpl(new ExtensibleConfigurationPersister() {
+        ExtensibleConfigurationPersister mockPersister = new ExtensibleConfigurationPersister() {
 
             @Override
             public void registerSubsystemWriter(String name, XMLElementWriter<SubsystemMarshallingContext> writer) {
@@ -101,7 +103,11 @@ public class RemoteDomainControllerConnectionTestCase {
             public List<ModelNode> load() throws ConfigurationPersistenceException {
                 return null;
             }
-        });
+        };
+        ModelNode mockModel = new ModelNode();
+        mockModel.get(ModelDescriptionConstants.PROFILE);
+        DomainModel dm = DomainModel.Factory.create(mockModel, mockPersister, null);
+        domainController = new DomainControllerImpl(Executors.newScheduledThreadPool(20), dm, "test");
         domainControllerOperationHandlerImpl = new DomainControllerOperationHandlerImpl(ModelControllerClient.Type.HOST, domainController, new ServerConnectionHandler());
 
         //Add an empty profile
@@ -138,16 +144,18 @@ public class RemoteDomainControllerConnectionTestCase {
     @Test
     public void testRemoteDomainControllerConnection() throws Exception {
         service = new RemoteDomainConnectionService("Test", InetAddress.getByName("localhost"), server.getBoundAddress().getPort());
-        ModelNode remoteModel = service.register(new TestHostController());
+        TestDomainControllerSlave slave = new TestDomainControllerSlave();
+        service.register("slave", slave);
+        ModelNode remoteModel = slave.model;
         Assert.assertNotNull(remoteModel);
         Assert.assertTrue(remoteModel.hasDefined(ModelDescriptionConstants.HOST));
         Assert.assertTrue(remoteModel.get(ModelDescriptionConstants.HOST).has("Test"));
         Assert.assertTrue(remoteModel.hasDefined(ModelDescriptionConstants.PROFILE));
         Assert.assertTrue(remoteModel.get(ModelDescriptionConstants.PROFILE).hasDefined("test"));
 
-        //Request the profile description from the host - this will be empty
-        ModelNode desc = service.getProfileOperations("test");
-        Assert.assertNotNull(desc);
+//        //Request the profile description from the host - this will be empty
+//        ModelNode desc = service.getProfileOperations("test");
+//        Assert.assertNotNull(desc);
 
         //Execute something hitting the host proxy
         ModelNode op = new ModelNode();
@@ -174,8 +182,9 @@ public class RemoteDomainControllerConnectionTestCase {
 
     }
 
-    private class TestHostController implements HostController {
+    private class TestDomainControllerSlave implements DomainControllerSlave {
 
+        private ModelNode model;
         @Override
         public OperationResult execute(ModelNode operation, ResultHandler handler) {
             ModelNode node = new ModelNode();
@@ -193,41 +202,27 @@ public class RemoteDomainControllerConnectionTestCase {
         }
 
         @Override
-        public String getName() {
+        public ModelNode addClient(HostControllerClient hostControllerClient) {
             return null;
         }
 
         @Override
-        public ServerStatus startServer(String serverName) {
+        public void removeClient(String id) {
+        }
+
+        @Override
+        public ModelNode getDomainModel() {
             return null;
         }
 
         @Override
-        public ServerStatus restartServer(String serverName) {
+        public ModelNode getProfileOperations(String profileName) {
             return null;
         }
 
         @Override
-        public ServerStatus restartServer(String serverName, int gracefulTimeout) {
-            return null;
-        }
-
-        @Override
-        public ServerStatus stopServer(String serverName) {
-            return null;
-        }
-
-        @Override
-        public ServerStatus stopServer(String serverName, int gracefulTimeout) {
-            return null;
-        }
-
-        @Override
-        public void registerRunningServer(String serverName, Connection connection) {
-        }
-
-        @Override
-        public void unregisterRunningServer(String serverName) {
+        public void setInitialDomainModel(ModelNode initialModel) {
+            this.model = initialModel;
         }
     }
 

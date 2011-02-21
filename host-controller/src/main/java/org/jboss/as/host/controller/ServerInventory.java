@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.domain.client.api.ServerStatus;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.server.ServerState;
@@ -47,14 +48,12 @@ class ServerInventory implements ManagedServerLifecycleCallback {
     private final HostControllerEnvironment environment;
     private final ProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
-    private final DomainControllerConnection domainControllerConnection;
     private HostControllerImpl hostController;
 
-    ServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient, final DomainControllerConnection domainControllerConnection) {
+    ServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient) {
         this.environment = environment;
         this.managementAddress = managementAddress;
         this.processControllerClient = processControllerClient;
-        this.domainControllerConnection = domainControllerConnection;
     }
 
     void setHostController(HostControllerImpl hostController) {
@@ -94,7 +93,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
         return status;
     }
 
-    ServerStatus startServer(final String serverName, final ModelNode hostModel, final ModelNode domainModel) {
+    ServerStatus startServer(final String serverName, final ModelNode hostModel, final DomainController domainController) {
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
@@ -102,7 +101,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
             return determineServerStatus(serverName);
         }
         log.info("starting server " + serverName);
-        final ManagedServer server = createManagedServer(serverName, hostModel, domainModel);
+        final ManagedServer server = createManagedServer(serverName, hostModel, domainController);
         servers.put(processName, server);
         try {
             server.createServerProcess();
@@ -117,9 +116,9 @@ class ServerInventory implements ManagedServerLifecycleCallback {
         return determineServerStatus(serverName);
     }
 
-    ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode hostModel, final ModelNode domainModel) {
+    ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode hostModel, final DomainController domainController) {
         stopServer(serverName, gracefulTimeout);
-        return startServer(serverName, hostModel, domainModel);
+        return startServer(serverName, hostModel, domainController);
     }
 
     ServerStatus stopServer(final String serverName, final int gracefulTimeout) {
@@ -277,8 +276,8 @@ class ServerInventory implements ManagedServerLifecycleCallback {
         }
     }
 
-    private ManagedServer createManagedServer(final String serverName, final ModelNode hostModel, final ModelNode domainModel) {
-        final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, environment, domainControllerConnection);
+    private ManagedServer createManagedServer(final String serverName, final ModelNode hostModel, final DomainController domainController) {
+        final ModelCombiner combiner = new ModelCombiner(serverName, hostModel, domainController, environment);
         return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
     }
 

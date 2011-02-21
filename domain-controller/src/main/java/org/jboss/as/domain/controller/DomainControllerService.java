@@ -23,16 +23,20 @@
 package org.jboss.as.domain.controller;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Emanuel Muckenhuber
@@ -41,17 +45,56 @@ public final class DomainControllerService implements Service<DomainController> 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final ExtensibleConfigurationPersister configurationPersister;
+    private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
+    private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
+    private final InjectedValue<TransactionalProxyController> hostController = new InjectedValue<TransactionalProxyController>();
+    private final String localHostName;
     private DomainController controller;
 
-    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister) {
+    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName) {
         this.configurationPersister = configurationPersister;
+        this.localHostName = localHostName;
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void start(final StartContext context) throws StartException {
+        MasterDomainControllerClient masterClient = masterDomainControllerClient.getOptionalValue();
+        this.controller = masterClient == null ? startMasterDomainController() : startSlaveDomainController(masterClient);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public synchronized void stop(final StopContext context) {
+        this.controller = null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public synchronized DomainController getValue() throws IllegalStateException, IllegalArgumentException {
+        final DomainController controller = this.controller;
+        if(controller == null) {
+            throw new IllegalStateException();
+        }
+        return controller;
+    }
+
+    public Injector<ScheduledExecutorService> getScheduledExecutorServiceInjector() {
+        return scheduledExecutorService;
+    }
+
+    public Injector<TransactionalProxyController> getHostControllerServiceInjector() {
+        return hostController;
+    }
+
+    public Injector<MasterDomainControllerClient> getMasterDomainControllerClientInjector() {
+        return masterDomainControllerClient;
+    }
+
+    private DomainController startMasterDomainController() throws StartException {
+
         log.info("Starting Domain Controller");
-        final DomainController controller = new DomainControllerImpl(configurationPersister);
+        DomainModelImpl domainModel = new DomainModelImpl(configurationPersister, hostController.getValue());
         final List<ModelNode> updates;
         try {
              updates = configurationPersister.load();
@@ -89,28 +132,21 @@ public final class DomainControllerService implements Service<DomainController> 
         };
         for (ModelNode update : updates) {
             count.incrementAndGet();
-            controller.execute(update, resultHandler);
+            domainModel.execute(update, resultHandler);
         }
         if (count.decrementAndGet() == 0) {
             // some action?
         }
-        this.controller = controller;
+
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public synchronized void stop(final StopContext context) {
-        this.controller = null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public synchronized DomainController getValue() throws IllegalStateException, IllegalArgumentException {
-        final DomainController controller = this.controller;
-        if(controller == null) {
-            throw new IllegalStateException();
-        }
+    private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) {
+        log.info("Starting Domain Controller Slave");
+        DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue());
+        controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, masterClient);
         return controller;
     }
+
 
 }

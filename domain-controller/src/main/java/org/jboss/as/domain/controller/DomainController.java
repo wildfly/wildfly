@@ -41,8 +41,10 @@ public interface DomainController extends ModelController {
      * Registers a Host Controller with this domain controller.
      *
      * @param hostControllerClient client the domain controller can use to communicate with the Host Controller.
+     *
+     * @return a copy of the domain level model
      */
-    void addClient(final HostControllerClient hostControllerClient);
+    ModelNode addClient(final HostControllerClient hostControllerClient);
 
     /**
      * Deregisters a previously registered Host Controller.
@@ -59,4 +61,12 @@ public interface DomainController extends ModelController {
      */
     ModelNode getDomainModel();
 
+    /**
+     * Get the operations needed to create the given profile.
+     *
+     * @param profileName the name of the profile
+     *
+     * @return the operations
+     */
+    ModelNode getProfileOperations(String profileName);
 }

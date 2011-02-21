@@ -22,11 +22,14 @@
 
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import java.util.concurrent.CancellationException;
 
-import java.io.IOException;
-
+import org.jboss.as.controller.ControllerTransactionContext;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -41,16 +44,16 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  */
-public class HostControllerService implements Service<HostController> {
+public class HostControllerService implements Service<TransactionalProxyController> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
-    private final InjectedValue<DomainControllerConnection> connection = new InjectedValue<DomainControllerConnection>();
     private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
     private final HostModel hostModel;
     private final FileRepository repository;
     private final String name;
 
     private HostController controller;
+    private TransactionalProxyController proxyController;
 
     HostControllerService(final String name, final HostModel hostModel, final FileRepository repository) {
         this.name = name;
@@ -61,69 +64,49 @@ public class HostControllerService implements Service<HostController> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        final DomainControllerConnection connection = this.connection.getValue();
         final ServerInventory serverInventory = this.serverInventory.getValue();
         final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory, repository);
         serverInventory.setHostController(controller);
-        try {
-            final ModelNode domainModel = connection.register(controller);
-            final FileRepository remoteRepository = connection.getRemoteFileRepository();
-            controller.initDomainConnection(domainModel, remoteRepository);
-            // start servers
-            final ModelNode rawModel = hostModel.getHostModel();
-            if(rawModel.hasDefined(SERVER)) {
-                final ModelNode servers = rawModel.get(SERVER).clone();
-                for(final String serverName : servers.keys()) {
-                    if(servers.get(serverName, START).asBoolean(true)) {
-                        try {
-                            controller.startServer(serverName);
-                        } catch (Exception e) {
-                            log.errorf(e, "failed to start server (%s)", serverName);
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new StartException(e);
-        }
         this.controller = controller;
+        this.proxyController = new TransactionalProxyController() {
+
+            @Override
+            public OperationResult execute(ModelNode operation, ResultHandler handler, ControllerTransactionContext transaction) {
+                return controller.execute(operation, handler, transaction);
+            }
+
+            @Override
+            public ModelNode execute(ModelNode operation) throws CancellationException {
+                return controller.execute(operation);
+            }
+
+            @Override
+            public OperationResult execute(ModelNode operation, ResultHandler handler) {
+                return controller.execute(operation, handler);
+            }
+
+            @Override
+            public PathAddress getProxyNodeAddress() {
+                return PathAddress.pathAddress(PathElement.pathElement("host", name));
+            }
+        };
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
-        final HostController controller = this.controller;
-        final DomainControllerConnection connection = this.connection.getValue();
-        connection.unregister();
         this.controller = null;
-        // stop servers
-        final ModelNode rawModel = hostModel.getHostModel();
-        if(rawModel.hasDefined(SERVER) ) {
-            final ModelNode servers = rawModel.get(SERVER).clone();
-            for(final String serverName : servers.keys()) {
-                if(servers.get(serverName, START).asBoolean(true)) {
-                    try {
-                        controller.stopServer(serverName);
-                    } catch (Exception e) {
-                        log.errorf(e, "failed to stop server (%s)", serverName);
-                    }
-                }
-            }
-        }
+        this.proxyController = null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public synchronized HostController getValue() throws IllegalStateException, IllegalArgumentException {
-        final HostController controller = this.controller;
+    public synchronized TransactionalProxyController getValue() throws IllegalStateException, IllegalArgumentException {
+        final TransactionalProxyController controller = this.proxyController;
         if(controller == null) {
             throw new IllegalArgumentException();
         }
         return controller;
-    }
-
-    InjectedValue<DomainControllerConnection> getConnection() {
-        return connection;
     }
 
     InjectedValue<ServerInventory> getServerInventory() {

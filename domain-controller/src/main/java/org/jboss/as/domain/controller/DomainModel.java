@@ -22,14 +22,15 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.TransactionalModelController;
+import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface DomainModel extends ModelController {
+public interface DomainModel extends TransactionalModelController {
 
     /**
      * Get a snapshot of the underlying model.
@@ -39,8 +40,8 @@ public interface DomainModel extends ModelController {
     ModelNode getDomainModel();
 
     static class Factory {
-        public static DomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister) {
-            return new DomainModelImpl(domainModel, configurationPersister);
+        public static DomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
+            return new DomainModelImpl(domainModel, configurationPersister, localHostProxy);
         }
     }
 

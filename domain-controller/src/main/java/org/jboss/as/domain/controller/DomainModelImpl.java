@@ -46,13 +46,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.BasicTransactionalModelController;
+import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -81,26 +82,39 @@ import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class DomainModelImpl extends BasicModelController implements DomainModel {
+public class DomainModelImpl extends BasicTransactionalModelController implements DomainModel {
 
-    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister) {
-        super(configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
-        initialize(getRegistry(), configurationPersister);
-        createCoreModel();
+    /** Constructor for a master DC. */
+    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
+        super(createCoreModel(), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
+        ModelNodeRegistration registry = getRegistry();
+        initialize(registry, configurationPersister, null);
+        if (localHostProxy != null) {
+            registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
+        }
     }
 
-    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister) {
+    /** Constructor for a slave DC. */
+    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
         super(model, configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
-        initialize(getRegistry(), configurationPersister);
+        ModelNodeRegistration registry = getRegistry();
+        initialize(registry, configurationPersister, model);
+        if (localHostProxy != null) {
+            registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
+        }
     }
 
-    private void createCoreModel() {
+    private static ModelNode createCoreModel() {
         // Create roots
-        final ModelNode rootModel = getModel();
+        final ModelNode rootModel = new ModelNode();
         rootModel.get(NAMESPACES).setEmptyList();
         rootModel.get(SCHEMA_LOCATIONS).setEmptyList();
         rootModel.get(EXTENSION);
@@ -110,13 +124,15 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         rootModel.get(SOCKET_BINDING_GROUP);
         rootModel.get(PATH);
         rootModel.get(HOST);
+        return rootModel;
     }
 
+    @Override
     public ModelNode getDomainModel() {
         return super.getModel().clone();
     }
 
-    protected static void initialize(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister) {
+    protected static void initialize(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister, final ModelNode model) {
         // Global operations
         root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
         root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
@@ -172,22 +188,24 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         final ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
+
+        // If we were provided a model, we're a slave and need to initialize all extensions
+        if (model != null && model.hasDefined(EXTENSION)) {
+            for (Property prop : model.get(EXTENSION).asPropertyList()) {
+                try {
+                    String module = prop.getValue().get(ExtensionDescription.MODULE).asString();
+                    for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
+                        extension.initialize(extensionContext);
+                    }
+                } catch (ModuleLoadException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
-    protected ModelNodeRegistration getRegistry() {
-        return super.getRegistry();
-    }
-
-    void registerProxy(final ProxyController controller) {
-        final PathElement element = controller.getProxyNodeAddress().getLastElement();
-        getRegistry().registerProxyController(element, controller);
-        getModel().get(element.getKey(), element.getValue());
-    }
-
-    void unregisterProxy(final PathAddress proxyNodeAddress) {
-        final PathElement element = proxyNodeAddress.getLastElement();
-        getModel().get(element.getKey()).remove(element.getValue());
-        getRegistry().unregisterProxyController(element);
+    void setInitialDomainModel(ModelNode domainModel) {
+        getModel().set(domainModel);
     }
 
 }

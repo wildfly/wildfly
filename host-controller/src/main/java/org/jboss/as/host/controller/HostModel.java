@@ -50,7 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.BasicTransactionalModelController;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
@@ -91,7 +91,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Kabir Khan
  */
-public class HostModel extends BasicModelController {
+public class HostModel extends BasicTransactionalModelController {
 
     /**
      * @param configurationPersister

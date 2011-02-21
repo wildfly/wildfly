@@ -22,11 +22,6 @@
 
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
 import java.io.IOException;
@@ -39,11 +34,17 @@ import java.util.concurrent.Executors;
 
 import javax.net.SocketFactory;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
+import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
@@ -61,7 +62,7 @@ import org.jboss.msc.service.StopContext;
 /**
  * @author Kabir Khan
  */
-class RemoteDomainConnectionService implements DomainControllerConnection, Service<DomainControllerConnection> {
+class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient> {
 
     private static final int CONNECTION_TIMEOUT = 5000;
     private final InetAddress host;
@@ -69,7 +70,7 @@ class RemoteDomainConnectionService implements DomainControllerConnection, Servi
     private final String name;
 
     private volatile Connection connection;
-    private volatile ModelControllerClient client;
+    private volatile ProxyController client;
     private volatile ModelControllerOperationHandler operationHandler;
 
     RemoteDomainConnectionService(String name, InetAddress host, int port){
@@ -80,7 +81,7 @@ class RemoteDomainConnectionService implements DomainControllerConnection, Servi
 
     /** {@inheritDoc} */
     @Override
-    public synchronized ModelNode register(final HostController hostController) {
+    public synchronized void register(final String hostName, final DomainControllerSlave slave) {
         final ProtocolClient.Configuration config = new ProtocolClient.Configuration();
         config.setMessageHandler(initialMessageHandler);
         config.setConnectTimeout(CONNECTION_TIMEOUT);
@@ -93,32 +94,16 @@ class RemoteDomainConnectionService implements DomainControllerConnection, Servi
 
         try {
             connection = protocolClient.connect();
-            client = ModelControllerClient.Factory.create(ModelControllerClient.Type.DOMAIN, connection);
-            operationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.HOST, hostController, initialMessageHandler);
+            client = RemoteProxyController.create(ModelControllerClient.Type.DOMAIN, connection, PathAddress.EMPTY_ADDRESS);
+            operationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.HOST, slave, initialMessageHandler);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         try {
-            return new RegisterModelControllerRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
+            ModelNode node = new RegisterModelControllerRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
+            slave.setInitialDomainModel(node);
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode getProfileOperations(String profileName) {
-        assert profileName != null : "Null profile name";
-        ModelNode operation = new ModelNode();
-
-        operation.get(OP).set(DESCRIBE);
-        operation.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(PROFILE, profileName)).toModelNode());
-        try {
-            return client.execute(operation).require(RESULT);
-        } catch (CancellationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -140,6 +125,16 @@ class RemoteDomainConnectionService implements DomainControllerConnection, Servi
         return null;
     }
 
+    @Override
+    public OperationResult execute(ModelNode operation, ResultHandler handler) {
+        return client.execute(operation, handler);
+    }
+
+    @Override
+    public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+        return client.execute(operation);
+    }
+
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
@@ -148,13 +143,12 @@ class RemoteDomainConnectionService implements DomainControllerConnection, Servi
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
-        StreamUtils.safeClose(client);
         StreamUtils.safeClose(connection);
     }
 
     /** {@inheritDoc} */
     @Override
-    public synchronized DomainControllerConnection getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized MasterDomainControllerClient getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

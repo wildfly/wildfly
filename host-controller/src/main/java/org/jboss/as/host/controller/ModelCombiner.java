@@ -57,6 +57,7 @@ import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
@@ -86,14 +87,14 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     final String profileName;
     final JvmElement jvmElement;
     final HostControllerEnvironment environment;
-    final DomainControllerConnection domainControllerConnection;
+    final DomainController domainController;
 
-    ModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final DomainControllerConnection domainControllerConnection) {
+    ModelCombiner(final String serverName, final ModelNode hostModel, final DomainController domainController, final HostControllerEnvironment environment) {
         this.serverName = serverName;
-        this.domainModel = domainModel;
+        this.domainModel = domainController.getDomainModel();
         this.hostModel = hostModel;
         this.serverModel = hostModel.require(SERVER).require(serverName);
-        this.domainControllerConnection = domainControllerConnection;
+        this.domainController = domainController;
         this.environment = environment;
 
         final String serverGroupName = serverModel.require(GROUP).asString();
@@ -372,7 +373,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     private void addSubsystems(List<ModelNode> updates) {
-        ModelNode node = domainControllerConnection.getProfileOperations(profileName);
+        ModelNode node = domainController.getProfileOperations(profileName);
         updates.addAll(node.asList());
     }
 

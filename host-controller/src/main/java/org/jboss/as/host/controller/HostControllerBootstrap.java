@@ -47,11 +47,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
@@ -65,6 +67,7 @@ import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -141,39 +144,18 @@ public class HostControllerBootstrap {
 
         final ServiceTarget serviceTarget = serviceContainer;
         serviceTarget.addListener(new AbstractServiceListener<Object>() {
+            @Override
             public void serviceFailed(final ServiceController<?> serviceController, final StartException reason) {
                 log.errorf(reason, "Service [%s] failed.", serviceController.getName());
             }
         });
-        // Get the raw model
-        final ModelNode rawModel = hostModel.getHostModel();
-        final String mgmtNetwork = rawModel.get(MANAGEMENT, NATIVE_API, INTERFACE).asString();
-        final int mgmtPort = rawModel.get(MANAGEMENT, NATIVE_API, PORT).asInt();
         // Install the process controller client
         final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
         serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
+        // Get the raw model
+        final ModelNode rawModel = hostModel.getHostModel();
         // manually install the network interface services
         activateNetworkInterfaces(rawModel, serviceTarget);
-        // install the domain controller connection
-        activateDomainControllerConnection(environment, rawModel, serviceTarget);
-        //
-        final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
-        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
-            .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
-            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
-            .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, inventory.getDomainControllerConnection())
-            .install();
-
-        final String name = rawModel.get(NAME).asString();
-        final FileRepository repository = new LocalFileRepository(environment);
-        final HostControllerService hc = new HostControllerService(name, hostModel, repository);
-        serviceTarget.addService(HostController.SERVICE_NAME, hc)
-            .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hc.getConnection())
-            .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, hc.getServerInventory())
-            .addDependency(ServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
-            .setInitialMode(Mode.ACTIVE)
-            .install();
-
         //
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
@@ -182,6 +164,23 @@ public class HostControllerBootstrap {
         final HostControllerExecutorService executorService = new HostControllerExecutorService();
         serviceTarget.addService(executorServiceName, executorService)
             .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
+            .install();
+        //
+        final String mgmtNetwork = rawModel.get(MANAGEMENT, NATIVE_API, INTERFACE).asString();
+        final int mgmtPort = rawModel.get(MANAGEMENT, NATIVE_API, PORT).asInt();
+        final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
+        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
+            .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
+            .install();
+
+        final String name = rawModel.get(NAME).asString();
+        final FileRepository repository = new LocalFileRepository(environment);
+        final HostControllerService hc = new HostControllerService(name, hostModel, repository);
+        serviceTarget.addService(HostController.SERVICE_NAME, hc)
+            .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, hc.getServerInventory())
+            .addDependency(ServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
+            .setInitialMode(Mode.ACTIVE)
             .install();
 
         //  Add the management communication service
@@ -193,6 +192,9 @@ public class HostControllerBootstrap {
             .addDependency(threadFactoryServiceName, ThreadFactory.class, managementCommunicationService.getThreadFactoryInjector())
             .setInitialMode(Mode.ACTIVE)
             .install();
+
+        // install the domain controller
+        activateDomainController(environment, rawModel, serviceTarget);
 
         // Add the server to host operation handler
         final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
@@ -209,24 +211,25 @@ public class HostControllerBootstrap {
      * @param host the host model
      * @param serviceTarget the service target
      */
-    static void activateDomainControllerConnection(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {
-        if (host.get(DOMAIN_CONTROLLER, LOCAL).isDefined()) {
-            installLocalDomainController(environment, host, serviceTarget);
-        } else {
+    static void activateDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {
+        boolean slave = !host.get(DOMAIN_CONTROLLER, LOCAL).isDefined();
+        if (slave) {
             installRemoteDomainControllerConnection(environment, host, serviceTarget);
         }
+        installLocalDomainController(environment, host, serviceTarget, slave);
     }
 
-    static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {
+    static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, boolean isSlave) {
+        final String hostName = host.get(NAME).asString();
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir);
-        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister);
-        serviceTarget.addService(DomainController.SERVICE_NAME, dcService).install();
-
-        final LocalDomainConnectionService service = new LocalDomainConnectionService();
-        serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, service)
-            .addDependency(DomainController.SERVICE_NAME, DomainController.class, service.getDomainController())
-            .setInitialMode(Mode.ACTIVE)
+        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName);
+        ServiceBuilder<DomainController> builder = serviceTarget.addService(DomainController.SERVICE_NAME, dcService);
+        if (isSlave) {
+            builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());
+        }
+        builder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, dcService.getScheduledExecutorServiceInjector())
+            .addDependency(HostController.SERVICE_NAME, TransactionalProxyController.class, dcService.getHostControllerServiceInjector())
             .install();
 
         //Install the domain controller operation handler
@@ -256,7 +259,7 @@ public class HostControllerBootstrap {
         }
         int port = dc.require(PORT).asInt();
         final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port);
-        serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, service)
+        serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
             .setInitialMode(Mode.ACTIVE)
             .install();
     }

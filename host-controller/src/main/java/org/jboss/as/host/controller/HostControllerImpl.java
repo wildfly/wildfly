@@ -23,20 +23,21 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.util.concurrent.CancellationException;
 
+import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
-import org.jboss.as.domain.controller.DomainModel;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
@@ -49,14 +50,13 @@ public class HostControllerImpl implements HostController {
 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
-    private static final ExtensibleConfigurationPersister domainPersister = new NullConfigurationPersister(null);
 
     private final String name;
     private final HostModel hostModel;
     private final ServerInventory serverInventory;
     private final FileRepository repository;
 
-    private DomainModel domainModel;
+    private DomainController domainController;
     private FileRepository remoteRepository;
 
     HostControllerImpl(final String name, final HostModel model, final ServerInventory serverInventory, final FileRepository repository) {
@@ -66,17 +66,16 @@ public class HostControllerImpl implements HostController {
         this.serverInventory = serverInventory;
     }
 
-    void initDomainConnection(final ModelNode domainModel, final FileRepository remoteRepository) {
-        assert domainModel != null : "null domain model";
-        /// assert remoteRepository != null : "null remote repository";
-        this.domainModel = DomainModel.Factory.create(domainModel, domainPersister);
-        this.remoteRepository = remoteRepository;
-    }
-
     /** {@inheritDoc} */
     @Override
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OperationResult execute(ModelNode operation, ResultHandler handler, ControllerTransactionContext transaction) {
+        return hostModel.execute(operation, handler, transaction);
     }
 
     /** {@inheritDoc} */
@@ -95,8 +94,11 @@ public class HostControllerImpl implements HostController {
     /** {@inheritDoc} */
     @Override
     public ServerStatus startServer(String serverName) {
+        if (domainController == null) {
+            throw new IllegalStateException(String.format("Domain Controller is not available; cannot start server %s", serverName));
+        }
         final ServerInventory servers = this.serverInventory;
-        return servers.startServer(serverName, hostModel.getHostModel(), domainModel.getDomainModel());
+        return servers.startServer(serverName, hostModel.getHostModel(), domainController);
     }
 
     /** {@inheritDoc} */
@@ -108,8 +110,11 @@ public class HostControllerImpl implements HostController {
     /** {@inheritDoc} */
     @Override
     public ServerStatus restartServer(String serverName, int gracefulTimeout) {
+        if (domainController == null) {
+            throw new IllegalStateException(String.format("Domain Controller is not available; cannot restart server %s", serverName));
+        }
         final ServerInventory servers = this.serverInventory;
-        return servers.restartServer(serverName, gracefulTimeout, hostModel.getHostModel(), domainModel.getDomainModel());
+        return servers.restartServer(serverName, gracefulTimeout, hostModel.getHostModel(), domainController);
     }
 
     /** {@inheritDoc} */
@@ -135,6 +140,45 @@ public class HostControllerImpl implements HostController {
     @Override
     public void unregisterRunningServer(String serverName) {
         hostModel.unregisterProxy(serverName);
+    }
+
+    @Override
+    public void registerDomainController(DomainController domainController) {
+        this.domainController = domainController;
+        // start servers
+        final ModelNode rawModel = hostModel.getHostModel();
+        if(rawModel.hasDefined(SERVER)) {
+            final ModelNode servers = rawModel.get(SERVER).clone();
+            for(final String serverName : servers.keys()) {
+                if(servers.get(serverName, START).asBoolean(true)) {
+                    try {
+                        startServer(serverName);
+                    } catch (Exception e) {
+                        log.errorf(e, "failed to start server (%s)", serverName);
+                    }
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void unregisterDomainController() {
+        this.domainController = null;
+        // stop servers
+        final ModelNode rawModel = hostModel.getHostModel();
+        if(rawModel.hasDefined(SERVER) ) {
+            final ModelNode servers = rawModel.get(SERVER).clone();
+            for(final String serverName : servers.keys()) {
+                if(servers.get(serverName, START).asBoolean(true)) {
+                    try {
+                        stopServer(serverName);
+                    } catch (Exception e) {
+                        log.errorf(e, "failed to stop server (%s)", serverName);
+                    }
+                }
+            }
+        }
     }
 
 }

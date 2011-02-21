@@ -69,7 +69,7 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class BasicModelController implements ModelController {
+public class BasicModelController extends AbstractModelController implements ModelController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
@@ -147,23 +147,6 @@ public class BasicModelController implements ModelController {
      */
     protected OperationHandler getHandler(final PathAddress address, final String name) {
         return registry.getOperationHandler(address, name);
-    }
-
-    /**
-     * Get a failure result from a throwable exception.
-     *
-     * @param t the exception
-     * @return the failure result
-     */
-    protected ModelNode getFailureResult(Throwable t) {
-        final ModelNode node = new ModelNode();
-        // todo - define this structure
-        do {
-            final String message = t.getLocalizedMessage();
-            node.add(t.getClass().getName(), message != null ? message : "");
-            t = t.getCause();
-        } while (t != null);
-        return node;
     }
 
     /** {@inheritDoc} */
@@ -252,10 +235,13 @@ public class BasicModelController implements ModelController {
      * @param configurationPersisterFactory factory for the configuration persister
      */
     protected void persistConfiguration(final ModelNode model, final ConfigurationPersisterProvider configurationPersisterFactory) {
-        try {
-            configurationPersisterFactory.getConfigurationPersister().store(model);
-        } catch (final ConfigurationPersistenceException e) {
-            log.warnf(e, "Failed to persist configuration change: %s", e);
+        ConfigurationPersister configurationPersister =  configurationPersisterFactory.getConfigurationPersister();
+        if (configurationPersister != null) {
+            try {
+                configurationPersister.store(model);
+            } catch (final ConfigurationPersistenceException e) {
+                log.warnf(e, "Failed to persist configuration change: %s", e);
+            }
         }
     }
 
@@ -270,10 +256,12 @@ public class BasicModelController implements ModelController {
      * </p>
      */
     protected void registerInternalOperations() {
-        // Ugly. We register a handler for reading the config as xml to avoid leaking internals
-        // via the ModelController or OperationContext interfaces.
-        XmlMarshallingHandler handler = new XmlMarshallingHandler();
-        this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, handler, handler, false);
+        if (configurationPersister != null) {
+            // Ugly. We register a handler for reading the config as xml to avoid leaking internals
+            // via the ModelController or OperationContext interfaces.
+            XmlMarshallingHandler handler = new XmlMarshallingHandler();
+            this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, handler, handler, false);
+        }
     }
 
     /**
@@ -426,7 +414,7 @@ public class BasicModelController implements ModelController {
      *
      * @throws IllegalStateException if the resource already exists or ancestor resources are missing
      */
-    private void validateNewAddress(PathAddress address) {
+    protected void validateNewAddress(PathAddress address) {
         if (address.size() == 0) {
             throw new IllegalStateException("Resource at address " + address + " already exists");
         }

@@ -22,12 +22,12 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.TransactionalProxyController;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface HostControllerClient extends ProxyController {
+public interface HostControllerClient extends TransactionalProxyController {
 
     /**
      * Get the identifier for the Host Controller.

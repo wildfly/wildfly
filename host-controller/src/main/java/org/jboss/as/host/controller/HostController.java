@@ -22,15 +22,16 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.TransactionalModelController;
 import org.jboss.as.domain.client.api.ServerStatus;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.protocol.Connection;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface HostController extends ModelController {
+public interface HostController extends TransactionalModelController {
 
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
 
@@ -97,4 +98,8 @@ public interface HostController extends ModelController {
      * @param serverName the name of the server
      */
     void unregisterRunningServer(String serverName);
+
+    void registerDomainController(DomainController domainController);
+
+    void unregisterDomainController();
 }
