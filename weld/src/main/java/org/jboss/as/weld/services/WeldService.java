@@ -75,21 +75,26 @@ public class WeldService implements Service<WeldContainer> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.info("Starting weld service");
-        // set up injected services
-        weldContainer.addWeldService(EjbServices.class, ejbServices.getValue());
-        weldContainer.addWeldService(SecurityServices.class, securityServices.getValue());
-        weldContainer.addWeldService(TransactionServices.class, weldTransactionServices.getValue());
-        weldContainer.addWeldService(ValidationServices.class, validationServices.getValue());
+        try {
+            log.info("Starting weld service");
+            // set up injected services
+            weldContainer.addWeldService(EjbServices.class, ejbServices.getValue());
+            weldContainer.addWeldService(SecurityServices.class, securityServices.getValue());
+            weldContainer.addWeldService(TransactionServices.class, weldTransactionServices.getValue());
+            weldContainer.addWeldService(ValidationServices.class, validationServices.getValue());
 
-        // TODO: this is a complete hack. We will need one instance of each service per bean deployment archive
-        for (BeanDeploymentArchive bda : weldContainer.getBeanDeploymentArchives()) {
-            bda.getServices().add(EjbInjectionServices.class, ejbInjectionServices.getValue());
-            bda.getServices().add(JpaInjectionServices.class, jpaInjectionServices.getValue());
-            bda.getServices().add(ResourceInjectionServices.class, resourceInjectionServices.getValue());
+            // TODO: this is a complete hack. We will need one instance of each service per bean deployment archive
+            for (BeanDeploymentArchive bda : weldContainer.getBeanDeploymentArchives()) {
+                bda.getServices().add(EjbInjectionServices.class, ejbInjectionServices.getValue());
+                bda.getServices().add(JpaInjectionServices.class, jpaInjectionServices.getValue());
+                bda.getServices().add(ResourceInjectionServices.class, resourceInjectionServices.getValue());
+            }
+            // start weld
+            weldContainer.start();
+        } catch (Exception e) {
+            weldContainer.stop();
+            throw new StartException(e);
         }
-        // start weld
-        weldContainer.start();
     }
 
     @Override

@@ -72,6 +72,7 @@ public class WeldContainer {
         if (started) {
             throw new IllegalStateException("WeldContainer is already running");
         }
+        started = true;
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
@@ -80,7 +81,6 @@ public class WeldContainer {
             bootstrap.deployBeans();
             bootstrap.validateBeans();
             bootstrap.endInitialization();
-            started = true;
         } finally {
             SecurityActions.setContextClassLoader(oldTccl);
         }

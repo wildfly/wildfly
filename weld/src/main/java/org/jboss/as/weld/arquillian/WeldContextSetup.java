@@ -34,6 +34,7 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.weld.context.bound.BoundConversationContext;
 import org.jboss.weld.context.bound.BoundLiteral;
+import org.jboss.weld.context.bound.BoundRequest;
 import org.jboss.weld.context.bound.BoundRequestContext;
 import org.jboss.weld.context.bound.BoundSessionContext;
 import org.jboss.weld.context.bound.MutableBoundRequest;
@@ -46,9 +47,20 @@ import org.jboss.weld.context.bound.MutableBoundRequest;
  */
 public class WeldContextSetup implements SetupAction {
 
+    private static class ContextMapThreadLocal extends ThreadLocal<Map<String, Object>> {
+        @Override
+        protected Map<String, Object> initialValue() {
+            return new ConcurrentHashMap<String, Object>();
+        }
+    }
+
     private static final String STANDARD_BEAN_MANAGER_JNDI_NAME = "java:comp/BeanManager";
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
+
+    private final ThreadLocal<Map<String, Object>> sessionContexts = new ContextMapThreadLocal();
+    private final ThreadLocal<Map<String, Object>> requestContexts = new ContextMapThreadLocal();
+    private final ThreadLocal<BoundRequest> boundRequests = new ThreadLocal<BoundRequest>();
 
     @SuppressWarnings("unchecked")
     public void setup(Map<String, Object> properties) {
@@ -57,15 +69,12 @@ public class WeldContextSetup implements SetupAction {
 
             if (manager != null) {
 
-                final Map<String, Object> sessionMap = new ConcurrentHashMap<String, Object>();
-                final Map<String, Object> requestMap = new ConcurrentHashMap<String, Object>();
-
                 final Bean<BoundSessionContext> sessionContextBean = (Bean<BoundSessionContext>) manager.resolve(manager
                         .getBeans(BoundSessionContext.class, BoundLiteral.INSTANCE));
                 CreationalContext<?> ctx = manager.createCreationalContext(sessionContextBean);
                 final BoundSessionContext sessionContext = (BoundSessionContext) manager.getReference(sessionContextBean,
                         BoundSessionContext.class, ctx);
-                sessionContext.associate(sessionMap);
+                sessionContext.associate(sessionContexts.get());
                 sessionContext.activate();
 
                 final Bean<BoundRequestContext> requestContextBean = (Bean<BoundRequestContext>) manager.resolve(manager
@@ -73,7 +82,7 @@ public class WeldContextSetup implements SetupAction {
                 ctx = manager.createCreationalContext(requestContextBean);
                 final BoundRequestContext requestContext = (BoundRequestContext) manager.getReference(requestContextBean,
                         BoundRequestContext.class, ctx);
-                requestContext.associate(requestMap);
+                requestContext.associate(requestContexts.get());
                 requestContext.activate();
 
                 final Bean<BoundConversationContext> conversationContextBean = (Bean<BoundConversationContext>) manager
@@ -81,7 +90,9 @@ public class WeldContextSetup implements SetupAction {
                 ctx = manager.createCreationalContext(conversationContextBean);
                 final BoundConversationContext conversationContext = (BoundConversationContext) manager.getReference(
                         conversationContextBean, BoundConversationContext.class, ctx);
-                conversationContext.associate(new MutableBoundRequest(requestMap, sessionMap));
+                BoundRequest request = new MutableBoundRequest(requestContexts.get(), sessionContexts.get());
+                boundRequests.set(request);
+                conversationContext.associate(request);
                 conversationContext.activate();
             }
         } catch (NamingException e) {
@@ -100,6 +111,7 @@ public class WeldContextSetup implements SetupAction {
             final BoundSessionContext sessionContext = (BoundSessionContext) manager.getReference(sessionContextBean,
                     BoundSessionContext.class, ctx);
             sessionContext.deactivate();
+            sessionContext.dissociate(sessionContexts.get());
 
             final Bean<BoundRequestContext> requestContextBean = (Bean<BoundRequestContext>) manager.resolve(manager.getBeans(
                     BoundRequestContext.class, BoundLiteral.INSTANCE));
@@ -107,6 +119,7 @@ public class WeldContextSetup implements SetupAction {
             final BoundRequestContext requestContext = (BoundRequestContext) manager.getReference(requestContextBean,
                     BoundRequestContext.class, ctx);
             requestContext.deactivate();
+            requestContext.dissociate(requestContexts.get());
 
             final Bean<BoundConversationContext> conversationContextBean = (Bean<BoundConversationContext>) manager
                     .resolve(manager.getBeans(BoundConversationContext.class, BoundLiteral.INSTANCE));
@@ -114,8 +127,13 @@ public class WeldContextSetup implements SetupAction {
             final BoundConversationContext conversationContext = (BoundConversationContext) manager.getReference(
                     conversationContextBean, BoundConversationContext.class, ctx);
             conversationContext.deactivate();
+            conversationContext.dissociate(boundRequests.get());
         } catch (NamingException e) {
             log.error("Failed to tear down Weld contexts", e);
+        } finally {
+            sessionContexts.remove();
+            requestContexts.remove();
+            boundRequests.remove();
         }
     }
 
