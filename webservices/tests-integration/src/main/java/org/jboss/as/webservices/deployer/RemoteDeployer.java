@@ -61,11 +61,6 @@ public final class RemoteDeployer implements Deployer {
         final DeploymentAction deployAction = builder.getLastAction();
         final String uniqueId = executeDeploymentPlan(plan, deployAction);
         url2Id.put(url, uniqueId);
-        // For some reason AS7 server deployer isn't notified when web application is started.
-        // Thus we're getting successful deployment notification even if the web application isn't started yet :(
-        // Then when trying to access e.g. WSDL file, we're getting HTTP 500 (not found)
-        LOGGER.fatal("TODO: remove this ugly hack (Thread.sleep(3000)");
-        Thread.sleep(3000);
     }
 
     @Override

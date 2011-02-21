@@ -62,6 +62,7 @@ public class JBWS3207TestCase {
                 testSOAPCall();
             } catch (Exception e) {
                 e.printStackTrace();
+                throw e;
             } finally {
                 deployer.undeploy(archiveURL);
             }
