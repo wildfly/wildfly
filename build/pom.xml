@@ -667,6 +667,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.ws.projects</groupId>
+            <artifactId>jaxws-httpserver-httpspi</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-client</artifactId>
         </dependency>

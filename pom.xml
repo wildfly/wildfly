@@ -145,6 +145,7 @@
         <version.org.jboss.ws.common>2.0.0.Alpha2</version.org.jboss.ws.common>
         <version.org.jboss.ws.jbossws-cxf>4.0.0.Alpha1</version.org.jboss.ws.jbossws-cxf>
         <version.org.jboss.ws.spi>2.0.0.Alpha2</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.jaxws-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-httpserver-httpspi>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.mockito>1.8.4</version.org.mockito>
@@ -2610,6 +2611,12 @@
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-spi</artifactId>
                 <version>${version.org.jboss.ws.spi}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws.projects</groupId>
+                <artifactId>jaxws-httpserver-httpspi</artifactId>
+                <version>${version.org.jboss.ws.jaxws-httpserver-httpspi}</version>
             </dependency>
 
             <dependency>

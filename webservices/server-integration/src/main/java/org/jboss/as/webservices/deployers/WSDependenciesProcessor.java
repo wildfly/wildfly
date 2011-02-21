@@ -62,6 +62,7 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JBOSS_WS_CXF_CLIENT = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-client");
     private static final ModuleIdentifier JBOSS_WS_CXF_FACTORIES = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-factories");
     private static final ModuleIdentifier JBOSS_WS_CXF_SERVER = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-server");
+    private static final ModuleIdentifier JBOSS_WS_CXF_TRANSPORTS_HTTPSERVER = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-transports-httpserver");
     private static final ModuleIdentifier JBOSS_WEBSERVICES = ModuleIdentifier.create("org.jboss.as.webservices");
     private static final ModuleIdentifier SAAJ_IMPL = ModuleIdentifier.create("com.sun.xml.messaging.saaj");
     private static final ModuleIdentifier WSDL4J = ModuleIdentifier.create("wsdl4j.wsdl4j");
@@ -78,12 +79,10 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_COMMON, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_CLIENT, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_FACTORIES, false, false, true));
+            moduleSpecification.addDependency(applyCXFExtensionImportFilters(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_TRANSPORTS_HTTPSERVER, false, false, true)));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_SERVER, false, false, true));
 
-            ModuleDependency apacheCxfDep = new ModuleDependency(moduleLoader, APACHE_CXF, false, false, true);
-            apacheCxfDep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/cxf"), true)); //to include bus extensions in META-INF
-            apacheCxfDep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/spring.*"), true));
-            moduleSpecification.addDependency(apacheCxfDep);
+            moduleSpecification.addDependency(applyCXFExtensionImportFilters(new ModuleDependency(moduleLoader, APACHE_CXF, false, false, true)));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XALAN, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
 
@@ -91,6 +90,12 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SAAJ_IMPL, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, WSDL4J, false, false, true));
         }
+    }
+
+    private static ModuleDependency applyCXFExtensionImportFilters(ModuleDependency dep) {
+        dep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/cxf"), true)); //to include bus extensions in META-INF
+        dep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/spring.*"), true));
+        return dep;
     }
 
     /**

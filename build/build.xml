@@ -667,6 +667,10 @@
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-httpserver"/>
         </module-def>
 
+        <module-def name="org.jboss.ws.jaxws-httpserver-httpspi">
+            <maven-resource group="org.jboss.ws.projects" artifact="jaxws-httpserver-httpspi"/>
+        </module-def>
+
         <module-def name="org.jboss.ws.api">
             <maven-resource group="org.jboss.ws" artifact="jbossws-api"/>
         </module-def>
