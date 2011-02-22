@@ -27,6 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -113,10 +114,17 @@ public final class DomainControllerService implements Service<DomainController> 
         final DomainControllerSlave controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, masterClient);
         try {
             masterClient.register(hostController.getValue().getName(), controller);
-            return controller;
         } catch (IllegalStateException e) {
             return null;
         }
+
+        try {
+            configurationPersister.store(domainModel.getDomainModel());
+        } catch (ConfigurationPersistenceException e) {
+            log.error("Could not cache domain model", e);
+        }
+
+        return controller;
     }
 
     private DomainController startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {

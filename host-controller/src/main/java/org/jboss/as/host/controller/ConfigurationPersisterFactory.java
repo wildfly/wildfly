@@ -48,8 +48,12 @@ public class ConfigurationPersisterFactory {
     }
 
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
+        return createDomainXmlConfigurationPersister(configDir, DOMAIN_XML);
+    }
+
+    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, String name) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
-        return new BackupXmlConfigurationPersister(getFile(configDir, DOMAIN_XML), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        return new BackupXmlConfigurationPersister(getFile(configDir, name), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }
 
     private static File getFile(final File configDir, final String file) {

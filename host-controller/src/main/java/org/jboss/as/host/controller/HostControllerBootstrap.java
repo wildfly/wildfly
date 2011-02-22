@@ -222,7 +222,7 @@ public class HostControllerBootstrap {
     static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, boolean isSlave) {
         final String hostName = host.get(NAME).asString();
         final File configDir = environment.getDomainConfigurationDir();
-        final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir);
+        final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, isSlave);
         final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName);
         ServiceBuilder<DomainController> builder = serviceTarget.addService(DomainController.SERVICE_NAME, dcService);
         if (isSlave) {
@@ -294,10 +294,15 @@ public class HostControllerBootstrap {
      * Create the domain.xml configuration persister, in case the DC is running in process.
      *
      * @param configDir the domain configuration directory
+     * @param isSlave true if we are a slave
      * @return the configuration persister
      */
-    static ExtensibleConfigurationPersister createDomainConfigurationPersister(final File configDir) {
-        return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir);
+    static ExtensibleConfigurationPersister createDomainConfigurationPersister(final File configDir, boolean isSlave) {
+        if (isSlave) {
+            return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, "cached-remote-domain.xml");
+        } else {
+            return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir);
+        }
     }
 
     static final class HostControllerExecutorService implements Service<Executor> {
