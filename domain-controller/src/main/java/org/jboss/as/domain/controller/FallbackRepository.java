@@ -51,7 +51,7 @@ public class FallbackRepository implements FileRepository {
     @Override
     public File getConfigurationFile(String relativePath) {
         File file = primary.getConfigurationFile(relativePath);
-        return file != null ? file : secondary.getFile(relativePath);
+        return file != null ? file : secondary.getConfigurationFile(relativePath);
     }
 
     /** {@inheritDoc} */
