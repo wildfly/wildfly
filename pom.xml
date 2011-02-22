@@ -66,6 +66,7 @@
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
         <version.javax.ws.rs.jsr311-api>1.0</version.javax.ws.rs.jsr311-api>
         <version.javax.xml.jaxrpc-api>1.1</version.javax.xml.jaxrpc-api>
+        <version.jline>0.9.94</version.jline>
         <version.junit>4.8.1</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
@@ -1535,6 +1536,12 @@
                         <artifactId>saaj-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+               <groupId>jline</groupId>
+               <artifactId>jline</artifactId>
+               <version>${version.jline}</version>
             </dependency>
 
             <dependency>

@@ -21,8 +21,7 @@
  */
 package org.jboss.as.cli;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,12 +63,15 @@ public class CommandLineMain {
 
     public static void main(String[] args) throws Exception {
 
-        final CommandContextImpl cmdCtx = new CommandContextImpl();
+        final jline.ConsoleReader console = new jline.ConsoleReader();
+        console.setUseHistory(true);
+
+        final CommandContextImpl cmdCtx = new CommandContextImpl(console);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
                 StreamUtils.safeClose(cmdCtx.client);
-                System.out.println("closed");
+                cmdCtx.log("closed");
             }
         }));
 
@@ -77,10 +79,8 @@ public class CommandLineMain {
                 " Type /connect to connect to the server or" +
                 " /help for the list of supported commands.");
 
-        BufferedReader input = new BufferedReader(new InputStreamReader(
-                System.in));
         while (!cmdCtx.terminate) {
-            String line = input.readLine().trim();
+            String line = console.readLine("[" + cmdCtx.getPrefixFormatter().format(cmdCtx.getPrefix()) + "] ");
 
             if (line.isEmpty()) {
                 // cmdCtx.log("Type /help for the list of supported commands.");
@@ -114,6 +114,7 @@ public class CommandLineMain {
 
     private static class CommandContextImpl implements CommandContext {
 
+        private jline.ConsoleReader console;
         /** whether the session should be terminated*/
         private boolean terminate;
         /** current command's arguments */
@@ -131,6 +132,9 @@ public class CommandLineMain {
         /** the prefix formatter */
         private final PrefixFormatter prefixFormatter = new DefaultPrefixFormatter();
 
+        private CommandContextImpl(jline.ConsoleReader console) {
+            this.console = console;
+        }
 
         @Override
         public String getCommandArguments() {
@@ -144,7 +148,12 @@ public class CommandLineMain {
 
         @Override
         public void log(String message) {
-            System.out.println(message);
+            try {
+                console.printString(message);
+                console.printNewline();
+            } catch (IOException e) {
+                System.err.println("Failed to print '" + message + "' to the console: " + e.getLocalizedMessage());
+            }
         }
 
         @Override

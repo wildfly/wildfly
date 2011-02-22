@@ -195,6 +195,10 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
+        <module-def name="jline.jline">
+            <maven-resource group="jline" artifact="jline"/>
+        </module-def>
+
         <module-def name="junit.junit">
             <maven-resource group="junit" artifact="junit"/>
         </module-def>
