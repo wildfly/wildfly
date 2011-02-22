@@ -67,13 +67,19 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
 
         cmd = cmd.trim();
 
-        int colonIndex = cmd.indexOf(ADDRESS_OPERATION_SEPARATOR);
+        int addrSepIndex = cmd.indexOf(ADDRESS_OPERATION_SEPARATOR);
+        int argListStartIndex = cmd.indexOf(ARG_LIST_START);
+        if(argListStartIndex > 0 && addrSepIndex > argListStartIndex) {
+            // the symbol belongs to an argument value
+            addrSepIndex = - 1;
+        }
+
 /*        if(colonIndex < 0) {
             throw new CommandFormatException("Couldn't locate '" + ADDRESS_OPERATION_SEPARATOR + "'. Command '" + cmd + "' doesn't follow the format " + FORMAT);
         }
 */
-        if (colonIndex > 0) {
-            String address = cmd.substring(0, colonIndex).trim();
+        if (addrSepIndex > 0) {
+            String address = cmd.substring(0, addrSepIndex).trim();
             if (address.isEmpty()) {
                 throw new CommandFormatException(
                         "The address part is missing. Command '" + cmd
@@ -140,16 +146,15 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
         }
 
         String operation;
-        int argListStartIndex = cmd.indexOf(ARG_LIST_START, colonIndex + 1);
         if(argListStartIndex < 0) {
             //throw new CommandFormatException("Couldn't locate '" + ARG_LIST_START + "'. Command '" + cmd + "' doesn't follow the format " + FORMAT);
-            int argListEndIndex = cmd.indexOf(ARG_LIST_END, colonIndex + 1);
+            int argListEndIndex = cmd.indexOf(ARG_LIST_END, addrSepIndex + 1);
             if(argListEndIndex != -1)
                throw new CommandFormatException("Couldn't locate '" + ARG_LIST_START + "' but found '" + ARG_LIST_END + "'. Command '" + cmd + "' doesn't follow the format " + FORMAT);
-            operation = cmd.substring(colonIndex + 1);
+            operation = cmd.substring(addrSepIndex + 1);
         }
         else {
-            operation = cmd.substring(colonIndex + 1, argListStartIndex).trim();
+            operation = cmd.substring(addrSepIndex + 1, argListStartIndex).trim();
         }
         if(operation.isEmpty()) {
             throw new CommandFormatException("The operation name is missing: '" + cmd + "'");
