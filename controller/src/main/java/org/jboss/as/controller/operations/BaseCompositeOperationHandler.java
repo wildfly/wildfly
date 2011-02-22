@@ -21,13 +21,6 @@
  */
 package org.jboss.as.controller.operations;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -35,16 +28,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -65,6 +65,8 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
     public static final String ROLLED_BACK = "rolled-back";
     public static final String ROLLBACK_FAILURE = "rollback-failure-description";
     public static final String COMPOSITE = "composite";
+    public static final String OUTCOME = "outcome";
+    public static final String FAILED = "failed";
 
 
     protected static final String[] EMPTY = new String[0];
@@ -302,6 +304,7 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
         public void recordFailure(final Integer id, final ModelNode failureDescription) {
             synchronized (resultsNode) {
 //                System.out.println(id + " -- " + failureDescription);
+                resultsNode.get(id).get(OUTCOME).set(FAILED);
                 resultsNode.get(id).get(FAILURE_DESCRIPTION).set(failureDescription);
                 hasFailures = true;
             }
@@ -316,6 +319,7 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                 if (!result.isDefined()) {
                     resultsNode.get(id).get(CANCELLED).set(true);
                 }
+                resultsNode.get(id).get(OUTCOME).set(CANCELLED);
             }
             if(count.decrementAndGet() == 0 && modelComplete.get()) {
                 processComplete();
