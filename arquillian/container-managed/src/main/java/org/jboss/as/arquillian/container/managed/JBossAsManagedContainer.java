@@ -66,12 +66,19 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             if (jbossHomeDir == null)
                 throw new IllegalStateException("Cannot find system property: " + jbossHomeKey);
 
+            final String additionalJavaOpts = System.getProperty("jboss.options");
+
             File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
             if (modulesJar.exists() == false)
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
             List<String> cmd = new ArrayList<String>();
             cmd.add("java");
+            if (additionalJavaOpts != null) {
+                for (String opt : additionalJavaOpts.split("\\s+")) {
+                    cmd.add(opt);
+                }
+            }
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
