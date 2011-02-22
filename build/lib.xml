@@ -73,8 +73,7 @@
     <macrodef name="maven-resource" >
         <attribute name="group"/>
         <attribute name="artifact"/>
-        <attribute name="export-all" default="false"/>
-        
+
         <sequential>
             <!-- Copy the jar to the module dir -->
             <copy todir="${module.repo.output.dir}/${current.module.path}" failonerror="true">
@@ -85,7 +84,7 @@
             <basename file="${@{group}:@{artifact}:jar}" property="resourcename.@{group}.@{artifact}"/>
 
             <!-- Update the resource entry in module.xml -->
-            <define-resource-root path="${resourcename.@{group}.@{artifact}}" export-all="@{export-all}"/>
+            <define-resource-root path="${resourcename.@{group}.@{artifact}}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
                 <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
@@ -97,7 +96,6 @@
         <attribute name="group"/>
         <attribute name="artifact"/>
         <attribute name="classifier"/>
-        <attribute name="export-all" default="false"/>
         
         <sequential>
             <!-- Copy the jar to the module dir -->
@@ -109,7 +107,7 @@
             <basename file="${@{group}:@{artifact}:jar:@{classifier}}" property="resourcename.@{group}.@{artifact}.@{classifier}"/>
 
             <!-- Update the resource entry in module.xml -->
-            <define-resource-root path="${resourcename.@{group}.@{artifact}.@{classifier}}" export-all="@{export-all}"/>
+            <define-resource-root path="${resourcename.@{group}.@{artifact}.@{classifier}}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
                 <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
@@ -119,19 +117,11 @@
 
     <scriptdef name="define-resource-root" language="javascript">
         <attribute name="path"/>
-        <attribute name="export-all"/>
         <![CDATA[
             path = attributes.get("path");
-            exportAll = attributes.get("export-all");
-            root = "";
-            if(exportAll == "true") {
-                root = "<resource-root path=\"" + path + "\">\n            <exports>\n                <include path=\"**\"/>\n            </exports>\n        </resource-root>";
-            } else {
-                root = "<resource-root path=\"" + path + "\"/>";
-            }
-
-                project.setProperty("current.resource.root", root);
+            root = "<resource-root path=\"" + path + "\"/>";
+            project.setProperty("current.resource.root", root);
         ]]>
     </scriptdef>
-    
+
 </project>
