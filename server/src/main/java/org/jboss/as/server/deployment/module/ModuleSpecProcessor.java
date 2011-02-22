@@ -72,7 +72,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
 
         final ResourceRoot mainRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final List<ResourceRoot> additionalRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        final List<ResourceRoot> additionalRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         if (mainRoot == null) {
             return;
         }
@@ -81,12 +81,11 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         if (ModuleRootMarker.isModuleRoot(mainRoot)) {
             resourceRoots.add(mainRoot);
         }
-        if (additionalRoots != null)
-            for (ResourceRoot additionalRoot : additionalRoots) {
-                if (ModuleRootMarker.isModuleRoot(additionalRoot) && !SubDeploymentMarker.isSubDeployment(additionalRoot)) {
-                    resourceRoots.add(additionalRoot);
-                }
+        for (ResourceRoot additionalRoot : additionalRoots) {
+            if (ModuleRootMarker.isModuleRoot(additionalRoot) && !SubDeploymentMarker.isSubDeployment(additionalRoot)) {
+                resourceRoots.add(additionalRoot);
             }
+        }
 
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
