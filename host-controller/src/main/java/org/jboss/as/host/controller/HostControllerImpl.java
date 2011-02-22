@@ -38,6 +38,8 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerSlave;
+import org.jboss.as.domain.controller.FallbackRepository;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
@@ -54,15 +56,15 @@ public class HostControllerImpl implements HostController {
     private final String name;
     private final HostModel hostModel;
     private final ServerInventory serverInventory;
-    private final FileRepository repository;
+    private final FileRepository localRepository;
 
-    private DomainController domainController;
-    private FileRepository remoteRepository;
+    private volatile DomainController domainController;
+    private volatile FileRepository remoteRepository;
 
     HostControllerImpl(final String name, final HostModel model, final ServerInventory serverInventory, final FileRepository repository) {
         this.name = name;
         this.hostModel = model;
-        this.repository = repository;
+        this.localRepository = repository;
         this.serverInventory = serverInventory;
     }
 
@@ -143,8 +145,12 @@ public class HostControllerImpl implements HostController {
     }
 
     @Override
-    public void startServers(DomainController domainController) {
+    public void startServers(DomainControllerSlave domainController) {
         this.domainController = domainController;
+        // By having a remote repo as a secondary content will be synced only if needed
+        FallbackRepository repository = new FallbackRepository(localRepository, domainController.getFileRepository());
+        this.remoteRepository = repository;
+
         // start servers
         final ModelNode rawModel = hostModel.getHostModel();
         if(rawModel.hasDefined(SERVER)) {
@@ -159,7 +165,6 @@ public class HostControllerImpl implements HostController {
                 }
             }
         }
-
     }
 
     @Override
@@ -180,5 +185,4 @@ public class HostControllerImpl implements HostController {
             }
         }
     }
-
 }

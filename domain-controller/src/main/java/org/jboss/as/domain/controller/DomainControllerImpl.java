@@ -79,21 +79,26 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     private final String localHostName;
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
+    private final FileRepository fileRepository;
     private final MasterDomainControllerClient masterDomainControllerClient;
 
-    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName) {
+    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
         this.hosts.put(hostName, domainModel);
+        this.fileRepository = fileRepository;
         this.masterDomainControllerClient = null;
+
     }
 
-    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final MasterDomainControllerClient masterDomainControllerClient) {
+    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository,
+            final MasterDomainControllerClient masterDomainControllerClient) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.masterDomainControllerClient = masterDomainControllerClient;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
+        this.fileRepository = new FallbackRepository(fileRepository, masterDomainControllerClient.getRemoteFileRepository());
         this.hosts.put(hostName, domainModel);
     }
 
@@ -261,6 +266,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     @Override
     public ModelNode getDomainModel() {
         return localDomainModel.getDomainModel();
+    }
+
+    @Override
+    public FileRepository getFileRepository() {
+        return fileRepository;
     }
 
     private Map<String, ModelNode> pushToHosts(final ModelNode operation, final OperationRouting routing, final ControllerTransaction transaction) {

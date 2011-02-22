@@ -21,6 +21,7 @@
 */
 package org.jboss.as.host.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -48,6 +49,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerImpl;
 import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.DomainModel;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerImpl;
 import org.jboss.as.protocol.Connection;
@@ -107,7 +109,7 @@ public class RemoteDomainControllerConnectionTestCase {
         ModelNode mockModel = new ModelNode();
         mockModel.get(ModelDescriptionConstants.PROFILE);
         DomainModel dm = DomainModel.Factory.create(mockModel, mockPersister, null);
-        domainController = new DomainControllerImpl(Executors.newScheduledThreadPool(20), dm, "test");
+        domainController = new DomainControllerImpl(Executors.newScheduledThreadPool(20), dm, "test", new NoopFileRepository());
         domainControllerOperationHandlerImpl = new DomainControllerOperationHandlerImpl(ModelControllerClient.Type.HOST, domainController, new ServerConnectionHandler());
 
         //Add an empty profile
@@ -143,7 +145,7 @@ public class RemoteDomainControllerConnectionTestCase {
 
     @Test
     public void testRemoteDomainControllerConnection() throws Exception {
-        service = new RemoteDomainConnectionService("Test", InetAddress.getByName("localhost"), server.getBoundAddress().getPort());
+        service = new RemoteDomainConnectionService("Test", InetAddress.getByName("localhost"), server.getBoundAddress().getPort(), new NoopFileRepository());
         TestDomainControllerSlave slave = new TestDomainControllerSlave();
         service.register("slave", slave);
         ModelNode remoteModel = slave.model;
@@ -224,6 +226,35 @@ public class RemoteDomainControllerConnectionTestCase {
         public void setInitialDomainModel(ModelNode initialModel) {
             this.model = initialModel;
         }
+
+        @Override
+        public FileRepository getFileRepository() {
+            return null;
+        }
+    }
+
+    private class NoopFileRepository implements FileRepository{
+
+        @Override
+        public File getFile(String relativePath) {
+            return null;
+        }
+
+        @Override
+        public File getConfigurationFile(String relativePath) {
+            return null;
+        }
+
+        @Override
+        public File[] getDeploymentFiles(byte[] deploymentHash) {
+            return null;
+        }
+
+        @Override
+        public File getDeploymentRoot(byte[] deploymentHash) {
+            return null;
+        }
+
     }
 
 }

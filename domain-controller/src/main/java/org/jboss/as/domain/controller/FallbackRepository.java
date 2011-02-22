@@ -20,11 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller;
+package org.jboss.as.domain.controller;
 
 import java.io.File;
 
-import org.jboss.as.domain.controller.FileRepository;
 
 
 /**

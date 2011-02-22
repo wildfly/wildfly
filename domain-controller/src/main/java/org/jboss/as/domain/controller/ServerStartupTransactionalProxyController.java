@@ -30,6 +30,6 @@ import org.jboss.as.controller.TransactionalProxyController;
  */
 public interface ServerStartupTransactionalProxyController extends TransactionalProxyController {
     String getName();
-    void startServers(DomainController domainController);
+    void startServers(DomainControllerSlave domainController);
     void stopServers();
 }

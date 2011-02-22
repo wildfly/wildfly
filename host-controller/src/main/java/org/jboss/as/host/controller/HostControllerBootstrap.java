@@ -194,7 +194,7 @@ public class HostControllerBootstrap {
             .install();
 
         // install the domain controller
-        activateDomainController(environment, rawModel, serviceTarget);
+        activateDomainController(environment, rawModel, serviceTarget, repository);
 
         // Add the server to host operation handler
         final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
@@ -211,19 +211,20 @@ public class HostControllerBootstrap {
      * @param host the host model
      * @param serviceTarget the service target
      */
-    static void activateDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {
+    static void activateDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, final FileRepository repository) {
         boolean slave = !host.get(DOMAIN_CONTROLLER, LOCAL).isDefined();
         if (slave) {
-            installRemoteDomainControllerConnection(environment, host, serviceTarget);
+            installRemoteDomainControllerConnection(environment, host, serviceTarget, repository);
         }
-        installLocalDomainController(environment, host, serviceTarget, slave);
+        installLocalDomainController(environment, host, serviceTarget, slave, repository);
     }
 
-    static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, boolean isSlave) {
+    static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, final boolean isSlave,
+            final FileRepository repository) {
         final String hostName = host.get(NAME).asString();
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, isSlave);
-        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName);
+        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, repository);
         ServiceBuilder<DomainController> builder = serviceTarget.addService(DomainController.SERVICE_NAME, dcService);
         if (isSlave) {
             builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());
@@ -241,7 +242,7 @@ public class HostControllerBootstrap {
             .install();
     }
 
-    static void installRemoteDomainControllerConnection(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget) {
+    static void installRemoteDomainControllerConnection(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, final FileRepository repository) {
 
         String name;
         try {
@@ -258,7 +259,7 @@ public class HostControllerBootstrap {
             throw new RuntimeException(e);
         }
         int port = dc.require(PORT).asInt();
-        final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port);
+        final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port, repository);
         serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
             .setInitialMode(Mode.ACTIVE)
             .install();

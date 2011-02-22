@@ -24,6 +24,9 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +37,7 @@ import java.util.concurrent.Executors;
 
 import javax.net.SocketFactory;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
@@ -46,9 +50,13 @@ import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
@@ -70,15 +78,17 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     private final InetAddress host;
     private final int port;
     private final String name;
+    private final RemoteFileRepository remoteFileRepository;
 
     private volatile Connection connection;
     private volatile ProxyController client;
     private volatile ModelControllerOperationHandler operationHandler;
 
-    RemoteDomainConnectionService(String name, InetAddress host, int port){
+    RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
         this.host = host;
         this.port = port;
+        this.remoteFileRepository = new RemoteFileRepository(localRepository);
     }
 
     /** {@inheritDoc} */
@@ -125,8 +135,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     /** {@inheritDoc} */
     @Override
     public synchronized FileRepository getRemoteFileRepository() {
-        // TODO Auto-generated method stub
-        return null;
+        return remoteFileRepository;
     }
 
     @Override
@@ -211,6 +220,163 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
         }
     }
 
+    private class GetFileRequest extends RegistryRequest<File> {
+        private final byte rootId;
+        private final String filePath;
+        private final FileRepository localFileRepository;
+
+        private GetFileRequest(final byte rootId, final String filePath, final FileRepository localFileRepository) {
+            this.rootId = rootId;
+            this.filePath = filePath;
+            this.localFileRepository = localFileRepository;
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return DomainControllerProtocol.GET_FILE_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return DomainControllerProtocol.GET_FILE_RESPONSE;
+        }
+
+        @Override
+        protected final void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
+            super.sendRequest(protocolVersion, outputStream);
+            log.debugf("Requesting files for path %s", filePath);
+            ByteDataOutput output = null;
+            try {
+                output = new SimpleByteDataOutput(outputStream);
+                output.writeByte(DomainControllerProtocol.PARAM_ROOT_ID);
+                output.writeByte(rootId);
+                output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
+                output.writeUTF(filePath);
+                output.close();
+            } finally {
+                StreamUtils.safeClose(output);
+            }
+        }
+
+        @Override
+        protected final File receiveResponse(final InputStream inputStream) throws IOException {
+            final File localPath;
+            switch (rootId) {
+                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                    localPath = localFileRepository.getFile(filePath);
+                    break;
+                }
+                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                    localPath = localFileRepository.getConfigurationFile(filePath);
+                    break;
+                }
+                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                    byte[] hash = HashUtil.hexStringToByteArray(filePath);
+                    localPath = localFileRepository.getDeploymentRoot(hash);
+                    break;
+                }
+                default: {
+                    localPath = null;
+                }
+            }
+            ByteDataInput input = null;
+            try {
+                input = new SimpleByteDataInput(inputStream);
+                expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
+                int numFiles = input.readInt();
+                log.debugf("Received %d files for %s", numFiles, localPath);
+                switch (numFiles) {
+                    case -1: { // Not found on DC
+                        break;
+                    }
+                    case 0: { // Found on DC, but was an empty dir
+                        if (!localPath.mkdirs()) {
+                            throw new IOException("Unable to create local directory: " + localPath);
+                        }
+                        break;
+                    }
+                    default: { // Found on DC
+                        for (int i = 0; i < numFiles; i++) {
+                            expectHeader(input, DomainControllerProtocol.FILE_START);
+                            expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
+                            final String path = input.readUTF();
+                            expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
+                            final long length = input.readLong();
+                            log.debugf("Received file [%s] of length %d", path, length);
+                            final File file = new File(localPath, path);
+                            if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                                throw new IOException("Unable to create local directory " + localPath.getParent());
+                            }
+                            long totalRead = 0;
+                            OutputStream fileOut = null;
+                            try {
+                                fileOut = new BufferedOutputStream(new FileOutputStream(file));
+                                final byte[] buffer = new byte[8192];
+                                int read;
+                                while (totalRead < length && (read = input.read(buffer, 0, Math.min((int) (length - totalRead), buffer.length))) != -1) {
+                                    if (read > 0) {
+                                        fileOut.write(buffer, 0, read);
+                                        totalRead += read;
+                                    }
+                                }
+                            } finally {
+                                if (fileOut != null) {
+                                    fileOut.close();
+                                }
+                            }
+                            if (totalRead != length) {
+                                throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
+                            }
+
+                            expectHeader(input, DomainControllerProtocol.FILE_END);
+                        }
+                    }
+                }
+                input.close();
+            } finally {
+                StreamUtils.safeClose(input);
+            }
+            return localPath;
+        }
+    }
+
+    private class RemoteFileRepository implements FileRepository {
+        private final FileRepository localFileRepository;
+
+        private RemoteFileRepository(final FileRepository localFileRepository) {
+            this.localFileRepository = localFileRepository;
+        }
+
+        @Override
+        public final File getFile(String relativePath) {
+            return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_FILE);
+        }
+
+        @Override
+        public final File getConfigurationFile(String relativePath) {
+            return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION);
+        }
+
+        @Override
+        public final File[] getDeploymentFiles(byte[] deploymentHash) {
+            String hex = HashUtil.bytesToHexString(deploymentHash);
+            return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT).listFiles();
+        }
+
+        @Override
+        public File getDeploymentRoot(byte[] deploymentHash) {
+            String hex = HashUtil.bytesToHexString(deploymentHash);
+            return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
+        }
+
+        private File getFile(final String relativePath, final byte repoId) {
+            try {
+                return new GetFileRequest(repoId, relativePath, localFileRepository).executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to get file from remote repository", e);
+            }
+        }
+    }
 
     private final MessageHandler initialMessageHandler = new ManagementHeaderMessageHandler() {
 

@@ -45,15 +45,17 @@ public final class DomainControllerService implements Service<DomainController> 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final ExtensibleConfigurationPersister configurationPersister;
+    private final FileRepository localRepository;
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
     private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
     private final InjectedValue<ServerStartupTransactionalProxyController> hostController = new InjectedValue<ServerStartupTransactionalProxyController>();
     private final String localHostName;
-    private DomainController controller;
+    private DomainControllerSlave controller;
 
-    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName) {
+    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName, FileRepository localRepository) {
         this.configurationPersister = configurationPersister;
         this.localHostName = localHostName;
+        this.localRepository = localRepository;
     }
 
     /** {@inheritDoc} */
@@ -93,25 +95,25 @@ public final class DomainControllerService implements Service<DomainController> 
         return masterDomainControllerClient;
     }
 
-    private DomainController startMasterDomainController() throws StartException {
+    private DomainControllerSlave startMasterDomainController() throws StartException {
 
         log.info("Starting Domain Controller");
         DomainModel domainModel = loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName);
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localRepository);
     }
 
-    private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
-        DomainController remoteController = startRemoteSlaveDomainController(masterClient);
+    private DomainControllerSlave startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+        DomainControllerSlave remoteController = startRemoteSlaveDomainController(masterClient);
         if (remoteController != null) {
             return remoteController;
         }
         return startLocalCopySlaveDomainController(masterClient);
     }
 
-    private DomainController startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+    private DomainControllerSlave startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
 
         final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue());
-        final DomainControllerSlave controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, masterClient);
+        final DomainControllerSlave controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localRepository, masterClient);
         try {
             masterClient.register(hostController.getValue().getName(), controller);
         } catch (IllegalStateException e) {
@@ -127,9 +129,9 @@ public final class DomainControllerService implements Service<DomainController> 
         return controller;
     }
 
-    private DomainController startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+    private DomainControllerSlave startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         final DomainModel domainModel = loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, masterClient);
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localRepository, masterClient);
     }
 
     private DomainModel loadLocalDomainModel() throws StartException {

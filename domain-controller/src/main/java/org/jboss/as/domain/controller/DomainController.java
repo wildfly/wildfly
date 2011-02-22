@@ -69,4 +69,12 @@ public interface DomainController extends ModelController {
      * @return the operations
      */
     ModelNode getProfileOperations(String profileName);
+
+    /**
+     * Gets the file repository backing this domain controller
+     *
+     * @return the file repository
+     */
+    FileRepository getFileRepository();
+
 }

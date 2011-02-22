@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.ServerStartupTransactionalProxyController;
 import org.jboss.dmr.ModelNode;
@@ -91,7 +91,7 @@ public class HostControllerService implements Service<ServerStartupTransactional
                 return PathAddress.pathAddress(PathElement.pathElement("host", name));
             }
 
-            public void startServers(DomainController domainController) {
+            public void startServers(DomainControllerSlave domainController) {
                 controller.startServers(domainController);
             }
 
