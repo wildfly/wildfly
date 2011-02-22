@@ -65,6 +65,7 @@ public class CommandLineMain {
 
         final jline.ConsoleReader console = new jline.ConsoleReader();
         console.setUseHistory(true);
+        console.addCompletor(new CommandCompleter(handlers.keySet()));
 
         final CommandContextImpl cmdCtx = new CommandContextImpl(console);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
