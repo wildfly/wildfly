@@ -63,6 +63,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
 
+        // Add modules for JSF
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JSF_IMPL, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true));
 
