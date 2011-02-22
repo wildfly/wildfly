@@ -46,6 +46,12 @@
             <include path="META-INF/spring.*"/>
           </imports>
         </module>
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" services="import">
+          <imports>
+            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF/spring.*"/>
+          </imports>
+        </module>
         <module name="org.jboss.common-core" />
         <module name="org.jboss.logging" />
         <module name="wsdl4j.wsdl4j" />
