@@ -58,6 +58,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -114,17 +115,18 @@ public class ResourceAdaptersExtension implements Extension {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTER);
 
-        registration.registerXMLElementWriter(NewResourceAdapterSubsystemParser.INSTANCE);
+        registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
 
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, ResourceAdaptersSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false);
 
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
     }
 
     private static ModelNode createAddSubsystemOperation() {
@@ -138,10 +140,10 @@ public class ResourceAdaptersExtension implements Extension {
         return subsystem;
     }
 
-    static final class NewResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+    static final class ResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
-        static final NewResourceAdapterSubsystemParser INSTANCE = new NewResourceAdapterSubsystemParser();
+        static final ResourceAdapterSubsystemParser INSTANCE = new ResourceAdapterSubsystemParser();
 
         /** {@inheritDoc} */
         @Override
@@ -481,7 +483,19 @@ public class ResourceAdaptersExtension implements Extension {
 
             ModelNode add = createAddSubsystemOperation();
 
-            // TODO Fill in the details
+            ModelNode model = context.getSubModel();
+
+            // FIXME remove when equivalent workaround in ResourceAdaptersSubsystemAdd is gone
+            boolean workaround = true;
+
+            if (workaround) {
+                if (model.hasDefined(RESOURCEADAPTERS)) {
+                    ModelNode datasources = model.get(RESOURCEADAPTERS);
+                    add.get(RESOURCEADAPTERS).set(datasources);
+                }
+            } else {
+                // TODO Fill in the details
+            }
 
             ModelNode result = new ModelNode();
             result.add(add);

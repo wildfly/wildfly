@@ -626,7 +626,19 @@ public class DataSourcesExtension implements Extension {
 
             ModelNode add = createEmptyAddSubsystemOperation();
 
-            // TODO Fill in the details
+            ModelNode model = context.getSubModel();
+
+            // FIXME remove when equivalent workaround in DataSourcesSubsystemAdd is gone
+            boolean workaround = true;
+
+            if (workaround) {
+                if (model.hasDefined(DATASOURCES)) {
+                    ModelNode datasources = model.get(DATASOURCES);
+                    add.get(DATASOURCES).set(datasources);
+                }
+            } else {
+                //TODO Fill in the details
+            }
 
             ModelNode result = new ModelNode();
             result.add(add);

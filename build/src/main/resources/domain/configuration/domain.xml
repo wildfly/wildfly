@@ -136,25 +136,21 @@
                 <bean-validation enabled="true"/>
                 <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
             </subsystem>
-            <!-- subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                Uncomment to add an in-memory datasource
                <datasources>
                   <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
                       <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                      <driver-class>org.h2.Driver</driver-class>
                      <module>com.h2database.h2</module>
-                     <pool></pool>
                      <security>
                         <user-name>sa</user-name>
                         <password>sa</password>
                      </security>
-                     <validation></validation>
-                     <timeout></timeout>
-                     <statement></statement>
                   </datasource>
                </datasources>
-            </subsystem-->      
-            <!-- subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" / -->     
+            </subsystem>      
+            <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />     
             <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
                <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                    <property name="manager.root">jboss-osgi</property>
@@ -199,7 +195,7 @@
                    <module identifier="org.apache.aries.jmx" start="true"/>
                    <module identifier="org.jboss.osgi.jmx" start="true"/>
                </modules> 
-            </subsystem>               
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
                 <journal-file-size>102400</journal-file-size>
