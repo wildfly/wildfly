@@ -61,8 +61,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private final WeldModuleResourceLoader resourceLoader;
 
-    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id,
-            boolean isolatedModule) {
+    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id) {
         this.beanClasses = new ConcurrentSkipListSet<String>(beanClasses);
         this.beanDeploymentArchives = new CopyOnWriteArraySet<BeanDeploymentArchive>();
         this.beansXml = beansXml;

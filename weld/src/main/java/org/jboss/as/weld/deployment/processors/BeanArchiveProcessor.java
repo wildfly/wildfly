@@ -26,8 +26,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -70,9 +68,14 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
+        final String beanArchiveIdPrefix;
+        if (deploymentUnit.getParent() == null) {
+            beanArchiveIdPrefix = deploymentUnit.getName();
+        } else {
+            beanArchiveIdPrefix = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
+        }
 
-        boolean isolatedModule = DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit);
+        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
         log.info("Processing CDI deployment: " + phaseContext.getDeploymentUnit().getName());
 
         final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
@@ -84,7 +87,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             // however we still want to create a module level bean manager
             for (BeanArchiveMetadata beanArchiveMetadata : cdiDeploymentMetadata.getBeanArchiveMetadata()) {
                 BeanDeploymentArchiveImpl bda = createBeanDeploymentArchive(indexes.get(beanArchiveMetadata.getResourceRoot()),
-                        beanArchiveMetadata, module, isolatedModule);
+                        beanArchiveMetadata, module, beanArchiveIdPrefix);
                 beanDeploymentArchives.add(bda);
                 if (beanArchiveMetadata.isDeploymentRoot()) {
                     rootArchiveFound = true;
@@ -94,7 +97,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
         if (!rootArchiveFound) {
             BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
-                    BeansXml.EMPTY_BEANS_XML, module, deploymentUnit.getName(), isolatedModule);
+                    BeansXml.EMPTY_BEANS_XML, module, beanArchiveIdPrefix);
             beanDeploymentArchives.add(bda);
             deploymentUnit.putAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE, bda);
         }
@@ -102,8 +105,8 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE, new BeanDeploymentModule(beanDeploymentArchives));
     }
 
-    private BeanDeploymentArchiveImpl createBeanDeploymentArchive(final Index index,
-            BeanArchiveMetadata beanArchiveMetadata, Module module, boolean isolatedModule) throws DeploymentUnitProcessingException {
+    private BeanDeploymentArchiveImpl createBeanDeploymentArchive(final Index index, BeanArchiveMetadata beanArchiveMetadata,
+            Module module, String beanArchivePrefix) throws DeploymentUnitProcessingException {
 
         Set<String> classNames = new HashSet<String>();
         // index may be null if a war has a beans.xml but no WEB-INF/classes
@@ -112,8 +115,8 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 classNames.add(classInfo.name().toString());
             }
         }
-        return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, beanArchiveMetadata
-                .getResourceRoot().getRootName(),isolatedModule);
+        return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, beanArchivePrefix
+                + beanArchiveMetadata.getResourceRoot().getRoot().getPathName());
     }
 
     @Override
