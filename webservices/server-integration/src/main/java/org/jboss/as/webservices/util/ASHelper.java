@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -338,12 +339,24 @@ public final class ASHelper {
      */
     private static List<ServletMetaData> getWebServiceServlets(final DeploymentUnit unit, final boolean jaxws) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
-        final List<ServletMetaData> endpoints = new ArrayList<ServletMetaData>();
         final Index annotationIndex = getRootAnnotationIndex(unit);
+        return selectWebServiceServlets(annotationIndex, jbossWebMD.getServlets(), jaxws);
+    }
+
+    /**
+     * Return a new sublist of the provided ServletMetaData list including the WS servlet data only
+     *
+     * @param annotationIndex the annotation index to use for scanning for annotations
+     * @param smd the initial servlet metadata collection
+     * @param jaxws if passed value is <b>true</b> JAXWS servlets list will be returned, otherwise JAXRPC servlets list
+     * @return either JAXRPC or JAXWS servlets list
+     */
+    public static <T extends ServletMetaData> List<ServletMetaData> selectWebServiceServlets(final Index annotationIndex, final Collection<T> smd, final boolean jaxws) {
+        final List<ServletMetaData> endpoints = new ArrayList<ServletMetaData>();
         final DotName webserviceAnnotation = DotName.createSimple(WebService.class.getName());
         final DotName webserviceProviderAnnotation = DotName.createSimple(WebServiceProvider.class.getName());
 
-        for (ServletMetaData servletMD : jbossWebMD.getServlets()) {
+        for (ServletMetaData servletMD : smd) {
             final String endpointClassName = ASHelper.getEndpointName(servletMD);
             if (endpointClassName != null && endpointClassName.length() > 0) { // exclude JSP
                 // check webservice annotations

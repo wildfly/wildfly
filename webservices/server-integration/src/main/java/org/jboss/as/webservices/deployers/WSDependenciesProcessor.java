@@ -21,11 +21,8 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import java.util.List;
-
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
-
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -34,11 +31,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -70,7 +64,7 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isWSDeployment(deploymentUnit)) {
-            final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
             final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
             // FIXME see if/how we can or should avoid (or at least limit) exposing the whole server stack code
@@ -99,41 +93,21 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
     }
 
     /**
-     * Look for @WebService / @WebServiceProvider annotated classes only as the jbossweb metadata is not available yet here
-     * TODO: to be improved (jaxrpc deployments are skipped)
+     * Determines whether the provided deployment unit is a WS endpoint deployment or not;
+     * currently finds JSE endpoints only and relies upon endpoints declared in web.xml only
+     * (merged jbossweb metadata is not available yet at this phase)
+     * TODO: to be improved (jaxrpc deployments are skipped, ejb3 enpoints are skipped, web3 servlets are skipped)
      *
      * @param unit
      * @return
      */
     private boolean isWSDeployment(DeploymentUnit unit) {
-        final DotName webserviceProviderAnnotation = DotName.createSimple(WebServiceProvider.class.getName());
-        final Index index = ASHelper.getRootAnnotationIndex(unit);
-        if (index == null) {
-            // this should only happen with ear modules
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
             return false;
         }
-        final List<AnnotationInstance> wsProvAnnList = index.getAnnotations(webserviceProviderAnnotation);
-
-        return hasWebServiceImpl(index) || (wsProvAnnList != null && wsProvAnnList.size() > 0);
-    }
-
-    private boolean hasWebServiceImpl(Index index) {
-        final DotName webserviceAnnotation = DotName.createSimple(WebService.class.getName());
-        final List<AnnotationInstance> wsAnnList = index.getAnnotations(webserviceAnnotation);
-        if (wsAnnList != null) {
-            for (AnnotationInstance ai : wsAnnList) {
-                AnnotationTarget target = ai.target();
-                if (target instanceof ClassInfo) {
-                    short flags = ((ClassInfo) target).flags();
-                    // Interfaces have 0x200 and 0x400 flags ON
-                    // http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html
-                    if (flags < 0x600) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        final Index index = ASHelper.getRootAnnotationIndex(unit);
+        final WarMetaData warMetaData = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
+        return (ASHelper.selectWebServiceServlets(index, warMetaData.getWebMetaData().getServlets(), true).size() > 0);
     }
 
     public void undeploy(final DeploymentUnit context) {
