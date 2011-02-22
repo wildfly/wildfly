@@ -16,6 +16,13 @@ public interface MasterDomainControllerClient extends ModelController {
 
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "connection");
 
+    /**
+     * Register with the remote domain controller
+     *
+     * @param host the name of this host
+     * @param domainController the slave domain controller on this host
+     * @throws IllegalStateException if there was a problem talking to the remote host
+     */
     void register(String hostName, DomainControllerSlave domainController);
 
     void unregister();

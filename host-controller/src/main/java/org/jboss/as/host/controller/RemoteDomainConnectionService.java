@@ -54,6 +54,7 @@ import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -64,6 +65,7 @@ import org.jboss.msc.service.StopContext;
  */
 class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient> {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private static final int CONNECTION_TIMEOUT = 5000;
     private final InetAddress host;
     private final int port;
@@ -97,14 +99,16 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
             client = RemoteProxyController.create(ModelControllerClient.Type.DOMAIN, connection, PathAddress.EMPTY_ADDRESS);
             operationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.HOST, slave, initialMessageHandler);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
+            throw new IllegalStateException(e);
         }
 
         try {
             ModelNode node = new RegisterModelControllerRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
             slave.setInitialDomainModel(node);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
+            throw new IllegalStateException(e);
         }
     }
 

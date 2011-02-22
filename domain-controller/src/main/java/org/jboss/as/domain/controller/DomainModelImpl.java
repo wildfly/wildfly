@@ -92,11 +92,13 @@ import org.jboss.modules.ModuleLoadException;
  */
 public class DomainModelImpl extends BasicTransactionalModelController implements DomainModel {
 
+    final ExtensionContext extensionContext;
+
     /** Constructor for a master DC. */
     protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
         super(createCoreModel(), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         ModelNodeRegistration registry = getRegistry();
-        initialize(registry, configurationPersister, null);
+        extensionContext = initialize(registry, configurationPersister, null);
         if (localHostProxy != null) {
             registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
         }
@@ -106,7 +108,7 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
     protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
         super(model, configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         ModelNodeRegistration registry = getRegistry();
-        initialize(registry, configurationPersister, model);
+        extensionContext = initialize(registry, configurationPersister, model);
         if (localHostProxy != null) {
             registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
         }
@@ -132,7 +134,7 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         return super.getModel().clone();
     }
 
-    protected static void initialize(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister, final ModelNode model) {
+    protected ExtensionContext initialize(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister, final ModelNode model) {
         // Global operations
         root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
         root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
@@ -189,6 +191,11 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 
+        initializeExtensions(model);
+        return extensionContext;
+    }
+
+    private void initializeExtensions(ModelNode model) {
         // If we were provided a model, we're a slave and need to initialize all extensions
         if (model != null && model.hasDefined(EXTENSION)) {
             for (Property prop : model.get(EXTENSION).asPropertyList()) {
@@ -206,6 +213,6 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
 
     void setInitialDomainModel(ModelNode domainModel) {
         getModel().set(domainModel);
+        initializeExtensions(domainModel);
     }
-
 }

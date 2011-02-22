@@ -98,6 +98,11 @@ public class HostControllerService implements Service<ServerStartupTransactional
             public void stopServers() {
                 controller.stopServers();
             }
+
+            @Override
+            public String getName() {
+                return name;
+            }
         };
     }
 

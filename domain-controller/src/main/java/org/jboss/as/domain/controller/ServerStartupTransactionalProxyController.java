@@ -29,7 +29,7 @@ import org.jboss.as.controller.TransactionalProxyController;
  * @version $Revision: 1.1 $
  */
 public interface ServerStartupTransactionalProxyController extends TransactionalProxyController {
-
+    String getName();
     void startServers(DomainController domainController);
     void stopServers();
 }

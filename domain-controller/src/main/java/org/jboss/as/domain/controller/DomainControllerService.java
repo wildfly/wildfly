@@ -95,6 +95,36 @@ public final class DomainControllerService implements Service<DomainController> 
     private DomainController startMasterDomainController() throws StartException {
 
         log.info("Starting Domain Controller");
+        DomainModel domainModel = loadLocalDomainModel();
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName);
+    }
+
+    private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+        DomainController remoteController = startRemoteSlaveDomainController(masterClient);
+        if (remoteController != null) {
+            return remoteController;
+        }
+        return startLocalCopySlaveDomainController(masterClient);
+    }
+
+    private DomainController startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+
+        final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue());
+        final DomainControllerSlave controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, masterClient);
+        try {
+            masterClient.register(hostController.getValue().getName(), controller);
+            return controller;
+        } catch (IllegalStateException e) {
+            return null;
+        }
+    }
+
+    private DomainController startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+        final DomainModel domainModel = loadLocalDomainModel();
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, masterClient);
+    }
+
+    private DomainModel loadLocalDomainModel() throws StartException {
         DomainModelImpl domainModel = new DomainModelImpl(configurationPersister, hostController.getValue());
         final List<ModelNode> updates;
         try {
@@ -138,16 +168,6 @@ public final class DomainControllerService implements Service<DomainController> 
         if (count.decrementAndGet() == 0) {
             // some action?
         }
-
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName);
+        return domainModel;
     }
-
-    private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) {
-        log.info("Starting Domain Controller Slave");
-        DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue());
-        controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, masterClient);
-        return controller;
-    }
-
-
 }
