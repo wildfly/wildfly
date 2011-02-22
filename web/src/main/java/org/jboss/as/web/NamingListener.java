@@ -49,13 +49,13 @@ public class NamingListener implements InstanceListener {
     public void instanceEvent(InstanceEvent event) {
         String type = event.getType();
         // Push the identity on the before init/destroy
-        if (type.equals(InstanceEvent.BEFORE_DISPATCH_EVENT) || type.equals(InstanceEvent.BEFORE_DESTROY_EVENT)
+        if (type.equals(InstanceEvent.BEFORE_FILTER_EVENT) || type.equals(InstanceEvent.BEFORE_DESTROY_EVENT)
                 || type.equals(InstanceEvent.BEFORE_INIT_EVENT)) {
             // Push naming id
             selector.activate();
         }
         // Pop the identity on the after init/destroy
-        else if (type.equals(InstanceEvent.AFTER_DISPATCH_EVENT) || type.equals(InstanceEvent.AFTER_DESTROY_EVENT)
+        else if (type.equals(InstanceEvent.AFTER_FILTER_EVENT) || type.equals(InstanceEvent.AFTER_DESTROY_EVENT)
                 || type.equals(InstanceEvent.AFTER_INIT_EVENT)) {
             // Pop naming id
             selector.deactivate();
