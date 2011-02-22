@@ -43,6 +43,10 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
     private static final ModuleIdentifier JAVAX_EE_API = ModuleIdentifier.create("javaee.api");
     private static final ModuleIdentifier APACHE_XERCES = ModuleIdentifier.create("org.apache.xerces");
+
+    private static final ModuleIdentifier JSF_IMPL = ModuleIdentifier.create("com.sun.jsf-impl");
+    private static final ModuleIdentifier BEAN_VALIDATION = ModuleIdentifier.create("org.hibernate.validator");
+
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
@@ -57,7 +61,10 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // Add module dependencies on Java EE apis
 
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
+
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JSF_IMPL, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
