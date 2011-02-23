@@ -79,7 +79,6 @@
         <version.org.apache.xalan>2.7.1.patch01-brew</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
         <version.org.apache.ws.commons.xmlschema>1.4.5</version.org.apache.ws.commons.xmlschema>
-        <version.org.glassfish.web.el-impl>2.1.2-b04</version.org.glassfish.web.el-impl>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
@@ -1598,12 +1597,6 @@
                         <artifactId>tools</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>el-impl</artifactId>
-                <version>${version.org.glassfish.web.el-impl}</version>
             </dependency>
 
             <dependency>

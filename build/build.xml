@@ -278,10 +278,6 @@
 
         <module-def name="org.apache.commons.logging"/>
 
-        <module-def name="org.glassfish.web.el-impl">
-            <maven-resource group="org.glassfish.web" artifact="el-impl" />
-        </module-def>
-
         <module-def name="javax.persistence.api">
             <maven-resource group="org.hibernate.javax.persistence" artifact="hibernate-jpa-2.0-api" />
         </module-def>
