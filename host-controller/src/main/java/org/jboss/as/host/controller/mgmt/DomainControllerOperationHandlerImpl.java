@@ -105,6 +105,7 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         case DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST:
             return new UnregisterOperation();
         case DomainControllerProtocol.GET_FILE_REQUEST:
+            return new GetFileOperation();
         default:
             return super.operationFor(commandByte);
         }
@@ -274,16 +275,6 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
     }
 
     private static class RemoteHostControllerClient implements HostControllerClient {
-//        private static final MarshallingConfiguration CONFIG;
-//        static {
-//            CONFIG = new MarshallingConfiguration();
-//            CONFIG.setClassResolver(new SimpleClassResolver(DomainClientImpl.class.getClassLoader()));
-//        }
-//
-//        private static Marshaller getMarshaller() throws IOException {
-//            return ProtocolUtils.getMarshaller(CONFIG);
-//        }
-
         final ProxyController remote;
         final Connection connection;
         final String hostId;

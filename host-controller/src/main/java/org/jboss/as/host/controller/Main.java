@@ -169,6 +169,7 @@ public final class Main {
         String procName = "Host Controller";
         String defaultJVM = null;
         boolean isRestart = false;
+        boolean backupDomainFiles = false;
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
@@ -233,6 +234,8 @@ public final class Main {
                     procName = args[++i];
                 } else if (CommandLineConstants.RESTART_HOST_CONTROLLER.equals(arg)) {
                     isRestart = true;
+                } else if (CommandLineConstants.BACKUP_DC.equals(arg)) {
+                    backupDomainFiles = true;
                 } else if(CommandLineConstants.DEFAULT_JVM.equals(arg)) {
                     defaultJVM = args[++i];
                 } else if (arg.startsWith("-D")) {
@@ -260,7 +263,7 @@ public final class Main {
             }
         }
 
-        return new HostControllerEnvironment(systemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM);
+        return new HostControllerEnvironment(systemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM, backupDomainFiles);
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {

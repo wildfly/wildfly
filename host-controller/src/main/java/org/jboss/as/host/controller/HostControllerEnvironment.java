@@ -103,7 +103,6 @@ public class HostControllerEnvironment {
      */
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
 
-
     private final Properties props;
     private final String processName;
     private final InetAddress processControllerAddress;
@@ -122,6 +121,7 @@ public class HostControllerEnvironment {
     private final File domainTempDir;
     private final File defaultJVM;
     private final boolean isRestart;
+    private final boolean backupDomainFiles;
 
     private final InputStream stdin;
     private final PrintStream stdout;
@@ -130,7 +130,7 @@ public class HostControllerEnvironment {
 
     public HostControllerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
-            Integer hostControllerPort, String defaultJVM) {
+            Integer hostControllerPort, String defaultJVM, boolean backupDomainFiles) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -172,6 +172,7 @@ public class HostControllerEnvironment {
         this.hostControllerAddress = hostControllerAddress;
         this.hostControllerPort = hostControllerPort;
         this.isRestart = isRestart;
+
 
         File home = getFileFromProperty(HOME_DIR);
         if (home == null) {
@@ -251,6 +252,8 @@ public class HostControllerEnvironment {
         } else {
             this.defaultJVM = null;
         }
+
+        this.backupDomainFiles = backupDomainFiles;
     }
 
     /**
@@ -337,6 +340,10 @@ public class HostControllerEnvironment {
      */
     public boolean isRestart() {
         return isRestart;
+    }
+
+    public boolean isBackupDomainFiles() {
+        return backupDomainFiles;
     }
 
     public File getHomeDir() {

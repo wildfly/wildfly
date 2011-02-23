@@ -359,13 +359,13 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         @Override
         public final File[] getDeploymentFiles(byte[] deploymentHash) {
-            String hex = HashUtil.bytesToHexString(deploymentHash);
+            String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
             return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT).listFiles();
         }
 
         @Override
         public File getDeploymentRoot(byte[] deploymentHash) {
-            String hex = HashUtil.bytesToHexString(deploymentHash);
+            String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
             return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
         }
 
@@ -393,5 +393,4 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
             return null;
         }
     };
-
 }

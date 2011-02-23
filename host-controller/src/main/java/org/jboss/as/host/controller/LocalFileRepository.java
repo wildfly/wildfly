@@ -65,9 +65,11 @@ public class LocalFileRepository implements FileRepository {
     /** {@inheritDoc} */
     @Override
     public File getDeploymentRoot(byte[] hash) {
+        if (hash == null || hash.length == 0) {
+            return deploymentRoot;
+        }
         String hex = HashUtil.bytesToHexString(hash);
         File first = new File(deploymentRoot, hex.substring(0,2));
         return new File(first, hex.substring(2));
-
     }
 }
