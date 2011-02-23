@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.server.deployment.SimpleAttachable;
+import org.jboss.modules.ResourceLoaderSpec;
 
 /**
  * Information used to build a module.
@@ -37,6 +38,7 @@ import org.jboss.as.server.deployment.SimpleAttachable;
 public class ModuleSpecification extends SimpleAttachable {
 
     private final List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
+    private final List<ResourceLoaderSpec> resourceLoaders = new ArrayList<ResourceLoaderSpec>();
 
     private Boolean childFirst;
 
@@ -58,6 +60,14 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public List<ModuleDependency> getDependencies() {
         return Collections.unmodifiableList(dependencies);
+    }
+
+    public void addResourceLoader(ResourceLoaderSpec resourceLoader) {
+        this.resourceLoaders.add(resourceLoader);
+    }
+
+    public List<ResourceLoaderSpec> getResourceLoaders() {
+        return Collections.unmodifiableList(resourceLoaders);
     }
 
 }

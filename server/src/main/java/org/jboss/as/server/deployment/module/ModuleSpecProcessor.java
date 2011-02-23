@@ -118,6 +118,11 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         final List<ModuleDependency> dependencies = moduleSpecification.getDependencies();
 
+        // add aditional resource loaders first
+        for (ResourceLoaderSpec resourceLoaderSpec : moduleSpecification.getResourceLoaders()) {
+            specBuilder.addResourceRoot(resourceLoaderSpec);
+        }
+
         for (ResourceRoot resourceRoot : resourceRoots) {
             addResourceRoot(specBuilder, resourceRoot);
         }

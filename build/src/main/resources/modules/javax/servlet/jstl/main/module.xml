@@ -22,31 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.weld.core">
+<module xmlns="urn:jboss:module:1.0" name="javax.servlet.jstl">
+    <dependencies>
+        <module name="javax.servlet.api" export="false"/>
+    </dependencies>
 
     <resources>
         <!-- Insert resources here -->
     </resources>
-
-    <dependencies>
-        <module name="ch.qos.cal10n" />
-        <module name="com.google.guava"/>
-        <module name="javax.api"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.el.api" />
-        <module name="javax.enterprise.api"/>
-        <module name="javax.faces.api"/>
-        <module name="javax.inject.api"/>
-        <module name="javax.interceptor.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
-        <module name="org.javassist"/>
-        <module name="org.jboss.interceptor"/>
-        <module name="org.jboss.interceptor.spi"/>
-        <module name="org.jboss.weld.api" />
-        <module name="org.jboss.weld.spi" />
-        <module name="org.slf4j" />
-        <module name="org.slf4j.ext" />
-    </dependencies>
 </module>

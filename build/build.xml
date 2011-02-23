@@ -165,6 +165,10 @@
             <maven-resource group="org.jboss.spec.javax.servlet.jsp" artifact="jboss-jsp-api_2.2_spec"/>
         </module-def>
 
+        <module-def name="javax.servlet.jstl">
+            <maven-resource group="javax.servlet" artifact="jstl"/>
+        </module-def>
+
         <module-def name="javax.transaction.api">
             <maven-resource group="org.jboss.spec.javax.transaction" artifact="jboss-transaction-api_1.1_spec"/>
         </module-def>
@@ -273,6 +277,10 @@
         </module-def>
 
         <module-def name="org.apache.commons.logging"/>
+
+        <module-def name="org.glassfish.web.el-impl">
+            <maven-resource group="org.glassfish.web" artifact="el-impl" />
+        </module-def>
 
         <module-def name="javax.persistence.api">
             <maven-resource group="org.hibernate.javax.persistence" artifact="hibernate-jpa-2.0-api" />

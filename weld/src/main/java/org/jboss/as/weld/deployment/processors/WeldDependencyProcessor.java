@@ -22,6 +22,8 @@
 
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -33,6 +35,7 @@ import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Deployment processor which adds a module dependencies for modules needed for weld deployments.
@@ -64,13 +67,21 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDepdenency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
         addDepdenency(moduleSpecification, moduleLoader, JAVAEE_API_ID);
-        addDepdenency(moduleSpecification, moduleLoader, JBOSS_AS_WELD_ID);
         addDepdenency(moduleSpecification, moduleLoader, JBOSS_INTERCEPTOR_ID);
         addDepdenency(moduleSpecification, moduleLoader, JBOSS_LOGGING_ID);
         addDepdenency(moduleSpecification, moduleLoader, JAVASSIST_ID);
         addDepdenency(moduleSpecification, moduleLoader, WELD_CORE_ID);
         addDepdenency(moduleSpecification, moduleLoader, WELD_API_ID);
         addDepdenency(moduleSpecification, moduleLoader, WELD_SPI_ID);
+
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            // we just want the faces-config.xml file
+            ModuleDependency dep = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false);
+            dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+            dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
+            moduleSpecification.addDependency(dep);
+        }
+
     }
 
     private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
