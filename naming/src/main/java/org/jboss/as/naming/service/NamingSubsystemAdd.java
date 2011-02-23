@@ -22,6 +22,9 @@
 
 package org.jboss.as.naming.service;
 
+import javax.naming.CompositeName;
+import javax.naming.Context;
+import javax.naming.NamingException;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -30,17 +33,18 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.management.MBeanServer;
-import javax.naming.Context;
-import javax.naming.Reference;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
-import org.jboss.as.naming.context.NamespaceObjectFactory;
+import org.jboss.as.naming.NamingEventCoordinator;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
@@ -50,7 +54,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Values;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -81,21 +84,23 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
 
                     NamingContext.initializeNamingManager();
 
+                    final NamingStore namingStore = new InMemoryNamingStore(new NamingEventCoordinator());
+
                     // Create the Naming Service
                     final ServiceTarget target = context.getServiceTarget();
-                    target.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
-
-                    // Create java: context service
-                    final JavaContextService javaContextService = new JavaContextService();
-                    target.addService(JavaContextService.SERVICE_NAME, javaContextService)
-                            .addDependency(NamingService.SERVICE_NAME)
+                        target.addService(NamingService.SERVICE_NAME, new NamingService(namingStore))
+                            .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME)
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
 
-                    final ContextService globalContextService = new ContextService("global");
-                    target.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
-                            .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector())
-                            .install();
+                    // Create the java:global namespace
+                    try {
+                        namingStore.createSubcontext((Context) namingStore.lookup(new CompositeName()), new CompositeName("global"));
+                    } catch (NamingException e) {
+                        throw new OperationFailedException(new ModelNode().set("Unable to create java:global context - " + e.getMessage()));
+                    }
 
+                    // Create the EE namespace
                     addContextFactory(target, "app");
                     addContextFactory(target, "module");
                     addContextFactory(target, "comp");
@@ -120,10 +125,9 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
     }
 
     private static void addContextFactory(final ServiceTarget target, final String contextName) {
-        final Reference appReference = NamespaceObjectFactory.createReference(contextName);
-        final BinderService<Reference> binderService = new BinderService<Reference>(contextName, Values.immediateValue(appReference));
-        target.addService(JavaContextService.SERVICE_NAME.append(contextName), binderService)
-            .addDependency(JavaContextService.SERVICE_NAME, Context.class, binderService.getContextInjector())
+        final EEContextService eeContextService = new EEContextService(contextName);
+        target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(contextName), eeContextService)
+            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, eeContextService.getJavaContextInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
     }

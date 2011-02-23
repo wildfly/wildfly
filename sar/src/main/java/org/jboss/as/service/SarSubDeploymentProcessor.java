@@ -22,16 +22,17 @@
 
 package org.jboss.as.service;
 
-import java.util.List;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.vfs.VirtualFile;
+
+import java.util.List;
 
 /**
  * Deployment processor used to determine if a possible sub-deployment contains a service descriptor.
@@ -41,7 +42,7 @@ import org.jboss.vfs.VirtualFile;
 public class SarSubDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.getParent() == null) {
+        if (deploymentUnit.getParent() != null) {
             return;
         }
 
@@ -54,6 +55,7 @@ public class SarSubDeploymentProcessor implements DeploymentUnitProcessor {
                             .getChild(ServiceDeploymentParsingProcessor.SERVICE_DESCRIPTOR_PATH);
                     if (sarDescriptor.exists()) {
                         SubDeploymentMarker.mark(resourceRoot);
+                        ModuleRootMarker.mark(resourceRoot);
                     }
                 }
             }

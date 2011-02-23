@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming;
 
-import javax.naming.spi.NamingManager;
-import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -47,7 +45,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
-import static org.jboss.as.naming.util.NamingUtils.asReference;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -505,14 +502,14 @@ public class NamingContextTestCase {
     public  static class TestObjectFactory implements ObjectFactory {
         @Override
         public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-            return asReference(obj).get(0).getContent();
+            return ((Reference) obj).get(0).getContent();
         }
     }
 
     public  static class TestObjectFactoryWithNameResolution implements ObjectFactory {
         @Override
         public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-            final Reference reference = asReference(obj);
+            final Reference reference = (Reference) obj;
             return new NamingContext(new CompositeName((String)reference.get(0).getContent()), null);
         }
     }

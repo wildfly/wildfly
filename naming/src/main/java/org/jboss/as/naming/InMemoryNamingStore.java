@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.as.naming.util.FastCopyHashMap;
-
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
 import javax.naming.CompositeName;
@@ -42,17 +40,9 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import static org.jboss.as.naming.util.NamingUtils.asReference;
-import static org.jboss.as.naming.util.NamingUtils.cannotProceedException;
-import static org.jboss.as.naming.util.NamingUtils.emptyName;
-import static org.jboss.as.naming.util.NamingUtils.emptyNameException;
-import static org.jboss.as.naming.util.NamingUtils.getLastComponent;
-import static org.jboss.as.naming.util.NamingUtils.isEmpty;
-import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
-import static org.jboss.as.naming.util.NamingUtils.nameAlreadyBoundException;
-import static org.jboss.as.naming.util.NamingUtils.nameNotFoundException;
-import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+import static org.jboss.as.naming.util.NamingUtils.*;
 
 /**
  * In-memory implementation of the NamingStore.  The backing for the entries is a basic tree structure with either context
@@ -64,10 +54,7 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 public class InMemoryNamingStore implements NamingStore {
 
     /* The root node of the tree.  Represents a JNDI name of "" */
-    private final ContextNode root = new ContextNode(emptyName(), null);
-
-    /* Cached security namanger */
-    private transient SecurityManager securityManager;
+    private final ContextNode root = new ContextNode(new CompositeName(), null);
 
     /* Naming Event Coordinator */
     private final NamingEventCoordinator eventCoordinator;
@@ -102,7 +89,16 @@ public class InMemoryNamingStore implements NamingStore {
             throw emptyNameException();
         }
         checkPermissions(name, JndiPermission.Action.BIND);
-        root.accept(new BindVisitor(callingContext, name, object, className));
+        root.accept(new BindVisitor(false, callingContext, name, object, className));
+    }
+
+    /** {@inheritDoc} */
+    public void bindCreatingParents(final Context context, final Name name, final Object object, final String className) throws NamingException {
+        if (isLastComponentEmpty(name)) {
+            throw emptyNameException();
+        }
+        checkPermissions(name, JndiPermission.Action.BIND);
+        root.accept(new BindVisitor(true, context, name, object, className));
     }
 
     /**
@@ -214,7 +210,7 @@ public class InMemoryNamingStore implements NamingStore {
      * @param listener The listener
      */
     public void addNamingListener(final Name target, final int scope, final NamingListener listener) {
-        final NamingEventCoordinator coordinator = this.eventCoordinator;
+        final NamingEventCoordinator coordinator = eventCoordinator;
         if (coordinator != null) {
             coordinator.addListener(target.toString(), scope, listener);
         }
@@ -226,14 +222,14 @@ public class InMemoryNamingStore implements NamingStore {
      * @param listener The listener
      */
     public void removeNamingListener(final NamingListener listener) {
-        final NamingEventCoordinator coordinator = this.eventCoordinator;
+        final NamingEventCoordinator coordinator = eventCoordinator;
         if (coordinator != null) {
             coordinator.removeListener(listener);
         }
     }
 
     private void fireEvent(final Context callingContext, final Name name, final Binding existingBinding, final Binding newBinding, final int type, final String changeInfo) {
-        final NamingEventCoordinator coordinator = this.eventCoordinator;
+        final NamingEventCoordinator coordinator = eventCoordinator;
         if (coordinator != null && callingContext instanceof EventContext) {
             coordinator.fireEvent(EventContext.class.cast(callingContext), name, existingBinding, newBinding, type, changeInfo, NamingEventCoordinator.DEFAULT_SCOPES);
         }
@@ -241,18 +237,16 @@ public class InMemoryNamingStore implements NamingStore {
 
     private void checkReferenceForContinuation(final Name name, final Object object) throws CannotProceedException {
         if (object instanceof Reference) {
-            if (asReference(object).get("nns") != null) {
+            if (((Reference) object).get("nns") != null) {
                 throw cannotProceedException(object, name);
             }
         }
     }
 
     private void checkPermissions(final Name name, JndiPermission.Action permission) {
-        if (securityManager == null)
-            securityManager = System.getSecurityManager();
-
-        if (securityManager != null) {
-            securityManager.checkPermission(new JndiPermission(name, permission));
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(new JndiPermission(name, permission));
         }
     }
 
@@ -268,47 +262,44 @@ public class InMemoryNamingStore implements NamingStore {
         protected abstract <T> T accept(NodeVisitor<T> visitor) throws NamingException;
     }
 
+    private static final AtomicMapFieldUpdater<ContextNode, String, TreeNode> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ContextNode.class, Map.class, "children"));
+
     private class ContextNode extends TreeNode {
-        private volatile Map<String, TreeNode> children = Collections.emptyMap();
+        volatile Map<String, TreeNode> children = Collections.emptyMap();
 
         private ContextNode(final Name fullName, final NamingContext context) {
             super(fullName, new Binding(getLastComponent(fullName), Context.class.getName(), context));
         }
 
-        private synchronized void addChild(final String childName, final TreeNode childNode) throws NamingException {
-            if (children.containsKey(childName)) {
+        private void addChild(final String childName, final TreeNode childNode) throws NamingException {
+            if (childrenUpdater.putIfAbsent(this, childName, childNode) != null) {
                 throw nameAlreadyBoundException(fullName.add(childName));
             }
-            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
-            copy.put(childName, childNode);
-            children = copy;
         }
 
-        private synchronized TreeNode replaceChild(final String childName, final TreeNode childNode) throws NamingException {
-            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
-            final TreeNode existing = copy.put(childName, childNode);
-            children = copy;
-            return existing;
+        private TreeNode replaceChild(final String childName, final TreeNode childNode) throws NamingException {
+            return childrenUpdater.put(this, childName, childNode);
         }
 
-        private synchronized TreeNode removeChild(final String childName) throws NameNotFoundException {
-            if (!children.containsKey(childName)) {
+        private TreeNode removeChild(final String childName) throws NameNotFoundException {
+            TreeNode old = childrenUpdater.remove(this, childName);
+            if (old == null) {
                 throw nameNotFoundException(childName, fullName);
             }
-            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
-            final TreeNode existing = copy.remove(childName);
-            children = copy;
-            return existing;
+            return old;
         }
 
-        private synchronized void clear() {
-            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
-            copy.clear();
-            children = copy;
+        private void clear() {
+            childrenUpdater.clear(this);
         }
 
         protected final <T> T accept(NodeVisitor<T> visitor) throws NamingException {
             return visitor.visit(this);
+        }
+
+        public TreeNode addOrGetChild(final String childName, final TreeNode childNode) {
+            TreeNode appearing = childrenUpdater.putIfAbsent(this, childName, childNode);
+            return appearing == null ? childNode : appearing;
         }
     }
 
@@ -329,12 +320,17 @@ public class InMemoryNamingStore implements NamingStore {
     }
 
     private abstract class NodeTraversingVisitor<T> implements NodeVisitor<T> {
+        private final boolean createIfMissing;
         private Name currentName;
         protected final Name targetName;
 
-        private NodeTraversingVisitor(final Name targetName) {
-            this.currentName = targetName;
-            this.targetName = targetName;
+        protected NodeTraversingVisitor(final boolean createIfMissing, final Name targetName) {
+            this.createIfMissing = createIfMissing;
+            this.targetName = currentName = targetName;
+        }
+
+        protected NodeTraversingVisitor(final Name targetName) {
+            this(false, targetName);
         }
 
         public final T visit(final BindingNode bindingNode) throws NamingException {
@@ -352,7 +348,12 @@ public class InMemoryNamingStore implements NamingStore {
             currentName = currentName.getSuffix(1);
             final TreeNode node = contextNode.children.get(childName);
             if (node == null) {
-                throw nameNotFoundException(childName, contextNode.fullName);
+                if (createIfMissing) {
+                    final NamingContext subContext = new NamingContext(targetName, InMemoryNamingStore.this, new Hashtable<String, Object>());
+                    return contextNode.addOrGetChild(childName, new ContextNode(targetName, subContext)).accept(this);
+                } else {
+                    throw nameNotFoundException(childName, contextNode.fullName);
+                }
             }
             return node.accept(this);
         }
@@ -371,9 +372,13 @@ public class InMemoryNamingStore implements NamingStore {
     private abstract class BindingContextVisitor<T> extends NodeTraversingVisitor<T> {
         protected final Name targetName;
 
-        private BindingContextVisitor(final Name targetName) {
-            super(targetName.getPrefix(targetName.size() - 1));
+        protected BindingContextVisitor(final boolean createIfMissing, final Name targetName) {
+            super(createIfMissing, targetName.getPrefix(targetName.size() - 1));
             this.targetName = targetName;
+        }
+
+        protected BindingContextVisitor(final Name targetName) {
+            this(false, targetName);
         }
 
         protected final T found(final ContextNode contextNode) throws NamingException {
@@ -393,8 +398,8 @@ public class InMemoryNamingStore implements NamingStore {
         private final Object object;
         private final String className;
 
-        private BindVisitor(final Context callingContext, final Name name, final Object object, final String className) {
-            super(name);
+        private BindVisitor(final boolean createIfMissing, final Context callingContext, final Name name, final Object object, final String className) {
+            super(createIfMissing, name);
             this.callingContext = callingContext;
             this.object = object;
             this.className = className;
@@ -502,7 +507,7 @@ public class InMemoryNamingStore implements NamingStore {
         }
 
         protected List<NameClassPair> found(final BindingNode bindingNode) throws NamingException {
-            checkReferenceForContinuation(emptyName(), bindingNode.binding.getObject());
+            checkReferenceForContinuation(new CompositeName(), bindingNode.binding.getObject());
             throw notAContextException(targetName);
         }
     }
@@ -521,7 +526,7 @@ public class InMemoryNamingStore implements NamingStore {
         }
 
         protected List<Binding> found(final BindingNode bindingNode) throws NamingException {
-            checkReferenceForContinuation(emptyName(), bindingNode.binding.getObject());
+            checkReferenceForContinuation(new CompositeName(), bindingNode.binding.getObject());
             throw notAContextException(targetName);
         }
     }

@@ -22,9 +22,10 @@
 package org.jboss.as.weld.deployment.processors;
 
 import javax.enterprise.inject.spi.BeanManager;
-import javax.naming.Context;
 
 import org.jboss.as.ee.naming.ContextServiceNameBuilder;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ValueJndiInjectable;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -85,11 +86,12 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         final ServiceName beanManagerBindingServiceName = moduleContextServiceName.append("BeanManager");
 
         InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
-        BinderService<BeanManager> beanManagerBindingService = new BinderService<BeanManager>("BeanManager",
-                injectedBeanManager);
-        serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService).addDependency(
-                moduleContextServiceName, Context.class, beanManagerBindingService.getContextInjector()).addDependency(
-                beanManagerServiceName, BeanManager.class, injectedBeanManager).install();
+        BinderService beanManagerBindingService = new BinderService("BeanManager");
+        serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService)
+                .addInjection(beanManagerBindingService.getJndiInjectableInjector(), new ValueJndiInjectable(injectedBeanManager))
+                .addDependency(moduleContextServiceName, NamingStore.class, beanManagerBindingService.getNamingStoreInjector())
+                .addDependency(beanManagerServiceName, BeanManager.class, injectedBeanManager)
+                .install();
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 

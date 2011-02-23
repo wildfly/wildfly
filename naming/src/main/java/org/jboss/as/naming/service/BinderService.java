@@ -22,15 +22,19 @@
 
 package org.jboss.as.naming.service;
 
+import javax.naming.Name;
+import javax.naming.Reference;
+import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.JndiInjectableObjectFactory;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.util.NameParser;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 /**
@@ -39,20 +43,18 @@ import javax.naming.NamingException;
  *
  * @author John E. Bailey
  */
-public class BinderService<T> implements Service<T> {
-    private final InjectedValue<Context> namingContextValue = new InjectedValue<Context>();
+public class BinderService implements Service<JndiInjectable> {
+    private final InjectedValue<NamingStore> namingStoreValue = new InjectedValue<NamingStore>();
     private final String name;
-    private final Value<T> value;
+    private final InjectedValue<JndiInjectable> jndiInjectableInjector = new InjectedValue<JndiInjectable>();
 
     /**
      * Construct new instance.
      *
-     * @param name The JNDI name to use for binding.
-     * @param value The value to bind into JNDI
+     * @param name  The JNDI name to use for binding
      */
-    public BinderService(final String name, final Value<T> value) {
+    public BinderService(final String name) {
         this.name = name;
-        this.value = value;
     }
 
     /**
@@ -62,11 +64,13 @@ public class BinderService<T> implements Service<T> {
      * @throws StartException If the entity can not be bound
      */
     public synchronized void start(StartContext context) throws StartException {
-        final Context namingContext = namingContextValue.getValue();
+        final NamingStore namingStore = namingStoreValue.getValue();
         try {
-            namingContext.rebind(name, value.getValue());
+            final Reference reference = JndiInjectableObjectFactory.createReference(context.getController().getName());
+            final Name name = NameParser.INSTANCE.parse(this.name);
+            namingStore.bindCreatingParents(null, name, reference, Reference.class.getName());
         } catch (NamingException e) {
-            throw new StartException("Failed to bind resource into context [" + namingContext + "] at location [" + name + "]", e);
+            throw new StartException("Failed to bind resource into naming store [" + namingStore + "] at location [" + name + "]", e);
         }
     }
 
@@ -76,11 +80,11 @@ public class BinderService<T> implements Service<T> {
      * @param context The stop context
      */
     public synchronized void stop(StopContext context) {
-        final Context namingContext = namingContextValue.getValue();
+        final NamingStore namingStore = namingStoreValue.getValue();
         try {
-            namingContext.unbind(name);
+            namingStore.unbind(null, NameParser.INSTANCE.parse(name));
         } catch (NamingException e) {
-            throw new IllegalStateException("Failed to unbind resource from context [" + namingContext + "] at location [" + name + "]", e);
+            throw new IllegalStateException("Failed to unbind resource from naming store [" + namingStore + "] at location [" + name + "]", e);
         }
     }
 
@@ -91,22 +95,25 @@ public class BinderService<T> implements Service<T> {
      * @throws IllegalStateException
      */
     @SuppressWarnings("unchecked")
-    public synchronized T getValue() throws IllegalStateException {
-        final Context namingContext = namingContextValue.getValue();
-        try {
-            return (T)namingContext.lookup(name);
-        } catch (NamingException e) {
-            throw new RuntimeException("Failed to lookup value from context [" + namingContext + "] at location [" + name + "]", e);
-        }
+    public synchronized JndiInjectable getValue() throws IllegalStateException {
+        return jndiInjectableInjector.getValue();
     }
 
     /**
-     * Get the naming context injector.
+     * Get the injector for the item to be bound.
      *
      * @return the injector
      */
-    public Injector<Context> getContextInjector() {
-        return namingContextValue;
+    public Injector<JndiInjectable> getJndiInjectableInjector() {
+        return jndiInjectableInjector;
     }
 
+    /**
+     * Get the naming store injector.
+     *
+     * @return the injector
+     */
+    public Injector<NamingStore> getNamingStoreInjector() {
+        return namingStoreValue;
+    }
 }

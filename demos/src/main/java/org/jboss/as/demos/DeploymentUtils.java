@@ -21,25 +21,6 @@
  */
 package org.jboss.as.demos;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
@@ -53,6 +34,24 @@ import org.jboss.shrinkwrap.api.container.ResourceContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>standalone</b> application server
@@ -76,6 +75,11 @@ public class DeploymentUtils implements Closeable {
     public DeploymentUtils(String archiveName, Package pkg) throws UnknownHostException {
         this();
         addDeployment(archiveName, pkg);
+    }
+
+    public DeploymentUtils(Archive archive) throws UnknownHostException {
+        this();
+        deployments.add(new ArbitraryDeployment(archive,false));
     }
 
     public DeploymentUtils(String archiveName, Package pkg, boolean show) throws UnknownHostException {
@@ -267,6 +271,23 @@ public class DeploymentUtils implements Closeable {
             if (sourceWebInf != null) {
                addFiles(archive, sourceWebInf, ArchivePaths.create("WEB-INF"));
             }
+
+            System.out.println(archive.toString(show));
+            realArchive = createArchive(archive);
+        }
+
+        @Override
+        protected File getRealArchive() {
+            return realArchive;
+        }
+    }
+
+    private class ArbitraryDeployment extends AbstractDeployment {
+        final File realArchive;
+
+        public ArbitraryDeployment(Archive archive,  boolean show) {
+
+            ArchivePath metaInf = ArchivePaths.create("META-INF");
 
             System.out.println(archive.toString(show));
             realArchive = createArchive(archive);

@@ -23,7 +23,6 @@ package org.jboss.as.naming;
 
 import javax.naming.RefAddr;
 import org.jboss.as.naming.context.ModularReference;
-import static org.jboss.as.naming.util.NamingUtils.asReference;
 
 import java.util.Hashtable;
 
@@ -69,7 +68,7 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
     @SuppressWarnings("unchecked")
     @Override
     public final Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        final Reference reference = asReference(obj);
+        final Reference reference = (Reference) obj;
         final ServiceNameRefAdr nameAdr = (ServiceNameRefAdr) reference.get("srof");
         if (nameAdr == null) {
             throw new NamingException("Invalid context reference.  Not a 'srof' reference.");

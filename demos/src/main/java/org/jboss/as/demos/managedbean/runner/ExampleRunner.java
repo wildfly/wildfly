@@ -21,12 +21,16 @@
  */
 package org.jboss.as.demos.managedbean.runner;
 
+import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
+import org.jboss.as.demos.managedbean.mbean.TestMBean;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
-import org.jboss.as.demos.DeploymentUtils;
-import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
-import org.jboss.as.demos.managedbean.mbean.Test;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
@@ -39,15 +43,24 @@ public class ExampleRunner {
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
         try {
-            utils = new DeploymentUtils("managedbean-example.jar", SimpleManagedBean.class.getPackage());
-            utils.addDeployment("managedbean-mbean.sar", Test.class.getPackage());
+            EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class,"managedbean-example.ear");
+            JavaArchive sar = ShrinkWrap.create(JavaArchive.class,"managedbean-mbean.sar");
+            sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+            sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/jboss-service.xml", "jboss-service.xml");
+            sar.addPackage(TestMBean.class.getPackage());
+            ear.add(sar,"/");
+
+            JavaArchive jar = ShrinkWrap.create(JavaArchive.class,"managedbean-example.jar");
+            jar.addManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+            jar.addManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator", "services/org.jboss.msc.service.ServiceActivator");
+            jar.addPackage(SimpleManagedBean.class.getPackage());
+            ear.add(jar,"/");
+
+            utils = new DeploymentUtils(ear);
 
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=managedbean");
-
             MBeanServerConnection mbeanServer = utils.getConnection();
-
-            //Thread.sleep(2000);
             System.out.println("Calling echo(\"Hello\")");
             Object o = mbeanServer.invoke(objectName, "echo", new Object[] {"Hello"}, new String[] {"java.lang.String"});
             System.out.println("echo returned " + o);

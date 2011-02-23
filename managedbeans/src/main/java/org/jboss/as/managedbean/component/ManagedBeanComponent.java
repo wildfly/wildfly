@@ -24,11 +24,7 @@ package org.jboss.as.managedbean.component;
 
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
-import org.jboss.as.ee.component.ComponentConfiguration;
-
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -44,16 +40,13 @@ public class ManagedBeanComponent extends AbstractComponent {
      * Construct a new instance.
      *
      * @param configuration the component configuration
-     * @param deploymentClassLoader the deployment class loader
-     * @param index the deployment reflection index
-     * @throws DeploymentUnitProcessingException if an error occurs
      */
-    public ManagedBeanComponent(final ComponentConfiguration configuration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index) throws DeploymentUnitProcessingException {
-        super(configuration, deploymentClassLoader, index);
+    public ManagedBeanComponent(final ManagedBeanComponentConfiguration configuration) {
+        super(configuration);
     }
 
     /** {@inheritDoc} */
-    protected AbstractComponentInstance constructComponentInstance(final Object instance) {
+    protected AbstractComponentInstance constructComponentInstance(final Object instance, Iterable<Interceptor> preDestroyInterceptors) {
         return new ManagedBeanComponentInstance(this, instance);
     }
 
@@ -69,7 +62,6 @@ public class ManagedBeanComponent extends AbstractComponent {
             }
 
             protected void finalize() throws Throwable {
-                // TODO - need a better lifecycle strategy than this, perhaps related to injection
                 destroyInstance(instance);
             }
         };

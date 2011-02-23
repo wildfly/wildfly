@@ -21,9 +21,13 @@
  */
 package org.jboss.as.ee.naming;
 
+import javax.naming.CompositeName;
 import javax.naming.Context;
+import javax.naming.NamingException;
 
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -33,69 +37,54 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * A {@link NamespaceContextSelector} that can resolve the comp, module and app contexts.
- * <p>
- *
  *
  * @author Stuart Douglas
- *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class NamespaceSelectorService extends NamespaceContextSelector implements Service<NamespaceSelectorService> {
+public class NamespaceSelectorService implements Service<NamespaceContextSelector> {
 
     public static final ServiceName NAME = ServiceName.of("namespaceselector");
 
-    private final InjectedValue<Context> comp = new InjectedValue<Context>();
-    private final InjectedValue<Context> module = new InjectedValue<Context>();
-    private final InjectedValue<Context> app = new InjectedValue<Context>();
+    private final InjectedValue<NamingStore> comp = new InjectedValue<NamingStore>();
+    private final InjectedValue<NamingStore> module = new InjectedValue<NamingStore>();
+    private final InjectedValue<NamingStore> app = new InjectedValue<NamingStore>();
 
-    private volatile boolean started = false;
-
-    @Override
-    public Context getContext(String identifier) {
-        if (identifier.equals("comp")) {
-            return comp.getValue();
-        } else if (identifier.equals("module")) {
-            return module.getValue();
-        } else if (identifier.equals("app")) {
-            return app.getValue();
-        }
-        return null;
-    }
+    private volatile SimpleEENamespaceContextSelector selector;
 
     @Override
     public void start(StartContext context) throws StartException {
-        started = true;
+        NamingStore app = this.app.getOptionalValue();
+        NamingStore module = this.module.getOptionalValue();
+        NamingStore comp = this.comp.getOptionalValue();
+        try {
+            selector = new SimpleEENamespaceContextSelector(
+                    app != null ? (Context) app.lookup(new CompositeName()) : null,
+                    module != null ? (Context) module.lookup(new CompositeName()) : null,
+                    comp != null ? (Context) module.lookup(new CompositeName()) : null);
+        } catch (NamingException e) {
+            throw new StartException(e);
+        }
     }
 
     @Override
     public void stop(StopContext context) {
-        started = false;
-    }
-
-    public void activate() {
-        if (!started) {
-            throw new IllegalStateException("Service not started");
-        }
-        pushCurrentSelector(this);
-    }
-
-    public void deactivate() {
-        popCurrentSelector();
+        selector = null;
     }
 
     @Override
-    public NamespaceSelectorService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public NamespaceContextSelector getValue() throws IllegalStateException, IllegalArgumentException {
+        return selector;
     }
 
-    public InjectedValue<Context> getComp() {
+    public Injector<NamingStore> getComp() {
         return comp;
     }
 
-    public InjectedValue<Context> getModule() {
+    public Injector<NamingStore> getModule() {
         return module;
     }
 
-    public InjectedValue<Context> getApp() {
+    public Injector<NamingStore> getApp() {
         return app;
     }
 }

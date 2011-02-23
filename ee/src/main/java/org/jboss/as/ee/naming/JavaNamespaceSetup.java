@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -23,6 +23,7 @@ package org.jboss.as.ee.naming;
 
 import java.util.Map;
 
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
 
 /**
@@ -47,12 +48,12 @@ public class JavaNamespaceSetup implements SetupAction {
 
     @Override
     public void setup(Map<String, Object> properties) {
-        namespaceSelector.activate();
+        NamespaceContextSelector.pushCurrentSelector(namespaceSelector.getValue());
     }
 
     @Override
     public void teardown(Map<String, Object> properties) {
-        namespaceSelector.deactivate();
+        NamespaceContextSelector.popCurrentSelector();
     }
 
 }

@@ -30,8 +30,6 @@ import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
 import java.util.Hashtable;
 
-import static org.jboss.as.naming.util.NamingUtils.asReference;
-
 /**
  * Object factory used to retrieve a naming context with a given name.  This relies on a {@code org.jboss.as.naming.contexts.NamespaceContextSelector}
  * to select the right naming context to return.
@@ -61,7 +59,7 @@ public class NamespaceObjectFactory implements ObjectFactory {
      * @throws Exception
      */
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        final Reference reference = asReference(obj);
+        final Reference reference = (Reference) obj;
         final StringRefAddr nameAdr = (StringRefAddr)reference.get("nns");
         if(nameAdr == null) {
             throw new NamingException("Invalid context reference.  Not a 'nns' reference.");

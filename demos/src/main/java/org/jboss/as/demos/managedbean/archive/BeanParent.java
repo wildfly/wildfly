@@ -32,7 +32,7 @@ import javax.interceptor.InvocationContext;
 @Interceptors(InterceptorFromParent.class)
 public class BeanParent {
     @AroundInvoke
-    public Object intercept(InvocationContext context) throws Exception {
+    public Object interceptParent(InvocationContext context) throws Exception {
         if (!context.getMethod().getName().equals("echo")) {
             return context.proceed();
         }

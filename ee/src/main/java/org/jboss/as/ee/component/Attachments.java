@@ -27,7 +27,8 @@ import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class Attachments {
-    public static final AttachmentKey<AttachmentList<ComponentConfiguration>> COMPONENT_CONFIGS = AttachmentKey.createList(ComponentConfiguration.class);
+    public static final AttachmentKey<EEModuleDescription> EE_MODULE_DESCRIPTION = AttachmentKey.create(EEModuleDescription.class);
 }

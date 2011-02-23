@@ -22,20 +22,27 @@
 
 package org.jboss.as.managedbean.component;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.ee.naming.ContextNames;
-import org.jboss.as.naming.deployment.JndiName;
+import org.jboss.as.ee.component.AbstractComponentConfiguration;
 
 /**
+ * The component configuration for a managed bean.
+ *
  * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ManagedBeanComponentConfiguration extends ComponentConfiguration {
-    public ManagedBeanComponentConfiguration(String name, String componentClassName, ComponentFactory componentFactory) {
-        super(name, componentClassName, componentFactory);
+public class ManagedBeanComponentConfiguration extends AbstractComponentConfiguration {
+
+    /**
+     * Construct a new instance.
+     *
+     * @param description the original description
+     */
+    public ManagedBeanComponentConfiguration(final ManagedBeanComponentDescription description) {
+        super(description);
     }
 
-    public JndiName getBindContextName() {
-        return ContextNames.MODULE_CONTEXT_NAME;
+    /** {@inheritDoc} */
+    public ManagedBeanComponent constructComponent() {
+        return new ManagedBeanComponent(this);
     }
 }

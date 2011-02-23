@@ -23,6 +23,9 @@
 package org.jboss.as.managedbean.component;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.invocation.Interceptor;
+
+import java.util.Collections;
 
 /**
  * A managed bean component instance.
@@ -40,6 +43,7 @@ public final class ManagedBeanComponentInstance extends AbstractComponentInstanc
      * @param instance the object instance
      */
     protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance) {
-        super(component, instance);
+        //we don't support pre destroy for manage beans, as the lifecycle is not defined
+        super(component, instance, Collections.<Interceptor>emptyList());
     }
 }

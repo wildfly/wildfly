@@ -22,10 +22,6 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.util.NamingUtils.asReference;
-import static org.jboss.as.naming.util.NamingUtils.asReferenceable;
-import static org.jboss.as.naming.util.NamingUtils.cast;
-import static org.jboss.as.naming.util.NamingUtils.emptyName;
 import static org.jboss.as.naming.util.NamingUtils.isEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
@@ -35,6 +31,7 @@ import java.util.Hashtable;
 
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
+import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.ContextNotEmptyException;
 import javax.naming.InitialContext;
@@ -53,7 +50,6 @@ import javax.naming.spi.ResolveResult;
 
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.as.naming.util.NameParser;
-import org.jboss.as.naming.util.NamingUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -103,9 +99,6 @@ public class NamingContext implements EventContext {
         }
     }
 
-    /* The name parser */
-    private static final NameParser nameParser = new NameParser();
-
     /* The naming store providing the back-end storage */
     private final NamingStore namingStore;
 
@@ -120,9 +113,10 @@ public class NamingContext implements EventContext {
      * the active naming store.
      *
      * @param environment The naming environment
+     * @throws NamingException if an error occurs
      */
     public NamingContext(final Hashtable<String, Object> environment) throws NamingException {
-        this(emptyName(), ACTIVE_NAMING_STORE, environment);
+        this(new CompositeName(), ACTIVE_NAMING_STORE, environment);
     }
 
     /**
@@ -130,6 +124,7 @@ public class NamingContext implements EventContext {
      *
      * @param prefix The prefix for this context
      * @param environment The naming environment
+     * @throws NamingException if an error occurs
      */
     public NamingContext(final Name prefix, final Hashtable<String, Object> environment) throws NamingException {
         this(prefix, ACTIVE_NAMING_STORE, environment);
@@ -141,6 +136,7 @@ public class NamingContext implements EventContext {
      * @param prefix The prefix for this context
      * @param namingStore The NamingStore
      * @param environment The naming environment
+     * @throws NamingException if an error occurs
      */
     public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable<String, Object> environment) throws NamingException {
         if(prefix == null) {
@@ -152,17 +148,21 @@ public class NamingContext implements EventContext {
         }
         this.namingStore = namingStore;
         if(environment != null) {
-            this.environment = NamingUtils.clone(environment);
+            this.environment = new Hashtable<String, Object>(environment);
         } else {
             this.environment = new Hashtable<String, Object>();
         }
     }
 
     /**
-     * Create a new naming context with the given namingStore and an empty name
+     * Create a new naming context with the given namingStore and an empty name.
+     *
+     * @param namingStore the naming store to use
+     * @param environment the environment to use
+     * @throws NamingException if an error occurs
      */
     public NamingContext(final NamingStore namingStore, final Hashtable<String, Object> environment) throws NamingException {
-        this(emptyName(), namingStore, environment);
+        this(new CompositeName(), namingStore, environment);
     }
 
     /** {@inheritDoc} */
@@ -181,7 +181,7 @@ public class NamingContext implements EventContext {
         }
 
         if (result instanceof ResolveResult) {
-            final ResolveResult resolveResult = cast(result);
+            final ResolveResult resolveResult = (ResolveResult) result;
             final Object resolvedObject = resolveResult.getResolvedObj();
 
             Object context;
@@ -193,7 +193,7 @@ public class NamingContext implements EventContext {
             if (!(context instanceof Context)) {
                 throw notAContextException(absoluteName.getPrefix(absoluteName.size() - resolveResult.getRemainingName().size()));
             }
-            final Context namingContext = cast(context);
+            final Context namingContext = (Context) context;
             return namingContext.lookup(resolveResult.getRemainingName());
         } else if (result instanceof LinkRef) {
             result = resolveLink(result);
@@ -218,11 +218,11 @@ public class NamingContext implements EventContext {
         object = NamingManager.getStateToBind(object, absoluteName, this, environment);
 
         if(object instanceof Referenceable) {
-            object = asReferenceable(object).getReference();
+            object = ((Referenceable) object).getReference();
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            className = asReference(object).getClassName();
+            className = ((Reference) object).getClassName();
         }
         try {
             namingStore.bind(this, absoluteName, object, className);
@@ -243,11 +243,11 @@ public class NamingContext implements EventContext {
         object = NamingManager.getStateToBind(object, absoluteName, this, environment);
 
         if(object instanceof Referenceable) {
-            object = asReferenceable(object).getReference();
+            object = ((Referenceable) object).getReference();
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            className = asReference(object).getClassName();
+            className = ((Reference) object).getClassName();
         }
         try {
             namingStore.rebind(this, absoluteName, object, className);
@@ -373,17 +373,17 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public NameParser getNameParser(Name name) throws NamingException {
-        return nameParser;
+        return NameParser.INSTANCE;
     }
 
     /** {@inheritDoc} */
     public NameParser getNameParser(String name) throws NamingException {
-        return nameParser;
+        return NameParser.INSTANCE;
     }
 
     /** {@inheritDoc} */
     public Name composeName(Name name, Name prefix) throws NamingException {
-        final Name result = NamingUtils.clone(prefix);
+        final Name result = (Name) prefix.clone();
         result.addAll(name);
         return result;
     }
@@ -463,7 +463,7 @@ public class NamingContext implements EventContext {
         }
     }
 
-    private Object getObjectInstance(final Object object, final Name name, final Hashtable environment) throws NamingException {
+    private Object getObjectInstance(final Object object, final Name name, final Hashtable<?, ?> environment) throws NamingException {
         try {
             final ObjectFactoryBuilder factoryBuilder = ObjectFactoryBuilder.INSTANCE;
             final ObjectFactory objectFactory = factoryBuilder.createObjectFactory(object, environment);
@@ -478,7 +478,7 @@ public class NamingContext implements EventContext {
     private Object resolveLink(Object result) throws NamingException {
         final Object linkResult;
         try {
-            final LinkRef linkRef = cast(result);
+            final LinkRef linkRef = (LinkRef) result;
             final String referenceName = linkRef.getLinkName();
             if (referenceName.startsWith("./")) {
                 linkResult = lookup(referenceName.substring(2));

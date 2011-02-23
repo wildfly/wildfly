@@ -37,15 +37,12 @@ import org.jboss.logging.Logger;
  * @version $Revision: 1.1 $
  */
 @ManagedBean("BeanWithSimpleInjected")
-@Resources({
-    @Resource(name="simple", type=SimpleManagedBean.class, mappedName="SimpleManagedBean")
-})
 @Interceptors(InterceptorBean.class)
 public class BeanWithSimpleInjected extends BeanParent {
 
     private final Logger log = Logger.getLogger(BeanWithSimpleInjected.class);
 
-    @Resource
+    @Resource(lookup="java:module/SimpleManagedBean")
     private SimpleManagedBean simple;
 
     @PostConstruct

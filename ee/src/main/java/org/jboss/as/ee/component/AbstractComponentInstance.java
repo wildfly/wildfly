@@ -22,12 +22,14 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+
+import java.lang.reflect.Method;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An abstract base component instance.
@@ -40,6 +42,7 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
 
     private final AbstractComponent component;
     private final Object instance;
+    private final List<Interceptor> preDestroyInterceptors;
 
     /**
      * This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
@@ -53,9 +56,10 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
      * @param component the component
      * @param instance the object instance
      */
-    protected AbstractComponentInstance(final AbstractComponent component, final Object instance) {
+    protected AbstractComponentInstance(final AbstractComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors) {
         this.component = component;
         this.instance = instance;
+        this.preDestroyInterceptors = preDestroyInterceptors;
         final Map<Method, InterceptorFactory> factoryMap = component.getInterceptorFactoryMap();
         final Map<Method, Interceptor> methodMap = new IdentityHashMap<Method, Interceptor>(factoryMap.size());
         final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
@@ -74,6 +78,11 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
     /** {@inheritDoc} */
     public Object getInstance() {
         return instance;
+    }
+
+    @Override
+    public Iterable<Interceptor> getPreDestroyInterceptors() {
+        return preDestroyInterceptors;
     }
 
     /** {@inheritDoc} */

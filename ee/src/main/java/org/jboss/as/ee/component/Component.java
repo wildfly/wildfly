@@ -93,16 +93,6 @@ public interface Component {
     Interceptor createClientInterceptor(Class<?> view);
 
     /**
-     * Create a local client proxy for this component.
-     *
-     * @param view the view type class
-     * @param clientInterceptor the client interceptor to use for this proxy.
-     * @param <T> the view type
-     * @return the proxy
-     */
-    <T> T createLocalProxy(Class<T> view, Interceptor clientInterceptor);
-
-    /**
      * Create a remote client proxy for this component.
      *
      * @param view the view type class

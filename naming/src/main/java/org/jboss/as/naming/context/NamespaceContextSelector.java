@@ -49,7 +49,7 @@ public abstract class NamespaceContextSelector {
     /**
      * Pops the current selector for the thread, replacing it with the previous selector
      *
-     * @param selector The current selector
+     * @return selector The current selector
      */
     public static NamespaceContextSelector popCurrentSelector() {
         return currentSelector.pop();

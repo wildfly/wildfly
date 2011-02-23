@@ -22,14 +22,15 @@
 
 package org.jboss.as.demos.managedbean.archive;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 /**
  * @author John Bailey
@@ -39,7 +40,7 @@ public class LookupService implements Service<Void> {
 
     private final String lookupName;
 
-    public static BeanWithSimpleInjected bean;
+    private static volatile BeanWithSimpleInjected bean;
 
     public LookupService(String lookupName) {
         this.lookupName = lookupName;
@@ -48,6 +49,9 @@ public class LookupService implements Service<Void> {
     public void start(StartContext context) throws StartException {
         try {
             bean = (BeanWithSimpleInjected) lookupContext.getValue().lookup(lookupName);
+            synchronized (LookupService.class) {
+                LookupService.class.notifyAll();
+            }
         } catch (NamingException e) {
             throw new StartException(e);
         }
@@ -62,5 +66,16 @@ public class LookupService implements Service<Void> {
 
     public Injector<Context> getLookupContextInjector() {
         return lookupContext;
+    }
+
+    public static synchronized  BeanWithSimpleInjected getBean() {
+        if(bean == null) {
+            try {
+                LookupService.class.wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return bean;
     }
 }

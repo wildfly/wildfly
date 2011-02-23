@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.embedded.demos.managedbean;
 
-import javax.naming.NamingException;
-
 import junit.framework.Assert;
 
 import org.jboss.arquillian.api.Deployment;
@@ -31,8 +29,11 @@ import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
 import org.jboss.as.demos.managedbean.archive.LookupService;
+import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
+import org.jboss.as.demos.managedbean.mbean.TestMBean;
 import org.jboss.as.test.modular.utils.PollingUtils;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,29 +48,34 @@ import org.junit.runner.RunWith;
 public class ManagedBeanTestCase {
 
     @Deployment
-    public static JavaArchive createDeployment() throws Exception {
-        JavaArchive archive = ShrinkWrapUtils.createJavaArchive("demos/managedbean-example.jar", ManagedBeanTestCase.class.getPackage(), BeanWithSimpleInjected.class.getPackage());
-        archive.addClass(PollingUtils.class);
-        return archive;
+    public static EnterpriseArchive createDeployment() throws Exception {
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "managedbean-example.ear");
+        JavaArchive sar = ShrinkWrap.create(JavaArchive.class,"managedbean-mbean.sar");
+        sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+        sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/jboss-service.xml", "jboss-service.xml");
+        sar.addPackage(TestMBean.class.getPackage());
+        ear.add(sar,"/");
+
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class,"managedbean-example.jar");
+        jar.addManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+        jar.addManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator", "services/org.jboss.msc.service.ServiceActivator");
+        jar.addPackage(SimpleManagedBean.class.getPackage());
+        jar.addPackage(ManagedBeanTestCase.class.getPackage());
+        jar.addPackage(BeanWithSimpleInjected.class.getPackage());
+        jar.addClass(PollingUtils.class);
+        ear.add(jar,"/");
+
+        return ear;
     }
 
     @Test
     public void testManagedBean() throws Exception {
-        try {
-            PollingUtils.retryWithTimeout(3000, new PollingUtils.Task() {
-                public boolean execute() throws Exception {
-                    return LookupService.bean != null;
-                }
-            });
-            BeanWithSimpleInjected bean = LookupService.bean;
-            Assert.assertNotNull(bean);
-            Assert.assertNotNull(bean.getSimple());
-            String s = bean.echo("Hello");
-            Assert.assertNotNull(s);
-            Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello", s);
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
+        BeanWithSimpleInjected bean = LookupService.getBean();
+        Assert.assertNotNull(bean);
+        Assert.assertNotNull(bean.getSimple());
+        String s = bean.echo("Hello");
+        Assert.assertNotNull(s);
+        Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello", s);
     }
 
 }

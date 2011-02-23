@@ -24,7 +24,7 @@ package org.jboss.as.web.deployment;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
-import org.jboss.as.ee.naming.NamespaceSelectorService;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.web.NamingListener;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -42,7 +42,7 @@ class WebDeploymentService implements Service<Context> {
 
     private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
-    private final InjectedValue<NamespaceSelectorService> namespaceSelector = new InjectedValue<NamespaceSelectorService>();
+    private final InjectedValue<NamespaceContextSelector> namespaceSelector = new InjectedValue<NamespaceContextSelector>();
 
     public WebDeploymentService(final StandardContext context) {
         this.context = context;
@@ -91,7 +91,7 @@ class WebDeploymentService implements Service<Context> {
         return context;
     }
 
-    public InjectedValue<NamespaceSelectorService> getNamespaceSelector() {
+    public InjectedValue<NamespaceContextSelector> getNamespaceSelector() {
         return namespaceSelector;
     }
 

@@ -22,13 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -50,6 +43,13 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Deployment processor responsible for detecting EAR deployments and putting setting up the basic structure.
  *
@@ -60,11 +60,13 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     private static final String JAR_EXTENSION = ".jar";
     private static final String WAR_EXTENSION = ".war";
+    private static final String SAR_EXTENSION = ".sar";
     private static final List<String> CHILD_ARCHIVE_EXTENSIONS = new ArrayList<String>();
 
     static {
         CHILD_ARCHIVE_EXTENSIONS.add(JAR_EXTENSION);
         CHILD_ARCHIVE_EXTENSIONS.add(WAR_EXTENSION);
+        CHILD_ARCHIVE_EXTENSIONS.add(SAR_EXTENSION);
     }
 
     private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(CHILD_ARCHIVE_EXTENSIONS, new VisitorAttributes() {

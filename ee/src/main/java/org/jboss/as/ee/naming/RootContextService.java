@@ -29,6 +29,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.NamingContext;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -42,8 +43,7 @@ import org.jboss.msc.service.StopContext;
  * @author John E. Bailey
  * @author Stuart Douglas
  */
-public class RootContextService implements Service<Context> {
-    private Context context;
+public class RootContextService implements Service<NamingStore> {
     private InMemoryNamingStore store;
 
     /**
@@ -54,11 +54,6 @@ public class RootContextService implements Service<Context> {
      */
     public synchronized void start(final StartContext context) throws StartException {
         store = new InMemoryNamingStore();
-        try {
-            this.context = new NamingContext(store, new Hashtable<String, Object>());
-        } catch (NamingException e) {
-            throw new StartException("Failed to create root context", e);
-        }
     }
 
     /**
@@ -70,7 +65,6 @@ public class RootContextService implements Service<Context> {
         try {
             store.close();
             store = null;
-            context = null;
         } catch (NamingException e) {
             throw new IllegalStateException("Failed to destroy root context", e);
         }
@@ -79,10 +73,10 @@ public class RootContextService implements Service<Context> {
     /**
      * Get the context value.
      *
-     * @return The context
+     * @return The naming store
      * @throws IllegalStateException
      */
-    public synchronized Context getValue() throws IllegalStateException {
-        return context;
+    public synchronized NamingStore getValue() throws IllegalStateException {
+        return store;
     }
 }

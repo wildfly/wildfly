@@ -22,13 +22,12 @@
 
 package org.jboss.as.messaging.jms;
 
-import javax.naming.Context;
-
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.naming.service.JavaContextService;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -38,6 +37,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import javax.naming.CompositeName;
+import javax.naming.Context;
+
 /**
  * The {@code JMSServerManager} service.
  *
@@ -46,14 +48,14 @@ import org.jboss.msc.value.InjectedValue;
 public class JMSService implements Service<JMSServerManager> {
 
     private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
-    private final InjectedValue<Context> contextInjector = new InjectedValue<Context>();
+    private final InjectedValue<NamingStore> namingStoreInjector = new InjectedValue<NamingStore>();
     private JMSServerManager jmsServer;
 
     public static void addService(final ServiceTarget target) {
         final JMSService service = new JMSService();
         target.addService(JMSServices.JMS_MANAGER, service)
             .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
-            .addDependency(JavaContextService.SERVICE_NAME, Context.class, service.getContextInjector())
+            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, service.getNamingStoreInjector())
             .setInitialMode(Mode.ACTIVE)
             .install();
     }
@@ -68,9 +70,10 @@ public class JMSService implements Service<JMSServerManager> {
         try {
             final JMSServerManager jmsServer = new JMSServerManagerImpl(hornetQServer.getValue());
 
-            final Context jndiContext = contextInjector.getOptionalValue();
-            if(jndiContext != null) {
-                jmsServer.setContext(jndiContext);
+            final NamingStore namingStore = namingStoreInjector.getOptionalValue();
+            if(namingStore != null) {
+                // TODO: this will begin to fail once contexts are read-only; see HORNETQ-650 for more info
+                jmsServer.setContext((Context) namingStore.lookup(new CompositeName()));
             }
 
             try {
@@ -113,7 +116,7 @@ public class JMSService implements Service<JMSServerManager> {
         return hornetQServer;
     }
 
-    InjectedValue<Context> getContextInjector() {
-        return contextInjector;
+    InjectedValue<NamingStore> getNamingStoreInjector() {
+        return namingStoreInjector;
     }
 }

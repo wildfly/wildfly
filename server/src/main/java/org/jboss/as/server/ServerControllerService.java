@@ -161,6 +161,7 @@ final class ServerControllerService implements Service<ServerController> {
 
             @Override
             public void handleFailed(final ModelNode failureDescription) {
+                log.errorf("Boot update failed: %s", failureDescription);
                 if (count.decrementAndGet() == 0) {
                     // some action
                 }

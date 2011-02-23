@@ -49,6 +49,17 @@ public interface NamingStore {
     void bind(Context context, Name name, Object object, String className) throws NamingException;
 
     /**
+     * Bind and object into the naming store, creating parent contexts.
+     *
+     * @param context The calling context
+     * @param name The entry name
+     * @param object The entry object
+     * @param className The entry class name
+     * @throws NamingException If any problems occur
+     */
+    void bindCreatingParents(Context context, Name name, Object object, String className) throws NamingException;
+
+    /**
      * Re-bind and object into the naming store.  All parent contexts must be created before this can be executed.
      *
      * @param context The calling context

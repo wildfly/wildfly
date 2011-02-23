@@ -80,8 +80,6 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        log.infof("Activating OSGi Subsystem");
-
         populateSubModel(context.getSubModel(), operation);
 
         if (context instanceof BootOperationContext) {

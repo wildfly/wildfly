@@ -22,10 +22,10 @@
 
 package org.jboss.as.ee.naming;
 
-import javax.naming.Context;
-
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ValueJndiInjectable;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.as.naming.service.ContextService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -53,6 +53,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
         if (deploymentUnit.getParent() != null) {
             return;
         }
+        EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
@@ -60,15 +61,11 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
         final RootContextService contextService = new RootContextService();
         serviceTarget.addService(applicationContextServiceName, contextService).install();
 
-        final BinderService<String> applicationNameBinder = new BinderService<String>("AppName", Values
-                .immediateValue(deploymentUnit.getName()));
-        serviceTarget.addService(applicationContextServiceName.append("AppName"), applicationNameBinder).addDependency(
-                applicationContextServiceName, Context.class, applicationNameBinder.getContextInjector()).install();
-
-        final ContextService envContextService = new ContextService("env");
-        serviceTarget.addService(applicationContextServiceName.append("env"), envContextService)
-            .addDependency(applicationContextServiceName, Context.class, envContextService.getParentContextInjector())
-            .install();
+        final BinderService applicationNameBinder = new BinderService("AppName");
+        serviceTarget.addService(applicationContextServiceName.append("AppName"), applicationNameBinder)
+                .addDependency(applicationContextServiceName, NamingStore.class, applicationNameBinder.getNamingStoreInjector())
+                .addInjection(applicationNameBinder.getJndiInjectableInjector(), new ValueJndiInjectable(Values.immediateValue(moduleDescription.getAppName())))
+                .install();
 
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);
     }

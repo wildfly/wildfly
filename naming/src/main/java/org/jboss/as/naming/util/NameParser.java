@@ -33,6 +33,11 @@ import javax.naming.NamingException;
  */
 public class NameParser implements javax.naming.NameParser {
 
+    public static final NameParser INSTANCE = new NameParser();
+
+    private NameParser() {
+    }
+
     /**
      * Parse the string name into a {@code javax.naming.Name} instance.
      *

@@ -22,7 +22,6 @@
 
 package org.jboss.as.naming.context;
 
-import static org.jboss.as.naming.util.NamingUtils.asReference;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
 
 import java.util.Hashtable;
@@ -65,7 +64,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
     public ObjectFactory createObjectFactory(final Object obj, Hashtable<?, ?> environment) throws NamingException {
         try {
             if (obj instanceof Reference) {
-                return factoryFromReference(asReference(obj), environment);
+                return factoryFromReference((Reference) obj, environment);
             }
         } catch(Throwable ignored) {
         }

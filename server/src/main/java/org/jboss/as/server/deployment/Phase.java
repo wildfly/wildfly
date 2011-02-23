@@ -190,6 +190,7 @@ public enum Phase {
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x0D00;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x0E00;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x0F00;
+    public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1000;
 
     // PARSE
     public static final int PARSE_STRUCTURE_DESCRIPTOR                  = 0x0100;
@@ -214,10 +215,10 @@ public enum Phase {
     public static final int PARSE_DATA_SOURCES                          = 0x1400;
     public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1500;
     public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1600;
-    public static final int PARSE_BEAN_LIEFCYCLE_ANNOTATION             = 0x1700;
-    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x1800;
-    public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1900;
-    public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1A00;
+    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x1700;
+    public static final int PARSE_INTERCEPTOR_LIEFCYCLE_ANNOTATION      = 0x1800;
+    public static final int PARSE_INTERCEPTOR_AROUNDINVOKE_ANNOTATION   = 0x1900;
+    public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1A00;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x1B00;
     public static final int PARSE_WEBSERVICES_XML                       = 0x1C00;
     public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x1D00;
@@ -261,19 +262,15 @@ public enum Phase {
     public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0A00;
     public static final int INSTALL_DS_DEPLOYMENT                       = 0x0B00;
-    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x0D00;
-    public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x0E00;
-    public static final int INSTALL_EE_COMPONENT_CLASSLOAD              = 0x0F00;
-    public static final int INSTALL_EE_COMPONENT_LIFECYCLES             = 0x1000;
-    public static final int INSTALL_EE_COMPONENT_INTERCEPTORS           = 0x1100;
-    public static final int INSTALL_EE_COMPONENT_INJECTIONS             = 0x1200;
-    public static final int INSTALL_EE_COMPONENT                        = 0x1300;
-    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1400;
-    public static final int INSTALL_JAXRS_SCANNING                      = 0x1500;
-    public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1600;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1700;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1800;
-    public static final int INSTALL_JDBC_DRIVER                         = 0x1600;
+    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x0C00;
+    public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x0D00;
+    public static final int INSTALL_EE_COMPONENT                        = 0x0E00;
+    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x0F00;
+    public static final int INSTALL_JAXRS_SCANNING                      = 0x1000;
+    public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1100;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1200;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1300;
+    public static final int INSTALL_JDBC_DRIVER                         = 0x1400;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;

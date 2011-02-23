@@ -23,7 +23,7 @@ package org.jboss.as.web;
 
 import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.InstanceListener;
-import org.jboss.as.ee.naming.NamespaceSelectorService;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 
 /**
  * An InstanceListener used to push/pop the application naming context.
@@ -32,14 +32,14 @@ import org.jboss.as.ee.naming.NamespaceSelectorService;
  */
 public class NamingListener implements InstanceListener {
 
-    private final NamespaceSelectorService selector;
+    private final NamespaceContextSelector selector;
 
     /**
      * Thread local used to initialise the Listener after startup.
      *
      * TODO: figure out a better way to do this
      */
-    private static final ThreadLocal<NamespaceSelectorService> localSelector = new ThreadLocal<NamespaceSelectorService>();
+    private static final ThreadLocal<NamespaceContextSelector> localSelector = new ThreadLocal<NamespaceContextSelector>();
 
     public NamingListener() {
         selector = localSelector.get();
@@ -54,7 +54,7 @@ public class NamingListener implements InstanceListener {
                 || type.equals(InstanceEvent.BEFORE_DESTROY_EVENT)
                 || type.equals(InstanceEvent.BEFORE_INIT_EVENT)) {
             // Push naming id
-            selector.activate();
+            NamespaceContextSelector.pushCurrentSelector(selector);
         }
         // Pop the identity on the after init/destroy
         else if (type.equals(InstanceEvent.AFTER_DISPATCH_EVENT)
@@ -62,17 +62,17 @@ public class NamingListener implements InstanceListener {
                 || type.equals(InstanceEvent.AFTER_DESTROY_EVENT)
                 || type.equals(InstanceEvent.AFTER_INIT_EVENT)) {
             // Pop naming id
-            selector.deactivate();
+            NamespaceContextSelector.popCurrentSelector();
         }
     }
 
-    public static void beginComponentStart(NamespaceSelectorService selector) {
+    public static void beginComponentStart(NamespaceContextSelector selector) {
         localSelector.set(selector);
-        selector.activate();
+        NamespaceContextSelector.pushCurrentSelector(selector);
     }
 
     public static void endComponentStart() {
-        localSelector.get().deactivate();
+        NamespaceContextSelector.popCurrentSelector();
         localSelector.set(null);
     }
 

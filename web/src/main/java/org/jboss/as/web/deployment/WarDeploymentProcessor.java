@@ -22,19 +22,13 @@
 
 package org.jboss.as.web.deployment;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.ee.naming.NamespaceSelectorService;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -45,14 +39,20 @@ import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.security.JBossWebRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
 import org.jboss.vfs.VirtualFile;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Emanuel Muckenhuber
@@ -189,7 +189,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
             serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService).addDependency(
                     WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
-                    .addDependency(namespaceSelectorServiceName, NamespaceSelectorService.class,
+                    .addDependency(namespaceSelectorServiceName, NamespaceContextSelector.class,
                             webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE).install();
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);

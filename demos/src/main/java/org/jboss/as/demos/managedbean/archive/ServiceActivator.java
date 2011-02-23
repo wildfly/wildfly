@@ -22,13 +22,19 @@
 
 package org.jboss.as.demos.managedbean.archive;
 
-import javax.naming.Context;
 import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+
+import javax.naming.CompositeName;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 /**
  * @author John Bailey
@@ -41,11 +47,23 @@ public class ServiceActivator implements org.jboss.msc.service.ServiceActivator 
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
         final LookupService rebindService = new LookupService("BeanWithSimpleInjected");
+        final Injector<Context> injector = rebindService.getLookupContextInjector();
 
         serviceTarget.addService(ServiceName.JBOSS.append("BeanWithSimpleInjected", "rebind"), rebindService)
-            .addDependency(ContextNames.MODULE_CONTEXT_SERVICE_NAME.append("managedbean-example.jar"), Context.class, rebindService.getLookupContextInjector())
-            .addDependency(ServiceName.JBOSS.append("deployment", "unit", "managedbean-example.jar", "component", "BeanWithSimpleInjected"))
-            .addDependency(ContextNames.MODULE_CONTEXT_SERVICE_NAME.append("managedbean-example.jar", "BeanWithSimpleInjected"))
+            .addDependency(ServiceName.JBOSS.append("deployment", "unit","managedbean-example.ear", "managedbean-example.jar", "component", "BeanWithSimpleInjected","START"))
+            .addDependency(ContextNames.contextServiceNameOfModule("managedbean-example.ear", "managedbean-example.jar"), NamingStore.class, new Injector<NamingStore>() {
+                public void inject(final NamingStore value) throws InjectionException {
+                    try {
+                        injector.inject((Context) value.lookup(new CompositeName()));
+                    } catch (NamingException e) {
+                        throw new InjectionException(e);
+                    }
+                }
+
+                public void uninject() {
+                    injector.uninject();
+                }
+            })
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
     }

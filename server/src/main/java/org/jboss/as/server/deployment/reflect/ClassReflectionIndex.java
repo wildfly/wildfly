@@ -173,7 +173,7 @@ public final class ClassReflectionIndex<T> {
      * @param name the name of the method
      * @return the (possibly empty) collection of methods with the given name
      */
-    public Collection<Method> getMethods(String name) {
+    public Collection<Method> getAllMethods(String name) {
         final Map<ParamList, Map<Class<?>, Method>> nameMap = methods.get(name);
         if (nameMap == null) {
             return Collections.emptySet();

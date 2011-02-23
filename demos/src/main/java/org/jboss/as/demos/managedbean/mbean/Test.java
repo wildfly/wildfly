@@ -38,7 +38,7 @@ public class Test implements TestMBean {
     public String echo(String s) {
         log.info("-----> In test()");
         log.info("-----> Found BeanWithSimpleInjected, calling echo(\"Test\")");
-        final BeanWithSimpleInjected bean = LookupService.bean;
+        final BeanWithSimpleInjected bean = LookupService.getBean();
         s = bean.echo(s);
         if(bean.getSimple() == null) {
             throw new RuntimeException("Injection not complete");

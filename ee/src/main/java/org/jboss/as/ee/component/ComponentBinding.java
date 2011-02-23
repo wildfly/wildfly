@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import javax.naming.Reference;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -31,14 +30,14 @@ import org.jboss.msc.service.ServiceName;
  * @author John Bailey
  */
 public class ComponentBinding {
-    private final Reference reference;
+    private final Class<?> viewClass;
     private final ServiceName contextServiceName;
     private final String bindName;
 
-    public ComponentBinding(final ServiceName contextServiceName, final String bindName, final Reference reference) {
+    public ComponentBinding(final ServiceName contextServiceName, final String bindName,  final Class<?> viewClass) {
         this.contextServiceName = contextServiceName;
         this.bindName = bindName;
-        this.reference = reference;
+        this.viewClass = viewClass;
     }
 
     /**
@@ -46,7 +45,7 @@ public class ComponentBinding {
      *
      * @return The context service name
      */
-    public ServiceName getContextServiceName() {
+    public ServiceName getContextStoreServiceName() {
         return contextServiceName;
     }
 
@@ -60,11 +59,11 @@ public class ComponentBinding {
     }
 
     /**
-     * Get the reference to bind for the component.
+     * Get the view class for this component binding.
      *
-     * @return The reference
+     * @return The view class
      */
-    public Reference getReference() {
-        return reference;
+    public Class<?> getViewClass() {
+        return viewClass;
     }
 }

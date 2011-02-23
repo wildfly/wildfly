@@ -28,6 +28,10 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -38,18 +42,14 @@ import static org.jboss.as.security.CommonAttributes.MAPPING_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.SECURITY_DOMAIN;
 import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
 
-import javax.naming.Context;
-import javax.naming.Reference;
 import javax.security.auth.login.Configuration;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.naming.service.JavaContextService;
-import org.jboss.as.security.context.SecurityDomainObjectFactory;
+import org.jboss.as.security.context.SecurityDomainJndiInjectable;
 import org.jboss.as.security.processors.SecurityDependencyProcessor;
-import org.jboss.as.security.service.JaasBinderService;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityManagementService;
@@ -60,7 +60,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Values;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.login.XMLLoginConfigImpl;
@@ -219,10 +218,15 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                             ServiceController.Mode.ACTIVE).install();
 
                     // add service to bind SecurityDomainObjectFactory to JNDI
-                    final Reference reference = SecurityDomainObjectFactory.createReference("JSM");
-                    final JaasBinderService binderService = new JaasBinderService(Values.immediateValue(reference));
-                    target.addService(JaasBinderService.SERVICE_NAME, binderService).addDependency(JavaContextService.SERVICE_NAME,
-                            Context.class, binderService.getContextInjector()).setInitialMode(ServiceController.Mode.ACTIVE).install();
+                    final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
+                    final BinderService binderService = new BinderService("jaas");
+                    target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
+                            .addInjection(binderService.getJndiInjectableInjector(), securityDomainJndiInjectable)
+                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
+                            .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class, securityDomainJndiInjectable.getSecurityManagementInjector())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
+
 
                     final SecurityManagementService securityManagementService = new SecurityManagementService(
                             resolvedAuthenticationManagerClassName, deepCopySubject, resolvedCallbackHandlerClassName, resolvedAuthorizationManagerClassName,

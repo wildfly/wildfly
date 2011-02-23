@@ -23,21 +23,18 @@
 package org.jboss.as.managedbean;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.managedbean.processors.ManagedBeanDependencyProcessor;
-import org.jboss.as.managedbean.processors.ManagedBeanResourceTargetProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * The managed beans subsystem add handler.
@@ -61,7 +58,6 @@ class ManagedBeansSubsystemAdd implements ModelAddOperationHandler, BootOperatio
             final BootOperationContext updateContext = (BootOperationContext) context;
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new ManagedBeanDependencyProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_RESOURCE_TARGET, new ManagedBeanResourceTargetProcessor());
         }
 
         final ModelNode compensatingOperation = new ModelNode();
