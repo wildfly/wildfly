@@ -122,6 +122,7 @@ public class HostControllerEnvironment {
     private final File defaultJVM;
     private final boolean isRestart;
     private final boolean backupDomainFiles;
+    private final boolean useCachedDc;
 
     private final InputStream stdin;
     private final PrintStream stdout;
@@ -130,7 +131,7 @@ public class HostControllerEnvironment {
 
     public HostControllerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
-            Integer hostControllerPort, String defaultJVM, boolean backupDomainFiles) {
+            Integer hostControllerPort, String defaultJVM, boolean backupDomainFiles, boolean useCachedDc) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -172,6 +173,7 @@ public class HostControllerEnvironment {
         this.hostControllerAddress = hostControllerAddress;
         this.hostControllerPort = hostControllerPort;
         this.isRestart = isRestart;
+
 
 
         File home = getFileFromProperty(HOME_DIR);
@@ -254,6 +256,7 @@ public class HostControllerEnvironment {
         }
 
         this.backupDomainFiles = backupDomainFiles;
+        this.useCachedDc = useCachedDc;
     }
 
     /**
@@ -342,8 +345,24 @@ public class HostControllerEnvironment {
         return isRestart;
     }
 
+    /**
+     * Whether we should grab a copy of the master Domain Controller's files on startup.
+     * This only has an effect if we are in slave mode
+     *
+     * @return <code>true</code> if we should grab the files
+     */
     public boolean isBackupDomainFiles() {
         return backupDomainFiles;
+    }
+
+    /**
+     * Whether we should try to start up with our copy of the domain controller.
+     * This only has an effect if we are in slave mode
+     *
+     * @return <code>true</code> if we should grab the files
+     */
+    public boolean isUseCachedDc() {
+        return useCachedDc;
     }
 
     public File getHomeDir() {

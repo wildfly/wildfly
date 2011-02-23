@@ -54,8 +54,11 @@ public class CommandLineConstants {
     /** Passed in when the host controller is respawned by process controller */
     public static final String RESTART_HOST_CONTROLLER = "-restarted-host-controller";
 
-    /** Passed in to a host controller to get a backup of all files on the domain controller" */
+    /** Passed in to a slave host controller to get a backup of all files on the domain controller" */
     public static final String BACKUP_DC = "-backup";
+
+    /** Passed in to a slave host controller to attempt to start up using its cached copy of the remote DC, if the remote DC can not be contacted" */
+    public static final String CACHED_DC = "-cached-dc";
 
     /** Output usage */
     public static final String HELP = "-help";
