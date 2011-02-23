@@ -99,12 +99,14 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 AnnotationRepository repository = new JandexAnnotationRepositoryImpl(entry.getValue(), classLoader);
                     cmd = annotator.merge(cmd, repository, classLoader);
             }
+            // FIXME: when the connector is null the Iron Jacamar data is ignored
+            if (cmd != null) {
+                // Validate metadata
+                cmd.validate();
 
-            // Validate metadata
-            cmd.validate();
-
-            // Merge metadata
-            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(ijmd, cmd);
+                // Merge metadata
+                cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(ijmd, cmd);
+            }
 
             final ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module);
 

@@ -73,8 +73,8 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
         if (!deploymentRootName.endsWith(RAR_EXTENSION)) {
             return;
         }
-
-        ModuleRootMarker.mark(resourceRoot);
+        // we do not load classes from the module resource root
+        ModuleRootMarker.mark(resourceRoot, false);
 
         try {
             final List<VirtualFile> childArchives = deploymentRoot.getChildren(CHILD_ARCHIVE_FILTER);
@@ -83,7 +83,7 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
                 final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider()) : NO_OP_CLOSEABLE;
                 final MountHandle mountHandle = new MountHandle(closable);
                 final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
-                ModuleRootMarker.mark(resourceRoot);
+                ModuleRootMarker.mark(childResource);
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
                 resourceRoot.addToAttachmentList(Attachments.INDEX_IGNORE_PATHS, child.getPathNameRelativeTo(deploymentRoot));
             }
