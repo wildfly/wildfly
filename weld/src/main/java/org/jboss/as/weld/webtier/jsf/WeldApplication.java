@@ -20,8 +20,8 @@ import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.faces.application.Application;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.weld.el.WeldELContextListener;
 
@@ -49,6 +49,7 @@ public class WeldApplication extends ForwardingApplication {
     private volatile ExpressionFactory expressionFactory;
     private AdjustableELResolver elResolver;
     private volatile boolean initialized;
+    private volatile BeanManager beanManager;
 
     public WeldApplication(Application application) {
         this.application = application;
@@ -77,20 +78,29 @@ public class WeldApplication extends ForwardingApplication {
         // may be improved for thread safety, but right now the only risk is to invoke wrapExpressionFactory
         // multiple times for concurrent threads. This is ok, as the call is
         if (expressionFactory == null) {
-            expressionFactory = beanManager().wrapExpressionFactory(application.getExpressionFactory());
+            BeanManager bm = beanManager();
+            if (bm == null) {
+                expressionFactory = application.getExpressionFactory();
+            } else {
+                expressionFactory = bm.wrapExpressionFactory(application.getExpressionFactory());
+            }
         }
         return expressionFactory;
     }
 
-    private static BeanManager beanManager() {
-        if (FacesContext.getCurrentInstance() != null
-                && FacesContext.getCurrentInstance().getExternalContext().getContext() instanceof ServletContext) {
-            ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext()
-                    .getContext();
-            return (BeanManager) servletContext.getAttribute(BeanManager.class.getName());
-        } else {
-            return null;
+    private BeanManager beanManager() {
+        if (beanManager == null) {
+            synchronized (this) {
+                if (beanManager == null) {
+                    try {
+                        beanManager = (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
+                    } catch (NamingException e) {
+                        return null;
+                    }
+                }
+            }
         }
+        return beanManager;
     }
 
 }

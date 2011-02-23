@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Module dependencies processor.
@@ -58,15 +59,17 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
         }
-        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
-        final ModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         // Add module dependencies on Java EE apis
 
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
 
         // Add modules for JSF
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JSF_IMPL, false, false, false));
+        ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_IMPL, false, false, false);
+        jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpecification.addDependency(jsf);
+
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_EL_IMPL, false, false, false));
 
@@ -75,15 +78,6 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, LOG, false, false, false));
 
-        if(deploymentUnit.getParent() != null) {
-            final DeploymentUnit parent = deploymentUnit.getParent();
-            final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
-            if(parentModule != null) {
-                // access to ear classes
-                moduleSpecification.addDependency(new ModuleDependency(deploymentModuleLoader, parentModule, false, false,
-                        false));
-            }
-        }
     }
 
     public void undeploy(final DeploymentUnit context) {

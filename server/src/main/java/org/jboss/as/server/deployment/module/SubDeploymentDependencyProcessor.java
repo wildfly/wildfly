@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -41,14 +42,20 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit parent = deploymentUnit.getParent();
         //only run for sub deployments
-        //TODO: should ear modules have access to sub deplyments?
-        if(deploymentUnit.getParent() == null) {
+        if (parent == null) {
             return;
         }
         final ModuleSpecification moduleSpec=deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final AttachmentList<DeploymentUnit> subDeployments = deploymentUnit.getParent().getAttachment(Attachments.SUB_DEPLOYMENTS);
+        final AttachmentList<DeploymentUnit> subDeployments = parent.getAttachment(Attachments.SUB_DEPLOYMENTS);
         final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
+        final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
+        if (parentModule != null) {
+            // access to ear classes
+            moduleSpec.addDependency(new ModuleDependency(moduleLoader, parentModule, false, false, false));
+        }
+
         for(DeploymentUnit subDeployment : subDeployments){
             if(subDeployment.getServiceName().equals(deploymentUnit.getServiceName())) {
                 continue;

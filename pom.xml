@@ -63,7 +63,7 @@
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail.mail>1.4.2</version.javax.mail.mail>
-        <version.javax.servlet.jstl>1.1.2</version.javax.servlet.jstl>
+        <version.javax.servlet.jstl>1.2</version.javax.servlet.jstl>
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
         <version.javax.ws.rs.jsr311-api>1.0</version.javax.ws.rs.jsr311-api>
         <version.javax.xml.jaxrpc-api>1.1</version.javax.xml.jaxrpc-api>
