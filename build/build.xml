@@ -651,10 +651,6 @@
             <maven-resource group="org.jboss.ws" artifact="jbossws-common"/>
         </module-def>
 
-        <module-def name="org.jboss.ws.cxf.jbossws-cxf-client">
-            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-client"/>
-        </module-def>
-
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-factories">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-factories"/>
         </module-def>
@@ -665,6 +661,10 @@
 
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-httpserver"/>
+        </module-def>
+
+        <module-def name="org.jboss.ws.jaxws-client">
+            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-client"/>
         </module-def>
 
         <module-def name="org.jboss.ws.jaxws-httpserver-httpspi">

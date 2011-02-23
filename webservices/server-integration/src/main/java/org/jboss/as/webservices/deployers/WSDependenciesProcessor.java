@@ -53,10 +53,10 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JAXB_IMPL = ModuleIdentifier.create("com.sun.xml.bind");
     private static final ModuleIdentifier JBOSS_WS_COMMON = ModuleIdentifier.create("org.jboss.ws.common");
     private static final ModuleIdentifier JBOSS_WS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
-    private static final ModuleIdentifier JBOSS_WS_CXF_CLIENT = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-client");
     private static final ModuleIdentifier JBOSS_WS_CXF_FACTORIES = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-factories");
     private static final ModuleIdentifier JBOSS_WS_CXF_SERVER = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-server");
     private static final ModuleIdentifier JBOSS_WS_CXF_TRANSPORTS_HTTPSERVER = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-transports-httpserver");
+    private static final ModuleIdentifier JBOSS_WS_JAXWS_CLIENT = ModuleIdentifier.create("org.jboss.ws.jaxws-client");
     private static final ModuleIdentifier JBOSS_WEBSERVICES = ModuleIdentifier.create("org.jboss.as.webservices");
     private static final ModuleIdentifier SAAJ_IMPL = ModuleIdentifier.create("com.sun.xml.messaging.saaj");
     private static final ModuleIdentifier WSDL4J = ModuleIdentifier.create("wsdl4j.wsdl4j");
@@ -71,7 +71,7 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAXB_IMPL, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_SPI, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_COMMON, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_CLIENT, false, false, true));
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_JAXWS_CLIENT, false, false, true));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_FACTORIES, false, false, true));
             moduleSpecification.addDependency(applyCXFExtensionImportFilters(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_TRANSPORTS_HTTPSERVER, false, false, true)));
             moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_SERVER, false, false, true));

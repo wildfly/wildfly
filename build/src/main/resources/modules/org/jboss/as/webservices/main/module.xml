@@ -49,7 +49,7 @@
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.common" />
         <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="import"/>
-        <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="import"/>
+        <module name="org.jboss.ws.jaxws-client" services="import"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-server" services="import"/>
         <module name="org.jboss.ws.spi" />
     </dependencies>
