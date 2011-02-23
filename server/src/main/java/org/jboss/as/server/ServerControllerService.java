@@ -23,12 +23,16 @@
 package org.jboss.as.server;
 
 import java.io.File;
+import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
@@ -46,28 +50,27 @@ import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ManifestClassPathProcessor;
-import org.jboss.as.server.deployment.module.ManifestExtensionNameProcessor;
 import org.jboss.as.server.deployment.module.ManifestExtensionListProcessor;
+import org.jboss.as.server.deployment.module.ManifestExtensionNameProcessor;
 import org.jboss.as.server.deployment.module.ModuleClassPathProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
-import org.jboss.as.server.deployment.module.ModuleExtensionNameProcessor;
 import org.jboss.as.server.deployment.module.ModuleExtensionListProcessor;
+import org.jboss.as.server.deployment.module.ModuleExtensionNameProcessor;
 import org.jboss.as.server.deployment.module.ModuleIdentifierProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecProcessor;
 import org.jboss.as.server.deployment.module.SubDeploymentDependencyProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
-import org.jboss.dmr.ModelNode;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -78,6 +81,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * The root service of the JBoss Application Server.  Stopping this
@@ -88,6 +92,8 @@ import org.jboss.msc.value.InjectedValue;
 final class ServerControllerService implements Service<ServerController> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
+
+    private static final int DEFAULT_POOL_SIZE = 5;
 
     private final Bootstrap.Configuration configuration;
 
@@ -123,7 +129,11 @@ final class ServerControllerService implements Service<ServerController> {
 
         final ExtensibleConfigurationPersister persister = configuration.getConfigurationPersister();
 
-        final ServerControllerImpl serverController = new ServerControllerImpl(container, serviceTarget, serverEnvironment, persister, injectedDeploymentRepository.getValue());
+        // TODO consider injecting the executor service
+        final ThreadGroup threadGroup = new ThreadGroup("ServerController-threads");
+        ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, null, null, null, AccessController.getContext());
+        final ExecutorService executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE, threadFactory);
+        final ServerControllerImpl serverController = new ServerControllerImpl(container, serviceTarget, serverEnvironment, persister, injectedDeploymentRepository.getValue(), executorService);
         serverController.init();
 
         final List<ModelNode> updates;

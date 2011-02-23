@@ -22,13 +22,6 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
@@ -56,18 +49,26 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContextImpl;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
@@ -93,11 +94,11 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
-import org.jboss.as.server.operations.ServerReloadHandler;
-import org.jboss.as.server.operations.ServerCompositeOperationHandler;
-import org.jboss.as.server.operations.ServerOperationHandlers;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
 import org.jboss.as.server.operations.NativeManagementAddHandler;
+import org.jboss.as.server.operations.ServerCompositeOperationHandler;
+import org.jboss.as.server.operations.ServerOperationHandlers;
+import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.as.server.operations.ServerSocketBindingAddHandler;
 import org.jboss.as.server.operations.ServerSocketBindingRemoveHandler;
 import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
@@ -118,10 +119,13 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ServerControllerImpl extends BasicModelController implements ServerController {
+class ServerControllerImpl extends BasicModelController implements ServerController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
+    public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
+
+    private final ExecutorService executorService;
     private final ServiceTarget serviceTarget;
     private final ServiceRegistry serviceRegistry;
     private final ServerEnvironment serverEnvironment;
@@ -131,13 +135,16 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
     private final DeploymentRepository deploymentRepository;
     private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
 
-    ServerControllerImpl(final ServiceContainer container, final ServiceTarget serviceTarget, final ServerEnvironment serverEnvironment, final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository) {
+    ServerControllerImpl(final ServiceContainer container, final ServiceTarget serviceTarget, final ServerEnvironment serverEnvironment,
+            final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository,
+            final ExecutorService executorService) {
         super(createCoreModel(), configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
         this.serviceTarget = serviceTarget;
         this.extensibleConfigurationPersister = configurationPersister;
         this.serverEnvironment = serverEnvironment;
         this.deploymentRepository = deploymentRepository;
-        serviceRegistry = new DelegatingServiceRegistry(container);
+        this.serviceRegistry = new DelegatingServiceRegistry(container);
+        this.executorService = executorService;
     }
 
     void init() {
@@ -293,20 +300,39 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         }
     }
 
+    @Override
     protected OperationResult doExecute(OperationContext context, ModelNode operation, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelNode subModel) throws OperationFailedException {
+        boolean rollback = isRollbackOnRuntimeFailure(context, operation);
+        RollbackAwareResultHandler rollbackAwareHandler = null;
+        if (rollback) {
+            rollbackAwareHandler = new RollbackAwareResultHandler(resultHandler);
+            resultHandler = rollbackAwareHandler;
+        }
         final OperationResult result = super.doExecute(context, operation, operationHandler, resultHandler, address, subModel);
         if(context instanceof ServerOperationContextImpl) {
+            if (rollbackAwareHandler != null) {
+                rollbackAwareHandler.setRollbackOperation(result.getCompensatingOperation());
+                // TODO deal with Cancellable as well
+            }
             final ServerOperationContextImpl serverOperationContext = ServerOperationContextImpl.class.cast(context);
             if(serverOperationContext.getRuntimeTask() != null) {
-                serverOperationContext.getRuntimeTask().execute(new RuntimeTaskContext() {
-                    public ServiceTarget getServiceTarget() {
-                        return serviceTarget;
-                    }
+                try {
+                    serverOperationContext.getRuntimeTask().execute(new RuntimeTaskContext() {
+                        @Override
+                        public ServiceTarget getServiceTarget() {
+                            return serviceTarget;
+                        }
 
-                    public ServiceRegistry getServiceRegistry() {
-                        return serviceRegistry;
-                    }
-                });
+                        @Override
+                        public ServiceRegistry getServiceRegistry() {
+                            return serviceRegistry;
+                        }
+                    });
+                } catch (OperationFailedException e) {
+                    resultHandler.handleFailed(e.getFailureDescription());
+                } catch (Exception e) {
+                    resultHandler.handleFailed(new ModelNode().set(e.toString()));
+                }
             }
         }
         return result;
@@ -319,6 +345,11 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
         if (getState() != State.STARTING) {
             super.persistConfiguration(model);
         }
+    }
+
+    private boolean isRollbackOnRuntimeFailure(OperationContext context, ModelNode operation) {
+        return context instanceof ServerOperationContextImpl &&
+            (!operation.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || operation.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
     }
 
     private class ServerOperationContextImpl extends OperationContextImpl implements ServerOperationContext, RuntimeOperationContext {
@@ -361,6 +392,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
                     ourStamp, ServerControllerImpl.this.stamp.incrementAndGet());
         }
 
+        @Override
         public RuntimeOperationContext getRuntimeContext() {
             return this;
         }
@@ -369,6 +401,7 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
             return runtimeTask;
         }
 
+        @Override
         public void setRuntimeTask(RuntimeTask runtimeTask) {
             this.runtimeTask = runtimeTask;
         }
@@ -421,5 +454,89 @@ final class ServerControllerImpl extends BasicModelController implements ServerC
             return processor;
         }
 
+    }
+
+    class RollbackAwareResultHandler implements ResultHandler {
+
+        private final ResultHandler delegate;
+        private ModelNode rollbackOperation;
+
+        public RollbackAwareResultHandler(ResultHandler resultHandler) {
+            this.delegate = resultHandler;
+        }
+
+        @Override
+        public void handleResultFragment(String[] location, ModelNode result) {
+            delegate.handleResultFragment(location, result);
+        }
+
+        @Override
+        public void handleResultComplete() {
+            delegate.handleResultComplete();
+        }
+
+        @Override
+        public void handleFailed(final ModelNode failureDescription) {
+
+            if (rollbackOperation == null) {
+                delegate.handleFailed(failureDescription);
+                return;
+            }
+
+            final ResultHandler rollbackHandler = new ResultHandler() {
+
+                @Override
+                public void handleResultFragment(String[] location, ModelNode result) {
+                    // ignore fragments from rollback
+                }
+
+                @Override
+                public void handleResultComplete() {
+                    // FIXME this will not appear in the correct location
+                    ModelNode rollbackResult = new ModelNode();
+                    rollbackResult.get("rolled-back").set(true);
+                    delegate.handleResultFragment(new String[0], rollbackResult);
+                    delegate.handleFailed(failureDescription);
+                }
+
+                @Override
+                public void handleFailed(ModelNode rollbackFailureDescription) {
+                    // FIXME this will not appear in the correct location
+                    ModelNode rollbackResult = new ModelNode();
+                    rollbackResult.get("rolled-back").set(false);
+                    delegate.handleResultFragment(new String[0], rollbackResult);
+                    rollbackResult = new ModelNode();
+                    rollbackResult.get("rollback-failure-description").set(rollbackFailureDescription);
+                    delegate.handleFailed(failureDescription);
+                }
+
+                @Override
+                public void handleCancellation() {
+                    handleFailed(new ModelNode().set("Rollback was cancelled"));
+                }
+            };
+
+            // Make sure the rollback op doesn't itself try and roll back
+            rollbackOperation.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+            Runnable r = new Runnable() {
+
+                @Override
+                public void run() {
+                    execute(rollbackOperation, rollbackHandler);
+                }
+
+            };
+            executorService.execute(r);
+        }
+
+        @Override
+        public void handleCancellation() {
+            delegate.handleCancellation();
+        }
+
+        private void setRollbackOperation(ModelNode compensatingOperation) {
+            this.rollbackOperation = compensatingOperation;
+        }
     }
 }

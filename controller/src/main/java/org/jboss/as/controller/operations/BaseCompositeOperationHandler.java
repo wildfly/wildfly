@@ -45,12 +45,15 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeOperationContext;
 import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handler for multi-step operations that have to be performed atomically.
- * This basic handler does not perf
+ * This basic handler does not provide support for registering runtime tasks.
  *
  * @author Brian Stansberry
  */
@@ -61,15 +64,20 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
     public static final String RESULT = "result";
     public static final String CANCELLED = "cancelled";
     public static final String FAILURE_DESCRIPTION = "failure-description";
+    public static final String OUTCOME = "outcome";
+    public static final String FAILED = "failed";
     public static final String SUCCESS = "success";
     public static final String ROLLED_BACK = "rolled-back";
     public static final String ROLLBACK_FAILURE = "rollback-failure-description";
     public static final String COMPOSITE = "composite";
-    public static final String OUTCOME = "outcome";
-    public static final String FAILED = "failed";
 
+    public static final String OPERATION_NAME = COMPOSITE;
 
     protected static final String[] EMPTY = new String[0];
+
+    private final ParameterValidator stepsValidator = new ModelTypeValidator(ModelType.LIST);
+
+    public static final BaseCompositeOperationHandler INSTANCE = new BaseCompositeOperationHandler();
 
     /**
      * {@inheritDoc}
@@ -77,38 +85,28 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
-        try {
-            final List<ModelNode> steps = operation.require(STEPS).asList();
-            executeSteps(new CompositeOperationContext(context, resultHandler), steps);
-        }
-        catch (final Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
-        }
-        return new BasicOperationResult();
-    }
-
-    protected void executeSteps(final CompositeOperationContext context, final List<ModelNode> steps) {
-
-        final StepHandlerContext stepHandlerContext = new StepHandlerContext(context, steps.size());
+        validateOperation(operation);
+        final List<ModelNode> steps = operation.require(STEPS).asList();
+        CompositeOperationContext compositeContext = getCompositeOperationContext(context, operation, resultHandler, steps);
 
         for (int i = 0; i < steps.size(); i++) {
             final ModelNode step = steps.get(i);
-            if (stepHandlerContext.hasFailures()) {
-                stepHandlerContext.recordCancellation(Integer.valueOf(i));
+            if (compositeContext.hasFailures()) {
+                compositeContext.recordCancellation(Integer.valueOf(i));
             }
             else {
-                final PathAddress address = PathAddress.pathAddress(step.require(OP_ADDR));
+                final PathAddress address = PathAddress.pathAddress(step.get(OP_ADDR));
                 final String operationName = step.require(OP).asString();
 
                 final Integer id = Integer.valueOf(i);
-                final OperationHandler stepHandler = context.getRegistry().getOperationHandler(address, operationName);
-                final OperationContext stepContext = context.getStepOperationContext(id, address, stepHandler);
-                final ResultHandler stepResultHandler = new StepResultHandler(id, stepHandlerContext);
+                final OperationHandler stepHandler = compositeContext.getRegistry().getOperationHandler(address, operationName);
+                final OperationContext stepContext = compositeContext.getStepOperationContext(id, address, stepHandler);
+                final ResultHandler stepResultHandler = new StepResultHandler(id, compositeContext);
                 try {
                     final OperationResult result = stepHandler.execute(stepContext, step, stepResultHandler);
-                    stepHandlerContext.setRollbackOp(id, result.getCompensatingOperation());
+                    compositeContext.recordRollbackOp(id, result.getCompensatingOperation());
 
-                    final ModelNode overallModel = context.getSubModel();
+                    final ModelNode overallModel = compositeContext.getSubModel();
                     final ModelNode stepModel = stepContext.getSubModel();
                     if (stepModel != null) {
                         synchronized (overallModel) {
@@ -122,18 +120,33 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                 } catch (OperationFailedException e) {
                     stepResultHandler.handleFailed(e.getFailureDescription());
                 } catch (Throwable t) {
-                    final String message = t.getLocalizedMessage() != null ? t.getLocalizedMessage() : t.getMessage();
-                    stepResultHandler.handleFailed(new ModelNode().set(message));
+                    stepResultHandler.handleFailed(new ModelNode().set(t.toString()));
                 }
             }
         }
-        stepHandlerContext.setModelComplete();
 
-        if(!stepHandlerContext.hasFailures() && context.overallContext.getRuntimeContext() != null) {
-            final RuntimeTask runtimeTask = getRuntimeTasks(context);
-            if(runtimeTask != null) {
-                context.overallContext.getRuntimeContext().setRuntimeTask(runtimeTask);
+        if (compositeContext.hasFailures()) {
+            throw new OperationFailedException(compositeContext.getOverallFailureDescription());
+        }
+        else {
+            ModelNode compensatingOp = compositeContext.getOverallCompensatingOperation();
+
+            RuntimeTask runtimeTask = null;
+            if(compositeContext.overallContext.getRuntimeContext() != null) {
+                runtimeTask  = getRuntimeTasks(compositeContext);
+                if(runtimeTask != null) {
+                    compositeContext.overallContext.getRuntimeContext().setRuntimeTask(runtimeTask);
+                }
             }
+
+            if (runtimeTask == null) {
+                compositeContext.handleSuccess();
+            }
+            else {
+                compositeContext.recordModelComplete();
+            }
+
+            return new BasicOperationResult(compensatingOp);
         }
     }
 
@@ -141,14 +154,29 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
         return null;
     }
 
+    protected CompositeOperationContext getCompositeOperationContext(OperationContext context, ModelNode operation,
+            ResultHandler resultHandler, final List<ModelNode> steps) {
+        return new CompositeOperationContext(context, resultHandler, steps.size());
+    }
+
+    private void validateOperation(final ModelNode operation) throws OperationFailedException {
+        stepsValidator.validateParameter(STEPS, operation.get(STEPS));
+    }
+
     protected static class CompositeOperationContext {
 
         private final OperationContext overallContext;
         private final ResultHandler resultHandler;
+        private final AtomicInteger count;
+        protected final ModelNode resultsNode = new ModelNode();
+        private final Map<Integer, ModelNode> rollbackOps = new HashMap<Integer, ModelNode>();
+        private final AtomicBoolean modelComplete = new AtomicBoolean(false);
+        private boolean hasFailures = false;
 
-        public CompositeOperationContext(final OperationContext overallContext, final ResultHandler resultHandler) {
+        public CompositeOperationContext(final OperationContext overallContext, final ResultHandler resultHandler, final int count) {
             this.overallContext = overallContext;
             this.resultHandler = resultHandler;
+            this.count = new AtomicInteger(count);
         }
 
         public OperationContext getStepOperationContext(final Integer index, final PathAddress address, final OperationHandler stepHandler) {
@@ -170,66 +198,153 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
                     return overallContext.getController();
                 }
 
+                @Override
                 public RuntimeOperationContext getRuntimeContext() {
                     return overallContext.getRuntimeContext();
                 }
             };
         }
 
-        public void handleFailures(final StepHandlerContext stepHandlerContext, final ModelNode results) {
+        void handleFailures() {
 
-            handleRollback(stepHandlerContext, results);
-
-            final ModelNode failureMsg = new ModelNode();
-            // TODO i18n
-            final String baseMsg = "Composite operation failed and was rolled back. Steps that failed:";
-            for (int i = 0; i < results.asInt(); i++) {
-                final ModelNode result = results.get(i);
-                result.get(SUCCESS).set(false);
-                if (result.has(FAILURE_DESCRIPTION)) {
-                    failureMsg.get(baseMsg, "Operation at index " + i).set(result.get(FAILURE_DESCRIPTION));
+            for (final ModelNode result : resultsNode.asList()) {
+                // Invoking resultHandler.handleFailed is going to result in discarding
+                // any changes we made, so record that as a rollback
+                if (!result.hasDefined(OUTCOME) || !CANCELLED.equals(result.get(CANCELLED).asString())) {
+                    result.get(ROLLED_BACK).set(true);
+                }
+                else {
+                    result.get(OUTCOME).set(FAILED);
                 }
             }
 
+            final ModelNode failureMsg = getOverallFailureDescription();
+
             // Inform handler of the details
-            resultHandler.handleResultFragment(EMPTY, results);
+            resultHandler.handleResultFragment(EMPTY, resultsNode);
 
             resultHandler.handleFailed(failureMsg);
         }
 
-        public void handleSuccess(final StepHandlerContext stepHandlerContext, final ModelNode results) {
+        void handleSuccess() {
+
+            resultHandler.handleResultFragment(EMPTY, resultsNode);
+
+            resultHandler.handleResultComplete();
+
+        }
+
+        ModelNode getOverallFailureDescription() {
+            final ModelNode failureMsg = new ModelNode();
+            // TODO i18n
+            final String baseMsg = "Composite operation failed and was rolled back. Steps that failed:";
+            for (int i = 0; i < resultsNode.asInt(); i++) {
+                final ModelNode result = resultsNode.get(i);
+                if (result.hasDefined(FAILURE_DESCRIPTION)) {
+                    failureMsg.get(baseMsg, "Operation at index " + i).set(result.get(FAILURE_DESCRIPTION));
+                }
+            }
+            return failureMsg;
+        }
+
+        ModelController getController() {
+            return overallContext.getController();
+        }
+
+        ModelNodeRegistration getRegistry() {
+            return overallContext.getRegistry();
+        }
+
+        ModelNode getSubModel() throws IllegalArgumentException {
+            return overallContext.getSubModel();
+        }
+
+        void recordRollbackOp(final Integer id, final ModelNode compensatingOperation) {
+            synchronized(rollbackOps) {
+                rollbackOps.put(id, compensatingOperation);
+            }
+            synchronized (resultsNode) {
+                resultsNode.get(id).get(COMPENSATING_OPERATION).set(compensatingOperation == null ? new ModelNode() : compensatingOperation);
+            }
+        }
+
+        void recordResult(final Integer id, final ModelNode result) {
+            synchronized (resultsNode) {
+                ModelNode stepResult = resultsNode.get(id);
+                stepResult.get(OUTCOME).set(SUCCESS);
+                stepResult.get(RESULT).set(result);
+            }
+
+            if(count.decrementAndGet() == 0 && modelComplete.get()) {
+                processComplete();
+            }
+        }
+
+        void recordFailure(final Integer id, final ModelNode failureDescription) {
+            synchronized (resultsNode) {
+                ModelNode stepResult = resultsNode.get(id);
+                stepResult.get(OUTCOME).set(FAILED);
+                stepResult.get(FAILURE_DESCRIPTION).set(failureDescription);
+                hasFailures = true;
+            }
+            if(count.decrementAndGet() == 0 && modelComplete.get()) {
+                processComplete();
+            }
+        }
+
+        void recordCancellation(final Integer id) {
+            synchronized (resultsNode) {
+                if (!resultsNode.hasDefined(id)) {
+                    resultsNode.get(id).get(CANCELLED).set(true);
+                }
+                resultsNode.get(id).get(OUTCOME).set(CANCELLED);
+            }
+            if(count.decrementAndGet() == 0 && modelComplete.get()) {
+                processComplete();
+            }
+        }
+
+        void recordModelComplete() {
+            modelComplete.set(true);
+        }
+
+        boolean hasFailures() {
+            synchronized (resultsNode) {
+                return hasFailures;
+            }
+        }
+
+        private void processComplete() {
+            if (hasFailures()) {
+                handleFailures();
+            } else {
+                handleSuccess();
+            }
+        }
+
+        public ModelNode getCompensatingOperation(final Integer id) {
+            synchronized (rollbackOps) {
+                return rollbackOps.get(id);
+            }
+        }
+
+        public ModelNode getOverallCompensatingOperation() {
 
             final ModelNode compensatingOp = new ModelNode();
             compensatingOp.get(OP).set(COMPOSITE);
             compensatingOp.get(OP_ADDR).setEmptyList();
             final ModelNode compSteps = compensatingOp.get(STEPS);
             compSteps.setEmptyList();
-            for (int i = results.asInt() - 1; i >= 0 ; i--) {
-                ModelNode stepResult = results.get(i);
-                stepResult.get(SUCCESS).set(true);
-                final ModelNode compStep = stepHandlerContext.getCompensatingOperation(Integer.valueOf(i));
-                if (compStep.isDefined()) {
-                    compSteps.add(compStep);
+            synchronized (rollbackOps) {
+                for (int i = rollbackOps.size() - 1; i >= 0 ; i--) {
+                    final ModelNode compStep = rollbackOps.get(i);
+                    if (compStep.isDefined()) {
+                        compSteps.add(compStep);
+                    }
                 }
-                stepResult.get(COMPENSATING_OPERATION).set(compStep);
             }
 
-            resultHandler.handleResultFragment(EMPTY, results);
-
-            resultHandler.handleResultComplete();
-
-        }
-
-        public ModelController getController() {
-            return overallContext.getController();
-        }
-
-        public ModelNodeRegistration getRegistry() {
-            return overallContext.getRegistry();
-        }
-
-        public ModelNode getSubModel() throws IllegalArgumentException {
-            return overallContext.getSubModel();
+            return compensatingOp;
         }
 
         protected ModelNode getStepSubModel(final PathAddress address, final OperationHandler stepHandler) {
@@ -250,11 +365,11 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
             return stepModel;
         }
 
-        protected void handleRollback(final StepHandlerContext stepHandlerContext, final ModelNode results) {
+        protected void handleRollback(final ModelNode results) {
             for (final ModelNode result : results.asList()) {
                 // Invoking resultHandler.handleFailed is going to result in discarding
                 // any changes we made, so record that as a rollback
-                if (!result.has(CANCELLED) || !result.get(CANCELLED).asBoolean()) {
+                if (!result.hasDefined(OUTCOME) || !CANCELLED.equals(result.get(CANCELLED).asString())) {
                     result.get(ROLLED_BACK).set(true);
                 }
             }
@@ -265,103 +380,15 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
         }
     }
 
-    /**
-     * Execution context for an individual operation in an overall composite operation.
-     */
-    protected static class StepHandlerContext {
-        private final ModelNode resultsNode = new ModelNode();
-        private final Map<Integer, ModelNode> rollbackOps = new HashMap<Integer, ModelNode>();
-        private boolean hasFailures = false;
-        private final AtomicInteger count;
-        private AtomicBoolean modelComplete = new AtomicBoolean(false);
-        private final CompositeOperationContext context;
-
-
-        private StepHandlerContext(final CompositeOperationContext context, final int count) {
-            this.count = new AtomicInteger(count);
-            this.resultsNode.setEmptyList();
-            this.context = context;
-        }
-
-        public void setRollbackOp(final Integer id, final ModelNode compensatingOperation) {
-            synchronized(rollbackOps) {
-                rollbackOps.put(id, compensatingOperation);
-            }
-        }
-
-        public void recordResult(final Integer id, final ModelNode result) {
-//            if (result.isDefined()) {
-                synchronized (resultsNode) {
-                    resultsNode.get(id).get(RESULT).set(result);
-                }
-//            }
-
-            if(count.decrementAndGet() == 0 && modelComplete.get()) {
-                processComplete();
-            }
-        }
-
-        public void recordFailure(final Integer id, final ModelNode failureDescription) {
-            synchronized (resultsNode) {
-//                System.out.println(id + " -- " + failureDescription);
-                resultsNode.get(id).get(OUTCOME).set(FAILED);
-                resultsNode.get(id).get(FAILURE_DESCRIPTION).set(failureDescription);
-                hasFailures = true;
-            }
-            if(count.decrementAndGet() == 0 && modelComplete.get()) {
-                processComplete();
-            }
-        }
-
-        public void recordCancellation(final Integer id) {
-            synchronized (resultsNode) {
-                final ModelNode result = resultsNode.get(id);
-                if (!result.isDefined()) {
-                    resultsNode.get(id).get(CANCELLED).set(true);
-                }
-                resultsNode.get(id).get(OUTCOME).set(CANCELLED);
-            }
-            if(count.decrementAndGet() == 0 && modelComplete.get()) {
-                processComplete();
-            }
-        }
-
-        public boolean hasFailures() {
-            synchronized (resultsNode) {
-                return hasFailures;
-            }
-        }
-
-        private void processComplete() {
-            if (hasFailures()) {
-                context.handleFailures(this, resultsNode);
-            } else {
-                context.handleSuccess(this, resultsNode);
-            }
-        }
-
-        public ModelNode getCompensatingOperation(final Integer id) {
-            synchronized (rollbackOps) {
-                return rollbackOps.get(id);
-            }
-        }
-
-        public void setModelComplete() {
-            if(modelComplete.compareAndSet(false,true) && count.get() == 0) {
-                processComplete();
-            }
-        }
-    }
-
     private static class StepResultHandler implements ResultHandler {
 
         private final Integer id;
         private final ModelNode stepResult = new ModelNode();
-        private final StepHandlerContext stepContext;
+        private final CompositeOperationContext compositeContext;
 
-        public StepResultHandler(final Integer id, final StepHandlerContext stepContext) {
+        public StepResultHandler(final Integer id, final CompositeOperationContext stepContext) {
             this.id = id;
-            this.stepContext = stepContext;
+            this.compositeContext = stepContext;
         }
 
         @Override
@@ -371,51 +398,18 @@ public class BaseCompositeOperationHandler implements ModelUpdateOperationHandle
 
         @Override
         public void handleResultComplete() {
-            stepContext.recordResult(id, stepResult);
+            compositeContext.recordResult(id, stepResult);
         }
 
         @Override
         public void handleFailed(final ModelNode failureDescription) {
-            stepContext.recordFailure(id, failureDescription);
+            compositeContext.recordFailure(id, failureDescription);
         }
 
         @Override
         public void handleCancellation() {
-            stepContext.recordCancellation(id);
+            compositeContext.recordCancellation(id);
         }
 
-    }
-
-    public static void main(final String[] args) {
-        final ModelNode results = new ModelNode().setEmptyList();
-        final ModelNode voidResult = new ModelNode();
-        voidResult.get("success").set(true);
-        results.add(voidResult);
-        final ModelNode stringResult = new ModelNode();
-        stringResult.get("success").set(true);
-        stringResult.get("result").set("the result");
-        results.add(stringResult);
-        final ModelNode cancelledResult = new ModelNode();
-        cancelledResult.get("success").set(false);
-        cancelledResult.get("cancelled").set(true);
-        results.add(cancelledResult);
-        final ModelNode failedResult = new ModelNode();
-        failedResult.get("success").set(false);
-        failedResult.get("failure-description").set("The description of the failure");
-        results.add(failedResult);
-        final ModelNode voidRollbackResult = new ModelNode();
-        voidRollbackResult.get("success").set(false);
-        voidRollbackResult.get("rolled-back").set(true);
-        results.add(voidRollbackResult);
-        final ModelNode stringRollbackResult = new ModelNode();
-        stringRollbackResult.get("success").set(false);
-        stringRollbackResult.get("result").set("the result");
-        stringRollbackResult.get("rolled-back").set(true);
-        results.add(stringRollbackResult);
-        final ModelNode rollbackFailureResult = new ModelNode();
-        rollbackFailureResult.get("success").set(false);
-        rollbackFailureResult.get("rolled-back").set(false);
-        rollbackFailureResult.get("rollback-failure-description").set("The description of the failure");
-        results.add(rollbackFailureResult);
     }
 }
