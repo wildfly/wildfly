@@ -27,7 +27,6 @@ import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -70,7 +69,7 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
     }
 
     @Override
-    public ModelNode execute(final ModelNode operation) throws CancellationException, OperationFailedException {
+    public ModelNode execute(final ModelNode operation) throws CancellationException {
         try {
             return client.execute(operation);
         } catch (IOException e) {
@@ -85,10 +84,12 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
             this.delegate = delegate;
         }
 
+        @Override
         public Cancellable getCancellable() {
             return this;
         }
 
+        @Override
         public ModelNode getCompensatingOperation() {
             return delegate.getCompensatingOperation();
         }

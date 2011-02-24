@@ -18,17 +18,20 @@
  */
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
@@ -64,13 +67,12 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
                 final ModelNode includeAddress = address.subAddress(0, address.size() - 1).append(PathElement.pathElement(PROFILE, include.asString())).toModelNode();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(includeAddress);
-                try {
-                    final ModelNode newOpResult = context.getController().execute(newOp);
-                    for (ModelNode op : newOpResult.require(RESULT).asList()) {
-                        result.add(op);
-                    }
-                } catch (OperationFailedException e) {
-                    throw new OperationFailedException(Util.createErrorResult(e));
+                final ModelNode newOpResult = context.getController().execute(newOp);
+                if (FAILED.equals(newOpResult.get(OUTCOME).asString())) {
+                    throw new OperationFailedException(newOpResult.get(FAILURE_DESCRIPTION));
+                }
+                for (ModelNode op : newOpResult.require(RESULT).asList()) {
+                    result.add(op);
                 }
             }
         }
@@ -80,13 +82,12 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
                 final ModelNode subsystemAddress = address.append(PathElement.pathElement(SUBSYSTEM, subsystemName)).toModelNode();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(subsystemAddress);
-                try {
-                    final ModelNode newOpResult = context.getController().execute(newOp);
-                    for (ModelNode op : newOpResult.require(RESULT).asList()) {
-                        result.add(op);
-                    }
-                } catch (OperationFailedException e) {
-                    throw new OperationFailedException(Util.createErrorResult(e));
+                final ModelNode newOpResult = context.getController().execute(newOp);
+                if (FAILED.equals(newOpResult.get(OUTCOME).asString())) {
+                    throw new OperationFailedException(newOpResult.get(FAILURE_DESCRIPTION));
+                }
+                for (ModelNode op : newOpResult.require(RESULT).asList()) {
+                    result.add(op);
                 }
             }
         }

@@ -21,7 +21,6 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
@@ -30,7 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -151,7 +150,7 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         }
 
         @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+        public ModelNode execute(ModelNode operation) throws CancellationException {
             return remote.execute(operation);
         }
 

@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -71,78 +70,72 @@ public class RemotingSubsystemUnitTestCase {
         reg.registerOperationHandler(ADD, new ConnectorAdd(), RemotingSubsystemProviders.CONNECTOR_ADD, false);
         reg.registerOperationHandler(REMOVE, new ConnectorRemove(), RemotingSubsystemProviders.CONNECTOR_REMOVE, false);
 
-        try {
+        System.out.println(model);
+
+        // Create the subsystem
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).set(subsystemRoot.clone());
+            operation.get(OP).set(ADD);
+            operation.get("thread-pool").set("remoting-thread-pool");
+            final ModelNode response = c.execute(operation);
+        }
+        System.out.println(model);
+        // One
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).set(connectorRoot.clone().add("one"));
+            operation.get(OP).set(ADD);
+            operation.get("socket-binding").set("sb-one");
+            operation.get("sasl");
+
+            final ModelNode response = c.execute(operation);
             System.out.println(model);
+        }
+        // Two
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
+            operation.get(OP).set(ADD);
+            operation.get("socket-binding").set("sb-two");
 
-            // Create the subsystem
-            {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP_ADDR).set(subsystemRoot.clone());
-                operation.get(OP).set(ADD);
-                operation.get("thread-pool").set("remoting-thread-pool");
-                final ModelNode response = c.execute(operation);
-            }
-            System.out.println(model);
-            // One
-            {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP_ADDR).set(connectorRoot.clone().add("one"));
-                operation.get(OP).set(ADD);
-                operation.get("socket-binding").set("sb-one");
-                operation.get("sasl");
+            final ModelNode response = c.execute(operation);
+        }
+        // Three
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).set(connectorRoot.clone().add("three"));
+            operation.get(OP).set(ADD);
+            operation.get("socket-binding").set("sb-three");
+            operation.get("authentication-provider").set("test");
 
-                final ModelNode response = c.execute(operation);
-                System.out.println(model);
-            }
-            // Two
-            {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
-                operation.get(OP).set(ADD);
-                operation.get("socket-binding").set("sb-two");
+            final ModelNode response = c.execute(operation);
+        }
 
-                final ModelNode response = c.execute(operation);
-            }
-            // Three
-            {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP_ADDR).set(connectorRoot.clone().add("three"));
-                operation.get(OP).set(ADD);
-                operation.get("socket-binding").set("sb-three");
-                operation.get("authentication-provider").set("test");
+        System.out.println(model);
+        System.out.println("----");
 
-                final ModelNode response = c.execute(operation);
-            }
+        // Remove two
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
+            operation.get(OP).set(REMOVE);
 
-            System.out.println(model);
-            System.out.println("----");
+            final ModelNode response = c.execute(operation);
+        }
 
-            // Remove two
-            {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
-                operation.get(OP).set(REMOVE);
+        System.out.println(model);
+        System.out.println("----");
 
-                final ModelNode response = c.execute(operation);
-            }
+        // Add two
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
+            operation.get(OP).set(ADD);
+            operation.get("socket-binding").set("sb-two");
+            operation.get("sasl");
 
-            System.out.println(model);
-            System.out.println("----");
-
-            // Add two
-            {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP_ADDR).set(connectorRoot.clone().add("two"));
-                operation.get(OP).set(ADD);
-                operation.get("socket-binding").set("sb-two");
-                operation.get("sasl");
-
-                final ModelNode response = c.execute(operation);
-            }
-
-        } catch (final OperationFailedException e) {
-            e.printStackTrace();
-            System.err.println(e.getFailureDescription());
+            final ModelNode response = c.execute(operation);
         }
 
     }

@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -187,7 +186,7 @@ public class RemoteDomainControllerConnectionTestCase {
         }
 
         @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+        public ModelNode execute(ModelNode operation) throws CancellationException {
             ModelNode node = new ModelNode();
             node.get("test").set("hello");
             return node;

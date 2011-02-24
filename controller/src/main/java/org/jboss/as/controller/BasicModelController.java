@@ -280,7 +280,7 @@ public class BasicModelController implements ModelController {
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(final ModelNode operation) throws OperationFailedException {
+    public ModelNode execute(final ModelNode operation) {
         final AtomicInteger status = new AtomicInteger();
         final ModelNode finalResult = new ModelNode();
         // Ensure there is a "result" child even if we receive no fragments
@@ -340,7 +340,7 @@ public class BasicModelController implements ModelController {
                             case 2: finalResult.get(OUTCOME).set("cancelled");
                                 throw new CancellationException();
                             case 3: finalResult.get(OUTCOME).set("failed");
-                                throw new OperationFailedException(finalResult);
+                                return finalResult;
                         }
                         finalResult.wait();
                     } catch (final InterruptedException e) {

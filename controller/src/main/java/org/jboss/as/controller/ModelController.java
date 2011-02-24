@@ -47,7 +47,6 @@ public interface ModelController {
      * @return the result
      * @throws CancellationException if the operation was cancelled due to interruption (the thread's interrupt
      * status will be set)
-     * @throws OperationFailedException if the operation failed; the exception will include the cause
      */
-    ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException;
+    ModelNode execute(ModelNode operation) throws CancellationException;
 }

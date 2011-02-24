@@ -26,7 +26,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -90,10 +89,11 @@ public class RemoteProxyController implements ProxyController {
     }
 
     @Override
-    public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+    public ModelNode execute(ModelNode operation) throws CancellationException {
         return delegate.execute(operation);
     }
 
+    @Override
     public PathAddress getProxyNodeAddress() {
         return proxyNodeAddress;
     }

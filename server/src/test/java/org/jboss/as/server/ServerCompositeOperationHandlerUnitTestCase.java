@@ -3,18 +3,18 @@
  */
 package org.jboss.as.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.DESC_PROVIDER;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.NULL_REPO;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.createTestNode;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.getOperation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
 import org.jboss.as.server.ServerModelControllerImplUnitTestCase.BadHandler;
 import org.jboss.as.server.ServerModelControllerImplUnitTestCase.EvilHandler;
@@ -77,13 +77,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     public void testOperationFailedExecution() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
-        try {
-            controller.execute(getCompositeOperation(null, step1, step2));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this request is bad") > - 1);
-        }
+        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("this request is bad") > - 1);
 
         assertTrue(runtimeState.get());
 
@@ -95,15 +91,11 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     public void testOperationFailedExecutionNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
-        try {
-            ModelNode op = getCompositeOperation(null, step1, step2);
-            op.get("rollback-on-runtime-failure").set(false);
-            controller.execute(op);
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this request is bad") > - 1);
-        }
+        ModelNode op = getCompositeOperation(null, step1, step2);
+        op.get("rollback-on-runtime-failure").set(false);
+        ModelNode result = controller.execute(op);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("this request is bad") > - 1);
 
         assertTrue(runtimeState.get());
 
@@ -115,13 +107,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     public void testUnhandledFailureExecution() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("evil", "attr2", 1);
-        try {
-            controller.execute(getCompositeOperation(null, step1, step2));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this handler is evil") > - 1);
-        }
+        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
 
         assertTrue(runtimeState.get());
 
@@ -133,15 +121,11 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     public void testUnhandledFailureExecutionNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("evil", "attr2", 1);
-        try {
-            ModelNode op = getCompositeOperation(null, step1, step2);
-            op.get("rollback-on-runtime-failure").set(false);
-            controller.execute(op);
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this handler is evil") > - 1);
-        }
+        ModelNode op = getCompositeOperation(null, step1, step2);
+        op.get("rollback-on-runtime-failure").set(false);
+        ModelNode result = controller.execute(op);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
 
         assertTrue(runtimeState.get());
 
@@ -153,13 +137,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     public void testHandleFailedExecution() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("handleFailed", "attr2", 1);
-        try {
-            controller.execute(getCompositeOperation(null, step1, step2));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("handleFailed") > - 1);
-        }
+        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("handleFailed") > - 1);
 
         assertTrue(runtimeState.get());
 
@@ -171,15 +151,11 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     public void testHandleFailedExecutionNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("handleFailed", "attr2", 1);
-        try {
-            ModelNode op = getCompositeOperation(null, step1, step2);
-            op.get("rollback-on-runtime-failure").set(false);
-            controller.execute(op);
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("handleFailed") > - 1);
-        }
+        ModelNode op = getCompositeOperation(null, step1, step2);
+        op.get("rollback-on-runtime-failure").set(false);
+        ModelNode result = controller.execute(op);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("handleFailed") > - 1);
 
         assertTrue(runtimeState.get());
 

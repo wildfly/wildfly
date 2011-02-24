@@ -33,9 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ServerSocketFactory;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -118,6 +116,7 @@ public class ExistingConnectionRemoteProxyControllerTestCase extends AbstractPro
         return testController;
     }
 
+    @Override
     public MessageHandler handleConnected(Connection connection) throws IOException {
         serverConn = connection;
         try {
@@ -168,7 +167,7 @@ public class ExistingConnectionRemoteProxyControllerTestCase extends AbstractPro
         }
 
         @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+        public ModelNode execute(ModelNode operation) throws CancellationException {
             return delegate.execute(operation);
         }
 

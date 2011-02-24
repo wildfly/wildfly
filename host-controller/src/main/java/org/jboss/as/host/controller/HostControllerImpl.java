@@ -26,11 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -88,7 +87,7 @@ public class HostControllerImpl implements HostController {
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+    public ModelNode execute(ModelNode operation) throws CancellationException {
 
         return hostModel.execute(operation);
     }

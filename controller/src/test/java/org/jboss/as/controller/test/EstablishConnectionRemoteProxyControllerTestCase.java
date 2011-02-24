@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -82,7 +81,7 @@ public class EstablishConnectionRemoteProxyControllerTestCase extends AbstractPr
         }
 
         @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+        public ModelNode execute(ModelNode operation) throws CancellationException {
             return delegate.execute(operation);
         }
 

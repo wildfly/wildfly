@@ -22,14 +22,13 @@
 package org.jboss.as.threads;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
@@ -37,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -163,7 +163,7 @@ public class ThreadsSubsystemTestCase {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "test");
         operation.get(RECURSIVE).set(true);
         operation.get(OPERATIONS).set(true);
-        ModelNode result = controller.execute(operation);
+        ModelNode result = controller.executeForResult(operation);
 
         ModelNode threadsDescription = result.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, THREADS);
         assertTrue(threadsDescription.isDefined());
@@ -232,7 +232,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -248,9 +248,9 @@ public class ThreadsSubsystemTestCase {
     public void testSimpleThreadFactoryInvalidPriorityValue() throws Exception {
         List<ModelNode> updates = createSubSystem("<thread-factory name=\"test-factory\" priority=\"12\"/>");
         assertEquals(2, updates.size());
-        controller.execute(updates.get(0));
+        controller.executeForResult(updates.get(0));
         try {
-            controller.execute(updates.get(1));
+            controller.executeForResult(updates.get(1));
             fail("Expected failure for invalid priority");
         } catch (OperationFailedException e) {
         }
@@ -270,7 +270,7 @@ public class ThreadsSubsystemTestCase {
                 "</thread-factory>");
 
         TestResultHandler handler = new TestResultHandler();
-        controller.execute(updates.get(0));
+        controller.executeForResult(updates.get(0));
         controller.execute(updates.get(1), handler);
 
         checkFullTreadFactory();
@@ -324,7 +324,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -349,7 +349,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -375,7 +375,7 @@ public class ThreadsSubsystemTestCase {
                 "</unbounded-queue-thread-pool>");
 
         TestResultHandler handler = new TestResultHandler();
-        controller.execute(updates.get(0));
+        controller.executeForResult(updates.get(0));
         controller.execute(updates.get(1), handler);
 
         checkFullUnboundedThreadPool();
@@ -383,14 +383,14 @@ public class ThreadsSubsystemTestCase {
 //        ModelNode compensating = handler.getCompensatingOperation();
 //        assertNotNull(compensating);
 //        handler.clear();
-//        controller.execute(compensating, handler);
+//        controller.executeForResult(compensating, handler);
 //
 //        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("unbounded-queue-thread-pool").has("test-pool"));
 //
 //        compensating = handler.getCompensatingOperation();
 //        assertNotNull(compensating);
 //        handler.clear();
-//        controller.execute(compensating, handler);
+//        controller.executeForResult(compensating, handler);
 //
 //        checkFullUnboundedThreadPool();
     }
@@ -433,7 +433,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -455,7 +455,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -481,7 +481,7 @@ public class ThreadsSubsystemTestCase {
                 "</scheduled-thread-pool>");
 
         TestResultHandler handler = new TestResultHandler();
-        controller.execute(updates.get(0));
+        controller.executeForResult(updates.get(0));
         controller.execute(updates.get(1), handler);
 
         checkFullScheduledThreadPool();
@@ -539,7 +539,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -561,7 +561,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -588,7 +588,7 @@ public class ThreadsSubsystemTestCase {
                 "</queueless-thread-pool>");
 
         TestResultHandler handler = new TestResultHandler();
-        controller.execute(updates.get(0));
+        controller.executeForResult(updates.get(0));
         controller.execute(updates.get(1), handler);
 
         checkFullQueuelessThreadPool();
@@ -650,7 +650,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -673,7 +673,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -702,7 +702,7 @@ public class ThreadsSubsystemTestCase {
                 "</bounded-queue-thread-pool>");
 
         TestResultHandler handler = new TestResultHandler();
-        controller.execute(updates.get(0));
+        controller.executeForResult(updates.get(0));
         controller.execute(updates.get(1), handler);
 
         checkFullBoundedQueueThreadPool();
@@ -710,7 +710,7 @@ public class ThreadsSubsystemTestCase {
 //        ModelNode compensating = handler.getCompensatingOperation();
 //        assertNotNull(compensating);
 //        handler.clear();
-//        controller.execute(compensating, handler);
+//        controller.executeForResult(compensating, handler);
 //
 //        assertFalse(model.require("profile").require("test").require("subsystem").require("threads").require("bounded-queue-thread-pool").has("test-pool"));
 //
@@ -769,7 +769,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.execute(update);
+                controller.executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -835,9 +835,12 @@ public class ThreadsSubsystemTestCase {
         /**
          * Override to get the actual result from the response.
          */
-        @Override
-        public ModelNode execute(ModelNode operation) throws OperationFailedException {
-            return super.execute(operation).get(RESULT);
+        public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+            ModelNode rsp = super.execute(operation);
+            if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+                throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+            }
+            return rsp.get(RESULT);
         }
     }
 

@@ -1,11 +1,13 @@
 package org.jboss.as.domain.http.server;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -19,7 +21,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -27,7 +28,6 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-
 /**
  * An embedded web server that provides a JSON over HTTP API to the
  * domain management model.
@@ -92,13 +92,14 @@ public class DomainHttpServer implements HttpHandler {
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
             response = modelController.execute(dmr);
-        } catch (OperationFailedException e) {
-            response = e.getFailureDescription();
-            status = 500;
         } catch (Throwable t) {
             log.error("Unexpected error executing model request", t);
             http.sendResponseHeaders(500, -1);
             return;
+        }
+
+        if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
+            status = 500;
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();

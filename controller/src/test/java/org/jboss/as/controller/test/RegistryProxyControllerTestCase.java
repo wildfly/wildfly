@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -256,7 +255,7 @@ public class RegistryProxyControllerTestCase {
         }
 
         @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+        public ModelNode execute(ModelNode operation) throws CancellationException {
             return null;
         }
 

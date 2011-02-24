@@ -3,21 +3,22 @@
  */
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -43,39 +44,31 @@ public class BaseModelControllerUnitTestCase {
     @Test
     public void testGoodExecution() throws Exception {
         ModelNode result = controller.execute(getOperation("good", "attr1", 5));
-        assertEquals("success", result.get("outcome").asString());
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertEquals(1, result.get("result").asInt());
         result = controller.execute(getOperation("good", "attr1", 1));
-        assertEquals("success", result.get("outcome").asString());
-        assertEquals(5, result.get("result").asInt());
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertEquals(5, result.get(RESULT).asInt());
     }
 
     @Test
     public void testOperationFailedExecution() throws Exception {
-        ModelNode result = null;
-        try {
-            result = controller.execute(getOperation("bad", "attr1", 5));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertEquals("this request is bad", e.getFailureDescription().get("failure-description").asString());
-        }
+        ModelNode result = controller.execute(getOperation("bad", "attr1", 5));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertEquals("this request is bad", result.get(FAILURE_DESCRIPTION).asString());
+
         // Confirm model was unchanged
         result = controller.execute(getOperation("good", "attr1", 1));
-        assertEquals("success", result.get("outcome").asString());
-        assertEquals(1, result.get("result").asInt());
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertEquals(1, result.get(RESULT).asInt());
     }
 
     @Test
     public void testUnhandledFailureExecution() throws Exception {
-        ModelNode result = null;
-        try {
-            result = controller.execute(getOperation("evil", "attr1", 5));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this handler is evil") > - 1);
-        }
+        ModelNode result = controller.execute(getOperation("evil", "attr1", 5));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this handler is evil") > - 1);
+
         // Confirm model was unchanged
         result = controller.execute(getOperation("good", "attr1", 1));
         assertEquals("success", result.get("outcome").asString());
@@ -98,10 +91,10 @@ public class BaseModelControllerUnitTestCase {
 
     public static ModelNode getOperation(String opName, String attr, int val, String rollbackName) {
         ModelNode op = new ModelNode();
-        op.get("operation").set(opName);
-        op.get("address").setEmptyList();
-        op.get("name").set(attr);
-        op.get("value").set(val);
+        op.get(OP).set(opName);
+        op.get(OP_ADDR).setEmptyList();
+        op.get(NAME).set(attr);
+        op.get(VALUE).set(val);
         op.get("rollbackName").set(rollbackName == null ? opName : rollbackName);
         return op;
     }
@@ -111,10 +104,10 @@ public class BaseModelControllerUnitTestCase {
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler)
                 throws OperationFailedException {
 
-            String name = operation.require("name").asString();
+            String name = operation.require(NAME).asString();
             ModelNode attr = context.getSubModel().get(name);
             int current = attr.asInt();
-            attr.set(operation.require("value"));
+            attr.set(operation.require(VALUE));
 
             resultHandler.handleResultFragment(new String[0], new ModelNode().set(current));
             resultHandler.handleResultComplete();
@@ -127,9 +120,9 @@ public class BaseModelControllerUnitTestCase {
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler)
                 throws OperationFailedException {
 
-            String name = operation.require("name").asString();
+            String name = operation.require(NAME).asString();
             ModelNode attr = context.getSubModel().get(name);
-            attr.set(operation.require("value"));
+            attr.set(operation.require(VALUE));
 
             resultHandler.handleResultFragment(new String[0], new ModelNode().set("bad"));
             throw new OperationFailedException(new ModelNode().set("this request is bad"));
@@ -141,9 +134,9 @@ public class BaseModelControllerUnitTestCase {
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler)
                 throws OperationFailedException {
 
-            String name = operation.require("name").asString();
+            String name = operation.require(NAME).asString();
             ModelNode attr = context.getSubModel().get(name);
-            attr.set(operation.require("value"));
+            attr.set(operation.require(VALUE));
 
             throw new RuntimeException("this handler is evil");
         }

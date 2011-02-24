@@ -24,7 +24,6 @@ package org.jboss.as.controller.test;
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -64,7 +63,7 @@ public class ProxyControllerTestCase extends AbstractProxyControllerTest {
         }
 
         @Override
-        public ModelNode execute(final ModelNode operation) throws CancellationException, OperationFailedException {
+        public ModelNode execute(final ModelNode operation) throws CancellationException {
             return targetController.execute(operation);
         }
     }

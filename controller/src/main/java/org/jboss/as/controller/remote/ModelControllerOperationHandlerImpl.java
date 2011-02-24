@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller.remote;
 
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.StreamUtils.readByte;
 
@@ -36,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
@@ -90,6 +89,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
     }
 
     /** {@inheritDoc} */
+    @Override
     public byte getIdentifier() {
         return type.getHandlerId();
     }
@@ -143,12 +143,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-            ModelNode result = null;
-            try {
-                result = modelController.execute(operation);
-            } catch (OperationFailedException e) {
-                result = new ModelNode().set(createErrorResult(e));
-            }
+            ModelNode result = modelController.execute(operation);
             outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
             result.writeExternal(outputStream);
         }
@@ -324,10 +319,6 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         public void setException(IOException exception) {
             this.exception = exception;
         }
-    }
-
-    static ModelNode createErrorResult(OperationFailedException e) {
-        return e.getFailureDescription();
     }
 
     @Override

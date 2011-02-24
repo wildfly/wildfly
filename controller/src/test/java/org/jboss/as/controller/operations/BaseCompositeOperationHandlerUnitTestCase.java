@@ -3,12 +3,16 @@
  */
 package org.jboss.as.controller.operations;
 
+import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.controller.BaseModelControllerUnitTestCase.DESC_PROVIDER;
 import static org.jboss.as.controller.BaseModelControllerUnitTestCase.createTestNode;
 import static org.jboss.as.controller.BaseModelControllerUnitTestCase.getOperation;
-import static org.junit.Assert.assertEquals;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.OutputStream;
 import java.util.List;
@@ -17,7 +21,6 @@ import org.jboss.as.controller.BaseModelControllerUnitTestCase.BadHandler;
 import org.jboss.as.controller.BaseModelControllerUnitTestCase.EvilHandler;
 import org.jboss.as.controller.BaseModelControllerUnitTestCase.GoodHandler;
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NewConfigurationPersister;
 import org.jboss.dmr.ModelNode;
@@ -65,13 +68,10 @@ public class BaseCompositeOperationHandlerUnitTestCase {
     public void testBadCompositeExecution() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
-        try {
-            controller.execute(getCompositeOperation(null, step1, step2));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this request is bad") > - 1);
-        }
+        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > - 1);
+
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -81,13 +81,9 @@ public class BaseCompositeOperationHandlerUnitTestCase {
     public void testEvilCompositeExecution() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("evil", "attr2", 1);
-        try {
-            controller.execute(getCompositeOperation(null, step1, step2));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this handler is evil") > - 1);
-        }
+        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this handler is evil") > - 1);
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -96,8 +92,8 @@ public class BaseCompositeOperationHandlerUnitTestCase {
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {
 
         ModelNode op = new ModelNode();
-        op.get("operation").set("composite");
-        op.get("address").setEmptyList();
+        op.get(OP).set("composite");
+        op.get(OP_ADDR).setEmptyList();
         for (ModelNode step : steps) {
             op.get("steps").add(step);
         }

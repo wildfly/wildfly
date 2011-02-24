@@ -33,7 +33,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.process.ProcessControllerClient;
@@ -145,7 +144,7 @@ class ManagedServer implements ModelController {
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+    public ModelNode execute(ModelNode operation) throws CancellationException {
         // TODO use serverManagementConnection to execute the operation
         return null;
     }

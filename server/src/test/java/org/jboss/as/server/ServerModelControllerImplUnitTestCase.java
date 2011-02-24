@@ -3,10 +3,11 @@
  */
 package org.jboss.as.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,14 +73,9 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testOperationFailedExecution() throws Exception {
-        ModelNode result = null;
-        try {
-            result = controller.execute(getOperation("bad", "attr1", 5, "good"));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertEquals("this request is bad", e.getFailureDescription().get("failure-description").asString());
-        }
+        ModelNode result = controller.execute(getOperation("bad", "attr1", 5, "good"));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertEquals("this request is bad", result.get("failure-description").asString());
 
         // Confirm runtime state was unchanged
         assertTrue(runtimeState.get());
@@ -92,14 +88,9 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testUnhandledFailureExecution() throws Exception {
-        ModelNode result = null;
-        try {
-            result = controller.execute(getOperation("evil", "attr1", 5, "good"));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this handler is evil") > - 1);
-        }
+        ModelNode result = controller.execute(getOperation("evil", "attr1", 5, "good"));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
 
         // Confirm runtime state was unchanged
         assertTrue(runtimeState.get());
@@ -112,14 +103,9 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testHandleFailedExecution() throws Exception {
-        ModelNode result = null;
-        try {
-            result = controller.execute(getOperation("handleFailed", "attr1", 5, "good"));
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertEquals("handleFailed", e.getFailureDescription().get("failure-description").asString());
-        }
+        ModelNode result = controller.execute(getOperation("handleFailed", "attr1", 5, "good"));
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertEquals("handleFailed", result.get("failure-description").asString());
 
         // Confirm runtime state was unchanged
         assertTrue(runtimeState.get());
@@ -132,16 +118,12 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testOperationFailedExecutionNoRollback() throws Exception {
-        ModelNode result = null;
-        try {
-            ModelNode op = getOperation("bad", "attr1", 5, "good");
-            op.get("rollback-on-runtime-failure").set(false);
-            result = controller.execute(op);
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertEquals("this request is bad", e.getFailureDescription().get("failure-description").asString());
-        }
+
+        ModelNode op = getOperation("bad", "attr1", 5, "good");
+        op.get("rollback-on-runtime-failure").set(false);
+        ModelNode result = controller.execute(op);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertEquals("this request is bad", result.get("failure-description").asString());
 
         // Confirm runtime state was changed
         assertFalse(runtimeState.get());
@@ -154,16 +136,12 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testHandleFailedExecutionNoRollback() throws Exception {
-        ModelNode result = null;
-        try {
-            ModelNode op = getOperation("handleFailed", "attr1", 5, "good");
-            op.get("rollback-on-runtime-failure").set(false);
-            result = controller.execute(op);
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertEquals("handleFailed", e.getFailureDescription().get("failure-description").asString());
-        }
+
+        ModelNode op = getOperation("handleFailed", "attr1", 5, "good");
+        op.get("rollback-on-runtime-failure").set(false);
+        ModelNode result = controller.execute(op);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertEquals("handleFailed", result.get("failure-description").asString());
 
         // Confirm runtime state was changed
         assertFalse(runtimeState.get());
@@ -176,16 +154,12 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testUnhandledFailureExecutionNoRollback() throws Exception {
-        ModelNode result = null;
-        try {
-            ModelNode op = getOperation("evil", "attr1", 5, "good");
-            op.get("rollback-on-runtime-failure").set(false);
-            result = controller.execute(op);
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertTrue(e.getFailureDescription().get("failure-description").toString().indexOf("this handler is evil") > - 1);
-        }
+
+        ModelNode op = getOperation("evil", "attr1", 5, "good");
+        op.get("rollback-on-runtime-failure").set(false);
+        ModelNode result = controller.execute(op);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
 
         // Confirm runtime state was changed
         assertFalse(runtimeState.get());
@@ -208,14 +182,9 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testPathologicalRollback() throws Exception {
-        ModelNode result = null;
-        try {
-            result = controller.execute(getOperation("bad", "attr1", 5)); // don't tell it to call the 'good' op on rollback
-            fail("should have thrown OperationFailedException");
-        }
-        catch (OperationFailedException e) {
-            assertEquals("this request is bad", e.getFailureDescription().get("failure-description").asString());
-        }
+        ModelNode result = controller.execute(getOperation("bad", "attr1", 5)); // don't tell it to call the 'good' op on rollback
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertEquals("this request is bad", result.get("failure-description").asString());
 
         // Confirm runtime state was unchanged
         assertTrue(runtimeState.get());

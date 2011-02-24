@@ -43,6 +43,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String ATTRIBUTES = "attributes";
     public static final String BYTES = "bytes";
+    public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
     public static final String CPU_AFFINITY = "cpu-affinity";
@@ -55,6 +56,7 @@ public class ModelDescriptionConstants {
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
     public static final String EXTENSION = "extension";
+    public static final String FAILED = "failed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FIXED_PORT = "fixed-port";
     public static final String GROUP = "group";
