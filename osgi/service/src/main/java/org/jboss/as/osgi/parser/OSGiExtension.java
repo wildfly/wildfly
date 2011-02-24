@@ -22,6 +22,7 @@
 package org.jboss.as.osgi.parser;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -41,14 +42,24 @@ import static org.jboss.as.osgi.parser.CommonAttributes.START;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -75,6 +86,7 @@ public class OSGiExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(OSGiSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemDescribeHandler.INSTANCE, false);
         subsystem.registerXMLElementWriter(PARSER);
     }
 
@@ -410,6 +422,46 @@ public class OSGiExtension implements Extension {
             writer.writeAttribute(attr.getLocalName(), value.asString());
         }
 
+    }
+
+    private static class OSGiSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider{
+        static final OSGiSubsystemDescribeHandler INSTANCE = new OSGiSubsystemDescribeHandler();
+
+        @Override
+        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+            final ModelNode model = context.getSubModel();
+
+            PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
+            final ModelNode result = new ModelNode();
+
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(rootAddress.toModelNode());
+            if (model.has(ACTIVATION)) {
+                subsystem.get(ACTIVATION).set(model.get(ACTIVATION));
+            }
+            if (model.has(CONFIGURATION)) {
+                subsystem.get(CONFIGURATION).set(model.get(CONFIGURATION));
+            }
+            if (model.has(PROPERTIES)) {
+                subsystem.get(PROPERTIES).set(model.get(PROPERTIES));
+            }
+            if (model.has(MODULES)) {
+                subsystem.get(MODULES).set(model.get(MODULES));
+            }
+            result.add(subsystem);
+
+
+            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
+        }
+
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
     }
 
 }
