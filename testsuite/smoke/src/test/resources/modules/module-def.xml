@@ -33,6 +33,12 @@
        <resource-root path="$$TEST.CLASSES$$"/>
    </test-module-resources>
     <test-module-dependencies>
+         <!-- Needed to connect via the client -->
+        <module name="org.jboss.as.controller-client"/>
+        <module name="org.jboss.as.protocol"/>
+        <module name="org.jboss.dmr"/>
+        
+        <!-- Needed to start up the server -->
         <module name="org.jboss.as.standalone"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
