@@ -107,12 +107,19 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:security:1.0">
+                <jaas>
+                    <security-domain name="other">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required"/>
+                        </authentication>
+                    </security-domain>
+                </jaas>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>
             </subsystem>
-
             <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
@@ -143,7 +150,7 @@
                   </datasource>
                </datasources>
             </subsystem-->      
-            <!-- subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" / -->      
+            <!-- subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" / -->     
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
                 <journal-file-size>102400</journal-file-size>
@@ -191,22 +198,22 @@
                 </address-settings>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:jms:1.0">
-	            <connection-factory name="InVmConnectionFactory">
-	                <connectors>
-	                    <connector-ref connector-name="in-vm" backup-connector-name="netty"/>
-	                </connectors>
-	               <entries>
-	                    <entry name="java:/ConnectionFactory" />
-	               </entries>
-	            </connection-factory>
-	            <connection-factory name="RemoteConnectionFactory">
-	               <connectors>
-	                    <connector-ref connector-name="netty" backup-connector-name="in-vm"/>
-	               </connectors>
-	               <entries>
-	                    <entry name="RemoteConnectionFactory" />
-	               </entries>
-	            </connection-factory>
+               <connection-factory name="InVmConnectionFactory">
+                   <connectors>
+                       <connector-ref connector-name="in-vm" backup-connector-name="netty"/>
+                   </connectors>
+                  <entries>
+                       <entry name="java:/ConnectionFactory" />
+                  </entries>
+               </connection-factory>
+               <connection-factory name="RemoteConnectionFactory">
+                  <connectors>
+                       <connector-ref connector-name="netty" backup-connector-name="in-vm"/>
+                  </connectors>
+                  <entries>
+                       <entry name="RemoteConnectionFactory" />
+                  </entries>
+               </connection-factory>
                 <queue name="testQueue">
                     <entry name="queue/test" />
                 </queue>
@@ -221,7 +228,7 @@
                </virtual-server>
              </subsystem>
            <subsystem xmlns="urn:jboss:domain:webservices:1.0">
-          	   <configuration>
+                <configuration>
                  <webServiceHost>localhost</webServiceHost>
                  <modifySOAPAddress>true</modifySOAPAddress>
                  <!-- <webServiceSecurePort>8443</webServiceSecurePort>

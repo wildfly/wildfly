@@ -22,21 +22,27 @@
 
 package org.jboss.as.security;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.AUTHORIZATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
 import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.IDENTITY_TRUST_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.MAPPING_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.SECURITY_DOMAIN;
+import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -44,6 +50,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
@@ -104,16 +111,37 @@ public class SecurityExtension implements Extension {
             if (model.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
                 subsystem.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(model.get(AUTHENTICATION_MANAGER_CLASS_NAME));
             }
-            if (subsystem.hasDefined(DEEP_COPY_SUBJECT_MODE)) {
+            if (model.hasDefined(DEEP_COPY_SUBJECT_MODE)) {
                 subsystem.get(DEEP_COPY_SUBJECT_MODE).set(model.get(DEEP_COPY_SUBJECT_MODE));
-
             }
-            if (subsystem.hasDefined(DEFAULT_CALLBACK_HANDLER_CLASS_NAME)) {
+            if (model.hasDefined(DEFAULT_CALLBACK_HANDLER_CLASS_NAME)) {
                 subsystem.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).set(model.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME));
+            }
+            if (model.hasDefined(SUBJECT_FACTORY_CLASS_NAME)) {
+                subsystem.get(SUBJECT_FACTORY_CLASS_NAME).set(model.get(SUBJECT_FACTORY_CLASS_NAME));
+            }
+            if (model.hasDefined(AUTHORIZATION_MANAGER_CLASS_NAME)) {
+                subsystem.get(AUTHORIZATION_MANAGER_CLASS_NAME).set(model.get(AUTHORIZATION_MANAGER_CLASS_NAME));
+            }
+            if (model.hasDefined(AUDIT_MANAGER_CLASS_NAME)) {
+                subsystem.get(AUDIT_MANAGER_CLASS_NAME).set(model.get(AUDIT_MANAGER_CLASS_NAME));
+            }
+            if (model.hasDefined(IDENTITY_TRUST_MANAGER_CLASS_NAME)) {
+                subsystem.get(IDENTITY_TRUST_MANAGER_CLASS_NAME).set(model.get(IDENTITY_TRUST_MANAGER_CLASS_NAME));
+            }
+            if (model.hasDefined(MAPPING_MANAGER_CLASS_NAME)) {
+                subsystem.get(MAPPING_MANAGER_CLASS_NAME).set(model.get(MAPPING_MANAGER_CLASS_NAME));
             }
 
             ModelNode result = new ModelNode();
             result.add(subsystem);
+
+            if (model.hasDefined(SECURITY_DOMAIN)) {
+                for (Property prop : model.get(SECURITY_DOMAIN).asPropertyList()) {
+                    final ModelNode addr = subsystem.get(OP_ADDR).clone().add(SECURITY_DOMAIN, prop.getName());
+                    result.add(SecurityDomainAdd.getRecreateOperation(addr, prop.getValue()));
+                }
+            }
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
             resultHandler.handleResultComplete();
