@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -459,7 +460,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     }
 
-    protected void parseNativeManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseNativeManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String interfaceName = null;
         int port = 0;
@@ -1451,5 +1452,32 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         writer.writeEndElement();
     }
+
+    protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode serverManagement) throws XMLStreamException {
+        writer.writeStartElement(Element.MANAGEMENT.getLocalName());
+
+        if (serverManagement.hasDefined(NATIVE_API)) {
+            writeManagementProtocol(Element.NATIVE_API, writer, serverManagement.get(NATIVE_API));
+        }
+
+        if (serverManagement.hasDefined(HTTP_API)) {
+            writeManagementProtocol(Element.HTTP_API, writer, serverManagement.get(HTTP_API));
+        }
+
+        writer.writeEndElement();
+    }
+
+    private void writeManagementProtocol(final Element type, final XMLExtendedStreamWriter writer, final ModelNode protocol) throws XMLStreamException {
+        String iface = protocol.get(INTERFACE).asString();
+        String port = protocol.get(PORT).asString();
+        writer.writeStartElement(type.getLocalName());
+        writeAttribute(writer, Attribute.INTERFACE, iface);
+        writeAttribute(writer, Attribute.PORT, port);
+        if (protocol.hasDefined(MAX_THREADS)) {
+            writeAttribute(writer, Attribute.MAX_THREADS, protocol.get(MAX_THREADS).asString());
+        }
+        writer.writeEndElement();
+    }
+
 
 }

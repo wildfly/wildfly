@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -198,7 +197,7 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseNativeManagementSocket(reader, address, list);
+            parseManagement(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DOMAIN_CONTROLLER) {
@@ -507,21 +506,6 @@ public class HostXml extends CommonXml {
         final boolean isStart = start == null ? true : start.booleanValue();
         final ModelNode startUpdate = Util.getWriteAttributeOperation(address, "start", isStart);
         list.add(startUpdate);
-    }
-
-    private void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        writer.writeStartElement(Element.MANAGEMENT.getLocalName());
-        if (modelNode.has(NATIVE_API)) {
-            //TODO decide if this should have the same format in host.xml as in standalone.xml
-            final ModelNode nativeApi = modelNode.get(NATIVE_API);
-            if (nativeApi.hasDefined(INTERFACE)) {
-                writeAttribute(writer, Attribute.INTERFACE, nativeApi.get(INTERFACE).asString());
-            }
-            if (nativeApi.hasDefined(PORT)) {
-                writeAttribute(writer, Attribute.PORT, nativeApi.get(PORT).asString());
-            }
-        }
-        writer.writeEndElement();
     }
 
     private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {

@@ -25,6 +25,7 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
@@ -59,6 +60,7 @@ import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.process.ProcessControllerClient;
+import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
@@ -195,6 +197,21 @@ public class HostControllerBootstrap {
 
         // install the domain controller
         activateDomainController(environment, rawModel, serviceTarget, repository, environment.isBackupDomainFiles(), environment.isUseCachedDc());
+
+        if (rawModel.get(MANAGEMENT).hasDefined(HTTP_API)) {
+            final HttpManagementService service = new HttpManagementService();
+            serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
+                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(rawModel.get(MANAGEMENT, HTTP_API).require(INTERFACE).asString()), NetworkInterfaceBinding.class, service.getInterfaceInjector())
+                    .addDependency(DomainController.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
+                    .addInjection(service.getPortInjector(), rawModel.get(MANAGEMENT, HTTP_API).require(PORT).asInt())
+                    .addDependency(executorServiceName, ExecutorService.class, service.getExecutorServiceInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                    .install();
+
+        }
+
+
 
         // Add the server to host operation handler
         final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
