@@ -220,6 +220,7 @@ public enum Phase {
     public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1A00;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x1B00;
     public static final int PARSE_WEBSERVICES_XML                       = 0x1C00;
+    public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x1D00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -234,7 +235,8 @@ public enum Phase {
     public static final int DEPENDENCIES_WELD                           = 0xA00;
     public static final int DEPENDENCIES_NAMING                         = 0xB00;
     public static final int DEPENDENCIES_WS                             = 0xC00;
-    public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0xD00;
+    public static final int DEPENDENCIES_JAXRS                          = 0xD00;
+    public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0xE00;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_SPEC                       = 0x100;
@@ -267,8 +269,10 @@ public enum Phase {
     public static final int INSTALL_EE_COMPONENT_INJECTIONS             = 0x1200;
     public static final int INSTALL_EE_COMPONENT                        = 0x1300;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1400;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1500;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1600;
+    public static final int INSTALL_JAXRS_SCANNING                      = 0x1500;
+    public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1600;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1700;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1800;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;

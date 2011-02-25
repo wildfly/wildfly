@@ -53,7 +53,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
         final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (parentModule != null) {
             // access to ear classes
-            moduleSpec.addDependency(new ModuleDependency(moduleLoader, parentModule, false, false, false));
+            moduleSpec.addDependency(new ModuleDependency(moduleLoader, parentModule, false, false, true));
         }
 
         for(DeploymentUnit subDeployment : subDeployments){

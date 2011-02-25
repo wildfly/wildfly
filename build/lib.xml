@@ -27,7 +27,10 @@
     <property name="output.dir" value="target/jboss-${jboss.as.release.version}"/>
     <property name="module.repo.output.dir" value="${output.dir}/modules"/>
     <property name="module.xml" value="module.xml"/>
-    
+
+
+    <taskdef name="jandex" classname="org.jboss.jandex.JandexAntTask" />
+
     <macrodef name="module-def">
         <attribute name="name"/>
         <attribute name="slot" default="main"/>
@@ -50,13 +53,14 @@
             
             <!-- Process the resource -->
             <resources/>
-            
+
             <!-- Some final cleanup -->
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
               <replacetoken><![CDATA[
         <!-- Insert resources here -->]]></replacetoken>
               <replacevalue></replacevalue>
             </replace>
+
         </sequential>
     </macrodef>
     
@@ -73,6 +77,7 @@
     <macrodef name="maven-resource" >
         <attribute name="group"/>
         <attribute name="artifact"/>
+        <attribute name="jandex" default="false" />
 
         <sequential>
             <!-- Copy the jar to the module dir -->
@@ -82,9 +87,12 @@
             </copy>
 
             <basename file="${@{group}:@{artifact}:jar}" property="resourcename.@{group}.@{artifact}"/>
-
+            <!-- Generate the Jandex Index -->
+            <jandex run="@{jandex}" newJar="true" >
+                <fileset dir="${module.repo.output.dir}/${current.module.path}" />
+            </jandex>
             <!-- Update the resource entry in module.xml -->
-            <define-resource-root path="${resourcename.@{group}.@{artifact}}"/>
+            <define-resource-root path="${resourcename.@{group}.@{artifact}}" jandex="@{jandex}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
                 <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
@@ -96,6 +104,7 @@
         <attribute name="group"/>
         <attribute name="artifact"/>
         <attribute name="classifier"/>
+        <attribute name="jandex" default="false" />
         
         <sequential>
             <!-- Copy the jar to the module dir -->
@@ -115,11 +124,16 @@
         
     </macrodef>
 
+
     <scriptdef name="define-resource-root" language="javascript">
         <attribute name="path"/>
+        <attribute name="jandex"/>
         <![CDATA[
             path = attributes.get("path");
             root = "<resource-root path=\"" + path + "\"/>";
+            if(attributes.get("jandex") == "true" ) {
+                root = root + "\n\t<resource-root path=\"" + path.replace(".jar","-jandex.jar") + "\"/>";
+            }
             project.setProperty("current.resource.root", root);
         ]]>
     </scriptdef>

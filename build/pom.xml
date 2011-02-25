@@ -63,6 +63,13 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jandex</artifactId>
+                        <version>${version.org.jboss.jandex}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -287,6 +294,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-ejb3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jaxrs</artifactId>
         </dependency>
 
         <dependency>
@@ -552,6 +564,21 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>async-http-servlet-3.0</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-cdi</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.slf4j</groupId>
             <artifactId>slf4j-jboss-logmanager</artifactId>
         </dependency>
@@ -714,6 +741,11 @@
         <dependency>
           <groupId>org.picketbox</groupId>
           <artifactId>picketbox</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scannotation</groupId>
+            <artifactId>scannotation</artifactId>
         </dependency>
 
         <dependency>

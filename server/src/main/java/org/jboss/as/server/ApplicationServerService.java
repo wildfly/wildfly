@@ -37,6 +37,7 @@ import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.version.Version;
@@ -120,6 +121,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir());
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
+        ModuleIndexService.addService(serviceTarget);
         ServerControllerService.addService(serviceTarget, configuration);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override

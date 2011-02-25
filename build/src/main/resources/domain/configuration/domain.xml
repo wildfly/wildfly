@@ -30,6 +30,7 @@
                             urn:jboss:domain:transactions:1.0 jboss-txn.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:sar:1.0 jboss-sar.xsd
                             urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
@@ -47,6 +48,7 @@
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.ee"/>
+        <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
@@ -244,6 +246,7 @@
                     </address-setting>
                 </address-settings>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:messaging:jms:1.0">
                <connection-factory name="InVmConnectionFactory">
                    <connectors>

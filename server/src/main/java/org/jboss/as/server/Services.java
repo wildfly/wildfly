@@ -60,4 +60,8 @@ public final class Services {
      * The internal deployer chains service used by all deployments.
      */
     public static final ServiceName JBOSS_DEPLOYER_CHAINS = JBOSS_AS.append("deployer-chains");
+    /**
+     * The service that caches system module jandex indexes
+     */
+    public static final ServiceName JBOSS_MODULE_INDEX_SERVICE = JBOSS_AS.append("module-index-service");
 }

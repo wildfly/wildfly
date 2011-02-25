@@ -21,13 +21,14 @@
   -->
 
 <server name="example"
-        xmlns="urn:jboss:domain:1.0" 
+        xmlns="urn:jboss:domain:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
                             urn:jboss:domain:connector:1.0 jboss-connector.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
                             urn:jboss:domain:ee:1.0 jboss-ee.xsd
+                            urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
@@ -50,6 +51,7 @@
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
+        <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
@@ -147,6 +149,7 @@
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">

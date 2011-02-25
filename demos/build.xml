@@ -23,7 +23,7 @@
 <project name="as-examples" basedir="." default="example">
     <target name="use-maven" unless="mvn.run">
         <fail>You must use maven to run the demos. Run 'mvn install' for further help.</fail>
-        
+
     </target>
 
     <target name="usage" unless="example" depends="use-maven">
@@ -36,6 +36,7 @@
         <echo>  managedbean      - deploys a managed bean</echo>
         <echo>  serviceloader    - deploys a serviceloader style service</echo>
         <echo>  messaging        - deploys HornetQ native sender and receiver</echo>
+        <echo>  jaxrs            - deploys a jax-rs war</echo>
         <echo>  jms              - deploys HornetQ JMS sender and receiver</echo>
         <echo>  jms.client       - Uses HornetQ JMS API from the client</echo>
         <echo>  rar              - deploys a resource adapter</echo>
@@ -58,7 +59,7 @@
         <echo>  domain.rar         - deploys deploys a resource adapter</echo>
         <echo>  domain.servers     - shows domain, host controller and server configs, starts/stops servers</echo>
     </target>
-        
+
     <target name="run" if="example">
     	<echo>-Dexample=${example} was passed in. Running org.jboss.as.demos.${example}.runner.ExampleRunner</echo>
         <java classname="org.jboss.as.demos.${example}.runner.ExampleRunner">
@@ -67,10 +68,10 @@
         	</classpath>
     	</java>
     </target>
-                
-	
+
+
     <target name="example" depends="usage,run">
     </target>
-	
-	
+
+
 </project>

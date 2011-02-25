@@ -10,8 +10,14 @@
   <version>7.0.0.Alpha2-SNAPSHOT</version>
   <name>JBoss Application Server: Demos</name>
   <description>Some demo applications for JBoss AS</description>
-  
+
   <dependencies>
+
+    <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>jsr311-api</artifactId>
+    </dependency>
+
     <dependency>
         <groupId>org.hornetq</groupId>
         <artifactId>hornetq-core</artifactId>
@@ -26,7 +32,7 @@
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-spec-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging</artifactId>
@@ -41,7 +47,7 @@
       <groupId>org.jboss.as</groupId>
       <artifactId>jboss-as-domain-client</artifactId>
     </dependency>
-  
+
     <dependency>
       <groupId>org.jboss.as</groupId>
       <artifactId>jboss-as-server</artifactId>
@@ -51,7 +57,7 @@
       <groupId>org.jboss.shrinkwrap</groupId>
       <artifactId>shrinkwrap-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.jboss.shrinkwrap</groupId>
       <artifactId>shrinkwrap-impl-base</artifactId>
@@ -74,12 +80,12 @@
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-connector</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-logging</artifactId>
@@ -129,7 +135,7 @@
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
   </dependencies>
-  
+
   <properties>
      <mvn.run>true</mvn.run>
   </properties>
@@ -160,5 +166,5 @@
       </plugin>
     </plugins>
   </build>
-  
+
 </project>

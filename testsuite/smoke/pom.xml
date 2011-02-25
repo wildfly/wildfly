@@ -106,6 +106,7 @@
                               <include>org/jboss/as/test/embedded/demos/sar/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/serviceloader/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/jaxrs/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/war/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>

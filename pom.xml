@@ -65,7 +65,7 @@
         <version.javax.mail.mail>1.4.2</version.javax.mail.mail>
         <version.javax.servlet.jstl>1.2</version.javax.servlet.jstl>
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
-        <version.javax.ws.rs.jsr311-api>1.0</version.javax.ws.rs.jsr311-api>
+        <version.javax.ws.rs.jsr311-api>1.1.1</version.javax.ws.rs.jsr311-api>
         <version.javax.xml.jaxrpc-api>1.1</version.javax.xml.jaxrpc-api>
         <version.jline>0.9.94</version.jline>
         <version.junit>4.8.1</version.junit>
@@ -93,7 +93,7 @@
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
         <version.org.jboss.invocaton>1.0.0.Beta2</version.org.jboss.invocaton>
         <version.org.jboss.ironjacamar>1.0.0.Beta3</version.org.jboss.ironjacamar>
-        <version.org.jboss.jandex>1.0.0.Beta4</version.org.jboss.jandex>
+        <version.org.jboss.jandex>1.0.0.Beta6</version.org.jboss.jandex>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.jboss-dmr>1.0.0.Beta3</version.org.jboss.jboss-dmr>
         <version.org.jboss.jbossts.jbossjts>4.11.0.Final</version.org.jboss.jbossts.jbossjts>
@@ -118,6 +118,7 @@
         <version.org.jboss.osgi.spi>1.0.22</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.5</version.org.jboss.osgi.vfs>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
+        <version.org.jboss.resteasy.resteasy-jaxrs>2.1.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-alpha-11</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
@@ -150,6 +151,7 @@
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.mockito>1.8.4</version.org.mockito>
         <version.org.picketbox>4.0.0.Alpha3</version.org.picketbox>
+        <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j.jcl-over-slf4j>1.5.10</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.10</version.org.slf4j.slf4j-api>
         <version.org.slf4j.slf4j-ext>1.5.10</version.org.slf4j.slf4j-ext>
@@ -179,6 +181,7 @@
         <module>ee</module>
         <module>ejb3</module>
         <module>host-controller</module>
+        <module>jaxrs</module>
         <module>jmx</module>
         <module>logging</module>
         <module>managedbeans</module>
@@ -1295,6 +1298,12 @@
                 <artifactId>jboss-as-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
+                        
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jaxrs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -2246,6 +2255,62 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jaxrs</artifactId>
+                <version>${version.org.jboss.resteasy.resteasy-jaxrs}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>jaxrs-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.httpcomponents</groupId>
+                        <artifactId>httpcore</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.httpcomponents</groupId>
+                        <artifactId>httpclient</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.scannotation</groupId>
+                        <artifactId>scannotation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>net.jcip</groupId>
+                        <artifactId>jcip</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>net.jcip</groupId>
+                        <artifactId>jcip-annotations</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>jsr250-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>async-http-servlet-3.0</artifactId>
+                <version>${version.org.jboss.resteasy.resteasy-jaxrs}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-cdi</artifactId>
+                <version>${version.org.jboss.resteasy.resteasy-jaxrs}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-api</artifactId>
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
@@ -2658,6 +2723,12 @@
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox</artifactId>
                 <version>${version.org.picketbox}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.scannotation</groupId>
+                <artifactId>scannotation</artifactId>
+                <version>${version.org.scannotation}</version>
             </dependency>
 
             <dependency>

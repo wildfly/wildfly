@@ -216,7 +216,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 }
             }
         } else {
-            classes.addAll(index.getKnownSubclasses(typeName));
+            classes.addAll(index.getAllKnownSubclasses(typeName));
         }
         return classes;
     }

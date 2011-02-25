@@ -57,6 +57,7 @@
         </resources>
         <dependencies>
             <module name="javax.servlet.api"/>
+            <module name="javax.ws.rs.api"/>
             <module name="org.jboss.msc"/>
         </dependencies>
     </module>

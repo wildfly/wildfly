@@ -393,6 +393,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-host-controller"/>
         </module-def>
 
+        <module-def name="org.jboss.as.jaxrs">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jaxrs"/>
+        </module-def>
+
         <module-def name="org.jboss.as.jmx">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
         </module-def>
@@ -600,10 +604,18 @@
         <module-def name="org.jboss.remoting3">
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
-        
-        <module-def name="org.jboss.threads">
-            <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
-        </module-def>
+
+    	<module-def name="org.jboss.resteasy.async-http-servlet-30">
+    	    <maven-resource group="org.jboss.resteasy" artifact="async-http-servlet-3.0"/>
+    	</module-def>
+
+    	<module-def name="org.jboss.resteasy.resteasy-jaxrs" >
+    	    <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxrs" jandex="true"/>
+    	</module-def>
+
+    	<module-def name="org.jboss.resteasy.resteasy-cdi">
+    	    <maven-resource group="org.jboss.resteasy" artifact="resteasy-cdi"/>
+    	</module-def>
 
         <module-def name="org.jboss.shrinkwrap.api">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
@@ -625,6 +637,10 @@
 
         <module-def name="org.jboss.stdio">
             <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
+        </module-def>
+
+        <module-def name="org.jboss.threads">
+            <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
         </module-def>
 
         <module-def name="org.jboss.xnio.nio">
@@ -701,6 +717,10 @@
 
         <module-def name="org.slf4j.jcl-over-slf4j">
             <maven-resource group="org.slf4j" artifact="jcl-over-slf4j"/>
+        </module-def>
+
+        <module-def name="org.scannotation.scannotation">
+            <maven-resource group="org.scannotation" artifact="scannotation"/>
         </module-def>
 
         <module-def name="org.slf4j">
