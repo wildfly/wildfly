@@ -91,12 +91,12 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Kabir Khan
  */
-class HostModel extends BasicModelController {
+public class HostModel extends BasicModelController {
 
     /**
      * @param configurationPersister
      */
-    protected HostModel(final ExtensibleConfigurationPersister configurationPersister) {
+    public HostModel(final ExtensibleConfigurationPersister configurationPersister) {
         super(configurationPersister, HostDescriptionProviders.ROOT_PROVIDER);
 
         // Register the operation handlers

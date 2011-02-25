@@ -85,7 +85,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class DomainModelImpl extends BasicModelController implements DomainModel {
+public class DomainModelImpl extends BasicModelController implements DomainModel {
 
     protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister) {
         super(configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);

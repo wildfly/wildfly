@@ -86,6 +86,8 @@ public class ServerInModuleStartupTestCase {
 
             Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
 
+
+
             //TODO parse and compare the result to standlone.xml?
         } finally {
             StreamUtils.safeClose(client);

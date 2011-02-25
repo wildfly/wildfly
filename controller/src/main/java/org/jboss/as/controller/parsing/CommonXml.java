@@ -1135,7 +1135,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if (offset < 0) {
             offset = 0;
         }
-        update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_PORT_OFFSET, offset);
+        if (offset > 0) {
+            update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_PORT_OFFSET, offset);
+        }
         updates.add(update);
     }
 
