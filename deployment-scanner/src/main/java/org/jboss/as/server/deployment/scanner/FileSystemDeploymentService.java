@@ -22,12 +22,20 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -49,18 +57,19 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
 import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.server.deployment.DeploymentRedeployHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 
 /**
@@ -74,15 +83,17 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private static final Set<String> ARCHIVES = new HashSet<String>(Arrays.asList(".jar", ".war", ".ear", ".rar", ".sar", ".beans"));
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
     private static final String DEPLOYED = ".deployed";
+    private static final String FAILED_DEPLOY = ".faileddeploy";
+    private static final String DO_DEPLOY = ".dodeploy";
 
     private File deploymentDir;
     private long scanInterval = 0;
     private volatile boolean scanEnabled = false;
     private ScheduledFuture<?> scanTask;
     private final Lock scanLock = new ReentrantLock();
-    private Set<String> deployed = new HashSet<String>();
 
-//    private final ServerModel serverModel;
+    private final Map<String, DeploymentMarker> deployed = new HashMap<String, DeploymentMarker>();
+
     private final ScheduledExecutorService scheduledExecutor;
     private final ServerController serverController;
     private final DeploymentRepository deploymentRepository;
@@ -117,8 +128,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
         this.serverController = serverController;
         this.scheduledExecutor = scheduledExecutor;
         this.deploymentRepository = deploymentRepository;
-
-        // Build list of existing ".deployed" files
         establishDeployedContentList(deploymentDir);
     }
 
@@ -148,6 +157,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         return scanEnabled;
     }
 
+
     /**
      * {@inheritDoc}
      */
@@ -171,29 +181,21 @@ class FileSystemDeploymentService implements DeploymentScanner {
         cancelScan();
     }
 
-    // ---------------------------------------------------------------  protected
-
-    void validate() {
-
-
-    }
-
     private void establishDeployedContentList(File dir) throws OperationFailedException {
-        Set<String> deploymentNames = getDeploymentNames();
-        File[] children = dir.listFiles();
+        final Set<String> deploymentNames = getDeploymentNames();
+        final File[] children = dir.listFiles();
         for (File child : children) {
-            String fileName = child.getName();
+            final String fileName = child.getName();
             if (child.isDirectory()) {
-                // TODO special handling for exploded content
-                establishDeployedContentList(child);
+                final int idx = fileName.lastIndexOf('.');
+                if (idx == -1 || !ARCHIVES.contains(fileName.substring(idx))) {
+                    establishDeployedContentList(child);
+                }
             } else if (fileName.endsWith(DEPLOYED)) {
-                String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
+                final String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
                 if (deploymentNames.contains(deploymentName)) {
-                    // ServerModel knows about this deployment
-                    deployed.add(deploymentName);
+                    deployed.put(deploymentName, new DeploymentMarker(child.lastModified()));
                 } else {
-                    // ServerController doesn't know about this deployment, so the
-                    // marker file needs to be removed.
                     if (!child.delete()) {
                         log.warnf("Cannot removed extraneous deployment marker file %s", fileName);
                     }
@@ -202,55 +204,61 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private void scan() throws OperationFailedException {
+    private void scan() {
 
         try {
             scanLock.lockInterruptibly();
-        }
-        catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             return;
         }
         try {
             if (scanEnabled) { // confirm the scan is still wanted
-
                 log.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
-                final List<ModelNode> updates = new ArrayList<ModelNode>();
+                final List<ScannerTask> scannerTasks = new ArrayList<ScannerTask>();
 
-                Map<String, File> foundDeployed = new HashMap<String, File>();
-                Set<String> newlyAdded = new HashSet<String>();
-                Set<String> registeredDeployments = getDeploymentNames();
-                scanDirectory(deploymentDir, updates, foundDeployed, newlyAdded, registeredDeployments);
+                final Set<String> registeredDeployments = getDeploymentNames();
+                final Set<String> toRemove = new HashSet<String>(deployed.keySet());
+                scanDirectory(deploymentDir, scannerTasks, registeredDeployments, toRemove);
 
                 // Add remove actions to the plan for anything we count as
                 // deployed that we didn't find on the scan
-                Set<String> toRemove = new HashSet<String>(deployed);
-                toRemove.removeAll(foundDeployed.keySet());
-                toRemove.removeAll(newlyAdded); // in case user removed the marker and added replacement
                 for (String missing : toRemove) {
-                    updates.add(getUndeployOperation(missing));
-                    updates.add(getRemoveOperation(missing));
+                    scannerTasks.add(new UndeployTask(missing));
                 }
 
-                if (updates.size() > 0) {
-                    if (log.isDebugEnabled()) {
-                        for (ModelNode update : updates) {
+                if (scannerTasks.size() > 0) {
+                    List<ModelNode> updates = new ArrayList<ModelNode>(scannerTasks.size());
+
+                    for (ScannerTask task : scannerTasks) {
+                        final ModelNode update = task.getUpdate();
+                        if (log.isDebugEnabled()) {
                             log.debugf("Deployment scan of [%s] found update action [%s]", deploymentDir, update);
                         }
+                        updates.add(update);
                     }
-                    Operation composite = getCompositeUpdate(updates);
-                    ModelNode results = serverController.execute(composite);
-//                    System.out.println(composite);
-//                    System.out.println(results);
-                    // FIXME deal with result
+
+                    while (!updates.isEmpty()) {
+                        ModelNode composite = getCompositeUpdate(updates);
+                        final ModelNode results = serverController.execute(OperationBuilder.Factory.create(composite).build());
+                        final List<Property> resultList = results.get(RESULT).asPropertyList();
+                        final List<ModelNode> toRetry = new ArrayList<ModelNode>();
+                        for (int i = 0; i < resultList.size(); i++) {
+                            final ModelNode result = resultList.get(i).getValue();
+                            final ScannerTask task = scannerTasks.get(i);
+                            final ModelNode outcome = result.get(OUTCOME);
+                            if (OUTCOME != null && SUCCESS.equals(outcome.asString())) {
+                                task.handleSuccessResult();
+                            } else if (OUTCOME != null && CANCELLED.equals(outcome.asString())) {
+                                toRetry.add(updates.get(i));
+                            } else {
+                                task.handleFailureResult(result);
+                            }
+                        }
+                        updates = toRetry;
+                    }
                 }
-
-                // Throw away any found marker files that we didn't already know about
-                Set<String> validFinds = cleanSpuriousMarkerFiles(foundDeployed);
-                validFinds.addAll(newlyAdded);
-                this.deployed = validFinds;
-
                 log.tracef("Scan complete");
             }
         } finally {
@@ -258,134 +266,64 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private Set<String> cleanSpuriousMarkerFiles(Map<String, File> found) {
-        Set<String> valid = new HashSet<String>();
-
-        for (Map.Entry<String, File> entry : found.entrySet()) {
-            if (deployed.contains(entry.getKey())) {
-                valid.add(entry.getKey());
-            } else {
-                // Try and clean up
-                entry.getValue().delete();
-            }
-        }
-        return valid;
-    }
-
     /**
      * Scan the given directory for content changes.
      *
-     * @param directory     the directory to scan
-     * @param updates       the update list;
-     * @param foundDeployed place to store marker files found in the directory; key is the name
-     *                      of the deployment, value is the marker file
-     * @param newlyAdded    place to store names of newly added content
-     * @param registeredDeployments TODO
-     * @return the builder the current builder following any changes
+     * @param directory             the directory to scan
+     * @param events                the event queue;
+     * @param registeredDeployments the deployments currently registered with the server
+     * @param toRemove              the deployments to be removed, any deployment that needs to stick around should be removed
      */
-    private void scanDirectory(File directory, final List<ModelNode> updates, Map<String, File> foundDeployed, Set<String> newlyAdded, Set<String> registeredDeployments) {
-
-        //TODO externalize config of filter?
-        File[] children = directory.listFiles(filter);
+    private void scanDirectory(final File directory, final List<ScannerTask> events, final Set<String> registeredDeployments, final Set<String> toRemove) {
+        final File[] children = directory.listFiles(filter);
         if (children == null) {
             return;
         }
 
         for (File child : children) {
-
-            String fileName = child.getName();
-
+            final String fileName = child.getName();
             if (fileName.endsWith(DEPLOYED)) {
-                String origName = fileName.substring(0, fileName.length() - DEPLOYED.length());
-                foundDeployed.put(origName, child);
+                final String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
+                toRemove.remove(deploymentName);
+                if (!deployed.containsKey(deploymentName)) {
+                    if (!child.delete()) {
+                        log.warnf("Cannot removed extraneous deployment marker file %s", fileName);
+                    }
+                }
+                if (deployed.get(deploymentName).lastModified != child.lastModified()) {
+                    events.add(new RedeployTask(deploymentName, child.lastModified()));
+                }
+            } else if (fileName.endsWith(DO_DEPLOY)) {
+                final String deploymentName = fileName.substring(0, fileName.length() - DO_DEPLOY.length());
+                final File deploymentFile = new File(directory, deploymentName);
+                if (!deploymentFile.exists()) {
+                    log.warnf("Deployment of '%s' requested, but the deployment is not present", deploymentFile);
+                    if (!child.delete()) {
+                        log.warnf("Cannot removed extraneous deployment marker file %s", fileName);
+                    }
+                    continue;
+                }
+                if (registeredDeployments.contains(deploymentName)) {
+                    events.add(new ReplaceTask(deploymentName, deploymentFile));
+                } else {
+                    events.add(new DeployTask(deploymentName, deploymentFile));
+                }
+                toRemove.remove(deploymentName);
+            } else if (fileName.endsWith(FAILED_DEPLOY)) {
+                final String deploymentName = fileName.substring(0, fileName.length() - FAILED_DEPLOY.length());
+                toRemove.remove(deploymentName);
             } else if (child.isDirectory()) {
                 int idx = fileName.lastIndexOf('.');
-                if (idx > -1 && ARCHIVES.contains(fileName.substring(idx))) {
-                    // FIXME handle exploded deployments
-                    log.warnf("%s is an exploded deployment and exploded deployments are not currently handled by %s", child.getName(), getClass().getSimpleName());
-                } else {
-                    // It's just a dir for organizing content. Recurse
-                    scanDirectory(child, updates, foundDeployed, newlyAdded, registeredDeployments);
-                }
-            } else {
-                // Found a single non-marker file
-                boolean uploaded = false;
-                if (registeredDeployments.contains(fileName)) {
-
-                    byte[] hash = new byte[0];
-                    try {
-                        final InputStream inputStream = new FileInputStream(child);
-                        hash = deploymentRepository.addDeploymentContent(fileName, fileName, inputStream);
-                    } catch (IOException e) {
-                        log.error("Failed to add content to deployment repository for [" + fileName + "]", e);
-                        continue;
-                    }
-                    updates.add(getFullReplaceOperation(fileName, hash));
-                    uploaded = true;
-                } else {
-                    byte[] hash = new byte[0];
-                    try {
-                        final InputStream inputStream = new FileInputStream(child);
-                        hash = deploymentRepository.addDeploymentContent(fileName, fileName, inputStream);
-                    } catch (IOException e) {
-                        log.error("Failed to add content to deployment repository for [" + fileName + "]", e);
-                        continue;
-                    }
-                    updates.add(getAddOperation(fileName, hash));
-                    updates.add(getDeployOperation(fileName));
-                    uploaded = true;
-                }
-
-                if (uploaded && replaceWithDeployedMarker(child)) {
-                    newlyAdded.add(fileName);
+                if (idx == -1 || !ARCHIVES.contains(fileName.substring(idx))) {
+                    scanDirectory(child, events, registeredDeployments, toRemove);
                 }
             }
         }
-    }
-
-    /**
-     * Adds a marker file, deletes the regular content file
-     */
-    private boolean replaceWithDeployedMarker(File child) {
-        boolean ok = false;
-        File marker = new File(child.getParent(), child.getName() + DEPLOYED);
-        FileOutputStream fos = null;
-        try {
-            marker.createNewFile();
-            fos = new FileOutputStream(marker);
-            fos.write(child.getName().getBytes());
-            ok = true;
-        }
-        catch (IOException io) {
-            log.errorf(io, "Caught exception writing deployment marker file %s", marker.getAbsolutePath());
-        }
-        finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                }
-                catch (IOException ignored) {
-                    log.warnf("Could not close output stream for deployment marker file %s", marker.getAbsolutePath());
-                }
-            }
-        }
-
-        if (ok) {
-            ok = child.delete();
-            if (!ok) {
-                log.errorf("Cannot remove deployment content file %s", child.getAbsolutePath());
-                marker.delete();
-            }
-        }
-
-        return ok;
     }
 
     private synchronized void startScan() {
-
         if (scanEnabled) {
-
-            Runnable r = new Runnable() {
+            final Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -397,9 +335,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
             };
 
             if (scanInterval > 0) {
-                scanTask = scheduledExecutor.scheduleWithFixedDelay(r, 0, scanInterval, TimeUnit.MILLISECONDS);
+                scanTask = scheduledExecutor.scheduleWithFixedDelay(runnable, 0, scanInterval, TimeUnit.MILLISECONDS);
             } else {
-                scanTask = scheduledExecutor.schedule(r, scanInterval, TimeUnit.MILLISECONDS);
+                scanTask = scheduledExecutor.schedule(runnable, scanInterval, TimeUnit.MILLISECONDS);
             }
         }
     }
@@ -414,15 +352,14 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private Set<String> getDeploymentNames() throws CancellationException, OperationFailedException {
-        ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
+    private Set<String> getDeploymentNames() throws CancellationException {
+        final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
         op.get(CHILD_TYPE).set(DEPLOYMENT);
-        ModelNode response = serverController.execute(OperationBuilder.Factory.create(op).build());
-        // TODO use the proper response structure
-        ModelNode result = response.get("result");
-        Set<String> deploymentNames = new HashSet<String>();
+        final ModelNode response = serverController.execute(OperationBuilder.Factory.create(op).build());
+        final ModelNode result = response.get(RESULT);
+        final Set<String> deploymentNames = new HashSet<String>();
         if (result.isDefined()) {
-            List<ModelNode> deploymentNodes = result.asList();
+            final List<ModelNode> deploymentNodes = result.asList();
             for (ModelNode node : deploymentNodes) {
                 deploymentNames.add(node.asString());
             }
@@ -430,42 +367,220 @@ class FileSystemDeploymentService implements DeploymentScanner {
         return deploymentNames;
     }
 
-    private ModelNode getFullReplaceOperation(String fileName, byte[] hash) {
-        ModelNode op = Util.getEmptyOperation(DeploymentFullReplaceHandler.OPERATION_NAME, new ModelNode());
-        op.get(NAME).set(fileName);
-        op.get(HASH).set(hash);
-        return op;
-    }
-
-    private Operation getCompositeUpdate(List<ModelNode> updates) {
-        ModelNode op = Util.getEmptyOperation("composite", new ModelNode()); // TODO use constant
-        ModelNode steps = op.get("steps");
+    private ModelNode getCompositeUpdate(final List<ModelNode> updates) {
+        final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+        final ModelNode steps = op.get(STEPS);
         for (ModelNode update : updates) {
             steps.add(update);
         }
-        return OperationBuilder.Factory.create(op).build();
-    }
-
-    private ModelNode getRemoveOperation(String missing) {
-        ModelNode address = new ModelNode().add(DEPLOYMENT, missing);
-        return Util.getEmptyOperation(DeploymentRemoveHandler.OPERATION_NAME, address);
-    }
-
-    private ModelNode getUndeployOperation(String missing) {
-        ModelNode address = new ModelNode().add(DEPLOYMENT, missing);
-        return Util.getEmptyOperation(DeploymentUndeployHandler.OPERATION_NAME, address);
-    }
-
-    private ModelNode getDeployOperation(String fileName) {
-        ModelNode address = new ModelNode().add(DEPLOYMENT, fileName);
-        return Util.getEmptyOperation(DeploymentDeployHandler.OPERATION_NAME, address);
-    }
-
-    private ModelNode getAddOperation(String fileName, byte[] hash) {
-        ModelNode address = new ModelNode().add(DEPLOYMENT, fileName);
-        ModelNode op = Util.getEmptyOperation(DeploymentAddHandler.OPERATION_NAME, address);
-        op.get(HASH).set(hash);
         return op;
     }
 
+    private ModelNode getCompositeUpdate(final ModelNode... updates) {
+        final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+        final ModelNode steps = op.get(STEPS);
+        for (ModelNode update : updates) {
+            steps.add(update);
+        }
+        return op;
+    }
+
+    private void safeClose(final Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    private void writeFailedMarker(final File deploymentFile, final ModelNode failureDescription) {
+        final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
+        final File deployMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DO_DEPLOY);
+        if (deployMarker.exists() && !deployMarker.delete()) {
+            log.warnf("Unable to remove marger file %s", deployMarker);
+        }
+        final File deployedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DEPLOYED);
+        if (deployedMarker.exists() && !deployedMarker.delete()) {
+            log.warnf("Unable to remove marger file %s", deployMarker);
+        }
+        FileOutputStream fos = null;
+        try {
+            failedMarker.createNewFile();
+            fos = new FileOutputStream(failedMarker);
+            fos.write(failureDescription.asString().getBytes());
+        } catch (IOException io) {
+            log.errorf(io, "Caught exception writing deployment failed marker file %s", failedMarker.getAbsolutePath());
+        } finally {
+            safeClose(fos);
+        }
+    }
+
+    private abstract class ScannerTask {
+        protected final String deploymentName;
+
+        private ScannerTask(final String deploymentName) {
+            this.deploymentName = deploymentName;
+        }
+
+        protected abstract ModelNode getUpdate();
+
+        protected abstract void handleSuccessResult();
+
+        protected abstract void handleFailureResult(final ModelNode result);
+    }
+
+    private abstract class ContentAddingTask extends ScannerTask {
+        protected final File deploymentFile;
+
+        protected ContentAddingTask(final String deploymentName, final File deploymentFile) {
+            super(deploymentName);
+            this.deploymentFile = deploymentFile;
+        }
+
+        @Override
+        protected ModelNode getUpdate() {
+            byte[] hash = new byte[0];
+            InputStream inputStream = null;
+            try {
+                inputStream = new FileInputStream(deploymentFile);
+                hash = deploymentRepository.addDeploymentContent(deploymentName, deploymentName, inputStream);
+            } catch (IOException e) {
+                log.error("Failed to add content to deployment repository for [" + deploymentName + "]", e);
+            } finally {
+                safeClose(inputStream);
+            }
+            return getUpdatesAfterContent(hash);
+        }
+
+        protected abstract ModelNode getUpdatesAfterContent(final byte[] hash);
+
+        @Override
+        protected void handleSuccessResult() {
+            final File doDeployMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DO_DEPLOY);
+            if (!doDeployMarker.delete()) {
+                log.errorf("Failed to delete deployment marker file %s", doDeployMarker.getAbsolutePath());
+            }
+
+            // Remove any previous failure marker
+            final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
+            if (failedMarker.exists() && !failedMarker.delete()) {
+                log.warnf("Unable to remove marger file %s", failedMarker);
+            }
+
+            final File deployedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DEPLOYED);
+            FileOutputStream fos = null;
+            try {
+                deployedMarker.createNewFile();
+                fos = new FileOutputStream(deployedMarker);
+                fos.write(deploymentFile.getName().getBytes());
+            } catch (IOException io) {
+                log.errorf(io, "Caught exception writing deployment marker file %s", deployedMarker.getAbsolutePath());
+            } finally {
+                safeClose(fos);
+            }
+            if (deployed.containsKey(deploymentName)) {
+                deployed.remove(deploymentName);
+            }
+            deployed.put(deploymentName, new DeploymentMarker(deployedMarker.lastModified()));
+        }
+    }
+
+    private final class DeployTask extends ContentAddingTask {
+        private DeployTask(final String deploymentName, final File deploymentFile) {
+            super(deploymentName, deploymentFile);
+        }
+
+        @Override
+        protected ModelNode getUpdatesAfterContent(final byte[] hash) {
+            final ModelNode address = new ModelNode().add(DEPLOYMENT, deploymentName);
+            final ModelNode addOp = Util.getEmptyOperation(DeploymentAddHandler.OPERATION_NAME, address);
+            addOp.get(HASH).set(hash);
+            final ModelNode deployOp = Util.getEmptyOperation(DeploymentDeployHandler.OPERATION_NAME, address);
+            return getCompositeUpdate(addOp, deployOp);
+        }
+
+        @Override
+        protected void handleFailureResult(final ModelNode result) {
+            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION));
+        }
+    }
+
+    private final class ReplaceTask extends ContentAddingTask {
+        private ReplaceTask(String deploymentName, File deploymentFile) {
+            super(deploymentName, deploymentFile);
+        }
+
+        @Override
+        protected ModelNode getUpdatesAfterContent(byte[] hash) {
+            final ModelNode replaceOp = Util.getEmptyOperation(DeploymentFullReplaceHandler.OPERATION_NAME, new ModelNode());
+            replaceOp.get(NAME).set(deploymentName);
+            replaceOp.get(HASH).set(hash);
+            return replaceOp;
+        }
+
+        @Override
+        protected void handleFailureResult(ModelNode result) {
+            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION));
+        }
+    }
+
+    private final class RedeployTask extends ScannerTask {
+        private final long markerLastModified;
+
+        private RedeployTask(final String deploymentName, final long markerLastModified) {
+            super(deploymentName);
+            this.markerLastModified = markerLastModified;
+        }
+
+        @Override
+        protected ModelNode getUpdate() {
+            final ModelNode address = new ModelNode().add(DEPLOYMENT, deploymentName);
+            return Util.getEmptyOperation(DeploymentRedeployHandler.OPERATION_NAME, address);
+        }
+
+        @Override
+        protected void handleSuccessResult() {
+            deployed.remove(deploymentName);
+            deployed.put(deploymentName, new DeploymentMarker(markerLastModified));
+
+        }
+
+        @Override
+        protected void handleFailureResult(ModelNode result) {
+            // TODO: Handle Failure
+        }
+    }
+
+    private final class UndeployTask extends ScannerTask {
+        private UndeployTask(final String deploymentName) {
+            super(deploymentName);
+        }
+
+        @Override
+        protected ModelNode getUpdate() {
+            final ModelNode address = new ModelNode().add(DEPLOYMENT, deploymentName);
+            final ModelNode undeployOp = Util.getEmptyOperation(DeploymentUndeployHandler.OPERATION_NAME, address);
+            final ModelNode removeOp = Util.getEmptyOperation(DeploymentRemoveHandler.OPERATION_NAME, address);
+            return getCompositeUpdate(undeployOp, removeOp);
+        }
+
+        @Override
+        protected void handleSuccessResult() {
+            deployed.remove(deploymentName);
+        }
+
+        @Override
+        protected void handleFailureResult(ModelNode result) {
+            // TODO: Handle Failure
+        }
+    }
+
+    private class DeploymentMarker {
+        private long lastModified;
+
+        private DeploymentMarker(final long lastModified) {
+            this.lastModified = lastModified;
+        }
+    }
 }

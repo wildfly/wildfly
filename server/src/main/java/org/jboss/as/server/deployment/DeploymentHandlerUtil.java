@@ -43,7 +43,6 @@ import org.jboss.msc.service.StartException;
  * Utility methods used by operation handlers involved with deployment.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
 public class DeploymentHandlerUtil {
 
@@ -65,7 +64,7 @@ public class DeploymentHandlerUtil {
     }
 
     private static void deploy(final ModelNode deploymentModel, final ResultHandler resultHandler,
-            RuntimeTaskContext context) {
+                               RuntimeTaskContext context) {
         String deploymentUnitName = deploymentModel.require(NAME).asString();
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry();
@@ -102,6 +101,36 @@ public class DeploymentHandlerUtil {
         }
     }
 
+    public static void redeploy(final ModelNode deploymentModel, final OperationContext operationContext, final ResultHandler resultHandler) throws OperationFailedException {
+        if (operationContext.getRuntimeContext() != null) {
+            operationContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(final RuntimeTaskContext context) throws OperationFailedException {
+                    final String deploymentUnitName = deploymentModel.require(NAME).asString();
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(deploymentUnitName));
+                    if (controller != null) {
+                        controller.addListener(new AbstractServiceListener<Object>() {
+
+                            @Override
+                            public void listenerAdded(ServiceController<? extends Object> serviceController) {
+                                controller.setMode(ServiceController.Mode.NEVER);
+                            }
+
+                            public void serviceStopped(ServiceController<? extends Object> serviceController) {
+                                controller.removeListener(this);
+                                controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
+                                controller.setMode(ServiceController.Mode.ACTIVE);
+                            }
+                        });
+                    } else {
+                        deploy(deploymentModel, resultHandler, context);
+                    }
+                }
+            });
+        } else {
+            resultHandler.handleResultComplete();
+        }
+    }
+
     public static void replace(final ModelNode deploymentModel, final String toReplace, final OperationContext operationContext, final ResultHandler resultHandler) throws OperationFailedException {
         if (operationContext.getRuntimeContext() != null) {
             operationContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -111,14 +140,15 @@ public class DeploymentHandlerUtil {
                             .getService(Services.JBOSS_DEPLOYMENT_UNIT.append(toReplace));
                     if (controller != null) {
                         controller.addListener(new AbstractServiceListener<Object>() {
-
                             @Override
                             public void listenerAdded(ServiceController<? extends Object> serviceController) {
                                 controller.setMode(ServiceController.Mode.REMOVE);
                             }
 
+
                             @Override
                             public void serviceRemoved(ServiceController<? extends Object> serviceController) {
+                                controller.removeListener(this);
                                 deploy(deploymentModel, resultHandler, runtimeContext);
                             }
                         });

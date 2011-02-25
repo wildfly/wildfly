@@ -36,6 +36,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -47,6 +48,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
     public static final String OPERATION_NAME = REMOVE;
 
     public static final DeploymentRemoveHandler INSTANCE = new DeploymentRemoveHandler();
@@ -86,7 +88,6 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
                         }
                     }
                 });
-
             } else {
                 resultHandler.handleResultComplete();
             }

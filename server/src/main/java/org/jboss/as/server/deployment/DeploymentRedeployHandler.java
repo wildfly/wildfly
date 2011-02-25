@@ -34,6 +34,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -69,24 +70,5 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, De
         redeploy(model, context, resultHandler);
 
         return new BasicOperationResult(compensatingOp);
-    }
-
-    private void redeploy(final ModelNode model, final OperationContext context, final ResultHandler resultHandler) {
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    String deploymentUnitName = model.require(NAME).asString();
-                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
-
-                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                    controller.setMode(ServiceController.Mode.NEVER);
-                    controller.setMode(ServiceController.Mode.ACTIVE);
-                    controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
     }
 }
