@@ -20,9 +20,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -156,13 +155,11 @@ public class BaseModelControllerUnitTestCase {
             getRegistry().registerOperationHandler("good", new GoodHandler(), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("bad", new BadHandler(), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("evil", new EvilHandler(), DESC_PROVIDER, false);
-
-            getRegistry().registerOperationHandler(BaseCompositeOperationHandler.OPERATION_NAME, BaseCompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
         }
     }
 
 
-    private static class NullConfigurationPersister implements NewConfigurationPersister{
+    private static class NullConfigurationPersister implements ConfigurationPersister{
 
         @Override
         public void store(ModelNode model) throws ConfigurationPersistenceException {

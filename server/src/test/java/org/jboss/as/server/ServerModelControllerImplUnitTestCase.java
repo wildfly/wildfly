@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -34,6 +35,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,16 +46,32 @@ import org.junit.Test;
  */
 public class ServerModelControllerImplUnitTestCase {
 
+    private ServiceContainer container;
     private TestModelController controller;
 
     private static final AtomicBoolean runtimeState = new AtomicBoolean(true);
 
     @Before
     public void setupController() {
-        ServiceContainer container = ServiceContainer.Factory.create("test");
+        container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
         controller = new TestModelController(container, target);
         runtimeState.set(true);
+    }
+
+    @After
+    public void shutdownServiceContainer() {
+        if (container != null) {
+            container.shutdown();
+            try {
+                container.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            finally {
+                container = null;
+            }
+        }
     }
 
     @Test

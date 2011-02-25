@@ -35,7 +35,7 @@ import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -143,7 +143,7 @@ public class RemotingSubsystemUnitTestCase {
     static class TestController extends BasicModelController {
 
         protected TestController() {
-            super(model, new NewConfigurationPersister() {
+            super(model, new ConfigurationPersister() {
                 @Override
                 public void store(ModelNode model) throws ConfigurationPersistenceException {
                 }

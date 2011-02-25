@@ -22,14 +22,17 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -37,10 +40,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
@@ -57,6 +64,7 @@ import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelProvider;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContextImpl;
@@ -76,6 +84,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
+import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -96,7 +105,6 @@ import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
 import org.jboss.as.server.operations.NativeManagementAddHandler;
-import org.jboss.as.server.operations.ServerCompositeOperationHandler;
 import org.jboss.as.server.operations.ServerOperationHandlers;
 import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.as.server.operations.ServerSocketBindingAddHandler;
@@ -122,8 +130,6 @@ import org.jboss.msc.service.ServiceTarget;
 class ServerControllerImpl extends BasicModelController implements ServerController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
-
-    public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
 
     private final ExecutorService executorService;
     private final ServiceTarget serviceTarget;
@@ -177,7 +183,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, DeploymentReplaceHandler.INSTANCE, DeploymentReplaceHandler.INSTANCE, false);
         DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
-        root.registerOperationHandler(ServerCompositeOperationHandler.OPERATION_NAME, ServerCompositeOperationHandler.INSTANCE, ServerCompositeOperationHandler.INSTANCE, false);
+//        root.registerOperationHandler(ServerCompositeOperationHandler.OPERATION_NAME, ServerCompositeOperationHandler.INSTANCE, ServerCompositeOperationHandler.INSTANCE, false);
 
         // Runtime operations
         root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, ServerReloadHandler.INSTANCE, ServerReloadHandler.INSTANCE, false);
@@ -285,30 +291,30 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     /** {@inheritDoc} */
     @Override
-    protected OperationContext getOperationContext(final ModelNode subModel, final ModelNode operation, final OperationHandler operationHandler) {
+    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler) {
         if (operationHandler instanceof BootOperationHandler) {
             if (getState() == State.STARTING) {
                 return new BootContextImpl(subModel, getRegistry(), deployers);
             } else {
                 state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
-                return super.getOperationContext(subModel, operation, operationHandler);
+                return super.getOperationContext(subModel, operationHandler);
             }
         } else if (!(getState() == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
             return new ServerOperationContextImpl(this, getRegistry(), subModel);
         } else {
-            return super.getOperationContext(subModel, operation, operationHandler);
+            return super.getOperationContext(subModel, operationHandler);
         }
     }
 
     @Override
-    protected OperationResult doExecute(OperationContext context, ModelNode operation, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelNode subModel) throws OperationFailedException {
+    protected OperationResult doExecute(OperationContext context, ModelNode operation, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelProvider modelProvider, ConfigurationPersisterProvider configurationPersisterFactory) throws OperationFailedException {
         boolean rollback = isRollbackOnRuntimeFailure(context, operation);
         RollbackAwareResultHandler rollbackAwareHandler = null;
         if (rollback) {
             rollbackAwareHandler = new RollbackAwareResultHandler(resultHandler);
             resultHandler = rollbackAwareHandler;
         }
-        final OperationResult result = super.doExecute(context, operation, operationHandler, resultHandler, address, subModel);
+        final OperationResult result = super.doExecute(context, operation, operationHandler, resultHandler, address, modelProvider, configurationPersisterFactory);
         if(context instanceof ServerOperationContextImpl) {
             if (rollbackAwareHandler != null) {
                 rollbackAwareHandler.setRollbackOperation(result.getCompensatingOperation());
@@ -340,11 +346,17 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     /** {@inheritDoc} */
     @Override
-    protected void persistConfiguration(final ModelNode model) {
+    protected void persistConfiguration(final ModelNode model, final ConfigurationPersisterProvider configurationPersisterFactory) {
         // do not persist during startup
         if (getState() != State.STARTING) {
-            super.persistConfiguration(model);
+            super.persistConfiguration(model, configurationPersisterFactory);
         }
+    }
+
+    @Override
+    protected MultiStepOperationController getMultiStepOperationController(ModelNode operation, ResultHandler handler,
+            ModelProvider modelSource) throws OperationFailedException {
+        return new ServerMultiStepOperationController(operation, handler, modelSource);
     }
 
     private boolean isRollbackOnRuntimeFailure(OperationContext context, ModelNode operation) {
@@ -493,9 +505,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                 @Override
                 public void handleResultComplete() {
                     // FIXME this will not appear in the correct location
-                    ModelNode rollbackResult = new ModelNode();
-                    rollbackResult.get("rolled-back").set(true);
-                    delegate.handleResultFragment(new String[0], rollbackResult);
+//                    ModelNode rollbackResult = new ModelNode();
+//                    rollbackResult.get("rolled-back").set(true);
+//                    delegate.handleResultFragment(new String[0], rollbackResult);
                     delegate.handleFailed(failureDescription);
                 }
 
@@ -503,8 +515,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                 public void handleFailed(ModelNode rollbackFailureDescription) {
                     // FIXME this will not appear in the correct location
                     ModelNode rollbackResult = new ModelNode();
-                    rollbackResult.get("rolled-back").set(false);
-                    delegate.handleResultFragment(new String[0], rollbackResult);
+//                    rollbackResult.get("rolled-back").set(false);
+//                    delegate.handleResultFragment(new String[0], rollbackResult);
                     rollbackResult = new ModelNode();
                     rollbackResult.get("rollback-failure-description").set(rollbackFailureDescription);
                     delegate.handleFailed(failureDescription);
@@ -538,5 +550,200 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private void setRollbackOperation(ModelNode compensatingOperation) {
             this.rollbackOperation = compensatingOperation;
         }
+    }
+
+    private class ServerMultiStepOperationController extends MultiStepOperationController {
+
+        private final boolean rollbackOnRuntimeFailure;
+
+        private ServerMultiStepOperationController(final ModelNode operation, final ResultHandler resultHandler,
+                final ModelProvider modelSource) throws OperationFailedException {
+            super(operation, resultHandler, modelSource);
+            this.rollbackOnRuntimeFailure = (!operation.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || operation.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
+        }
+
+        @Override
+        public OperationContext getOperationContext(ModelProvider modelSource, PathAddress address,
+                OperationHandler operationHandler) {
+            OperationContext delegate = super.getOperationContext(modelSource, address, operationHandler);
+            return delegate.getRuntimeContext() == null ? delegate : new StepRuntimeOperationContext(Integer.valueOf(currentOperation), ServerOperationContext.class.cast(delegate));
+        }
+
+        @Override
+        protected void handleFailures() {
+            if (!rollbackOnRuntimeFailure || !modelComplete.get()) {
+                super.handleFailures();
+            }
+            else {
+                final ModelNode compensatingOp = getOverallCompensatingOperation();
+                final ResultHandler rollbackResultHandler = new RollbackResultHandler();
+                // Execute the rollback in another thread as this method may be called by an MSC thread
+                // and we don't want to risk blocking it
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        ServerControllerImpl.this.execute(compensatingOp, rollbackResultHandler);
+                    }
+                };
+                ServerControllerImpl.this.executorService.execute(r);
+            }
+        }
+
+        @Override
+        protected void recordModelComplete() {
+            super.recordModelComplete();
+
+            if (runtimeTasks.size() > 0) {
+                RuntimeTaskContext rtc = new RuntimeTaskContext() {
+                    @Override
+                    public ServiceTarget getServiceTarget() {
+                        return serviceTarget;
+                    }
+
+                    @Override
+                    public ServiceRegistry getServiceRegistry() {
+                        return serviceRegistry;
+                    }
+                };
+                for(int i = 0; i < steps.size(); i++) {
+                    Integer id = Integer.valueOf(i);
+                    RuntimeTask runtimeTask = runtimeTasks.get(id);
+                    if (runtimeTask == null) {
+                        continue;
+                    }
+                    try {
+                        runtimeTask.execute(rtc);
+                    } catch (OperationFailedException e) {
+                        stepResultHandlers.get(id).handleFailed(e.getFailureDescription());
+                    } catch (Throwable t) {
+                        stepResultHandlers.get(id).handleFailed(new ModelNode().set(t.toString()));
+                    }
+                }
+            }
+        }
+
+        private void rollbackComplete(final ModelNode rollbackResult) {
+
+            // Update each of our steps to indicate what happened with the rollback
+            synchronized (resultsNode) {
+                for (int i = 0; i < steps.size(); i++) {
+                    String stepKey = getStepKey(i);
+                    ModelNode stepResult = resultsNode.get(stepKey);
+                    if (stepResult.hasDefined(OUTCOME) && !CANCELLED.equals(stepResult.get(OUTCOME).asString())) {
+
+                        ModelNode rollbackStepOutcome = null;
+                        ModelNode rollbackStepResult = null;
+                        String rollbackKey = rollbackStepNames.get(Integer.valueOf(i));
+                        if (rollbackKey != null) {
+                            rollbackStepResult = rollbackResult.get(rollbackKey);
+                            rollbackStepOutcome = rollbackStepResult.isDefined() ? rollbackStepResult.get(OUTCOME) : null;
+                        }
+
+                        if (rollbackStepOutcome == null || !rollbackStepOutcome.isDefined()) {
+                            stepResult.get(ROLLED_BACK).set(false);
+                            stepResult.get(ROLLBACK_FAILURE_DESCRIPTION).set(new ModelNode().set("No compensating operations was available"));
+                        }
+                        else if (CANCELLED.equals(rollbackStepOutcome.asString())) {
+                            stepResult.get(ROLLED_BACK).set(false);
+                            stepResult.get(ROLLBACK_FAILURE_DESCRIPTION).set(new ModelNode().set("Execution of the compensating operation was cancelled"));
+                        }
+                        else if (SUCCESS.equals(rollbackStepOutcome.asString())) {
+                            stepResult.get(ROLLED_BACK).set(true);
+                        }
+                        else {
+                            stepResult.get(ROLLED_BACK).set(false);
+                            ModelNode rollbackFailureCause = rollbackStepResult.get(FAILURE_DESCRIPTION);
+                            if (!rollbackFailureCause.isDefined()) {
+                                rollbackFailureCause = new ModelNode().set("Compensating operation was reverted due to failure of other compensating operations");
+                            }
+                            stepResult.get(ROLLBACK_FAILURE_DESCRIPTION).set(rollbackFailureCause);
+                        }
+                    }
+                }
+            }
+
+            // Finally, notify the end user's result handler of completion
+            super.handleFailures();
+        }
+
+        /** Context that stores any registered RuntimeTask under the step's id */
+        private class StepRuntimeOperationContext implements ServerOperationContext, RuntimeOperationContext {
+
+            private final Integer id;
+            private final ServerOperationContext delegate;
+
+            private StepRuntimeOperationContext(final Integer id, final ServerOperationContext delegate) {
+                this.id = id;
+                this.delegate = delegate;
+            }
+
+            @Override
+            public ModelNode getSubModel() throws IllegalArgumentException {
+                return delegate.getSubModel();
+            }
+
+            @Override
+            public ModelNodeRegistration getRegistry() {
+                return delegate.getRegistry();
+            }
+
+            @Override
+            public ServerController getController() {
+                return delegate.getController();
+            }
+
+            @Override
+            public void restartRequired() {
+                delegate.restartRequired();
+            }
+
+            @Override
+            public void revertRestartRequired() {
+                delegate.revertRestartRequired();
+            }
+
+            @Override
+            public RuntimeOperationContext getRuntimeContext() {
+                return this;
+            }
+
+            @Override
+            public void setRuntimeTask(RuntimeTask runtimeTask) {
+                runtimeTasks.put(id, runtimeTask);
+            }
+        }
+
+        /**
+         * Captures the result of executing compensating operations and then triggers
+         * the final completion of the original operation.
+         */
+        private class RollbackResultHandler implements ResultHandler {
+
+            private final ModelNode rollbackResult = new ModelNode();
+            @Override
+            public void handleResultFragment(String[] location, ModelNode result) {
+                rollbackResult.get(location).set(result);
+            }
+
+            @Override
+            public void handleResultComplete() {
+                // TODO add an overall rollback message (needs change in ResultHandler API)
+                rollbackComplete(rollbackResult);
+            }
+
+            @Override
+            public void handleFailed(ModelNode failureDescription) {
+             // TODO add an overall rollback message (needs change in ResultHandler API)
+                rollbackComplete(rollbackResult);
+            }
+
+            @Override
+            public void handleCancellation() {
+             // TODO add an overall rollback message (needs change in ResultHandler API)
+                rollbackComplete(rollbackResult);
+            }
+
+        }
+
     }
 }

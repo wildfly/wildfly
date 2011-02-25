@@ -82,7 +82,7 @@ import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -726,7 +726,7 @@ public class GlobalOperationsTestCase {
         return result;
     }
 
-    private static class NullConfigurationPersister implements NewConfigurationPersister{
+    private static class NullConfigurationPersister implements ConfigurationPersister{
 
         @Override
         public void store(ModelNode model) throws ConfigurationPersistenceException {

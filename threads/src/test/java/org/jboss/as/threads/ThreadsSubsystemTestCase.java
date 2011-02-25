@@ -92,7 +92,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.threads.ThreadsExtension.NewThreadsSubsystemParser;
@@ -800,7 +800,7 @@ public class ThreadsSubsystemTestCase {
     class TestController extends BasicModelController {
 
         protected TestController() {
-            super(model, new NewConfigurationPersister() {
+            super(model, new ConfigurationPersister() {
                 @Override
                 public void store(ModelNode model) throws ConfigurationPersistenceException {
                 }

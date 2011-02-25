@@ -46,6 +46,7 @@ public class ModelDescriptionConstants {
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    public static final String COMPOSITE = "composite";
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
     public static final String COMPENSATING_OPERATION = "compensating-operation";
@@ -123,6 +124,9 @@ public class ModelDescriptionConstants {
     public static final String RECURSIVE = "recursive";
     public static final String REQUIRED = "required";
     public static final String RESULT = "result";
+    public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
+    public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
+    public static final String ROLLED_BACK = "rolled-back";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String RUNNING_SERVER = "running-server";
     public static final String SCHEMA_LOCATION = "schema-location";
@@ -134,6 +138,7 @@ public class ModelDescriptionConstants {
     public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";
     public static final String SOCKET_BINDING_PORT_OFFSET = "socket-binding-port-offset";
     public static final String START = "start";
+    public static final String STEPS = "steps";
     /** The key for {@link AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";
     public static final String SUBSYSTEM = "subsystem";

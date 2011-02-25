@@ -87,7 +87,7 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
         for (int i = 0; i < actions.size(); i++) {
             DeploymentActionImpl action = actions.get(i);
             UUID actionId = action.getId();
-            ModelNode actionResultNode = planResultNode.get(i);
+            ModelNode actionResultNode = planResultNode.get("step-" + i);
             actionResults.put(actionId, getActionResult(actionId, actionResultNode));
         }
         return new DeploymentPlanResultImpl(planId, actionResults);

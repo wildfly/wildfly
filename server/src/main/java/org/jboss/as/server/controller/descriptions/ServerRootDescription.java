@@ -22,6 +22,7 @@
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -37,25 +38,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.BaseCompositeOperationHandler;
-import org.jboss.as.server.operations.ServerCompositeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -132,14 +131,14 @@ public class ServerRootDescription {
 
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ServerCompositeOperationHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(COMPOSITE);
         root.get(DESCRIPTION).set(bundle.getString("composite"));
-        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.STEPS, TYPE).set(ModelType.LIST); // TODO details of the type
-        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.STEPS, DESCRIPTION).set(bundle.getString("composite.steps"));
-        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.STEPS, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.ROLLBACK_ON_RUNTIME_FAILURE, TYPE).set(ModelType.BOOLEAN);
-        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.ROLLBACK_ON_RUNTIME_FAILURE, DESCRIPTION).set(bundle.getString("composite.rollback"));
-        root.get(REQUEST_PROPERTIES, BaseCompositeOperationHandler.ROLLBACK_ON_RUNTIME_FAILURE, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, STEPS, TYPE).set(ModelType.LIST); // TODO details of the type
+        root.get(REQUEST_PROPERTIES, STEPS, DESCRIPTION).set(bundle.getString("composite.steps"));
+        root.get(REQUEST_PROPERTIES, STEPS, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, ROLLBACK_ON_RUNTIME_FAILURE, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, ROLLBACK_ON_RUNTIME_FAILURE, DESCRIPTION).set(bundle.getString("composite.rollback"));
+        root.get(REQUEST_PROPERTIES, ROLLBACK_ON_RUNTIME_FAILURE, REQUIRED).set(false);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
         // TODO details of the reply
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("composite.result"));

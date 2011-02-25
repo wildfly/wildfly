@@ -24,7 +24,7 @@ package org.jboss.as.server;
 
 import java.util.List;
 
-import org.jboss.as.controller.persistence.NewConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -57,7 +57,7 @@ final class BootstrapImpl implements Bootstrap {
             throw new IllegalArgumentException("serverEnvironment is null");
         }
         final String name = serverEnvironment.getServerName();
-        final NewConfigurationPersister configurationPersister = configuration.getConfigurationPersister();
+        final ConfigurationPersister configurationPersister = configuration.getConfigurationPersister();
         if (moduleLoader == null) {
             throw new IllegalArgumentException("moduleLoader is null");
         }

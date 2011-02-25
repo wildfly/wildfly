@@ -32,6 +32,9 @@ import org.jboss.msc.service.StartException;
  */
 public interface ResultHandler {
 
+    /** Parameter value for {@link #handleResultFragment(String[], ModelNode) that indicates an empty location. */
+    String[] EMPTY_LOCATION = new String[0];
+
     /**
      * Add a result fragment to the final result.
      *

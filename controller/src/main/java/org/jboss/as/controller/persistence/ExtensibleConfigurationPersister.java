@@ -23,6 +23,6 @@ package org.jboss.as.controller.persistence;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface ExtensibleConfigurationPersister extends NewConfigurationPersister, SubsystemXmlWriterRegistry {
+public interface ExtensibleConfigurationPersister extends ConfigurationPersister, SubsystemXmlWriterRegistry {
 
 }
