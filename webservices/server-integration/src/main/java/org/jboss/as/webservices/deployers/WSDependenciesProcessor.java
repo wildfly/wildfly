@@ -40,10 +40,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
-import java.util.List;
-
 /**
  * A DUP that sets the dependencies required for using WS classes in WS deployments
  *
@@ -112,6 +108,9 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
         }
         final Index index = ASHelper.getRootAnnotationIndex(unit);
         final WarMetaData warMetaData = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
+        if(warMetaData == null || warMetaData.getWebMetaData() == null) {
+            return false;
+        }
         return (ASHelper.selectWebServiceServlets(index, warMetaData.getWebMetaData().getServlets(), true).size() > 0);
     }
 
