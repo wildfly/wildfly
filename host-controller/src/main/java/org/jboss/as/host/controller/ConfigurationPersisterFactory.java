@@ -43,12 +43,12 @@ public class ConfigurationPersisterFactory {
     private static final String DOMAIN_XML = "domain.xml";
 
     public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir) {
-        HostXml hostXml = new HostXml(Module.getSystemModuleLoader());
+        HostXml hostXml = new HostXml(Module.getBootModuleLoader());
         return new BackupXmlConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
     }
 
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
-        DomainXml domainXml = new DomainXml(Module.getSystemModuleLoader());
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
         return new BackupXmlConfigurationPersister(getFile(configDir, DOMAIN_XML), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }
 

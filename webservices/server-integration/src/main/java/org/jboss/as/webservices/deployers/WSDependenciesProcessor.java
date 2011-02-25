@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.deployers;
 
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -38,6 +39,10 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
+
+import javax.jws.WebService;
+import javax.xml.ws.WebServiceProvider;
+import java.util.List;
 
 /**
  * A DUP that sets the dependencies required for using WS classes in WS deployments

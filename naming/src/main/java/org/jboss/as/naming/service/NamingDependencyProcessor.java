@@ -47,7 +47,7 @@ public class NamingDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));

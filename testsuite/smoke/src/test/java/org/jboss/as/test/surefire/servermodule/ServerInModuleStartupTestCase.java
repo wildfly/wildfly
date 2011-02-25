@@ -61,7 +61,7 @@ public class ServerInModuleStartupTestCase {
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
         configuration.setServerEnvironment(serverEnvironment);
-        configuration.setModuleLoader(Module.getSystemModuleLoader());
+        configuration.setModuleLoader(Module.getBootModuleLoader());
         configuration.setPortOffset(0);
 
         container = bootstrap.startup(configuration, Collections.<ServiceActivator>emptyList()).get();

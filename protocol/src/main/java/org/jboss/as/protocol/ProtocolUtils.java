@@ -22,10 +22,6 @@
 
 package org.jboss.as.protocol;
 
-import java.io.DataInput;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -33,6 +29,10 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.Module;
+
+import java.io.DataInput;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Utility class providing methods for common management tasks.
@@ -46,7 +46,7 @@ public class    ProtocolUtils {
     static {
         MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ProtocolUtils.class.getClassLoader());
         MODULAR_CONFIG = new MarshallingConfiguration();
-        MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance(Module.getSystemModuleLoader()));
+        MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance(Module.getBootModuleLoader()));
     }
 
     private ProtocolUtils() {

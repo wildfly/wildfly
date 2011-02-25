@@ -72,7 +72,7 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, false));
     }
 

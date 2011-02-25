@@ -64,7 +64,7 @@ final class InitialModuleLoaderFactory {
             }
             SecurityActions.setSystemProperty("jboss.modules.system.pkgs", packages.toString());
 
-            ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+            ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
             // Sanity check that the SYSTEM module ClassLoader cannot see this class
             try {

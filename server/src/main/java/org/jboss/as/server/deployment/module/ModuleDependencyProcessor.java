@@ -78,7 +78,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
                 if (dependencyId.getName().startsWith("deployment.")) {
                     dependencyLoader = deploymentModuleLoader;
                 } else {
-                    dependencyLoader = Module.getSystemModuleLoader();
+                    dependencyLoader = Module.getBootModuleLoader();
                 }
                 ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, false);
                 moduleSpecification.addDependency(dependency);

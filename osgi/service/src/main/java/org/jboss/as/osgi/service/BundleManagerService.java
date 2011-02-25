@@ -215,7 +215,7 @@ public class BundleManagerService implements Service<BundleManager> {
 
         FrameworkModuleLoader(BundleManager bundleManager) throws ModuleLoadException {
 
-            ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+            ModuleLoader moduleLoader = Module.getBootModuleLoader();
             Module frameworkModule = moduleLoader.loadModule(ModuleIdentifier.create("org.jboss.osgi.framework"));
 
             // Setup the extended framework module spec
