@@ -30,6 +30,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -72,6 +78,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     private static final Set<String> READ_ONLY_OPERATIONS;
     static {
         Set<String> roops = new HashSet<String>();
+        roops.add(READ_ATTRIBUTE_OPERATION);
+        roops.add(READ_CHILDREN_NAMES_OPERATION);
+        roops.add(READ_OPERATION_DESCRIPTION_OPERATION);
+        roops.add(READ_OPERATION_NAMES_OPERATION);
+        roops.add(READ_RESOURCE_DESCRIPTION_OPERATION);
+        roops.add(READ_RESOURCE_OPERATION);
         READ_ONLY_OPERATIONS = Collections.unmodifiableSet(roops);
     }
 
@@ -205,7 +217,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             List<String> hosts = Collections.singletonList(targetHost);
             routing = new OperationRouting(hosts);
         }
-        else if (isReadOnly(operation)) {
+        else if (isReadOnly(operation, address)) {
             // Direct read of domain model
             routing = new OperationRouting(false);
         }
@@ -254,11 +266,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return routing;
     }
 
-    private boolean isReadOnly(ModelNode operation) {
+    private boolean isReadOnly(final ModelNode operation, final List<Property> address) {
         // FIXME this is an overly primitive way to check for read-only ops
-        boolean ro = READ_ONLY_OPERATIONS.contains(operation.require(OP).asString());
-        if (!ro) {
-
+        String opName = operation.require(OP).asString();
+        boolean ro = READ_ONLY_OPERATIONS.contains(opName);
+        if (!ro && address.size() == 1 && DESCRIBE.equals(opName) && PROFILE.equals(address.get(0).getName())) {
+            ro = true;
         }
         return ro;
     }
