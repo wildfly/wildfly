@@ -22,10 +22,6 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
-
-import java.util.List;
-
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -41,6 +37,10 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+
+import java.util.List;
+
+import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata to add Module dependencies for
@@ -79,10 +79,10 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                             if (ds.getModule() != null && !ds.getModule().trim().equals("")) {
                                 ModuleIdentifier jdbcIdentifier = ModuleIdentifier.fromString(ds.getModule());
                                 // TODO: Use application server module loader
-                                Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
+                                Module jdbcModule = Module.getBootModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                moduleSpecification.addDependency(new ModuleDependency(Module.getSystemModuleLoader(),
+                                moduleSpecification.addDependency(new ModuleDependency(Module.getBootModuleLoader(),
                                         jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", ds.getJndiName());
@@ -103,10 +103,10 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
                             if (xads.getModule() != null && !xads.getModule().trim().equals("")) {
                                 ModuleIdentifier jdbcIdentifier = ModuleIdentifier.fromString(xads.getModule());
                                 // TODO: Use application server module loader
-                                Module jdbcModule = Module.getSystemModuleLoader().loadModule(jdbcIdentifier);
+                                Module jdbcModule = Module.getBootModuleLoader().loadModule(jdbcIdentifier);
 
                                 // Hack: Link the jdbcModule
-                                moduleSpecification.addDependency(new ModuleDependency(Module.getSystemModuleLoader(),
+                                moduleSpecification.addDependency(new ModuleDependency(Module.getBootModuleLoader(),
                                         jdbcIdentifier, false, false, false));
                             } else {
                                 log.warnf("No module defined for %s", xads.getJndiName());
