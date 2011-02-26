@@ -17,3 +17,4 @@ transaction.log
 # vim files
 *.swp
 /.gitk-tmp.*
+atlassian-ide-plugin.xml
