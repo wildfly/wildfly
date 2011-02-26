@@ -21,20 +21,10 @@
  */
 package org.jboss.as.webservices.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
-
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
@@ -50,6 +40,15 @@ import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+
+import javax.jws.WebService;
+import javax.xml.ws.WebServiceProvider;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JBoss AS integration helper class.
@@ -356,31 +355,31 @@ public final class ASHelper {
         final DotName webserviceAnnotation = DotName.createSimple(WebService.class.getName());
         final DotName webserviceProviderAnnotation = DotName.createSimple(WebServiceProvider.class.getName());
 
-        for (ServletMetaData servletMD : smd) {
-            final String endpointClassName = ASHelper.getEndpointName(servletMD);
-            if (endpointClassName != null && endpointClassName.length() > 0) { // exclude JSP
-                // check webservice annotations
-                Map<DotName, List<AnnotationInstance>> map = null;
-                if (annotationIndex != null) {
-                    ClassInfo ci = annotationIndex.getClassByName(DotName.createSimple(endpointClassName));
-                    if (ci != null) {
-                        map = ci.annotations();
+        if(smd != null) for (ServletMetaData servletMD : smd) {
+                final String endpointClassName = ASHelper.getEndpointName(servletMD);
+                if (endpointClassName != null && endpointClassName.length() > 0) { // exclude JSP
+                    // check webservice annotations
+                    Map<DotName, List<AnnotationInstance>> map = null;
+                    if (annotationIndex != null) {
+                        ClassInfo ci = annotationIndex.getClassByName(DotName.createSimple(endpointClassName));
+                        if (ci != null) {
+                            map = ci.annotations();
+                        }
+                    }
+                    if (map == null) {
+                        map = new HashMap<DotName, List<AnnotationInstance>>();
+                    }
+                    final boolean isWebService = map.containsKey(webserviceAnnotation);
+                    final boolean isWebServiceProvider = map.containsKey(webserviceProviderAnnotation);
+                    // detect webservice type
+                    final boolean isJaxwsEndpoint = jaxws && (isWebService || isWebServiceProvider);
+                    final boolean isJaxrpcEndpoint = !jaxws && (!isWebService && !isWebServiceProvider);
+
+                    if (isJaxwsEndpoint || isJaxrpcEndpoint) {
+                        endpoints.add(servletMD);
                     }
                 }
-                if (map == null) {
-                    map = new HashMap<DotName, List<AnnotationInstance>>();
-                }
-                final boolean isWebService = map.containsKey(webserviceAnnotation);
-                final boolean isWebServiceProvider = map.containsKey(webserviceProviderAnnotation);
-                // detect webservice type
-                final boolean isJaxwsEndpoint = jaxws && (isWebService || isWebServiceProvider);
-                final boolean isJaxrpcEndpoint = !jaxws && (!isWebService && !isWebServiceProvider);
-
-                if (isJaxwsEndpoint || isJaxrpcEndpoint) {
-                    endpoints.add(servletMD);
-                }
             }
-        }
         return endpoints;
     }
 
