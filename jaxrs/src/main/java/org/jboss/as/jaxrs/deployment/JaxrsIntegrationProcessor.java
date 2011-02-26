@@ -1,10 +1,5 @@
 package org.jboss.as.jaxrs.deployment;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.ApplicationPath;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -21,6 +16,10 @@ import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.plugins.server.servlet.Filter30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
+
+import javax.ws.rs.ApplicationPath;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -57,7 +56,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
             }
             String resources = buf.toString();
-            log.info("*** Adding JAX-RS resource classes: " + resources);
+            log.debug("Adding JAX-RS resource classes: " + resources);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_RESOURCES, resources);
         }
         if (!resteasy.getScannedProviderClasses().isEmpty()) {
@@ -71,7 +70,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
             }
             String providers = buf.toString();
-            log.info("*** Adding JAX-RS provider classes: " + providers);
+            log.debug("Adding JAX-RS provider classes: " + providers);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_PROVIDERS, providers);
         }
 
@@ -86,7 +85,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
             }
             String providers = buf.toString();
-            log.info("*** Adding JAX-RS jndi component resource classes: " + providers);
+            log.debug("Adding JAX-RS jndi component resource classes: " + providers);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_JNDI_RESOURCES, providers);
         }
 
@@ -103,7 +102,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
             // don't set this param if CDI is not in classpath
             if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
-                log.debug("***** Found CDI, adding injector factory class");
+                log.debug("Found CDI, adding injector factory class");
                 setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
             }
         } catch (ClassNotFoundException ignored) {
