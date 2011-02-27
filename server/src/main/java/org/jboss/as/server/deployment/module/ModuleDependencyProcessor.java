@@ -74,13 +74,14 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
                 final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
                 boolean export = parseOptionalExportParams(dependencyParts, "export");
                 boolean optional = parseOptionalExportParams(dependencyParts, "optional");
+                boolean services = parseOptionalExportParams(dependencyParts, "services");
                 final ModuleLoader dependencyLoader;
                 if (dependencyId.getName().startsWith("deployment.")) {
                     dependencyLoader = deploymentModuleLoader;
                 } else {
                     dependencyLoader = Module.getBootModuleLoader();
                 }
-                ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, false);
+                ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services);
                 moduleSpecification.addDependency(dependency);
             }
         }
