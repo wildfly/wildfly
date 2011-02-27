@@ -26,6 +26,7 @@
     <dependencies>
         <module name="javax.xml.bind.api" export="true"/>
         <module name="javax.xml.soap.api" export="true"/>
+        <module name="javax.api"/>
         <module name="org.jboss.modules"/>
     </dependencies>
 
