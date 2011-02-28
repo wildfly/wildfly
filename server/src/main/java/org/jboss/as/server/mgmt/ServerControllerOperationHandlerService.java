@@ -21,7 +21,6 @@
 */
 package org.jboss.as.server.mgmt;
 
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.server.Services;
@@ -42,7 +41,6 @@ public class ServerControllerOperationHandlerService extends ModelControllerOper
     private InjectedValue<ManagementCommunicationService> managementCommunicationService = new InjectedValue<ManagementCommunicationService>();
 
     public ServerControllerOperationHandlerService() {
-        super(ModelControllerClient.Type.STANDALONE);
     }
 
     @Override

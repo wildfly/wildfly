@@ -49,12 +49,10 @@ import org.jboss.dmr.ModelNode;
 * @version $Revision: 1.1 $
 */
 abstract class AbstractModelControllerClient implements ModelControllerClient {
-    final Type type;
     final ThreadFactory threadFactory = Executors.defaultThreadFactory();
     final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-    public AbstractModelControllerClient(final Type type) {
-        this.type = type;
+    public AbstractModelControllerClient() {
     }
 
     @Override
@@ -137,7 +135,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
         @Override
         protected byte getHandlerId() {
-            return type.getHandlerId();
+            return ModelControllerClientProtocol.HANDLER_ID;
         }
     }
 

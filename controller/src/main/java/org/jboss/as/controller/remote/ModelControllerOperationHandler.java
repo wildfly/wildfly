@@ -21,10 +21,8 @@
  */
 package org.jboss.as.controller.remote;
 
-import org.jboss.as.protocol.MessageHandler;
-
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 
 /**
@@ -39,24 +37,22 @@ public interface ModelControllerOperationHandler extends MessageHandler, Managem
         /**
          * Creates a new ModelControllerOperationHandler intended for use when new connections are created per request
          *
-         * @param type the type of connection
          * @param modelController the target controller
          */
-        public static ModelControllerOperationHandlerImpl create(ModelControllerClient.Type type, ModelController modelController) {
-            return create(type, modelController, null);
+        public static ModelControllerOperationHandlerImpl create(ModelController modelController) {
+            return create(modelController, null);
         }
 
         /**
          * Creates a new ModelControllerOperationHandler intended for use when the connection is reused between requests
          *
-         * @param type the type of connection
          * @param modelController the target controller
          */
-        public static ModelControllerOperationHandlerImpl create(ModelControllerClient.Type type, ModelController modelController, MessageHandler initialMessageHandler) {
+        public static ModelControllerOperationHandlerImpl create(ModelController modelController, MessageHandler initialMessageHandler) {
             if (initialMessageHandler == null) {
                 initialMessageHandler = MessageHandler.NULL;
             }
-            return new ModelControllerOperationHandlerImpl(type, modelController, initialMessageHandler);
+            return new ModelControllerOperationHandlerImpl(modelController, initialMessageHandler);
         }
     }
 }

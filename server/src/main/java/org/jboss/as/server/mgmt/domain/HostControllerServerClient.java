@@ -27,7 +27,6 @@ import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
@@ -76,7 +75,7 @@ public class HostControllerServerClient implements Service<Void> {
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.STANDALONE, controller.getValue(), initialMessageHandler);
+        modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(controller.getValue(), initialMessageHandler);
         smConnection.setMessageHandler(initialMessageHandler);
     }
 

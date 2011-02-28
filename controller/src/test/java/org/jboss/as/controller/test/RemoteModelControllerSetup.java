@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
@@ -83,7 +82,7 @@ public class RemoteModelControllerSetup implements ConnectionHandler {
         final ModelControllerOperationHandler operationHandler;
 
         SetupManagementHeaderMessageHandler(ModelController controller){
-            this.operationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.STANDALONE, controller, this);
+            this.operationHandler = ModelControllerOperationHandler.Factory.create(controller, this);
         }
 
 

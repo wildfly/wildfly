@@ -38,7 +38,6 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
@@ -99,7 +98,7 @@ public class ExistingConnectionRemoteProxyControllerTestCase extends AbstractPro
         MessageHandler handler = new RemoteModelControllerSetup.SetupManagementHeaderMessageHandler(proxyController);
         clientConn.setMessageHandler(handler);
 
-        testController.setDelegate(RemoteProxyController.create(ModelControllerClient.Type.STANDALONE, serverConn, proxyNodeAddress));
+        testController.setDelegate(RemoteProxyController.create(serverConn, proxyNodeAddress));
     }
 
     @After

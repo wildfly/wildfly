@@ -42,7 +42,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainControllerSlave;
@@ -105,8 +105,8 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         try {
             connection = protocolClient.connect();
-            client = RemoteProxyController.create(ModelControllerClient.Type.DOMAIN, connection, PathAddress.EMPTY_ADDRESS);
-            operationHandler = ModelControllerOperationHandler.Factory.create(ModelControllerClient.Type.HOST, slave, initialMessageHandler);
+            client = RemoteProxyController.create(connection, PathAddress.EMPTY_ADDRESS);
+            operationHandler = ModelControllerOperationHandler.Factory.create(slave, initialMessageHandler);
         } catch (IOException e) {
             log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
             throw new IllegalStateException(e);
@@ -168,7 +168,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         @Override
         protected byte getHandlerId() {
-            return ModelControllerClient.Type.DOMAIN.getHandlerId();
+            return ModelControllerClientProtocol.HANDLER_ID;
         }
     }
 
@@ -386,7 +386,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         @Override
         protected MessageHandler getHandlerForId(byte handlerId) {
-            if (handlerId == ModelControllerClient.Type.HOST.getHandlerId()) {
+            if (handlerId == ModelControllerClientProtocol.HANDLER_ID) {
                 return operationHandler;
             }
             return null;

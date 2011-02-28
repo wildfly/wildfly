@@ -37,7 +37,6 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
@@ -57,8 +56,6 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
     private static final Logger log = Logger.getLogger("org.jboss.server.management");
 
-    private final ModelControllerClient.Type type;
-
     private final ModelController modelController;
 
     private final AtomicInteger currentAsynchronousRequestId = new AtomicInteger();
@@ -67,8 +64,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
     private final MessageHandler initiatingHandler;
 
-    protected ModelControllerOperationHandlerImpl(ModelControllerClient.Type type, ModelController modelController, MessageHandler initiatingHandler) {
-        this.type = type;
+    protected ModelControllerOperationHandlerImpl(ModelController modelController, MessageHandler initiatingHandler) {
         this.modelController = modelController;
         this.initiatingHandler = initiatingHandler;
     }
@@ -91,7 +87,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
     /** {@inheritDoc} */
     @Override
     public byte getIdentifier() {
-        return type.getHandlerId();
+        return ModelControllerClientProtocol.HANDLER_ID;
     }
 
     protected ModelController getController() {
@@ -319,10 +315,5 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         public void setException(IOException exception) {
             this.exception = exception;
         }
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + "[" + type + "]";
     }
 }

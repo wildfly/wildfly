@@ -22,7 +22,6 @@
 package org.jboss.as.controller.remote;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -44,14 +43,11 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
 
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
 
-    private final ModelControllerClient.Type type;
-
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
 
     private volatile ModelControllerOperationHandler handler;
 
-    public ModelControllerOperationHandlerService(ModelControllerClient.Type type) {
-        this.type = type;
+    public ModelControllerOperationHandlerService() {
     }
 
     /**
@@ -68,7 +64,7 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
     public void start(StartContext context) throws StartException {
         final ModelController modelController = modelControllerValue.getValue();
         final MessageHandler initialMessageHandler = getInitialMessageHandler();
-        this.handler = createOperationHandler(type, modelController, initialMessageHandler);
+        this.handler = createOperationHandler(modelController, initialMessageHandler);
     }
 
     /** {@inheritDoc} */
@@ -91,7 +87,7 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
         return MessageHandler.NULL;
     }
 
-    protected ModelControllerOperationHandler createOperationHandler(ModelControllerClient.Type type, ModelController modelController, MessageHandler initialMessageHandler) {
-        return new ModelControllerOperationHandlerImpl(type, modelController, initialMessageHandler);
+    protected ModelControllerOperationHandler createOperationHandler(ModelController modelController, MessageHandler initialMessageHandler) {
+        return new ModelControllerOperationHandlerImpl(modelController, initialMessageHandler);
     }
 }

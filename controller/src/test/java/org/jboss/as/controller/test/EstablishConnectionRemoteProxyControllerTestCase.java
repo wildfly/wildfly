@@ -29,7 +29,6 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
@@ -51,7 +50,7 @@ public class EstablishConnectionRemoteProxyControllerTestCase extends AbstractPr
     public void start() throws Exception {
         server = new RemoteModelControllerSetup(proxyController, 0);
         server.start();
-        testController.setDelegate(RemoteProxyController.create(ModelControllerClient.Type.STANDALONE, InetAddress.getByName("localhost"), server.getPort(), proxyNodeAddress));
+        testController.setDelegate(RemoteProxyController.create(InetAddress.getByName("localhost"), server.getPort(), proxyNodeAddress));
     }
 
     @After

@@ -27,6 +27,7 @@ package org.jboss.as.controller.client;
  * @version $Revision: 1.1 $
  */
 public interface ModelControllerClientProtocol {
+    int HANDLER_ID = 0x1;
     int EXECUTE_ASYNCHRONOUS_REQUEST = 0x45;
     int EXECUTE_ASYNCHRONOUS_RESPONSE = 0x46;
     int EXECUTE_SYNCHRONOUS_REQUEST = 0x47;

@@ -32,8 +32,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 class ExistingConnectionModelControllerClient extends AbstractModelControllerClient {
     private final Connection connection;
 
-    public ExistingConnectionModelControllerClient(Type type, Connection connection) {
-        super(type);
+    public ExistingConnectionModelControllerClient(Connection connection) {
         this.connection = connection;
     }
 

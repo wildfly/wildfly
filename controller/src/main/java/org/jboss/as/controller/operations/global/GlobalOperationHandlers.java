@@ -21,8 +21,6 @@
  */
 package org.jboss.as.controller.operations.global;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -45,11 +43,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -180,7 +180,7 @@ public class GlobalOperationHandlers {
             ModelNode resultNode = mainResult;
             for (Iterator<PathElement> it = address.iterator() ; it.hasNext() ; ) {
                 PathElement element = it.next();
-                resultNode = resultNode.require(element.getKey()).require(element.getValue());
+                resultNode = resultNode.get(element.getKey()).get(element.getValue());
             }
             resultNode.set(proxyResult.get(RESULT).clone());
         }

@@ -46,12 +46,11 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
     /**
      * Create a new model controller adapter connecting to a remote host
      *
-     * @param type the type of controller to connect to
      * @param address the address of the remote model controller to connect to
      * @param port the port of the remote model controller to connect to
      */
-    ModelControllerClientToModelControllerAdapter(final ModelControllerClient.Type type, final InetAddress address, final int port) {
-        client = ModelControllerClient.Factory.create(type, address, port);
+    ModelControllerClientToModelControllerAdapter(final InetAddress address, final int port) {
+        client = ModelControllerClient.Factory.create(address, port);
     }
 
     /**
@@ -59,8 +58,8 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
      *
      * @param connection the connection
      */
-    public ModelControllerClientToModelControllerAdapter(final ModelControllerClient.Type type, final Connection connection) {
-        client = ModelControllerClient.Factory.create(type, connection);
+    public ModelControllerClientToModelControllerAdapter(final Connection connection) {
+        client = ModelControllerClient.Factory.create(connection);
     }
 
     @Override

@@ -40,7 +40,6 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -110,7 +109,7 @@ public class RemoteDomainControllerConnectionTestCase {
         mockModel.get(ModelDescriptionConstants.PROFILE);
         DomainModel dm = DomainModel.Factory.create(mockModel, mockPersister, null);
         domainController = new DomainControllerImpl(Executors.newScheduledThreadPool(20), dm, "test", new NoopFileRepository());
-        domainControllerOperationHandlerImpl = new DomainControllerOperationHandlerImpl(ModelControllerClient.Type.HOST, domainController, new ServerConnectionHandler());
+        domainControllerOperationHandlerImpl = new DomainControllerOperationHandlerImpl(domainController, new ServerConnectionHandler());
 
         //Add an empty profile
         ModelNode add = new ModelNode();
@@ -150,8 +149,6 @@ public class RemoteDomainControllerConnectionTestCase {
         service.register("slave", slave);
         ModelNode remoteModel = slave.model;
         Assert.assertNotNull(remoteModel);
-        Assert.assertTrue(remoteModel.hasDefined(ModelDescriptionConstants.HOST));
-        Assert.assertTrue(remoteModel.get(ModelDescriptionConstants.HOST).has("Test"));
         Assert.assertTrue(remoteModel.hasDefined(ModelDescriptionConstants.PROFILE));
         Assert.assertTrue(remoteModel.get(ModelDescriptionConstants.PROFILE).hasDefined("test"));
 

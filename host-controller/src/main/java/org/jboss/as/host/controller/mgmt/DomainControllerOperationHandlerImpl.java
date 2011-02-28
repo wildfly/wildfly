@@ -52,8 +52,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerImpl;
 import org.jboss.as.controller.remote.RemoteProxyController;
@@ -88,8 +86,8 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
     public static final byte TRANSACTION_ROLLBACK_RESPONSE = (byte)0x26;
     public static final byte TRANSACTION_ID = (byte)0x30;
 
-    public DomainControllerOperationHandlerImpl(Type type, DomainController modelController, MessageHandler initiatingHandler) {
-        super(type, modelController, initiatingHandler);
+    public DomainControllerOperationHandlerImpl(DomainController modelController, MessageHandler initiatingHandler) {
+        super(modelController, initiatingHandler);
     }
 
     @Override
@@ -287,7 +285,7 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
             this.hostId = hostId;
             this.connection = connection;
             this.proxyNodeAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, getId()));
-            this.remote = RemoteProxyController.create(ModelControllerClient.Type.HOST, connection, proxyNodeAddress);
+            this.remote = RemoteProxyController.create(connection, proxyNodeAddress);
             this.connectionStrategy = new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection);
         }
 

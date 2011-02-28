@@ -34,7 +34,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
@@ -135,7 +134,7 @@ public class HostControllerImpl implements HostController {
     @Override
     public void registerRunningServer(String serverName, Connection connection) {
         PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
-        ProxyController serverController = RemoteProxyController.create(ModelControllerClient.Type.STANDALONE, connection, PathAddress.pathAddress(element));
+        ProxyController serverController = RemoteProxyController.create(connection, PathAddress.pathAddress(element));
         hostModel.registerProxy(serverController);
     }
 

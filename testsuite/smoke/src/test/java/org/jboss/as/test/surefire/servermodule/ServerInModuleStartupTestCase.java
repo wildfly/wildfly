@@ -77,7 +77,7 @@ public class ServerInModuleStartupTestCase {
 
     @Test
     public void testXmlConfigDemo() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(ModelControllerClient.Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
@@ -96,7 +96,7 @@ public class ServerInModuleStartupTestCase {
 
     @Test
     public void testDescriptionDemo() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(ModelControllerClient.Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-resource");

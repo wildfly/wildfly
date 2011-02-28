@@ -22,7 +22,6 @@
 package org.jboss.as.host.controller.mgmt;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
 import org.jboss.as.domain.controller.DomainController;
@@ -46,7 +45,6 @@ public class DomainControllerOperationHandlerService extends ModelControllerOper
     private InjectedValue<ManagementCommunicationService> managementCommunicationService = new InjectedValue<ManagementCommunicationService>();
 
     public DomainControllerOperationHandlerService() {
-        super(ModelControllerClient.Type.DOMAIN);
     }
 
     @Override
@@ -70,8 +68,8 @@ public class DomainControllerOperationHandlerService extends ModelControllerOper
         return managementCommunicationService.getValue().getInitialMessageHandler();
     }
 
-    protected ModelControllerOperationHandler createOperationHandler(ModelControllerClient.Type type, ModelController modelController, MessageHandler initialMessageHandler) {
-        return new DomainControllerOperationHandlerImpl(type, (DomainController)modelController, initialMessageHandler);
+    protected ModelControllerOperationHandler createOperationHandler(ModelController modelController, MessageHandler initialMessageHandler) {
+        return new DomainControllerOperationHandlerImpl((DomainController)modelController, initialMessageHandler);
     }
 
 }

@@ -65,8 +65,8 @@ public interface ModelControllerClient extends Closeable {
          * @param port The remote port
          * @return A domain client
          */
-        public static ModelControllerClient create(final Type type, final InetAddress address, final int port) {
-            return new EstablishConnectionModelControllerClient(type, address, port);
+        public static ModelControllerClient create(final InetAddress address, final int port) {
+            return new EstablishConnectionModelControllerClient(address, port);
         }
 
         /**
@@ -75,24 +75,8 @@ public interface ModelControllerClient extends Closeable {
          * @param connection the connection
          * @return A domain client
          */
-        public static ModelControllerClient create(final Type type, final Connection connection) {
-            return new ExistingConnectionModelControllerClient(type, connection);
-        }
-    }
-
-    enum Type {
-        STANDALONE((byte)0x01),
-        HOST((byte)0x02),
-        DOMAIN((byte)0x03);
-
-        private final byte handlerId;
-
-        Type(final byte handlerId){
-            this.handlerId = handlerId;
-        }
-
-        public byte getHandlerId() {
-            return handlerId;
+        public static ModelControllerClient create(final Connection connection) {
+            return new ExistingConnectionModelControllerClient(connection);
         }
     }
 }

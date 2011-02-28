@@ -36,8 +36,7 @@ public class EstablishConnectionModelControllerClient extends AbstractModelContr
     private final InetAddress address;
     private final int port;
 
-    public EstablishConnectionModelControllerClient(Type type, InetAddress address, int port) {
-        super(type);
+    public EstablishConnectionModelControllerClient(InetAddress address, int port) {
         this.address = address;
         this.port = port;
     }

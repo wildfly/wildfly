@@ -27,7 +27,6 @@ import java.net.UnknownHostException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.ModelControllerClient.Type;
 
 /**
  * Connect handler.
@@ -71,7 +70,7 @@ public class ConnectHandler implements CommandHandler {
 
         if(port >= 0) {
             try {
-                ModelControllerClient client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName(host), port);
+                ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName(host), port);
                 ctx.setModelControllerClient(client);
                 ctx.log("Connected to " + host + ":" + port);
             } catch (UnknownHostException e) {

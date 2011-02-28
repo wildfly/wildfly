@@ -21,25 +21,8 @@
  */
 package org.jboss.as.demos;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.ModelControllerClient.Type;
-import org.jboss.as.server.client.api.deployment.DeploymentPlan;
-import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
-import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.container.ResourceContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +35,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.server.client.api.deployment.DeploymentPlan;
+import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
+import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.container.ResourceContainer;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>standalone</b> application server
@@ -69,7 +69,7 @@ public class DeploymentUtils implements Closeable {
     private final ServerDeploymentManager manager;
 
     public DeploymentUtils() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
+        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         manager = ServerDeploymentManager.Factory.create(client);
     }
 

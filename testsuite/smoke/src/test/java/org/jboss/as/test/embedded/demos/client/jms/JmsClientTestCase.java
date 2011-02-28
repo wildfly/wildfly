@@ -52,7 +52,6 @@ import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.ModelControllerClient.Type;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -82,7 +81,7 @@ public class JmsClientTestCase {
     public void testMessagingClient() throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        ModelControllerClient client = ModelControllerClient.Factory.create(Type.STANDALONE, InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
 
         boolean actionsApplied = false;
         try {
