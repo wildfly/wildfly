@@ -63,6 +63,17 @@ public class ServerEnvironment implements Serializable {
     public static final String MODULES_DIR = "jboss.modules.dir";
 
     /**
+     * Constant that holds the name of the system property for specifying
+     * the modules that provide protocol handlers.
+     */
+    public static final String PROTOCOL_HANDLER_MODULES = "jboss.protocol.handler.modules";
+
+    /**
+     * VFS module identifier
+     */
+    public static final String VFS_MODULE_IDENTIFIER = "org.jboss.vfs";
+
+    /**
      * Constant that holds the name of the environment property
      * for specifying the base directory for server content.
      *
@@ -295,6 +306,12 @@ public class ServerEnvironment implements Serializable {
         SecurityActions.setSystemProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
+        String protocolHandlers = SecurityActions.getSystemProperty(PROTOCOL_HANDLER_MODULES);
+        if(protocolHandlers == null || protocolHandlers.trim().isEmpty()) {
+            SecurityActions.setSystemProperty(PROTOCOL_HANDLER_MODULES, VFS_MODULE_IDENTIFIER);
+        } else {
+            SecurityActions.setSystemProperty(PROTOCOL_HANDLER_MODULES, protocolHandlers + '|' + VFS_MODULE_IDENTIFIER);
+        }
     }
 
     /**
