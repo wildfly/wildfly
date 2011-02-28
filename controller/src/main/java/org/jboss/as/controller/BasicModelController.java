@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -147,6 +146,18 @@ public class BasicModelController extends AbstractModelController implements Mod
      */
     protected OperationHandler getHandler(final PathAddress address, final String name) {
         return registry.getOperationHandler(address, name);
+    }
+
+    protected ModelProvider getModelProvider() {
+        return modelSource;
+    }
+
+    protected OperationContextFactory getOperationContextFactory() {
+        return contextFactory;
+    }
+
+    protected ConfigurationPersisterProvider getConfigurationPersisterProvider() {
+        return configPersisterProvider;
     }
 
     /** {@inheritDoc} */
@@ -318,89 +329,6 @@ public class BasicModelController extends AbstractModelController implements Mod
         return model;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode execute(final ModelNode operation) {
-        final AtomicInteger status = new AtomicInteger();
-        final ModelNode finalResult = new ModelNode();
-        // Make the "outcome" child come first
-        finalResult.get(OUTCOME);
-        // Ensure there is a "result" child even if we receive no fragments
-        finalResult.get(RESULT);
-        final OperationResult handlerResult = execute(operation, new ResultHandler() {
-            @Override
-            public void handleResultFragment(final String[] location, final ModelNode fragment) {
-                synchronized (finalResult) {
-                    if (status.get() == 0) {
-                        finalResult.get(RESULT).get(location).set(fragment);
-                    }
-                }
-            }
-
-            @Override
-            public void handleResultComplete() {
-                synchronized (finalResult) {
-                    status.compareAndSet(0, 1);
-                    finalResult.notify();
-                }
-            }
-
-            @Override
-            public void handleFailed(final ModelNode failureDescription) {
-                synchronized (finalResult) {
-                    if (status.compareAndSet(0, 3)) {
-//                        finalResult.remove(RESULT);
-                        finalResult.get(FAILURE_DESCRIPTION).set(failureDescription);
-                    }
-                    finalResult.notify();
-                }
-            }
-
-            @Override
-            public void handleCancellation() {
-                synchronized (finalResult) {
-                    if (status.compareAndSet(0, 2)) {
-                        finalResult.remove(RESULT);
-                    }
-                    finalResult.notify();
-                }
-            }
-        });
-        boolean intr = false;
-        try {
-            synchronized (finalResult) {
-                for (;;) {
-                    try {
-                        final int s = status.get();
-                        switch (s) {
-                            case 1: finalResult.get(OUTCOME).set(SUCCESS);
-                                if(handlerResult.getCompensatingOperation() != null) {
-                                   finalResult.get(COMPENSATING_OPERATION).set(handlerResult.getCompensatingOperation());
-                                }
-                                return finalResult;
-                            case 2: finalResult.get(OUTCOME).set(CANCELLED);
-                                throw new CancellationException();
-                            case 3: finalResult.get(OUTCOME).set(FAILED);
-                                if (!finalResult.hasDefined(RESULT)) {
-                                    // Remove the undefined node
-                                    finalResult.remove(RESULT);
-                                }
-                                return finalResult;
-                        }
-                        finalResult.wait();
-                    } catch (final InterruptedException e) {
-                        intr = true;
-                        handlerResult.getCancellable().cancel();
-                    }
-                }
-            }
-        } finally {
-            if (intr) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
     /**
      * Validates that it is valid to add a resource to the model at the given
      * address. Confirms that:
@@ -478,7 +406,6 @@ public class BasicModelController extends AbstractModelController implements Mod
                 log.errorf(t, "Failed to close resource %s", closeable);
             }
         }
-
     }
 
     protected class MultiStepOperationController implements ModelProvider, OperationContextFactory, ConfigurationPersisterProvider {
@@ -613,15 +540,19 @@ public class BasicModelController extends AbstractModelController implements Mod
         protected void recordModelComplete() {
             modelComplete.set(true);
             if (modelUpdated) {
-                final ModelNode model = modelSource.getModel();
-                synchronized (model) {
-                    model.set(localModel);
-                }
-                BasicModelController.this.persistConfiguration(model, injectedConfigPersisterProvider);
+                updateModelAndPersist();
             }
             if (unfinishedCount.get() == 0) {
                 handleSuccess();
             }
+        }
+
+        protected void updateModelAndPersist() {
+            final ModelNode model = modelSource.getModel();
+            synchronized (model) {
+                model.set(localModel);
+            }
+            BasicModelController.this.persistConfiguration(model, injectedConfigPersisterProvider);
         }
 
         protected final String getStepKey(int id) {

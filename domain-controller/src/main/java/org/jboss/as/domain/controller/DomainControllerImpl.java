@@ -137,7 +137,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         try {
             ModelNode rsp = localDomainModel.execute(operation);
-            if (!rsp.hasDefined(OUTCOME) || !SUCCESS.equals(rsp.get(OUTCOME))) {
+            if (!rsp.hasDefined(OUTCOME) || !SUCCESS.equals(rsp.get(OUTCOME).asString())) {
                 ModelNode msgNode = rsp.get(FAILURE_DESCRIPTION);
                 String msg = msgNode.isDefined() ? msgNode.toString() : "Failed to retrieve profile operations from domain controller";
                 throw new RuntimeException(msg);

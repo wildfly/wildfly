@@ -38,7 +38,6 @@ import java.util.concurrent.Executors;
 import javax.net.SocketFactory;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -144,7 +143,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     }
 
     @Override
-    public ModelNode execute(ModelNode operation) throws CancellationException, OperationFailedException {
+    public ModelNode execute(ModelNode operation) throws CancellationException {
         return client.execute(operation);
     }
 

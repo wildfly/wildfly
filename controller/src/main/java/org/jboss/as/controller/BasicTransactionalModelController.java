@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -104,19 +105,27 @@ public class BasicTransactionalModelController extends BasicModelController impl
     /** {@inheritDoc} */
     @Override
     public OperationResult execute(final ModelNode operation, final ResultHandler handler, final ControllerTransactionContext transaction) {
+
+        return execute(operation, handler, getModelProvider(), getOperationContextFactory(), getConfigurationPersisterProvider(), transaction);
+    }
+
+    protected OperationResult execute(ModelNode operation, ResultHandler handler, ModelProvider modelSource,
+            OperationContextFactory contextFactory, ConfigurationPersisterProvider configurationPersisterProvider,
+            ControllerTransactionContext transaction) {
+
         try {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+            final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
 
             final ProxyController proxyExecutor = getRegistry().getProxyController(address);
             if (proxyExecutor != null) {
-                if (proxyExecutor instanceof TransactionalProxyController) {
-                    ModelNode newOperation = operation.clone();
-                    newOperation.get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
-                    return TransactionalProxyController.class.cast(proxyExecutor).execute(newOperation, handler, transaction);
-                }
-                else {
-                    throw new IllegalStateException(String.format("ProxyController at address %s does not support transactional operations", address));
-                }
+                ModelNode newOperation = operation.clone();
+                newOperation.get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
+                return proxyExecutor.execute(newOperation, handler);
+            }
+
+            if (isMultiStepOperation(operation, address)) {
+                MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, modelSource, transaction);
+                return multistepController.execute(handler);
             }
 
             final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
@@ -124,53 +133,18 @@ public class BasicTransactionalModelController extends BasicModelController impl
             if (operationHandler == null) {
                 throw new IllegalStateException("No handler for " + operationName + " at address " + address);
             }
-            final ModelNode subModel;
-            if (operationHandler instanceof ModelAddOperationHandler) {
-                validateNewAddress(address);
-                subModel = new ModelNode();
-            } else if (operationHandler instanceof ModelQueryOperationHandler) {
-                // or model update operation handler...
-                final ModelNode model = getModel();
-                synchronized (model) {
-                    subModel = address.navigate(model, false).clone();
-                }
-            } else {
-                subModel = null;
-            }
 
-            final OperationContext context = getOperationContext(subModel, operation, operationHandler);
-            final ResultHandler useHandler = (operationHandler instanceof ModelUpdateOperationHandler) ? new ResultHandler() {
-                @Override
-                public void handleResultFragment(final String[] location, final ModelNode result) {
-                    handler.handleResultFragment(location, result);
-                }
-
-                @Override
-                public void handleResultComplete() {
-                    handler.handleResultComplete();
-                }
-
-                @Override
-                public void handleFailed(final ModelNode failureDescription) {
-                    handler.handleFailed(failureDescription);
-                }
-
-                @Override
-                public void handleCancellation() {
-                    handler.handleCancellation();
-                }
-            } : handler;
-
+            final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler);
             try {
-                final OperationResult result = operationHandler.execute(context, operation, useHandler);
-                ControllerResource txResource = getControllerResource(context, operation, operationHandler, useHandler, address, subModel);
+                final OperationResult result = operationHandler.execute(context, operation, handler);
+                ControllerResource txResource = getControllerResource(context, operation, operationHandler, handler, address, modelSource, configurationPersisterProvider);
                 if (txResource != null) {
                     transaction.registerResource(txResource);
                 }
                 return result;
             } catch (OperationFailedException e) {
                 transaction.setRollbackOnly();
-                useHandler.handleFailed(e.getFailureDescription());
+                handler.handleFailed(e.getFailureDescription());
                 return new BasicOperationResult();
             }
         } catch (final Throwable t) {
@@ -181,11 +155,17 @@ public class BasicTransactionalModelController extends BasicModelController impl
         }
     }
 
-    protected ControllerResource getControllerResource(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler, final ResultHandler resultHandler, final PathAddress address, final ModelNode subModel) {
+    protected MultiStepOperationController getMultiStepOperationController(ModelNode operation, ResultHandler handler,
+            ModelProvider modelSource, ControllerTransactionContext transaction) throws OperationFailedException {
+        return new TransactionalMultiStepOperationController(operation, handler, modelSource, transaction);
+    }
+
+    protected ControllerResource getControllerResource(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler,
+            final ResultHandler resultHandler, final PathAddress address, final ModelProvider modelProvider, final ConfigurationPersisterProvider persisterProvider) {
         ControllerResource resource = null;
 
         if (operationHandler instanceof ModelUpdateOperationHandler) {
-            resource = new UpdateModelControllerResource(operationHandler, address, subModel);
+            resource = new UpdateModelControllerResource(operationHandler, address, context.getSubModel(), modelProvider, persisterProvider);
         }
 
         return resource;
@@ -195,31 +175,37 @@ public class BasicTransactionalModelController extends BasicModelController impl
         private final PathAddress address;
         private final ModelNode subModel;
         private final boolean isRemove;
+        private final ModelProvider modelProvider;
+        private final ConfigurationPersisterProvider persisterProvider;
 
-        public UpdateModelControllerResource(final OperationHandler handler, final PathAddress address, final ModelNode subModel) {
+        public UpdateModelControllerResource(final OperationHandler handler, final PathAddress address, final ModelNode subModel, final ModelProvider modelProvider, final ConfigurationPersisterProvider persisterProvider) {
             if (handler instanceof ModelUpdateOperationHandler) {
                 this.address = address;
                 this.subModel = subModel;
                 this.isRemove = (handler instanceof ModelRemoveOperationHandler);
+                this.modelProvider = modelProvider;
+                this.persisterProvider = persisterProvider;
             }
             else {
                 this.address = null;
                 this.subModel = null;
                 this.isRemove = false;
+                this.modelProvider = null;
+                this.persisterProvider = null;
             }
         }
 
         @Override
         public void commit() {
             if (address != null) {
-                final ModelNode model = getModel();
+                final ModelNode model = modelProvider.getModel();
                 synchronized (model) {
                     if (isRemove) {
                         address.remove(model);
                     } else {
                         address.navigate(model, true).set(subModel);
                     }
-                    persistConfiguration(model);
+                    persistConfiguration(model, persisterProvider);
                 }
             }
         }
@@ -227,6 +213,41 @@ public class BasicTransactionalModelController extends BasicModelController impl
         @Override
         public void rollback() {
             // no-op
+        }
+
+    }
+
+    protected class TransactionalMultiStepOperationController extends MultiStepOperationController {
+
+        protected final ControllerTransactionContext transaction;
+
+        protected TransactionalMultiStepOperationController(final ModelNode operation, final ResultHandler resultHandler,
+                final ModelProvider modelSource, final ControllerTransactionContext transaction) throws OperationFailedException {
+            super(operation, resultHandler, modelSource);
+            this.transaction = transaction;
+        }
+
+        /** Instead of updating and persisting, we register a resource that does it at commit */
+        @Override
+        protected void updateModelAndPersist() {
+            ControllerResource resource = new ControllerResource() {
+
+                @Override
+                public void commit() {
+                    TransactionalMultiStepOperationController.this.commit();
+                }
+
+                @Override
+                public void rollback() {
+                    // no-op
+                }
+
+            };
+            transaction.registerResource(resource);
+        }
+
+        private void commit() {
+            super.updateModelAndPersist();
         }
 
     }
