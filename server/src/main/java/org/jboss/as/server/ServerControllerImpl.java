@@ -210,8 +210,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     @Override
     protected MultiStepOperationController getMultiStepOperationController(ModelNode operation, ResultHandler handler,
-            ModelProvider modelSource) throws OperationFailedException {
-        return new ServerMultiStepOperationController(operation, handler, modelSource);
+            ModelProvider modelSource, ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
+        return new ServerMultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider);
     }
 
     private boolean isRollbackOnRuntimeFailure(OperationContext context, ModelNode operation) {
@@ -409,12 +409,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     private class ServerMultiStepOperationController extends MultiStepOperationController {
 
-        private final boolean rollbackOnRuntimeFailure;
-
         private ServerMultiStepOperationController(final ModelNode operation, final ResultHandler resultHandler,
-                final ModelProvider modelSource) throws OperationFailedException {
-            super(operation, resultHandler, modelSource);
-            this.rollbackOnRuntimeFailure = (!operation.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || operation.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
+                final ModelProvider modelSource, final ConfigurationPersisterProvider injectedConfigPersisterProvider) throws OperationFailedException {
+            super(operation, resultHandler, modelSource, injectedConfigPersisterProvider);
         }
 
         @Override

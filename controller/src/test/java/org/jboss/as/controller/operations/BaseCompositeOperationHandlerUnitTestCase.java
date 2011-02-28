@@ -90,6 +90,42 @@ public class BaseCompositeOperationHandlerUnitTestCase {
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
     }
 
+    @Test
+    public void testGoodNestedComposite() throws Exception {
+        ModelNode step1 = getOperation("good", "attr1", 2);
+        ModelNode step2 = getOperation("good", "attr2", 1);
+        ModelNode comp1 = getCompositeOperation(null, step1, step2);
+        ModelNode step3 = getOperation("good", "attr1", 20);
+        ModelNode step4 = getOperation("good", "attr2", 10);
+        ModelNode comp2 = getCompositeOperation(null, step3, step4);
+        ModelNode op = getCompositeOperation(null, comp1, comp2);
+        System.out.println(op);
+        ModelNode result = controller.execute(op);
+        System.out.println(result);
+        assertEquals("success", result.get("outcome").asString());
+
+        assertEquals(20, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
+        assertEquals(10, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
+    }
+
+    @Test
+    public void testBadNestedComposite() throws Exception {
+        ModelNode step1 = getOperation("good", "attr1", 2);
+        ModelNode step2 = getOperation("good", "attr2", 1);
+        ModelNode comp1 = getCompositeOperation(null, step1, step2);
+        ModelNode step3 = getOperation("good", "attr1", 20);
+        ModelNode step4 = getOperation("bad", "attr2", 10);
+        ModelNode comp2 = getCompositeOperation(null, step3, step4);
+        ModelNode op = getCompositeOperation(null, comp1, comp2);
+//        System.out.println(op);
+        ModelNode result = controller.execute(op);
+//        System.out.println(result);
+        assertEquals("failed", result.get("outcome").asString());
+
+        assertEquals(1, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
+        assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
+    }
+
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {
 
         ModelNode op = new ModelNode();

@@ -76,13 +76,23 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testGoodExecution() throws Exception {
+        goodExecutionTest(false);
+    }
+
+    @Test
+    public void testGoodExecutionAsync() throws Exception {
+        goodExecutionTest(true);
+    }
+
+
+    private void goodExecutionTest(boolean async) throws Exception {
         ModelNode result = controller.execute(getOperation("good", "attr1", 5));
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
 
         assertFalse(runtimeState.get());
 
-        result = controller.execute(getOperation("good", "attr1", 1));
+        result = controller.execute(getOperation("good", "attr1", 1, async));
         assertEquals("success", result.get("outcome").asString());
         assertEquals(5, result.get("result").asInt());
 
@@ -121,7 +131,16 @@ public class ServerModelControllerImplUnitTestCase {
 
     @Test
     public void testHandleFailedExecution() throws Exception {
-        ModelNode result = controller.execute(getOperation("handleFailed", "attr1", 5, "good"));
+        handleFailedExecutionTest(false);
+    }
+
+    @Test
+    public void testHandleFailedExecutionAsync() throws Exception {
+        handleFailedExecutionTest(true);
+    }
+
+    private void handleFailedExecutionTest(boolean async) throws Exception {
+        ModelNode result = controller.execute(getOperation("handleFailed", "attr1", 5, "good", async));
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertEquals("handleFailed", result.get("failure-description").asString());
 
@@ -214,16 +233,27 @@ public class ServerModelControllerImplUnitTestCase {
     }
 
     public static ModelNode getOperation(String opName, String attr, int val) {
-        return getOperation(opName, attr, val, null);
+        return getOperation(opName, attr, val, null, false);
+    }
+
+    public static ModelNode getOperation(String opName, String attr, int val, boolean async) {
+        return getOperation(opName, attr, val, null, async);
     }
 
     public static ModelNode getOperation(String opName, String attr, int val, String rollbackName) {
+        return getOperation(opName, attr, val, rollbackName, false);
+    }
+
+    public static ModelNode getOperation(String opName, String attr, int val, String rollbackName, boolean async) {
         ModelNode op = new ModelNode();
         op.get("operation").set(opName);
         op.get("address").setEmptyList();
         op.get("name").set(attr);
         op.get("value").set(val);
         op.get("rollbackName").set(rollbackName == null ? opName : rollbackName);
+        if (async) {
+            op.get("async").set(true);
+        }
         return op;
     }
 
@@ -237,15 +267,35 @@ public class ServerModelControllerImplUnitTestCase {
             final int current = attr.asInt();
             attr.set(operation.require("value"));
 
-
+            final boolean async = operation.hasDefined("async") && operation.get("async").asBoolean();
 
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
 
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    resultHandler.handleResultFragment(new String[0], new ModelNode().set(current));
-                    runtimeState.set(!runtimeState.get());
-                    resultHandler.handleResultComplete();
+                    Runnable r = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (async) {
+                                try {
+                                    Thread.sleep(5);
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                }
+                            }
+                            resultHandler.handleResultFragment(new String[0], new ModelNode().set(current));
+                            runtimeState.set(!runtimeState.get());
+                            resultHandler.handleResultComplete();
+                        }
+                    };
+
+                    if (async) {
+                        Thread t = new Thread(r);
+                        t.start();
+                    }
+                    else {
+                        r.run();
+                    }
                 }
             });
             return new BasicOperationResult(getOperation("good", name, current, operation.get("rollbackName").asString()));
@@ -312,14 +362,36 @@ public class ServerModelControllerImplUnitTestCase {
             int current = attr.asInt();
             attr.set(operation.require("value"));
 
+            final boolean async = operation.hasDefined("async") && operation.get("async").asBoolean();
+
             resultHandler.handleResultFragment(new String[0], new ModelNode().set("bad"));
 
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
 
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    runtimeState.set(!runtimeState.get());
+                    Runnable r = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (async) {
+                                try {
+                                    Thread.sleep(5);
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                }
+                            }
+                            runtimeState.set(!runtimeState.get());
                     resultHandler.handleFailed(new ModelNode().set("handleFailed"));
+                }
+            };
+
+            if (async) {
+                Thread t = new Thread(r);
+                t.start();
+            }
+            else {
+                r.run();
+            }
                 }
             });
 

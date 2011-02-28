@@ -196,7 +196,7 @@ public class BasicModelController implements ModelController {
             }
 
             if (isMultiStepOperation(operation, address)) {
-                MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, modelSource);
+                MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider);
                 return multistepController.execute(handler);
             }
 
@@ -220,11 +220,11 @@ public class BasicModelController implements ModelController {
         }
     }
 
-    protected MultiStepOperationController getMultiStepOperationController(final ModelNode operation, final ResultHandler handler, final ModelProvider modelSource) throws OperationFailedException {
-        return new MultiStepOperationController(operation, handler, modelSource);
+    protected MultiStepOperationController getMultiStepOperationController(final ModelNode operation, final ResultHandler handler, final ModelProvider modelSource, final ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
+        return new MultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider);
     }
 
-    private ModelNode getOperationSubModel(ModelProvider modelSource, OperationHandler operationHandler, PathAddress address) {
+    protected ModelNode getOperationSubModel(ModelProvider modelSource, OperationHandler operationHandler, PathAddress address) {
         final ModelNode subModel;
         if (operationHandler instanceof ModelAddOperationHandler) {
             validateNewAddress(address);
@@ -497,6 +497,7 @@ public class BasicModelController implements ModelController {
 
         private final ParameterValidator stepsValidator = new ModelTypeValidator(ModelType.LIST);
 
+        protected final boolean rollbackOnRuntimeFailure;
         /** The handler passed in by the user */
         protected final ResultHandler resultHandler;
         /** The individual steps in the multi-step op */
@@ -525,8 +526,9 @@ public class BasicModelController implements ModelController {
         protected int currentOperation;
         /** Runtime tasks registered by individual steps */
         protected final Map<Integer, RuntimeTask> runtimeTasks = new HashMap<Integer, RuntimeTask>();
+        protected final ConfigurationPersisterProvider injectedConfigPersisterProvider;
         /** Instead of persisting, this persister records that model was modified and needs to be persisted when all steps are done. */
-        protected final ConfigurationPersister configPersister = new ConfigurationPersister() {
+        protected final ConfigurationPersister localConfigPersister = new ConfigurationPersister() {
             @Override
             public void store(ModelNode model) throws ConfigurationPersistenceException {
                 modelUpdated = true;
@@ -545,13 +547,16 @@ public class BasicModelController implements ModelController {
             }
         };
 
-        protected MultiStepOperationController(final ModelNode operation, final ResultHandler resultHandler, final ModelProvider modelSource) throws OperationFailedException {
+        protected MultiStepOperationController(final ModelNode operation, final ResultHandler resultHandler,
+                final ModelProvider modelSource, final ConfigurationPersisterProvider injectedConfigPersisterProvider) throws OperationFailedException {
             stepsValidator.validateParameter(STEPS, operation.get(STEPS));
             this.resultHandler = resultHandler;
             this.steps = operation.require(STEPS).asList();
             this.unfinishedCount.set(steps.size());
+            this.rollbackOnRuntimeFailure = (!operation.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || operation.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
             this.modelSource = modelSource;
             this.localModel = this.modelSource.getModel().clone();
+            this.injectedConfigPersisterProvider = injectedConfigPersisterProvider;
             // Ensure the outcome and result fields come first for each result
             for (int i = 0; i < unfinishedCount.get(); i++) {
                 ModelNode stepResult = getStepResultNode(i);
@@ -624,9 +629,9 @@ public class BasicModelController implements ModelController {
                 synchronized (model) {
                     model.set(localModel);
                 }
-                BasicModelController.this.persistConfiguration(model, BasicModelController.this.configPersisterProvider);
+                BasicModelController.this.persistConfiguration(model, injectedConfigPersisterProvider);
             }
-            if (runtimeTasks.size() == 0) {
+            if (unfinishedCount.get() == 0) {
                 handleSuccess();
             }
         }
@@ -642,7 +647,9 @@ public class BasicModelController implements ModelController {
 
             for (int i = 0; i < steps.size(); i++) {
                 currentOperation = i;
-                final ModelNode step = steps.get(i);
+                final ModelNode step = steps.get(i).clone();
+                // Do not auto-rollback individual steps
+                step.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
                 if (hasFailures()) {
                     recordCancellation(Integer.valueOf(i));
                 }
@@ -688,7 +695,7 @@ public class BasicModelController implements ModelController {
             synchronized (resultsNode) {
                 ModelNode stepResult = getStepResultNode(id);
                 stepResult.get(OUTCOME).set(FAILED);
-                if (stepResult.has(RESULT)) {
+                if (stepResult.has(RESULT) && !stepResult.hasDefined(RESULT)) {
                     // Remove the undefined node
                     stepResult.remove(RESULT);
                 }
@@ -786,7 +793,7 @@ public class BasicModelController implements ModelController {
 
         @Override
         public ConfigurationPersister getConfigurationPersister() {
-            return configPersister;
+            return localConfigPersister;
         }
 
         // --------------------- OperationContextFactory
