@@ -32,11 +32,14 @@ public class JBossAsContainerConfiguration implements ContainerConfiguration {
     private InetAddress bindAddress;
     private int managementPort;
     private int jmxPort;
+    private int httpPort;
+    private boolean executeWithServlet;
 
     public JBossAsContainerConfiguration() {
         bindAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
         jmxPort = 1090;
+        httpPort = 8080;
     }
 
     public ContainerProfile getContainerProfile() {
@@ -65,6 +68,28 @@ public class JBossAsContainerConfiguration implements ContainerConfiguration {
 
     public void setJmxPort(int jmxPort) {
         this.jmxPort = jmxPort;
+    }
+
+    public int getHttpPort() {
+        return httpPort;
+    }
+
+    public void setHttpPort(int httpPort) {
+        this.httpPort = httpPort;
+    }
+
+    public boolean isExecuteWithServlet() {
+        if (!executeWithServlet) {
+            String val = System.getProperty("jboss.arquillian.executeWithServlet", null);
+            if (val != null) {
+                return Boolean.valueOf(val);
+            }
+        }
+        return executeWithServlet;
+    }
+
+    public void setExecuteWithServlet(boolean executeWithServlet) {
+        this.executeWithServlet = executeWithServlet;
     }
 
     private InetAddress getInetAddress(String name) {

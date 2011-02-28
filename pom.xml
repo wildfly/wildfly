@@ -2230,6 +2230,18 @@
             </dependency>
 
             <dependency>
+              <groupId>org.jboss.arquillian.protocol</groupId>
+              <artifactId>arquillian-protocol-servlet-3</artifactId>
+              <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.jboss.arquillian.protocol</groupId>
+              <artifactId>arquillian-protocol-servlet-3</artifactId>
+              <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-cdi</artifactId>
                 <version>${version.org.jboss.arquillian.testenricher.cdi}</version>

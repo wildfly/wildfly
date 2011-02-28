@@ -54,6 +54,10 @@
           <artifactId>arquillian-protocol-osgi</artifactId>
         </dependency>
         <dependency>
+          <groupId>org.jboss.arquillian.protocol</groupId>
+          <artifactId>arquillian-protocol-servlet-3</artifactId>
+        </dependency>
+        <dependency>
           <groupId>org.jboss.arquillian.testenricher</groupId>
           <artifactId>arquillian-testenricher-cdi</artifactId>
           <exclusions>
