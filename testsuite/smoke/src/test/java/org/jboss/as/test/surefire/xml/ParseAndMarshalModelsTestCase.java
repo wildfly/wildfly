@@ -402,7 +402,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private static class TestDomainController extends DomainModelImpl {
         protected TestDomainController(ExtensibleConfigurationPersister configurationPersister) {
-            super(configurationPersister);
+            super(configurationPersister, null);
         }
 
         @Override
