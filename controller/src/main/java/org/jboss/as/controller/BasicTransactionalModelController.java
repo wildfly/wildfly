@@ -124,7 +124,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
             }
 
             if (isMultiStepOperation(operation, address)) {
-                MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, modelSource, transaction);
+                MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider, transaction);
                 return multistepController.execute(handler);
             }
 
@@ -156,8 +156,8 @@ public class BasicTransactionalModelController extends BasicModelController impl
     }
 
     protected MultiStepOperationController getMultiStepOperationController(ModelNode operation, ResultHandler handler,
-            ModelProvider modelSource, ControllerTransactionContext transaction) throws OperationFailedException {
-        return new TransactionalMultiStepOperationController(operation, handler, modelSource, transaction);
+            ModelProvider modelSource, final ConfigurationPersisterProvider persisterProvider, ControllerTransactionContext transaction) throws OperationFailedException {
+        return new TransactionalMultiStepOperationController(operation, handler, modelSource, persisterProvider, transaction);
     }
 
     protected ControllerResource getControllerResource(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler,
@@ -222,8 +222,9 @@ public class BasicTransactionalModelController extends BasicModelController impl
         protected final ControllerTransactionContext transaction;
 
         protected TransactionalMultiStepOperationController(final ModelNode operation, final ResultHandler resultHandler,
-                final ModelProvider modelSource, final ControllerTransactionContext transaction) throws OperationFailedException {
-            super(operation, resultHandler, modelSource);
+                final ModelProvider modelSource, final ConfigurationPersisterProvider persisterProvider,
+                final ControllerTransactionContext transaction) throws OperationFailedException {
+            super(operation, resultHandler, modelSource, persisterProvider);
             this.transaction = transaction;
         }
 
