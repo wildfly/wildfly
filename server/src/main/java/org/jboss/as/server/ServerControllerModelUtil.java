@@ -66,6 +66,7 @@ import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.deployment.DeploymentReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
@@ -132,6 +133,8 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh, false);
         DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(deploymentRepository);
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
+        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(deploymentRepository);
+        root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, DeploymentReplaceHandler.INSTANCE, DeploymentReplaceHandler.INSTANCE, false);
         DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);

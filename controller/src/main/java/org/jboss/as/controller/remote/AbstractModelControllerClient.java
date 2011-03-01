@@ -23,6 +23,7 @@ package org.jboss.as.controller.remote;
 
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -162,17 +163,23 @@ abstract class AbstractModelControllerClient implements TransactionalModelContro
             List<InputStream> streams = executionContext.getInputStreams();
             for (InputStream in : streams) {
                 output.write(ModelControllerClientProtocol.PARAM_INPUT_STREAM);
-                if (in == null) {
-                    output.write(0);
-                    continue;
-                }
                 //Just copy the stream contents for now - remoting will handle this better
-                output.write(1);
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 try {
                     byte[] buffer = new byte[8192];
                     int read;
                     while ((read = in.read(buffer)) != -1) {
-                        output.write(buffer, 0, read);
+                        bout.write(buffer, 0, read);
+                    }
+                } finally {
+                    StreamUtils.safeClose(in);
+                }
+
+                byte[] bytes = bout.toByteArray();
+                StreamUtils.writeInt(output, bytes.length);
+                try {
+                    for (byte b : bytes) {
+                        output.write(b);
                     }
                 } finally {
                     StreamUtils.safeClose(in);

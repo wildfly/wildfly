@@ -18,43 +18,42 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTACHMENT;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
- * Handler for the upload-deployment-bytes operation.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
- */
-public class DeploymentUploadBytesHandler
-    extends AbstractDeploymentUploadHandler
-    implements DescriptionProvider {
+* Handler for the upload-deployment-stream operation.
+*
+* @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+* @version $Revision: 1.1 $
+*/
+public class DeploymentUploadStreamAttachmentHandler
+extends AbstractDeploymentUploadHandler
+implements DescriptionProvider {
 
-    public static final String OPERATION_NAME = "upload-deployment-bytes";
+    public static final String OPERATION_NAME = "upload-deployment-stream";
 
-    private final ParametersValidator bytesValidator = new ParametersValidator();
+    private final ParametersValidator streamValidator = new ParametersValidator();
 
-    public DeploymentUploadBytesHandler(final DeploymentRepository repository) {
+    public DeploymentUploadStreamAttachmentHandler(final DeploymentRepository repository) {
         super(repository);
-        this.bytesValidator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES));
+        this.streamValidator.registerValidator(ATTACHMENT, new IntRangeValidator(0));
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getUploadDeploymentBytesOperation(locale);
+        return DeploymentDescription.getUploadDeploymentStreamAttachmentOperation(locale);
     }
 
     /**
@@ -62,9 +61,19 @@ public class DeploymentUploadBytesHandler
      */
     @Override
     protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
-        bytesValidator.validate(operation);
-        byte[] bytes = operation.get(BYTES).asBytes();
-        return new ByteArrayInputStream(bytes);
+        streamValidator.validate(operation);
+
+        int streamIndex = operation.get(ATTACHMENT).asInt();
+        if (streamIndex > operationContext.getInputStreams().size() - 1) {
+            throw new IllegalArgumentException("Invalid '" + ATTACHMENT + "' value:" + streamIndex + ", the maximum index is " + streamIndex);
+        }
+
+        InputStream in = operationContext.getInputStreams().get(streamIndex);
+        if (in == null) {
+            throw new IllegalStateException("Null stream at index " + streamIndex);
+        }
+
+        return in;
     }
 
 }

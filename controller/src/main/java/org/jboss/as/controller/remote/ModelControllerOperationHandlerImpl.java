@@ -131,17 +131,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         protected void readRequest(final InputStream inputStream) throws IOException {
             expectHeader(inputStream, ModelControllerClientProtocol.PARAM_OPERATION);
             builder = ExecutionContextBuilder.Factory.create(readNode(inputStream));
-        }
-    }
 
-    private class ExecuteSynchronousOperation extends ExecuteOperation {
-        @Override
-        protected final byte getResponseCode() {
-            return ModelControllerClientProtocol.EXECUTE_SYNCHRONOUS_RESPONSE;
-        }
-
-        protected void readRequest(final InputStream inputStream) throws IOException {
-            super.readRequest(inputStream);
             int cmd = inputStream.read();
             if (cmd == ModelControllerClientProtocol.PARAM_REQUEST_END) {
                 return;
@@ -149,19 +139,33 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
             if (cmd != ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
                 throw new IllegalArgumentException("Expected " + ModelControllerClientProtocol.PARAM_INPUT_STREAM + " received " + cmd);
             }
-            //Just copy the stream contents for now - remoting will handle this better
-            ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            try {
-                byte[] buffer = new byte[8192];
-                int read;
-                while ((read = inputStream.read(buffer)) != -1) {
-                    bout.write(buffer, 0, read);
+            while (cmd == ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
+                //Just copy the stream contents for now - remoting will handle this better
+                int length = StreamUtils.readInt(inputStream);
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                try {
+
+                    for (int i = 0 ; i < length ; i++) {
+                        int b = inputStream.read();
+                        if (b == -1) {
+                            throw new IllegalArgumentException("Unexpected end of file");
+                        }
+                        bout.write(b);
+                    }
+                } finally {
+                    StreamUtils.safeClose(inputStream);
                 }
-            } finally {
-                StreamUtils.safeClose(inputStream);
+                builder.addInputStream(new ByteArrayInputStream(bout.toByteArray()));
+
+                cmd = inputStream.read();
             }
-            builder.addInputStream(new ByteArrayInputStream(bout.toByteArray()));
-            expectHeader(inputStream, ModelControllerClientProtocol.PARAM_REQUEST_END);
+        }
+    }
+
+    private class ExecuteSynchronousOperation extends ExecuteOperation {
+        @Override
+        protected final byte getResponseCode() {
+            return ModelControllerClientProtocol.EXECUTE_SYNCHRONOUS_RESPONSE;
         }
 
         @Override
@@ -179,33 +183,6 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         @Override
         protected final byte getResponseCode() {
             return ModelControllerClientProtocol.EXECUTE_ASYNCHRONOUS_RESPONSE;
-        }
-
-        protected void readRequest(final InputStream inputStream) throws IOException {
-            super.readRequest(inputStream);
-            int cmd = inputStream.read();
-            if (cmd == ModelControllerClientProtocol.PARAM_REQUEST_END) {
-                return;
-            }
-            if (cmd != ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
-                throw new IllegalArgumentException("Expected " + ModelControllerClientProtocol.PARAM_INPUT_STREAM + " received " + cmd);
-            }
-
-            while (cmd == ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
-                //Just copy the stream contents for now - remoting will handle this better
-                ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                try {
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    while ((read = inputStream.read(buffer)) != -1) {
-                        bout.write(buffer, 0, read);
-                    }
-                } finally {
-                    StreamUtils.safeClose(inputStream);
-                }
-                builder.addInputStream(new ByteArrayInputStream(bout.toByteArray()));
-                cmd = inputStream.read();
-            }
         }
 
         @Override

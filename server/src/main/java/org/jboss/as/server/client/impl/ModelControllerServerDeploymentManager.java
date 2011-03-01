@@ -30,7 +30,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
 
@@ -52,9 +52,9 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(ModelNode operation) {
+    protected Future<ModelNode> executeOperation(ExecutionContext executionContext) {
         Handler handler = new Handler();
-        OperationResult c = client.execute(ExecutionContextBuilder.Factory.create(operation).build(), handler.resultHandler);
+        OperationResult c = client.execute(executionContext, handler.resultHandler);
         handler.setCancellable(c.getCancellable());
         return handler;
     }

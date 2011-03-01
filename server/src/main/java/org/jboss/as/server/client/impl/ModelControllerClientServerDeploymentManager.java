@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.Cancellable;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationResult;
 import org.jboss.as.controller.client.ResultHandler;
@@ -52,9 +52,9 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(ModelNode operation) {
+    protected Future<ModelNode> executeOperation(ExecutionContext executionContext) {
         Handler handler = new Handler();
-        OperationResult c = client.execute(ExecutionContextBuilder.Factory.create(operation).build(), handler.resultHandler);
+        OperationResult c = client.execute(executionContext, handler.resultHandler);
         handler.setCancellable(c.getCancellable());
         return handler;
     }

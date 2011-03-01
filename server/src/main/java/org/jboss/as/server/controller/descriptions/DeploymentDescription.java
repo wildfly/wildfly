@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTACHMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -26,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
@@ -50,6 +52,7 @@ import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.deployment.DeploymentReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -144,6 +147,34 @@ public class DeploymentDescription {
         root.get(REQUEST_PROPERTIES, URL, REQUIRED).set(true);
         root.get(REQUEST_PROPERTIES, URL, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, URL, NILLABLE).set(false);
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.BYTES);
+        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("deployment.hash"));
+        root.get(REPLY_PROPERTIES, MIN_LENGTH).set(20);
+        root.get(REPLY_PROPERTIES, MAX_LENGTH).set(20);
+        root.get(REPLY_PROPERTIES, NILLABLE).set(false);
+        return root;
+    }
+
+    public static final ModelNode getUploadDeploymentStreamAttachmentOperation(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("deployment.upload-stream"));
+        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
+        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, DESCRIPTION).set(bundle.getString("deployment.runtime-name"));
+        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, MIN_LENGTH).set(1);
+        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, NILLABLE).set(true);
+        root.get(REQUEST_PROPERTIES, ATTACHMENT, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, ATTACHMENT, DESCRIPTION).set(bundle.getString("deployment.stream-attachment"));
+        root.get(REQUEST_PROPERTIES, ATTACHMENT, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, ATTACHMENT, MIN_VALUE).set(0);
+        root.get(REQUEST_PROPERTIES, ATTACHMENT, NILLABLE).set(false);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.BYTES);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("deployment.hash"));
         root.get(REPLY_PROPERTIES, MIN_LENGTH).set(20);

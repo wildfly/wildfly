@@ -41,6 +41,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_ADDRESS = "any-address";
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
+    public static final String ATTACHMENT = "attachment";
     public static final String ATTRIBUTES = "attributes";
     public static final String BYTES = "bytes";
     public static final String CANCELLED = "cancelled";
