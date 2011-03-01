@@ -131,6 +131,9 @@
         <![CDATA[
             path = attributes.get("path");
             root = "<resource-root path=\"" + path + "\"/>";
+            if(path.indexOf('${') != -1) {
+                throw "Module resource root not found, make sure it is listed in build/pom.xml" + path;
+            }
             if(attributes.get("jandex") == "true" ) {
                 root = root + "\n\t<resource-root path=\"" + path.replace(".jar","-jandex.jar") + "\"/>";
             }

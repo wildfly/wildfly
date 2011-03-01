@@ -80,8 +80,16 @@
           <artifactId>jboss-as-jmx</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-api</artifactId>
+        </dependency>
+        <dependency>
           <groupId>org.osgi</groupId>
           <artifactId>org.osgi.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.spi</groupId>
+            <artifactId>jbosgi-spi</artifactId>
         </dependency>
     </dependencies>
 </project>
