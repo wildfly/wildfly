@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.security.CodeSigner;
+import java.security.CodeSource;
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.PackageSpec;
 import org.jboss.modules.filter.PathFilter;
@@ -57,18 +59,20 @@ public class VFSResourceLoader implements ResourceLoader {
     private final VirtualFile root;
     private final String rootName;
     private final Manifest manifest;
+    private final URL rootUrl;
 
     /**
      * Construct new instance.
      *
      * @param rootName The module root name
      * @param root The root virtual file
-     * @throws IOException
+     * @throws IOException if the manifest could not be read or the root URL is invalid
      */
     public VFSResourceLoader(final String rootName, final VirtualFile root) throws IOException {
         this.root = root;
         this.rootName = rootName;
         manifest = VFSUtils.getManifest(root);
+        rootUrl = root.asFileURL();
     }
 
     /** {@inheritDoc} */
@@ -91,6 +95,8 @@ public class VFSResourceLoader implements ResourceLoader {
                 // done
                 is.close();
                 spec.setBytes(bytes);
+                // TODO - support signed deployments
+                spec.setCodeSource(new CodeSource(rootUrl, (CodeSigner[])null));
                 return spec;
             } else {
                 throw new IOException("Resource is too large to be a valid class file");
@@ -116,7 +122,7 @@ public class VFSResourceLoader implements ResourceLoader {
         spec.setImplVersion(getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VERSION, entryAttribute, mainAttribute));
         spec.setImplVendor(getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VENDOR, entryAttribute, mainAttribute));
         if (Boolean.parseBoolean(getDefinedAttribute(Attributes.Name.SEALED, entryAttribute, mainAttribute))) {
-            spec.setSealBase(root.toURL());
+            spec.setSealBase(rootUrl);
         }
         return spec;
     }
