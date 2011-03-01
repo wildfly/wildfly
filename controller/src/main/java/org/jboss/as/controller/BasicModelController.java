@@ -85,9 +85,9 @@ public class BasicModelController extends AbstractModelController implements Mod
     private final OperationContextFactory contextFactory = new OperationContextFactory() {
         @Override
         public OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address,
-                final OperationHandler operationHandler) {
+                final OperationHandler operationHandler, final ExecutionContext executionContext) {
             final ModelNode subModel = getOperationSubModel(modelSource, operationHandler, address);
-            return BasicModelController.this.getOperationContext(subModel, operationHandler);
+            return BasicModelController.this.getOperationContext(subModel, operationHandler, executionContext);
         }
     };
     private final ConfigurationPersisterProvider configPersisterProvider = new ConfigurationPersisterProvider() {
@@ -201,7 +201,7 @@ public class BasicModelController extends AbstractModelController implements Mod
                 throw new IllegalStateException("No handler for " + operationName + " at address " + address);
             }
 
-            final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler);
+            final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
             try {
                 return doExecute(context, executionContext, operationHandler, handler, address, modelSource, configurationPersisterProvider);
             } catch (OperationFailedException e) {
@@ -283,10 +283,11 @@ public class BasicModelController extends AbstractModelController implements Mod
      * @param subModel the submodel affected by the operation
      * @param operation the operation itself
      * @param operationHandler the operation handler which will run the operation
+     * @param executionContext the exectution context
      * @return the operation context
      */
-    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler) {
-        return new OperationContextImpl(this, getRegistry(), subModel);
+    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final ExecutionContext executionContext) {
+        return new OperationContextImpl(this, getRegistry(), subModel, executionContext);
     }
 
     /**
@@ -725,8 +726,8 @@ public class BasicModelController extends AbstractModelController implements Mod
 
         @Override
         public OperationContext getOperationContext(ModelProvider modelSource, PathAddress address,
-                OperationHandler operationHandler) {
-            return BasicModelController.this.contextFactory.getOperationContext(modelSource, address, operationHandler);
+                OperationHandler operationHandler, ExecutionContext executionContext) {
+            return BasicModelController.this.contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
         }
 
         // ------------------ ModelProvider

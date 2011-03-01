@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller;
 
+import java.io.InputStream;
+import java.util.List;
+
+import org.jboss.as.controller.client.ExecutionAttachments;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -34,6 +38,7 @@ public class OperationContextImpl implements OperationContext {
     private final ModelController controller;
     private final ModelNodeRegistration registry;
     private final ModelNode subModel;
+    private final ExecutionAttachments executionAttachments;
 
     /**
      * Construct a new instance.
@@ -42,10 +47,11 @@ public class OperationContextImpl implements OperationContext {
      * @param registry the registry
      * @param subModel the affected submodel
      */
-    public OperationContextImpl(final ModelController controller, final ModelNodeRegistration registry, final ModelNode subModel) {
+    public OperationContextImpl(final ModelController controller, final ModelNodeRegistration registry, final ModelNode subModel, final ExecutionAttachments executionAttachments) {
         this.controller = controller;
         this.registry = registry;
         this.subModel = subModel;
+        this.executionAttachments = executionAttachments;
     }
 
     /** {@inheritDoc} */
@@ -69,5 +75,10 @@ public class OperationContextImpl implements OperationContext {
 
     public RuntimeOperationContext getRuntimeContext() {
         return null;
+    }
+
+    @Override
+    public List<InputStream> getInputStreams() {
+        return executionAttachments.getInputStreams();
     }
 }

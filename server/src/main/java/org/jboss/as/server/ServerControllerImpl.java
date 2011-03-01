@@ -30,7 +30,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.InputStream;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -52,6 +54,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeOperationContext;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.client.ExecutionAttachments;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
@@ -148,18 +151,18 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     /** {@inheritDoc} */
     @Override
-    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler) {
+    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, ExecutionContext executionContext) {
         if (operationHandler instanceof BootOperationHandler) {
             if (getState() == State.STARTING) {
-                return new BootContextImpl(subModel, getRegistry(), deployers);
+                return new BootContextImpl(subModel, getRegistry(), deployers, executionContext);
             } else {
                 state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
-                return super.getOperationContext(subModel, operationHandler);
+                return super.getOperationContext(subModel, operationHandler, executionContext);
             }
         } else if (!(getState() == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
-            return new ServerOperationContextImpl(this, getRegistry(), subModel);
+            return new ServerOperationContextImpl(this, getRegistry(), subModel, executionContext);
         } else {
-            return super.getOperationContext(subModel, operationHandler);
+            return super.getOperationContext(subModel, operationHandler, executionContext);
         }
     }
 
@@ -227,8 +230,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private int ourStamp = -1;
         private RuntimeTask runtimeTask;
 
-        public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel) {
-            super(controller, registry, subModel);
+        public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel, ExecutionAttachments executionAttachments) {
+            super(controller, registry, subModel, executionAttachments);
         }
 
         @Override
@@ -280,8 +283,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers;
 
-        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry, final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers) {
-            super(ServerControllerImpl.this, registry, subModel);
+        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry, final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers, ExecutionAttachments executionAttachments) {
+            super(ServerControllerImpl.this, registry, subModel, executionAttachments);
             this.deployers = deployers;
         }
 
@@ -418,9 +421,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         @Override
         public OperationContext getOperationContext(ModelProvider modelSource, PathAddress address,
-                OperationHandler operationHandler) {
-            OperationContext delegate = super.getOperationContext(modelSource, address, operationHandler);
-            return delegate.getRuntimeContext() == null ? delegate : new StepRuntimeOperationContext(Integer.valueOf(currentOperation), ServerOperationContext.class.cast(delegate));
+                OperationHandler operationHandler, ExecutionContext executionContext) {
+            OperationContext delegate = super.getOperationContext(modelSource, address, operationHandler, executionContext);
+            return delegate.getRuntimeContext() == null ? delegate : new StepRuntimeOperationContext(Integer.valueOf(currentOperation), ServerOperationContext.class.cast(delegate), executionContext);
         }
 
         @Override
@@ -525,10 +528,12 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
             private final Integer id;
             private final ServerOperationContext delegate;
+            private final ExecutionAttachments executionAttachments;
 
-            private StepRuntimeOperationContext(final Integer id, final ServerOperationContext delegate) {
+            private StepRuntimeOperationContext(final Integer id, final ServerOperationContext delegate, ExecutionAttachments executionAttachments) {
                 this.id = id;
                 this.delegate = delegate;
+                this.executionAttachments = executionAttachments;
             }
 
             @Override
@@ -564,6 +569,11 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             @Override
             public void setRuntimeTask(RuntimeTask runtimeTask) {
                 runtimeTasks.put(id, runtimeTask);
+            }
+
+            @Override
+            public List<InputStream> getInputStreams() {
+                return executionAttachments.getInputStreams();
             }
         }
 

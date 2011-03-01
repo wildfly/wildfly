@@ -21,30 +21,19 @@
 */
 package org.jboss.as.controller.client;
 
-import org.jboss.dmr.ModelNode;
+import java.io.InputStream;
+import java.util.List;
 
 /**
- * The context representing an operation passed in to the model controller
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public interface ExecutionContext extends ExecutionAttachments {
-
+public interface ExecutionAttachments {
     /**
-     * The operation to execute
+     * Input streams associated with the operation
      *
-     * @return the operation
+     * @return the streams. If there are none an empty list is returned
      */
-    ModelNode getOperation();
-
-    /**
-     * Clones this execution context, but overrides the operation
-     */
-    ExecutionContext clone();
-
-    /**
-     * Clones this execution context, but overrides the operation
-     */
-    ExecutionContext clone(ModelNode operation);
+    List<InputStream> getInputStreams();
 }

@@ -3,6 +3,8 @@
  */
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.client.ExecutionContext;
+
 
 /**
  * Factory for an {@link OperationContext}.
@@ -11,5 +13,5 @@ package org.jboss.as.controller;
  */
 public interface OperationContextFactory {
 
-    OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address, final OperationHandler operationHandler);
+    OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address, final OperationHandler operationHandler, final ExecutionContext executionContext);
 }

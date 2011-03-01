@@ -135,7 +135,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
                 throw new IllegalStateException("No handler for " + operationName + " at address " + address);
             }
 
-            final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler);
+            final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
             try {
                 final OperationResult result = operationHandler.execute(context, executionContext.getOperation(), handler);
                 ControllerResource txResource = getControllerResource(context, executionContext.getOperation(), operationHandler, handler, address, modelSource, configurationPersisterProvider);
