@@ -27,6 +27,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
@@ -48,7 +49,7 @@ public class __TestStandaloneClient {
             op.get("operation").set("read-resource");
             op.get("address").setEmptyList();
             op.get("recursive").set(true);
-            ModelNode response = client.execute(op);
+            ModelNode response = client.execute(ExecutionContextBuilder.Factory.create(op).build());
             if ("success".equals(op.get("outcome").asString())) {
                 System.out.println("Got model " + response.get("result"));
             }
@@ -61,7 +62,7 @@ public class __TestStandaloneClient {
             op.get("operation").set("add");
             op.get("address").add("path", "org.jboss.test");
             op.get("path").set("/home/emuckenh/Downloads");
-            response = client.execute(op);
+            response = client.execute(ExecutionContextBuilder.Factory.create(op).build());
             if ("success".equals(op.get("outcome").asString())) {
                 System.out.println("Added path");
             }

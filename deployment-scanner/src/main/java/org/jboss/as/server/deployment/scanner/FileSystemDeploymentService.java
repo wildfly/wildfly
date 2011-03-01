@@ -49,6 +49,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
@@ -237,7 +239,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                             log.debugf("Deployment scan of [%s] found update action [%s]", deploymentDir, update);
                         }
                     }
-                    ModelNode composite = getCompositeUpdate(updates);
+                    ExecutionContext composite = getCompositeUpdate(updates);
                     ModelNode results = serverController.execute(composite);
 //                    System.out.println(composite);
 //                    System.out.println(results);
@@ -415,7 +417,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private Set<String> getDeploymentNames() throws CancellationException, OperationFailedException {
         ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
         op.get(CHILD_TYPE).set(DEPLOYMENT);
-        ModelNode response = serverController.execute(op);
+        ModelNode response = serverController.execute(ExecutionContextBuilder.Factory.create(op).build());
         // TODO use the proper response structure
         ModelNode result = response.get("result");
         Set<String> deploymentNames = new HashSet<String>();
@@ -435,13 +437,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
         return op;
     }
 
-    private ModelNode getCompositeUpdate(List<ModelNode> updates) {
+    private ExecutionContext getCompositeUpdate(List<ModelNode> updates) {
         ModelNode op = Util.getEmptyOperation("composite", new ModelNode()); // TODO use constant
         ModelNode steps = op.get("steps");
         for (ModelNode update : updates) {
             steps.add(update);
         }
-        return op;
+        return ExecutionContextBuilder.Factory.create(op).build();
     }
 
     private ModelNode getRemoveOperation(String missing) {

@@ -24,6 +24,8 @@ package org.jboss.as.controller.remote;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.StreamUtils.readByte;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,6 +39,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
@@ -118,16 +121,16 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
     }
 
     private abstract class ExecuteOperation extends ManagementResponse {
-        ModelNode operation;
+        ExecutionContextBuilder builder;
 
         ExecuteOperation() {
             super(getInitiatingHandler());
         }
 
         @Override
-        protected final void readRequest(final InputStream inputStream) throws IOException {
+        protected void readRequest(final InputStream inputStream) throws IOException {
             expectHeader(inputStream, ModelControllerClientProtocol.PARAM_OPERATION);
-            operation = readNode(inputStream);
+            builder = ExecutionContextBuilder.Factory.create(readNode(inputStream));
         }
     }
 
@@ -137,9 +140,33 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
             return ModelControllerClientProtocol.EXECUTE_SYNCHRONOUS_RESPONSE;
         }
 
+        protected void readRequest(final InputStream inputStream) throws IOException {
+            super.readRequest(inputStream);
+            int cmd = inputStream.read();
+            if (cmd == ModelControllerClientProtocol.PARAM_REQUEST_END) {
+                return;
+            }
+            if (cmd != ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
+                throw new IllegalArgumentException("Expected " + ModelControllerClientProtocol.PARAM_INPUT_STREAM + " received " + cmd);
+            }
+            //Just copy the stream contents for now - remoting will handle this better
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            try {
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = inputStream.read(buffer)) != -1) {
+                    bout.write(buffer, 0, read);
+                }
+            } finally {
+                StreamUtils.safeClose(inputStream);
+            }
+            builder.addInputStream(new ByteArrayInputStream(bout.toByteArray()));
+            expectHeader(inputStream, ModelControllerClientProtocol.PARAM_REQUEST_END);
+        }
+
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-            ModelNode result = modelController.execute(operation);
+            ModelNode result = modelController.execute(builder.build());
             outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
             result.writeExternal(outputStream);
         }
@@ -154,6 +181,33 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
             return ModelControllerClientProtocol.EXECUTE_ASYNCHRONOUS_RESPONSE;
         }
 
+        protected void readRequest(final InputStream inputStream) throws IOException {
+            super.readRequest(inputStream);
+            int cmd = inputStream.read();
+            if (cmd == ModelControllerClientProtocol.PARAM_REQUEST_END) {
+                return;
+            }
+            if (cmd != ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
+                throw new IllegalArgumentException("Expected " + ModelControllerClientProtocol.PARAM_INPUT_STREAM + " received " + cmd);
+            }
+
+            while (cmd == ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
+                //Just copy the stream contents for now - remoting will handle this better
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                try {
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = inputStream.read(buffer)) != -1) {
+                        bout.write(buffer, 0, read);
+                    }
+                } finally {
+                    StreamUtils.safeClose(inputStream);
+                }
+                builder.addInputStream(new ByteArrayInputStream(bout.toByteArray()));
+                cmd = inputStream.read();
+            }
+        }
+
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
             final CountDownLatch completeLatch = new CountDownLatch(1);
@@ -161,7 +215,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
             final FailureHolder failureHolder = new FailureHolder();
             final AtomicInteger status = new AtomicInteger(0);
 
-            OperationResult result = modelController.execute(operation, new ResultHandler() {
+            OperationResult result = modelController.execute(builder.build(), new ResultHandler() {
                 @Override
                 public void handleResultFragment(String[] location, ModelNode fragment) {
                     try {

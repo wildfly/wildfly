@@ -44,4 +44,7 @@ public interface ModelControllerClientProtocol {
     int PARAM_REQUEST_ID = 0x66;
     int PARAM_HANDLE_RESULT_FAILED = 0x67;
 
+    int PARAM_INPUT_STREAM = 0x68;
+    int PARAM_REQUEST_END = 0x69;
+
 }

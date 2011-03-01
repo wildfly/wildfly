@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.war.archive.SimpleServlet;
@@ -137,7 +138,7 @@ public class ExampleRunner {
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws OperationFailedException, IOException {
-        ModelNode result = client.execute(update);
+        ModelNode result = client.execute(ExecutionContextBuilder.Factory.create(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

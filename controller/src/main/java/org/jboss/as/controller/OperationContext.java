@@ -26,6 +26,8 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * The context passed from the {@link ModelController} to the {@link OperationHandler}s.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface OperationContext {

@@ -24,6 +24,7 @@ package org.jboss.as.demos.domain.description.runner;
 
 import java.net.InetAddress;
 
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -51,7 +52,7 @@ public class ExampleRunner {
             //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined")).toModelNode()); //2
             //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined"), PathElement.pathElement("running-server", "Server:server-two")).toModelNode()); //3
             request.get("recursive").set(true);
-            ModelNode r = client.execute(request);
+            ModelNode r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
             System.out.println(r);
 
             System.out.println("Dumping resource description tree\n");
@@ -61,7 +62,7 @@ public class ExampleRunner {
             //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined")).toModelNode());
             request.get("operations").set(true);
             request.get("recursive").set(true);
-            r = client.execute(request);
+            r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
             System.out.println(r);
 
         } finally {

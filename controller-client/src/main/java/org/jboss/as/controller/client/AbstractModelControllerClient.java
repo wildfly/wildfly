@@ -26,6 +26,7 @@ import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -55,10 +56,18 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     public AbstractModelControllerClient() {
     }
 
+    public OperationResult execute(ModelNode operation, ResultHandler handler) {
+        return execute(ExecutionContextBuilder.Factory.create(operation).build(), handler);
+    }
+
+    public ModelNode execute(ModelNode operation) throws CancellationException, IOException {
+        return execute(ExecutionContextBuilder.Factory.create(operation).build());
+    }
+
     @Override
-    public OperationResult execute(final ModelNode operation, final ResultHandler handler) {
-        if (operation == null) {
-            throw new IllegalArgumentException("Null operation");
+    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler) {
+        if (executionContext == null) {
+            throw new IllegalArgumentException("Null execution context");
         }
         if (handler == null) {
             throw new IllegalArgumentException("Null handler");
@@ -69,7 +78,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             @Override
             public void run() {
                 try {
-                    Future<Void> f = new ExecuteAsynchronousRequest(result, operation, handler).execute(getConnectionStrategy());
+                    Future<Void> f = new ExecuteAsynchronousRequest(result, executionContext, handler).execute(getConnectionStrategy());
 
                     while (true) {
                         try {
@@ -100,12 +109,12 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     }
 
     @Override
-    public ModelNode execute(final ModelNode operation) throws CancellationException, IOException {
-        if (operation == null) {
-            throw new IllegalArgumentException("Null operation");
+    public ModelNode execute(final ExecutionContext executionContext) throws CancellationException, IOException {
+        if (executionContext == null) {
+            throw new IllegalArgumentException("Null execution context");
         }
         try {
-            return new ExecuteSynchronousRequest(operation).executeForResult(getConnectionStrategy());
+            return new ExecuteSynchronousRequest(executionContext).executeForResult(getConnectionStrategy());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof IOException) {
                 throw new IOException(e);
@@ -139,12 +148,45 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
         }
     }
 
-    private class ExecuteSynchronousRequest extends ModelControllerRequest<ModelNode> {
+    private abstract class ExecuteRequest<T> extends ModelControllerRequest<T> {
+        private final ExecutionContext executionContext;
 
-        private final ModelNode operation;
+        public ExecuteRequest(ExecutionContext executionContext) {
+            this.executionContext = executionContext;
+        }
 
-        ExecuteSynchronousRequest(ModelNode operation) {
-            this.operation = operation;
+        /** {@inheritDoc} */
+        @Override
+        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+            output.write(ModelControllerClientProtocol.PARAM_OPERATION);
+            executionContext.getOperation().writeExternal(output);
+            List<InputStream> streams = executionContext.getInputStreams();
+            for (InputStream in : streams) {
+                output.write(ModelControllerClientProtocol.PARAM_INPUT_STREAM);
+                if (in == null) {
+                    output.write(0);
+                    continue;
+                }
+                //Just copy the stream contents for now - remoting will handle this better
+                output.write(1);
+                try {
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = in.read(buffer)) != -1) {
+                        output.write(buffer, 0, read);
+                    }
+                } finally {
+                    StreamUtils.safeClose(in);
+                }
+            }
+            output.write(ModelControllerClientProtocol.PARAM_REQUEST_END);
+        }
+    }
+
+    private class ExecuteSynchronousRequest extends ExecuteRequest<ModelNode> {
+
+        ExecuteSynchronousRequest(ExecutionContext executionContext) {
+            super(executionContext);
         }
 
         @Override
@@ -159,29 +201,20 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
 
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
-            output.write(ModelControllerClientProtocol.PARAM_OPERATION);
-            operation.writeExternal(output);
-        }
-
-
-        /** {@inheritDoc} */
-        @Override
         protected ModelNode receiveResponse(InputStream input) throws IOException {
             expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
             return readNode(input);
         }
     }
 
-    private class ExecuteAsynchronousRequest extends ModelControllerRequest<Void> {
+    private class ExecuteAsynchronousRequest extends ExecuteRequest<Void> {
 
         private final AsynchronousOperation result;
-        private final ModelNode operation;
         private final ResultHandler handler;
 
-        ExecuteAsynchronousRequest(AsynchronousOperation result, ModelNode operation, ResultHandler handler) {
+        ExecuteAsynchronousRequest(AsynchronousOperation result, ExecutionContext executionContext, ResultHandler handler) {
+            super(executionContext);
             this.result = result;
-            this.operation = operation;
             this.handler = handler;
         }
 
@@ -194,14 +227,6 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
         protected byte getResponseCode() {
             return ModelControllerClientProtocol.EXECUTE_ASYNCHRONOUS_RESPONSE;
         }
-
-        /** {@inheritDoc} */
-        @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
-            output.write(ModelControllerClientProtocol.PARAM_OPERATION);
-            operation.writeExternal(output);
-        }
-
 
         /** {@inheritDoc} */
         @Override

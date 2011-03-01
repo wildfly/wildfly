@@ -42,6 +42,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -119,7 +120,7 @@ public class ExampleRunner {
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws OperationFailedException, IOException {
-        ModelNode result = client.execute(update);
+        ModelNode result = client.execute(ExecutionContextBuilder.Factory.create(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

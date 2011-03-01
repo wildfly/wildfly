@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,14 +46,14 @@ public abstract class AbstractModelController implements ModelController {
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(final ModelNode operation) {
+    public ModelNode execute(final ExecutionContext executionContext) {
         final AtomicInteger status = new AtomicInteger();
         final ModelNode finalResult = new ModelNode();
         // Make the "outcome" child come first
         finalResult.get(OUTCOME);
         // Ensure there is a "result" child even if we receive no fragments
         finalResult.get(RESULT);
-        final OperationResult handlerResult = execute(operation, new ResultHandler() {
+        final OperationResult handlerResult = execute(executionContext, new ResultHandler() {
             @Override
             public void handleResultFragment(final String[] location, final ModelNode fragment) {
                 synchronized (finalResult) {

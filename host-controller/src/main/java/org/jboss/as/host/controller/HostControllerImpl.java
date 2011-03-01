@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
@@ -75,21 +76,21 @@ public class HostControllerImpl implements HostController {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(ModelNode operation, ResultHandler handler, ControllerTransactionContext transaction) {
-        return hostModel.execute(operation, handler, transaction);
+    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction) {
+        return hostModel.execute(executionContext, handler, transaction);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(ModelNode operation, ResultHandler handler) {
-        return hostModel.execute(operation, handler);
+    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+        return hostModel.execute(executionContext, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(ModelNode operation) throws CancellationException {
+    public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
 
-        return hostModel.execute(operation);
+        return hostModel.execute(executionContext);
     }
 
     /** {@inheritDoc} */

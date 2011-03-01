@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -55,14 +56,14 @@ class HostControllerProxy implements ProxyController {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(ModelNode operation, ResultHandler handler) {
-        return host.execute(operation, handler);
+    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+        return host.execute(executionContext, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(ModelNode operation) throws CancellationException {
-        return host.execute(operation);
+    public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
+        return host.execute(executionContext);
     }
 
 }

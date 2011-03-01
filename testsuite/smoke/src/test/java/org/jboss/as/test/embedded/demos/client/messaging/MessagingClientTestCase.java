@@ -46,6 +46,7 @@ import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
@@ -131,7 +132,7 @@ public class MessagingClientTestCase {
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws OperationFailedException, IOException {
-        ModelNode result = client.execute(update);
+        ModelNode result = client.execute(ExecutionContextBuilder.Factory.create(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

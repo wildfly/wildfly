@@ -52,6 +52,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeOperationContext;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -162,14 +164,14 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     }
 
     @Override
-    protected OperationResult doExecute(OperationContext context, ModelNode operation, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelProvider modelProvider, ConfigurationPersisterProvider configurationPersisterFactory) throws OperationFailedException {
-        boolean rollback = isRollbackOnRuntimeFailure(context, operation);
+    protected OperationResult doExecute(OperationContext context, ExecutionContext executionContext, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelProvider modelProvider, ConfigurationPersisterProvider configurationPersisterFactory) throws OperationFailedException {
+        boolean rollback = isRollbackOnRuntimeFailure(context, executionContext.getOperation());
         RollbackAwareResultHandler rollbackAwareHandler = null;
         if (rollback) {
             rollbackAwareHandler = new RollbackAwareResultHandler(resultHandler);
             resultHandler = rollbackAwareHandler;
         }
-        final OperationResult result = super.doExecute(context, operation, operationHandler, resultHandler, address, modelProvider, configurationPersisterFactory);
+        final OperationResult result = super.doExecute(context, executionContext, operationHandler, resultHandler, address, modelProvider, configurationPersisterFactory);
         if(context instanceof ServerOperationContextImpl) {
             if (rollbackAwareHandler != null) {
                 rollbackAwareHandler.setRollbackOperation(result.getCompensatingOperation());
@@ -209,9 +211,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     }
 
     @Override
-    protected MultiStepOperationController getMultiStepOperationController(ModelNode operation, ResultHandler handler,
+    protected MultiStepOperationController getMultiStepOperationController(ExecutionContext executionContext, ResultHandler handler,
             ModelProvider modelSource, ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
-        return new ServerMultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider);
+        return new ServerMultiStepOperationController(executionContext, handler, modelSource, configurationPersisterProvider);
     }
 
     private boolean isRollbackOnRuntimeFailure(OperationContext context, ModelNode operation) {
@@ -390,7 +392,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
                 @Override
                 public void run() {
-                    execute(rollbackOperation, rollbackHandler);
+                    execute(ExecutionContextBuilder.Factory.create(rollbackOperation).build(), rollbackHandler);
                 }
 
             };
@@ -409,9 +411,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     private class ServerMultiStepOperationController extends MultiStepOperationController {
 
-        private ServerMultiStepOperationController(final ModelNode operation, final ResultHandler resultHandler,
+        private ServerMultiStepOperationController(final ExecutionContext executionContext, final ResultHandler resultHandler,
                 final ModelProvider modelSource, final ConfigurationPersisterProvider injectedConfigPersisterProvider) throws OperationFailedException {
-            super(operation, resultHandler, modelSource, injectedConfigPersisterProvider);
+            super(executionContext, resultHandler, modelSource, injectedConfigPersisterProvider);
         }
 
         @Override
@@ -434,7 +436,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-                        ServerControllerImpl.this.execute(compensatingOp, rollbackResultHandler);
+                        ServerControllerImpl.this.execute(ExecutionContextBuilder.Factory.create(compensatingOp).build(), rollbackResultHandler);
                     }
                 };
                 ServerControllerImpl.this.executorService.execute(r);

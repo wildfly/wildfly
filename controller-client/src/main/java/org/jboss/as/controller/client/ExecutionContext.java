@@ -1,0 +1,62 @@
+/*
+* JBoss, Home of Professional Open Source.
+* Copyright 2006, Red Hat Middleware LLC, and individual contributors
+* as indicated by the @author tags. See the copyright.txt file in the
+* distribution for a full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
+package org.jboss.as.controller.client;
+
+import java.io.InputStream;
+import java.util.List;
+
+import org.jboss.dmr.ModelNode;
+
+/**
+ * The context passed in to the model controller
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
+ */
+public interface ExecutionContext {
+
+    /**
+     * The operation to execute
+     *
+     * @return the operation
+     */
+    ModelNode getOperation();
+
+    /**
+     * Input streams associated with the operations
+     *
+     * @return the streams. If there are none an empty list is returned
+     */
+    List<InputStream> getInputStreams();
+
+    /**
+     * Clones this execution context
+     *
+     * @return the copy
+     */
+    ExecutionContext clone();
+
+    /**
+     * Clones this execution context, but overrides the operation
+     */
+    ExecutionContext clone(ModelNode operation);
+}

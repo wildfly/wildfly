@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.domain.controller.DomainController;
@@ -138,7 +139,7 @@ public class HostControllerBootstrap {
         };
         for(final ModelNode operation : operations) {
             count.incrementAndGet();
-            hostModel.execute(operation, resultHandler);
+            hostModel.execute(ExecutionContextBuilder.Factory.create(operation).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {
             // some action?

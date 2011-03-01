@@ -44,6 +44,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationResult;
 import org.jboss.as.controller.client.ResultHandler;
@@ -97,12 +99,22 @@ public class DomainClientImpl implements DomainClient {
 
     @Override
     public OperationResult execute(ModelNode operation, ResultHandler handler) {
-        return delegate.execute(operation, handler);
+        return execute(ExecutionContextBuilder.Factory.create(operation).build(), handler);
     }
 
     @Override
     public ModelNode execute(ModelNode operation) throws CancellationException, IOException {
-        return delegate.execute(operation);
+        return execute(ExecutionContextBuilder.Factory.create(operation).build());
+    }
+
+    @Override
+    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+        return delegate.execute(executionContext, handler);
+    }
+
+    @Override
+    public ModelNode execute(ExecutionContext executionContext) throws CancellationException, IOException {
+        return delegate.execute(executionContext);
     }
 
     @Override

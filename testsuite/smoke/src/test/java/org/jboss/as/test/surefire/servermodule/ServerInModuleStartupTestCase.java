@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
@@ -82,7 +83,7 @@ public class ServerInModuleStartupTestCase {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
             request.get("address").setEmptyList();
-            ModelNode r = client.execute(request);
+            ModelNode r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
 
             Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
 
@@ -102,7 +103,7 @@ public class ServerInModuleStartupTestCase {
             request.get("operation").set("read-resource");
             request.get("address").setEmptyList();
             request.get("recursive").set(true);
-            ModelNode r = client.execute(request);
+            ModelNode r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
 
             Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
         } finally {

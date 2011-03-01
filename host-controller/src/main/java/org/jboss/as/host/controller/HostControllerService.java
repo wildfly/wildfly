@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.ServerStartupTransactionalProxyController;
@@ -72,18 +73,18 @@ public class HostControllerService implements Service<ServerStartupTransactional
         this.proxyController = new ServerStartupTransactionalProxyController() {
 
             @Override
-            public OperationResult execute(ModelNode operation, ResultHandler handler, ControllerTransactionContext transaction) {
-                return controller.execute(operation, handler, transaction);
+            public OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction) {
+                return controller.execute(executionContext, handler, transaction);
             }
 
             @Override
-            public ModelNode execute(ModelNode operation) throws CancellationException {
-                return controller.execute(operation);
+            public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
+                return controller.execute(executionContext);
             }
 
             @Override
-            public OperationResult execute(ModelNode operation, ResultHandler handler) {
-                return controller.execute(operation, handler);
+            public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+                return controller.execute(executionContext, handler);
             }
 
             @Override

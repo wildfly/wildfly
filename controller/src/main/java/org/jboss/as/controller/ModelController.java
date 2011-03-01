@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.util.concurrent.CancellationException;
 
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,19 +35,19 @@ public interface ModelController {
     /**
      * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler.
      *
-     * @param operation the operation to execute
+     * @param executionContext the operation to execute
      * @param handler the result handler
      * @return a handle which may be used to cancel the operation
      */
-    OperationResult execute(ModelNode operation, ResultHandler handler);
+    OperationResult execute(ExecutionContext executionContext, ResultHandler handler);
 
     /**
      * Execute an operation synchronously.
      *
-     * @param operation the operation to execute
+     * @param executionContext the operation to execute
      * @return the result
      * @throws CancellationException if the operation was cancelled due to interruption (the thread's interrupt
      * status will be set)
      */
-    ModelNode execute(ModelNode operation) throws CancellationException;
+    ModelNode execute(ExecutionContext executionContext) throws CancellationException;
 }

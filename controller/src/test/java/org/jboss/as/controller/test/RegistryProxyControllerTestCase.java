@@ -38,6 +38,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -250,12 +251,12 @@ public class RegistryProxyControllerTestCase {
         }
 
         @Override
-        public OperationResult execute(ModelNode operation, ResultHandler handler) {
+        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
             return null;
         }
 
         @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException {
+        public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
             return null;
         }
 

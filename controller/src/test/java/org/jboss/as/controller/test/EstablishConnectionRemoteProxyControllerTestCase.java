@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
@@ -75,13 +76,13 @@ public class EstablishConnectionRemoteProxyControllerTestCase extends AbstractPr
         }
 
         @Override
-        public OperationResult execute(ModelNode operation, ResultHandler handler) {
-            return delegate.execute(operation, handler);
+        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+            return delegate.execute(executionContext, handler);
         }
 
         @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException {
-            return delegate.execute(operation);
+        public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
+            return delegate.execute(executionContext);
         }
 
         @Override

@@ -29,6 +29,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
@@ -63,14 +64,14 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
     }
 
     @Override
-    public OperationResult execute(final ModelNode operation, final ResultHandler handler) {
-        return new OperationHandlerResultAdapter(client.execute(operation, new ResultHandlerAdapter(handler)));
+    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler) {
+        return new OperationHandlerResultAdapter(client.execute(executionContext, new ResultHandlerAdapter(handler)));
     }
 
     @Override
-    public ModelNode execute(final ModelNode operation) throws CancellationException {
+    public ModelNode execute(final ExecutionContext executionContext) throws CancellationException {
         try {
-            return client.execute(operation);
+            return client.execute(executionContext);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -54,6 +54,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -170,7 +171,7 @@ public class GlobalOperationHandlers {
                 operation.get(ADDRESS).set(new ModelNode());
 
                 for (ProxyController proxyController : proxyControllers) {
-                    final ModelNode proxyResult = proxyController.execute(operation);
+                    final ModelNode proxyResult = proxyController.execute(ExecutionContextBuilder.Factory.create(operation).build());
                     addProxyResultToMainResult(proxyController.getProxyNodeAddress(), result, proxyResult);
                 }
             }
@@ -448,7 +449,7 @@ public class GlobalOperationHandlers {
                         if (locale != null) {
                             operation.get(OPERATIONS).set(locale.toString());
                         }
-                        child = proxyControllers.iterator().next().execute(operation).get(RESULT);
+                        child = proxyControllers.iterator().next().execute(ExecutionContextBuilder.Factory.create(operation).build()).get(RESULT);
 
                     } else {
                         child = provider.getModelDescription(locale);

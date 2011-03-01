@@ -31,6 +31,7 @@ import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.OperationRequestBuilder;
 import org.jboss.as.cli.OperationRequestParser;
 import org.jboss.as.cli.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -61,7 +62,7 @@ public class OperationRequestHandler implements CommandHandler {
            OperationRequestParser parser = ctx.getOperationRequestParser();
            parser.parse(ctx.getCommandArguments(), reqBuilder);
            ModelNode request = reqBuilder.buildRequest();
-           ModelNode result = client.execute(request);
+           ModelNode result = client.execute(ExecutionContextBuilder.Factory.create(request).build());
            ctx.log(result.toString());
         } catch(CommandFormatException e) {
             ctx.log(e.getLocalizedMessage());

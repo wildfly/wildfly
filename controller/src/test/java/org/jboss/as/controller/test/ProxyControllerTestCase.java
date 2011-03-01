@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -58,13 +59,13 @@ public class ProxyControllerTestCase extends AbstractProxyControllerTest {
         }
 
         @Override
-        public OperationResult execute(final ModelNode operation, final ResultHandler resultHandler) {
-            return targetController.execute(operation, resultHandler);
+        public OperationResult execute(final ExecutionContext executionContext, final ResultHandler resultHandler) {
+            return targetController.execute(executionContext, resultHandler);
         }
 
         @Override
-        public ModelNode execute(final ModelNode operation) throws CancellationException {
-            return targetController.execute(operation);
+        public ModelNode execute(final ExecutionContext executionContext) throws CancellationException {
+            return targetController.execute(executionContext);
         }
     }
 }

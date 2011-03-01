@@ -61,6 +61,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.TransactionalModelController;
+import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -136,7 +138,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         operation.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(PROFILE, profileName)).toModelNode());
 
         try {
-            ModelNode rsp = localDomainModel.execute(operation);
+            ModelNode rsp = localDomainModel.execute(ExecutionContextBuilder.Factory.create(operation).build());
             if (!rsp.hasDefined(OUTCOME) || !SUCCESS.equals(rsp.get(OUTCOME).asString())) {
                 ModelNode msgNode = rsp.get(FAILURE_DESCRIPTION);
                 String msg = msgNode.isDefined() ? msgNode.toString() : "Failed to retrieve profile operations from domain controller";
@@ -151,24 +153,24 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
 
     @Override
-    public OperationResult execute(ModelNode operation, ResultHandler handler) {
+    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
 
         // See who handles this op
-        OperationRouting routing = determineRouting(operation);
+        OperationRouting routing = determineRouting(executionContext.getOperation());
         if (routing.isRouteToMaster()) {
-            return masterDomainControllerClient.execute(operation, handler);
+            return masterDomainControllerClient.execute(executionContext, handler);
         }
         else if (routing.isLocalOnly()) {
             // It's either for a domain-level resource, which the DomainModel will handle directly,
             // or it's for a host resource, which the DomainModel will proxy off to the local HostController
-            return localDomainModel.execute(operation, handler);
+            return localDomainModel.execute(executionContext, handler);
         }
 
         // Else we are responsible for coordinating a multi-host op
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
-        Map<String, ModelNode> hostResults = pushToHosts(operation, routing, transaction);
+        Map<String, ModelNode> hostResults = pushToHosts(executionContext, routing, transaction);
         for (ModelNode hostResult : hostResults.values()) {
             if (hostResult.hasDefined(OUTCOME) && "failed".equals(hostResult.get(OUTCOME).asString())) {
                 transaction.setRollbackOnly();
@@ -286,14 +288,14 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return fileRepository;
     }
 
-    private Map<String, ModelNode> pushToHosts(final ModelNode operation, final OperationRouting routing, final ControllerTransaction transaction) {
+    private Map<String, ModelNode> pushToHosts(final ExecutionContext executionContext, final OperationRouting routing, final ControllerTransaction transaction) {
         final Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>();
         final Map<String, Future<OperationResult>> futures = new HashMap<String, Future<OperationResult>>();
 
         // Try and execute locally first; if it fails don't bother with the other hosts
         final Set<String> targets = routing.getHosts();
         if (targets.remove(localHostName)) {
-            pushToHost(operation, transaction, localHostName, hostResults, futures);
+            pushToHost(executionContext, transaction, localHostName, hostResults, futures);
             processHostFuture(localHostName, futures.remove(localHostName), hostResults);
             ModelNode hostResult = hostResults.get(localHostName);
             if (!transaction.isRollbackOnly()) {
@@ -305,7 +307,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         if (!transaction.isRollbackOnly()) {
             for (final String host : targets) {
-                pushToHost(operation, transaction, host, hostResults, futures);
+                pushToHost(executionContext, transaction, host, hostResults, futures);
             }
 
             log.debugf("Domain updates pushed to %s host controller(s)", futures.size());
@@ -335,7 +337,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
     }
 
-    private void pushToHost(final ModelNode operation, final ControllerTransaction transaction, final String host,
+    private void pushToHost(final ExecutionContext executionContext, final ControllerTransaction transaction, final String host,
             final Map<String, ModelNode> hostResults, final Map<String, Future<OperationResult>> futures) {
         final TransactionalModelController client = hosts.get(host);
         if (client != null) {
@@ -368,7 +370,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
                 @Override
                 public OperationResult call() throws Exception {
-                    return client.execute(operation, handler, transaction);
+                    return client.execute(executionContext, handler, transaction);
                 }
 
             };

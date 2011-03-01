@@ -24,6 +24,7 @@ package org.jboss.as.demos.xmlconfig.runner;
 
 import java.net.InetAddress;
 
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -48,7 +49,7 @@ public class ExampleRunner {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
             request.get("address").setEmptyList();
-            ModelNode r = client.execute(request);
+            ModelNode r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
             System.out.println(r.get("result").asString());
 
         } finally {

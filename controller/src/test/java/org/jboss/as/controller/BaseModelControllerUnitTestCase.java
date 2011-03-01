@@ -19,6 +19,8 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
+import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -42,34 +44,34 @@ public class BaseModelControllerUnitTestCase {
 
     @Test
     public void testGoodExecution() throws Exception {
-        ModelNode result = controller.execute(getOperation("good", "attr1", 5));
+        ModelNode result = controller.execute(getExecutionContext("good", "attr1", 5));
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertEquals(1, result.get("result").asInt());
-        result = controller.execute(getOperation("good", "attr1", 1));
+        result = controller.execute(getExecutionContext("good", "attr1", 1));
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertEquals(5, result.get(RESULT).asInt());
     }
 
     @Test
     public void testOperationFailedExecution() throws Exception {
-        ModelNode result = controller.execute(getOperation("bad", "attr1", 5));
+        ModelNode result = controller.execute(getExecutionContext("bad", "attr1", 5));
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertEquals("this request is bad", result.get(FAILURE_DESCRIPTION).asString());
 
         // Confirm model was unchanged
-        result = controller.execute(getOperation("good", "attr1", 1));
+        result = controller.execute(getExecutionContext("good", "attr1", 1));
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertEquals(1, result.get(RESULT).asInt());
     }
 
     @Test
     public void testUnhandledFailureExecution() throws Exception {
-        ModelNode result = controller.execute(getOperation("evil", "attr1", 5));
+        ModelNode result = controller.execute(getExecutionContext("evil", "attr1", 5));
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this handler is evil") > - 1);
 
         // Confirm model was unchanged
-        result = controller.execute(getOperation("good", "attr1", 1));
+        result = controller.execute(getExecutionContext("good", "attr1", 1));
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
     }
@@ -84,18 +86,19 @@ public class BaseModelControllerUnitTestCase {
         return model;
     }
 
-    public static ModelNode getOperation(String opName, String attr, int val) {
-        return getOperation(opName, attr, val, null);
+    public static ExecutionContext getExecutionContext(String opName, String attr, int val) {
+        return getExecutionContext(opName, attr, val, null);
     }
 
-    public static ModelNode getOperation(String opName, String attr, int val, String rollbackName) {
+    public static ExecutionContext getExecutionContext(String opName, String attr, int val, String rollbackName) {
         ModelNode op = new ModelNode();
         op.get(OP).set(opName);
         op.get(OP_ADDR).setEmptyList();
         op.get(NAME).set(attr);
         op.get(VALUE).set(val);
         op.get("rollbackName").set(rollbackName == null ? opName : rollbackName);
-        return op;
+
+        return ExecutionContextBuilder.Factory.create(op).build();
     }
 
     public static class GoodHandler implements ModelUpdateOperationHandler {
@@ -110,7 +113,7 @@ public class BaseModelControllerUnitTestCase {
 
             resultHandler.handleResultFragment(new String[0], new ModelNode().set(current));
             resultHandler.handleResultComplete();
-            return new BasicOperationResult(getOperation("good", name, current, operation.get("rollbackName").asString()));
+            return new BasicOperationResult(getExecutionContext("good", name, current, operation.get("rollbackName").asString()).getOperation());
         }
     }
 
