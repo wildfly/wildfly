@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.deployers;
 
-
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -29,7 +28,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.deployment.WarMetaData;
@@ -44,52 +42,31 @@ import org.jboss.modules.filter.PathFilters;
  * A DUP that sets the dependencies required for using WS classes in WS deployments
  *
  * @author alessio.soldano@jboss.com
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @since 19-Jan-2011
  */
-public class WSDependenciesProcessor implements DeploymentUnitProcessor {
+public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier APACHE_CXF = ModuleIdentifier.create("org.apache.cxf");
-    private static final ModuleIdentifier APACHE_XALAN = ModuleIdentifier.create("org.apache.xalan");
-    private static final ModuleIdentifier APACHE_XERCES = ModuleIdentifier.create("org.apache.xerces");
-    private static final ModuleIdentifier JAXB_IMPL = ModuleIdentifier.create("com.sun.xml.bind");
-    private static final ModuleIdentifier JBOSS_WS_COMMON = ModuleIdentifier.create("org.jboss.ws.common");
-    private static final ModuleIdentifier JBOSS_WS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
-    private static final ModuleIdentifier JBOSS_WS_CXF_FACTORIES = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-factories");
-    private static final ModuleIdentifier JBOSS_WS_CXF_SERVER = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-server");
-    private static final ModuleIdentifier JBOSS_WS_CXF_TRANSPORTS_HTTPSERVER = ModuleIdentifier.create("org.jboss.ws.cxf.jbossws-cxf-transports-httpserver");
-    private static final ModuleIdentifier JBOSS_WS_JAXWS_CLIENT = ModuleIdentifier.create("org.jboss.ws.jaxws-client");
-    private static final ModuleIdentifier JBOSS_WEBSERVICES = ModuleIdentifier.create("org.jboss.as.webservices");
-    private static final ModuleIdentifier SAAJ_IMPL = ModuleIdentifier.create("com.sun.xml.messaging.saaj");
-    private static final ModuleIdentifier WSDL4J = ModuleIdentifier.create("wsdl4j.wsdl4j");
+    private static final ModuleIdentifier ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.integration");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (isWSDeployment(deploymentUnit)) {
-            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-            final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-
-            // FIXME see if/how we can or should avoid (or at least limit) exposing the whole server stack code
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAXB_IMPL, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_SPI, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_COMMON, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_JAXWS_CLIENT, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_FACTORIES, false, false, true));
-            moduleSpecification.addDependency(applyCXFExtensionImportFilters(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_TRANSPORTS_HTTPSERVER, false, false, true)));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WS_CXF_SERVER, false, false, true));
-
-            moduleSpecification.addDependency(applyCXFExtensionImportFilters(new ModuleDependency(moduleLoader, APACHE_CXF, false, false, true)));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XALAN, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
-
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEBSERVICES, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SAAJ_IMPL, false, false, true));
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, WSDL4J, false, false, true));
+        if (!isWSDeployment(deploymentUnit)) {
+            return;
         }
+
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+
+        ModuleDependency asilDependency = new ModuleDependency(moduleLoader, ASIL, false, true, true);
+        ModuleDependency hackyDependency = applyCXFExtensionImportFilters(asilDependency); // TODO: remove hack
+        moduleSpecification.addDependency(hackyDependency); // TODO: use asilDependency instead
     }
 
-    private static ModuleDependency applyCXFExtensionImportFilters(ModuleDependency dep) {
-        dep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/cxf"), true)); //to include bus extensions in META-INF
-        dep.getImportFilters().add(new FilterSpecification(PathFilters.match("META-INF/spring.*"), true));
+    private static ModuleDependency applyCXFExtensionImportFilters(final ModuleDependency dep) {
+        // TODO: investigate how to do it via module.xml
+        dep.addImportFilter(PathFilters.match("META-INF/cxf"), true);
+        dep.addImportFilter(PathFilters.match("META-INF/spring.*"), true);
         return dep;
     }
 
@@ -108,7 +85,7 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
         }
         final Index index = ASHelper.getRootAnnotationIndex(unit);
         final WarMetaData warMetaData = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
-        if(warMetaData == null || warMetaData.getWebMetaData() == null) {
+        if (warMetaData == null || warMetaData.getWebMetaData() == null) {
             return false;
         }
         return (ASHelper.selectWebServiceServlets(index, warMetaData.getWebMetaData().getServlets(), true).size() > 0);
@@ -116,4 +93,5 @@ public class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
     public void undeploy(final DeploymentUnit context) {
     }
+
 }

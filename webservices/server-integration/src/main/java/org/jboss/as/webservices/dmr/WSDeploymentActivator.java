@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.server.BootOperationContext;
@@ -36,13 +37,17 @@ import org.jboss.as.webservices.deployers.WSDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSTypeDeploymentProcessor;
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
+import org.jboss.logging.Logger;
+import org.jboss.wsf.common.sort.DeploymentAspectSorter;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
 /**
  * @author alessio.soldano@jboss.com
- * @since 12-Jan-2011
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class WSDeploymentActivator {
+final class WSDeploymentActivator {
+
+    private static final Logger LOGGER = Logger.getLogger(WSDeploymentActivator.class);
 
     static void activate(final BootOperationContext updateContext) {
         int priority = Phase.INSTALL_WAR_METADATA + 10;
@@ -58,23 +63,19 @@ class WSDeploymentActivator {
         addDeploymentProcessors(WSDeploymentActivator.class.getClassLoader(), updateContext, priority);
     }
 
-    private static void addDeploymentProcessors(final ClassLoader cl, final BootOperationContext updateContext, int priority) {
+    private static List<DeploymentAspect> getDeploymentAspects(final ClassLoader cl, final String resourcePath)
+    {
         try {
-            Enumeration<URL> urls = cl.getResources("/META-INF/deployment-aspects.xml");
+            Enumeration<URL> urls = cl.getResources(resourcePath);
             if (urls != null) {
                 ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
                 try {
                     SecurityActions.setContextClassLoader(cl);
-                    while (urls.hasMoreElements()) {
-                        URL url = urls.nextElement();
+                    URL url = urls.nextElement();
                         InputStream is = null;
                         try {
                             is =  url.openStream();
-                            List<DeploymentAspect> deploymentAspects = WSDeploymentAspectParser.parse(is);
-                            for (DeploymentAspect da : deploymentAspects) {
-                                int p = priority + da.getRelativeOrder();
-                                updateContext.addDeploymentProcessor(Phase.INSTALL, p, new AspectDeploymentProcessor(da));
-                            }
+                            return WSDeploymentAspectParser.parse(is);
                         } finally {
                             if (is != null) {
                                 try {
@@ -84,13 +85,31 @@ class WSDeploymentActivator {
                                 }
                             }
                         }
-                    }
                 } finally {
                     SecurityActions.setContextClassLoader(origClassLoader);
                 }
             }
+            else {
+                throw new RuntimeException("Could not load WS deployment aspects from " + resourcePath);
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Could not load WS deployment aspects!", e);
+            throw new RuntimeException("Could not load WS deployment aspects from " + resourcePath, e);
         }
     }
+
+    private static void addDeploymentProcessors(final ClassLoader cl, final BootOperationContext updateContext, final int priority) {
+        int index = 1;
+        for (final DeploymentAspect da : getSortedDeploymentAspects(cl)) {
+            LOGGER.tracef("Installing aspect %s", da.getClass().getName());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, priority + index++, new AspectDeploymentProcessor(da));
+        }
+    }
+
+    private static List<DeploymentAspect> getSortedDeploymentAspects(final ClassLoader cl) {
+        final List<DeploymentAspect> deploymentAspects = new LinkedList<DeploymentAspect>();
+        deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-agnostic-deployment-aspects.xml"));
+        deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-specific-deployment-aspects.xml"));
+        return DeploymentAspectSorter.getInstance().sort(deploymentAspects);
+    }
+
 }

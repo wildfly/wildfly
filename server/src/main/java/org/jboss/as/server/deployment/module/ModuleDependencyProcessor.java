@@ -52,6 +52,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ServiceModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
 
         List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         for (ResourceRoot resourceRoot : allResourceRoots) {
@@ -59,11 +60,10 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             if (manifest == null)
                 continue;
 
-            final ServiceModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
-
             final String dependencyString = manifest.getMainAttributes().getValue("Dependencies");
             if (dependencyString == null)
-                return;
+                continue;
+
             final String[] dependencyDefs = dependencyString.split(",");
             for (String dependencyDef : dependencyDefs) {
                 final String[] dependencyParts = dependencyDef.split(" ");

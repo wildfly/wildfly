@@ -463,6 +463,10 @@
             <maven-resource-with-classifier group="org.jboss.ws.cxf" artifact="jbossws-cxf-resources" classifier="jboss700"/>
         </module-def>
 
+        <module-def name="org.jboss.as.webservices.server.integration">
+            <!-- this is just dependencies wrapper module - to support multiple JBossWS SOAP stacks -->
+        </module-def>
+
         <module-def name="org.jboss.as.weld">
             <maven-resource group="org.jboss.as" artifact="jboss-as-weld"/>
         </module-def>

@@ -225,7 +225,7 @@ public class WSDeploymentAspectParser {
         for (Method m : methods) {
             if (m.getName().equals("set" + JavaUtils.capitalize(propName))) {
                 Class<?>[] pars = m.getParameterTypes();
-                if (pars.length == 1 && pars[0].isAssignableFrom(Class.forName(propClass))) {
+                if (pars.length == 1 && (propClass.equals(pars[0].getName()) || (pars[0].isAssignableFrom(Class.forName(propClass))))) {
                     return m;
                 }
             }
@@ -235,7 +235,7 @@ public class WSDeploymentAspectParser {
 
     private static boolean isSupportedPropertyClass(String propClass) {
         return (String.class.getName().equals(propClass) || Boolean.class.getName().equals(propClass) || Integer.class
-                .getName().equals(propClass));
+                .getName().equals(propClass) || JavaUtils.isPrimitive(propClass));
     }
 
     private static Object parseSimpleValue(XMLStreamReader reader, String propClass) throws XMLStreamException {
@@ -245,6 +245,8 @@ public class WSDeploymentAspectParser {
             return StAXUtils.elementAsBoolean(reader);
         } else if (Integer.class.getName().equals(propClass)) {
             return StAXUtils.elementAsInt(reader);
+        } else if (boolean.class.getName().equals(propClass)) {
+            return StAXUtils.elementAsBoolean(reader);
         } else {
             throw new IllegalArgumentException("Unsupported property class: " + propClass);
         }
