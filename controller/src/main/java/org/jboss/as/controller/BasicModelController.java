@@ -41,18 +41,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -180,8 +184,19 @@ public class BasicModelController extends AbstractModelController implements Mod
     protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler,
             final ModelProvider modelSource, final OperationContextFactory contextFactory,
             final ConfigurationPersisterProvider configurationPersisterProvider) {
+        return execute(executionContext, handler, modelSource, contextFactory, configurationPersisterProvider, true);
+    }
+
+    protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler,
+            final ModelProvider modelSource, final OperationContextFactory contextFactory,
+            final ConfigurationPersisterProvider configurationPersisterProvider, boolean resolve) {
         try {
             final PathAddress address = PathAddress.pathAddress(executionContext.getOperation().get(ModelDescriptionConstants.OP_ADDR));
+            final boolean multiTarget = address.isMultiTarget();
+            if(multiTarget && resolve) {
+                final MultiTargetAction action = new MultiTargetAction(address);
+                return action.execute(executionContext, handler, modelSource, contextFactory, configurationPersisterProvider);
+            }
 
             final ProxyController proxyExecutor = registry.getProxyController(address);
             if (proxyExecutor != null) {
@@ -466,6 +481,8 @@ public class BasicModelController extends AbstractModelController implements Mod
                 throw new UnsupportedOperationException("load() should not be called as part of operation handling");
             }
         };
+        /** Flag indicating whether wildcards should be resolved or not. */
+        protected boolean resolve = true;
 
         protected MultiStepOperationController(final ExecutionContext executionContext, final ResultHandler resultHandler,
                 final ModelProvider modelSource, final ConfigurationPersisterProvider injectedConfigPersisterProvider) throws OperationFailedException {
@@ -582,7 +599,7 @@ public class BasicModelController extends AbstractModelController implements Mod
                 else {
                     final Integer id = Integer.valueOf(i);
                     final ResultHandler stepResultHandler = getStepResultHandler(id);
-                    final OperationResult result = BasicModelController.this.execute(executionContext.clone(step), stepResultHandler, this, this, this);
+                    final OperationResult result = BasicModelController.this.execute(executionContext.clone(step), stepResultHandler, this, this, this, resolve);
                     recordRollbackOp(id, result.getCompensatingOperation());
                 }
             }
@@ -768,5 +785,105 @@ public class BasicModelController extends AbstractModelController implements Mod
         public void handleCancellation() {
             compositeContext.recordCancellation(id);
         }
+    }
+
+    protected final class MultiTargetAction {
+
+        private final PathAddress address;
+        protected MultiTargetAction(PathAddress address) {
+            this.address = address;
+        }
+
+        protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler,
+                final ModelProvider modelSource, final OperationContextFactory contextFactory,
+                final ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
+            // Resolve the address first
+            final ModelNode resolveOperation = new ModelNode();
+            resolveOperation.get(ModelDescriptionConstants.OP).set(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME);
+            resolveOperation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
+            resolveOperation.get(GlobalOperationHandlers.ResolveAddressOperationHandler.ADDRESS_PARAM).set(address.toModelNode());
+            resolveOperation.get(GlobalOperationHandlers.ResolveAddressOperationHandler.ORIGINAL_OPERATION).set(executionContext.getOperation().require(ModelDescriptionConstants.OP));
+            // Aggregate the result as collection using a hacked resolve operation and resultHandler
+            final Collection<ModelNode> resolved = new ArrayList<ModelNode>();
+            final AtomicInteger status = new AtomicInteger();
+            final ModelNode failureResult = new ModelNode();
+            final ExecutionContext resolveContext = ExecutionContextBuilder.Factory.create(resolveOperation).build();
+            final ResultHandler resolveHandler = new ResultHandler() {
+                public void handleResultFragment(String[] location, ModelNode result) {
+                    synchronized(failureResult) {
+                        if (status.get() == 0) {
+                            resolved.add(result);
+                        }
+                    }
+                }
+                public void handleResultComplete() {
+                    synchronized(failureResult) {
+                        status.compareAndSet(0, 1);
+                        failureResult.notify();
+                    }
+                }
+                public void handleFailed(ModelNode failureDescription) {
+                    synchronized(failureResult) {
+                        failureResult.set(failureDescription);
+                        status.compareAndSet(0, 2);
+                        failureResult.notify();
+                    }
+                }
+                public void handleCancellation() {
+                    synchronized(failureResult) {
+                        status.compareAndSet(0, 3);
+                        failureResult.notify();
+                    }
+                }
+            };
+            final OperationResult result = BasicModelController.this.execute(resolveContext, resolveHandler, modelSource, contextFactory, configurationPersisterProvider, false);
+            boolean intr = false;
+            try {
+                synchronized (failureResult) {
+                    for(;;) {
+                        try {
+                            final int s = status.get();
+                            switch (s) {
+                                case 1: return executeMultiOperation(resolved, executionContext, handler, modelSource, contextFactory, configurationPersisterProvider);
+                                case 2: handler.handleFailed(failureResult); return new BasicOperationResult();
+                                case 3: throw new CancellationException();
+                            }
+                            failureResult.wait();
+                        } catch(InterruptedException e) {
+                            intr = true;
+                            result.getCancellable().cancel();
+                        }
+                    }
+                }
+            } finally {
+                if(intr) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+        protected OperationResult executeMultiOperation(final Collection<ModelNode> resolved, final ExecutionContext executionContext, final ResultHandler handler,
+                final ModelProvider modelSource, final OperationContextFactory contextFactory,
+                final ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
+            // unresolved might be a failure?
+            if(resolved.isEmpty()) {
+                handler.handleResultComplete();
+                return new BasicOperationResult();
+            }
+            // Create multi step operation
+            final ModelNode multiStep = new ModelNode();
+            for(final ModelNode a : resolved) {
+                final ModelNode newOperation = executionContext.getOperation().clone();
+                newOperation.get(ModelDescriptionConstants.OP_ADDR).set(a);
+                multiStep.get(STEPS).add(newOperation);
+            }
+            final ExecutionContext multiContext = executionContext.clone(multiStep);
+            final MultiStepOperationController multistepController = BasicModelController.this.getMultiStepOperationController(multiContext, handler, modelSource, configurationPersisterProvider);
+            multistepController.resolve = false; // tell the multi step controller not to resolve again
+            // Execute multi step operation
+            return multistepController.execute(handler);
+        }
+
+
     }
 }

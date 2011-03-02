@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -224,6 +225,20 @@ final class NodeSubregistry {
             for (AbstractNodeRegistration childRegistry : snapshot.values()) {
                 childRegistry.getProxyControllers(iterator, controllers);
             }
+        }
+    }
+
+    void resolveAddress(final PathAddress address, final PathAddress base, final PathElement current, Set<PathAddress> addresses) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
+        final AbstractNodeRegistration childRegistry = snapshot.get(current.getValue());
+        if(childRegistry == null) {
+            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
+            if(wildcardRegistry == null) {
+                return;
+            }
+            wildcardRegistry.resolveAddress(address, base.append(current), addresses);
+        } else {
+            childRegistry.resolveAddress(address, base.append(current), addresses);
         }
     }
 }

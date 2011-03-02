@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -320,12 +321,49 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
             if (subregistry == null) {
                 return;
             }
-            subregistry.getProxyControllers(iterator, next.getValue(), controllers);
+            if(next.isWildcard()) {
+                subregistry.getProxyControllers(iterator, null, controllers);
+            } else if(next.isMultiTarget()) {
+                for(final String value : next.getSegments()) {
+                    subregistry.getProxyControllers(iterator, value, controllers);
+                }
+            } else {
+                subregistry.getProxyControllers(iterator, next.getValue(), controllers);
+            }
         } else {
             final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
             for (NodeSubregistry subregistry : snapshot.values()) {
                 subregistry.getProxyControllers(iterator, null, controllers);
             }
+        }
+    }
+
+    @Override
+    void resolveAddress(PathAddress address, PathAddress base, Set<PathAddress> addresses) {
+        final PathAddress current = address.subAddress(base.size());
+        final Iterator<PathElement> iterator = current.iterator();
+        if(iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if(subregistry == null) {
+                return;
+            }
+            if(next.isWildcard()) {
+                for(final String key : subregistry.getChildNames()) {
+                    final PathElement element = PathElement.pathElement(next.getKey(), key);
+                    subregistry.resolveAddress(address, base, element, addresses);
+                }
+            } else if (next.isMultiTarget()) {
+                for(final String value : next.getSegments()) {
+                    final PathElement element = PathElement.pathElement(next.getKey(), value);
+                    subregistry.resolveAddress(address, base, element, addresses);
+                }
+            } else {
+                final PathElement element = PathElement.pathElement(next.getKey(), next.getValue());
+                subregistry.resolveAddress(address, base, element, addresses);
+            }
+        } else {
+            addresses.add(base);
         }
     }
 

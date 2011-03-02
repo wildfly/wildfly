@@ -37,7 +37,7 @@ public class PathElement {
 
     private final String key;
     private final String value;
-
+    private final boolean multiTarget;
     private final int hashCode;
 
     /**
@@ -92,7 +92,16 @@ public class PathElement {
             throw new IllegalArgumentException("Invalid value specification");
         }
         this.key = key;
-        this.value = value.equals(WILDCARD_VALUE) ? WILDCARD_VALUE : value;
+        if(value.equals(WILDCARD_VALUE)) {
+            this.value = WILDCARD_VALUE;
+            this.multiTarget = true;
+        } else if (value.charAt(0) == '[' && value.charAt(value.length() -1) == ']') {
+            this.value = value.substring(1, value.length() -1);
+            this.multiTarget = value.indexOf(',') != -1;
+        } else {
+            this.value = value;
+            this.multiTarget = false;
+        }
         hashCode = key.hashCode() * 19 + value.hashCode();
     }
 
@@ -132,6 +141,14 @@ public class PathElement {
      */
     public boolean isWildcard() {
         return WILDCARD_VALUE == value;
+    }
+
+    public boolean isMultiTarget() {
+        return multiTarget;
+    }
+
+    public String[] getSegments() {
+        return value.split(",");
     }
 
     @Override

@@ -150,6 +150,16 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     abstract void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers);
 
+    /** {@inheritDoc} */
+    @Override
+    public Set<PathAddress> resolveAddress(final PathAddress address) {
+        final Set<PathAddress> addresses = new HashSet<PathAddress>();
+        resolveAddress(address, PathAddress.EMPTY_ADDRESS, addresses);
+        return addresses;
+    }
+
+    abstract void resolveAddress(final PathAddress address, final PathAddress base, Set<PathAddress> addresses);
+
     final String getLocationString() {
         if (parent == null) {
             return "";

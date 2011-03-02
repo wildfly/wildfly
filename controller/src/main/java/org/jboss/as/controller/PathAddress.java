@@ -203,6 +203,16 @@ public class PathAddress implements Iterable<PathElement> {
     }
 
     /**
+     * Create a new path address by appending more elements to the end of this address.
+     *
+     * @param address the address to append
+     * @return the new path address
+     */
+    public PathAddress append(PathAddress address) {
+        return append(address.pathAddressList);
+    }
+
+    /**
      * Navigate to this address in the given model node.
      *
      * @param model the model node
@@ -215,6 +225,9 @@ public class PathAddress implements Iterable<PathElement> {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (create && ! i.hasNext()) {
+                if(element.isMultiTarget()) {
+                    throw new IllegalStateException();
+                }
                 model = model.require(element.getKey()).get(element.getValue());
             } else {
                 model = model.require(element.getKey()).require(element.getValue());
@@ -244,6 +257,58 @@ public class PathAddress implements Iterable<PathElement> {
         return model;
     }
 
+    public static Set<PathAddress> resolve(final PathAddress address, final ModelNode model, boolean create) {
+        if(! address.isMultiTarget()) {
+            return Collections.singleton(address);
+        }
+        final Set<PathAddress> resolved = new HashSet<PathAddress>();
+        resolve(address, EMPTY_ADDRESS, model, resolved, create);
+        return resolved;
+    }
+
+    private static void resolve(final PathAddress address, PathAddress base, ModelNode model, final Set<PathAddress> resolved, final boolean create) {
+        final PathAddress current = address.subAddress(base.size());
+        final Iterator<PathElement> iterator = current.iterator();
+        if(! iterator.hasNext()) {
+            resolved.add(base);
+            return;
+        }
+        while(iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            if(next.isWildcard()) {
+                if(model.hasDefined(next.getKey())) {
+                    for(final String value : model.require(next.getKey()).keys()) {
+                        final PathElement element = PathElement.pathElement(next.getKey(), value);
+                        resolve(address, base.append(element), model.get(next.getKey(), value), resolved, create);
+                    }
+                }
+                return;
+            } else if (next.isMultiTarget()) {
+                if(model.hasDefined(next.getKey())) {
+                    final ModelNode subModel = model.get(next.getKey());
+                    for(final String value : next.getSegments()) {
+                        if(subModel.hasDefined(value)) {
+                            final PathElement element = PathElement.pathElement(next.getKey(), value);
+                            resolve(address, base.append(element), subModel.get(value), resolved, create);
+                        }
+                    }
+                }
+                return;
+            } else {
+                if(create && ! iterator.hasNext()) {
+                    model = model.require(next.getKey()).get(next.getValue());
+                } else {
+                    model = model.require(next.getKey()).require(next.getValue());
+                }
+                if(! iterator.hasNext()) {
+                    resolved.add(base.append(next));
+                } else {
+                    base = base.append(next);
+                }
+            }
+        }
+    }
+
     /**
      * Convert this path address to its model node representation.
      *
@@ -252,9 +317,29 @@ public class PathAddress implements Iterable<PathElement> {
     public ModelNode toModelNode() {
         final ModelNode node = new ModelNode().setEmptyList();
         for (PathElement element : pathAddressList) {
-            node.add(element.getKey(), element.getValue());
+            final String value;
+            if(element.isMultiTarget() && ! element.isWildcard()) {
+                value = '[' + element.getValue() + ']';
+            } else {
+                value = element.getValue();
+            }
+            node.add(element.getKey(), value);
         }
         return node;
+    }
+
+    /**
+     * Check whether this address applies to multiple targets.
+     *
+     * @return <code>true</code> if the address can apply to multiple targets, <code>false</code> otherwise
+     */
+    public boolean isMultiTarget() {
+        for(final PathElement element : pathAddressList) {
+            if(element.isMultiTarget()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -65,6 +65,8 @@ public class ExampleRunner {
             r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
             System.out.println(r);
 
+            wildcards(client);
+
         } finally {
             StreamUtils.safeClose(client);
             System.out.println("Closed");
@@ -72,4 +74,22 @@ public class ExampleRunner {
 
     }
 
+    static void wildcards(final ModelControllerClient client) throws Exception {
+        {
+            final ModelNode address = new ModelNode();
+            address.add("host", "*");
+            address.add("running-server", "*");
+            address.add("subsystem", "*");
+            System.out.println("Wildcards\n");
+            ModelNode request = new ModelNode();
+            request.get("operation").set("read-resource");
+            request.get("address").set(address);
+            request.get("recursive").set(true);
+            ModelNode r = client.execute(request);
+            System.out.println(r);
+        }
+        {
+
+        }
+    }
 }

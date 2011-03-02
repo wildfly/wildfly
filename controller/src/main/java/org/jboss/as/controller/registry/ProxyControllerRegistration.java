@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -127,8 +128,14 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
 
     @Override
     void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
-        if (!iterator.hasNext()) {
-            controllers.add(proxyController);
-        }
+        controllers.add(proxyController);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    void resolveAddress(final PathAddress address, final PathAddress base, final Set<PathAddress> addresses) {
+        assert base.equals(proxyController.getProxyNodeAddress()) : "invalid address " + base;
+        final PathAddress subAddress = address.subAddress(base.size());
+        addresses.add(address.append(subAddress));
     }
 }

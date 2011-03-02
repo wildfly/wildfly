@@ -32,18 +32,22 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MOD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -54,6 +58,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -73,6 +78,7 @@ public class GlobalOperationHandlers {
     public static final OperationHandler READ_RESOURCE = new ReadResourceHandler();
     public static final OperationHandler READ_ATTRIBUTE = new ReadAttributeHandler();
     public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
+    public static final ResolveAddressOperationHandler RESOLVE = new ResolveAddressOperationHandler();
 
     private GlobalOperationHandlers() {
         //
@@ -460,6 +466,107 @@ public class GlobalOperationHandlers {
             }
         }
     };
+
+
+    public static final class ResolveAddressOperationHandler implements ModelQueryOperationHandler, DescriptionProvider {
+
+        public static final String OPERATION_NAME = "resolve-address";
+        public static final String ADDRESS_PARAM = "address-to-resolve";
+        public static final String ORIGINAL_OPERATION = "original-operation";
+
+        /** {@inheritDoc} */
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS_PARAM));
+            final String operationName = operation.require(ORIGINAL_OPERATION).asString();
+            // First check if the address is handled by a proxy
+            final Collection<ProxyController> proxies = context.getRegistry().getProxyControllers(address);
+            final int size = proxies.size();
+            if(size > 0) {
+                final AtomicInteger count = new AtomicInteger(size);
+                final AtomicInteger status = new AtomicInteger();
+                final ModelNode failureResult = new ModelNode();
+                for(final ProxyController proxy : proxies) {
+                    final PathAddress proxyAddress = proxy.getProxyNodeAddress();
+                    final ModelNode newOperation = operation.clone();
+                    newOperation.get(OP_ADDR).set(address.subAddress(proxyAddress.size()).toModelNode());
+                    final ExecutionContext executionContext = ExecutionContextBuilder.Factory.create(newOperation).build();
+                    proxy.execute(executionContext, new ResultHandler() {
+                        public void handleResultFragment(String[] location, ModelNode result) {
+                            synchronized(failureResult) {
+                                if(status.get() == 0) {
+                                    // Addresses are aggregated as list by the controller
+                                    final PathAddress resolved = PathAddress.pathAddress(result);
+                                    resultHandler.handleResultFragment(Util.NO_LOCATION, proxyAddress.append(resolved).toModelNode());
+                                }
+                            }
+                        }
+                        public void handleResultComplete() {
+                            synchronized(failureResult) {
+                                status.compareAndSet(0, 1);
+                                if(count.decrementAndGet() == 0) {
+                                    handleComplete();
+                                }
+                            }
+                        }
+                        public void handleFailed(ModelNode failureDescription) {
+                            synchronized(failureResult) {
+                                if(failureDescription != null)  {
+                                    failureResult.add(failureDescription);
+                                }
+                                status.compareAndSet(0, 2);
+                                if(count.decrementAndGet() == 0) {
+                                    handleComplete();
+                                }
+                            }
+                        }
+                        public void handleCancellation() {
+                            synchronized(failureResult) {
+                                status.compareAndSet(0, 3);
+                                if(count.decrementAndGet() == 0) {
+                                    handleComplete();
+                                }
+                            }
+                        }
+                        private void handleComplete() {
+                            final int s = status.get();
+                            switch(s) {
+                                case 1: resultHandler.handleResultComplete(); break;
+                                case 2: resultHandler.handleFailed(new ModelNode()); break;
+                                case 3: resultHandler.handleCancellation(); break;
+                                default : throw new IllegalStateException();
+                            }
+                        }
+                    });
+                    return new BasicOperationResult();
+                }
+            }
+            final OperationHandler operationHandler = context.getRegistry().getOperationHandler(address, operationName);
+            if(operationHandler == null) {
+                resultHandler.handleFailed(new ModelNode().set("no operation handler" + operationName));
+                return new BasicOperationResult();
+            }
+            final Collection<PathAddress> resolved;
+            if(operationHandler instanceof ModelQueryOperationHandler) {
+                resolved = PathAddress.resolve(address, context.getSubModel(), operationHandler instanceof ModelAddOperationHandler);
+            } else {
+                resolved = context.getRegistry().resolveAddress(address);
+            }
+            if(! resolved.isEmpty()) {
+                for(PathAddress a : resolved) {
+                    // Addresses are aggregated as list by the controller
+                    resultHandler.handleResultFragment(Util.NO_LOCATION, a.toModelNode());
+                }
+            }
+            resultHandler.handleResultComplete();
+            return new BasicOperationResult();
+        }
+
+        /** {@inheritDoc} */
+        public ModelNode getModelDescription(Locale locale) {
+            return new ModelNode();
+        }
+
+    }
 
     private static Locale getLocale(final ModelNode operation) {
         if (!operation.has(LOCALE)) {

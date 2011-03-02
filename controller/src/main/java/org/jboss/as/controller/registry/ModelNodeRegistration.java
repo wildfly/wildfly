@@ -197,6 +197,13 @@ public interface ModelNodeRegistration {
      */
     Set<ProxyController> getProxyControllers(PathAddress address);
 
+    /**
+     * Resolve a address against the registry.
+     *
+     * @param address the address
+     * @return the resolved addresses
+     */
+    Set<PathAddress> resolveAddress(PathAddress address);
 
     /**
      * A factory for creating a new, root model node registration.
