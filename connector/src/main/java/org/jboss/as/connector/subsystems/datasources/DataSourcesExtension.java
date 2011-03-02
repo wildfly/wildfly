@@ -33,6 +33,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
@@ -49,9 +50,12 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_USE_S
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERTTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
@@ -62,6 +66,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_FAST_F
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
@@ -98,10 +103,11 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.jca.common.api.metadata.ds.DsSecurity;
+import org.jboss.jca.common.api.metadata.ds.JdbcAdapterExtension;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
@@ -133,7 +139,8 @@ public class DataSourcesExtension implements Extension {
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, DataSourcesSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE, DataSourcesSubsystemDescribeHandler.INSTANCE, false);
+        subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE,
+                DataSourcesSubsystemDescribeHandler.INSTANCE, false);
 
     }
 
@@ -165,6 +172,7 @@ public class DataSourcesExtension implements Extension {
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.POOL_NAME, POOLNAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.ENABLED, ENABLED);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.SPY, SPY);
 
                     if (!isXADataSource) {
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTIONURL, CONNECTION_URL);
@@ -186,6 +194,7 @@ public class DataSourcesExtension implements Extension {
                     }
                     writeElementIfHas(writer, dataSourceNode, DataSource.Tag.NEWCONNECTIONSQL, NEW_CONNECTION_SQL);
                     writeElementIfHas(writer, dataSourceNode, DataSource.Tag.TRANSACTIONISOLATION, TRANSACTION_ISOLOATION);
+
                     if (!isXADataSource) {
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URLDELIMITER, URL_DELIMITER);
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URLSELECTORSTRATEGYCLASSNAME,
@@ -219,8 +228,10 @@ public class DataSourcesExtension implements Extension {
                     boolean securityRequired = hasAnyOf(dataSourceNode, USERNAME, PASSWORD);
                     if (securityRequired) {
                         writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
-                        writeElementIfHas(writer, dataSourceNode, CommonSecurity.Tag.USERNAME, USERNAME);
-                        writeElementIfHas(writer, dataSourceNode, CommonSecurity.Tag.PASSWORD, PASSWORD);
+                        writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.USERNAME, USERNAME);
+                        writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.PASSWORD, PASSWORD);
+                        writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.SECURITY_DOMAIN, SECURITY_DOMAIN);
+
                         writer.writeEndElement();
                     }
                     boolean validationRequired = hasAnyOf(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
@@ -228,7 +239,7 @@ public class DataSourcesExtension implements Extension {
                             USE_FAST_FAIL, STALECONNECTIONCHECKERCLASSNAME, EXCEPTIONSORTERCLASSNAME);
                     if (validationRequired) {
                         writer.writeStartElement(DataSource.Tag.VALIDATION.getLocalName());
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDCONNECTIONCHECKERCLASSNAME,
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDCONNECTIONCHECKER,
                                 VALIDCONNECTIONCHECKERCLASSNAME);
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.CHECKVALIDCONNECTIONSQL,
                                 CHECKVALIDCONNECTIONSQL);
@@ -237,10 +248,9 @@ public class DataSourcesExtension implements Extension {
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATIONMINUTES,
                                 BACKGROUNDVALIDATIONMINUTES);
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.USEFASTFAIL, USE_FAST_FAIL);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.STALECONNECTIONCHECKERCLASSNAME,
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.STALECONNECTIONCHECKER,
                                 STALECONNECTIONCHECKERCLASSNAME);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.EXCEPTIONSORTERCLASSNAME,
-                                EXCEPTIONSORTERCLASSNAME);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.EXCEPTIONSORTER, EXCEPTIONSORTERCLASSNAME);
                         writer.writeEndElement();
                     }
                     boolean timeoutRequired = hasAnyOf(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES,
@@ -305,8 +315,8 @@ public class DataSourcesExtension implements Extension {
             writeElementIfHas(writer, node, element.getLocalName(), identifier);
         }
 
-        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonSecurity.Tag element,
-                String identifier) throws XMLStreamException {
+        private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, DsSecurity.Tag element, String identifier)
+                throws XMLStreamException {
             writeElementIfHas(writer, node, element.getLocalName(), identifier);
         }
 
@@ -389,7 +399,8 @@ public class DataSourcesExtension implements Extension {
                                 DsParser parser = new DsParser();
                                 dataSources = parser.parse(reader);
 
-                                // Ensure the final end tag of the subsystem has been read.
+                                // Ensure the final end tag of the subsystem has
+                                // been read.
                                 ParseUtils.requireNoContent(reader);
 
                                 break;
@@ -426,10 +437,11 @@ public class DataSourcesExtension implements Extension {
                         setIfNotNull(dsModel, POOL_PREFILL, pool.isPrefill());
                         setIfNotNull(dsModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
                     }
-                    CommonSecurity security = ds.getSecurity();
+                    DsSecurity security = ds.getSecurity();
                     if (security != null) {
                         setIfNotNull(dsModel, USERNAME, security.getUserName());
                         setIfNotNull(dsModel, PASSWORD, security.getPassword());
+                        setIfNotNull(dsModel, SECURITY_DOMAIN, security.getSecurityDomain());
                     }
                     Statement statement = ds.getStatement();
                     if (statement != null) {
@@ -452,12 +464,20 @@ public class DataSourcesExtension implements Extension {
                     if (ds.getTransactionIsolation() != null) {
                         setIfNotNull(dsModel, TRANSACTION_ISOLOATION, ds.getTransactionIsolation().name());
                     }
+
+                    if (ds.isSpy()) {
+                        setIfNotNull(dsModel, SPY, ds.isSpy());
+                    }
+
                     Validation validation = ds.getValidation();
                     if (validation != null) {
                         setIfNotNull(dsModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-                        setIfNotNull(dsModel, EXCEPTIONSORTERCLASSNAME, validation.getExceptionSorterClassName());
-                        setIfNotNull(dsModel, STALECONNECTIONCHECKERCLASSNAME, validation.getStaleConnectionCheckerClassName());
-                        setIfNotNull(dsModel, VALIDCONNECTIONCHECKERCLASSNAME, validation.getValidConnectionCheckerClassName());
+                        setIfNotNull(dsModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
+                                validation.getExceptionSorter());
+                        setIfNotNull(dsModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
+                                validation.getStaleConnectionChecker());
+                        setIfNotNull(dsModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
+                                validation.getValidConnectionChecker());
                         setIfNotNull(dsModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
                         setIfNotNull(dsModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
                         setIfNotNull(dsModel, USE_FAST_FAIL, validation.isUseFastFail());
@@ -494,10 +514,11 @@ public class DataSourcesExtension implements Extension {
                         setIfNotNull(xadsModel, SAME_RM_OVERRIDE, pool.isSameRmOverride());
                         setIfNotNull(xadsModel, WRAP_XA_DATASOURCE, pool.isWrapXaDataSource());
                     }
-                    CommonSecurity security = xads.getSecurity();
+                    DsSecurity security = xads.getSecurity();
                     if (security != null) {
                         setIfNotNull(xadsModel, USERNAME, security.getUserName());
                         setIfNotNull(xadsModel, PASSWORD, security.getPassword());
+                        setIfNotNull(xadsModel, SECURITY_DOMAIN, security.getSecurityDomain());
                     }
                     Statement statement = xads.getStatement();
                     if (statement != null) {
@@ -521,12 +542,20 @@ public class DataSourcesExtension implements Extension {
                     if (xads.getTransactionIsolation() != null) {
                         setIfNotNull(xadsModel, TRANSACTION_ISOLOATION, xads.getTransactionIsolation().name());
                     }
+
+                    if (xads.isSpy()) {
+                        setIfNotNull(xadsModel, SPY, xads.isSpy());
+                    }
+
                     Validation validation = xads.getValidation();
                     if (xads.getValidation() != null) {
                         setIfNotNull(xadsModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-                        setIfNotNull(xadsModel, EXCEPTIONSORTERCLASSNAME, validation.getExceptionSorterClassName());
-                        setIfNotNull(xadsModel, STALECONNECTIONCHECKERCLASSNAME, validation.getStaleConnectionCheckerClassName());
-                        setIfNotNull(xadsModel, VALIDCONNECTIONCHECKERCLASSNAME, validation.getValidConnectionCheckerClassName());
+                        setIfNotNull(xadsModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
+                                validation.getExceptionSorter());
+                        setIfNotNull(xadsModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
+                                validation.getStaleConnectionChecker());
+                        setIfNotNull(xadsModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
+                                validation.getValidConnectionChecker());
                         setIfNotNull(xadsModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
                         setIfNotNull(xadsModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
                         setIfNotNull(xadsModel, USE_FAST_FAIL, validation.isUseFastFail());
@@ -536,6 +565,20 @@ public class DataSourcesExtension implements Extension {
                     XAdatasourcesNode.add(xadsModel);
                 }
             }
+        }
+
+        private void setIfNotNull(ModelNode dsModel, String extensionclassname, String extensionProperties,
+                JdbcAdapterExtension extension) {
+            if (extension != null) {
+                setIfNotNull(dsModel, extensionclassname, extension.getClassName());
+                if (extension.getConfigPropertiesMap() != null) {
+                    for (Entry<String, String> entry : extension.getConfigPropertiesMap().entrySet()) {
+
+                        dsModel.get(extensionProperties, entry.getKey()).set(entry.getValue());
+                    }
+                }
+            }
+
         }
 
         private void setIfNotNull(ModelNode node, String identifier, Boolean value) {
@@ -577,12 +620,13 @@ public class DataSourcesExtension implements Extension {
 
     private static class DataSourcesSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final DataSourcesSubsystemDescribeHandler INSTANCE = new DataSourcesSubsystemDescribeHandler();
+
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
             ModelNode add = createEmptyAddSubsystemOperation();
 
-            //TODO Fill in the details
+            // TODO Fill in the details
 
             ModelNode result = new ModelNode();
             result.add(add);

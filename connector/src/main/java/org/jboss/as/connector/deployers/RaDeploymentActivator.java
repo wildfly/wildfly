@@ -33,6 +33,7 @@ import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
 import org.jboss.as.connector.jndi.JndiStrategyService;
 import org.jboss.as.connector.mdr.MdrService;
+import org.jboss.as.connector.rarepository.RaRepositoryService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.deployment.Phase;
@@ -53,6 +54,9 @@ public class RaDeploymentActivator {
         MdrService mdrService = new MdrService();
         serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService).install();
 
+        RaRepositoryService raRepositoryService = new RaRepositoryService();
+        serviceTarget.addService(ConnectorServices.RA_REPOSISTORY_SERVICE, raRepositoryService).install();
+
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
         serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService).install();
 
@@ -61,9 +65,11 @@ public class RaDeploymentActivator {
 
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_RAR_CONFIG, new RarConfigProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RA_DEPLOYMENT, new RaDeploymentParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_IRON_JACAMAR_DEPLOYMENT, new IronJacamarDeploymentParsingProcessor());
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_IRON_JACAMAR_DEPLOYMENT,
+                new IronJacamarDeploymentParsingProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_DEPLOYMENT, new ParsedRaDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_XML_DEPLOYMENT, new RaXmlDeploymentProcessor(mdrService.getValue()));
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_XML_DEPLOYMENT, new RaXmlDeploymentProcessor(
+                mdrService.getValue()));
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DS_DEPLOYMENT, new DsDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_RAR, new RaStructureProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JDBC_DRIVER, new DriverProcessor());

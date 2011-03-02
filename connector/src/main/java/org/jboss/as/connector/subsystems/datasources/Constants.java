@@ -103,6 +103,8 @@ class Constants {
 
     static final String PASSWORD = "password";
 
+    static final String SECURITY_DOMAIN = "security-domain";
+
     static final String STATEMENT = "statement";
 
     static final String SHAREPREPAREDSTATEMENTS = "share-prepared-statements";
@@ -118,6 +120,8 @@ class Constants {
     static final String CHECKVALIDCONNECTIONSQL = "check-valid-connection-sql";
 
     static final String VALIDATEONMATCH = "validate-on-match";
+
+    static final String SPY = "spy";
 
     static final String STALECONNECTIONCHECKERCLASSNAME = "stale-connection-checker-class-name";
 
@@ -146,5 +150,11 @@ class Constants {
     static final String WRAP_XA_DATASOURCE = "wrap-xa-datasource";
 
     static final String NEWCONNECTIONSQL = "new-connection-sql";
+
+    static final String EXCEPTIONSORTER_PROPERTIES = "exceptionsorter-properties";
+
+    static final String STALECONNECTIONCHECKER_PROPERTIES = "staleconnectionchecker-properties";
+
+    static final String VALIDCONNECTIONCHECKER_PROPERTIES = "validconnectionchecker-properties";
 
 }

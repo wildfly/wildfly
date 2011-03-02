@@ -25,6 +25,7 @@ package org.jboss.as.connector.metadata.deployment;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.logging.Logger;
@@ -47,6 +48,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected ResourceAdapterDeployment value;
 
     protected final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
+
+    protected final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
 
     protected final InjectedValue<ResourceAdapterDeploymentRegistry> registry = new InjectedValue<ResourceAdapterDeploymentRegistry>();
 
@@ -92,8 +95,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
             if (value.getDeployment() != null && value.getDeployment().getCfs() != null
                     && value.getDeployment().getCfJndiNames() != null) {
                 try {
-                    jndiStrategy.getValue().unbindConnectionFactories(value.getDeployment().getDeploymentName(), value
-                            .getDeployment().getCfs(), value.getDeployment().getCfJndiNames());
+                    jndiStrategy.getValue().unbindConnectionFactories(value.getDeployment().getDeploymentName(),
+                            value.getDeployment().getCfs(), value.getDeployment().getCfJndiNames());
                 } catch (Throwable t) {
                     log.warn("Exception during JNDI unbinding", t);
                 }
@@ -116,8 +119,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
             if (value.getDeployment() != null && value.getDeployment().getAos() != null
                     && value.getDeployment().getAoJndiNames() != null) {
                 try {
-                    jndiStrategy.getValue().unbindConnectionFactories(value.getDeployment().getDeploymentName(), value
-                            .getDeployment().getAos(), value.getDeployment().getAoJndiNames());
+                    jndiStrategy.getValue().unbindConnectionFactories(value.getDeployment().getDeploymentName(),
+                            value.getDeployment().getAos(), value.getDeployment().getAoJndiNames());
                 } catch (Throwable t) {
                     log.warn("Exception during JNDI unbinding", t);
                 }
@@ -131,6 +134,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<MetadataRepository> getMdrInjector() {
         return mdr;
+    }
+
+    public Injector<ResourceAdapterRepository> getRaRepositoryInjector() {
+        return raRepository;
     }
 
     public Injector<ResourceAdapterDeploymentRegistry> getRegistryInjector() {

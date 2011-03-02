@@ -87,9 +87,11 @@ class Constants {
 
     static final String SECURITY = "security";
 
-    static final String USERNAME = "user-name";
+    static final String SECURITY_DOMAIN_AND_APPLICATION = "security-domain-and-application";
 
-    static final String PASSWORD = "password";
+    static final String SECURITY_DOMAIN = "security-domain";
+
+    static final String APPLICATION = "security-application";
 
     static final String STATEMENT = "statement";
 

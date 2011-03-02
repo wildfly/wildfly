@@ -53,6 +53,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
+import org.jboss.security.SubjectFactory;
 
 /**
  * A ResourceAdapterXmlDeploymentService.
@@ -75,7 +76,8 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txm = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
-    public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml, Connector cmd, IronJacamar ijmd, Module module, String deploymentName, File root) {
+    public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
+            Connector cmd, IronJacamar ijmd, Module module, String deploymentName, File root) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.raxml = raxml;
         this.cmd = cmd;
@@ -87,7 +89,6 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
     /** create an instance **/
 
-
     @Override
     public void start(StartContext context) throws StartException {
         log.debugf("Starting sevice %s",
@@ -98,7 +99,8 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
         CommonDeployment raxmlDeployment = null;
         try {
-            raxmlDeployment = raDeployer.doDeploy(connectorXmlDescriptor.getUrl(), deploymentName, root, module.getClassLoader(), cmd, ijmd, raxml);
+            raxmlDeployment = raDeployer.doDeploy(connectorXmlDescriptor.getUrl(), deploymentName, root,
+                    module.getClassLoader(), cmd, ijmd, raxml);
         } catch (Throwable t) {
             throw new StartException("Failed to start RA deployment [" + deploymentName + "]", t);
         }
@@ -264,6 +266,18 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 throws AlreadyExistsException {
             log.debugf("Registering ResourceAdapter %s", deploymentName);
             mdr.getValue().registerResourceAdapter(deploymentName, file, connector, ij);
+        }
+
+        @Override
+        protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
+            /* TODO: We need security context service to implement it! */
+            throw new DeployException("TODO: We need security context service to implement it!");
+        }
+
+        @Override
+        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
+            return raRepository.getValue().registerResourceAdapter(instance);
+
         }
     }
 

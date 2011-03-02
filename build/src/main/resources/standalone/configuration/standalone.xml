@@ -173,7 +173,7 @@
                         <password>sa</password>
                     </security>
                     <validation></validation>
-                    <time-out></time-out>
+                    <timeout></timeout>
                     <statement></statement>
                 </datasource>
             </datasources>

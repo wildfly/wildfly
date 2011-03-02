@@ -20,9 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.datasources;
+package org.jboss.as.connector.rarepository;
 
-import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.core.mdr.SimpleMetadataRepository;
+import org.jboss.jca.core.rar.SimpleResourceAdapterRepository;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -30,29 +36,30 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * A ConnectorConfigService.
+ * A MdrService. it provide access to IronJacamar's metadata repository
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-final class DataSourcesService implements Service<DataSources> {
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
+public final class RaRepositoryService implements Service<ResourceAdapterRepository> {
 
-    private final DataSources value;
+    private final ResourceAdapterRepository value;
 
-    /** create an instance **/
-    public DataSourcesService(DataSources value) {
-        super();
-        this.value = value;
+    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
 
+    /**
+     * Create instance
+     */
+    public RaRepositoryService() {
+        this.value = new SimpleResourceAdapterRepository();
     }
 
     @Override
-    public DataSources getValue() throws IllegalStateException {
-        return value;
+    public ResourceAdapterRepository getValue() throws IllegalStateException {
+        return ConnectorServices.notNull(value);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.infof("Starting DataSources Service");
+        log.debugf("Starting sevice RaRepositoryService");
     }
 
     @Override

@@ -26,7 +26,8 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * A ConnectorServices.
- * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public final class ConnectorServices {
@@ -46,6 +47,8 @@ public final class ConnectorServices {
 
     /** MDR service name **/
     public static final ServiceName IRONJACAMAR_MDR = ServiceName.JBOSS.append("ironjacamar", "mdr");
+
+    public static final ServiceName RA_REPOSISTORY_SERVICE = ServiceName.JBOSS.append("rarepository");
 
     public static final ServiceName RESOURCEADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters");
 

@@ -39,13 +39,12 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.IDLET
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PASSWORD;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.*;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOLNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
@@ -81,6 +80,7 @@ import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CommonAdminObjectImpl;
 import org.jboss.jca.common.metadata.common.CommonConnDefImpl;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
@@ -138,10 +138,12 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
                     final ServiceTarget serviceTarget = context.getServiceTarget();
 
                     ResourceAdapters resourceAdapters = buildResourceAdaptersObject(operation);
-                    serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
-                            .setInitialMode(Mode.ACTIVE).install();
+                    serviceTarget
+                            .addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
+                                    new ResourceAdaptersService(resourceAdapters)).setInitialMode(Mode.ACTIVE).install();
 
-                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS, new ResourceAdaptersAttachingProcessor(resourceAdapters));
+                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS,
+                            new ResourceAdaptersAttachingProcessor(resourceAdapters));
                     resultHandler.handleResultComplete();
                 }
             });
@@ -155,7 +157,7 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
         return new BasicOperationResult(compensatingOperation);
     }
 
-    private ResourceAdapters buildResourceAdaptersObject(ModelNode operation) {
+    private ResourceAdapters buildResourceAdaptersObject(ModelNode operation) throws OperationFailedException {
         List<ResourceAdapter> resourceAdapters = new ArrayList<ResourceAdapter>();
 
         if (operation.hasDefined(RESOURCEADAPTERS)) {
@@ -174,9 +176,13 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
                     beanValidationGroups.add(beanValidtion.asString());
                 }
 
-                ResourceAdapter ra = new ResourceAdapterImpl(archive, transactionSupport,
-                        buildConnectionDefinitionObject(operation), buildAdminObjects(operation), configProperties,
-                        beanValidationGroups, bootstrapContext);
+                ResourceAdapter ra;
+                try {
+                    ra = new ResourceAdapterImpl(archive, transactionSupport, buildConnectionDefinitionObject(operation),
+                            buildAdminObjects(operation), configProperties, beanValidationGroups, bootstrapContext);
+                } catch (ValidateException e) {
+                    throw new OperationFailedException(e, operation);
+                }
 
                 resourceAdapters.add(ra);
             }
@@ -186,7 +192,7 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
 
     }
 
-    private List<CommonConnDef> buildConnectionDefinitionObject(ModelNode parentNode) {
+    private List<CommonConnDef> buildConnectionDefinitionObject(ModelNode parentNode) throws ValidateException {
         List<CommonConnDef> connDefs = new ArrayList<CommonConnDef>();
 
         for (ModelNode conDefNode : parentNode.get(CONNECTIONDEFINITIONS).asList()) {
@@ -215,9 +221,10 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
                     allocationRetryWaitMillis, xaResourceTimeout);
             CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin);
 
-            String username = getStringIfSetOrGetDefault(conDefNode, USERNAME, null);
-            String password = getStringIfSetOrGetDefault(conDefNode, PASSWORD, null);
-            CommonSecurity security = new CommonSecurityImpl(username, password);
+            String securityDomain = getStringIfSetOrGetDefault(conDefNode, SECURITY_DOMAIN, null);
+            String securityDomainAndApplication = getStringIfSetOrGetDefault(conDefNode, SECURITY_DOMAIN_AND_APPLICATION, null);
+            boolean application = getBooleanIfSetOrGetDefault(conDefNode, APPLICATION, false);
+            CommonSecurity security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
 
             Long backgroundValidationMinutes = getLongIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATIONMINUTES, null);
             boolean backgroundValidation = getBooleanIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATION, false);

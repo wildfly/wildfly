@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.resource.spi.IllegalStateException;
+import javax.resource.spi.ResourceAdapter;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.connector.ConnectorServices;
@@ -61,6 +63,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.SubjectFactory;
 
 import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 
@@ -324,6 +327,19 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             log.debugf("Registering ResourceAdapter %s", deploymentName);
             mdr.getValue().registerResourceAdapter(deploymentName, file, connector, ij);
         }
+
+        @Override
+        protected String registerResourceAdapterToResourceAdapterRepository(ResourceAdapter instance) {
+            return raRepository.getValue().registerResourceAdapter(instance);
+
+        }
+
+        @Override
+        protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
+            /* TODO: We need security context service to implement it! */
+            throw new DeployException("TODO: We need security context service to implement it!");
+        }
+
     }
 
     private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);

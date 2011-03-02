@@ -24,6 +24,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATIONMINUTES;
@@ -41,23 +42,21 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_P
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOLNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -69,10 +68,12 @@ import java.util.Map.Entry;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -256,10 +257,14 @@ public class ResourceAdaptersExtension implements Extension {
 
             }
 
-            if (conDef.has(USERNAME) || conDef.has(PASSWORD)) {
+            if (conDef.hasDefined(APPLICATION) || conDef.hasDefined(SECURITY_DOMAIN)
+                    || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION)) {
                 streamWriter.writeStartElement(CommonConnDef.Tag.SECURITY.getLocalName());
-                writeElementIfHas(streamWriter, conDef, CommonSecurity.Tag.USERNAME, USERNAME);
-                writeElementIfHas(streamWriter, conDef, CommonSecurity.Tag.PASSWORD, PASSWORD);
+                writeElementIfHas(streamWriter, conDef, CommonSecurity.Tag.APPLICATION, APPLICATION);
+                writeElementIfHas(streamWriter, conDef, CommonSecurity.Tag.SECURITY_DOMAIN, SECURITY_DOMAIN);
+                writeElementIfHas(streamWriter, conDef, CommonSecurity.Tag.SECURITY_DOMAIN_AND_APPLICATION,
+                        SECURITY_DOMAIN_AND_APPLICATION);
+
                 streamWriter.writeEndElement();
             }
 
@@ -452,8 +457,10 @@ public class ResourceAdaptersExtension implements Extension {
             }
 
             if (conDef.getSecurity() != null) {
-                condefModel.get(USERNAME).set(conDef.getSecurity().getUserName());
-                condefModel.get(PASSWORD).set(conDef.getSecurity().getPassword());
+                condefModel.get(APPLICATION).set(conDef.getSecurity().isApplication());
+                condefModel.get(SECURITY_DOMAIN).set(conDef.getSecurity().getSecurityDomain());
+                condefModel.get(SECURITY_DOMAIN_AND_APPLICATION).set(conDef.getSecurity().getSecurityDomainAndApplication());
+
             }
 
             if (conDef.getValidation() != null) {
