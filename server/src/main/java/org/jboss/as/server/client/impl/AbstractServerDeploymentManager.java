@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.client.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -48,7 +47,7 @@ import org.jboss.as.server.client.impl.deployment.DeploymentActionImpl;
 import org.jboss.as.server.client.impl.deployment.DeploymentContentDistributor;
 import org.jboss.as.server.client.impl.deployment.DeploymentPlanImpl;
 import org.jboss.as.server.client.impl.deployment.InitialDeploymentPlanBuilderFactory;
-import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -173,17 +172,16 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
     }
 
     private byte[] uploadDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
-        //Upload bytes
-        byte[] bytes = streamToByteArray(stream);
         ModelNode op = new ModelNode();
-        op.get("operation").set(DeploymentUploadBytesHandler.OPERATION_NAME);
+        op.get("operation").set(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME);
         op.get("address").setEmptyList();
         op.get("name").set(name);
         op.get("runtime-name").set(runtimeName);
-        op.get("bytes").set(bytes);
+        op.get("attachment").set(0);
         try {
             try {
-                ModelNode response = executeOperation(op).get();
+                ExecutionContext ctx = ExecutionContextBuilder.Factory.create(op).addInputStream(stream).build();
+                ModelNode response = executeOperation(ctx).get();
                 return response.asBytes();
             } catch (ExecutionException e) {
                 throw e.getCause();
@@ -201,48 +199,6 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
-
-        //Upload using streams
-//        ModelNode op = new ModelNode();
-//        op.get("operation").set(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME);
-//        op.get("address").setEmptyList();
-//        op.get("name").set(name);
-//        op.get("runtime-name").set(runtimeName);
-//        op.get("attachment").set(0);
-//        try {
-//            try {
-//                ExecutionContext ctx = ExecutionContextBuilder.Factory.create(op).addInputStream(stream).build();
-//                ModelNode response = executeOperation(ctx).get();
-//                return response.asBytes();
-//            } catch (ExecutionException e) {
-//                throw e.getCause();
-//            }
-//        } catch (InterruptedException e) {
-//            IOException ioe = new InterruptedIOException();
-//            ioe.initCause(e);
-//            throw ioe;
-//        } catch (RuntimeException e) {
-//            throw e;
-//        } catch (IOException e) {
-//            throw e;
-//        } catch (Error e) {
-//            throw e;
-//        } catch (Throwable e) {
-//            throw new RuntimeException(e);
-//        }
-    }
-
-    public byte[] streamToByteArray(InputStream stream) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buf = new byte[1024];
-        int read;
-        while ((read = stream.read(buf)) > -1) {
-            baos.write(buf, 0, read);
-        }
-        stream.close();
-        baos.close();
-        byte[] bytes = baos.toByteArray();
-        return bytes;
     }
 
     private boolean isDeploymentNameUnique(String name) throws IOException {
