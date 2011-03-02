@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller;
+package org.jboss.as.domain.controller.plan;
 
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.dmr.ModelNode;
+import java.util.Comparator;
 
+import org.jboss.as.domain.client.api.ServerIdentity;
 
-/**
- * TODO add class javadoc for TransactionalModelController
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
- */
-public interface TransactionalModelController extends ModelController {
+/** Used to order ServerIdentity instances based on host name */
+class ServerIdentityComparator implements Comparator<ServerIdentity> {
 
-    ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction);
-    OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction);
+    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
+
+    @Override
+    public int compare(ServerIdentity o1, ServerIdentity o2) {
+        int val = o1.getHostName().compareTo(o2.getHostName());
+        if (val == 0) {
+            val = o1.getServerName().compareTo(o2.getServerName());
+        }
+        return val;
+    }
 }

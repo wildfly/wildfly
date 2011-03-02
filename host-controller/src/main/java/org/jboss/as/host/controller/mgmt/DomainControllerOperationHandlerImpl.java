@@ -45,6 +45,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.jboss.as.controller.AbstractModelController;
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.HashUtil;
@@ -274,7 +275,7 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         }
     }
 
-    private static class RemoteHostControllerClient implements HostControllerClient {
+    private static class RemoteHostControllerClient extends AbstractModelController implements HostControllerClient {
         final ProxyController remote;
         final Connection connection;
         final String hostId;
@@ -304,6 +305,11 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         @Override
         public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
             return remote.execute(executionContext);
+        }
+
+        @Override
+        public ModelNode execute(final ExecutionContext executionContext, ControllerTransactionContext transaction) throws CancellationException {
+            return super.execute(executionContext, transaction);
         }
 
         @Override

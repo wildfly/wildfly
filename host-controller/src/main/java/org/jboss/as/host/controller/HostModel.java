@@ -44,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
@@ -209,12 +210,17 @@ public class HostModel extends BasicTransactionalModelController {
     }
 
     /**
-     * Get the undelying host model.
+     * Get the underlying host model.
      *
      * @return the host model
      */
     protected ModelNode getHostModel() {
         return super.getModel().clone();
+    }
+
+    @Override
+    protected ModelNodeRegistration getRegistry() {
+        return super.getRegistry();
     }
 
     void registerProxy(final ProxyController controller) {
@@ -238,5 +244,10 @@ public class HostModel extends BasicTransactionalModelController {
         registry.registerOperationHandler(ServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
         registry.registerOperationHandler(ServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
         registry.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
+    }
+
+    String getServerGroupName(String serverName) {
+        ModelNode hostModel = getModel();
+        return hostModel.require(SERVER_CONFIG).require(serverName).require(SERVER_GROUP).asString();
     }
 }

@@ -22,8 +22,9 @@
 
 package org.jboss.as.domain.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -39,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.util.Collection;
@@ -58,11 +60,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.controller.AbstractModelController;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ControllerTransaction;
+import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.TransactionalModelController;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.dmr.ModelNode;
@@ -93,7 +95,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         READ_ONLY_OPERATIONS = Collections.unmodifiableSet(roops);
     }
 
-    private final Map<String, TransactionalModelController> hosts = new ConcurrentHashMap<String, TransactionalModelController>();
+    private final Map<String, HostControllerClient> hosts = new ConcurrentHashMap<String, HostControllerClient>();
     private final String localHostName;
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -104,7 +106,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         this.scheduledExecutorService = scheduledExecutorService;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
-        this.hosts.put(hostName, domainModel);
+        this.hosts.put(hostName, new LocalHostControllerClient());
         this.fileRepository = fileRepository;
         this.masterDomainControllerClient = null;
 
@@ -117,7 +119,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
         this.fileRepository = new FallbackRepository(fileRepository, masterDomainControllerClient.getRemoteFileRepository());
-        this.hosts.put(hostName, domainModel);
+        this.hosts.put(hostName, new LocalHostControllerClient());
     }
 
     /** {@inheritDoc} */
@@ -176,10 +178,17 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         ControllerTransaction  transaction = new ControllerTransaction();
         Map<String, ModelNode> hostResults = pushToHosts(executionContext, routing, transaction);
         for (ModelNode hostResult : hostResults.values()) {
-            if (hostResult.hasDefined(OUTCOME) && "failed".equals(hostResult.get(OUTCOME).asString())) {
+            if (hostResult.hasDefined(OUTCOME) && FAILED.equals(hostResult.get(OUTCOME).asString())) {
                 transaction.setRollbackOnly();
                 break;
             }
+        }
+
+        for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+            System.out.println("======================================================");
+            System.out.println(entry.getKey());
+            System.out.println("======================================================");
+            System.out.println(entry.getValue());
         }
 
         if (transaction.isRollbackOnly()) {
@@ -187,7 +196,9 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             throw new UnsupportedOperationException("implement reporting of domain-level failure");
         } else {
             transaction.commit();
+
             // Formulate plan
+            Map<String, Map<ServerIdentity, ModelNode>> opsByGroup = getOpsByGroup(hostResults);
 
             // Push to servers (via hosts)
 
@@ -198,7 +209,6 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             return new BasicOperationResult();
         }
     }
-
 
     private OperationRouting determineRouting(ModelNode operation) {
         OperationRouting routing;
@@ -227,13 +237,13 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             // Direct read of domain model
             routing = new OperationRouting(false);
         }
-        else if ("composite".equals(operation.require(OP).asString())){
+        else if (COMPOSITE.equals(operation.require(OP).asString())){
             // Recurse into the steps to see what's required
-            if (operation.hasDefined("steps")) {
+            if (operation.hasDefined(STEPS)) {
                 Set<String> allHosts = new HashSet<String>();
                 boolean routeToMaster = false;
                 boolean hasLocal = false;
-                for (ModelNode step : operation.get("steps").asList()) {
+                for (ModelNode step : operation.get(STEPS).asList()) {
                     OperationRouting stepRouting = determineRouting(step);
                     if (stepRouting.isRouteToMaster()) {
                         routeToMaster = true;
@@ -294,16 +304,26 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
     private Map<String, ModelNode> pushToHosts(final ExecutionContext executionContext, final OperationRouting routing, final ControllerTransaction transaction) {
         final Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>();
-        final Map<String, Future<OperationResult>> futures = new HashMap<String, Future<OperationResult>>();
+        final Map<String, Future<ModelNode>> futures = new HashMap<String, Future<ModelNode>>();
 
+        ModelNode wrapper = new ModelNode();
+        wrapper.get(OP).set(HostControllerClient.EXECUTE_ON_DOMAIN);
+        wrapper.get(HostControllerClient.DOMAIN_OP).set(executionContext.getOperation());
+
+        ExecutionContext wrapperContext = executionContext.clone(wrapper);
         // Try and execute locally first; if it fails don't bother with the other hosts
         final Set<String> targets = routing.getHosts();
         if (targets.remove(localHostName)) {
-            pushToHost(executionContext, transaction, localHostName, hostResults, futures);
+            if (targets.size() > 0) {
+                // clone things so our local activity doesn't affect the op
+                // we send to the other hosts
+                wrapperContext = wrapperContext.clone(wrapper.clone());
+            }
+            pushToHost(wrapperContext, transaction, localHostName, futures);
             processHostFuture(localHostName, futures.remove(localHostName), hostResults);
             ModelNode hostResult = hostResults.get(localHostName);
             if (!transaction.isRollbackOnly()) {
-                if (hostResult.hasDefined(OUTCOME) && "failed".equals(hostResult.get(OUTCOME).asString())) {
+                if (hostResult.hasDefined(OUTCOME) && FAILED.equals(hostResult.get(OUTCOME).asString())) {
                     transaction.setRollbackOnly();
                 }
             }
@@ -311,14 +331,14 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         if (!transaction.isRollbackOnly()) {
             for (final String host : targets) {
-                pushToHost(executionContext, transaction, host, hostResults, futures);
+                pushToHost(wrapperContext, transaction, host, futures);
             }
 
             log.debugf("Domain updates pushed to %s host controller(s)", futures.size());
 
-            for (final Map.Entry<String, Future<OperationResult>> entry : futures.entrySet()) {
+            for (final Map.Entry<String, Future<ModelNode>> entry : futures.entrySet()) {
                 String host = entry.getKey();
-                Future<OperationResult> future = entry.getValue();
+                Future<ModelNode> future = entry.getValue();
                 processHostFuture(host, future, hostResults);
             }
         }
@@ -326,55 +346,28 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return hostResults;
     }
 
-    private void processHostFuture(String host, Future<OperationResult> future, final Map<String, ModelNode> hostResults) {
+    private void processHostFuture(String host, Future<ModelNode> future, final Map<String, ModelNode> hostResults) {
         try {
-            OperationResult res = future.get();
-            ModelNode compOp = res.getCompensatingOperation();
-            hostResults.get(host).get(COMPENSATING_OPERATION).set(compOp == null ? new ModelNode() : compOp);
+            hostResults.put(host, future.get());
         } catch (final InterruptedException e) {
             log.debug("Interrupted reading host controller response");
             Thread.currentThread().interrupt();
             hostResults.put(host, getDomainFailureResult(e));
         } catch (final ExecutionException e) {
-            log.debug("Execution exception reading host controller response", e);
+            log.info("Execution exception reading host controller response", e);
             hostResults.put(host, getDomainFailureResult(e.getCause()));
         }
     }
 
     private void pushToHost(final ExecutionContext executionContext, final ControllerTransaction transaction, final String host,
-            final Map<String, ModelNode> hostResults, final Map<String, Future<OperationResult>> futures) {
-        final TransactionalModelController client = hosts.get(host);
+            final Map<String, Future<ModelNode>> futures) {
+        final HostControllerClient client = hosts.get(host);
         if (client != null) {
-            final ModelNode hostResult = new ModelNode();
-            hostResults.put(host, hostResult);
-            final ResultHandler handler = new ResultHandler() {
+            final Callable<ModelNode> callable = new Callable<ModelNode>() {
 
                 @Override
-                public void handleResultFragment(String[] location, ModelNode result) {
-                    hostResult.get(location).set(result);
-                }
-
-                @Override
-                public void handleResultComplete() {
-                    hostResult.get(OUTCOME).set("success");
-                }
-
-                @Override
-                public void handleFailed(ModelNode failureDescription) {
-                    hostResult.get(OUTCOME).set("failed");
-                }
-
-                @Override
-                public void handleCancellation() {
-                    hostResult.get(OUTCOME).set("cancelled");
-                }
-
-            };
-            final Callable<OperationResult> callable = new Callable<OperationResult>() {
-
-                @Override
-                public OperationResult call() throws Exception {
-                    return client.execute(executionContext, handler, transaction);
+                public ModelNode call() throws Exception {
+                    return client.execute(executionContext, transaction);
                 }
 
             };
@@ -382,11 +375,37 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             futures.put(host, scheduledExecutorService.submit(callable));
         }
     }
+
     private ModelNode getDomainFailureResult(Throwable e) {
         ModelNode node = new ModelNode();
-        node.get("outcome").set("failure");
-        node.get("failure-description").set(getFailureResult(e));
+        node.get(OUTCOME).set(FAILED);
+        node.get(FAILURE_DESCRIPTION).set(getFailureResult(e));
         return node;
+    }
+
+
+    private Map<String, Map<ServerIdentity, ModelNode>> getOpsByGroup(Map<String, ModelNode> hostResults) {
+        Map<String, Map<ServerIdentity, ModelNode>> result = new HashMap<String, Map<ServerIdentity, ModelNode>>();
+
+        for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+            ModelNode hostResult = entry.getValue();
+            if (hostResult.hasDefined("server-operations")) {
+                String host = entry.getKey();
+                for (ModelNode item : hostResult.get("server-operations").asList()) {
+                    ModelNode op = item.require("operation");
+                    for (Property prop : item.require("servers").asPropertyList()) {
+                        String group = prop.getValue().asString();
+                        Map<ServerIdentity, ModelNode> groupMap = result.get(group);
+                        if (groupMap == null) {
+                            groupMap = new HashMap<ServerIdentity, ModelNode>();
+                            result.put(group, groupMap);
+                        }
+                        groupMap.put(new ServerIdentity(host, group, prop.getName()), op);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private class OperationRouting {
@@ -427,5 +446,45 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
         // FIXME cast is poor
         ((DomainModelImpl) localDomainModel).setInitialDomainModel(initialModel);
+    }
+
+    private class LocalHostControllerClient implements HostControllerClient {
+
+        private final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(HOST, localHostName));
+        @Override
+        public PathAddress getProxyNodeAddress() {
+            return address;
+        }
+
+        @Override
+        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+            return localDomainModel.execute(executionContext, handler);
+        }
+
+        @Override
+        public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
+            return localDomainModel.execute(executionContext);
+        }
+
+        @Override
+        public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) {
+            return localDomainModel.execute(executionContext, transaction);
+        }
+
+        @Override
+        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler,
+                ControllerTransactionContext transaction) {
+            return localDomainModel.execute(executionContext, handler, transaction);
+        }
+
+        @Override
+        public String getId() {
+            return localHostName;
+        }
+
+        @Override
+        public boolean isActive() {
+            return true;
+        }
     }
 }

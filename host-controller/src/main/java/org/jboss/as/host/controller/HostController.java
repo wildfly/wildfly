@@ -24,7 +24,7 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.TransactionalModelController;
 import org.jboss.as.domain.client.api.ServerStatus;
-import org.jboss.as.domain.controller.DomainControllerSlave;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.protocol.Connection;
 import org.jboss.msc.service.ServiceName;
 
@@ -99,7 +99,7 @@ public interface HostController extends TransactionalModelController {
      */
     void unregisterRunningServer(String serverName);
 
-    void startServers(DomainControllerSlave domainController);
+    void startServers(DomainController domainController);
 
     void stopServers();
 }

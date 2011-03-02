@@ -72,6 +72,11 @@ public class BasicTransactionalModelController extends BasicModelController impl
         super(model, configurationPersister, rootDescriptionProvider);
     }
 
+    @Override
+    public ModelNode execute(final ExecutionContext executionContext, final ControllerTransactionContext transaction) {
+        return super.execute(executionContext, transaction);
+    }
+
     /** {@inheritDoc} */
     @Override
     public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler) {
@@ -134,7 +139,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
             if (operationHandler == null) {
                 throw new IllegalStateException("No handler for " + operationName + " at address " + address);
             }
-
+            System.out.println("Using " + operationHandler + " for " + operationName + " on " + address);
             final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
             try {
                 final OperationResult result = operationHandler.execute(context, executionContext.getOperation(), handler);

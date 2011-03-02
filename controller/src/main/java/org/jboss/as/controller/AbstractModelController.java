@@ -47,13 +47,18 @@ public abstract class AbstractModelController implements ModelController {
     /** {@inheritDoc} */
     @Override
     public ModelNode execute(final ExecutionContext executionContext) {
+        final ControllerTransactionContext transaction = null;
+        return execute(executionContext, transaction);
+    }
+
+    protected ModelNode execute(final ExecutionContext executionContext, final ControllerTransactionContext transaction) {
         final AtomicInteger status = new AtomicInteger();
         final ModelNode finalResult = new ModelNode();
         // Make the "outcome" child come first
         finalResult.get(OUTCOME);
         // Ensure there is a "result" child even if we receive no fragments
         finalResult.get(RESULT);
-        final OperationResult handlerResult = execute(executionContext, new ResultHandler() {
+        ResultHandler resultHandler = new ResultHandler() {
             @Override
             public void handleResultFragment(final String[] location, final ModelNode fragment) {
                 synchronized (finalResult) {
@@ -91,7 +96,8 @@ public abstract class AbstractModelController implements ModelController {
                     finalResult.notify();
                 }
             }
-        });
+        };
+        final OperationResult handlerResult = transaction == null ? execute(executionContext, resultHandler) : execute(executionContext, resultHandler, transaction);
         boolean intr = false;
         try {
             synchronized (finalResult) {
@@ -125,6 +131,11 @@ public abstract class AbstractModelController implements ModelController {
                 Thread.currentThread().interrupt();
             }
         }
+
+    }
+
+    protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler, final ControllerTransactionContext transaction) {
+        throw new UnsupportedOperationException("Transactional operations are not supported");
     }
 
     /**

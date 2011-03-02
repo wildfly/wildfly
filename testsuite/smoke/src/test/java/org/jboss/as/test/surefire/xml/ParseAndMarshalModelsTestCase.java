@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 
 import javax.xml.namespace.QName;
 
@@ -40,7 +41,13 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.DomainXml;
@@ -50,7 +57,10 @@ import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelImpl;
+import org.jboss.as.domain.controller.HostControllerProxy;
 import org.jboss.as.host.controller.HostModel;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
@@ -421,7 +431,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private static class TestDomainController extends DomainModelImpl {
         protected TestDomainController(ExtensibleConfigurationPersister configurationPersister) {
-            super(configurationPersister, null);
+            super(configurationPersister, MockHostControllerProxy.INSTANCE);
         }
 
         @Override
@@ -434,5 +444,66 @@ public class ParseAndMarshalModelsTestCase {
                 ConfigurationPersisterProvider configurationPersisterFactory) {
             // ignore
         }
+    }
+
+    private static class MockHostControllerProxy implements HostControllerProxy {
+
+        private static final MockHostControllerProxy INSTANCE = new MockHostControllerProxy();
+        @Override
+        public PathAddress getProxyNodeAddress() {
+            return PathAddress.pathAddress(PathElement.pathElement("host", getName()));
+        }
+
+        @Override
+        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler,
+                ControllerTransactionContext transaction) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getName() {
+            return "mock";
+        }
+
+        @Override
+        public ModelNode getHostModel() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ModelNodeRegistration getRegistry() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getServerGroupName(String serverName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void startServers(DomainController domainController) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void stopServers() {
+            throw new UnsupportedOperationException();
+        }
+
     }
 }

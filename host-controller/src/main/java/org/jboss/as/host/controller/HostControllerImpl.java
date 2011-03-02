@@ -38,7 +38,6 @@ import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FallbackRepository;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.protocol.Connection;
@@ -95,6 +94,13 @@ public class HostControllerImpl implements HostController {
 
     /** {@inheritDoc} */
     @Override
+    public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) throws CancellationException {
+
+        return hostModel.execute(executionContext, transaction);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ServerStatus startServer(String serverName) {
         if (domainController == null) {
             throw new IllegalStateException(String.format("Domain Controller is not available; cannot start server %s", serverName));
@@ -145,7 +151,7 @@ public class HostControllerImpl implements HostController {
     }
 
     @Override
-    public void startServers(DomainControllerSlave domainController) {
+    public void startServers(DomainController domainController) {
         this.domainController = domainController;
         // By having a remote repo as a secondary content will be synced only if needed
         FallbackRepository repository = new FallbackRepository(localRepository, domainController.getFileRepository());

@@ -29,12 +29,16 @@ import org.jboss.as.controller.TransactionalProxyController;
  */
 public interface HostControllerClient extends TransactionalProxyController {
 
+    String EXECUTE_ON_DOMAIN = "execute-on-domain";
+    String DOMAIN_OP = "domain-op";
+
     /**
      * Get the identifier for the Host Controller.
      *
      * @return the host identifier. Cannot be <code>null</code>.
      */
     String getId();
+
 
     /**
      * Check the host controller client to verify it is still active.

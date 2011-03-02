@@ -30,7 +30,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.domain.controller.DomainControllerSlave;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.HostControllerProxy;
 import org.jboss.dmr.ModelNode;
@@ -87,12 +88,17 @@ public class HostControllerService implements Service<HostControllerProxy> {
             }
 
             @Override
+            public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) {
+                return controller.execute(executionContext, transaction);
+            }
+
+            @Override
             public PathAddress getProxyNodeAddress() {
                 return PathAddress.pathAddress(PathElement.pathElement("host", name));
             }
 
             @Override
-            public void startServers(DomainControllerSlave domainController) {
+            public void startServers(DomainController domainController) {
                 controller.startServers(domainController);
             }
 
@@ -104,6 +110,21 @@ public class HostControllerService implements Service<HostControllerProxy> {
             @Override
             public String getName() {
                 return name;
+            }
+
+            @Override
+            public ModelNode getHostModel() {
+                return hostModel.getHostModel();
+            }
+
+            @Override
+            public String getServerGroupName(String serverName) {
+                return hostModel.getServerGroupName(serverName);
+            }
+
+            @Override
+            public ModelNodeRegistration getRegistry() {
+                return hostModel.getRegistry();
             }
         };
     }

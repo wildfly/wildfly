@@ -21,15 +21,59 @@
 */
 package org.jboss.as.domain.controller;
 
+import java.util.NoSuchElementException;
+
 import org.jboss.as.controller.TransactionalProxyController;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.dmr.ModelNode;
 
 /**
+ * Proxy to the local host controller.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface HostControllerProxy extends TransactionalProxyController {
+
+    /**
+     * Gets the name of the host.
+     * @return the host name. Will not be {@code null}
+     */
     String getName();
-    void startServers(DomainControllerSlave domainController);
+
+    /**
+     * Gets a copy of the host configuration model.
+     *
+     * @return the model. Will not be {@code null}
+     */
+    ModelNode getHostModel();
+
+    /**
+     * Gets the registry for host model resources.
+     *
+     * @return the registry. Will not be {@code null}
+     */
+    ModelNodeRegistration getRegistry();
+
+    /**
+     * Gets the name of the server group to which the given server belongs.
+     *
+     * @param serverName the name of the server
+     * @return the name of the server group. Will not be {@code null}
+     * @throws NoSuchElementException if the server does not exist
+     */
+    String getServerGroupName(String serverName);
+
+    /**
+     * Starts all the servers in the host configuration whose {@code start} attribute is {@code true}.
+     *
+     * @param domainController the DomainController the host controller should use for determining server
+     *         configurations
+     */
+    void startServers(DomainController domainController);
+
+    /**
+     * Stops all the servers managed by the host controller.
+     */
     void stopServers();
 }

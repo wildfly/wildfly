@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller;
+package org.jboss.as.domain.controller.plan;
 
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.dmr.ModelNode;
+import java.util.List;
 
+/** A task that iterates through other tasks */
+class RollingUpdateTask implements Runnable {
 
-/**
- * TODO add class javadoc for TransactionalModelController
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
- */
-public interface TransactionalModelController extends ModelController {
+    private final List<Runnable> rollingTasks;
 
-    ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction);
-    OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction);
+    RollingUpdateTask(final List<Runnable> rollingTasks) {
+        this.rollingTasks = rollingTasks;
+    }
+
+    @Override
+    public void run() {
+        for (Runnable r : rollingTasks) {
+            r.run();
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("RollingUpdateTask{tasks={");
+        for (int i = 0; i < rollingTasks.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(rollingTasks.get(i).toString());
+        }
+        sb.append("}}");
+        return sb.toString();
+    }
 }
