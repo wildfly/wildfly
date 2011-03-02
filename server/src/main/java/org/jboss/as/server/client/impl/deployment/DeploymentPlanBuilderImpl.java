@@ -51,17 +51,13 @@ import org.jboss.as.server.client.api.deployment.UndeployDeploymentPlanBuilder;
 class DeploymentPlanBuilderImpl
     implements AddDeploymentPlanBuilder, InitialDeploymentPlanBuilder, UndeployDeploymentPlanBuilder  {
 
-    private final DeploymentContentDistributor deploymentDistributor;
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
     private final boolean globalRollback;
 
     private final List<DeploymentActionImpl> deploymentActions = new ArrayList<DeploymentActionImpl>();
 
-    DeploymentPlanBuilderImpl(DeploymentContentDistributor deploymentDistributor) {
-        if (deploymentDistributor == null)
-            throw new IllegalArgumentException("deploymentDistributor is null");
-        this.deploymentDistributor = deploymentDistributor;
+    DeploymentPlanBuilderImpl() {
         this.shutdown = false;
         this.globalRollback = false;
         this.gracefulShutdownPeriod = -1;
@@ -69,7 +65,6 @@ class DeploymentPlanBuilderImpl
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing) {
         this.deploymentActions.addAll(existing.deploymentActions);
-        this.deploymentDistributor = existing.deploymentDistributor;
         this.shutdown = existing.shutdown;
         this.globalRollback = existing.globalRollback;
         this.gracefulShutdownPeriod = existing.gracefulShutdownPeriod;
@@ -77,7 +72,6 @@ class DeploymentPlanBuilderImpl
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
         this.deploymentActions.addAll(existing.deploymentActions);
-        this.deploymentDistributor = existing.deploymentDistributor;
         this.shutdown = false;
         this.globalRollback = globalRollback;
         this.gracefulShutdownPeriod = -1;
@@ -85,7 +79,6 @@ class DeploymentPlanBuilderImpl
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, long gracefulShutdownPeriod) {
         this.deploymentActions.addAll(existing.deploymentActions);
-        this.deploymentDistributor = existing.deploymentDistributor;
         this.shutdown = true;
         this.globalRollback = false;
         this.gracefulShutdownPeriod = gracefulShutdownPeriod;
@@ -185,8 +178,7 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public AddDeploymentPlanBuilder add(String name, String commonName, InputStream stream) throws IOException, DuplicateDeploymentNameException {
-        byte[] hash = deploymentDistributor.distributeDeploymentContent(name, commonName, stream);
-        DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, commonName, hash);
+        DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, commonName, stream);
         return new DeploymentPlanBuilderImpl(this, mod);
     }
 
@@ -262,8 +254,7 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public DeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException {
-        byte[] hash = deploymentDistributor.distributeReplacementDeploymentContent(name, commonName, stream);
-        DeploymentActionImpl mod = DeploymentActionImpl.getFullReplaceAction(name, commonName, hash);
+        DeploymentActionImpl mod = DeploymentActionImpl.getFullReplaceAction(name, commonName, stream);
         return new DeploymentPlanBuilderImpl(this, mod);
     }
 

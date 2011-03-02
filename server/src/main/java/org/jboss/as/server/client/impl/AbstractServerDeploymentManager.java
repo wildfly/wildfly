@@ -22,32 +22,35 @@
 
 package org.jboss.as.server.client.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import static org.jboss.as.server.client.ClientConstants.ADD;
+import static org.jboss.as.server.client.ClientConstants.COMPOSITE;
+import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT;
+import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT_DEPLOY_OPERATION;
+import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT_FULL_REPLACE_OPERATION;
+import static org.jboss.as.server.client.ClientConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.server.client.ClientConstants.NAME;
+import static org.jboss.as.server.client.ClientConstants.OP;
+import static org.jboss.as.server.client.ClientConstants.OP_ADDR;
+import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT_REDEPLOY_OPERATION;
+import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT_REMOVE_OPERATION;
+import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT_REPLACE_OPERATION;
+import static org.jboss.as.server.client.ClientConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.server.client.ClientConstants.RUNTIME_NAME;
+import static org.jboss.as.server.client.ClientConstants.STEPS;
+import static org.jboss.as.server.client.ClientConstants.TO_REPLACE;
+import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT_UNDEPLOY_OPERATION;
+
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
-import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
 import org.jboss.as.server.client.api.deployment.InitialDeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 import org.jboss.as.server.client.impl.deployment.DeploymentActionImpl;
-import org.jboss.as.server.client.impl.deployment.DeploymentContentDistributor;
 import org.jboss.as.server.client.impl.deployment.DeploymentPlanImpl;
 import org.jboss.as.server.client.impl.deployment.InitialDeploymentPlanBuilderFactory;
-import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -56,78 +59,13 @@ import org.jboss.dmr.ModelNode;
  */
 abstract class AbstractServerDeploymentManager implements ServerDeploymentManager {
 
-    private final DeploymentContentDistributor contentDistributor;
-
     AbstractServerDeploymentManager() {
-
-        this.contentDistributor = new DeploymentContentDistributor() {
-            @Override
-            public byte[] distributeDeploymentContent(String name, String runtimeName, InputStream stream)
-                    throws IOException, DuplicateDeploymentNameException {
-                boolean unique = AbstractServerDeploymentManager.this.isDeploymentNameUnique(name);
-                if (!unique) {
-                    throw new DuplicateDeploymentNameException(name, false);
-                }
-                return AbstractServerDeploymentManager.this.uploadDeploymentContent(name, runtimeName, stream);
-            }
-
-            @Override
-            public byte[] distributeReplacementDeploymentContent(String name, String runtimeName, InputStream stream)
-                    throws IOException {
-                return AbstractServerDeploymentManager.this.uploadDeploymentContent(name, runtimeName, stream);
-            }
-        };
-    }
-
-    @Override
-    public String addDeploymentContent(File file) throws IOException, DuplicateDeploymentNameException {
-        String name = file.getName();
-        uploadDeploymentContent(name, name, new FileInputStream(file));
-        return name;
-    }
-
-    @Override
-    public String addDeploymentContent(URL url) throws IOException, DuplicateDeploymentNameException {
-        String name = getName(url);
-        addDeploymentContent(name, name, url);
-        return name;
-    }
-
-    @Override
-    public void addDeploymentContent(String name, File file) throws IOException, DuplicateDeploymentNameException {
-        String commonName = file.getName();
-        uploadDeploymentContent(name, commonName, new FileInputStream(file));
-    }
-
-    @Override
-    public void addDeploymentContent(String name, URL url) throws IOException, DuplicateDeploymentNameException {
-        String commonName = getName(url);
-        addDeploymentContent(name, commonName, url);
-    }
-
-    private void addDeploymentContent(String name, String commonName, URL url) throws IOException,
-            DuplicateDeploymentNameException {
-        URLConnection conn = url.openConnection();
-        conn.connect();
-        uploadDeploymentContent(name, commonName, conn.getInputStream());
-    }
-
-    @Override
-    public void addDeploymentContent(String name, InputStream stream) throws IOException,
-            DuplicateDeploymentNameException {
-        addDeploymentContent(name, name, stream);
-    }
-
-    @Override
-    public void addDeploymentContent(String name, String commonName, InputStream stream) throws IOException,
-            DuplicateDeploymentNameException {
-        uploadDeploymentContent(name, commonName, stream);
     }
 
     /** {@inheritDoc} */
     @Override
     public InitialDeploymentPlanBuilder newDeploymentPlan() {
-        return InitialDeploymentPlanBuilderFactory.newInitialDeploymentPlanBuilder(contentDistributor);
+        return InitialDeploymentPlanBuilderFactory.newInitialDeploymentPlanBuilder();
     }
 
     /** {@inheritDoc} */
@@ -137,154 +75,67 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
             throw new IllegalArgumentException("Plan was not created by this manager");
         }
         DeploymentPlanImpl planImpl = (DeploymentPlanImpl) plan;
-        ModelNode operation = getCompositeOperation(planImpl);
+        ExecutionContext operation = getCompositeOperation(planImpl);
         Future<ModelNode> nodeFuture = executeOperation(operation);
         return new ServerDeploymentPlanResultFuture(planImpl, nodeFuture);
     }
 
-    private Future<ModelNode> executeOperation(ModelNode operation){
-        return executeOperation(ExecutionContextBuilder.Factory.create(operation).build());
-    }
     protected abstract Future<ModelNode> executeOperation(ExecutionContext context);
 
-    private static String getName(URL url) {
-        if ("file".equals(url.getProtocol())) {
-            try {
-                File f = new File(url.toURI());
-                return f.getName();
-            } catch (URISyntaxException e) {
-                throw new IllegalArgumentException(url + " is not a valid URI", e);
-            }
-        }
-
-        String path = url.getPath();
-        int idx = path.lastIndexOf('/');
-        while (idx == path.length() - 1) {
-            path = path.substring(0, idx);
-            idx = path.lastIndexOf('/');
-        }
-        if (idx == -1) {
-            throw new IllegalArgumentException("Cannot derive a deployment name from " + url
-                    + " -- use an overloaded method variant that takes a 'name' parameter");
-        }
-
-        return path.substring(idx + 1);
-    }
-
-    private byte[] uploadDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
-        ModelNode op = new ModelNode();
-        op.get("operation").set(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME);
-        op.get("address").setEmptyList();
-        op.get("name").set(name);
-        op.get("runtime-name").set(runtimeName);
-        op.get("attachment").set(0);
-        try {
-            try {
-                ExecutionContext ctx = ExecutionContextBuilder.Factory.create(op).addInputStream(stream).build();
-                ModelNode response = executeOperation(ctx).get();
-                return response.asBytes();
-            } catch (ExecutionException e) {
-                throw e.getCause();
-            }
-        } catch (InterruptedException e) {
-            IOException ioe = new InterruptedIOException();
-            ioe.initCause(e);
-            throw ioe;
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (IOException e) {
-            throw e;
-        } catch (Error e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean isDeploymentNameUnique(String name) throws IOException {
+    private ExecutionContext getCompositeOperation(DeploymentPlanImpl plan) {
 
         ModelNode op = new ModelNode();
-        op.get("operation").set("read-children-names");
-        op.get("address").setEmptyList();
-        op.get("child-type").set("deployment");
-        try {
-            try {
-                ModelNode response = executeOperation(op).get();
-                Set<String> deploymentNames = new HashSet<String>();
-                if (response.isDefined()) {
-                    List<ModelNode> deploymentNodes = response.asList();
-                    for (ModelNode node : deploymentNodes) {
-                        deploymentNames.add(node.asString());
-                    }
-                }
-                return !deploymentNames.contains(name);
-            } catch (ExecutionException e) {
-                throw e.getCause();
-            }
-        } catch (InterruptedException e) {
-            IOException ioe = new InterruptedIOException();
-            ioe.initCause(e);
-            throw ioe;
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (IOException e) {
-            throw e;
-        } catch (Error e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private ModelNode getCompositeOperation(DeploymentPlanImpl plan) {
-
-        ModelNode op = new ModelNode();
-        op.get("operation").set("composite");
-        op.get("address").setEmptyList();
-        ModelNode steps = op.get("steps");
+        op.get(OP).set(COMPOSITE);
+        op.get(OP_ADDR).setEmptyList();
+        ModelNode steps = op.get(STEPS);
         steps.setEmptyList();
-        op.get("rollback-on-runtime-failure").set(plan.isGlobalRollback());
+        op.get(ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isGlobalRollback());
         // FIXME deal with shutdown params
 
+        ExecutionContextBuilder builder = ExecutionContextBuilder.Factory.create(op);
+
+        int stream = 0;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {
             ModelNode step = new ModelNode();
             String uniqueName = action.getDeploymentUnitUniqueName();
             switch (action.getType()) {
             case ADD: {
-                configureDeploymentOperation(step, "add", uniqueName);
-                step.get("runtime-name").set(action.getNewContentFileName());
-                step.get("hash").set(action.getNewContentHash());
+                configureDeploymentOperation(step, ADD, uniqueName);
+                step.get(RUNTIME_NAME).set(action.getNewContentFileName());
+                builder.addInputStream(action.getContents());
+                step.get(INPUT_STREAM_INDEX).set(stream++);
                 break;
             }
             case DEPLOY: {
-                configureDeploymentOperation(step, "deploy", uniqueName);
+                configureDeploymentOperation(step, DEPLOYMENT_DEPLOY_OPERATION, uniqueName);
                 break;
             }
             case FULL_REPLACE: {
-                step.get("operation").set("full-replace-deployment");
-                step.get("address").setEmptyList();
-                step.get("name").set(uniqueName);
-                step.get("runtime-name").set(action.getNewContentFileName());
-                step.get("hash").set(action.getNewContentHash());
+                step.get(OP).set(DEPLOYMENT_FULL_REPLACE_OPERATION);
+                step.get(OP_ADDR).setEmptyList();
+                step.get(NAME).set(uniqueName);
+                step.get(RUNTIME_NAME).set(action.getNewContentFileName());
+                builder.addInputStream(action.getContents());
+                step.get(INPUT_STREAM_INDEX).set(stream++);
                 break;
             }
             case REDEPLOY: {
-                configureDeploymentOperation(step, "redeploy", uniqueName);
+                configureDeploymentOperation(step, DEPLOYMENT_REDEPLOY_OPERATION, uniqueName);
                 break;
             }
             case REMOVE: {
-                configureDeploymentOperation(step, "remove", uniqueName);
+                configureDeploymentOperation(step, DEPLOYMENT_REMOVE_OPERATION, uniqueName);
                 break;
             }
             case REPLACE: {
-                step.get("operation").set("replace-deployment");
-                step.get("address").setEmptyList();
-                step.get("name").set(uniqueName);
-                step.get("to-replace").set(action.getReplacedDeploymentUnitUniqueName());
+                step.get(OP).set(DEPLOYMENT_REPLACE_OPERATION);
+                step.get(OP_ADDR).setEmptyList();
+                step.get(NAME).set(uniqueName);
+                step.get(TO_REPLACE).set(action.getReplacedDeploymentUnitUniqueName());
                 break;
             }
             case UNDEPLOY: {
-                configureDeploymentOperation(step, "undeploy", uniqueName);
+                configureDeploymentOperation(step, DEPLOYMENT_UNDEPLOY_OPERATION, uniqueName);
                 break;
             }
             default: {
@@ -293,11 +144,12 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
             }
             steps.add(step);
         }
-        return op;
+
+        return builder.build();
     }
 
     private void configureDeploymentOperation(ModelNode op, String operationName, String uniqueName) {
-        op.get("operation").set(operationName);
-        op.get("address").add("deployment", uniqueName);
+        op.get(OP).set(operationName);
+        op.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
     }
 }

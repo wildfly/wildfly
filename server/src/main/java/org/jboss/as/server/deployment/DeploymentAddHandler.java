@@ -20,11 +20,14 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -40,6 +43,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
@@ -69,7 +73,8 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     public DeploymentAddHandler(final DeploymentRepository deploymentRepository) {
         this.deploymentRepository = deploymentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
+        this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
+        this.validator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
     }
 
     @Override
@@ -85,12 +90,33 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
 
         validator.validate(operation);
 
-        byte[] hash = operation.get(HASH).asBytes();
+        ModelNode opAddr = operation.get(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
+        String name = address.getLastElement().getValue();
+        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+
+        byte[] hash;
+        if (operation.hasDefined(INPUT_STREAM_INDEX) && operation.hasDefined(HASH)) {
+            throw new OperationFailedException(new ModelNode().set("Can't pass in both an input-stream-index and a hash"));
+        } else if (operation.hasDefined(INPUT_STREAM_INDEX)) {
+            InputStream in = getContents(context, operation);
+            try {
+                try {
+                    hash = deploymentRepository.addDeploymentContent(name, runtimeName, in);
+                } catch (IOException e) {
+                    throw new OperationFailedException(new ModelNode().set(e.toString()));
+                }
+
+            } finally {
+                StreamUtils.safeClose(in);
+            }
+        } else if (operation.hasDefined(HASH)){
+            hash = operation.get(HASH).asBytes();
+        } else {
+            throw new OperationFailedException(new ModelNode().set("Neither an attachment or a hash were passed in"));
+        }
+
         if (deploymentRepository.hasDeploymentContent(hash)) {
-            ModelNode opAddr = operation.get(OP_ADDR);
-            PathAddress address = PathAddress.pathAddress(opAddr);
-            String name = address.getLastElement().getValue();
-            String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
             ModelNode subModel = context.getSubModel();
             subModel.get(NAME).set(name);
             subModel.get(RUNTIME_NAME).set(runtimeName);
@@ -103,5 +129,18 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
+    }
+
+    private InputStream getContents(OperationContext context, ModelNode operation) {
+        int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
+        if (streamIndex > context.getInputStreams().size() - 1) {
+            throw new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
+        }
+
+        InputStream in = context.getInputStreams().get(streamIndex);
+        if (in == null) {
+            throw new IllegalStateException("Null stream at index " + streamIndex);
+        }
+        return in;
     }
 }

@@ -20,6 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.server.client.impl.deployment;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -34,8 +35,8 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
 
     private static final long serialVersionUID = 613098200977026475L;
 
-    public static DeploymentActionImpl getAddAction(String deploymentName, String fileName, byte[] hash) {
-        return new DeploymentActionImpl(Type.ADD, deploymentName, fileName, hash, null);
+    public static DeploymentActionImpl getAddAction(String deploymentName, String fileName, InputStream in) {
+        return new DeploymentActionImpl(Type.ADD, deploymentName, fileName, in, null);
     }
 
     public static DeploymentActionImpl getDeployAction(String deploymentName) {
@@ -54,8 +55,8 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
         return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, replacedName);
     }
 
-    public static DeploymentActionImpl getFullReplaceAction(String deploymentName, String fileName, byte[] hash) {
-        return new DeploymentActionImpl(Type.FULL_REPLACE, deploymentName, fileName, hash, null);
+    public static DeploymentActionImpl getFullReplaceAction(String deploymentName, String fileName, InputStream in) {
+        return new DeploymentActionImpl(Type.FULL_REPLACE, deploymentName, fileName, in, null);
     }
 
     public static DeploymentActionImpl getRemoveAction(String deploymentName) {
@@ -66,14 +67,14 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private final Type type;
     private final String deploymentUnitName;
     private final String oldDeploymentUnitName;
+    private final InputStream contents;
     private final String newContentFileName;
-    private final byte[] newContentHash;
 
-    private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName) {
+    private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, InputStream contents, String replacedDeploymentUnitName) {
         this.type = type;
         this.deploymentUnitName = deploymentUnitName;
         this.newContentFileName = newContentFileName;
-        this.newContentHash = newContentHash;
+        this.contents = contents;
         this.oldDeploymentUnitName = replacedDeploymentUnitName;
     }
 
@@ -101,8 +102,8 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
         return newContentFileName;
     }
 
-    public byte[] getNewContentHash() {
-        return newContentHash;
+    public InputStream getContents() {
+        return contents;
     }
 
 }

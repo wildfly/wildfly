@@ -18,13 +18,13 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTACHMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_VALUE;
@@ -170,11 +170,11 @@ public class DeploymentDescription {
         root.get(REQUEST_PROPERTIES, RUNTIME_NAME, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, RUNTIME_NAME, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, RUNTIME_NAME, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, ATTACHMENT, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, ATTACHMENT, DESCRIPTION).set(bundle.getString("deployment.stream-attachment"));
-        root.get(REQUEST_PROPERTIES, ATTACHMENT, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, ATTACHMENT, MIN_VALUE).set(0);
-        root.get(REQUEST_PROPERTIES, ATTACHMENT, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, DESCRIPTION).set(bundle.getString("deployment.inputstream"));
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, MIN_VALUE).set(0);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, NILLABLE).set(false);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.BYTES);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("deployment.hash"));
         root.get(REPLY_PROPERTIES, MIN_LENGTH).set(20);
@@ -198,11 +198,18 @@ public class DeploymentDescription {
         root.get(REQUEST_PROPERTIES, RUNTIME_NAME, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, RUNTIME_NAME, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, RUNTIME_NAME, NILLABLE).set(true);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, TYPE).set(ModelType.INT);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, DESCRIPTION).set(bundle.getString("deployment.inputstream"));
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, MIN_VALUE).set(0);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, NILLABLE).set(true);
         root.get(REQUEST_PROPERTIES, HASH, TYPE).set(ModelType.BYTES);
         root.get(REQUEST_PROPERTIES, HASH, DESCRIPTION).set(bundle.getString("deployment.hash"));
-        root.get(REQUEST_PROPERTIES, HASH, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, HASH, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, HASH, MIN_LENGTH).set(20);
-        root.get(REQUEST_PROPERTIES, HASH, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, HASH, MAX_LENGTH).set(20);
+        root.get(REQUEST_PROPERTIES, HASH, NILLABLE).set(true);
+
 //        root.get(REQUEST_PROPERTIES, START, TYPE).set(ModelType.BOOLEAN);
 //        root.get(REQUEST_PROPERTIES, START, DESCRIPTION).set(bundle.getString("deployment.start"));
 //        root.get(REQUEST_PROPERTIES, START, REQUIRED).set(false);

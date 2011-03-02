@@ -18,7 +18,7 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTACHMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 
 import java.io.InputStream;
 import java.util.Locale;
@@ -48,7 +48,7 @@ implements DescriptionProvider {
 
     public DeploymentUploadStreamAttachmentHandler(final DeploymentRepository repository) {
         super(repository);
-        this.streamValidator.registerValidator(ATTACHMENT, new IntRangeValidator(0));
+        this.streamValidator.registerValidator(INPUT_STREAM_INDEX, new IntRangeValidator(0));
     }
 
     @Override
@@ -63,9 +63,9 @@ implements DescriptionProvider {
     protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
         streamValidator.validate(operation);
 
-        int streamIndex = operation.get(ATTACHMENT).asInt();
+        int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
         if (streamIndex > operationContext.getInputStreams().size() - 1) {
-            throw new IllegalArgumentException("Invalid '" + ATTACHMENT + "' value:" + streamIndex + ", the maximum index is " + streamIndex);
+            throw new IllegalArgumentException("Invalid '" + INPUT_STREAM_INDEX + "' value:" + streamIndex + ", the maximum index is " + streamIndex);
         }
 
         InputStream in = operationContext.getInputStreams().get(streamIndex);

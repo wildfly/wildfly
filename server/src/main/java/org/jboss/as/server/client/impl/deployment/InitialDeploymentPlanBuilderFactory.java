@@ -37,7 +37,7 @@ public class InitialDeploymentPlanBuilderFactory {
     /** Prevent instantiation */
     private InitialDeploymentPlanBuilderFactory() {}
 
-    public static InitialDeploymentPlanBuilder newInitialDeploymentPlanBuilder(DeploymentContentDistributor contentDistributor) {
-        return new DeploymentPlanBuilderImpl(contentDistributor);
+    public static InitialDeploymentPlanBuilder newInitialDeploymentPlanBuilder() {
+        return new DeploymentPlanBuilderImpl();
     }
 }

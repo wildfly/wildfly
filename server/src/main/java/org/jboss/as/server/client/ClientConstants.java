@@ -1,0 +1,49 @@
+/*
+* JBoss, Home of Professional Open Source.
+* Copyright 2006, Red Hat Middleware LLC, and individual contributors
+* as indicated by the @author tags. See the copyright.txt file in the
+* distribution for a full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
+package org.jboss.as.server.client;
+
+/**
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
+ */
+public class ClientConstants {
+    public static final String ADD = "add";
+    public static final String COMPOSITE = "composite";
+    public static final String DEPLOYMENT = "deployment";
+    public static final String INPUT_STREAM_INDEX = "input-stream-index";
+    public static final String NAME = "name";
+    public static final String OP = "operation";
+    public static final String OP_ADDR = "address";
+    public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
+    public static final String RUNTIME_NAME = "runtime-name";
+    public static final String STEPS = "steps";
+    public static final String TO_REPLACE = "to-replace";
+
+    public static final String DEPLOYMENT_DEPLOY_OPERATION = "deploy";
+    public static final String DEPLOYMENT_FULL_REPLACE_OPERATION = "full-replace-deployment";
+    public static final String DEPLOYMENT_REDEPLOY_OPERATION = "redeploy";
+    public static final String DEPLOYMENT_REMOVE_OPERATION = "remove";
+    public static final String DEPLOYMENT_REPLACE_OPERATION = "replace-deployment";
+    public static final String DEPLOYMENT_UNDEPLOY_OPERATION = "undeploy";
+
+}

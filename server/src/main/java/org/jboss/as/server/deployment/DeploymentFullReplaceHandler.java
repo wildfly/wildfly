@@ -20,10 +20,13 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -64,7 +67,8 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         this.deploymentRepository = deploymentRepository;
         this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
+        this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
+        this.validator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
     }
 
     @Override
@@ -80,14 +84,32 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
 
         validator.validate(operation);
 
-        byte[] hash = operation.get(HASH).asBytes();
-        if (!deploymentRepository.hasDeploymentContent(hash)) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash))));
+        String name = operation.require(NAME).asString();
+        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+        byte[] hash;
+        if (operation.hasDefined(INPUT_STREAM_INDEX) && operation.hasDefined(HASH)) {
+            throw new OperationFailedException(new ModelNode().set("Can't pass in both an input-stream-index and a hash"));
+        } else if (operation.hasDefined(INPUT_STREAM_INDEX)) {
+            InputStream in = getContents(context, operation);
+            try {
+                hash = deploymentRepository.addDeploymentContent(name, runtimeName, in);
+            } catch (IOException e) {
+                throw new OperationFailedException(new ModelNode().set(e.toString()));
+            }
+        } else if (operation.hasDefined(HASH)) {
+
+            hash = operation.get(HASH).asBytes();
+            if (!deploymentRepository.hasDeploymentContent(hash)) {
+                throw new OperationFailedException(new ModelNode().set(String.format(
+                        "No deployment content with hash %s is available in the deployment content repository.",
+                        HashUtil.bytesToHexString(hash))));
+            }
+        } else {
+            throw new OperationFailedException(new ModelNode().set("Neither an attachment or a hash were passed in"));
         }
 
         ModelNode rootModel = context.getSubModel();
         ModelNode deployments = rootModel.get(DEPLOYMENT);
-        String name = operation.require(NAME).asString();
 
         ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
         if (replaceNode == null) {
@@ -95,7 +117,6 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         }
 
         boolean start = replaceNode.get(START).asBoolean();
-        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
         ModelNode deployNode = new ModelNode();
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
@@ -116,5 +137,19 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         }
 
         return new BasicOperationResult(compensatingOp);
+    }
+
+
+    private InputStream getContents(OperationContext context, ModelNode operation) {
+        int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
+        if (streamIndex > context.getInputStreams().size() - 1) {
+            throw new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
+        }
+
+        InputStream in = context.getInputStreams().get(streamIndex);
+        if (in == null) {
+            throw new IllegalStateException("Null stream at index " + streamIndex);
+        }
+        return in;
     }
 }

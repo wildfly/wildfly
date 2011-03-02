@@ -41,7 +41,6 @@ public class ModelDescriptionConstants {
     public static final String ANY_ADDRESS = "any-address";
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
-    public static final String ATTACHMENT = "attachment";
     public static final String ATTRIBUTES = "attributes";
     public static final String BYTES = "bytes";
     public static final String CANCELLED = "cancelled";
@@ -70,6 +69,7 @@ public class ModelDescriptionConstants {
     public static final String INCLUDES = "includes";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INET_ADDRESS = "inet-address";
+    public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
     public static final String JVM = "jvm";
     public static final String JVM_TYPE = "type";
