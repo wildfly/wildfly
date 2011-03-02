@@ -143,17 +143,12 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                 //Just copy the stream contents for now - remoting will handle this better
                 int length = StreamUtils.readInt(inputStream);
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                try {
-
-                    for (int i = 0 ; i < length ; i++) {
-                        int b = inputStream.read();
-                        if (b == -1) {
-                            throw new IllegalArgumentException("Unexpected end of file");
-                        }
-                        bout.write(b);
+                for (int i = 0 ; i < length ; i++) {
+                    int b = inputStream.read();
+                    if (b == -1) {
+                        throw new IllegalArgumentException("Unexpected end of file");
                     }
-                } finally {
-                    StreamUtils.safeClose(inputStream);
+                    bout.write(b);
                 }
                 builder.addInputStream(new ByteArrayInputStream(bout.toByteArray()));
 
