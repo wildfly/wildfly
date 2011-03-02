@@ -31,7 +31,9 @@ import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -114,10 +116,12 @@ public class FrameworkService implements Service<Framework> {
             // Create the list of {@link Deployment}s for the configured modules
             List<Deployment> deployments = new ArrayList<Deployment>();
             BundleDeploymentPlugin depPlugin = bundleManager.getPlugin(BundleDeploymentPlugin.class);
-            for (OSGiModule module : subsystemState.getModules()) {
-                ModuleIdentifier identifier = module.getIdentifier();
-                Deployment dep = depPlugin.createDeployment(identifier);
-                dep.setAutoStart(module.isStart());
+            for (OSGiModule moduleMetaData : subsystemState.getModules()) {
+                ModuleIdentifier identifier = moduleMetaData.getIdentifier();
+                ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+                Module module = moduleLoader.loadModule(identifier);
+                Deployment dep = depPlugin.createDeployment(module);
+                dep.setAutoStart(moduleMetaData.isStart());
                 deployments.add(dep);
             }
 

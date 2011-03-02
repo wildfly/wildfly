@@ -188,6 +188,7 @@
                 org.apache.log4j,
                 org.jboss.arquillian.api,
                 org.jboss.arquillian.junit,
+                org.jboss.arquillian.protocol.jmx,
                 org.jboss.arquillian.protocol.osgi,
                 org.jboss.arquillian.spi,
                 org.jboss.as.osgi,
@@ -208,7 +209,7 @@
                 org.jboss.osgi.testing;version=1.0,
                 org.jboss.osgi.vfs;version=1.0,
 
-                org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.osgi,
+                org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.jmx, org.jboss.arquillian.osgi,
                 org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
                 org.jboss.shrinkwrap.impl.base,
                 org.junit, org.junit.runner, javax.inject

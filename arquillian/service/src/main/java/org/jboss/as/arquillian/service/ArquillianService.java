@@ -22,27 +22,31 @@
 
 package org.jboss.as.arquillian.service;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.context.ContextManager;
 import org.jboss.arquillian.context.ContextManagerBuilder;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
-import org.jboss.arquillian.spi.TestEnricher;
 import org.jboss.arquillian.spi.TestResult;
-import org.jboss.arquillian.spi.util.ServiceLoader;
-import org.jboss.arquillian.testenricher.msc.ServiceContainerInjector;
+import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.service.BundleContextService;
+import org.jboss.as.server.ServerController;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.server.client.impl.ModelControllerServerDeploymentManager;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
@@ -51,6 +55,8 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -73,7 +79,7 @@ public class ArquillianService implements Service<ArquillianService> {
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private ServiceContainer serviceContainer;
+    private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
     private final Map<String, ArquillianConfig> deployedTests = new HashMap<String, ArquillianConfig>();
     private final Map<String, CountDownLatch> waitingTests = new HashMap<String, CountDownLatch>();
     private JMXTestRunner jmxTestRunner;
@@ -81,6 +87,7 @@ public class ArquillianService implements Service<ArquillianService> {
     public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
+        serviceBuilder.addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.install();
     }
@@ -91,15 +98,8 @@ public class ArquillianService implements Service<ArquillianService> {
         log.debugf("Starting Arquillian Test Runner");
 
         final MBeanServer mbeanServer = injectedMBeanServer.getValue();
-        final TestClassLoader testClassLoader = new TestClassLoaderImpl();
-
-        // Inject the ServiceContainer in the enrichers
-        serviceContainer = context.getController().getServiceContainer();
-        ServiceLoader<TestEnricher> loader = ServiceLoader.load(TestEnricher.class, testClassLoader.getServiceClassLoader());
-        for (TestEnricher enricher : loader.getProviders()) {
-            if (enricher instanceof ServiceContainerInjector)
-                ((ServiceContainerInjector) enricher).inject(serviceContainer);
-        }
+        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
+        final TestClassLoader testClassLoader = new TestClassLoaderImpl(serviceContainer);
 
         try {
             jmxTestRunner = new JMXTestRunner() {
@@ -112,12 +112,16 @@ public class ArquillianService implements Service<ArquillianService> {
                     if (config != null) {
                         final DeploymentUnit deployment = config.getDeploymentUnitContext();
                         final Module module = deployment.getAttachment(Attachments.MODULE);
-                        builder.add(new TCCLSetup(module.getClassLoader()));
+                        if (module != null) {
+                            builder.add(new TCCLSetup(module.getClassLoader()));
+                        }
                         builder.addAll(deployment);
                     }
+
                     Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
                     ContextManager contextManager = builder.build();
                     contextManager.setup(properties);
+
                     try {
                         // actually run the tests
                         return super.runTestMethod(className, methodName, props);
@@ -202,31 +206,59 @@ public class ArquillianService implements Service<ArquillianService> {
 
     class TestClassLoaderImpl implements JMXTestRunner.TestClassLoader {
 
+        private ServiceContainer serviceContainer;
+        private ServerDeploymentManager deploymentManager;
+
+        TestClassLoaderImpl(ServiceContainer serviceContainer) {
+            this.serviceContainer = serviceContainer;
+            this.deploymentManager = new ModelControllerServerDeploymentManager(injectedServerController.getValue());
+        }
+
         @Override
         public Class<?> loadTestClass(String className) throws ClassNotFoundException {
+
             ArquillianConfig arqConfig = getConfig(className);
-            if (arqConfig != null) {
+            if (arqConfig == null)
+                throw new ClassNotFoundException(className);
 
-                if (arqConfig.getTestClasses().contains(className)) {
-                    DeploymentUnit depunit = arqConfig.getDeploymentUnitContext();
-                    Module module = depunit.getAttachment(Attachments.MODULE);
-                    Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depunit);
-                    if (module != null && osgidep != null)
-                        throw new IllegalStateException("Found MODULE attachment for Bundle deployment: " + depunit);
+            if (arqConfig.getTestClasses().contains(className) == false)
+                throw new ClassNotFoundException(className);
 
-                    if (module != null)
-                        return module.getClassLoader().loadClass(className);
+            DeploymentUnit depunit = arqConfig.getDeploymentUnitContext();
+            Module module = depunit.getAttachment(Attachments.MODULE);
+            Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depunit);
+            if (module != null && osgidep != null)
+                throw new IllegalStateException("Found MODULE attachment for Bundle deployment: " + depunit);
 
-                    if (osgidep != null) {
-                        Bundle bundle = osgidep.getAttachment(Bundle.class);
-                        BundleAssociation.setBundle(bundle);
-                        BundleContext sysContext = getSystemBundleContext();
-                        BundleContextAssociation.setBundleContext(sysContext);
-                        return bundle.loadClass(className);
-                    }
-                }
+            Class<?> testClass = null;
+            if (module != null) {
+                ServiceContainerAssociation.setServiceContainer(serviceContainer);
+                ServerDeploymentManagerAssociation.setServerDeploymentManager(deploymentManager);
+                testClass = module.getClassLoader().loadClass(className);
             }
-            throw new ClassNotFoundException(className);
+
+            else if (osgidep != null) {
+                Bundle bundle = osgidep.getAttachment(Bundle.class);
+                BundleAssociation.setBundle(bundle);
+                ServiceContainerAssociation.setServiceContainer(serviceContainer);
+                ServerDeploymentManagerAssociation.setServerDeploymentManager(deploymentManager);
+                testClass = bundle.loadClass(className);
+            }
+
+            if (testClass == null)
+                throw new ClassNotFoundException(className);
+
+            // [TODO] Move the startup of the OSGi subsystem to a {@link SetupAction}
+            if (isOSGiSubsystemRequired(testClass)) {
+                ServiceController<?> controller = serviceContainer.getRequiredService(BundleContextService.SERVICE_NAME);
+                if (controller.getState() != State.UP) {
+                    controller.setMode(Mode.ACTIVE);
+                    assertServiceState(BundleContextService.SERVICE_NAME, State.UP, 5000);
+                }
+                BundleContextAssociation.setBundleContext((BundleContext) controller.getValue());
+            }
+
+            return testClass;
         }
 
         @Override
@@ -234,9 +266,35 @@ public class ArquillianService implements Service<ArquillianService> {
             return ArquillianService.class.getClassLoader();
         }
 
-        private BundleContext getSystemBundleContext() {
-            ServiceController<?> controller = serviceContainer.getService(BundleContextService.SERVICE_NAME);
-            return (BundleContext) (controller != null ? controller.getValue() : null);
+        boolean isOSGiSubsystemRequired(Class<?> testClass) {
+            for (Field field : testClass.getDeclaredFields()) {
+                Class<?> fieldType = field.getType();
+                if (field.isAnnotationPresent(Inject.class)) {
+                    if (fieldType.isAssignableFrom(BundleContext.class)) {
+                        return true;
+                    } else if (fieldType.isAssignableFrom(Bundle.class)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        void assertServiceState(ServiceName serviceName, State expState, long timeout) {
+            ServiceController<?> controller = serviceContainer.getService(serviceName);
+            State state = controller != null ? controller.getState() : null;
+            while ((state == null || state != expState) && timeout > 0) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    // ignore
+                }
+                controller = serviceContainer.getService(serviceName);
+                state = controller != null ? controller.getState() : null;
+                timeout -= 100;
+            }
+            if (expState != state)
+                throw new IllegalArgumentException(serviceName + " expected: " + expState + " but was " + state);
         }
     }
 }

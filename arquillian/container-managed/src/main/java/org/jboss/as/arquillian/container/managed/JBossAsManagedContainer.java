@@ -35,9 +35,9 @@ import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
-import org.jboss.as.arquillian.container.common.AbstractDeployableContainer;
-import org.jboss.as.arquillian.container.common.JBossAsContainerConfiguration;
-import org.jboss.as.arquillian.container.common.MBeanServerConnectionProvider;
+import org.jboss.as.arquillian.container.AbstractDeployableContainer;
+import org.jboss.as.arquillian.container.JBossAsContainerConfiguration;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 
 /**
  * JBossASEmbeddedContainer

@@ -30,7 +30,7 @@ import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
-import org.jboss.as.arquillian.container.common.AbstractDeployableContainer;
+import org.jboss.as.arquillian.container.AbstractDeployableContainer;
 import org.jboss.as.server.EmbeddedServerFactory;
 import org.jboss.as.server.StandaloneServer;
 

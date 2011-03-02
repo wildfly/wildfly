@@ -1,5 +1,1 @@
-org.jboss.arquillian.testenricher.msc.ServiceContainerEnricher
-org.jboss.arquillian.testenricher.osgi.OSGiTestEnricher
-org.jboss.arquillian.testenricher.cdi.CDIInjectionEnricher
-
-
+org.jboss.as.arquillian.service.ArchiveDeployerTestEnricher

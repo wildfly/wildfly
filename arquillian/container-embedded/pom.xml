@@ -36,14 +36,14 @@
     <artifactId>jboss-as-arquillian-container-embedded</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Arquillian: Embedded Container</name>
+    <name>JBoss Application Server: Arquillian Embedded Container</name>
 
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-common</artifactId>
+            <artifactId>jboss-as-arquillian-common</artifactId>
         </dependency>
 
         <dependency>

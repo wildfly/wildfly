@@ -327,6 +327,10 @@
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/>
         </module-def>
 
+        <module-def name="org.jboss.arquillian.testenricher.jmx">
+            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-jmx"/>
+        </module-def>
+
         <module-def name="org.jboss.arquillian.testenricher.msc">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-msc"/>
         </module-def>
@@ -336,6 +340,10 @@
         </module-def>
         
         <module-def name="org.jboss.as.aggregate" />
+
+        <module-def name="org.jboss.as.arquillian.common">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-common"/>
+        </module-def>
 
         <module-def name="org.jboss.as.arquillian.service">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>

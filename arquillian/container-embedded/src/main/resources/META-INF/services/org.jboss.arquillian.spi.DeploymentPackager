@@ -1,1 +1,1 @@
-org.jboss.as.arquillian.container.common.JBossASDeploymentPackager
+org.jboss.as.arquillian.container.JBossASDeploymentPackager

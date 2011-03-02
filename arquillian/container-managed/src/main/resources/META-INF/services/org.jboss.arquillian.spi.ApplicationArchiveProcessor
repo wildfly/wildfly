@@ -1,1 +1,1 @@
-org.jboss.as.arquillian.container.common.DelegatingApplicationArchiveProcessor
+org.jboss.as.arquillian.container.DelegatingApplicationArchiveProcessor

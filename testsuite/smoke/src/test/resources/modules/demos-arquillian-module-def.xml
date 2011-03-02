@@ -30,7 +30,7 @@
     -->
     <test-module-resources>
         <resource-root path="$org.jboss.as:jboss-as-arquillian-container-embedded$"/>
-        <resource-root path="$org.jboss.as:jboss-as-arquillian-container-common$"/>
+        <resource-root path="$org.jboss.as:jboss-as-arquillian-common$"/>
         <resource-root path="$$TEST.CLASSES$$"/>
     </test-module-resources>
        
