@@ -197,7 +197,7 @@ public final class DomainControllerService implements Service<DomainController> 
         };
         for (ModelNode update : updates) {
             count.incrementAndGet();
-            controller.execute(ExecutionContextBuilder.Factory.create(update).build(), resultHandler);
+            domainModel.execute(ExecutionContextBuilder.Factory.create(update).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {
             // some action?
