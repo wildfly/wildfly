@@ -21,27 +21,47 @@
  */
 package org.jboss.as.web.deployment;
 
-import java.lang.reflect.InvocationTargetException;
+import org.apache.tomcat.InstanceManager;
+import org.jboss.as.server.ManagedReference;
+import org.jboss.as.web.deployment.component.ComponentInstantiator;
+import org.jboss.msc.service.ServiceName;
 
 import javax.naming.NamingException;
-
-import org.apache.tomcat.InstanceManager;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The web injection container.
  *
  * @author Emanuel Muckenhuber
  */
-class WebInjectionContainer implements InstanceManager {
+public class WebInjectionContainer implements InstanceManager {
 
     private final ClassLoader classloader;
+    private final Map<String,ComponentInstantiator> webComponentInstantiatorMap = new HashMap<String,ComponentInstantiator>();
+    private final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
+    private final Map<Object,ManagedReference> instanceMap = Collections.synchronizedMap(new IdentityHashMap<Object,ManagedReference>());
 
     public WebInjectionContainer(ClassLoader classloader) {
         this.classloader = classloader;
     }
 
-    public void destroyInstance(Object arg0) throws IllegalAccessException, InvocationTargetException {
+    public void addInstantiator(String className, ComponentInstantiator instantiator) {
+        webComponentInstantiatorMap.put(className,instantiator);
+        serviceNames.addAll(instantiator.getServiceNames());
+    }
 
+    public void destroyInstance(Object instance) throws IllegalAccessException, InvocationTargetException {
+        final ManagedReference reference = instanceMap.get(instance);
+        if(reference != null) {
+            reference.release();
+            instanceMap.remove(instance);
+        }
     }
 
     public Object newInstance(String className) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
@@ -49,6 +69,10 @@ class WebInjectionContainer implements InstanceManager {
     }
 
     public Object newInstance(Class<?> clazz) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException {
+        final ComponentInstantiator instantiator = webComponentInstantiatorMap.get(clazz.getName());
+        if(instantiator != null) {
+            return instantiate(instantiator);
+        }
         // Instantiate
         final Object object = clazz.newInstance();
         // Inject
@@ -62,10 +86,23 @@ class WebInjectionContainer implements InstanceManager {
     }
 
     public Object newInstance(String className, ClassLoader cl) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
+        final ComponentInstantiator instantiator = webComponentInstantiatorMap.get(className);
+        if(instantiator != null) {
+            return instantiate(instantiator);
+        }
         // Use by JspServletWrapper for example.
         Class<?> clazz = cl.loadClass(className);
         // Annnotations ? return newInstance(clazz.newInstance(), clazz);
         return clazz.newInstance();
     }
 
+    private Object instantiate(ComponentInstantiator instantiator) {
+        ManagedReference reference =  instantiator.getReference();
+        instanceMap.put(reference.getInstance(),reference);
+        return reference.getInstance();
+    }
+
+    public Set<ServiceName> getServiceNames() {
+        return Collections.unmodifiableSet(serviceNames);
+    }
 }

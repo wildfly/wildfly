@@ -28,6 +28,7 @@ import org.jboss.invocation.proxy.ProxyFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ public abstract class AbstractComponentConfiguration {
     private final Map<Class<?>, ComponentInvocationHandler> views = new IdentityHashMap<Class<?>, ComponentInvocationHandler>();
     private final Map<Method, InterceptorFactory> interceptorFactoryMap = new IdentityHashMap<Method, InterceptorFactory>();
     private final Map<Class<?>, ProxyFactory<?>> proxyFactories = new IdentityHashMap<Class<?>, ProxyFactory<?>>();
+    private final List<ComponentInjector> componentInjectors = new ArrayList<ComponentInjector>();
     private Class<?> componentClass;
     private Interceptor componentInterceptor;
 
@@ -157,6 +159,14 @@ public abstract class AbstractComponentConfiguration {
 
     Map<Class<?>,ProxyFactory<?>> getProxyFactories() {
         return proxyFactories;
+    }
+
+    public void addComponentInjector(ComponentInjector injector) {
+        this.componentInjectors.add(injector);
+    }
+
+    public List<ComponentInjector> getComponentInjectors() {
+        return Collections.unmodifiableList(componentInjectors);
     }
 
     /**

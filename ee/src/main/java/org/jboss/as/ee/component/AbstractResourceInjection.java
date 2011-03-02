@@ -51,7 +51,7 @@ public abstract class AbstractResourceInjection implements ResourceInjection {
 
     /** {@inheritDoc} **/
     public void inject(final Object target) {
-        final Object value = this.value.getValue().getInjectedValue();
+        final Object value = this.value.getValue().getReference().getInstance();
         if(primitiveTarget && value == null) {
             return;
         }

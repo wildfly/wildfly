@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming;
 
+import org.jboss.as.server.ManagedReference;
 import org.jboss.msc.value.Value;
 
 /**
@@ -42,12 +43,19 @@ public final class ValueJndiInjectable implements JndiInjectable {
         this.value = value;
     }
 
-    /** {@inheritDoc} */
-    public Object getInjectedValue() {
-        return value.getValue();
+    @Override
+    public ManagedReference getReference() {
+        return new ManagedReference() {
+            @Override
+            public void release() {
+
+            }
+
+            @Override
+            public Object getInstance() {
+                return value.getValue();
+            }
+        };
     }
 
-    /** {@inheritDoc} */
-    public void returnInjectedValue(final Object injectedValue) {
-    }
 }

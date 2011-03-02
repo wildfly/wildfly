@@ -19,8 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.injection;
+package org.jboss.as.ee.component;
 
-public class WeldInjector {
+import org.jboss.as.server.ManagedReference;
 
+/**
+ * A managed reference to a non-proxies component instance.
+ *
+ * @author Stuart Douglas
+ */
+public class ComponentInstanceManagedReference implements ManagedReference{
+
+    private final ComponentInstance instance;
+    private boolean destroyed;
+
+    public ComponentInstanceManagedReference(ComponentInstance instance) {
+        this.instance = instance;
+    }
+
+    @Override
+    public synchronized void release() {
+        if(!destroyed) {
+            instance.getComponent().destroyInstance(instance);
+            destroyed = true;
+        }
+    }
+
+    @Override
+    public Object getInstance() {
+        return instance.getInstance();
+    }
 }

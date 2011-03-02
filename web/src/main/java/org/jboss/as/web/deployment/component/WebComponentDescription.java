@@ -20,31 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.component;
+package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.util.List;
+import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.AbstractComponentDescription;
 
 /**
- * A managed bean component instance.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
-public final class ManagedBeanComponentInstance extends AbstractComponentInstance {
+public final class WebComponentDescription extends AbstractComponentDescription {
 
-    private static final long serialVersionUID = -6175038319331057073L;
+    public WebComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
+        super(componentName, componentClassName, moduleName, applicationName);
+    }
 
-    /**
-     * Construct a new instance.
-     *
-     * @param component the component
-     * @param instance the object instance
-     */
-    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext interceptorFactoryContext) {
-        //we don't support pre destroy for manage beans, as the lifecycle is not defined
-        super(component, instance, preDestroyInterceptors,interceptorFactoryContext);
+    protected AbstractComponentConfiguration constructComponentConfiguration() {
+        return new WebComponentConfiguration(this);
     }
 }

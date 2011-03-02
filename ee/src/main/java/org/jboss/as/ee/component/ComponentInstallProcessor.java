@@ -80,6 +80,20 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             final AbstractComponentConfiguration configuration = description.createComponentConfiguration(phaseContext, componentClass);
             configuration.setComponentClass(componentClass);
 
+            //create additional injectors
+            final List<ServiceName> additionalDependencies = new ArrayList<ServiceName>();
+            for(InjectionFactory injectionFactory : moduleDescription.getInjectionFactories()) {
+                final ComponentInjector injector = injectionFactory.createInjector(configuration);
+                if(injector != null) {
+                    configuration.addComponentInjector(injector);
+                    ServiceName injectorServiceName = injector.getServiceName();
+                    if(injector.getServiceName() != null){
+                        additionalDependencies.add(injectorServiceName);
+                    }
+                }
+            }
+
+
             final ServiceName createServiceName = baseName.append("CREATE");
             final ServiceName startServiceName = baseName.append("START");
             final ComponentCreateService createService = new ComponentCreateService(configuration);
@@ -89,6 +103,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
             // START depends on CREATE
             startBuilder.addDependency(createServiceName, Component.class, startService.getComponentInjector());
+            //add dependencies on the injector services
+            startBuilder.addDependencies(additionalDependencies);
 
             // Iterate through each view, creating the services for each
             for (Map.Entry<Class<?>, ProxyFactory<?>> entry : configuration.getProxyFactories().entrySet()) {

@@ -25,6 +25,8 @@ package org.jboss.as.security.context;
 import org.jboss.as.naming.JndiInjectable;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.server.ManagedReference;
+import org.jboss.as.server.ValueManagedReference;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
@@ -60,7 +62,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, JndiInje
      * This method returns a Context proxy that is only able to handle a lookup operation for an
      * atomic name of a security domain.
      */
-    public Object getInjectedValue() {
+    public ManagedReference getReference() {
         final ClassLoader loader;
         try {
             loader = SecurityActions.getModuleClassLoader();
@@ -68,11 +70,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, JndiInje
             throw new IllegalStateException("Unable to get module classloader", e);
         }
         Class<?>[] interfaces = { Context.class };
-        return Proxy.newProxyInstance(loader, interfaces, this);
-    }
-
-    /** {@inheritDoc} */
-    public void returnInjectedValue(Object injectedValue) {
+        return new ValueManagedReference(Proxy.newProxyInstance(loader, interfaces, this));
     }
 
     /**

@@ -22,19 +22,18 @@
 
 package org.jboss.as.naming.context;
 
-import static org.jboss.as.naming.util.NamingUtils.namingException;
-
-import java.util.Hashtable;
+import org.jboss.as.naming.ServiceAwareObjectFactory;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceRegistry;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
+import java.util.Hashtable;
 
-import org.jboss.as.naming.ServiceAwareObjectFactory;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceRegistry;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
 
 /**
  * ObjectFactoryBuilder implementation used to support custom object factories being loaded from modules. This class

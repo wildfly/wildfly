@@ -21,11 +21,7 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -39,11 +35,17 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
+import org.jboss.as.weld.injection.WeldInjectionFactory;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.BeansXml;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Deployment processor that builds bean archives and attaches them to the deployment
@@ -61,6 +63,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final WeldDeploymentMetadata cdiDeploymentMetadata = deploymentUnit
                 .getAttachment(WeldDeploymentMetadata.ATTACHMENT_KEY);
 
@@ -68,6 +71,12 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        //create a CDI injection factory
+        EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final Module topLevelModule = topLevelDeployment.getAttachment(Attachments.MODULE);
+        if(eeModuleDescription != null) {
+            eeModuleDescription.addInjectionFactory(new WeldInjectionFactory(phaseContext.getServiceTarget(),deploymentUnit,topLevelModule.getClassLoader()));
+        }
         final String beanArchiveIdPrefix;
         if (deploymentUnit.getParent() == null) {
             beanArchiveIdPrefix = deploymentUnit.getName();

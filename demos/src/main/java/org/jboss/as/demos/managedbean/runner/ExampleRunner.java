@@ -25,6 +25,7 @@ import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
 import org.jboss.as.demos.managedbean.mbean.TestMBean;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
@@ -53,6 +54,7 @@ public class ExampleRunner {
             JavaArchive jar = ShrinkWrap.create(JavaArchive.class,"managedbean-example.jar");
             jar.addManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
             jar.addManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator", "services/org.jboss.msc.service.ServiceActivator");
+            jar.addManifestResource(EmptyAsset.INSTANCE,"beans.xml");
             jar.addPackage(SimpleManagedBean.class.getPackage());
             ear.add(jar,"/");
 

@@ -23,11 +23,12 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.server.ManagedReference;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.ProxyFactory;
 
 /**
- * A single view of a component.  This will return a proxy to of a single instance of the component.  The proxy will
+ * A single view of a component.  This will return a proxy to a single instance of the component.  The proxy will
  * be based on the provided view interface.
  *
  * @author John Bailey
@@ -51,19 +52,24 @@ public class ComponentView implements JndiInjectable {
         this.component = component;
     }
 
-    /** {@inheritDoc} */
-    public Object getInjectedValue() {
-        try {
-            return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor()))));
-        } catch (InstantiationException e) {
-            throw new InstantiationError(e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        }
-    }
+    @Override
+    public ManagedReference getReference() {
+        return new ManagedReference() {
+            @Override
+            public void release() {
 
-    /** {@inheritDoc} */
-    public void returnInjectedValue(final Object injectedValue) {
-//        component.returnValue(injectedValue);
+            }
+
+            @Override
+            public Object getInstance() {
+                try {
+                    return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor()))));
+                } catch (InstantiationException e) {
+                    throw new InstantiationError(e.getMessage());
+                } catch (IllegalAccessException e) {
+                    throw new IllegalAccessError(e.getMessage());
+                }
+            }
+        };
     }
 }

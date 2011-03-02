@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.component;
+package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.invocation.Interceptor;
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ManagedBeanComponentInstance extends AbstractComponentInstance {
+public final class WebComponentInstance extends AbstractComponentInstance {
 
     private static final long serialVersionUID = -6175038319331057073L;
 
@@ -43,8 +43,7 @@ public final class ManagedBeanComponentInstance extends AbstractComponentInstanc
      * @param component the component
      * @param instance the object instance
      */
-    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext interceptorFactoryContext) {
-        //we don't support pre destroy for manage beans, as the lifecycle is not defined
-        super(component, instance, preDestroyInterceptors,interceptorFactoryContext);
+    protected WebComponentInstance(final WebComponent component, final Object instance, List<Interceptor> preDestroyInterceptors,InterceptorFactoryContext context) {
+        super(component, instance, preDestroyInterceptors, context);
     }
 }

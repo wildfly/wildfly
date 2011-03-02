@@ -21,14 +21,14 @@
  */
 package org.jboss.as.demos.war.archive;
 
-import java.io.IOException;
-import java.io.Writer;
-
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  *
@@ -40,13 +40,20 @@ public class SimpleServlet extends HttpServlet {
 
     private static final long serialVersionUID = -2579304186167063651L;
 
+    private volatile String message;
+
+    @PostConstruct
+    public void messageSetup() {
+        message = "Simple Servlet called with input=";
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String msg = req.getParameter("input");
 
         Writer writer = resp.getWriter();
-        writer.write("Simple Servlet called with input=" + msg);
+        writer.write(message + msg);
     }
 
     @Override

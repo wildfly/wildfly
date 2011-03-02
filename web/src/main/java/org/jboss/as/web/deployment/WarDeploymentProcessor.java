@@ -26,7 +26,6 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
-import org.apache.tomcat.InstanceManager;
 import org.jboss.as.ee.naming.NamespaceSelectorService;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.Attachments;
@@ -36,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.NamingListener;
 import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
@@ -53,6 +53,7 @@ import javax.naming.NamingException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -139,10 +140,17 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             webContext.setCrossContext(true);
         }
 
-        //
+        final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
+
+        final Map<String, ComponentInstantiator> components  = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
+        if(components != null) {
+            for(Map.Entry<String, ComponentInstantiator> entry : components.entrySet()) {
+                injectionContainer.addInstantiator(entry.getKey(), entry.getValue());
+            }
+        }
+        webContext.setInstanceManager(injectionContainer);
+
         final Loader loader = new WebCtxLoader(classLoader);
-        final InstanceManager manager = new WebInjectionContainer(classLoader);
-        webContext.setInstanceManager(manager);
         webContext.setLoader(loader);
 
         // Set the session cookies flag according to metadata
@@ -189,6 +197,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
             serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService).addDependency(
                     WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
+                    .addDependencies(injectionContainer.getServiceNames())
                     .addDependency(namespaceSelectorServiceName, NamespaceContextSelector.class,
                             webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE).install();
         } catch (ServiceRegistryException e) {

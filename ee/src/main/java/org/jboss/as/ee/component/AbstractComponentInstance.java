@@ -24,7 +24,7 @@ package org.jboss.as.ee.component;
 
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
@@ -56,13 +56,12 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
      * @param component the component
      * @param instance the object instance
      */
-    protected AbstractComponentInstance(final AbstractComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors) {
+    protected AbstractComponentInstance(final AbstractComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors,final InterceptorFactoryContext factoryContext) {
         this.component = component;
         this.instance = instance;
         this.preDestroyInterceptors = preDestroyInterceptors;
         final Map<Method, InterceptorFactory> factoryMap = component.getInterceptorFactoryMap();
         final Map<Method, Interceptor> methodMap = new IdentityHashMap<Method, Interceptor>(factoryMap.size());
-        final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
         factoryContext.getContextData().put(AbstractComponent.INSTANCE_KEY, instance);
         for (Map.Entry<Method, InterceptorFactory> entry : factoryMap.entrySet()) {
             methodMap.put(entry.getKey(), entry.getValue().create(factoryContext));
@@ -93,4 +92,5 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
         }
         return interceptor;
     }
+
 }

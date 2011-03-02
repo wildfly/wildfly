@@ -21,8 +21,6 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import javax.enterprise.inject.spi.BeanManager;
-
 import org.jboss.as.ee.naming.ContextServiceNameBuilder;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueJndiInjectable;
@@ -40,10 +38,12 @@ import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.enterprise.inject.spi.BeanManager;
 
 /**
  * {@link DeploymentUnitProcessor} that binds the bean manager to JNDI
@@ -73,7 +73,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
             throw new RuntimeException("Could not find BeanManager for deployment " + deploymentUnit.getName());
         }
 
-        final ServiceName weldServiceName = deploymentUnit.getServiceName().append(WeldService.SERVICE_NAME);
+        final ServiceName weldServiceName = topLevelDeployment.getServiceName().append(WeldService.SERVICE_NAME);
 
         // add the BeanManager service
         final ServiceName beanManagerServiceName = deploymentUnit.getServiceName().append(BeanManagerService.NAME);

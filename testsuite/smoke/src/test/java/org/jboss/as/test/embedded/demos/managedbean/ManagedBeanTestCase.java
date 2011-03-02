@@ -33,6 +33,7 @@ import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
 import org.jboss.as.demos.managedbean.mbean.TestMBean;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -59,6 +60,7 @@ public class ManagedBeanTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class,"managedbean-example.jar");
         jar.addManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
         jar.addManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator", "services/org.jboss.msc.service.ServiceActivator");
+        jar.addManifestResource(EmptyAsset.INSTANCE,"beans.xml");
         jar.addPackage(SimpleManagedBean.class.getPackage());
         jar.addPackage(ManagedBeanTestCase.class.getPackage());
         jar.addPackage(BeanWithSimpleInjected.class.getPackage());
@@ -75,7 +77,7 @@ public class ManagedBeanTestCase {
         Assert.assertNotNull(bean.getSimple());
         String s = bean.echo("Hello");
         Assert.assertNotNull(s);
-        Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello", s);
+        Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean", s);
     }
 
 }

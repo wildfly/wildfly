@@ -22,8 +22,11 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +37,7 @@ public final class EEModuleDescription {
     private final String moduleName;
     private final Map<String, AbstractComponentDescription> componentsByName = new HashMap<String, AbstractComponentDescription>();
     private final Map<String, AbstractComponentDescription> componentsByClassName = new HashMap<String, AbstractComponentDescription>();
+    private final List<InjectionFactory> injectionFactories = new ArrayList<InjectionFactory>();
 
     /**
      * Construct a new instance.
@@ -89,4 +93,13 @@ public final class EEModuleDescription {
     public Collection<AbstractComponentDescription> getComponentDescriptions() {
         return componentsByName.values();
     }
+
+    public void addInjectionFactory(InjectionFactory factory) {
+        injectionFactories.add(factory);
+    }
+
+    public List<InjectionFactory> getInjectionFactories() {
+        return Collections.unmodifiableList(injectionFactories);
+    }
+
 }

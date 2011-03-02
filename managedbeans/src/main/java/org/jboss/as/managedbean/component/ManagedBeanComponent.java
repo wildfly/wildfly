@@ -27,6 +27,9 @@ import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactoryContext;
+
+import java.util.List;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
@@ -46,8 +49,8 @@ public class ManagedBeanComponent extends AbstractComponent {
     }
 
     /** {@inheritDoc} */
-    protected AbstractComponentInstance constructComponentInstance(final Object instance, Iterable<Interceptor> preDestroyInterceptors) {
-        return new ManagedBeanComponentInstance(this, instance);
+    protected AbstractComponentInstance constructComponentInstance(final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        return new ManagedBeanComponentInstance(this, instance,preDestroyInterceptors,context);
     }
 
     /** {@inheritDoc} */

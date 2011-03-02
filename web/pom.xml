@@ -115,7 +115,7 @@
        <groupId>org.jboss.web</groupId>
        <artifactId>jbossweb</artifactId>
     </dependency>
-    
+
     <dependency>
        <groupId>org.picketbox</groupId>
        <artifactId>picketbox</artifactId>

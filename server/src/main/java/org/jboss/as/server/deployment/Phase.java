@@ -215,13 +215,9 @@ public enum Phase {
     public static final int PARSE_DATA_SOURCES                          = 0x1400;
     public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1500;
     public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1600;
-    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x1700;
-    public static final int PARSE_INTERCEPTOR_LIEFCYCLE_ANNOTATION      = 0x1800;
-    public static final int PARSE_INTERCEPTOR_AROUNDINVOKE_ANNOTATION   = 0x1900;
-    public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1A00;
-    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1B00;
-    public static final int PARSE_WEBSERVICES_XML                       = 0x1C00;
-    public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x1D00;
+    public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x1700;
+    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1800;
+    public static final int PARSE_WEBSERVICES_XML                       = 0x1900;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -243,12 +239,17 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x100;
 
     // POST_MODULE
-    public static final int POST_MODULE_ANNOTATION_WAR                  = 0x100;
-    public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x200;
-    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x300;
-    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x400;
-    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x500;
-    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x600;
+    public static final int POST_MODULE_ANNOTATION_WAR                  = 0x0100;
+    public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x0200;
+    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0300;
+    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0400;
+    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0500;
+    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0600;
+    public static final int POST_MODULE_WEB_COMPONENTS                  = 0x0700;
+    public static final int POST_MODULE_BEAN_INTERCEPTOR_ANNOTATION     = 0x0800;
+    public static final int POST_MODULE_LIEFCYCLE_ANNOTATION            = 0x0900;
+    public static final int POST_MODULE_AROUNDINVOKE_ANNOTATION         = 0x1000;
+    public static final int POST_MODULE_RESOURCE_INJECTION_ANNOTATION   = 0x1100;
 
     // INSTALL
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;

@@ -25,6 +25,7 @@ import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
@@ -45,6 +46,9 @@ public class BeanWithSimpleInjected extends BeanParent {
     @Resource(lookup="java:module/SimpleManagedBean")
     private SimpleManagedBean simple;
 
+    @Inject
+    private CDIManagedBean bean;
+
     @PostConstruct
     public void start() {
         log.info("-----> Constructed BeanWithSimpleInjected, simple=" + simple);
@@ -52,7 +56,7 @@ public class BeanWithSimpleInjected extends BeanParent {
 
     @Interceptors(OtherInterceptorBean.class)
     public String echo(String msg) {
-        return msg;
+        return msg + bean.getValue();
     }
 
     public SimpleManagedBean getSimple() {

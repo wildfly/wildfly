@@ -25,8 +25,8 @@ public abstract class AttachmentKey<T> {
      * @param <T> the attachment type
      * @return the new instance
      */
-    public static <T> AttachmentKey<T> create(final Class<T> valueClass) {
-        return new SimpleAttachmentKey<T>(valueClass);
+    public static <T> AttachmentKey<T> create(final Class<? super T> valueClass) {
+        return new SimpleAttachmentKey(valueClass);
     }
 
     /**

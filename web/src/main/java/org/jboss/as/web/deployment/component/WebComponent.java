@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.component;
+package org.jboss.as.web.deployment.component;
 
+import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -29,22 +30,31 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import java.util.List;
 
 /**
- * A managed bean component instance.
+ * Implementation of {@link org.jboss.as.ee.component.Component} for web components
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
-public final class ManagedBeanComponentInstance extends AbstractComponentInstance {
-
-    private static final long serialVersionUID = -6175038319331057073L;
+public class WebComponent extends AbstractComponent {
 
     /**
      * Construct a new instance.
      *
-     * @param component the component
-     * @param instance the object instance
+     * @param configuration the component configuration
      */
-    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext interceptorFactoryContext) {
-        //we don't support pre destroy for manage beans, as the lifecycle is not defined
-        super(component, instance, preDestroyInterceptors,interceptorFactoryContext);
+    public WebComponent(final WebComponentConfiguration configuration) {
+        super(configuration);
+    }
+
+    /** {@inheritDoc} */
+    protected AbstractComponentInstance constructComponentInstance(final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        return new WebComponentInstance(this, instance,preDestroyInterceptors,context);
+    }
+
+
+
+    /** {@inheritDoc} */
+    @Override
+    public Interceptor createClientInterceptor(final Class<?> viewClass) {
+        return null; //not applicable
     }
 }

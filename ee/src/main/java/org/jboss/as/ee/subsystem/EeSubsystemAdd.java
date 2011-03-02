@@ -79,10 +79,10 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_MODULE_INIT, new EEModuleInitialProcessor());
 
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_LIB_CLASS_PATH, new EarLibManifestClassPathProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_INTERCEPTOR_ANNOTATION, new ComponentInterceptorAnnotationParsingProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_INTERCEPTOR_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_INTERCEPTOR_AROUNDINVOKE_ANNOTATION, new InterceptorAnnotationParsingProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_BEAN_INTERCEPTOR_ANNOTATION, new ComponentInterceptorAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_AROUNDINVOKE_ANNOTATION, new InterceptorAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
 
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());

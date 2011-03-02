@@ -22,11 +22,12 @@
 
 package org.jboss.as.naming;
 
-import java.util.Hashtable;
+import org.jboss.msc.service.ServiceName;
+
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.Reference;
-import org.jboss.msc.service.ServiceName;
+import java.util.Hashtable;
 
 /**
  * @author John Bailey
@@ -39,6 +40,6 @@ public class JndiInjectableObjectFactory extends ServiceReferenceObjectFactory {
 
     public Object getObjectInstance(final Object serviceValue, final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
         final JndiInjectable jndiInjectable = JndiInjectable.class.cast(serviceValue);
-        return jndiInjectable.getInjectedValue();
+        return jndiInjectable.getReference().getInstance();
     }
 }
