@@ -168,7 +168,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
             server.setState(ServerState.STARTED);
 
             //This should really be in serverStarted() along with an unregisterCall in serverStopped()
-            hostController.registerRunningServer(serverName, server.getServerConnection());
+            hostController.registerRunningServer(server.getServerName(), server.getServerConnection());
         } catch (final Exception e) {
             log.errorf(e, "Could not start server %s", serverName);
         }
