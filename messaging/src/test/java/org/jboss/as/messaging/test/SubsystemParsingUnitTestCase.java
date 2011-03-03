@@ -84,7 +84,7 @@ public class SubsystemParsingUnitTestCase extends TestCase {
         System.out.println("configURL = " + configURL);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
-        mapper.parseDocument(operations, XMLInputFactory.newFactory().createXMLStreamReader(reader));
+        mapper.parseDocument(operations, XMLInputFactory.newInstance().createXMLStreamReader(reader));
 
         return operations;
     }
