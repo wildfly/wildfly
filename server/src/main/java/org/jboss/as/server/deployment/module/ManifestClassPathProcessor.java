@@ -40,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
@@ -74,6 +75,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         final DeploymentUnit parent = deploymentUnit.getParent();
         final DeploymentUnit topLevelDeployment = parent == null ? deploymentUnit : parent;
         final VirtualFile toplevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile deploymentDirRoot = toplevelRoot.getParent();
         final ExternalModuleService externalModuleService = topLevelDeployment.getAttachment(Attachments.EXTERNAL_MODULE_SERVICE);
         final List<AdditionalModuleSpecification> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
         final List<ResourceRoot> topLevelResourceRoots = topLevelDeployment.getAttachment(Attachments.RESOURCE_ROOTS);
@@ -133,6 +135,14 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                         throw new DeploymentUnitProcessingException("Class Path entry " + item + " in "
                                 + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
                     }
+                } else if(isInside(classPathFile,deploymentDirRoot)) {
+                    //this is a dep on another deployment
+                    if(classPathFile.getParent().equals(deploymentDirRoot)) {
+
+                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES,ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + classPathFile.getName()));
+                    } else {
+                        throw new DeploymentUnitProcessingException("Class Path entries that references nestled jars inside another deployment are disallowed");
+                    }
                 } else {
                     ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(classPathFile);
                     target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
@@ -140,8 +150,9 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                 }
             }
         }
-
     }
+
+
 
     private static boolean isInside(VirtualFile classPathFile, VirtualFile toplevelRoot) {
         VirtualFile[] parentPaths = classPathFile.getParentFiles();
