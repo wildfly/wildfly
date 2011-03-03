@@ -175,6 +175,12 @@ public class EmbeddedServerFactory {
         return standaloneServer;
     }
 
+
+    public static void setupCleanDirectories(Properties props) {
+        File jbossHomeDir = new File(props.getProperty(ServerEnvironment.HOME_DIR));
+        setupCleanDirectories(jbossHomeDir, props);
+    }
+
     static void setupCleanDirectories(File jbossHomeDir, Properties props) {
         File tempRoot = getTempRoot(props);
         if (tempRoot == null) {

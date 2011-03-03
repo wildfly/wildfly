@@ -149,7 +149,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <!--  standard surefire options -->
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>

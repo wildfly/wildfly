@@ -38,6 +38,13 @@
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.dmr"/>
         
+        <!-- Needed for JMX -->
+        <module name="javax.api"/>
+        
+        <!-- Needed for shrinkwrap -->
+       <module name="org.jboss.shrinkwrap.api" export="true"/>
+       <module services="export" name="org.jboss.shrinkwrap.impl" export="true"/>
+        
         <!-- Needed to start up the server -->
         <module name="org.jboss.as.standalone"/>
         <module name="org.jboss.logging"/>
