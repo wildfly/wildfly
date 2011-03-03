@@ -82,9 +82,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
     // FIXME get this list from elsewhere
     private static final Set<String> ARCHIVES = new HashSet<String>(Arrays.asList(".jar", ".war", ".ear", ".rar", ".sar", ".beans"));
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
-    private static final String DEPLOYED = ".deployed";
-    private static final String FAILED_DEPLOY = ".faileddeploy";
-    private static final String DO_DEPLOY = ".dodeploy";
+    static final String DEPLOYED = ".deployed";
+    static final String FAILED_DEPLOY = ".faileddeploy";
+    static final String DO_DEPLOY = ".dodeploy";
 
     private File deploymentDir;
     private long scanInterval = 0;
@@ -204,7 +204,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private void scan() {
+    /** This method isn't private solely to allow a unit test in the same package to call it */
+    void scan() {
 
         try {
             scanLock.lockInterruptibly();
@@ -216,7 +217,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             if (scanEnabled) { // confirm the scan is still wanted
                 log.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
-                final List<ScannerTask> scannerTasks = new ArrayList<ScannerTask>();
+                List<ScannerTask> scannerTasks = new ArrayList<ScannerTask>();
 
                 final Set<String> registeredDeployments = getDeploymentNames();
                 final Set<String> toRemove = new HashSet<String>(deployed.keySet());
@@ -244,6 +245,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         final ModelNode results = serverController.execute(OperationBuilder.Factory.create(composite).build());
                         final List<Property> resultList = results.get(RESULT).asPropertyList();
                         final List<ModelNode> toRetry = new ArrayList<ModelNode>();
+                        final List<ScannerTask> retryTasks = new ArrayList<ScannerTask>();
                         for (int i = 0; i < resultList.size(); i++) {
                             final ModelNode result = resultList.get(i).getValue();
                             final ScannerTask task = scannerTasks.get(i);
@@ -252,11 +254,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
                                 task.handleSuccessResult();
                             } else if (OUTCOME != null && CANCELLED.equals(outcome.asString())) {
                                 toRetry.add(updates.get(i));
+                                retryTasks.add(task);
                             } else {
                                 task.handleFailureResult(result);
                             }
                         }
                         updates = toRetry;
+                        scannerTasks = retryTasks;
                     }
                 }
                 log.tracef("Scan complete");
