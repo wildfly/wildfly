@@ -210,16 +210,16 @@
 
                 <connectors>
                     <in-vm-connector name="in-vm" server-id="0" />
-                    <netty-connector name="netty" socket-binding="netty" />
-                    <netty-connector name="netty-throughput" socket-binding="netty-throughput">
+                    <netty-connector name="netty" socket-binding="messaging" />
+                    <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                         <param key="batch-delay" value="50"/>
                     </netty-connector>
                 </connectors>
 
                 <acceptors>
                     <in-vm-acceptor name="in-vm" server-id="0" />
-                    <netty-acceptor name="netty" socket-binding="netty" />
-                    <netty-acceptor name="netty-throughput" socket-binding="netty-throughput">
+                    <netty-acceptor name="netty" socket-binding="messaging" />
+                    <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
                         <param key="batch-delay" value="50"/>
                         <param key="direct-deliver" value="false"/>
                     </netty-acceptor>
@@ -317,8 +317,8 @@
             <socket-binding name="txn-socket-process-id" interface="loopback" port="4714"/>
          </socket-binding-group>
          <socket-binding-group name="messaging-sockets" default-interface="external">
-            <socket-binding name="netty" port="5445" />
-            <socket-binding name="netty-throughput" port="5455"/>
+            <socket-binding name="messaging" port="5445" />
+            <socket-binding name="messaging-throughput" port="5455"/>
          </socket-binding-group>
     </socket-binding-groups>
 
