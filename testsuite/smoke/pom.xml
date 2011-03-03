@@ -126,6 +126,7 @@
                               <include>org/jboss/as/test/embedded/demos/web/connector/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/osgi/SimpleArquillianTestCase.java</include>
+                              <include>org/jboss/as/test/embedded/mgmt/*TestCase.java</include>
                               <!--  The other demos don't work -->
                               <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
                            </includes>
