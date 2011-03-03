@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -47,7 +48,7 @@ public abstract class AbstractComponentConfiguration {
     private final List<LifecycleInterceptorFactory> postConstructInterceptorLifecycles = new ArrayList<LifecycleInterceptorFactory>();
     private final List<LifecycleInterceptorFactory> preDestroyInterceptorLifecycles = new ArrayList<LifecycleInterceptorFactory>();
     private final List<ResourceInjection> resourceInjections = new ArrayList<ResourceInjection>();
-    private final Map<Class,List<ResourceInjection>> interceptorResourceInjections = new HashMap<Class,List<ResourceInjection>>();
+    private final Map<Class<?>,List<ResourceInjection>> interceptorResourceInjections = new HashMap<Class<?>,List<ResourceInjection>>();
     private final List<InterceptorFactory> componentSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
     private final Map<Class<?>, ComponentInvocationHandler> views = new IdentityHashMap<Class<?>, ComponentInvocationHandler>();
     private final Map<Method, InterceptorFactory> interceptorFactoryMap = new IdentityHashMap<Method, InterceptorFactory>();
@@ -55,7 +56,7 @@ public abstract class AbstractComponentConfiguration {
     private final List<ComponentInjector> componentInjectors = new ArrayList<ComponentInjector>();
     private Class<?> componentClass;
     private Interceptor componentInterceptor;
-
+    private NamespaceContextSelector namespaceContextSelector;
 
     /**
      * Construct a new instance.

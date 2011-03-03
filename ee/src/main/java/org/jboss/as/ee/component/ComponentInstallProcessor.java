@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -101,8 +102,42 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             final ComponentStartService startService = new ComponentStartService();
             final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
 
+            final ServiceName appContextServiceName = ContextNames.contextServiceNameOfApplication(applicationName);
+            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(applicationName, moduleName);
+            final ServiceName componentContextServiceName;
+
+            switch (description.getNamingMode()) {
+                case CREATE: {
+                    componentContextServiceName = ContextNames.contextServiceNameOfComponent(applicationName, moduleName, componentName);
+                    // And, create the context...
+                    RootContextService contextService = new RootContextService();
+                    serviceTarget.addService(componentContextServiceName, contextService)
+                        .addDependency(createServiceName)
+                        .install();
+                    break;
+                }
+                case USE_MODULE: {
+                    componentContextServiceName = moduleContextServiceName;
+                    break;
+                }
+                default: {
+                    componentContextServiceName = null;
+                    break;
+                }
+            }
+
+            final NamespaceSelectorService selectorService = new NamespaceSelectorService();
+            final ServiceName selectorServiceName = baseName.append("NAMESPACE");
+            final ServiceBuilder<NamespaceContextSelector> selectorServiceBuilder = serviceTarget.addService(selectorServiceName, selectorService)
+                    .addDependency(appContextServiceName, NamingStore.class, selectorService.getApp())
+                    .addDependency(moduleContextServiceName, NamingStore.class, selectorService.getModule());
+            if (componentContextServiceName != null) {
+                selectorServiceBuilder.addDependency(componentContextServiceName, NamingStore.class, selectorService.getComp());
+            }
+            selectorServiceBuilder.install();
+
             // START depends on CREATE
-            startBuilder.addDependency(createServiceName, Component.class, startService.getComponentInjector());
+            startBuilder.addDependency(createServiceName, AbstractComponent.class, startService.getComponentInjector());
             //add dependencies on the injector services
             startBuilder.addDependencies(additionalDependencies);
 

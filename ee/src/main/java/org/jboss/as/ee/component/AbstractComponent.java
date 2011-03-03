@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
@@ -73,6 +75,7 @@ public abstract class AbstractComponent implements Component {
     private final List<ComponentInjector> componentInjectors;
     private final Interceptor componentInterceptor;
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
+    private final InjectedValue<NamespaceContextSelector> namespaceContextSelectorInjector = new InjectedValue<NamespaceContextSelector>();
 
     private volatile boolean gate;
 
@@ -293,7 +296,7 @@ public abstract class AbstractComponent implements Component {
     }
 
     public NamespaceContextSelector getNamespaceContextSelector() {
-        return null;
+        return namespaceContextSelectorInjector.getValue();
     }
 
     /**
