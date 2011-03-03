@@ -19,6 +19,7 @@
 package org.jboss.as.server.client.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationResult;
 import org.jboss.as.controller.client.ResultHandler;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
 
@@ -53,7 +55,7 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
      */
     @Override
     protected Future<ModelNode> executeOperation(ExecutionContext executionContext) {
-        Handler handler = new Handler();
+        Handler handler = new Handler(executionContext);
         OperationResult c = client.execute(executionContext, handler.resultHandler);
         handler.setCancellable(c.getCancellable());
         return handler;
@@ -61,15 +63,22 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
 
     private static class Handler implements Future<ModelNode> {
 
+
         private enum State {
             RUNNING, CANCELLED, DONE
         }
 
+        private final ExecutionContext executionContext;
         private AtomicReference<State> state = new AtomicReference<State>(State.RUNNING);
         private final Thread runner = Thread.currentThread();
         private final ModelNode result = new ModelNode();
         private Cancellable cancellable;
         private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
+
+        private Handler(ExecutionContext executionContext) {
+            this.executionContext = executionContext;
+        }
+
         private final ResultHandler resultHandler = new ResultHandler() {
             @Override
             public void handleResultFragment(String[] location, ModelNode fragment) {
@@ -81,28 +90,29 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
             @Override
             public void handleResultComplete() {
                 state.compareAndSet(State.RUNNING, State.DONE);
-                synchronized (Handler.this) {
-                    Handler.this.notifyAll();
-                }
+                cleanUpAndNotify();
             }
 
             @Override
             public void handleCancellation() {
                 state.compareAndSet(State.RUNNING, State.CANCELLED);
-                synchronized (Handler.this) {
-                    Handler.this.notifyAll();
-                }
+                cleanUpAndNotify();
             }
 
             @Override
             public void handleException(Exception e) {
                 exception.compareAndSet(null, e);
                 state.compareAndSet(State.RUNNING, State.DONE);
-                synchronized (Handler.this) {
-                    Handler.this.notifyAll();
-                }
+                cleanUpAndNotify();
             }
         };
+
+        synchronized void cleanUpAndNotify() {
+            for (InputStream in : executionContext.getInputStreams()) {
+                StreamUtils.safeClose(in);
+            }
+            notifyAll();
+        }
 
         void setCancellable(Cancellable c) {
             this.cancellable = c;

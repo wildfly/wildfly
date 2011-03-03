@@ -104,13 +104,10 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @throws DuplicateDeploymentNameException if the name of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
+     * @IOException if there is an error opening the file
      *              the server
      */
-    AddDeploymentPlanBuilder add(File file) throws IOException, DuplicateDeploymentNameException;
+    AddDeploymentPlanBuilder add(File file) throws IOException;
 
     /**
      * Indicates the content at the specified URL should be added to the content
@@ -124,13 +121,9 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @throws DuplicateDeploymentNameException if the name of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
+     * @IOException if there is an error opening the url
      */
-    AddDeploymentPlanBuilder add(URL url) throws IOException, DuplicateDeploymentNameException;
+    AddDeploymentPlanBuilder add(URL url) throws IOException;
 
     /**
      * Indicates the content of the specified fileL should be added to the content
@@ -147,13 +140,9 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @throws DuplicateDeploymentNameException if the name of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
+     * @IOException if there is an error opening the file
      */
-    AddDeploymentPlanBuilder add(String name, File file) throws IOException, DuplicateDeploymentNameException;
+    AddDeploymentPlanBuilder add(String name, File file) throws IOException;
 
     /**
      * Indicates the content at the specified URL should be added to the content
@@ -170,13 +159,9 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @throws DuplicateDeploymentNameException if the name of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
+     * @IOException if there is an error opening the url
      */
-    AddDeploymentPlanBuilder add(String name, URL url) throws IOException, DuplicateDeploymentNameException;
+    AddDeploymentPlanBuilder add(String name, URL url) throws IOException;
 
     /**
      * Indicates the content readable from the specified <code>InputStream</code>
@@ -190,16 +175,12 @@ public interface DeploymentPlanBuilder {
      *             name given to an other deployment content presently available
      *             on the server
      * @param stream <code>InputStream</code> from which the new content should be read
+     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @throws DuplicateDeploymentNameException if the name of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
      */
-    AddDeploymentPlanBuilder add(String name, InputStream stream) throws IOException, DuplicateDeploymentNameException;
+    AddDeploymentPlanBuilder add(String name, InputStream stream);
 
     /**
      * Indicates the content readable from the specified <code>InputStream</code>
@@ -225,16 +206,11 @@ public interface DeploymentPlanBuilder {
      *                   would need to have distinct {@code name} values but
      *                   would have the same {@code commonName}
      * @param stream <code>InputStream</code> from which the new content should be read
+     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
      *
      * @return a builder that can continue building the overall deployment plan
-     *
-     * @throws DuplicateDeploymentNameException if the {@code name} of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
      */
-    AddDeploymentPlanBuilder add(String name, String commonName, InputStream stream) throws IOException, DuplicateDeploymentNameException;
+    AddDeploymentPlanBuilder add(String name, String commonName, InputStream stream) throws IOException;
 
     /**
      * Indicates the specified deployment content should be deployed.
@@ -290,8 +266,7 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
+     * @IOException if there is an error opening the file
      */
     DeploymentPlanBuilder replace(File file) throws IOException;
 
@@ -310,8 +285,7 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
+     * @IOException if there is an error opening the url
      */
     DeploymentPlanBuilder replace(URL url) throws IOException;
 
@@ -329,8 +303,7 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
+     * @IOException if there is an error opening the file
      */
     DeploymentPlanBuilder replace(String name, File file) throws IOException;
 
@@ -348,8 +321,7 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
+     * @IOException if there is an error opening the url
      */
     DeploymentPlanBuilder replace(String name, URL url) throws IOException;
 
@@ -365,16 +337,12 @@ public interface DeploymentPlanBuilder {
      *
      * @param name name that should be given to the new content
      * @param stream <code>InputStream</code> from which the new content should be read
+     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @throws DuplicateDeploymentNameException if the name of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
      */
-    DeploymentPlanBuilder replace(String name, InputStream stream) throws IOException;
+    DeploymentPlanBuilder replace(String name, InputStream stream);
 
     /**
      * Indicates the content readable from the specified <code>InputStream</code>
@@ -399,17 +367,13 @@ public interface DeploymentPlanBuilder {
      *                   content repository), in which case the deployments
      *                   would need to have distinct {@code name} values but
      *                   would have the same {@code commonName}
-     * @param stream <code>InputStream</code> from which the new content should be read
+     * @param stream <code>InputStream</code> from which the new content should be read.
+     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
      *
      * @return a builder that can continue building the overall deployment plan
      *
-     * @throws DuplicateDeploymentNameException if the name of the deployment is
-     *              the same as that of other deployment content already present
-     *              on the server
-     * @IOException if an exception occurs passing the deployment content to
-     *              the server
      */
-    DeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException;
+    DeploymentPlanBuilder replace(String name, String commonName, InputStream stream);
 
     /**
      * Indicates the specified deployment content should be removed from the
@@ -427,5 +391,4 @@ public interface DeploymentPlanBuilder {
      * @return the deployment plan
      */
     DeploymentPlan build();
-
 }

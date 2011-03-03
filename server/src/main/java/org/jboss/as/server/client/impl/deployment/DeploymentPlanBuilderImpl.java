@@ -33,12 +33,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.client.api.deployment.AddDeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentAction.Type;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
-import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
 import org.jboss.as.server.client.api.deployment.InitialDeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.UndeployDeploymentPlanBuilder;
@@ -125,60 +125,64 @@ class DeploymentPlanBuilderImpl
     }
 
     @Override
-    public AddDeploymentPlanBuilder add(File file) throws IOException, DuplicateDeploymentNameException {
+    public AddDeploymentPlanBuilder add(File file) throws IOException {
         String name = file.getName();
         return add(name, name, file.toURI().toURL());
     }
 
     @Override
-    public AddDeploymentPlanBuilder add(URL url) throws IOException, DuplicateDeploymentNameException {
+    public AddDeploymentPlanBuilder add(URL url) throws IOException {
         String name = getName(url);
         return add(name, name, url);
     }
 
     @Override
-    public AddDeploymentPlanBuilder add(String name, File file) throws IOException, DuplicateDeploymentNameException {
+    public AddDeploymentPlanBuilder add(String name, File file) throws IOException {
         return add(name, file.getName(), file.toURI().toURL());
     }
 
     @Override
-    public AddDeploymentPlanBuilder add(String name, URL url) throws IOException, DuplicateDeploymentNameException {
+    public AddDeploymentPlanBuilder add(String name, URL url) throws IOException {
         String commonName = getName(url);
         return add(name, commonName, url);
     }
 
-    private AddDeploymentPlanBuilder add(String name, String commonName, URL url) throws IOException, DuplicateDeploymentNameException {
-        URLConnection conn = url.openConnection();
-        conn.connect();
-        InputStream stream = conn.getInputStream();
+    private AddDeploymentPlanBuilder add(String name, String commonName, URL url) throws IOException {
         try {
-            return add(name, commonName, stream);
-        }
-        finally {
-            try { stream.close(); } catch (Exception ignored) {}
+            URLConnection conn = url.openConnection();
+            conn.connect();
+            InputStream stream = conn.getInputStream();
+            return add(name, commonName, stream, true);
+        } catch (IOException e) {
+            cleanup();
+            throw e;
         }
     }
 
     private DeploymentPlanBuilder replace(String name, String commonName, URL url) throws IOException {
-        URLConnection conn = url.openConnection();
-        conn.connect();
-        InputStream stream = conn.getInputStream();
         try {
-            return replace(name, commonName, stream);
-        }
-        finally {
-            try { stream.close(); } catch (Exception ignored) {}
+            URLConnection conn = url.openConnection();
+            conn.connect();
+            InputStream stream = conn.getInputStream();
+            return replace(name, commonName, stream, true);
+        } catch (IOException e) {
+            cleanup();
+            throw e;
         }
     }
 
     @Override
-    public AddDeploymentPlanBuilder add(String name, InputStream stream) throws IOException, DuplicateDeploymentNameException {
+    public AddDeploymentPlanBuilder add(String name, InputStream stream) {
         return add(name, name, stream);
     }
 
     @Override
-    public AddDeploymentPlanBuilder add(String name, String commonName, InputStream stream) throws IOException, DuplicateDeploymentNameException {
-        DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, commonName, stream);
+    public AddDeploymentPlanBuilder add(String name, String commonName, InputStream stream) {
+        return add(name, commonName, stream, false);
+    }
+
+    private AddDeploymentPlanBuilder add(String name, String commonName, InputStream stream, boolean internalStream) {
+        DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, commonName, stream, internalStream);
         return new DeploymentPlanBuilderImpl(this, mod);
     }
 
@@ -248,13 +252,18 @@ class DeploymentPlanBuilderImpl
     }
 
     @Override
-    public DeploymentPlanBuilder replace(String name, InputStream stream) throws IOException {
+    public DeploymentPlanBuilder replace(String name, InputStream stream) {
         return replace(name, name, stream);
     }
 
     @Override
-    public DeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException {
-        DeploymentActionImpl mod = DeploymentActionImpl.getFullReplaceAction(name, commonName, stream);
+    public DeploymentPlanBuilder replace(String name, String commonName, InputStream stream) {
+        return replace(name, commonName, stream, false);
+    }
+
+    private DeploymentPlanBuilder replace(String name, String commonName, InputStream stream, boolean internalStream) {
+
+        DeploymentActionImpl mod = DeploymentActionImpl.getFullReplaceAction(name, commonName, stream, internalStream);
         return new DeploymentPlanBuilderImpl(this, mod);
     }
 
@@ -263,6 +272,7 @@ class DeploymentPlanBuilderImpl
         DeploymentAction last = getLastAction();
         if (last.getType() != Type.UNDEPLOY) {
             // Someone cast to the impl class instead of using the interface
+            cleanup();
             throw new IllegalStateException("Preceding action was not a " + Type.UNDEPLOY);
         }
         DeploymentActionImpl removeMod = DeploymentActionImpl.getRemoveAction(last.getDeploymentUnitUniqueName());
@@ -279,10 +289,13 @@ class DeploymentPlanBuilderImpl
     public DeploymentPlanBuilder withRollback() {
         if (deploymentActions.size() > 0) {
             // Someone has cast to this impl class
+            cleanup();
             throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
         }
-        if (shutdown)
+        if (shutdown) {
+            cleanup();
             throw new IllegalStateException("Global rollback is not compatible with a server restart");
+        }
         return new DeploymentPlanBuilderImpl(this, true);
     }
 
@@ -294,13 +307,16 @@ class DeploymentPlanBuilderImpl
 
         if (deploymentActions.size() > 0) {
             // Someone has to cast this impl class
+            cleanup();
             throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
         }
-        if (globalRollback)
+        if (globalRollback) {
+            cleanup();
             throw new IllegalStateException("Global rollback is not compatible with a server restart");
-
+        }
         long period = timeUnit.toMillis(timeout);
         if (shutdown && period != gracefulShutdownPeriod) {
+            cleanup();
             throw new IllegalStateException("Graceful shutdown already configured with a timeout of " + gracefulShutdownPeriod + " ms");
         }
         return new DeploymentPlanBuilderImpl(this, period);
@@ -314,12 +330,15 @@ class DeploymentPlanBuilderImpl
 
         if (deploymentActions.size() > 0) {
             // Someone has to cast this impl class
+            cleanup();
             throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
         }
-        if (globalRollback)
+        if (globalRollback) {
+            cleanup();
             throw new IllegalStateException("Global rollback is not compatible with a server restart");
-
+        }
         if (shutdown && gracefulShutdownPeriod != -1) {
+            cleanup();
             throw new IllegalStateException("Graceful shutdown already configured with a timeout of " + gracefulShutdownPeriod + " ms");
         }
         return new DeploymentPlanBuilderImpl(this, -1);
@@ -330,17 +349,19 @@ class DeploymentPlanBuilderImpl
         DeploymentAction last = getLastAction();
         if (last.getType() != Type.ADD) {
             // Someone cast to the impl class instead of using the interface
+            cleanup();
             throw new IllegalStateException("Preceding action was not a " + Type.ADD);
         }
         return last.getDeploymentUnitUniqueName();
     }
 
-    private static String getName(URL url) {
+    private String getName(URL url) {
         if ("file".equals(url.getProtocol())) {
             try {
                 File f = new File(url.toURI());
                 return f.getName();
             } catch (URISyntaxException e) {
+                cleanup();
                 throw new IllegalArgumentException(url + " is not a valid URI", e);
             }
         }
@@ -352,10 +373,19 @@ class DeploymentPlanBuilderImpl
             idx = path.lastIndexOf('/');
         }
         if (idx == -1) {
+            cleanup();
             throw new IllegalArgumentException("Cannot derive a deployment name from " +
                     url + " -- use an overloaded method variant that takes a 'name' parameter");
         }
 
         return path.substring(idx + 1);
+    }
+
+    protected void cleanup() {
+        for (DeploymentActionImpl action : deploymentActions) {
+            if (action.isInternalStream() && action.getContentStream() != null) {
+                StreamUtils.safeClose(action.getContentStream());
+            }
+        }
     }
 }

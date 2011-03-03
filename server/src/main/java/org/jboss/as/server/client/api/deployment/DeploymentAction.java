@@ -103,5 +103,4 @@ public interface DeploymentAction {
      *   Will not be <code>null</code> otherwise
      */
     String getReplacedDeploymentUnitUniqueName();
-
 }

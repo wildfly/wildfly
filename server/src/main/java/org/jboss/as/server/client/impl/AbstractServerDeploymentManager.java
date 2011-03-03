@@ -102,7 +102,7 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
             case ADD: {
                 configureDeploymentOperation(step, ADD, uniqueName);
                 step.get(RUNTIME_NAME).set(action.getNewContentFileName());
-                builder.addInputStream(action.getContents());
+                builder.addInputStream(action.getContentStream());
                 step.get(INPUT_STREAM_INDEX).set(stream++);
                 break;
             }
@@ -115,7 +115,7 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
                 step.get(OP_ADDR).setEmptyList();
                 step.get(NAME).set(uniqueName);
                 step.get(RUNTIME_NAME).set(action.getNewContentFileName());
-                builder.addInputStream(action.getContents());
+                builder.addInputStream(action.getContentStream());
                 step.get(INPUT_STREAM_INDEX).set(stream++);
                 break;
             }

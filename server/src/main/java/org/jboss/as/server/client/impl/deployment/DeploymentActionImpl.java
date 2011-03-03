@@ -35,32 +35,32 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
 
     private static final long serialVersionUID = 613098200977026475L;
 
-    public static DeploymentActionImpl getAddAction(String deploymentName, String fileName, InputStream in) {
-        return new DeploymentActionImpl(Type.ADD, deploymentName, fileName, in, null);
+    public static DeploymentActionImpl getAddAction(String deploymentName, String fileName, InputStream in, boolean internalStream) {
+        return new DeploymentActionImpl(Type.ADD, deploymentName, fileName, in, internalStream, null);
     }
 
     public static DeploymentActionImpl getDeployAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.DEPLOY, deploymentName, null, null, null);
+        return new DeploymentActionImpl(Type.DEPLOY, deploymentName, null, null, false, null);
     }
 
     public static DeploymentActionImpl getRedeployAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.REDEPLOY, deploymentName, null, null, null);
+        return new DeploymentActionImpl(Type.REDEPLOY, deploymentName, null, null, false, null);
     }
 
     public static DeploymentActionImpl getUndeployAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.UNDEPLOY, deploymentName, null, null, null);
+        return new DeploymentActionImpl(Type.UNDEPLOY, deploymentName, null, null, false, null);
     }
 
     public static DeploymentActionImpl getReplaceAction(String deploymentName, String replacedName) {
-        return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, replacedName);
+        return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, false, replacedName);
     }
 
-    public static DeploymentActionImpl getFullReplaceAction(String deploymentName, String fileName, InputStream in) {
-        return new DeploymentActionImpl(Type.FULL_REPLACE, deploymentName, fileName, in, null);
+    public static DeploymentActionImpl getFullReplaceAction(String deploymentName, String fileName, InputStream in, boolean internalStream) {
+        return new DeploymentActionImpl(Type.FULL_REPLACE, deploymentName, fileName, in, internalStream, null);
     }
 
     public static DeploymentActionImpl getRemoveAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.REMOVE, deploymentName, null, null, null);
+        return new DeploymentActionImpl(Type.REMOVE, deploymentName, null, null, false, null);
     }
 
     private final UUID uuid = UUID.randomUUID();
@@ -69,13 +69,15 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private final String oldDeploymentUnitName;
     private final InputStream contents;
     private final String newContentFileName;
+    private final boolean internalStream;
 
-    private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, InputStream contents, String replacedDeploymentUnitName) {
+    private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, InputStream contents, boolean internalStream, String replacedDeploymentUnitName) {
         this.type = type;
         this.deploymentUnitName = deploymentUnitName;
         this.newContentFileName = newContentFileName;
         this.contents = contents;
         this.oldDeploymentUnitName = replacedDeploymentUnitName;
+        this.internalStream = internalStream;
     }
 
     @Override
@@ -102,8 +104,11 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
         return newContentFileName;
     }
 
-    public InputStream getContents() {
+    public InputStream getContentStream() {
         return contents;
     }
 
+    public boolean isInternalStream() {
+        return internalStream;
+    }
 }
