@@ -184,9 +184,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     .addDependency(createServiceName)
                     .addDependency(bindingServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
                     .install();
-            // Start service depends on the binding, one way or another
-            // Note that view bindings will also be added as a dependency of the START phase; not strictly necessary but not harmful either
-            startBuilder.addDependency(bindingServiceName);
+            // Start service depends on the binding if the binding is a dependency
+            if (bindingDescription.isDependency()) startBuilder.addDependency(bindingServiceName);
         } else {
             // do not bind into JNDI
             // The resource value comes from the reference source, which may add a dependency on the original value to the start service

@@ -35,6 +35,7 @@ import java.util.List;
 public class BindingDescription {
     private BindingSourceDescription referenceSourceDescription;
     private boolean absoluteBinding;
+    private boolean dependency;
     private String bindingName;
     private String bindingType;
     private String description;
@@ -85,6 +86,24 @@ public class BindingDescription {
      */
     public void setAbsoluteBinding(final boolean absoluteBinding) {
         this.absoluteBinding = absoluteBinding;
+    }
+
+    /**
+     * Determine whether this binding is a dependency of the component.
+     *
+     * @return {@code true} if the component start depends on this binding, {@code false} otherwise
+     */
+    public boolean isDependency() {
+        return dependency;
+    }
+
+    /**
+     * Set whether this binding is a dependency of the component.
+     *
+     * @param dependency {@code true} if the component start depends on this binding, {@code false} otherwise
+     */
+    public void setDependency(final boolean dependency) {
+        this.dependency = dependency;
     }
 
     /**

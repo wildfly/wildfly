@@ -115,6 +115,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? fieldInfo.type().name() : declaredType;
 
         BindingDescription bindingDescription = new BindingDescription();
+        bindingDescription.setDependency(true);
         bindingDescription.setBindingName(localContextName);
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
@@ -153,6 +154,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         final DotName declaredType = declaredTypeValue != null ? declaredTypeValue.asClass().name() : null;
         final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? methodInfo.args()[0].name() : declaredType;
         final BindingDescription bindingDescription = new BindingDescription();
+        bindingDescription.setDependency(true);
         bindingDescription.setBindingName(localContextName);
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
@@ -184,6 +186,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         }
         final String type = typeValue.asClass().name().toString();
         final BindingDescription bindingDescription = new BindingDescription();
+        bindingDescription.setDependency(true);
         bindingDescription.setBindingName(name);
         bindingDescription.setBindingType(type);
         final AnnotationValue description = annotation.value("description");
