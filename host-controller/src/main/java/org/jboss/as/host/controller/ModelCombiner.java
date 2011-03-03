@@ -199,6 +199,8 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         command.add("modules");
         command.add("-logmodule");
         command.add("org.jboss.logmanager");
+        command.add("-jaxpmodule");
+        command.add("javax.xml.jaxp-provider");
         command.add("org.jboss.as.server");
 
         return command;

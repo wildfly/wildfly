@@ -172,12 +172,12 @@
         </dependency>
 
         <dependency>
-            <groupId>apache-xalan</groupId>
+            <groupId>org.apache.xalan</groupId>
             <artifactId>serializer</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>apache-xalan</groupId>
+            <groupId>org.apache.xalan</groupId>
             <artifactId>xalan</artifactId>
         </dependency>
 
