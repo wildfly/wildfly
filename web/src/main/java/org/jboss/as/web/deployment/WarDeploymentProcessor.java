@@ -135,6 +135,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         webContext.setPath(pathName);
         webContext.setIgnoreAnnotations(true);
+        if (!metaData.isDisableCrossContext()) {
+            webContext.setCrossContext(true);
+        }
 
         //
         final Loader loader = new WebCtxLoader(classLoader);
