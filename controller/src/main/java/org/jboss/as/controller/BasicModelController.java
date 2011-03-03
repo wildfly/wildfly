@@ -500,6 +500,7 @@ public class BasicModelController extends AbstractModelController implements Mod
             for (int i = 0; i < unfinishedCount.get(); i++) {
                 ModelNode stepResult = getStepResultNode(i);
                 stepResult.get(OUTCOME);
+                stepResult.get(OP_ADDR).set(steps.get(i).get(OP_ADDR));
                 stepResult.get(RESULT);
             }
         }
