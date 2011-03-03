@@ -30,8 +30,10 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ejb3.deployment.EjbJarParsingDeploymentUnitProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -54,8 +56,12 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
         if(context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
 
-            // TODO add ejb3 deployers
-
+            // add the metadata parser deployment processor
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
+            // TODO
+            // add the real deployment processor
+            // TODO: add the proper deployment processors
+            // updateContext.addDeploymentProcessor(processor, priority);
         }
 
         context.getSubModel().setEmptyObject();

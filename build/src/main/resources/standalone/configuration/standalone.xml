@@ -27,6 +27,7 @@
                             urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
                             urn:jboss:domain:connector:1.0 jboss-connector.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:ejb3:1.0 jboss-ejb3.xsd
                             urn:jboss:domain:ee:1.0 jboss-ee.xsd
                             urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
@@ -79,7 +80,7 @@
     </management>
 
     <profile name="ignore">
-       <subsystem xmlns="urn:jboss:domain:logging:1.0">
+        <subsystem xmlns="urn:jboss:domain:logging:1.0">
             <console-handler name="CONSOLE">
                 <level name="INFO"/>
                 <formatter>

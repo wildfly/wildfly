@@ -71,6 +71,10 @@
                           <name>jboss.embedded.root</name>
                           <value>target/embedded</value>
                         </property>
+                        <property>
+                          <name>jaxp.debug</name>
+                          <value>true</value>
+                        </property>
                     </systemProperties>
                     <includes>
                         <include>org/jboss/as/test/flat/**/*TestCase.java</include>

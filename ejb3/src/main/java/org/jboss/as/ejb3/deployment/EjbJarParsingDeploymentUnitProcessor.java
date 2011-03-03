@@ -23,20 +23,18 @@
 package org.jboss.as.ejb3.deployment;
 
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentException;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
@@ -100,6 +98,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
         // Locate a ejb-jar.xml
         VirtualFile ejbJarXml = null;
+        // EJB 3.1 FR 20.4 Enterprise Beans Packaged in a .war
         // TODO: Is there a better way to do this?
         if (deploymentRoot.getName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
             // it's a .war file, so look for the ejb-jar.xml in WEB-INF
@@ -111,14 +110,14 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             return;
         }
 
-        if (ejbJarXml == null) {
+        if (ejbJarXml == null || !ejbJarXml.exists()) {
             // no ejb-jar.xml found, nothing to do!
             return;
         }
 
         // get the XMLStreamReader and parse the ejb-jar.xml
-        XMLStreamReader reader = this.getXMLStreamReader(ejbJarXml);
         MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
+        XMLStreamReader reader = this.getXMLStreamReader(ejbJarXml, dtdInfo);
         try {
             EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo);
             // attach the ejbjar metadata
@@ -146,12 +145,12 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
      * @throws DeploymentUnitProcessingException
      *
      */
-    private XMLStreamReader getXMLStreamReader(VirtualFile ejbJarXml) throws DeploymentUnitProcessingException {
+    private XMLStreamReader getXMLStreamReader(VirtualFile ejbJarXml, XMLResolver resolver) throws DeploymentUnitProcessingException {
         InputStream is = null;
         try {
             is = ejbJarXml.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setXMLResolver(NoopXmlResolver.create());
+            inputFactory.setXMLResolver(resolver);
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return xmlReader;
         } catch (XMLStreamException xmlse) {
