@@ -136,9 +136,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         webContext.setPath(pathName);
         webContext.setIgnoreAnnotations(true);
-        if (!metaData.isDisableCrossContext()) {
-            webContext.setCrossContext(true);
-        }
+        webContext.setCrossContext(!metaData.isDisableCrossContext());
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
 
