@@ -52,7 +52,6 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -94,23 +93,26 @@ import org.jboss.modules.ModuleLoadException;
  */
 public class DomainModelImpl extends BasicTransactionalModelController implements DomainModel {
 
-    final ExtensionContext extensionContext;
+    private final ExtensionContext extensionContext;
+    private final HostControllerProxy hostController;
 
     /** Constructor for a master DC. */
-    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
+    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final HostControllerProxy localHostProxy) {
         super(createCoreModel(), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         ModelNodeRegistration registry = getRegistry();
-        extensionContext = initialize(registry, configurationPersister, null);
+        this.extensionContext = initialize(registry, configurationPersister, null);
+        this.hostController = localHostProxy;
         if (localHostProxy != null) {
             registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
         }
     }
 
     /** Constructor for a slave DC. */
-    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
+    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final HostControllerProxy localHostProxy) {
         super(model, configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         ModelNodeRegistration registry = getRegistry();
-        extensionContext = initialize(registry, configurationPersister, model);
+        this.extensionContext = initialize(registry, configurationPersister, model);
+        this.hostController = localHostProxy;
         if (localHostProxy != null) {
             registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
         }

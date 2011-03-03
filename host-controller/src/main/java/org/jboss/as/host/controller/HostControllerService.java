@@ -32,7 +32,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.ServerStartupTransactionalProxyController;
+import org.jboss.as.domain.controller.HostControllerProxy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -46,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  */
-public class HostControllerService implements Service<ServerStartupTransactionalProxyController> {
+public class HostControllerService implements Service<HostControllerProxy> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
@@ -54,8 +54,7 @@ public class HostControllerService implements Service<ServerStartupTransactional
     private final FileRepository repository;
     private final String name;
 
-    private HostController controller;
-    private ServerStartupTransactionalProxyController proxyController;
+    private HostControllerProxy proxyController;
 
     HostControllerService(final String name, final HostModel hostModel, final FileRepository repository) {
         this.name = name;
@@ -70,8 +69,7 @@ public class HostControllerService implements Service<ServerStartupTransactional
         final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory, repository);
         serverInventory.setHostController(controller);
         hostModel.setHostController(controller);
-        this.controller = controller;
-        this.proxyController = new ServerStartupTransactionalProxyController() {
+        this.proxyController = new HostControllerProxy() {
 
             @Override
             public OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction) {
@@ -113,14 +111,13 @@ public class HostControllerService implements Service<ServerStartupTransactional
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
-        this.controller = null;
         this.proxyController = null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public synchronized ServerStartupTransactionalProxyController getValue() throws IllegalStateException, IllegalArgumentException {
-        final ServerStartupTransactionalProxyController controller = this.proxyController;
+    public synchronized HostControllerProxy getValue() throws IllegalStateException, IllegalArgumentException {
+        final HostControllerProxy controller = this.proxyController;
         if(controller == null) {
             throw new IllegalArgumentException();
         }

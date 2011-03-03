@@ -23,7 +23,6 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.TransactionalModelController;
-import org.jboss.as.controller.TransactionalProxyController;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 
@@ -40,7 +39,7 @@ public interface DomainModel extends TransactionalModelController {
     ModelNode getDomainModel();
 
     static class Factory {
-        public static DomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister, final TransactionalProxyController localHostProxy) {
+        public static DomainModel create(final ModelNode domainModel, final ExtensibleConfigurationPersister configurationPersister, final HostControllerProxy localHostProxy) {
             return new DomainModelImpl(domainModel, configurationPersister, localHostProxy);
         }
     }

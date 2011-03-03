@@ -56,7 +56,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
-import org.jboss.as.domain.controller.ServerStartupTransactionalProxyController;
+import org.jboss.as.domain.controller.HostControllerProxy;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
@@ -254,7 +254,7 @@ public class HostControllerBootstrap {
             builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());
         }
         builder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, dcService.getScheduledExecutorServiceInjector())
-            .addDependency(HostController.SERVICE_NAME, ServerStartupTransactionalProxyController.class, dcService.getHostControllerServiceInjector())
+            .addDependency(HostController.SERVICE_NAME, HostControllerProxy.class, dcService.getHostControllerServiceInjector())
             .install();
 
         //Install the domain controller operation handler
