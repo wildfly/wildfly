@@ -19,15 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.embedded.domain.xml;
+package org.jboss.as.test.flat.xml;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.net.URL;
 
 import javax.xml.XMLConstants;
 import javax.xml.validation.SchemaFactory;
 
-import junit.framework.TestCase;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -39,7 +41,7 @@ import org.xml.sax.SAXParseException;
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
-public class XSDValidationUnitTestCase extends TestCase {
+public class XSDValidationUnitTestCase {
 
     @Test
     public void testJBoss70() throws Exception {
@@ -51,19 +53,17 @@ public class XSDValidationUnitTestCase extends TestCase {
         validateXsd("jboss-connector.xsd");
     }
 
+    // FIXME disabled until it passes
     @Test
+    @Ignore
     public void testJBossDatasources() throws Exception {
-        // FIXME disabled until it passes
-        if (Boolean.TRUE)
-            return;
         validateXsd("jboss-datasources.xsd");
     }
 
+    // FIXME disabled until it passes
     @Test
+    @Ignore
     public void testJBossResourceAdapters() throws Exception {
-        // FIXME disabled until it passes
-        if (Boolean.TRUE)
-            return;
         validateXsd("jboss-resource-adapters.xsd");
     }
 

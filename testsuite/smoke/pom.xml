@@ -73,7 +73,7 @@
                         </property>
                     </systemProperties>
                     <includes>
-                        <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
+                        <include>org/jboss/as/test/flat/**/*TestCase.java</include>
                     </includes>
                 </configuration>
                 <executions>
@@ -81,7 +81,6 @@
                         <!-- (Legacy) Tests not using arquillian  -->
                         <id>default-test</id>
                         <configuration>
-                            <skipTests>true</skipTests>
                             <includes>
                                 <include>org/jboss/as/test/flat/**/*TestCase.java</include>
                             </includes>
@@ -116,18 +115,25 @@
                        <configuration>
                            <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/demos-arquillian-module-def.xml</moduleDefinitionFile>
                            <includes>
+                              <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/client/messaging/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/ds/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/jaxrs/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/sar/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/serviceloader/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/jaxrs/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/war/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
+                              <!--  FIXME this does not exist -->
                               <include>org/jboss/as/test/embedded/demos/web/connector/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/ws/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/domain/xml/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/osgi/SimpleArquillianTestCase.java</include>
                               <include>org/jboss/as/test/embedded/mgmt/*TestCase.java</include>
                               <!--  The other demos don't work -->
+                              <!-- include>org/jboss/as/test/embedded/configadmin/*TestCase.java</include -->
+                              <!-- include>org/jboss/as/test/embedded/demos/rar/*TestCase.java</include -->
                               <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
                            </includes>
                        </configuration>

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.embedded.domain.xml;
+package org.jboss.as.test.flat.xml;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,12 +32,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -53,32 +49,24 @@ import org.xml.sax.XMLReader;
  * @author Brian Stansberry
  * @version $Revision: 1.1 $
  */
-@RunWith(Arquillian.class)
 public class StandardConfigsXMLValidationUnitTestCase {
-
-    @Deployment
-    public static Archive<?> getDeployment(){
-        return ShrinkWrapUtils.createJavaArchive("domain-xml/standard-validation.jar", StandardConfigsXMLValidationUnitTestCase.class);
-    }
 
     @Test
     public void testHost() throws Exception {
         parseXml("domain/configuration/host.xml");
     }
 
+    // FIXME disabled until it passes
     @Test
+    @Ignore
     public void testDomain() throws Exception {
-        // FIXME disabled until it passes
-        if (Boolean.TRUE)
-            return;
         parseXml("domain/configuration/domain.xml");
     }
 
+    // FIXME disabled until it passes
     @Test
+    @Ignore
     public void testStandalone() throws Exception {
-        // FIXME disabled until it passes
-        if (Boolean.TRUE)
-            return;
         parseXml("standalone/configuration/standalone.xml");
     }
 
