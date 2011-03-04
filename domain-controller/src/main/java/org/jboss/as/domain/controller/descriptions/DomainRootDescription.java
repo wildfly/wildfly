@@ -36,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -46,8 +45,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.descriptions.common.PathDescription;
-import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -124,27 +121,6 @@ public class DomainRootDescription {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
-
-    public static void main(final String[] args) {
-        final ModelNode root = getDescription(null);
-        root.get(CHILDREN, EXTENSION, MODEL_DESCRIPTION).set("TODO");  // TODO fill out EXTENSION
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).set(PathDescription.getNamedPathDescription(null));
-        root.get(CHILDREN, PROFILE, MODEL_DESCRIPTION).set(ProfileDescription.getProfileDescription(null));
-        root.get(CHILDREN, PROFILE, MODEL_DESCRIPTION, CHILDREN, "include", MODEL_DESCRIPTION).set(ProfileDescription.getProfileIncludesDescription(null));
-        root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).set("TODO");  // TODO fill out INTERFACE
-        root.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SOCKET_BINDING_GROUP
-        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SYSTEM_PROPERTY
-        root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION).set("TODO");  // TODO fill out DEPLOYMENT
-        root.get(CHILDREN, SERVER_GROUP, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SERVER_GROUP
-//        root.get(CHILDREN, HOST, MODEL_DESCRIPTION).set(HostRootDescription.getDescription(recursive));
-        root.get(CHILDREN, SERVER, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SERVER
-        root.get(OPERATIONS).set("TODO");
-        ModelNode op = PathDescription.getNamedPathAddOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = PathDescription.getPathRemoveOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        System.out.println(root);
     }
 
 }

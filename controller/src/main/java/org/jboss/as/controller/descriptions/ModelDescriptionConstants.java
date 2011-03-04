@@ -129,10 +129,11 @@ public class ModelDescriptionConstants {
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLED_BACK = "rolled-back";
     public static final String RUNTIME_NAME = "runtime-name";
-    public static final String RUNNING_SERVER = "running-server";
+    public static final String RUNNING_SERVER = "server";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SERVER = "server";
+    public static final String SERVER_CONFIG = "server-config";
     public static final String SERVER_GROUP = "server-group";
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";

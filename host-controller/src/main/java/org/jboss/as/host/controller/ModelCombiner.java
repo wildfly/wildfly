@@ -32,7 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -93,7 +93,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         this.serverName = serverName;
         this.domainModel = domainController.getDomainModel();
         this.hostModel = hostModel;
-        this.serverModel = hostModel.require(SERVER).require(serverName);
+        this.serverModel = hostModel.require(SERVER_CONFIG).require(serverName);
         this.domainController = domainController;
         this.environment = environment;
 

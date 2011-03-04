@@ -42,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -53,7 +54,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.descriptions.common.PathDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -136,10 +136,10 @@ public class HostRootDescription {
         root.get(CHILDREN, SERVER_CONFIG, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, SERVER_CONFIG, MODEL_DESCRIPTION).setEmptyObject();
 
-        root.get(CHILDREN, SERVER, DESCRIPTION).set(bundle.getString("host.server"));
-        root.get(CHILDREN, SERVER, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SERVER, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, SERVER, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, RUNNING_SERVER, DESCRIPTION).set(bundle.getString("host.server"));
+        root.get(CHILDREN, RUNNING_SERVER, MIN_OCCURS).set(0);
+        root.get(CHILDREN, RUNNING_SERVER, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, RUNNING_SERVER, MODEL_DESCRIPTION).setEmptyObject();
         return root;
     }
 
@@ -196,27 +196,6 @@ public class HostRootDescription {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
-
-    public static void main(final String[] args) {
-        final ModelNode root = getDescription(null);
-        root.get(CHILDREN, EXTENSION, MODEL_DESCRIPTION).set("TODO");  // TODO fill out EXTENSION
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).set(PathDescription.getSpecifiedPathDescription(null));
-        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SYSTEM_PROPERTY
-        root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).set("TODO");  // TODO fill out INTERFACE
-        root.get(CHILDREN, JVM, MODEL_DESCRIPTION).set("TODO");  // TODO fill out JVM
-        root.get(CHILDREN, SERVER, MODEL_DESCRIPTION).set("TODO");  // TODO fill out SERVER
-        ModelNode op = PathDescription.getSpecifiedPathAddOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = PathDescription.getPathRemoveOperation(null);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION, OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = getStartServerOperation(null);
-        root.get(OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = getRestartServerOperation(null);
-        root.get(OPERATIONS, op.get("operation-name").asString()).set(op);
-        op = getStopServerOperation(null);
-        root.get(OPERATIONS, op.get("operation-name").asString()).set(op);
-        System.out.println(root);
     }
 
 }

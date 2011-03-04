@@ -23,7 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.util.concurrent.CancellationException;
@@ -153,8 +153,8 @@ public class HostControllerImpl implements HostController {
 
         // start servers
         final ModelNode rawModel = hostModel.getHostModel();
-        if(rawModel.hasDefined(SERVER)) {
-            final ModelNode servers = rawModel.get(SERVER).clone();
+        if(rawModel.hasDefined(SERVER_CONFIG)) {
+            final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
                 if(servers.get(serverName, START).asBoolean(true)) {
                     try {
@@ -172,8 +172,8 @@ public class HostControllerImpl implements HostController {
         this.domainController = null;
         // stop servers
         final ModelNode rawModel = hostModel.getHostModel();
-        if(rawModel.hasDefined(SERVER) ) {
-            final ModelNode servers = rawModel.get(SERVER).clone();
+        if(rawModel.hasDefined(SERVER_CONFIG) ) {
+            final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
                 if(servers.get(serverName, START).asBoolean(true)) {
                     try {

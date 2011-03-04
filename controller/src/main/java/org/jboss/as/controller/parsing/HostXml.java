@@ -38,7 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
@@ -57,7 +57,6 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -131,8 +130,8 @@ public class HostXml extends CommonXml {
             writer.writeEndElement();
         }
 
-        if (modelNode.hasDefined(SERVER)) {
-            writeServers(writer, modelNode.get(SERVER));
+        if (modelNode.hasDefined(SERVER_CONFIG)) {
+            writeServers(writer, modelNode.get(SERVER_CONFIG));
         }
 
         writer.writeEndElement();
@@ -445,7 +444,7 @@ public class HostXml extends CommonXml {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.GROUP));
         }
 
-        final ModelNode address = parentAddress.clone().add(ModelDescriptionConstants.SERVER, name);
+        final ModelNode address = parentAddress.clone().add(SERVER_CONFIG, name);
         final ModelNode addUpdate = new ModelNode();
         addUpdate.get(OP_ADDR).set(address);
         addUpdate.get(OP).set(ADD);
