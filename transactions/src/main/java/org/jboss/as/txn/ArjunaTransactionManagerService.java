@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.msc.inject.Injector;
@@ -47,7 +49,7 @@ import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
-import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBean;
+import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule;
 import com.arjuna.ats.internal.arjuna.recovery.ExpiredTransactionStatusManagerScanner;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
@@ -61,10 +63,7 @@ import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
-import com.arjuna.common.internal.util.logging.LoggingEnvironmentBean;
-import com.arjuna.common.internal.util.logging.commonPropertyManager;
-import com.arjuna.common.internal.util.logging.jakarta.JakartaRelevelingLogFactory;
-import com.arjuna.common.internal.util.logging.jakarta.Log4JLogger;
+import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 
 /**
  * A service for the propriatary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
@@ -86,6 +85,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private RecoveryManagerService recoveryManagerService;
+    private ObjStoreBrowser objStoreBrowser;
 
     private String coreNodeIdentifier;
     private int coreSocketProcessIdMaxPorts;
@@ -103,12 +103,9 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
 
         // JTS expects the TCCL to be set to something that can find the log factory class.
         AccessController.doPrivileged(new SetContextLoaderAction(ArjunaTransactionManagerService.class.getClassLoader()));
+
         try {
             // Global configuration.
-
-            // Logging environment config
-            final LoggingEnvironmentBean loggingEnvironmentBean = commonPropertyManager.getLoggingEnvironmentBean();
-            loggingEnvironmentBean.setLoggingFactory(JakartaRelevelingLogFactory.class.getName() + ";" + Log4JLogger.class.getName());
 
             // Recovery env bean
             final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
@@ -141,16 +138,21 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
             coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
 
-            final ObjectStoreEnvironmentBean objectStoreEnvironmentBean = arjPropertyManager.getObjectStoreEnvironmentBean();
-            objectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
+            final ObjectStoreEnvironmentBean actionStoreObjectStoreEnvironmentBean =
+               BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "default");
+            actionStoreObjectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
+            final ObjectStoreEnvironmentBean stateStoreObjectStoreEnvironmentBean =
+                BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "stateStore");
+            stateStoreObjectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
+            final ObjectStoreEnvironmentBean communicationStoreObjectStoreEnvironmentBean =
+                BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "communicationStore");
+            communicationStoreObjectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
 
-            try {
-                ObjStoreBean.getObjectStoreBrowserBean();
-            } catch (Exception e) {
-                throw new StartException("Failed to configure object store browser bean", e);
-            }
-
-            final RecoveryManagerService recoveryManagerService = new RecoveryManagerService();
+            // Object Store Browser bean
+            Map<String, String> objStoreBrowserTypes = new HashMap<String, String> ();
+               objStoreBrowser = new ObjStoreBrowser();
+            objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
+                "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.JTAActionBean");
 
             final ORB orb = orbInjector.getValue();
 
@@ -165,11 +167,15 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
                 recoveryEnvironmentBean.setRecoveryActivators(null);
                 jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
                 jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple.class.getName());
+                jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
+
+                RecoveryManagerService recoveryManagerService = new RecoveryManagerService();
                 try {
                     recoveryManagerService.create();
                 } catch (Exception e) {
                     throw new StartException("Recovery manager create failed", e);
                 }
+
                 recoveryManagerService.start();
                 try {
                     service.create();
@@ -195,13 +201,18 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
                 recoveryEnvironmentBean.setRecoveryActivators(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
                 jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
                 jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple.class.getName());
+                jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
+                objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple",
+                    "com.arjuna.ats.arjuna.tools.osb.mbean.ActionBean");
 
+                RecoveryManagerService recoveryManagerService = null;
                 try {
+                    recoveryManagerService = new com.arjuna.ats.jbossatx.jts.RecoveryManagerService(orb);
                     recoveryManagerService.create();
+                    recoveryManagerService.start();
                 } catch (Exception e) {
                     throw new StartException("Recovery manager create failed", e);
                 }
-                recoveryManagerService.start();
 
                 try {
                     service.create();
@@ -215,6 +226,13 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
                 }
                 this.recoveryManagerService = recoveryManagerService;
                 value = service;
+            }
+
+            try {
+                objStoreBrowser.setTypes(objStoreBrowserTypes);
+                objStoreBrowser.start();
+            } catch (Exception e) {
+                throw new StartException("Failed to configure object store browser bean", e);
             }
             // todo: JNDI bindings
         } finally {
@@ -230,6 +248,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         } catch (Exception e) {
             // todo log
         }
+        objStoreBrowser.stop();
         recoveryManagerService.destroy();
         value = null;
         recoveryManagerService = null;
