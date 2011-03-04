@@ -117,7 +117,6 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         final ModelNode result = client.execute(operation);
-        System.out.println(result);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Collection<ModelNode> steps = getSteps(result.get(RESULT));
