@@ -51,7 +51,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDST
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERTTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
@@ -254,13 +254,13 @@ public class DataSourcesExtension implements Extension {
                         writer.writeEndElement();
                     }
                     boolean timeoutRequired = hasAnyOf(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES,
-                            SETTXQUERTTIMEOUT, QUERYTIMEOUT, USETRYLOCK, ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
+                            SETTXQUERYTIMEOUT, QUERYTIMEOUT, USETRYLOCK, ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
                             XA_RESOURCE_TIMEOUT);
                     if (timeoutRequired) {
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.BLOCKINGTIMEOUTMILLIS,
                                 BLOCKING_TIMEOUT_WAIT_MILLIS);
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.IDLETIMEOUTMINUTES, IDLETIMEOUTMINUTES);
-                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, TimeOut.Tag.SETTXQUERYTIMEOUT, SETTXQUERTTIMEOUT);
+                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, TimeOut.Tag.SETTXQUERYTIMEOUT, SETTXQUERYTIMEOUT);
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.QUERYTIMEOUT, QUERYTIMEOUT);
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.USETRYLOCK, USETRYLOCK);
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATIONRETRY, ALLOCATION_RETRY);
@@ -459,7 +459,7 @@ public class DataSourcesExtension implements Extension {
                         setIfNotNull(dsModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
                         setIfNotNull(dsModel, QUERYTIMEOUT, timeout.getQueryTimeout());
                         setIfNotNull(dsModel, USETRYLOCK, timeout.getUseTryLock());
-                        setIfNotNull(dsModel, SETTXQUERTTIMEOUT, timeout.isSetTxQueryTimeout());
+                        setIfNotNull(dsModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
                     }
                     if (ds.getTransactionIsolation() != null) {
                         setIfNotNull(dsModel, TRANSACTION_ISOLOATION, ds.getTransactionIsolation().name());
@@ -536,7 +536,7 @@ public class DataSourcesExtension implements Extension {
                         setIfNotNull(xadsModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
                         setIfNotNull(xadsModel, QUERYTIMEOUT, timeout.getQueryTimeout());
                         setIfNotNull(xadsModel, USETRYLOCK, timeout.getUseTryLock());
-                        setIfNotNull(xadsModel, SETTXQUERTTIMEOUT, timeout.isSetTxQueryTimeout());
+                        setIfNotNull(xadsModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
                         setIfNotNull(xadsModel, XA_RESOURCE_TIMEOUT, timeout.getXaResourceTimeout());
                     }
                     if (xads.getTransactionIsolation() != null) {

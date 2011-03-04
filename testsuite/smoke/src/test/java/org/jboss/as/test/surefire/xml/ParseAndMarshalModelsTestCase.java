@@ -111,11 +111,16 @@ public class ParseAndMarshalModelsTestCase {
         compare(originalModel, reparsedModel);
     }
 
-    //TODO look into why we get a "set-tx-quert-timeout"=>false in the model
+    //TODO look into why we get a "set-tx-query-timeout"=>false in the model
+    // BES 2011/03/04 reason for this is empty <timeout></timeout> element
+    // results in the item in the model due to behavior of IJ's DsParser,
+    // but when we marshal we realize there is no need to write the empty
+    // <timeout></timeout> element. So reparse doesn't add the element.
+    // Solution is to remove the empty element.
     private void fixupDs(ModelNode node) {
 
         for (ModelNode ds : node.get("subsystem", "datasources", "datasources").asList()) {
-            ds.remove("set-tx-quert-timeout");
+            ds.remove("set-tx-query-timeout");
         }
     }
 

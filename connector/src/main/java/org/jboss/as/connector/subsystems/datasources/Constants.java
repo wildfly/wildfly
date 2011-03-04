@@ -89,7 +89,7 @@ class Constants {
 
     static final String IDLETIMEOUTMINUTES = "idle-timeout-minutes";
 
-    static final String SETTXQUERTTIMEOUT = "set-tx-quert-timeout";
+    static final String SETTXQUERYTIMEOUT = "set-tx-query-timeout";
 
     static final String XA_RESOURCE_TIMEOUT = "xa-resource-timeout";
 

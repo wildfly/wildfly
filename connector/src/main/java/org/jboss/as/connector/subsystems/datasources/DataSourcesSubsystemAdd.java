@@ -51,7 +51,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDST
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERTTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
@@ -272,7 +272,7 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                     Long queryTimeout = getLongIfSetOrGetDefault(dataSourceNode, QUERYTIMEOUT, null);
                     Integer xaResourceTimeout = getIntIfSetOrGetDefault(dataSourceNode, XA_RESOURCE_TIMEOUT, null);
                     Long useTryLock = getLongIfSetOrGetDefault(dataSourceNode, USETRYLOCK, null);
-                    boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERTTIMEOUT, false);
+                    boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERYTIMEOUT, false);
                     TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                             allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
                     TransactionIsolation transactionIsolation = dataSourceNode.has(TRANSACTION_ISOLOATION) ? TransactionIsolation
@@ -354,7 +354,7 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                     Long queryTimeout = getLongIfSetOrGetDefault(dataSourceNode, QUERYTIMEOUT, null);
                     Integer xaResourceTimeout = getIntIfSetOrGetDefault(dataSourceNode, XA_RESOURCE_TIMEOUT, null);
                     Long useTryLock = getLongIfSetOrGetDefault(dataSourceNode, USETRYLOCK, null);
-                    boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERTTIMEOUT, false);
+                    boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERYTIMEOUT, false);
                     TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                             allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
                     TransactionIsolation transactionIsolation = dataSourceNode.has(TRANSACTION_ISOLOATION) ? TransactionIsolation
