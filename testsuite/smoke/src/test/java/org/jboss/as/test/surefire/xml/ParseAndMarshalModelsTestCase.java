@@ -47,6 +47,7 @@ import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.domain.controller.DomainModelImpl;
@@ -387,6 +388,12 @@ public class ParseAndMarshalModelsTestCase {
         protected ModelNode getModel() {
             return super.getModel();
         }
+
+        @Override
+        protected void persistConfiguration(ModelNode model,
+                ConfigurationPersisterProvider configurationPersisterFactory) {
+            // ignore
+        }
     }
 
     private static class TestHostController extends HostModel {
@@ -399,6 +406,12 @@ public class ParseAndMarshalModelsTestCase {
         protected ModelNode getHostModel() {
             return super.getHostModel();
         }
+
+        @Override
+        protected void persistConfiguration(ModelNode model,
+                ConfigurationPersisterProvider configurationPersisterFactory) {
+            // ignore
+        }
     }
 
     private static class TestDomainController extends DomainModelImpl {
@@ -409,6 +422,12 @@ public class ParseAndMarshalModelsTestCase {
         @Override
         public ModelNode getDomainModel() {
             return super.getDomainModel();
+        }
+
+        @Override
+        protected void persistConfiguration(ModelNode model,
+                ConfigurationPersisterProvider configurationPersisterFactory) {
+            // ignore
         }
     }
 }
