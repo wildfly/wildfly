@@ -176,7 +176,10 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             // no entry
             return EMPTY_STRING_ARRAY;
         }
-        return classPathString.split("\\s+");
+        if(classPathString.trim().isEmpty()) {
+            return EMPTY_STRING_ARRAY;
+        }
+        return classPathString.trim().split("\\s+");
     }
 
     /** {@inheritDoc} */
