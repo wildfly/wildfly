@@ -85,6 +85,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     static final String DEPLOYED = ".deployed";
     static final String FAILED_DEPLOY = ".faileddeploy";
     static final String DO_DEPLOY = ".dodeploy";
+    static final String DEPLOYING = ".deploying";
+    static final String UNDEPLOYING = ".undeploying";
 
     private File deploymentDir;
     private long scanInterval = 0;
@@ -226,7 +228,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 // Add remove actions to the plan for anything we count as
                 // deployed that we didn't find on the scan
                 for (String missing : toRemove) {
-                    scannerTasks.add(new UndeployTask(missing));
+                    // TODO -- minor -- this assumes the deployment was in the root deploymentDir,
+                    // not a child dir, and therefore puts the '.undeploying' file there
+                    File parent = deploymentDir;
+                    scannerTasks.add(new UndeployTask(missing, parent));
                 }
 
                 if (scannerTasks.size() > 0) {
@@ -295,7 +300,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     }
                 }
                 if (deployed.get(deploymentName).lastModified != child.lastModified()) {
-                    events.add(new RedeployTask(deploymentName, child.lastModified()));
+                    events.add(new RedeployTask(deploymentName, child.lastModified(), directory));
                 }
             } else if (fileName.endsWith(DO_DEPLOY)) {
                 final String deploymentName = fileName.substring(0, fileName.length() - DO_DEPLOY.length());
@@ -422,9 +427,15 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private abstract class ScannerTask {
         protected final String deploymentName;
+        protected final File parent;
+        private final String inProgressMarkerSuffix;
 
-        private ScannerTask(final String deploymentName) {
+        private ScannerTask(final String deploymentName, final File parent, final String inProgressMarkerSuffix) {
             this.deploymentName = deploymentName;
+            this.parent = parent;
+            this.inProgressMarkerSuffix = inProgressMarkerSuffix;
+            File marker = new File(parent, deploymentName + inProgressMarkerSuffix);
+            createMarkerFile(marker);
         }
 
         protected abstract ModelNode getUpdate();
@@ -432,13 +443,33 @@ class FileSystemDeploymentService implements DeploymentScanner {
         protected abstract void handleSuccessResult();
 
         protected abstract void handleFailureResult(final ModelNode result);
+
+        protected void createMarkerFile(final File deployedMarker) {
+            FileOutputStream fos = null;
+            try {
+                deployedMarker.createNewFile();
+                fos = new FileOutputStream(deployedMarker);
+                fos.write(deploymentName.getBytes());
+            } catch (IOException io) {
+                log.errorf(io, "Caught exception writing deployment marker file %s", deployedMarker.getAbsolutePath());
+            } finally {
+                safeClose(fos);
+            }
+        }
+
+        protected void removeInProgressMarker() {
+            File marker = new File(parent, deploymentName + inProgressMarkerSuffix);
+            if (marker.exists() && !marker.delete()) {
+                log.warnf("Cannot delete deployment progress marker file %s", marker);
+            }
+        }
     }
 
     private abstract class ContentAddingTask extends ScannerTask {
         protected final File deploymentFile;
 
         protected ContentAddingTask(final String deploymentName, final File deploymentFile) {
-            super(deploymentName);
+            super(deploymentName, deploymentFile.getParentFile(), DEPLOYING);
             this.deploymentFile = deploymentFile;
         }
 
@@ -461,7 +492,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleSuccessResult() {
-            final File doDeployMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DO_DEPLOY);
+            final File doDeployMarker = new File(parent, deploymentFile.getName() + DO_DEPLOY);
             if (!doDeployMarker.delete()) {
                 log.errorf("Failed to delete deployment marker file %s", doDeployMarker.getAbsolutePath());
             }
@@ -472,17 +503,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 log.warnf("Unable to remove marger file %s", failedMarker);
             }
 
-            final File deployedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DEPLOYED);
-            FileOutputStream fos = null;
-            try {
-                deployedMarker.createNewFile();
-                fos = new FileOutputStream(deployedMarker);
-                fos.write(deploymentFile.getName().getBytes());
-            } catch (IOException io) {
-                log.errorf(io, "Caught exception writing deployment marker file %s", deployedMarker.getAbsolutePath());
-            } finally {
-                safeClose(fos);
-            }
+            // Remove the in-progress marker
+            removeInProgressMarker();
+
+            final File deployedMarker = new File(parent, deploymentFile.getName() + DEPLOYED);
+            createMarkerFile(deployedMarker);
             if (deployed.containsKey(deploymentName)) {
                 deployed.remove(deploymentName);
             }
@@ -506,6 +531,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleFailureResult(final ModelNode result) {
+
+            // Remove the in-progress marker
+            removeInProgressMarker();
+
             writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION));
         }
     }
@@ -525,6 +554,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleFailureResult(ModelNode result) {
+
+            // Remove the in-progress marker
+            removeInProgressMarker();
+
             writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION));
         }
     }
@@ -532,8 +565,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final class RedeployTask extends ScannerTask {
         private final long markerLastModified;
 
-        private RedeployTask(final String deploymentName, final long markerLastModified) {
-            super(deploymentName);
+        private RedeployTask(final String deploymentName, final long markerLastModified, final File parent) {
+            super(deploymentName, parent, DEPLOYING);
             this.markerLastModified = markerLastModified;
         }
 
@@ -545,6 +578,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleSuccessResult() {
+
+            // Remove the in-progress marker
+            removeInProgressMarker();
+
             deployed.remove(deploymentName);
             deployed.put(deploymentName, new DeploymentMarker(markerLastModified));
 
@@ -552,13 +589,17 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleFailureResult(ModelNode result) {
+
+            // Remove the in-progress marker
+            removeInProgressMarker();
+
             // TODO: Handle Failure
         }
     }
 
     private final class UndeployTask extends ScannerTask {
-        private UndeployTask(final String deploymentName) {
-            super(deploymentName);
+        private UndeployTask(final String deploymentName, final File parent) {
+            super(deploymentName, parent, UNDEPLOYING);
         }
 
         @Override
@@ -571,11 +612,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleSuccessResult() {
+
+            // Remove the in-progress marker
+            removeInProgressMarker();
+
             deployed.remove(deploymentName);
         }
 
         @Override
         protected void handleFailureResult(ModelNode result) {
+
+            // Remove the in-progress marker
+            removeInProgressMarker();
+
             // TODO: Handle Failure
         }
     }
