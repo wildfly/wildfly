@@ -23,9 +23,11 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ejb3.cache.spi.Identifiable;
+import org.jboss.invocation.Interceptor;
 import org.jboss.util.id.GUID;
 
 import java.io.Serializable;
+import java.util.Collections;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -34,7 +36,7 @@ public class StatefulSessionComponentInstance extends AbstractComponentInstance 
     private final GUID id;
 
     protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance) {
-        super(component, instance);
+        super(component, instance, Collections.<Interceptor>emptyList());
         this.id = new GUID();
     }
 

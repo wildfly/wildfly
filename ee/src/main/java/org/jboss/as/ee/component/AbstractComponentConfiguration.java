@@ -138,7 +138,7 @@ public abstract class AbstractComponentConfiguration {
         return resourceInjections;
     }
 
-    List<InterceptorFactory> getComponentSystemInterceptorFactories() {
+    protected List<InterceptorFactory> getComponentSystemInterceptorFactories() {
         return componentSystemInterceptorFactories;
     }
 

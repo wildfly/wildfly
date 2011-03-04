@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
 import org.jboss.as.server.deployment.Attachments;
@@ -34,10 +33,9 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionComponentFactory extends AbstractSessionComponentFactory {
-    @Override
-    public Component createComponent(DeploymentUnit deploymentUnit, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+    public Component createComponent(DeploymentUnit deploymentUnit, EJBComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
         ClassLoader cl = getClassLoader(deploymentUnit);
         DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
-        return new StatefulSessionComponent((EJBComponentConfiguration) componentConfiguration, cl, reflectionIndex);
+        return new StatefulSessionComponent(componentConfiguration);
     }
 }

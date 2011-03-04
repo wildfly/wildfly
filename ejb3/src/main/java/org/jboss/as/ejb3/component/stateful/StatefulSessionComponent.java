@@ -28,6 +28,7 @@ import org.jboss.as.ejb3.cache.NoPassivationCache;
 import org.jboss.as.ejb3.cache.spi.Cache;
 import org.jboss.as.ejb3.cache.spi.StatefulObjectFactory;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -46,11 +47,9 @@ public class StatefulSessionComponent extends AbstractComponent {
      * Construct a new instance.
      *
      * @param configuration         the component configuration
-     * @param deploymentClassLoader the class loader of the deployment
-     * @param index                 the deployment reflection index
      */
-    protected StatefulSessionComponent(final EJBComponentConfiguration configuration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index) {
-        super(configuration, deploymentClassLoader, index);
+    protected StatefulSessionComponent(final EJBComponentConfiguration configuration) {
+        super(configuration);
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();
         cache.setStatefulObjectFactory(new StatefulObjectFactory<StatefulSessionComponentInstance>() {
@@ -66,8 +65,12 @@ public class StatefulSessionComponent extends AbstractComponent {
         });
     }
 
-    @Override
     protected AbstractComponentInstance constructComponentInstance(Object instance) {
+        return new StatefulSessionComponentInstance(this, instance);
+    }
+
+    @Override
+    protected AbstractComponentInstance constructComponentInstance(Object instance, Iterable<Interceptor> preDestroyInterceptors) {
         return new StatefulSessionComponentInstance(this, instance);
     }
 

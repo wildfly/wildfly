@@ -25,9 +25,8 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -62,28 +61,28 @@ public class StatelessSessionComponent extends AbstractComponent {
      * Constructs a StatelessEJBComponent for a stateless session bean
      *
      * @param componentConfiguration
-     * @param deploymentClassLoader
-     * @param index
      */
-    public StatelessSessionComponent(final ComponentConfiguration componentConfiguration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index) {
-        this(componentConfiguration, deploymentClassLoader, index, null);
+    public StatelessSessionComponent(final EJBComponentConfiguration componentConfiguration) {
+        this(componentConfiguration, null);
     }
 
     /**
      * Constructs a StatelessEJBComponent for a stateless session bean
      *
      * @param componentConfiguration
-     * @param deploymentClassLoader
-     * @param index
      * @param componentInterceptors
      */
-    public StatelessSessionComponent(final ComponentConfiguration componentConfiguration, final ClassLoader deploymentClassLoader, final DeploymentReflectionIndex index, List<Interceptor> componentInterceptors) {
-        super(componentConfiguration, deploymentClassLoader, index);
+    public StatelessSessionComponent(final EJBComponentConfiguration componentConfiguration, List<Interceptor> componentInterceptors) {
+        super(componentConfiguration);
         this.componentInterceptors = componentInterceptors;
     }
 
-    @Override
     protected AbstractComponentInstance constructComponentInstance(Object instance) {
+        return new StatelessSessionComponentInstance(this, instance);
+    }
+
+    @Override
+    protected AbstractComponentInstance constructComponentInstance(Object instance, Iterable<Interceptor> preDestroyInterceptors) {
         return new StatelessSessionComponentInstance(this, instance);
     }
 

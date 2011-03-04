@@ -21,37 +21,27 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
-import org.jboss.invocation.InterceptorFactory;
+import org.jboss.as.ee.component.AbstractComponentDescription;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJBComponentConfiguration extends AbstractComponentConfiguration {
+public class EJBComponentDescription extends AbstractComponentDescription {
     /**
      * Construct a new instance.
      *
-     * @param description the original component description
+     * @param componentName      the component name
+     * @param componentClassName the component instance class name
+     * @param moduleName         the module name
+     * @param applicationName    the application name
      */
-    public EJBComponentConfiguration(final EJBComponentDescription description, final AbstractSessionComponentFactory factory) {
-        super(description);
-    }
-
-    protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
-        super.getComponentSystemInterceptorFactories().add(interceptorFactory);
+    protected EJBComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
+        super(componentName, componentClassName, moduleName, applicationName);
     }
 
     @Override
-    public AbstractComponent constructComponent() {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponentConfiguration.constructComponent");
-    }
-
-    /**
-     * @return the ejb-name
-     */
-    public String getName() {
-        return getDescription().getComponentName();
+    protected AbstractComponentConfiguration constructComponentConfiguration() {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponentDescription.constructComponentConfiguration");
     }
 }

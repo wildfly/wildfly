@@ -26,6 +26,8 @@ import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.invocation.Interceptor;
 
+import java.util.Collections;
+
 /**
  * Author : Jaikiran Pai
  */
@@ -38,6 +40,6 @@ public class StatelessSessionComponentInstance extends AbstractComponentInstance
      * @param instance    the object instance
      */
     protected StatelessSessionComponentInstance(final AbstractComponent component, final Object instance) {
-        super(component, instance);
+        super(component, instance, Collections.<Interceptor>emptyList());
     }
 }

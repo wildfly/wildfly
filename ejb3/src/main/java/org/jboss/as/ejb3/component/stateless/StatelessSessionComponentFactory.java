@@ -23,74 +23,20 @@
 package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentBinding;
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.ee.component.service.ComponentObjectFactory;
-import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceName;
-
-import java.util.Collection;
-import java.util.LinkedList;
 
 /**
  * Author : Jaikiran Pai
  */
-public class StatelessSessionComponentFactory implements ComponentFactory {
+public class StatelessSessionComponentFactory extends AbstractSessionComponentFactory {
 
-    @Override
-    public Component createComponent(DeploymentUnit deploymentUnit, ComponentConfiguration componentConfiguration) {
+    public Component createComponent(DeploymentUnit deploymentUnit, EJBComponentConfiguration componentConfiguration) {
         ClassLoader cl = this.getClassLoader(deploymentUnit);
         DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
-        return new StatelessSessionComponent(componentConfiguration, cl, reflectionIndex);
-    }
-
-    private static ClassLoader getClassLoader(DeploymentUnit deploymentUnit) {
-        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        if (module == null) {
-            throw new IllegalStateException("Module not found for deployment unit: " + deploymentUnit);
-        }
-        return module.getClassLoader();
-    }
-
-    @Override
-    public Collection<ComponentBinding> getComponentBindings(DeploymentUnit deploymentUnit, ComponentConfiguration componentConfiguration, ServiceName componentServiceName) {
-//        final NamingContextConfig appNamespaceConfig = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.APPLICATION_CONTEXT_CONFIG);
-//        final NamingContextConfig moduleNamespaceConfig = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG);
-
-        // EJB 3.1 FR 4.4.1
-
-        // If it is an EAR set the appName
-        String appName = null;
-
-        // TODO: needs to take descriptor overrides into account
-        String moduleName = stripSuffix(deploymentUnit.getName());
-
-        String beanName = componentConfiguration.getName();
-
-        String globalJNDIName = (appName != null ? appName + "/" : "") + moduleName + "/" + beanName;
-        Collection<ComponentBinding> bindings = new LinkedList<ComponentBinding>();
-        try {
-            ClassLoader classLoader = getClassLoader(deploymentUnit);
-            for(String viewClassName : componentConfiguration.getViewClassNames()) {
-                Class<?> viewClass = Class.forName(viewClassName, true, classLoader);
-                bindings.add(new ComponentBinding(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, globalJNDIName + "!" + viewClass.getName(), ComponentObjectFactory.createReference(componentServiceName, viewClass)));
-            }
-        }
-        catch(ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        return bindings;
-    }
-
-    private static String stripSuffix(String s) {
-       int i;
-       if(s == null || (i = s.lastIndexOf('.')) == -1)
-          return s;
-       return s.substring(0, i);
+        return new StatelessSessionComponent(componentConfiguration);
     }
 }

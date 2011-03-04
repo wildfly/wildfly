@@ -21,10 +21,7 @@
  */
 package org.jboss.as.ejb3;
 
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.ejb3.parser.Element;
-import org.jboss.as.ejb3.parser.Namespace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -32,15 +29,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
 import java.util.List;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.ejb3.CommonAttributes.ASSEMBLY_DESCRIPTOR;
 
 /**
  * Create a subsystem add directive from the given XML input.
@@ -48,7 +42,8 @@ import static org.jboss.as.ejb3.CommonAttributes.ASSEMBLY_DESCRIPTOR;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class EJB3SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-    protected static final String NAMESPACE = Namespace.EJB3_1_0.getUriString();
+    //protected static final String NAMESPACE = Namespace.EJB3_1_0.getUriString();
+    protected static final String NAMESPACE = "urn:jboss:domain:ejb3:1.0";
 
     private static final EJB3SubsystemParser instance = new EJB3SubsystemParser();
 
@@ -65,6 +60,7 @@ class EJB3SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLEleme
         subsystem.get(OP_ADDR).add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
         list.add(subsystem);
 
+        /*
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case EJB3_1_0:
@@ -81,8 +77,10 @@ class EJB3SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLEleme
                     throw ParseUtils.unexpectedElement(reader);
             }
         }
+        */
     }
 
+    /*
     private static ModelNode parseAssemblyDescriptor(XMLExtendedStreamReader reader) throws XMLStreamException {
         ModelNode assemblyDescriptor = new ModelNode();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -98,6 +96,7 @@ class EJB3SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLEleme
         }
         return assemblyDescriptor;
     }
+    */
 
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
