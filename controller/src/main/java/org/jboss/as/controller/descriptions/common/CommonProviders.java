@@ -147,6 +147,13 @@ public final class CommonProviders {
         }
     };
 
+    public static final DescriptionProvider READ_CHILDREN_TYPES_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return GlobalDescriptions.getReadChildrenTypesOperationDescription(locale);
+        }
+    };
+
     public static final DescriptionProvider READ_OPERATION_NAMES_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

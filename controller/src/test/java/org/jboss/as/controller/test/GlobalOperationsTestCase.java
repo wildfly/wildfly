@@ -46,6 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
@@ -64,6 +65,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -341,6 +343,46 @@ public class GlobalOperationsTestCase {
     }
 
     @Test
+    public void testReadChildrenTypes() throws Exception {
+        ModelNode operation = createOperation(READ_CHILDREN_TYPES_OPERATION, "profile", "profileA");
+
+        ModelNode result = CONTROLLER.executeForResult(operation);
+        assertNotNull(result);
+        assertEquals(ModelType.LIST, result.getType());
+        assertEquals(1, result.asList().size());
+        assertEquals("subsystem", result.asList().get(0).asString());
+
+        operation = createOperation(READ_CHILDREN_TYPES_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        result = CONTROLLER.executeForResult(operation);
+        assertNotNull(result);
+        assertEquals(ModelType.LIST, result.getType());
+        assertEquals(2, result.asList().size());
+        List<String> stringList = modelNodeListToStringList(result.asList());
+        assertTrue(Arrays.asList("type1", "type2").containsAll(stringList));
+
+
+        operation = createOperation(READ_CHILDREN_TYPES_OPERATION, "profile", "profileA", "subsystem", "non-existant");
+        try {
+            result = CONTROLLER.executeForResult(operation);
+            fail("Expected error for non-existant child");
+        } catch (OperationFailedException expected) {
+        }
+
+        operation = createOperation(READ_CHILDREN_TYPES_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
+        result = CONTROLLER.executeForResult(operation);
+        assertNotNull(result);
+        assertEquals(ModelType.LIST, result.getType());
+        assertTrue(result.asList().isEmpty());
+
+        operation = createOperation(READ_CHILDREN_TYPES_OPERATION, "profile", "profileC", "subsystem", "subsystem5");
+        result = CONTROLLER.executeForResult(operation);
+        assertNotNull(result);
+        assertEquals(ModelType.LIST, result.getType());
+        assertEquals(1, result.asList().size());
+        assertEquals("type1", result.asList().get(0).asString());
+    }
+
+    @Test
     public void testReadOperationNamesOperation() throws Exception {
         ModelNode operation = createOperation(READ_OPERATION_NAMES_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         ModelNode result = CONTROLLER.executeForResult(operation);
@@ -472,6 +514,7 @@ public class GlobalOperationsTestCase {
         Set<String> ops = result.require(OPERATIONS).keys();
         assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
         assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+        assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
         assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
         assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
         assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -587,6 +630,7 @@ public class GlobalOperationsTestCase {
             Set<String> ops = result.require(OPERATIONS).keys();
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -762,6 +806,7 @@ public class GlobalOperationsTestCase {
             getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);

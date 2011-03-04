@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
@@ -55,6 +56,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -285,6 +287,34 @@ public abstract class AbstractProxyControllerTest {
 
     }
 
+    @Test
+    public void testReadChildTypes() throws Exception {
+        ExecutionContext read = createExecutionContext(READ_CHILDREN_TYPES_OPERATION);
+        ModelNode result = mainController.execute(read).get(RESULT);
+        assertNotNull(result);
+        assertEquals(ModelType.LIST, result.getType());
+        List<ModelNode> nodes = result.asList();
+        assertEquals(2, nodes.size());
+        List<String> typeNames = Arrays.asList(nodes.get(0).asString(), nodes.get(1).asString());
+        assertTrue(Arrays.asList("host", "profile").containsAll(typeNames));
+
+        read = createExecutionContext(READ_CHILDREN_TYPES_OPERATION, HOST, "hostA");
+        assertNotNull(result);
+        assertEquals(ModelType.LIST, result.getType());
+        nodes = result.asList();
+        assertEquals(2, nodes.size());
+        typeNames = Arrays.asList(nodes.get(0).asString(), nodes.get(1).asString());
+        assertTrue(Arrays.asList("host", "profile").containsAll(typeNames));
+
+        read = createExecutionContext(READ_CHILDREN_TYPES_OPERATION, HOST, "hostA", "hostchild", "hcA");
+        result = mainController.execute(read).get(RESULT);
+        assertNotNull(result);
+        assertEquals(ModelType.LIST, result.getType());
+        nodes = result.asList();
+        assertEquals(1, nodes.size());
+        assertEquals("child", nodes.get(0).asString());
+    }
+
     private void checkReadAttributeOperationDescription(ModelNode result) {
         assertEquals(READ_ATTRIBUTE_OPERATION, result.get(OPERATION_NAME).asString());
         assertEquals(ModelType.STRING, result.require(REQUEST_PROPERTIES).require(NAME).require(TYPE).asType());
@@ -294,7 +324,7 @@ public abstract class AbstractProxyControllerTest {
     private void checkOperationNames(ModelNode operationNamesList) {
         assertTrue(operationNamesList.isDefined());
         assertEquals(ModelType.LIST, operationNamesList.getType());
-        assertEquals(7, operationNamesList.asList().size());
+        assertEquals(8, operationNamesList.asList().size());
     }
 
     private void checkRootSubModelDescription(ModelNode result, boolean operations) {
@@ -311,6 +341,7 @@ public abstract class AbstractProxyControllerTest {
             Set<String> ops = result.require(OPERATIONS).keys();
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -340,6 +371,7 @@ public abstract class AbstractProxyControllerTest {
             Set<String> ops = result.require(OPERATIONS).keys();
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -473,6 +505,7 @@ public abstract class AbstractProxyControllerTest {
             getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
@@ -517,6 +550,7 @@ public abstract class AbstractProxyControllerTest {
             getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);

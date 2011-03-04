@@ -293,6 +293,40 @@ public class GlobalOperationHandlers {
     };
 
     /**
+     * {@link OperationHandler} querying the child types of a given node.
+     */
+    public static final ModelQueryOperationHandler READ_CHILDREN_TYPES = new ModelQueryOperationHandler() {
+        @Override
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+            try {
+                ModelNode subModel = context.getSubModel().clone();
+                if (!subModel.isDefined()) {
+                    final ModelNode result = new ModelNode();
+                    result.setEmptyList();
+                    resultHandler.handleResultFragment(new String[0], result);
+                    resultHandler.handleResultComplete();
+                } else {
+
+                    Set<String> childTypes = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.require(ADDRESS)));
+                    final ModelNode result = new ModelNode();
+                    for (final String key : childTypes) {
+                        final ModelNode node = new ModelNode();
+                        node.set(key);
+                        result.add(node);
+                    }
+
+                    resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+                    resultHandler.handleResultComplete();
+                }
+
+            } catch (final Exception e) {
+                throw new OperationFailedException(Util.createErrorResult(e));
+            }
+            return new BasicOperationResult();
+        }
+    };
+
+    /**
      * {@link OperationHandler} returning the names of the defined operations at a given model address.
      */
     public static final ModelQueryOperationHandler READ_OPERATION_NAMES = new ModelQueryOperationHandler() {

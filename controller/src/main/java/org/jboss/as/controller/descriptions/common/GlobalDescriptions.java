@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
@@ -126,6 +127,21 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, CHILD_TYPE, NILLABLE).set(false);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-names.reply"));
+        node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
+
+        node.protect();
+        return node;
+    }
+
+    public static ModelNode getReadChildrenTypesOperationDescription(Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(READ_CHILDREN_TYPES_OPERATION);
+        node.get(DESCRIPTION).set(bundle.getString("global.read-children-types"));
+
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-types.reply"));
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
 
         node.protect();
