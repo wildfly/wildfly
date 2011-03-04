@@ -19,19 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.completion.address.test;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+
 
 /**
- * Creates a string representation of the Prefix instance.
  *
  * @author Alexey Loubyansky
  */
-public interface PrefixFormatter {
+public class BufferLevel1TypeCompletionTestCase extends AbstractOperationAddressCompleterTest {
 
-    /**
-     * Creates a string representation of the Prefix instance.
-     * @param prefix the prefix instance
-     * @return  the string representation of the prefix.
-     */
-    String format(Prefix prefix);
+    @Test
+    public void testStringValues() {
+
+        assertAllCandidates(Arrays.asList("last1", "link1", "other1"));
+        assertSelectedCandidates(Arrays.asList("last1", "link1"));
+        assertBufferPrefix("");
+        assertContextPrefix("~");
+    }
 }

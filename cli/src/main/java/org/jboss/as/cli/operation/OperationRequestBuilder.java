@@ -19,11 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.operation;
 
 import org.jboss.dmr.ModelNode;
 
 /**
+ * TODO this is not used for now...
  *
  * @author Alexey Loubyansky
  */

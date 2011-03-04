@@ -28,10 +28,7 @@ import java.util.concurrent.CancellationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.OperationRequestBuilder;
-import org.jboss.as.cli.OperationRequestParser;
-import org.jboss.as.cli.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -56,14 +53,12 @@ public class OperationRequestHandler implements CommandHandler {
             return;
         }
 
-        OperationRequestBuilder reqBuilder = new DefaultOperationRequestBuilder();
-        ctx.getPrefix().apply(reqBuilder);
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
         try {
-           OperationRequestParser parser = ctx.getOperationRequestParser();
-           parser.parse(ctx.getCommandArguments(), reqBuilder);
-           ModelNode request = reqBuilder.buildRequest();
-           ModelNode result = client.execute(ExecutionContextBuilder.Factory.create(request).build());
-           ctx.log(result.toString());
+            ctx.getOperationRequestParser().parse(ctx.getCommandArguments(), builder);
+            ModelNode request = builder.buildRequest();
+            ModelNode result = client.execute(request);
+            ctx.log(result.toString());
         } catch(CommandFormatException e) {
             ctx.log(e.getLocalizedMessage());
         } catch(NoSuchElementException e) {

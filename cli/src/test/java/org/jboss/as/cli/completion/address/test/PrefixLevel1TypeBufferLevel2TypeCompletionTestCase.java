@@ -19,21 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.completion.address.test;
+
+import java.util.Arrays;
+
+import org.junit.Test;
 
 
 /**
- * Prefix parser parses the prefix string and calls corresponding methods on the Prefix instance.
  *
  * @author Alexey Loubyansky
  */
-public interface PrefixParser {
+public class PrefixLevel1TypeBufferLevel2TypeCompletionTestCase extends AbstractOperationAddressCompleterTest {
 
-    /**
-     * Parses prefix string and calls the corresponding methods on the Prefix instance.
-     * @param str  the prefix as a string
-     * @param prefix  the target Prefix instance
-     * @throws CommandFormatException in case the format of the prefix is not as expected.
-     */
-    void parse(String str, Prefix prefix) throws CommandFormatException;
+    @Test
+    public void testStringValues() {
+
+        assertAllCandidates(Arrays.asList("last4", "link4", "other4"));
+        assertSelectedCandidates(Arrays.asList("last4", "link4"));
+        assertBufferPrefix("link2,link3=");
+        assertContextPrefix("link1");
+    }
+
+    @Override
+    protected int getBufferLevel() {
+        return 3;
+    }
+
+    @Override
+    protected int getPrefixLevel() {
+        return 1;
+    }
 }

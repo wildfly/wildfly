@@ -24,10 +24,11 @@ package org.jboss.as.cli.handlers;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.Prefix;
+import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 
 /**
- * TODO change current node command handler
  *
  * @author Alexey Loubyansky
  */
@@ -40,7 +41,7 @@ public class PrefixHandler implements CommandHandler {
     public void handle(CommandContext ctx) {
 
         String args = ctx.getCommandArguments();
-        Prefix prefix = ctx.getPrefix();
+        OperationRequestAddress prefix = ctx.getPrefix();
 
         if(args == null) {
             ctx.log(ctx.getPrefixFormatter().format(prefix));
@@ -53,8 +54,9 @@ public class PrefixHandler implements CommandHandler {
             return;
         }
 
+        OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(ctx.getPrefix());
         try {
-            ctx.getPrefixParser().parse(args, ctx.getPrefix());
+            ctx.getOperationRequestParser().parse(args, handler);
         } catch (CommandFormatException e) {
             ctx.log(e.getLocalizedMessage());
         }

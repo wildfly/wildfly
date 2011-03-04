@@ -19,39 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.operation;
 
+import java.util.List;
 
 
 /**
- * An instance of this interface represents a prefix for the operation request address part.
+ * Provider of candidates for the tab completion.
  *
  * @author Alexey Loubyansky
  */
-public interface Prefix extends Iterable<Prefix.Node> {
+public interface OperationCandidatesProvider {
 
-    void apply(OperationRequestBuilder builder);
+    List<String> getNodeNames(OperationRequestAddress prefix);
 
-    void toNodeType(String nodeType);
+    List<String> getNodeTypes(OperationRequestAddress prefix);
 
-    void toNode(String nodeName);
+    List<String> getOperationNames(OperationRequestAddress prefix);
 
-    void toNode(String nodeType, String nodeName);
-
-    void toNodeType();
-
-    void toParentNode();
-
-    void reset();
-
-    boolean endsOnType();
-
-    boolean isEmpty();
-
-    interface Node {
-
-        String getType();
-
-        String getName();
-    }
+    List<String> getPropertyNames(String operationName, OperationRequestAddress address);
 }

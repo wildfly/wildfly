@@ -19,49 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import jline.Completor;
+package org.jboss.as.cli.operation.impl;
 
 /**
- * Tab-completer for commands starting with '/'.
  *
  * @author Alexey Loubyansky
  */
-public class CommandCompleter implements Completor {
+public class Util {
 
-    private Set<String> commands;
-
-    public CommandCompleter(Set<String> commands) {
-        if(commands == null)
-            throw new IllegalArgumentException("Set of commands can't be null.");
-        this.commands = commands;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public int complete(String buffer, int cursor, List candidates) {
-
-        if(buffer.length() < 1)
-            return -1;
-        if(buffer.charAt(0) != '/')
-            return -1;
-
-        if(buffer.length() == 1) {
-            candidates.addAll(commands);
-        } else {
-            String start = buffer.substring(1);
-            for (String command : commands) {
-                if (command.startsWith(start))
-                    candidates.add(command);
-            }
+    public static final boolean isValidIdentifier(String s) {
+        // an empty or null string cannot be a valid identifier
+        if (s == null || s.length() == 0) {
+           return false;
         }
-        Collections.sort(candidates);
-        return 1;
-    }
 
+        char[] c = s.toCharArray();
+        if (!Character.isJavaIdentifierStart(c[0])) {
+           return false;
+        }
+
+        for (int i = 1; i < c.length; i++) {
+           if (!(Character.isJavaIdentifierPart(c[i]) || c[i] == '-')) {
+              return false;
+           }
+        }
+
+        return true;
+     }
 }

@@ -30,10 +30,15 @@ import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
-import org.jboss.as.cli.impl.DefaultOperationRequestParser;
-import org.jboss.as.cli.impl.DefaultPrefix;
-import org.jboss.as.cli.impl.DefaultPrefixFormatter;
-import org.jboss.as.cli.impl.DefaultPrefixParser;
+import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationRequestCompleter;
+import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
+import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -75,6 +80,7 @@ public class CommandLineMain {
                 cmdCtx.log("closed");
             }
         }));
+        console.addCompletor(new OperationRequestCompleter(cmdCtx));
 
         cmdCtx.log("You are disconnected at the moment." +
                 " Type /connect to connect to the server or" +
@@ -127,14 +133,15 @@ public class CommandLineMain {
         /** operation request parser */
         private final OperationRequestParser parser = new DefaultOperationRequestParser();
         /** operation request address prefix */
-        private final Prefix prefix = new DefaultPrefix();
-        /** operation request address prefix parser */
-        private final PrefixParser prefixParser = new DefaultPrefixParser();
+        private final OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         /** the prefix formatter */
         private final PrefixFormatter prefixFormatter = new DefaultPrefixFormatter();
+        /** provider of operation request candidates for tab-completion */
+        private final OperationCandidatesProvider operationCandidatesProvider;
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
+            operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
         }
 
         @Override
@@ -183,19 +190,19 @@ public class CommandLineMain {
         }
 
         @Override
-        public Prefix getPrefix() {
+        public OperationRequestAddress getPrefix() {
             return prefix;
-        }
-
-        @Override
-        public PrefixParser getPrefixParser() {
-            return prefixParser;
         }
 
         @Override
         public PrefixFormatter getPrefixFormatter() {
 
             return prefixFormatter;
+        }
+
+        @Override
+        public OperationCandidatesProvider getOperationCandidatesProvider() {
+            return operationCandidatesProvider;
         }
 
     }

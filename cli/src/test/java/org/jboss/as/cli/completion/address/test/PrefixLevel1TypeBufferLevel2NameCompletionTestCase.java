@@ -19,42 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.impl;
+package org.jboss.as.cli.completion.address.test;
 
-import java.util.Iterator;
+import java.util.Arrays;
 
-import org.jboss.as.cli.Prefix;
-import org.jboss.as.cli.Prefix.Node;
-import org.jboss.as.cli.PrefixFormatter;
+import org.junit.Test;
+
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DefaultPrefixFormatter implements PrefixFormatter {
+public class PrefixLevel1TypeBufferLevel2NameCompletionTestCase extends AbstractOperationAddressCompleterTest {
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.PrefixFormatter#format(org.jboss.as.cli.Prefix)
-     */
-    @Override
-    public String format(Prefix prefix) {
+    @Test
+    public void testStringValues() {
 
-        Iterator<Node> iterator = prefix.iterator();
-        if(!iterator.hasNext()) {
-            return "~";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        while(iterator.hasNext()) {
-            Node next = iterator.next();
-            builder.append(next.getType());
-            if(next.getName() != null) {
-                builder.append('=').append(next.getName());
-            }
-            if(iterator.hasNext())
-                builder.append(',');
-        }
-        return builder.toString();
+        assertAllCandidates(Arrays.asList("last3", "link3", "other3"));
+        assertSelectedCandidates(Arrays.asList("last3", "link3"));
+        assertBufferPrefix("link2,");
+        assertContextPrefix("link1");
     }
 
+    @Override
+    protected int getBufferLevel() {
+        return 2;
+    }
+
+    @Override
+    protected int getPrefixLevel() {
+        return 1;
+    }
 }

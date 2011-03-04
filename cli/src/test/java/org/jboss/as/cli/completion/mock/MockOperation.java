@@ -19,49 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.completion.mock;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-import jline.Completor;
 
 /**
- * Tab-completer for commands starting with '/'.
  *
  * @author Alexey Loubyansky
  */
-public class CommandCompleter implements Completor {
+public class MockOperation {
 
-    private Set<String> commands;
+    private final String name;
+    private List<String> parameterNames = Collections.emptyList();
 
-    public CommandCompleter(Set<String> commands) {
-        if(commands == null)
-            throw new IllegalArgumentException("Set of commands can't be null.");
-        this.commands = commands;
+    public MockOperation(String name) {
+        this.name = name;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public int complete(String buffer, int cursor, List candidates) {
-
-        if(buffer.length() < 1)
-            return -1;
-        if(buffer.charAt(0) != '/')
-            return -1;
-
-        if(buffer.length() == 1) {
-            candidates.addAll(commands);
-        } else {
-            String start = buffer.substring(1);
-            for (String command : commands) {
-                if (command.startsWith(start))
-                    candidates.add(command);
-            }
-        }
-        Collections.sort(candidates);
-        return 1;
+    public String getName() {
+        return name;
     }
 
+    public List<String> getPropertyNames() {
+        return parameterNames;
+    }
+
+    public void setPropertyNames(List<String> parameterNames) {
+        this.parameterNames = parameterNames;
+    }
 }

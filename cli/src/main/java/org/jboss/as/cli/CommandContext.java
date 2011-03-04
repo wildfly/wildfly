@@ -18,10 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
  */
 package org.jboss.as.cli;
 
+import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 
 
@@ -86,17 +89,17 @@ public interface CommandContext {
      * Returns the current prefix.
      * @return current prefix
      */
-    Prefix getPrefix();
-
-    /**
-     * Returns the prefix parser.
-     * @return the prefix parser.
-     */
-    PrefixParser getPrefixParser();
+    OperationRequestAddress getPrefix();
 
     /**
      * Returns the prefix formatter.
      * @return the prefix formatter.
      */
     PrefixFormatter getPrefixFormatter();
+
+    /**
+     * Returns the provider of operation request candidates for tab-completion.
+     * @return provider of operation request candidates for tab-completion.
+     */
+    OperationCandidatesProvider getOperationCandidatesProvider();
 }

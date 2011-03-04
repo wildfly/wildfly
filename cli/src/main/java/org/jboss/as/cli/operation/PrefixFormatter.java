@@ -19,31 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.impl;
+package org.jboss.as.cli.operation;
+
 
 /**
+ * TODO this has to turn into the whole operation request formatter
+ *
+ * Creates a string representation of the Prefix instance.
  *
  * @author Alexey Loubyansky
  */
-public class Util {
+public interface PrefixFormatter {
 
-    public static final boolean isValidIdentifier(String s) {
-        // an empty or null string cannot be a valid identifier
-        if (s == null || s.length() == 0) {
-           return false;
-        }
-
-        char[] c = s.toCharArray();
-        if (!Character.isJavaIdentifierStart(c[0])) {
-           return false;
-        }
-
-        for (int i = 1; i < c.length; i++) {
-           if (!(Character.isJavaIdentifierPart(c[i]) || c[i] == '-')) {
-              return false;
-           }
-        }
-
-        return true;
-     }
+    /**
+     * Creates a string representation of the Prefix instance.
+     * @param prefix the prefix instance
+     * @return  the string representation of the prefix.
+     */
+    String format(OperationRequestAddress prefix);
 }

@@ -19,22 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.completion.address.test;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+
 
 /**
- * An implementation of this interface parses string commands and feeds an OperationRequestBuilder
- * with the request attributes.
  *
  * @author Alexey Loubyansky
  */
-public interface OperationRequestParser {
+public class PrefixLevel2TypeBufferLevel1TypeCompletionTestCase extends AbstractOperationAddressCompleterTest {
 
-    /**
-     * Parses a string command and feeds the request builder with the request attributes.
-     *
-     * @param command the command to be parsed
-     * @param requestBuilder the request builder
-     * @throws CommandFormatException in case the command doesn't follow the expected format
-     */
-    void parse(String command, OperationRequestBuilder requestBuilder) throws CommandFormatException;
+    @Test
+    public void testStringValues() {
+
+        assertAllCandidates(Arrays.asList("last4", "link4", "other4"));
+        assertSelectedCandidates(Arrays.asList("last4", "link4"));
+        assertBufferPrefix("");
+        assertContextPrefix("link1=link2,link3");
+    }
+
+    @Override
+    protected int getPrefixLevel() {
+        return 3;
+    }
 }

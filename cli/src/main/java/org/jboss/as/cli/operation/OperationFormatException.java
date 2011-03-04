@@ -19,49 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.operation;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import jline.Completor;
+import org.jboss.as.cli.CommandFormatException;
 
 /**
- * Tab-completer for commands starting with '/'.
  *
  * @author Alexey Loubyansky
  */
-public class CommandCompleter implements Completor {
+public class OperationFormatException extends CommandFormatException {
 
-    private Set<String> commands;
+    /**
+     *
+     */
+    private static final long serialVersionUID = -3481664048439674648L;
 
-    public CommandCompleter(Set<String> commands) {
-        if(commands == null)
-            throw new IllegalArgumentException("Set of commands can't be null.");
-        this.commands = commands;
+    /**
+     * @param message
+     * @param cause
+     */
+    public OperationFormatException(String message, Throwable cause) {
+        super(message, cause);
+        // TODO Auto-generated constructor stub
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public int complete(String buffer, int cursor, List candidates) {
+    /**
+     * @param message
+     */
+    public OperationFormatException(String message) {
+        super(message);
+        // TODO Auto-generated constructor stub
+    }
 
-        if(buffer.length() < 1)
-            return -1;
-        if(buffer.charAt(0) != '/')
-            return -1;
-
-        if(buffer.length() == 1) {
-            candidates.addAll(commands);
-        } else {
-            String start = buffer.substring(1);
-            for (String command : commands) {
-                if (command.startsWith(start))
-                    candidates.add(command);
-            }
-        }
-        Collections.sort(candidates);
-        return 1;
+    /**
+     * @param cause
+     */
+    public OperationFormatException(Throwable cause) {
+        super(cause);
+        // TODO Auto-generated constructor stub
     }
 
 }
