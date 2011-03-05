@@ -24,7 +24,8 @@ package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.JndiInjectable;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorInvocationHandler;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.ProxyFactory;
 
@@ -36,9 +37,9 @@ import org.jboss.invocation.proxy.ProxyFactory;
  */
 public class ComponentView implements JndiInjectable {
 
-    private final AbstractComponent component;
     private final Class<?> viewClass;
     private final ProxyFactory<?> proxyFactory;
+    private final ProxyInvocationHandler proxyInvocationHandler;
 
     /**
      * Construct a new instance.
@@ -48,18 +49,19 @@ public class ComponentView implements JndiInjectable {
      * @param proxyFactory the proxy factory
      */
     public ComponentView(final AbstractComponent component, final Class<?> viewClass, final ProxyFactory<?> proxyFactory) {
-        this.component = component;
         this.viewClass = viewClass;
         this.proxyFactory = proxyFactory;
+        proxyInvocationHandler = new ProxyInvocationHandler(new InterceptorFactory() {
+            public Interceptor create(final InterceptorFactoryContext context) {
+                return Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor());
+            }
+        });
     }
 
     /** {@inheritDoc} */
     public Object getInjectedValue() {
-        final Interceptor clientInterceptor = component.createClientInterceptor(viewClass);
-        final Interceptor componentInterceptor = component.getComponentInterceptor();
-        final InterceptorInvocationHandler handler = new InterceptorInvocationHandler(Interceptors.getChainedInterceptor(clientInterceptor, componentInterceptor));
         try {
-            return viewClass.cast(proxyFactory.newInstance(handler));
+            return viewClass.cast(proxyFactory.newInstance(proxyInvocationHandler));
         } catch (InstantiationException e) {
             throw new InstantiationError(e.getMessage());
         } catch (IllegalAccessException e) {
