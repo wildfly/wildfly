@@ -142,6 +142,8 @@ public class HostXml extends CommonXml {
 
         parseNamespaces(reader, address, list);
 
+        String hostName = null;
+
         // attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -151,7 +153,7 @@ public class HostXml extends CommonXml {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            setHostName(address, list, value);
+                            hostName = value;
                             break;
                         }
                         default: throw unexpectedAttribute(reader, i);
@@ -177,6 +179,11 @@ public class HostXml extends CommonXml {
                 default: throw unexpectedAttribute(reader, i);
             }
         }
+
+        if (hostName == null) {
+            hostName = getDefaultName();
+        }
+        setHostName(address, list, hostName);
 
         // Content
         // Handle elements: sequence

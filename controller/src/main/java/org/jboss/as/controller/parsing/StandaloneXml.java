@@ -95,6 +95,8 @@ public class StandaloneXml extends CommonXml {
 
         parseNamespaces(reader, address, list);
 
+        String serverName = null;
+
         // attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -104,7 +106,7 @@ public class StandaloneXml extends CommonXml {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            setServerName(address, list, value);
+                            serverName = value;
                             break;
                         }
                         default: throw unexpectedAttribute(reader, i);
@@ -130,6 +132,11 @@ public class StandaloneXml extends CommonXml {
                 default: throw unexpectedAttribute(reader, i);
             }
         }
+
+        if (serverName == null) {
+            serverName = getDefaultName();
+        }
+        setServerName(address, list, serverName);
 
         // elements - sequence
 

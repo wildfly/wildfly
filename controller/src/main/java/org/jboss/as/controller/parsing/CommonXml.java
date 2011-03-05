@@ -109,6 +109,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected static final Set<String> RESTRICTED_PATHS;
 
     static {
+
         final HashSet<String> set = new HashSet<String>(10);
         // Define the restricted path names.
         set.add("jboss.home");
@@ -132,6 +133,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected CommonXml(final ModuleLoader loader) {
         moduleLoader = loader;
+    }
+
+    protected String getDefaultName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Unable to determine a default name based on the local host name", e);
+        }
     }
 
     protected void parseNamespaces(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> nodes) {
