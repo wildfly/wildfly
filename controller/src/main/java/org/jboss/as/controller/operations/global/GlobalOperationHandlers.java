@@ -200,21 +200,29 @@ public class GlobalOperationHandlers {
     public static class ReadAttributeHandler implements ModelQueryOperationHandler {
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-            OperationResult handlerResult = null;
+            OperationResult handlerResult = new BasicOperationResult();
             try {
                 final String attributeName = operation.require(NAME).asString();
-                final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
+                final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
+                final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(address, attributeName);
                 if (attributeAccess == null) {
-                    resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
+                    final Set<String> children = context.getRegistry().getChildNames(address);
+                    if(children.contains(attributeName)) {
+                        resultHandler.handleFailed(new ModelNode().set(String.format("'%s' is a registered child of resource (%s)", attributeName, address))); // TODO i18n
+                    } else if(context.getSubModel().has(attributeName)) {
+                        final ModelNode result = context.getSubModel().get(attributeName).clone();
+                        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+                        resultHandler.handleResultComplete();
+                    } else {
+                        resultHandler.handleFailed(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
+                    }
                 } else if (attributeAccess.getReadHandler() == null) {
                     final ModelNode result = context.getSubModel().get(attributeName).clone();
                     resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                     resultHandler.handleResultComplete();
-                    handlerResult = new BasicOperationResult();
                 } else {
                     handlerResult = attributeAccess.getReadHandler().execute(context, operation, resultHandler);
                 }
-
             } catch (final Exception e) {
                 throw new OperationFailedException(Util.createErrorResult(e));
             }

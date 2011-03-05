@@ -24,9 +24,12 @@ package org.jboss.as.test.embedded.mgmt;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -150,6 +153,53 @@ public class BasicOperationsUnitTestCase {
         final ModelNode httpBinding = steps.get(0);
         Assert.assertEquals(8080, httpBinding.get(RESULT, "port").asInt());
 
+    }
+
+    @Test
+    public void testSimpleReadAttribute() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "deployment-scanner");
+        address.add("scanner", "default");
+
+        final ModelNode operation = createReadAttributeOperation(address, "path");
+        final ModelNode result = client.execute(operation);
+        assertSuccessful(result);
+
+        Assert.assertEquals("deployments", result.get(RESULT).asString());
+    }
+
+    @Test
+    public void testMetricReadAttribute() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "web");
+        address.add("connector", "http");
+
+        final ModelNode operation = createReadAttributeOperation(address, "bytesReceived");
+        final ModelNode result = client.execute(operation);
+        assertSuccessful(result);
+        Assert.assertTrue(result.asInt() >= 0);
+    }
+
+    public void testReadAttributeChild() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "deployment-scanner");
+
+        final ModelNode operation = createReadAttributeOperation(address, "scanner");
+        final ModelNode result = client.execute(operation);
+        Assert.assertEquals(FAILED, result.get(OUTCOME));
+    }
+
+    static void assertSuccessful(final ModelNode result) {
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.hasDefined(RESULT));
+    }
+
+    static ModelNode createReadAttributeOperation(final ModelNode address, final String attributeName) {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(attributeName);
+        return operation;
     }
 
     protected static List<ModelNode> getSteps(final ModelNode result) {
