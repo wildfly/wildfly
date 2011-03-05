@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -48,9 +49,10 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -555,6 +557,31 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertEquals(0, ts.controller.deployed.size());
     }
 
+    @Test
+    public void testDirectory() throws Exception {
+        final File war = createDirectory("foo.war", "index.html");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee("foo.war");
+        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertEquals(1, ts.repo.content.size());
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+
+        assertTrue(deployed.delete());
+        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertEquals(1, ts.repo.content.size());
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+
+    }
+
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {
         return createTestee(new MockServerController(new MockDeploymentRepository(), existingContent));
     }
@@ -588,6 +615,22 @@ public class FileSystemDeploymentServiceUnitTestCase {
         return f;
     }
 
+    private File createDirectory(String name, String... children) throws IOException {
+        return createDirectory(tmpDir, name, children);
+    }
+
+    private File createDirectory(File dir, String name, String... children) throws IOException {
+
+        final File directory = new File(dir, name);
+        directory.mkdirs();
+
+        for(final String child : children) {
+            createFile(directory, child);
+        }
+
+        return directory;
+    }
+
     private static class TesteeSet {
         private final FileSystemDeploymentService testee;
         private final MockDeploymentRepository repo;
@@ -600,7 +643,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
     }
 
-    private static class MockDeploymentRepository implements DeploymentRepository {
+    private static class MockDeploymentRepository implements ServerDeploymentRepository {
 
         private Set<byte[]> content = new HashSet<byte[]>(2);
 
@@ -615,6 +658,28 @@ public class FileSystemDeploymentServiceUnitTestCase {
         @Override
         public boolean hasDeploymentContent(byte[] hash) {
             return content.contains(hash);
+        }
+
+        /** {@inheritDoc} */
+        public byte[] addExternalFileReference(String name, String runtimeName, File file) throws IOException {
+            byte[] bytes = new byte[20];
+            random.nextBytes(bytes);
+            content.add(bytes);
+            return bytes;
+        }
+
+        /** {@inheritDoc} */
+        public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
+            return mountDeploymentContent(name, runtimeName, deploymentHash, mountPoint, false);
+        }
+
+        /** {@inheritDoc} */
+        public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint, boolean mountExploded) throws IOException {
+            return new Closeable() {
+                public void close() throws IOException {
+                    //
+                }
+            };
         }
 
     }

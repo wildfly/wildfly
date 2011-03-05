@@ -63,7 +63,8 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
         Closeable handle = null;
         final MountHandle mountHandle;
         try {
-            handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentHash, deploymentRoot);
+            final boolean mountExploded = deploymentName.endsWith("war");
+            handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentHash, deploymentRoot, mountExploded);
             mountHandle = new MountHandle(handle);
         } catch (IOException e) {
             failed = true;

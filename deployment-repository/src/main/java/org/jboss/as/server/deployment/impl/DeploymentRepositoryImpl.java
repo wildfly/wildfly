@@ -24,6 +24,7 @@ package org.jboss.as.server.deployment.impl;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -44,10 +45,11 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
     protected static final String CONTENT = "content";
+    private static final String ATTACHMENTS = "attachments";
     private final File repoRoot;
-    private final MessageDigest messageDigest;
+    protected final MessageDigest messageDigest;
 
-    protected DeploymentRepositoryImpl(File repoRoot) {
+    protected DeploymentRepositoryImpl(final File repoRoot) {
         if (repoRoot == null)
             throw new IllegalArgumentException("repoRoot is null");
         if (repoRoot.exists()) {
@@ -90,15 +92,12 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
                 }
             }
             finally {
-                try {
-                    fos.close();
-                } catch (Exception ignored) {
-                }
+                safeClose(fos);
             }
             sha1Bytes = messageDigest.digest();
         }
-        File realFile = getDeploymentContentFile(sha1Bytes, true);
-        if (realFile.exists()) {
+        final File realFile = getDeploymentContentFile(sha1Bytes, true);
+        if(hasDeploymentContent(sha1Bytes)) {
             // we've already got this content
             if (!tmp.delete()) {
                 tmp.deleteOnExit();
@@ -126,24 +125,26 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
     }
 
     private File getDeploymentContentFile(byte[] deploymentHash, boolean validate) {
-        // TODO recognize exploded content stored in a hot-deploy dir
-        String sha1 = HashUtil.bytesToHexString(deploymentHash);
-        String partA = sha1.substring(0,2);
-        String partB = sha1.substring(2);
-        File base = new File(getRepoRoot(), partA);
+        final File hashDir = getDeploymentHashDir(deploymentHash, validate);
+        return new File(hashDir, CONTENT);
+    }
+
+    protected File getDeploymentHashDir(final byte[] deploymentHash, final boolean validate) {
+        final String sha1 = HashUtil.bytesToHexString(deploymentHash);
+        final String partA = sha1.substring(0,2);
+        final String partB = sha1.substring(2);
+        final File base = new File(getRepoRoot(), partA);
         if (validate) {
             validateDir(base);
         }
-        File hashDir = new File(base, partB);
+        final File hashDir = new File(base, partB);
         if (validate && !hashDir.exists() && !hashDir.mkdirs()) {
             throw new IllegalStateException("Cannot create directory " + hashDir.getAbsolutePath());
         }
-        File content = new File(hashDir, CONTENT);
-        return content;
-
+        return hashDir;
     }
 
-    private void validateDir(File dir) {
+    protected void validateDir(File dir) {
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
                 throw new IllegalStateException("Cannot create directory " + dir.getAbsolutePath());
@@ -171,31 +172,25 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
                 while ((read = bis.read(bytes)) > -1) {
                     bos.write(bytes, 0, read);
                 }
-            }
-            finally {
-                try {
-                    if (bos != null) {
-                        bos.close();
-                    }
-                } catch (Exception ignored) {
-                }
-                try {
-                    if (fos != null) {
-                        fos.close();
-                    }
-                } catch (Exception ignored) {
-                }
-                try {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                } catch (Exception ignored) {
-                }
-
+            } finally {
+                safeClose(bos);
+                safeClose(fos);
+                safeClose(fis);
                 if (!tmpFile.delete()) {
                     tmpFile.deleteOnExit();
                 }
             }
         }
     }
+
+    protected static void safeClose(final Closeable closeable) {
+        if(closeable != null) {
+            try {
+                closeable.close();
+            } catch(Exception ignore) {
+                //
+            }
+        }
+    }
+
 }

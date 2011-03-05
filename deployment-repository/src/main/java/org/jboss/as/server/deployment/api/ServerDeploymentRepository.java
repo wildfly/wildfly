@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment.api;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 
 import org.jboss.msc.service.ServiceName;
@@ -42,6 +43,15 @@ public interface ServerDeploymentRepository extends DeploymentRepository {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment-repository");
 
     /**
+     * Add an external local file reference.
+     *
+     * @param file the local file
+     * @return the hash of the content that will be used as an internal identifier
+     *         for the content. Will not be <code>null</code>
+     */
+    byte[] addExternalFileReference(File file) throws IOException;
+
+    /**
      * Requests that the content with the given unique name and hash be mounted
      * in VFS at the given {@code mountPoint}.
      *
@@ -54,4 +64,19 @@ public interface ServerDeploymentRepository extends DeploymentRepository {
      * @throws IOException
      */
     Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException;
+
+    /**
+     * Requests that the content with the given unique name and hash be mounted
+     * in VFS at the given {@code mountPoint}.
+     *
+     * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
+     * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
+     * @param deploymentHash internal identification hash. Cannot be <code>null</code>
+     * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
+     * @param mountExpanded
+     * @return {@link java.io.Closeable} that can be used to close the mount
+     *
+     * @throws IOException
+     */
+    Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint, boolean mountExpanded) throws IOException;
 }

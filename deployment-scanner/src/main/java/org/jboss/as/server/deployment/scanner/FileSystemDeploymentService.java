@@ -66,7 +66,7 @@ import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentRedeployHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -98,12 +98,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final ScheduledExecutorService scheduledExecutor;
     private final ServerController serverController;
-    private final DeploymentRepository deploymentRepository;
+    private final ServerDeploymentRepository deploymentRepository;
 
-    //TODO Extenalize filter config
+    //TODO Externalize filter config
     private FileFilter filter = new ExtensibleFilter();
 
-    FileSystemDeploymentService(final File deploymentDir, final long scanInterval, final ServerController serverController, final ScheduledExecutorService scheduledExecutor, DeploymentRepository deploymentRepository) throws OperationFailedException {
+    FileSystemDeploymentService(final File deploymentDir, final long scanInterval, final ServerController serverController, final ScheduledExecutorService scheduledExecutor, ServerDeploymentRepository deploymentRepository) throws OperationFailedException {
         if (scheduledExecutor == null) {
             throw new IllegalStateException("null scheduled executor");
         }
@@ -255,9 +255,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                             final ModelNode result = resultList.get(i).getValue();
                             final ScannerTask task = scannerTasks.get(i);
                             final ModelNode outcome = result.get(OUTCOME);
-                            if (OUTCOME != null && SUCCESS.equals(outcome.asString())) {
+                            if (outcome.isDefined() && SUCCESS.equals(outcome.asString())) {
                                 task.handleSuccessResult();
-                            } else if (OUTCOME != null && CANCELLED.equals(outcome.asString())) {
+                            } else if (outcome.isDefined() && CANCELLED.equals(outcome.asString())) {
                                 toRetry.add(updates.get(i));
                                 retryTasks.add(task);
                             } else {
@@ -478,6 +478,16 @@ class FileSystemDeploymentService implements DeploymentScanner {
         @Override
         protected ModelNode getUpdate() {
             byte[] hash = new byte[0];
+
+            if(deploymentFile.isDirectory()) {
+                try {
+                    hash = deploymentRepository.addExternalFileReference(deploymentFile);
+                } catch(IOException e) {
+                    log.error("Failed to add content to deployment repository for [" + deploymentName + "]", e);
+                }
+                return getUpdatesAfterContent(hash);
+            }
+
             InputStream inputStream = null;
             try {
                 inputStream = new FileInputStream(deploymentFile);

@@ -225,8 +225,6 @@ public class HostControllerBootstrap {
 
         }
 
-
-
         // Add the server to host operation handler
         final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
         serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)

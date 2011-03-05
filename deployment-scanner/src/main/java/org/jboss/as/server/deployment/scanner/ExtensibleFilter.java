@@ -65,14 +65,13 @@ class ExtensibleFilter implements FileFilter {
      * the default suffix list
      */
     private static final String[] DEFAULT_SUFFIXES =
-            { "#", "$", "%", "~", ",v", ".BAK", ".bak", ".old", ".orig", ".tmp", ".rej", ".sh" };
+            { "#", "$", "%", "~", ",v", ".BAK", ".bak", ".old", ".orig", ".tmp", ".rej", ".sh", ".txt" };
 
     /**
      * the default matches list
      */
     private static final String[] DEFAULT_MATCHES =
-            { ".make.state", ".nse_depinfo", "CVS", "CVS.admin", "RCS", "RCSLOG",
-                    "SCCS", "TAGS", "core", "tags" };
+            { ".make.state", ".nse_depinfo", "CVS", "CVS.admin", "RCS", "RCSLOG", "SCCS", "TAGS", "core", "tags" };
 
     /**
      * The list of disallowed suffixes, sorted using reverse values

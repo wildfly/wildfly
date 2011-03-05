@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.as.server.services.path.AbsolutePathService;
@@ -59,7 +58,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
     private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
-    private final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<DeploymentRepository>();
+    private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<ScheduledExecutorService>();
 
     public static ServiceName getServiceName(String repositoryName) {
@@ -93,7 +92,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         serviceTarget.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.serverControllerValue)
-            .addDependency(ServerDeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.deploymentRepositoryValue)
+            .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
             .addInjection(service.scheduledExecutorValue, scheduledExecutorService)
             .setInitialMode(Mode.ACTIVE)
             .install();
