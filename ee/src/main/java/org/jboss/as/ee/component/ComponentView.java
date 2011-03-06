@@ -23,9 +23,6 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.JndiInjectable;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.ProxyFactory;
 
@@ -57,11 +54,7 @@ public class ComponentView implements JndiInjectable {
     /** {@inheritDoc} */
     public Object getInjectedValue() {
         try {
-            return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(new InterceptorFactory() {
-                public Interceptor create(final InterceptorFactoryContext context) {
-                    return Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor());
-                }
-            })));
+            return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor()))));
         } catch (InstantiationException e) {
             throw new InstantiationError(e.getMessage());
         } catch (IllegalAccessException e) {
