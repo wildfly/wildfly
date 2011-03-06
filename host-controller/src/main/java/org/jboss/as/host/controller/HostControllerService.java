@@ -69,6 +69,7 @@ public class HostControllerService implements Service<ServerStartupTransactional
         final ServerInventory serverInventory = this.serverInventory.getValue();
         final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory, repository);
         serverInventory.setHostController(controller);
+        hostModel.setHostController(controller);
         this.controller = controller;
         this.proxyController = new ServerStartupTransactionalProxyController() {
 
@@ -92,10 +93,12 @@ public class HostControllerService implements Service<ServerStartupTransactional
                 return PathAddress.pathAddress(PathElement.pathElement("host", name));
             }
 
+            @Override
             public void startServers(DomainControllerSlave domainController) {
                 controller.startServers(domainController);
             }
 
+            @Override
             public void stopServers() {
                 controller.stopServers();
             }

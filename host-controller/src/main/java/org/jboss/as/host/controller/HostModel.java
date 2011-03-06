@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
@@ -82,6 +81,9 @@ import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
+import org.jboss.as.host.controller.operations.ServerRestartHandler;
+import org.jboss.as.host.controller.operations.ServerStartHandler;
+import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.host.controller.operations.SpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
@@ -224,5 +226,16 @@ public class HostModel extends BasicTransactionalModelController {
         PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
         getModel().get(element.getKey()).remove(element.getValue());
         getRegistry().unregisterProxyController(element);
+    }
+
+    void setHostController(final HostController hc) {
+        // TODO consider getting rid of the HostController/HostModel split
+        ServerStartHandler startHandler = new ServerStartHandler(hc);
+        ServerRestartHandler restartHandler = new ServerRestartHandler(hc);
+        ServerStopHandler stopHandler = new ServerStopHandler(hc);
+        ModelNodeRegistration registry = getRegistry();
+        registry.registerOperationHandler(ServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
+        registry.registerOperationHandler(ServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
+        registry.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
     }
 }
