@@ -32,6 +32,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CONFIG_AS_XML_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
@@ -86,6 +88,8 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         roops.add(READ_OPERATION_NAMES_OPERATION);
         roops.add(READ_RESOURCE_DESCRIPTION_OPERATION);
         roops.add(READ_RESOURCE_OPERATION);
+        roops.add(READ_CHILDREN_TYPES_OPERATION);
+        roops.add(READ_CONFIG_AS_XML_OPERATION);
         READ_ONLY_OPERATIONS = Collections.unmodifiableSet(roops);
     }
 

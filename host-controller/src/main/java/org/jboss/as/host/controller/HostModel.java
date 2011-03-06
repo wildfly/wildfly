@@ -98,7 +98,7 @@ public class HostModel extends BasicTransactionalModelController {
      * @param configurationPersister
      */
     public HostModel(final ExtensibleConfigurationPersister configurationPersister) {
-        super(configurationPersister, HostDescriptionProviders.ROOT_PROVIDER);
+        super(createCoreModel(), configurationPersister, HostDescriptionProviders.ROOT_PROVIDER);
 
         // Register the operation handlers
         ModelNodeRegistration root = getRegistry();
@@ -133,7 +133,6 @@ public class HostModel extends BasicTransactionalModelController {
         root.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, RemoteDomainControllerAddHandler.INSTANCE, RemoteDomainControllerAddHandler.INSTANCE, false);
         root.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
-        //root.registerOperationHandler(ReadConfigAsXmlHandler.READ_CONFIG_AS_XML, ReadConfigAsXmlHandler.INSTANCE, ReadConfigAsXmlHandler.INSTANCE, false);
 
         //Extensions
         ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
@@ -186,11 +185,12 @@ public class HostModel extends BasicTransactionalModelController {
 
         //TODO register the rest of the server values
 
-        createCoreModel();
+        registerInternalOperations();
     }
 
-    private void createCoreModel() {
-        ModelNode root = getModel();
+    private static ModelNode createCoreModel() {
+        ModelNode root = new ModelNode();
+        root.get(NAME);
         root.get(NAMESPACES).setEmptyList();
         root.get(SCHEMA_LOCATIONS).setEmptyList();
         root.get(EXTENSION);
@@ -201,8 +201,8 @@ public class HostModel extends BasicTransactionalModelController {
         root.get(DOMAIN_CONTROLLER);
         root.get(INTERFACE);
         root.get(JVM);
-        root.get(DEPLOYMENT);
         root.get(RUNNING_SERVER);
+        return root;
     }
 
     /**
