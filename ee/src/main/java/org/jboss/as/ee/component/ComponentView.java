@@ -39,7 +39,7 @@ public class ComponentView implements JndiInjectable {
 
     private final Class<?> viewClass;
     private final ProxyFactory<?> proxyFactory;
-    private final ProxyInvocationHandler proxyInvocationHandler;
+    private final AbstractComponent component;
 
     /**
      * Construct a new instance.
@@ -51,17 +51,17 @@ public class ComponentView implements JndiInjectable {
     public ComponentView(final AbstractComponent component, final Class<?> viewClass, final ProxyFactory<?> proxyFactory) {
         this.viewClass = viewClass;
         this.proxyFactory = proxyFactory;
-        proxyInvocationHandler = new ProxyInvocationHandler(new InterceptorFactory() {
-            public Interceptor create(final InterceptorFactoryContext context) {
-                return Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor());
-            }
-        });
+        this.component = component;
     }
 
     /** {@inheritDoc} */
     public Object getInjectedValue() {
         try {
-            return viewClass.cast(proxyFactory.newInstance(proxyInvocationHandler));
+            return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(new InterceptorFactory() {
+                public Interceptor create(final InterceptorFactoryContext context) {
+                    return Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor());
+                }
+            })));
         } catch (InstantiationException e) {
             throw new InstantiationError(e.getMessage());
         } catch (IllegalAccessException e) {
