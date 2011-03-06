@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.naming;
 
-import javax.naming.Context;
-
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -34,7 +32,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
@@ -60,7 +57,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(deploymentUnit);
+        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(),moduleDescription.getModuleName());
         final RootContextService contextService = new RootContextService();
         serviceTarget.addService(moduleContextServiceName, contextService).install();
 
@@ -74,7 +71,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.MODULE_CONTEXT_CONFIG, moduleContextServiceName);
 
         // Add the namespace selector service for the module
-        ServiceName appNs = ContextServiceNameBuilder.app(deploymentUnit);
+        ServiceName appNs = ContextNames.contextServiceNameOfApplication(moduleDescription.getAppName());
         ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
         NamespaceSelectorService namespaceSelector = new NamespaceSelectorService();
         serviceTarget.addService(namespaceSelectorServiceName, namespaceSelector)
@@ -89,10 +86,6 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(DeploymentUnit context) {
-        final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(context);
-        final ServiceController<?> serviceController = context.getServiceRegistry().getService(moduleContextServiceName);
-        if (serviceController != null) {
-            serviceController.setMode(ServiceController.Mode.REMOVE);
-        }
+
     }
 }

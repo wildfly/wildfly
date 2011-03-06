@@ -21,7 +21,8 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import org.jboss.as.ee.naming.ContextServiceNameBuilder;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueJndiInjectable;
 import org.jboss.as.naming.service.BinderService;
@@ -37,8 +38,6 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -59,7 +58,16 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         if (!WeldDeploymentMarker.isWeldDeployment(topLevelDeployment)) {
+            return;
+        }
+        //hack to set up a java:comp binding for jar deployments as well as wars
+        if(!deploymentUnit.getName().endsWith(".war") && !deploymentUnit.getName().endsWith(".jar")) {
+            return;
+        }
+
+        if(moduleDescription == null) {
             return;
         }
         BeanDeploymentArchiveImpl rootBda = deploymentUnit
@@ -82,7 +90,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
                 WeldContainer.class, beanManagerService.getWeldContainer()).install();
 
         // bind the bean manager to JNDI
-        final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(deploymentUnit);
+        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(),moduleDescription.getModuleName());
         final ServiceName beanManagerBindingServiceName = moduleContextServiceName.append("BeanManager");
 
         InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
@@ -97,16 +105,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        final ServiceName beanManagerServiceName = deploymentUnit.getServiceName().append(BeanManagerService.NAME);
-        final ServiceName moduleContextServiceName = ContextServiceNameBuilder.module(deploymentUnit);
-        final ServiceName beanManagerBindingServiceName = moduleContextServiceName.append("BeanManager");
-        final ServiceName[] services = { beanManagerBindingServiceName, beanManagerServiceName };
-        for (ServiceName service : services) {
-            ServiceController<?> controller = deploymentUnit.getServiceRegistry().getService(service);
-            if (controller != null) {
-                controller.setMode(Mode.REMOVE);
-            }
-        }
+
 
     }
 

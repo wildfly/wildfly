@@ -38,6 +38,7 @@ import javax.annotation.Resources;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,15 @@ import java.util.Map;
 public class ResourceInjectionAnnotationParsingProcessor extends AbstractComponentConfigProcessor {
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
+    private static final Map<DotName,String> FIXED_LOCATIONS;
+
+    static {
+        final Map<DotName,String> locations = new HashMap<DotName,String>();
+        locations.put(DotName.createSimple("javax.transaction.UserTransaction"), "java:comp/UserTransaction");
+        locations.put(DotName.createSimple("javax.transaction.TransactionSynchronizationRegistry"), "java:comp/TransactionSynchronizationRegistry");
+        FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
+    }
+
 
     /** {@inheritDoc} **/
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription description) {
@@ -103,24 +113,28 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         final String fieldName = fieldInfo.name();
         final AnnotationValue declaredNameValue = annotation.value("name");
         final String declaredName = declaredNameValue != null ? declaredNameValue.asString() : null;
-        final String localContextName;
-        if (declaredName == null || declaredName.isEmpty()) {
-            localContextName = fieldInfo.declaringClass().name().toString() + "/" + fieldName;
-        } else {
-            localContextName = declaredName;
-        }
 
         final AnnotationValue declaredTypeValue = annotation.value("type");
         final DotName declaredType = declaredTypeValue != null ? declaredTypeValue.asClass().name() : null;
         final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? fieldInfo.type().name() : declaredType;
 
         BindingDescription bindingDescription = new BindingDescription();
-        bindingDescription.setDependency(true);
+        final String localContextName;
+        if (declaredName == null || declaredName.isEmpty()) {
+            localContextName = fieldInfo.declaringClass().name().toString() + "/" + fieldName;
+        } else {
+            localContextName = declaredName;
+        }
         bindingDescription.setBindingName(localContextName);
+        bindingDescription.setDependency(true);
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
         final AnnotationValue description = annotation.value("description");
         if (description != null) bindingDescription.setDescription(description.asString());
+
+        if(FIXED_LOCATIONS.containsKey(fieldInfo.type().name())) {
+            bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(FIXED_LOCATIONS.get(fieldInfo.type().name())));
+        }
         final AnnotationValue lookupValue = annotation.value("lookup");
         if (lookupValue != null) {
             bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(lookupValue.asString()));
@@ -149,7 +163,6 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         } else {
             localContextName = declaredName;
         }
-
         final AnnotationValue declaredTypeValue = annotation.value("type");
         final DotName declaredType = declaredTypeValue != null ? declaredTypeValue.asClass().name() : null;
         final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? methodInfo.args()[0].name() : declaredType;
@@ -160,6 +173,11 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         bindingDescription.setBindingType(injectionTypeName);
         final AnnotationValue description = annotation.value("description");
         if (description != null) bindingDescription.setDescription(description.asString());
+
+        if(FIXED_LOCATIONS.containsKey(methodInfo.args()[0].name())) {
+            bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(FIXED_LOCATIONS.get(methodInfo.args()[0].name())));
+        }
+        //there is nothing in the spec that says the user cannot override 'lookup; for things like UserTransaction
         final AnnotationValue lookupValue = annotation.value("lookup");
         if (lookupValue != null) {
             bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(lookupValue.asString()));

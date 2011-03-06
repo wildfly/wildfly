@@ -23,27 +23,22 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.txn.CommonAttributes.BINDING;
-import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
-import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
-import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
-
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -51,16 +46,21 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.txn.CommonAttributes.*;
+
 /**
  * Adds the transaction management subsystem.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class TransactionSubsystemAdd implements ModelAddOperationHandler {
+class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
     private static final String INTERNAL_OBJECTSTORE_PATH = "jboss.transactions.object.store.path";
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.transactions");
 
     private TransactionSubsystemAdd() {
         //
@@ -69,6 +69,10 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler {
     /** {@inheritDoc} */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+
+        if(context instanceof BootOperationContext) {
+            ((BootOperationContext) context).addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
+        }
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
@@ -112,8 +116,18 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler {
 
                     TransactionManagerService.addService(target);
                     UserTransactionService.addService(target);
+                    TransactionSynchronizationRegistryService.addService(target);
 
                     RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
+
+                    //we need to initialize this class when we have the correct TCCL set
+                    //so we force it to be initialized here
+                    try {
+                        Class.forName("com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple",true,getClass().getClassLoader());
+                    } catch (ClassNotFoundException e) {
+                        log.warn("Could not load com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple",e);
+                    }
+
                     resultHandler.handleResultComplete();
                 }
             });
@@ -123,5 +137,8 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler {
 
         return new BasicOperationResult(compensatingOperation);
     }
+
+
+
 
 }

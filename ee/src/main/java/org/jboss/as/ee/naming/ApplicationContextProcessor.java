@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
@@ -57,7 +56,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final ServiceName applicationContextServiceName = ContextServiceNameBuilder.app(deploymentUnit);
+        final ServiceName applicationContextServiceName = ContextNames.contextServiceNameOfApplication(moduleDescription.getAppName());
         final RootContextService contextService = new RootContextService();
         serviceTarget.addService(applicationContextServiceName, contextService).install();
 
@@ -71,10 +70,6 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(DeploymentUnit context) {
-        final ServiceName applicationContextServiceName = ContextServiceNameBuilder.app(context);
-        final ServiceController<?> serviceController = context.getServiceRegistry().getService(applicationContextServiceName);
-        if (serviceController != null) {
-            serviceController.setMode(ServiceController.Mode.REMOVE);
-        }
+
     }
 }

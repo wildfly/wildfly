@@ -40,6 +40,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_USER_TRANSACTION = JBOSS_TXN.append("UserTransaction");
 
+    public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
+
     public static <T> T notNull(T value) {
         if (value == null) throw new IllegalStateException("Service not started");
         return value;

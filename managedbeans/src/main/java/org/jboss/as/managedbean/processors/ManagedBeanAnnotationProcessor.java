@@ -37,10 +37,10 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.msc.service.ServiceName;
 
 import javax.annotation.ManagedBean;
 import java.util.List;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
@@ -63,7 +63,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final String applicationName = deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName();
+        final String applicationName = moduleDescription.getAppName();
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
             return;
@@ -84,7 +84,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName,beanClassName,deploymentUnit.getName(),applicationName);
+            final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName,beanClassName,moduleDescription.getModuleName(),applicationName);
             final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(beanName);
 
             // Add the view

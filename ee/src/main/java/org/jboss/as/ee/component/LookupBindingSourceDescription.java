@@ -44,7 +44,7 @@ public final class LookupBindingSourceDescription extends BindingSourceDescripti
     public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription bindingDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<JndiInjectable> injector) {
         if (lookupName.startsWith("java:")) {
             // Comes from a scoped dependency item
-            final String compName = componentDescription.getComponentName();
+            final String compName = componentDescription.getNamingMode() == ComponentNamingMode.CREATE ? componentDescription.getComponentName() : componentDescription.getModuleName();
             final String moduleName = componentDescription.getModuleName();
             final String appName = componentDescription.getApplicationName();
             final ServiceName sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);

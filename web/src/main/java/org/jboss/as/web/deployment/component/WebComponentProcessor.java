@@ -95,7 +95,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
                 ManagedBeanComponentInstantiator instantiator  = new ManagedBeanComponentInstantiator(deploymentUnit,description);
                 webComponents.put(clazz,instantiator);
             } else {
-                description = new WebComponentDescription(clazz,clazz,deploymentUnit.getName(),applicationName);
+                description = new WebComponentDescription(clazz,clazz,moduleDescription.getModuleName(),moduleDescription.getAppName());
                 moduleDescription.addComponent(description);
                 webComponents.put(clazz,new WebComponentInstantiator(deploymentUnit, description));
             }
