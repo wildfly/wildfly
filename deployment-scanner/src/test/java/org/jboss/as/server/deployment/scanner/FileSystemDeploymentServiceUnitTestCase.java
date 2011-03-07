@@ -49,6 +49,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
@@ -563,7 +564,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         TesteeSet ts = createTestee("foo.war");
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
@@ -572,7 +573,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(deployed.exists());
 
         assertTrue(deployed.delete());
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
@@ -660,6 +661,11 @@ public class FileSystemDeploymentServiceUnitTestCase {
             return content.contains(hash);
         }
 
+        @Override
+        public byte[] addExternalFileReference(File file) throws IOException {
+            return addExternalFileReference(file.getName(), file.getName(), file);
+        }
+
         /** {@inheritDoc} */
         public byte[] addExternalFileReference(String name, String runtimeName, File file) throws IOException {
             byte[] bytes = new byte[20];
@@ -669,13 +675,16 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         /** {@inheritDoc} */
+        @Override
         public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
             return mountDeploymentContent(name, runtimeName, deploymentHash, mountPoint, false);
         }
 
         /** {@inheritDoc} */
+        @Override
         public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint, boolean mountExploded) throws IOException {
             return new Closeable() {
+                @Override
                 public void close() throws IOException {
                     //
                 }
