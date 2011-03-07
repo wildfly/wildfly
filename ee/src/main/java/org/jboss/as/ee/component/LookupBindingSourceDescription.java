@@ -49,6 +49,8 @@ public final class LookupBindingSourceDescription extends BindingSourceDescripti
             final String appName = componentDescription.getApplicationName();
             final ServiceName sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);
             serviceBuilder.addDependency(sourceServiceName, JndiInjectable.class, injector);
+        }else {
+            throw new RuntimeException("lookup name " + lookupName + " not supported, lookup in @Resource annotation must start with java in " + componentDescription.getComponentClassName());
         }
     }
 }
