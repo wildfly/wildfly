@@ -1,0 +1,107 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.test.embedded.jsf;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+
+import javax.faces.component.UIComponent;
+
+import junit.framework.Assert;
+
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.spi.TestRunner;
+import org.jboss.as.arquillian.protocol.servlet.WebContext;
+import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.jsfunit.cdi.InitialPage;
+import org.jboss.jsfunit.jsfsession.JSFClientSession;
+import org.jboss.jsfunit.jsfsession.JSFServerSession;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+/**
+ * Version of the HelloJSFTest that uses Arquillian
+ *
+ * @author Stan Silvert
+ */
+@RunWith(Arquillian.class)
+@WebContext("jsf-example")
+public class JSFTestCase {
+
+    @Deployment
+    public static WebArchive createDeployment() {
+        //The servlet protocol relies on the war being called test.war
+        WebArchive war = ShrinkWrapUtils.createWebArchive("jsf-example.war", JSFTestCase.class);
+        war.addWebResource(EmptyAsset.INSTANCE, "beans.xml")
+            .addManifestResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
+            .add(new Asset() {
+                @Override
+                public InputStream openStream() {
+                    try {
+                        return new ByteArrayInputStream("org.jboss.arquillian.junit.JUnitTestRunner".getBytes("UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            , "META-INF/services/" + TestRunner.class.getName())
+           .addManifestResource(jsfunitFacesConfigXml(), "faces-config.xml")
+           .addManifestResource("arquillian/web-fragment.xml", "web-fragment.xml");
+
+        //System.out.println(war.toString(true)); // for debugging
+        return war;
+    }
+
+    @Test
+    @InitialPage("/index.faces")
+    public void testInitialPage(JSFServerSession server, JSFClientSession client) throws IOException {
+
+        // Test navigation to initial viewID
+        Assert.assertEquals("/index.xhtml", server.getCurrentViewID());
+
+        // Set the param and submit
+        client.setValue("name", "Stan");
+        client.click("submit_button");
+
+        // Assert that the greeting component is in the component tree and
+        // rendered
+        UIComponent greeting = server.findComponent("greeting");
+        Assert.assertTrue(greeting.isRendered());
+
+        // Test a managed bean using EL. We cheat and use the request object.
+        Assert.assertEquals("Stan", server.getManagedBeanValue("#{request.getParameter('form1:name')}"));
+    }
+
+    private static URL jsfunitFacesConfigXml()
+    {
+       return org.jboss.jsfunit.context.JSFUnitFacesContext.class.getResource("/META-INF/faces-config.xml");
+    }
+}

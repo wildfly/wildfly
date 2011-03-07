@@ -26,6 +26,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!--
+      Here since the arquillian Resource test enricher does not have a META-INF/services/org.jboss.arquillian.spi.TestEnricher  
+     -->
+
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-arquillian</artifactId>
@@ -33,57 +37,11 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+    <artifactId>jboss-as-arquillian-resource-testenricher-service</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Arquillian Embedded Container</name>
+    <name>JBoss Application Server: Arquillian Common</name>
 
     <packaging>jar</packaging>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-servlet-protocol</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.arquillian</groupId>
-            <artifactId>arquillian-junit</artifactId>
-            <scope>test</scope>
-        </dependency>        
-        
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    
 </project>

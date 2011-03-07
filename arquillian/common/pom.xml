@@ -54,9 +54,8 @@
           <artifactId>arquillian-protocol-osgi</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.arquillian.protocol</groupId>
-          <artifactId>arquillian-protocol-servlet-3</artifactId>
-          <scope>provided</scope>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-servlet-protocol</artifactId>
         </dependency>
         <dependency>
           <groupId>org.jboss.arquillian.testenricher</groupId>

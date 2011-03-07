@@ -327,6 +327,7 @@
 
         <module-def name="org.jboss.arquillian.testenricher.cdi">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/>
+        	   <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-cdi-testenricher-service"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.jmx">
@@ -340,13 +341,22 @@
         <module-def name="org.jboss.arquillian.testenricher.osgi">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-osgi"/>
         </module-def>
-        
+
+        <module-def name="org.jboss.arquillian.testenricher.resource">
+            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-resource"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-resource-testenricher-service"/>
+        </module-def>
+
         <module-def name="org.jboss.as.aggregate" />
 
         <module-def name="org.jboss.as.arquillian.common">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-common"/>
         </module-def>
-
+    	
+        <module-def name="org.jboss.as.arquillian.protocol.servlet">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-servlet-protocol"/>
+        </module-def>
+    	
         <module-def name="org.jboss.as.arquillian.service">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>
         </module-def>
@@ -540,7 +550,38 @@
         <module-def name="org.jboss.jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
+      
+    	  <module-def name="org.jboss.jsfunit.arquillian">
+            <maven-resource group="org.jboss.jsfunit" artifact="jsfunit-arquillian"/>
+        </module-def>
 
+        <module-def name="org.jboss.jsfunit.core">
+        	   <maven-resource group="commons-codec" artifact="commons-codec"/>
+            <maven-resource group="commons-collections" artifact="commons-collections"/>
+            <maven-resource group="commons-io" artifact="commons-io"/>
+            <maven-resource group="commons-lang" artifact="commons-lang"/>
+        	   <maven-resource group="commons-logging" artifact="commons-logging"/>
+            <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
+            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit"/>
+            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit-core-js"/>
+            <maven-resource group="net.sourceforge.nekohtml" artifact="nekohtml"/>
+            <maven-resource group="org.apache.httpcomponents" artifact="httpclient"/>
+            <maven-resource group="org.apache.httpcomponents" artifact="httpcore"/>
+            <maven-resource group="org.apache.httpcomponents" artifact="httpmime"/>
+            <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
+            <maven-resource group="org.jboss.jsfunit" artifact="jboss-jsfunit-core"/>
+            <maven-resource group="org.w3c.css" artifact="sac"/>
+            <maven-resource group="xalan" artifact="xalan"/>
+            <maven-resource group="xalan" artifact="serializer"/>
+            <maven-resource group="xerces" artifact="xercesImpl"/>
+            <maven-resource group="xml-apis" artifact="xml-apis"/>
+        	
+        </module-def>
+
+        <module-def name="org.jboss.jsfunit.jsfunit-arquillian-processor">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-jsfunit-processor-service"/>
+        </module-def>
+    	
         <module-def name="org.jboss.jts">
             <maven-resource group="org.jboss.jbossts" artifact="jbossjts"/>
         </module-def>
@@ -648,7 +689,9 @@
 
     	  <module-def name="org.jboss.surefire.arquillian-deps"/>
     	
-        <module-def name="org.jboss.staxmapper">
+        <module-def name="org.jboss.surefire.arquillian-jsfunit-deps"/>
+
+    	  <module-def name="org.jboss.staxmapper">
             <maven-resource group="org.jboss" artifact="staxmapper"/>
         </module-def>
 

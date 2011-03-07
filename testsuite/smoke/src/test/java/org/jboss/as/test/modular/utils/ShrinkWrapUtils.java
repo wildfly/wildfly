@@ -80,6 +80,13 @@ public class ShrinkWrapUtils {
         return archive;
     }
 
+    public static WebArchive createWebArchive(String archiveName, String resourcesName, Class<?>...classes) {
+        WebArchive archive = ShrinkWrap.create(WebArchive.class, getBaseArchiveName(archiveName));
+        addClasses(archive, classes);
+        addResources(resourcesName, archive);
+        return archive;
+    }
+
     public static JavaArchive createEmptyJavaArchive(String archiveName) {
 
         int index = archiveName.lastIndexOf("/");

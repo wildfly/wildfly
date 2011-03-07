@@ -42,7 +42,7 @@ import org.jboss.shrinkwrap.api.container.ManifestContainer;
  */
 public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProcessor {
 
-    static List<String> defaultDependencies = new ArrayList<String>();
+    static final List<String> defaultDependencies = new ArrayList<String>();
     static {
         defaultDependencies.add("org.jboss.arquillian.api");
         defaultDependencies.add("org.jboss.arquillian.junit");
@@ -53,6 +53,11 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
         defaultDependencies.add("org.jboss.shrinkwrap.api");
         defaultDependencies.add("org.jboss.shrinkwrap.impl");
         defaultDependencies.add("junit.junit");
+    }
+    static final List<String> jsfDependencies = new ArrayList<String>();
+    static {
+        jsfDependencies.add("org.jboss.jsfunit.arquillian");
+        jsfDependencies.add("org.jboss.jsfunit.core");
     }
 
     @Override
@@ -67,6 +72,13 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
         for (String dep : defaultDependencies) {
             if (moduleDeps.indexOf(dep) < 0)
                 moduleDeps.append("," + dep);
+        }
+        if (Boolean.valueOf(System.getProperty("jboss.arquillian.jsfunit", "false"))) {
+            for (String dep : jsfDependencies) {
+                if (moduleDeps.indexOf(dep) < 0) {
+                    moduleDeps.append("," + dep);
+                }
+            }
         }
         attributes.putValue("Dependencies", moduleDeps.toString());
 

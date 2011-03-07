@@ -51,7 +51,12 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
+            <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-servlet-protocol</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -61,8 +66,13 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+            <artifactId>jboss-as-server</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.jsfunit</groupId>
+           <artifactId>jsfunit-arquillian</artifactId>
+           <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -74,7 +84,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <!--  standard surefire options -->
-                    <redirectTestOutputToFile>false</redirectTestOutputToFile>                    
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>
@@ -180,7 +190,7 @@
                                       <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
                                    </includes>
                                    <excludes>
-                                      <exclude>org/jboss/as/test/embedded/nothing-to-exclude/*TestCase.java</exclude>
+                                      <exclude>org/jboss/as/test/embedded/jsf/*TestCase.java</exclude>
                                    </excludes>
                                </configuration>
                             </execution>
@@ -218,7 +228,65 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>modular-jsf</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.maven.surefire.modular</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                               <id>modular-jsf-arquillian</id>
+                               <phase>test</phase>
+                               <goals>
+                                   <goal>test</goal>
+                               </goals>
+                               <configuration>
+                                   <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/jsf-arquillian-module-def.xml</moduleDefinitionFile>
+                                   <includes>
+                                       <exclude>org/jboss/as/test/embedded/jsf/*TestCase.java</exclude>
+                                   </includes>
+			                          <systemProperties>
+			                              <property>
+			                                 <name>jboss.arquillian.executeWithServlet</name>
+			                                 <value>true</value>
+			                              </property>
+			                              <property>
+			                                 <name>jboss.arquillian.jsfunit</name>
+			                                 <value>true</value>
+			                              </property>
+			                              <!--  Need to specify these again, since just including one property for this excution overwrites all the others -->
+			                              <property>
+			                                 <name>java.util.logging.manager</name>
+			                                 <value>org.jboss.logmanager.LogManager</value>
+			                              </property>
+			                              <property>
+			                                 <name>jboss.home.dir</name>
+			                                 <value>${jboss.home}</value>
+			                              </property>
+			                              <property>
+			                                 <name>org.jboss.boot.log.file</name>
+			                                 <value>${jboss.home}/standalone/log/boot.log</value>
+			                              </property>
+			                              <property>
+			                                 <name>jboss.embedded.root</name>
+			                                 <value>target/temp-config</value>
+			                              </property>
+			                          </systemProperties>
+		                             <includes>
+		                                 <include>org/jboss/as/test/embedded/jsf/*TestCase.java</include>
+		                             </includes>
+                               </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
-    
 </project>
 

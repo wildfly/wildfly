@@ -32,6 +32,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
+import org.jboss.weld.Container;
 import org.jboss.weld.context.bound.BoundConversationContext;
 import org.jboss.weld.context.bound.BoundLiteral;
 import org.jboss.weld.context.bound.BoundRequest;
@@ -67,7 +68,7 @@ public class WeldContextSetup implements SetupAction {
         try {
             final BeanManager manager = (BeanManager) new InitialContext().lookup(STANDARD_BEAN_MANAGER_JNDI_NAME);
 
-            if (manager != null) {
+            if (manager != null && Container.available()) {
 
                 final Bean<BoundSessionContext> sessionContextBean = (Bean<BoundSessionContext>) manager.resolve(manager
                         .getBeans(BoundSessionContext.class, BoundLiteral.INSTANCE));
@@ -105,29 +106,31 @@ public class WeldContextSetup implements SetupAction {
         try {
             final BeanManager manager = (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
 
-            final Bean<BoundSessionContext> sessionContextBean = (Bean<BoundSessionContext>) manager.resolve(manager.getBeans(
-                    BoundSessionContext.class, BoundLiteral.INSTANCE));
-            CreationalContext<?> ctx = manager.createCreationalContext(sessionContextBean);
-            final BoundSessionContext sessionContext = (BoundSessionContext) manager.getReference(sessionContextBean,
-                    BoundSessionContext.class, ctx);
-            sessionContext.deactivate();
-            sessionContext.dissociate(sessionContexts.get());
+            if (manager != null && Container.available()) {
+                final Bean<BoundSessionContext> sessionContextBean = (Bean<BoundSessionContext>) manager.resolve(manager.getBeans(
+                        BoundSessionContext.class, BoundLiteral.INSTANCE));
+                CreationalContext<?> ctx = manager.createCreationalContext(sessionContextBean);
+                final BoundSessionContext sessionContext = (BoundSessionContext) manager.getReference(sessionContextBean,
+                        BoundSessionContext.class, ctx);
+                sessionContext.deactivate();
+                sessionContext.dissociate(sessionContexts.get());
 
-            final Bean<BoundRequestContext> requestContextBean = (Bean<BoundRequestContext>) manager.resolve(manager.getBeans(
-                    BoundRequestContext.class, BoundLiteral.INSTANCE));
-            ctx = manager.createCreationalContext(requestContextBean);
-            final BoundRequestContext requestContext = (BoundRequestContext) manager.getReference(requestContextBean,
-                    BoundRequestContext.class, ctx);
-            requestContext.deactivate();
-            requestContext.dissociate(requestContexts.get());
+                final Bean<BoundRequestContext> requestContextBean = (Bean<BoundRequestContext>) manager.resolve(manager.getBeans(
+                        BoundRequestContext.class, BoundLiteral.INSTANCE));
+                ctx = manager.createCreationalContext(requestContextBean);
+                final BoundRequestContext requestContext = (BoundRequestContext) manager.getReference(requestContextBean,
+                        BoundRequestContext.class, ctx);
+                requestContext.deactivate();
+                requestContext.dissociate(requestContexts.get());
 
-            final Bean<BoundConversationContext> conversationContextBean = (Bean<BoundConversationContext>) manager
-                    .resolve(manager.getBeans(BoundConversationContext.class, BoundLiteral.INSTANCE));
-            ctx = manager.createCreationalContext(conversationContextBean);
-            final BoundConversationContext conversationContext = (BoundConversationContext) manager.getReference(
-                    conversationContextBean, BoundConversationContext.class, ctx);
-            conversationContext.deactivate();
-            conversationContext.dissociate(boundRequests.get());
+                final Bean<BoundConversationContext> conversationContextBean = (Bean<BoundConversationContext>) manager
+                        .resolve(manager.getBeans(BoundConversationContext.class, BoundLiteral.INSTANCE));
+                ctx = manager.createCreationalContext(conversationContextBean);
+                final BoundConversationContext conversationContext = (BoundConversationContext) manager.getReference(
+                        conversationContextBean, BoundConversationContext.class, ctx);
+                conversationContext.deactivate();
+                conversationContext.dissociate(boundRequests.get());
+            }
         } catch (NamingException e) {
             log.error("Failed to tear down Weld contexts", e);
         } finally {

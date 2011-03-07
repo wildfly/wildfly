@@ -29,12 +29,12 @@ import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.jboss.arquillian.protocol.servlet_3.ServletMethodExecutor;
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.DeployableContainer;
 import org.jboss.arquillian.spi.DeploymentException;
+import org.jboss.as.arquillian.protocol.servlet.ServletMethodExecutor;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;

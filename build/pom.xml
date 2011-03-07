@@ -417,6 +417,31 @@
         </dependency>
         
         <dependency>
+           <groupId>org.jboss.arquillian.testenricher</groupId>
+           <artifactId>arquillian-testenricher-resource</artifactId>
+        </dependency>
+        
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-arquillian-cdi-testenricher-service</artifactId>
+        </dependency>
+
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-arquillian-jsfunit-processor-service</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-resource-testenricher-service</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-servlet-protocol</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-arquillian-service</artifactId>
         </dependency>
@@ -666,6 +691,16 @@
         <dependency>
             <groupId>org.jboss.jbossts</groupId>
             <artifactId>jbossjts-integration</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.jsfunit</groupId>
+            <artifactId>jsfunit-arquillian</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.jsfunit</groupId>
+            <artifactId>jboss-jsfunit-core</artifactId>
         </dependency>
 
         <dependency>
