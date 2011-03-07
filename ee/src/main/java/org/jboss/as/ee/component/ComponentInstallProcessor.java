@@ -172,7 +172,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             ComponentNamingMode namingMode = description.getNamingMode();
             final String fullBindingName;
             final String serviceBindingName;
-            if (bindingDescription.isAbsoluteBinding()) {
+            if (bindingName.startsWith("java:") || bindingDescription.isAbsoluteBinding()) {
                 fullBindingName = bindingName;
                 int idx = fullBindingName.indexOf('/');
                 if (idx == -1) {
