@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.naming.NamingStore;
@@ -91,13 +93,25 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
 
         // bind the bean manager to JNDI
         final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(),moduleDescription.getModuleName());
-        final ServiceName beanManagerBindingServiceName = moduleContextServiceName.append("BeanManager");
+        bindBeanManager(deploymentUnit, serviceTarget, beanManagerServiceName, moduleContextServiceName);
+
+        //bind the bm into java:comp for all components that require it
+        for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
+            if(component.getNamingMode() == ComponentNamingMode.CREATE) {
+                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getAppName(),moduleDescription.getModuleName(),component.getComponentName());
+                bindBeanManager(deploymentUnit, serviceTarget,beanManagerServiceName, compContextServiceName);
+            }
+        }
+    }
+
+    private void bindBeanManager(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName) {
+        final ServiceName beanManagerBindingServiceName = contextServiceName.append("BeanManager");
 
         InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
         BinderService beanManagerBindingService = new BinderService("BeanManager");
         serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService)
                 .addInjection(beanManagerBindingService.getJndiInjectableInjector(), new ValueJndiInjectable(injectedBeanManager))
-                .addDependency(moduleContextServiceName, NamingStore.class, beanManagerBindingService.getNamingStoreInjector())
+                .addDependency(contextServiceName, NamingStore.class, beanManagerBindingService.getNamingStoreInjector())
                 .addDependency(beanManagerServiceName, BeanManager.class, injectedBeanManager)
                 .install();
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
