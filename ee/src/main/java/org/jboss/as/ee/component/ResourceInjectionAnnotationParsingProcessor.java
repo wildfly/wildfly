@@ -58,6 +58,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         final Map<DotName,String> locations = new HashMap<DotName,String>();
         locations.put(DotName.createSimple("javax.transaction.UserTransaction"), "java:comp/UserTransaction");
         locations.put(DotName.createSimple("javax.transaction.TransactionSynchronizationRegistry"), "java:comp/TransactionSynchronizationRegistry");
+        locations.put(DotName.createSimple("javax.enterprise.inject.spi.BeanManager"), "java:comp/BeanManager");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
     }
 

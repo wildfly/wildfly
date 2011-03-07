@@ -77,7 +77,7 @@ public class ManagedBeanTestCase {
         Assert.assertNotNull(bean.getSimple());
         String s = bean.echo("Hello");
         Assert.assertNotNull(s);
-        Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean", s);
+        Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
     }
 
 }

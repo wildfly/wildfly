@@ -345,7 +345,7 @@ public abstract class AbstractComponent implements Component {
         @Override
         public Object processInvocation(InterceptorContext context) throws Exception {
             for(ComponentInjector.InjectionHandle injectionHandle : injections) {
-                injectionHandle.disinject();
+                injectionHandle.uninject();
             }
             return null;
         }

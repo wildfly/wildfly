@@ -54,7 +54,7 @@ public interface ComponentInjector {
         /**
          * Called at the end of the injected object lifecycle, to free any injected resources.
          */
-        void disinject();
+        void uninject();
     }
 
 }

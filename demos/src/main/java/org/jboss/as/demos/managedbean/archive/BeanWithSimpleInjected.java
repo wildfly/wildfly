@@ -21,16 +21,15 @@
  */
 package org.jboss.as.demos.managedbean.archive;
 
+import org.jboss.logging.Logger;
+
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.annotation.Resources;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
-
-import org.jboss.logging.Logger;
 
 /**
  *
@@ -49,14 +48,25 @@ public class BeanWithSimpleInjected extends BeanParent {
     @Inject
     private CDIManagedBean bean;
 
+    private CDIManagedBean bean2;
+
+    @Inject
+    public void initMethod(CDIManagedBean bean) {
+        this.bean2 = bean;
+    }
+
     @PostConstruct
     public void start() {
+        if(bean2 == null) {
+            throw new RuntimeException("PostContruct called before @Inject method");
+        }
+
         log.info("-----> Constructed BeanWithSimpleInjected, simple=" + simple);
     }
 
     @Interceptors(OtherInterceptorBean.class)
     public String echo(String msg) {
-        return msg + bean.getValue();
+        return msg + bean.getValue() + bean2.getValue();
     }
 
     public SimpleManagedBean getSimple() {

@@ -33,14 +33,26 @@ import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
 
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,7 +68,7 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
     private final ServiceName serviceName;
     private final Class<?> componentClass;
     private final InjectedValue<BeanManagerImpl> beanManager = new InjectedValue<BeanManagerImpl>();
-    private volatile List<CDIInjectionPoint> injectionPoints;
+    private volatile List<Injection> injectionPoints;
     private final ClassLoader classLoader;
 
     public WeldComponentInjectionService(ServiceName serviceName, Class<?> componentClass, ClassLoader classLoader) {
@@ -76,21 +88,12 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
         try {
             SecurityActions.setContextClassLoader(classLoader);
             final BeanManagerImpl bm = beanManager.getValue();
-            WeldInjectionHandle weldHandle = new WeldInjectionHandle(injectionPoints.size());
-            for (int i = 0; i < injectionPoints.size(); ++i) {
-                final CDIInjectionPoint injectionPoint = injectionPoints.get(i);
-                try {
-                    final CreationalContext<?> ctx = bm.createCreationalContext(injectionPoint.bean);
-                    final Object value = bm.getReference(injectionPoint.bean, injectionPoint.field.getGenericType(), ctx);
-                    injectionPoint.field.set(instance, value);
-                    weldHandle.instances[i] = value;
-                    weldHandle.creationalContexts[i] = ctx;
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Failed to perform CDI injection of field: " + injectionPoint.field + " on " + componentClass, e);
-                }
+            WeldInjectionHandle weldHandle = new WeldInjectionHandle();
+            for (Injection injectionPoint :injectionPoints) {
+                weldHandle.addAll(injectionPoint.inject(instance,bm));
             }
             return weldHandle;
-            } finally {
+        } finally {
             SecurityActions.setContextClassLoader(oldTCCL);
         }
     }
@@ -102,7 +105,7 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
             SecurityActions.setContextClassLoader(classLoader);
             final BeanManagerImpl bm = beanManager.getValue();
             final ClassTransformer transformer = bm.getServices().get(ClassTransformer.class);
-            final List<CDIInjectionPoint> injectionPoints = new ArrayList<CDIInjectionPoint>();
+            final List<Injection> injectionPoints = new ArrayList<Injection>();
             //we do it this way to get changes introduced by extensions
             WeldClass<?> weldClass = transformer.loadClass(componentClass);
             for (AnnotatedField<?> field : weldClass.getFields()) {
@@ -113,16 +116,42 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
                             qualifiers.add(annotation);
                         }
                     }
-                    Set<Bean<?>> beans = bm.getBeans(field.getBaseType(), qualifiers);
+                    FieldInjectionPoint ip = new FieldInjectionPoint(field, qualifiers);
+                    Set<Bean<?>> beans = bm.getBeans(ip);
                     if (beans.size() > 1) {
                         throw new StartException("Error resolving CDI injection point " + field + " on " + componentClass + ". Injection points is ambiguous " + beans);
                     } else if (beans.isEmpty()) {
                         throw new StartException("Error resolving CDI injection point " + field + " on " + componentClass + ". No bean satisfies the injection point.");
                     }
                     Bean<?> bean = bm.resolve(beans);
-                    injectionPoints.add(new CDIInjectionPoint(field.getJavaMember(), bean));
+                    injectionPoints.add(new CDIFieldInjection(field.getJavaMember(), bean));
                 }
             }
+            //now look for @Inject methods
+            for (AnnotatedMethod<?> method : weldClass.getMethods()) {
+                if (method.isAnnotationPresent(Inject.class)) {
+                    final List<Bean<?>> parameterBeans = new ArrayList<Bean<?>>();
+                    for (AnnotatedParameter<?> param : method.getParameters()) {
+                        final Set<Annotation> qualifiers = new HashSet<Annotation>();
+                        for (Annotation annotation : param.getAnnotations()) {
+                            if (bm.isQualifier(annotation.annotationType())) {
+                                qualifiers.add(annotation);
+                            }
+                        }
+                        ParameterInjectionPoint ip = new ParameterInjectionPoint(param, qualifiers);
+                        Set<Bean<?>> beans = bm.getBeans(ip);
+                        if (beans.size() > 1) {
+                            throw new StartException("Error resolving CDI injection point " + param + " on " + componentClass + ". Injection points is ambiguous " + beans);
+                        } else if (beans.isEmpty()) {
+                            throw new StartException("Error resolving CDI injection point " + param + " on " + componentClass + ". No bean satisfies the injection point.");
+                        }
+                        Bean<?> bean = bm.resolve(beans);
+                        parameterBeans.add(bean);
+                    }
+                    injectionPoints.add(new CDIMethodInjection(method.getJavaMember(), parameterBeans));
+                }
+            }
+
 
             this.injectionPoints = injectionPoints;
         } finally {
@@ -147,31 +176,38 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
     /**
      * Injection Handle that can be used to end the lifecycle of the injected CDI beans
      */
-    private class WeldInjectionHandle implements InjectionHandle {
-        private final CreationalContext<?>[] creationalContexts;
-        private final Object[] instances;
+    private static final class WeldInjectionHandle implements InjectionHandle {
+        private final List<CreationalContext<?>> creationalContexts = new ArrayList<CreationalContext<?>>();
 
-        public WeldInjectionHandle(int size) {
-            this.creationalContexts = new CreationalContext[size];
-            this.instances = new Object[size];
+        public void add(CreationalContext<?> ctx) {
+            creationalContexts.add(ctx);
+        }
+
+        public void addAll(Collection<CreationalContext<?>> ctxs) {
+            creationalContexts.addAll(ctxs);
         }
 
         @Override
-        public void disinject() {
-            for (int i = 0; i < injectionPoints.size(); ++i) {
-                ((Bean) injectionPoints.get(i).bean).destroy(instances[i], creationalContexts[i]);
+        public void uninject() {
+            for(CreationalContext<?> ctx : creationalContexts) {
+                ctx.release();
             }
         }
+    }
+
+
+    private static interface Injection {
+        Collection<CreationalContext<?>> inject(Object instance, BeanManager beanManager);
     }
 
     /**
      * tracks fields to be injected
      */
-    private static class CDIInjectionPoint {
+    private static final class CDIFieldInjection implements Injection {
         private final Field field;
         private final Bean<?> bean;
 
-        public CDIInjectionPoint(final Field field, final Bean<?> bean) {
+        public CDIFieldInjection(final Field field, final Bean<?> bean) {
             this.bean = bean;
             this.field = field;
             AccessController.doPrivileged(new PrivilegedAction<Object>() {
@@ -181,6 +217,172 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
                     return null;
                 }
             });
+        }
+
+        /**
+         * Injects into a field injection point
+         * @param instance The instance to inject
+         * @param beanManager The current BeanManager
+         * @return A collections of CreationalContexts that can be used to release the injected resources
+         */
+        @Override
+        public Collection<CreationalContext<?>> inject(Object instance, BeanManager beanManager) {
+            try {
+                final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
+                final Object value = beanManager.getReference(bean, field.getGenericType(), ctx);
+                field.set(instance, value);
+                return Collections.<CreationalContext<?>>singleton(ctx);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Failed to perform CDI injection of field: " + field + " on " + instance.getClass(), e);
+            }
+        }
+    }
+
+    /**
+     * tracks initalizer methods
+     */
+    private static final class CDIMethodInjection implements Injection {
+        private final Method method;
+        private final List<Bean<?>> beans;
+
+        public CDIMethodInjection(final Method method, final List<Bean<?>> beans) {
+            this.beans = beans;
+            this.method = method;
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    method.setAccessible(true);
+                    return null;
+                }
+            });
+        }
+
+
+        /**
+         * Invokes an Inject annotated method
+         * @param instance The instance to invoke on
+         * @param beanManager The current BeanManager
+         * @return A collections of CreationalContexts that can be used to release the injected resources
+         */
+        @Override
+        public Collection<CreationalContext<?>> inject(Object instance, BeanManager beanManager) {
+            try {
+                final Object[] params = new Object[beans.size()];
+                final Set<CreationalContext<?>> contexts = new HashSet<CreationalContext<?>>();
+                int i = 0;
+                for(Bean<?> bean : beans) {
+                    final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
+                    contexts.add(ctx);
+                    final Object value = beanManager.getReference(bean, method.getParameterTypes()[i], ctx);
+                    params[i++] = value;
+                }
+                method.invoke(instance,params);
+                return contexts;
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Failed to perform CDI injection of initalizer method: " + method + " on " + instance.getClass(), e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException("Failed to perform CDI injection of field: " + method + " on " + instance.getClass(), e);
+            }
+        }
+    }
+
+    /**
+     * InjectionPoint implementation for a field
+     */
+    private static final class FieldInjectionPoint implements InjectionPoint {
+
+        private final AnnotatedField<?> field;
+        private final Set<Annotation> qualifiers;
+
+        public FieldInjectionPoint(AnnotatedField<?> field, Set<Annotation> qualifiers) {
+            this.field = field;
+            this.qualifiers = qualifiers;
+        }
+
+        @Override
+        public Type getType() {
+            return field.getJavaMember().getGenericType();
+
+        }
+
+        @Override
+        public Set<Annotation> getQualifiers() {
+            return qualifiers;
+        }
+
+        @Override
+        public Bean<?> getBean() {
+            return null;
+        }
+
+        @Override
+        public Member getMember() {
+            return field.getJavaMember();
+        }
+
+        @Override
+        public Annotated getAnnotated() {
+            return field;
+        }
+
+        @Override
+        public boolean isDelegate() {
+            return false;
+        }
+
+        @Override
+        public boolean isTransient() {
+            return Modifier.isTransient(field.getJavaMember().getModifiers());
+        }
+    }
+
+    /**
+     * InjectionPoint implementation for method parameters
+     */
+    private static final class ParameterInjectionPoint implements InjectionPoint {
+
+        private final AnnotatedParameter<?> parameter;
+        private final Set<Annotation> qualifiers;
+
+        public ParameterInjectionPoint(AnnotatedParameter<?> parameter, Set<Annotation> qualifiers) {
+            this.parameter = parameter;
+            this.qualifiers = qualifiers;
+        }
+
+        @Override
+        public Type getType() {
+            return parameter.getBaseType();
+
+        }
+
+        @Override
+        public Set<Annotation> getQualifiers() {
+            return qualifiers;
+        }
+
+        @Override
+        public Bean<?> getBean() {
+            return null;
+        }
+
+        @Override
+        public Member getMember() {
+            return parameter.getDeclaringCallable().getJavaMember();
+        }
+
+        @Override
+        public Annotated getAnnotated() {
+            return parameter;
+        }
+
+        @Override
+        public boolean isDelegate() {
+            return false;
+        }
+
+        @Override
+        public boolean isTransient() {
+            return false;
         }
     }
 
