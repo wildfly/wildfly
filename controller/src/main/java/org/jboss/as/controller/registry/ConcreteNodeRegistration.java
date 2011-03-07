@@ -25,7 +25,6 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -96,20 +95,28 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    Map<String, DescriptionProvider> getOperationDescriptions(final ListIterator<PathElement> iterator) {
-        if (! iterator.hasNext()) {
-            final HashMap<String, DescriptionProvider> map = new HashMap<String, DescriptionProvider>();
+    void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, DescriptionProvider> providers, final boolean inherited) {
+
+        if (!iterator.hasNext() || inherited) {
             for (final Map.Entry<String, OperationEntry> entry : operationsUpdater.get(this).entrySet()) {
-                map.put(entry.getKey(), entry.getValue().getDescriptionProvider());
+                if (!providers.containsKey(entry.getKey())) {
+                    if (!iterator.hasNext() || (inherited && entry.getValue().isInherited())) {
+                        providers.put(entry.getKey(), entry.getValue().getDescriptionProvider());
+                    }
+                }
             }
-            return map;
+            if (!iterator.hasNext()) {
+                return;
+            }
         }
         final PathElement next = iterator.next();
         try {
             final String key = next.getKey();
             final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
             final NodeSubregistry subregistry = snapshot.get(key);
-            return subregistry == null ? Collections.<String, DescriptionProvider>emptyMap() : subregistry.getHandlers(iterator, next.getValue());
+            if (subregistry != null) {
+                subregistry.getHandlers(iterator, next.getValue(), providers, inherited);
+            }
         } finally {
             iterator.previous();
         }

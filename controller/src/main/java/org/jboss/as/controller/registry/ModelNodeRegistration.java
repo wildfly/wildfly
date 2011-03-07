@@ -171,9 +171,10 @@ public interface ModelNodeRegistration {
      * Get a map of descriptions of all operations available at an address.
      *
      * @param address the address
+     * @param inherited true to include inherited operations
      * @return the operation map
      */
-    Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address);
+    Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address, boolean inherited);
 
     /**
      * If there is a proxy controller registered under any part of the registered address it will be returned.

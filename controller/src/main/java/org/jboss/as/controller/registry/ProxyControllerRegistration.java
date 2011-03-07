@@ -87,8 +87,8 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    Map<String, DescriptionProvider> getOperationDescriptions(final ListIterator<PathElement> iterator) {
-        return Collections.emptyMap();
+    void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, DescriptionProvider> providers, final boolean inherited) {
+
     }
 
     @Override

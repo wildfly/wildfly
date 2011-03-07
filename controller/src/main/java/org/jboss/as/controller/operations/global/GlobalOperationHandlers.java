@@ -343,7 +343,7 @@ public class GlobalOperationHandlers {
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final ModelNodeRegistration registry = context.getRegistry();
-                final Map<String, DescriptionProvider> descriptionProviders = registry.getOperationDescriptions(PathAddress.pathAddress(operation.require(ADDRESS)));
+                final Map<String, DescriptionProvider> descriptionProviders = registry.getOperationDescriptions(PathAddress.pathAddress(operation.require(ADDRESS)), true);
 
                 final ModelNode result = new ModelNode();
                 if (descriptionProviders.size() > 0) {
@@ -416,7 +416,7 @@ public class GlobalOperationHandlers {
         private void addDescription(final OperationContext context, final ModelNode result, final boolean recursive, final boolean operations, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
 
             if (operations) {
-                final Map<String, DescriptionProvider> ops = registry.getOperationDescriptions(address);
+                final Map<String, DescriptionProvider> ops = registry.getOperationDescriptions(address, true);
                 if (ops.size() > 0) {
 
                     for (final Map.Entry<String, DescriptionProvider> entry : ops.entrySet()) {

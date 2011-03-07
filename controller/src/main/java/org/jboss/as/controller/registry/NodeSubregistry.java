@@ -99,25 +99,24 @@ final class NodeSubregistry {
         }
     }
 
-    Map<String, DescriptionProvider> getHandlers(final ListIterator<PathElement> iterator, final String child) {
+    void getHandlers(final ListIterator<PathElement> iterator, final String child, final Map<String, DescriptionProvider> providers, final boolean inherited) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
         final AbstractNodeRegistration childRegistry = snapshot.get(child);
         final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
         if (wildcardRegistry == null) {
             if (childRegistry == null) {
-                return Collections.emptyMap();
+                return;
             } else {
-                return childRegistry.getOperationDescriptions(iterator);
+                childRegistry.getOperationDescriptions(iterator, providers, inherited);
+                return;
             }
         } else {
             if (childRegistry == null) {
-                return wildcardRegistry.getOperationDescriptions(iterator);
+                wildcardRegistry.getOperationDescriptions(iterator, providers, inherited);
+                return;
             } else {
-                final Map<String, DescriptionProvider> wildcardHandlers = wildcardRegistry.getOperationDescriptions(iterator);
-                final Map<String, DescriptionProvider> childHandlers = childRegistry.getOperationDescriptions(iterator);
-                final FastCopyHashMap<String, DescriptionProvider> combined = new FastCopyHashMap<String, DescriptionProvider>(childHandlers);
-                combined.putAll(wildcardHandlers);
-                return combined;
+                wildcardRegistry.getOperationDescriptions(iterator, providers, inherited);
+                childRegistry.getOperationDescriptions(iterator, providers, inherited);
             }
         }
     }

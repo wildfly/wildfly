@@ -388,24 +388,48 @@ public class GlobalOperationsTestCase {
         ModelNode result = CONTROLLER.executeForResult(operation);
 
         assertEquals(ModelType.LIST, result.getType());
-        assertEquals(2, result.asList().size());
+        assertEquals(10, result.asList().size());
         List<String> names = modelNodeListToStringList(result.asList());
         assertTrue(names.contains("testA1-1"));
         assertTrue(names.contains("testA1-2"));
+        assertTrue(names.contains(READ_RESOURCE_OPERATION));
+        assertTrue(names.contains(READ_ATTRIBUTE_OPERATION));
+        assertTrue(names.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+        assertTrue(names.contains(READ_CHILDREN_NAMES_OPERATION));
+        assertTrue(names.contains(READ_CHILDREN_TYPES_OPERATION));
+        assertTrue(names.contains(READ_OPERATION_NAMES_OPERATION));
+        assertTrue(names.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+        assertTrue(names.contains(WRITE_ATTRIBUTE_OPERATION));
+
 
         operation = createOperation(READ_OPERATION_NAMES_OPERATION, "profile", "profileA", "subsystem", "subsystem2");
 
         result = CONTROLLER.executeForResult(operation);
         assertEquals(ModelType.LIST, result.getType());
-        assertEquals(1, result.asList().size());
+        assertEquals(9, result.asList().size());
         names = modelNodeListToStringList(result.asList());
         assertTrue(names.contains("testA2"));
+        assertTrue(names.contains(READ_RESOURCE_OPERATION));
+        assertTrue(names.contains(READ_ATTRIBUTE_OPERATION));
+        assertTrue(names.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+        assertTrue(names.contains(READ_CHILDREN_NAMES_OPERATION));
+        assertTrue(names.contains(READ_CHILDREN_TYPES_OPERATION));
+        assertTrue(names.contains(READ_OPERATION_NAMES_OPERATION));
+        assertTrue(names.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+        assertTrue(names.contains(WRITE_ATTRIBUTE_OPERATION));
 
         operation = createOperation(READ_OPERATION_NAMES_OPERATION, "profile", "profileB");
         result = CONTROLLER.executeForResult(operation);
         assertEquals(ModelType.LIST, result.getType());
-        assertEquals(0, result.asList().size());
-
+        assertEquals(8, result.asList().size());
+        assertTrue(names.contains(READ_RESOURCE_OPERATION));
+        assertTrue(names.contains(READ_ATTRIBUTE_OPERATION));
+        assertTrue(names.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+        assertTrue(names.contains(READ_CHILDREN_NAMES_OPERATION));
+        assertTrue(names.contains(READ_CHILDREN_TYPES_OPERATION));
+        assertTrue(names.contains(READ_OPERATION_NAMES_OPERATION));
+        assertTrue(names.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+        assertTrue(names.contains(WRITE_ATTRIBUTE_OPERATION));
     }
 
     @Test
@@ -703,10 +727,18 @@ public class GlobalOperationsTestCase {
         if (operations) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
-            //TODO should the inherited ops be picked up?
-            assertEquals(2, ops.size());
+            assertEquals(10, ops.size());
             assertTrue(ops.contains("testA1-1"));
             assertTrue(ops.contains("testA1-2"));
+            assertTrue(ops.contains(READ_RESOURCE_OPERATION));
+            assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
+            assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
+
         } else {
             assertFalse(result.get(OPERATIONS).isDefined());
         }
@@ -732,7 +764,18 @@ public class GlobalOperationsTestCase {
         assertTrue(result.require(ATTRIBUTES).require("value").require(REQUIRED).asBoolean());
         //TODO should the inherited ops be picked up?
         if (result.has(OPERATIONS)) {
-            assertTrue(result.get(OPERATIONS).asList().isEmpty());
+            assertTrue(result.require(OPERATIONS).isDefined());
+            Set<String> ops = result.require(OPERATIONS).keys();
+            assertEquals(8, ops.size());
+            assertTrue(ops.contains(READ_RESOURCE_OPERATION));
+            assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
+            assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
+
         }
 
     }
@@ -745,7 +788,17 @@ public class GlobalOperationsTestCase {
         assertTrue(result.require(ATTRIBUTES).require("name").require(REQUIRED).asBoolean());
         //TODO should the inherited ops be picked up?
         if (result.has(OPERATIONS)) {
-            assertTrue(result.get(OPERATIONS).asList().isEmpty());
+            assertTrue(result.require(OPERATIONS).isDefined());
+            Set<String> ops = result.require(OPERATIONS).keys();
+            assertEquals(8, ops.size());
+            assertTrue(ops.contains(READ_RESOURCE_OPERATION));
+            assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
+            assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
         }
     }
 

@@ -64,6 +64,7 @@ import java.util.Set;
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
@@ -123,8 +124,6 @@ public abstract class AbstractProxyControllerTest {
 
         result = mainController.execute(operation);
         checkRootSubModelDescription(result.get(RESULT), false);
-
-        System.out.println("------------");
 
         result = mainController.execute(operation);
         checkRootSubModelDescription(result.get(RESULT), false);
@@ -230,15 +229,15 @@ public abstract class AbstractProxyControllerTest {
     public void testReadOperationNames() throws Exception {
         ExecutionContext read = createExecutionContext(READ_OPERATION_NAMES_OPERATION);
         ModelNode result = mainController.execute(read);
-        checkOperationNames(result.get(RESULT));
+        checkOperationNames(result.get(RESULT), false);
 
         read = createExecutionContext(READ_OPERATION_NAMES_OPERATION, HOST, "hostA");
         result = mainController.execute(read);
-        checkOperationNames(result.get(RESULT));
+        checkOperationNames(result.get(RESULT), true);
 
         read = createExecutionContext(READ_OPERATION_NAMES_OPERATION,  HOST, "hostA", "hostchild", "hcA");
         result = mainController.execute(read);
-        assertTrue(result.get(RESULT).asList().isEmpty());
+        checkOperationNames(result.get(RESULT), true);
     }
 
     @Test
@@ -321,10 +320,10 @@ public abstract class AbstractProxyControllerTest {
         assertEquals(ModelType.OBJECT, result.require(REPLY_PROPERTIES).require(TYPE).asType());
     }
 
-    private void checkOperationNames(ModelNode operationNamesList) {
+    private void checkOperationNames(ModelNode operationNamesList, boolean isInHost) {
         assertTrue(operationNamesList.isDefined());
         assertEquals(ModelType.LIST, operationNamesList.getType());
-        assertEquals(8, operationNamesList.asList().size());
+        assertEquals(isInHost ? 9 : 8, operationNamesList.asList().size());
     }
 
     private void checkRootSubModelDescription(ModelNode result, boolean operations) {
@@ -403,7 +402,18 @@ public abstract class AbstractProxyControllerTest {
         if (!operations) {
             assertFalse(result.has(OPERATIONS));
         } else {
-            assertEquals(0, result.require(OPERATIONS).asList().size());
+            Set<String> ops = result.require(OPERATIONS).keys();
+            assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_CHILDREN_TYPES_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
+            assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
+            assertTrue(ops.contains(READ_RESOURCE_OPERATION));
+            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
+            for (String op : ops) {
+                assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
+            }
         }
 
 
@@ -554,6 +564,25 @@ public abstract class AbstractProxyControllerTest {
             getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+            getRegistry().registerOperationHandler("Test",
+                    new OperationHandler() {
+                        @Override
+                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler)
+                                throws OperationFailedException {
+                            return null;
+                        }
+                    },
+                    new DescriptionProvider() {
+
+                        @Override
+                        public ModelNode getModelDescription(Locale locale) {
+                            ModelNode node = new ModelNode();
+                            node.get(OPERATION_NAME).set("Test");
+                            return node;
+                        }
+                    },
+                    true);
+
 
             PathElement hostAElement = PathElement.pathElement(HOST, "hostA");
             mainController.getRegistry().registerProxyController(hostAElement, createProxyController(this, PathAddress.pathAddress(hostAElement)));

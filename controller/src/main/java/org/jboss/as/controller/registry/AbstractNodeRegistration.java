@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -90,14 +91,17 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      * Get all the handlers at a specific address.
      *
      * @param address the address
+     * @param inherited true to include the inherited operations
      * @return the handlers
      */
     @Override
-    public Map<String, DescriptionProvider> getOperationDescriptions(final PathAddress address) {
-        return getOperationDescriptions(address.iterator());
+    public Map<String, DescriptionProvider> getOperationDescriptions(final PathAddress address, boolean inherited) {
+        Map<String, DescriptionProvider> providers = new HashMap<String, DescriptionProvider>();
+        getOperationDescriptions(address.iterator(), providers, inherited);
+        return providers;
     }
 
-    abstract Map<String, DescriptionProvider> getOperationDescriptions(ListIterator<PathElement> iterator);
+    abstract void getOperationDescriptions(ListIterator<PathElement> iterator, Map<String, DescriptionProvider> providers, boolean inherited);
 
     /** {@inheritDoc} */
     @Override
