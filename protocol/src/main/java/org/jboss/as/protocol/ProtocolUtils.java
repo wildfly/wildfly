@@ -26,9 +26,7 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.Module;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -41,12 +39,9 @@ import java.io.InputStream;
  */
 public class    ProtocolUtils {
     private static final MarshallerFactory MARSHALLER_FACTORY;
-    public static final MarshallingConfiguration MODULAR_CONFIG;
 
     static {
         MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ProtocolUtils.class.getClassLoader());
-        MODULAR_CONFIG = new MarshallingConfiguration();
-        MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance(Module.getBootModuleLoader()));
     }
 
     private ProtocolUtils() {
