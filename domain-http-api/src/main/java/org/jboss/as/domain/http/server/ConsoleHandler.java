@@ -1,8 +1,41 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.domain.http.server;
 
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+import static org.jboss.as.domain.http.server.Constants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_JAVASCRIPT;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_OCTET_STREAM;
+import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.FOUND;
+import static org.jboss.as.domain.http.server.Constants.GET;
+import static org.jboss.as.domain.http.server.Constants.IMAGE_GIF;
+import static org.jboss.as.domain.http.server.Constants.IMAGE_JPEG;
+import static org.jboss.as.domain.http.server.Constants.IMAGE_PNG;
+import static org.jboss.as.domain.http.server.Constants.LOCATION;
+import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
+import static org.jboss.as.domain.http.server.Constants.NOT_FOUND;
+import static org.jboss.as.domain.http.server.Constants.OK;
+import static org.jboss.as.domain.http.server.Constants.TEXT_CSS;
+import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -13,27 +46,30 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+
 /**
  * @author Heiko Braun
  * @date 3/14/11
  */
-public class ConsoleHandler implements HttpHandler {
+public class ConsoleHandler implements ManagementHttpHandler {
 
     public static final String CONTEXT = "/console";
-    private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
     private ClassLoader loader = null;
 
     private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
 
     static {
-        contentTypeMapping.put(".js",   "application/javascript");
-        contentTypeMapping.put(".html", "text/html");
-        contentTypeMapping.put(".htm",  "text/html");
-        contentTypeMapping.put(".css",  "text/css");
-        contentTypeMapping.put(".gif",  "image/gif");
-        contentTypeMapping.put(".png",  "image/png");
-        contentTypeMapping.put(".jpeg", "image/jpeg");
+        contentTypeMapping.put(".js",   APPLICATION_JAVASCRIPT);
+        contentTypeMapping.put(".html", TEXT_HTML);
+        contentTypeMapping.put(".htm",  TEXT_HTML);
+        contentTypeMapping.put(".css",  TEXT_CSS);
+        contentTypeMapping.put(".gif",  IMAGE_GIF);
+        contentTypeMapping.put(".png",  IMAGE_PNG);
+        contentTypeMapping.put(".jpeg", IMAGE_JPEG);
     }
 
     public ConsoleHandler() {
@@ -49,8 +85,8 @@ public class ConsoleHandler implements HttpHandler {
         final String requestMethod = http.getRequestMethod();
 
         // only GET supported
-        if (!"GET".equals(requestMethod)) {
-            http.sendResponseHeaders(405, -1);
+        if (!GET.equals(requestMethod)) {
+            http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
             return;
         }
 
@@ -67,9 +103,9 @@ public class ConsoleHandler implements HttpHandler {
             String hostName = address.getHostName();
             int port = address.getPort();
             final Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add("Content-Type", "text/html");
-            responseHeaders.add("Location", "http://"+hostName + ":"+port+"/console/index.html");
-            http.sendResponseHeaders(302, 0);
+            responseHeaders.add(CONTENT_TYPE, TEXT_HTML);
+            responseHeaders.add(LOCATION, "http://"+hostName + ":"+port+"/console/index.html");
+            http.sendResponseHeaders(FOUND, 0);
 
 
             OutputStream outputStream = http.getResponseBody();
@@ -86,9 +122,9 @@ public class ConsoleHandler implements HttpHandler {
         if(inputStream!=null) {
 
             final Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add("Content-Type", resolveContentType(path));
-            responseHeaders.add("Access-Control-Allow-Origin", "*");
-            http.sendResponseHeaders(200, 0);
+            responseHeaders.add(CONTENT_TYPE, resolveContentType(path));
+            responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+            http.sendResponseHeaders(OK, 0);
 
             OutputStream outputStream = http.getResponseBody();
 
@@ -133,9 +169,9 @@ public class ConsoleHandler implements HttpHandler {
     private void respond404(HttpExchange http) throws IOException {
 
         final Headers responseHeaders = http.getResponseHeaders();
-        responseHeaders.add("Content-Type", "text/html");
-        responseHeaders.add("Access-Control-Allow-Origin", "*");
-        http.sendResponseHeaders(404, 0);
+        responseHeaders.add(CONTENT_TYPE, TEXT_HTML);
+        responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        http.sendResponseHeaders(NOT_FOUND, 0);
         OutputStream out = http.getResponseBody();
         out.flush();
         safeClose(out);
@@ -146,5 +182,15 @@ public class ConsoleHandler implements HttpHandler {
             return loader;
         else
             return ConsoleHandler.class.getClassLoader();
+    }
+
+    @Override
+    public void start(HttpServer httpServer) {
+        httpServer.createContext(CONTEXT, this);
+    }
+
+    @Override
+    public void stop(HttpServer httpServer) {
+        httpServer.removeContext(CONTEXT);
     }
 }

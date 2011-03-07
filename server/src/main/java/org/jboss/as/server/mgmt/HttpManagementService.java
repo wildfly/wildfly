@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.domain.http.server.DomainHttpServer;
+import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -38,19 +38,19 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * A service which launches the domain HTTP API and server.
+ * A service which launches the domain HTTP API and serverManagement.
  *
  * @author Jason T. Greene
  */
 public class HttpManagementService implements Service<HttpManagementService>  {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "http");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<String> tempDirValue = new InjectedValue<String>();
-    private DomainHttpServer server;
+    private ManagementHttpServer serverManagement;
 
     /**
      * Starts the service.
@@ -64,13 +64,12 @@ public class HttpManagementService implements Service<HttpManagementService>  {
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
         final Integer port = portValue.getValue();
         final InetSocketAddress bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
-        final File tempDir = new File(tempDirValue.getValue());
 
         try {
-            server = DomainHttpServer.create(bindAddress, 50, modelController, executorService, tempDir);
-            server.start();
+            serverManagement = ManagementHttpServer.create(bindAddress, 50, modelController, executorService);
+            serverManagement.start();
         } catch (Exception e) {
-            throw new StartException("Failed to start server socket", e);
+            throw new StartException("Failed to start serverManagement socket", e);
         }
     }
 
@@ -80,8 +79,8 @@ public class HttpManagementService implements Service<HttpManagementService>  {
      * @param context The stop context
      */
     public synchronized void stop(StopContext context) {
-        if (server != null) {
-            server.stop();
+        if (serverManagement != null) {
+            serverManagement.stop();
         }
     }
 

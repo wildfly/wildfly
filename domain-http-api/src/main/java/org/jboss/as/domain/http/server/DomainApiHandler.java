@@ -1,7 +1,43 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.domain.http.server.Constants.ACCEPT;
+import static org.jboss.as.domain.http.server.Constants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
+import static org.jboss.as.domain.http.server.Constants.CONTENT_DISPOSITION;
+import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.GET;
+import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
+import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
+import static org.jboss.as.domain.http.server.Constants.OK;
+import static org.jboss.as.domain.http.server.Constants.POST;
+import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
+import static org.jboss.as.domain.http.server.Constants.US_ASCII;
+import static org.jboss.as.domain.http.server.Constants.UTF_8;
 
 import java.io.Closeable;
 import java.io.File;
@@ -10,7 +46,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -18,7 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Executor;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +66,6 @@ import org.jboss.logging.Logger;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
@@ -39,15 +73,10 @@ import com.sun.net.httpserver.HttpServer;
  *
  * @author Jason T. Greene
  */
-public class DomainHttpServer implements HttpHandler {
+public class DomainApiHandler implements ManagementHttpHandler {
 
-    private static final int INTERNAL_ERROR = 500;
     private static final String DOMAIN_API_CONTEXT = "/domain-api";
     private static final String UPLOAD_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
-    private static final String POST_REQUEST_METHOD = "POST";
-    private static final String GET_REQUEST_METHOD = "GET";
-    private static final String CONTENT_DISPOSITION = "Content-Disposition";
-    private static final String UPLOAD_TEMP_DIRECTORY = "uploads";
 
     private static Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
     private static Pattern DISPOSITION_FILE =  Pattern.compile("^form-data.*filename=\"?([^\"]*)?\"?.*$");
@@ -58,11 +87,8 @@ public class DomainHttpServer implements HttpHandler {
      * Represents all possible management operations that can be executed using HTTP GET
      */
     enum GetOperation {
-        RESOURCE("read-resource"),
-        ATTRIBUTE("read-attribute"),
-        RESOURCE_DESCRIPTION("read-resource-description"),
-        OPERATION_DESCRIPTION("read-operation-description"),
-        OPERATION_NAMES("read-operation-names");
+        RESOURCE("read-resource"), ATTRIBUTE("read-attribute"), RESOURCE_DESCRIPTION("read-resource-description"), OPERATION_DESCRIPTION(
+                "read-operation-description"), OPERATION_NAMES("read-operation-names");
 
         private String realOperation;
 
@@ -75,11 +101,9 @@ public class DomainHttpServer implements HttpHandler {
         }
     }
 
-    private HttpServer server;
     private ModelController modelController;
 
-    DomainHttpServer(HttpServer server, ModelController modelController, File serverTempDir) {
-        this.server = server;
+    DomainApiHandler(ModelController modelController) {
         this.modelController = modelController;
     }
 
@@ -91,7 +115,7 @@ public class DomainHttpServer implements HttpHandler {
         /*
          * Detect the file upload request. If it is not present, submit the incoming request to the normal handler.
          */
-        if (POST_REQUEST_METHOD.equals(requestMethod) && UPLOAD_REQUEST.equals(request.getPath())) {
+        if (POST.equals(requestMethod) && UPLOAD_REQUEST.equals(request.getPath())) {
             processUploadRequest(http);
         } else {
             processRequest(http);
@@ -123,12 +147,13 @@ public class DomainHttpServer implements HttpHandler {
         } catch (Throwable t) {
             // TODO Consider draining input stream
             log.error("Unexpected error executing deployment upload request", t);
-            http.sendResponseHeaders(INTERNAL_ERROR, -1);
+            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
+
             return;
         }
 
         // TODO Determine what format the response should be in for a deployment upload request.
-        writeResponse(http, false, false, response, 200, false, "text/html");
+        writeResponse(http, false, false, response, OK, false, TEXT_HTML);
     }
 
     /**
@@ -141,31 +166,34 @@ public class DomainHttpServer implements HttpHandler {
         final URI request = http.getRequestURI();
         final String requestMethod = http.getRequestMethod();
 
-        boolean isGet = GET_REQUEST_METHOD.equals(requestMethod);
-        if (!isGet && !POST_REQUEST_METHOD.equals(requestMethod)) {
-            http.sendResponseHeaders(405, -1);
+        boolean isGet = GET.equals(requestMethod);
+        if (!isGet && !POST.equals(requestMethod)) {
+            http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
+
             return;
         }
 
         ModelNode dmr = null;
         ModelNode response;
-        int status = 200;
+        int status = OK;
 
         Headers requestHeaders = http.getRequestHeaders();
-        boolean encode = "application/dmr-encoded".equals(requestHeaders.getFirst("Accept"))
-                || "application/dmr-encoded".equals(requestHeaders.getFirst("Content-Type"));
+        boolean encode = APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(ACCEPT))
+                || APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(CONTENT_TYPE));
 
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
             response = modelController.execute(OperationBuilder.Factory.create(dmr).build());
         } catch (Throwable t) {
             log.error("Unexpected error executing model request", t);
-            http.sendResponseHeaders(INTERNAL_ERROR, -1);
+
+            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
+
             return;
         }
 
         if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-            status = 500;
+            status = INTERNAL_SERVER_ERROR;
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
@@ -174,7 +202,7 @@ public class DomainHttpServer implements HttpHandler {
 
      private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
             boolean encode) throws IOException {
-         String contentType = encode ? "application/dmr-encoded" : "application/json";
+         String contentType = encode ? APPLICATION_DMR_ENCODED : APPLICATION_JSON;
          writeResponse(http, isGet, pretty, response, status, encode, contentType);
      }
 
@@ -192,8 +220,8 @@ public class DomainHttpServer implements HttpHandler {
     private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
             boolean encode, String contentType) throws IOException {
         final Headers responseHeaders = http.getResponseHeaders();
-        responseHeaders.add("Content-Type", contentType);
-        responseHeaders.add("Access-Control-Allow-Origin", "*");
+        responseHeaders.add(CONTENT_TYPE, contentType);
+        responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
         http.sendResponseHeaders(status, 0);
 
         final OutputStream out = http.getResponseBody();
@@ -201,7 +229,7 @@ public class DomainHttpServer implements HttpHandler {
 
         // GET (read) operations will never have a compensating update, and the status is already
         // available via the http response status code, so unwrap them.
-        if (isGet && status == 200)
+        if (isGet && status == OK)
             response = response.get("result");
 
         try {
@@ -231,7 +259,7 @@ public class DomainHttpServer implements HttpHandler {
      * @throws IOException if an error occurs while attempting to extract the POST request data.
      */
     private SeekResult seekToDeployment(final HttpExchange http) throws IOException {
-        final String type = http.getRequestHeaders().getFirst("Content-Type");
+        final String type = http.getRequestHeaders().getFirst(CONTENT_TYPE);
         if (type == null)
             throw new IllegalArgumentException("No content type provided");
 
@@ -248,7 +276,7 @@ public class DomainHttpServer implements HttpHandler {
         while (stream.read(ignore) != -1) {}
 
         // From here on out a boundary is prefixed with a CRLF that should be skipped
-        stream.setBoundary(("\r\n" + boundary).getBytes("US-ASCII"));
+        stream.setBoundary(("\r\n" + boundary).getBytes(US_ASCII));
 
         while (!stream.isOuterStreamClosed()) {
             // purposefully send the trailing CRLF to headers so that a headerless body can be detected
@@ -353,7 +381,7 @@ public class DomainHttpServer implements HttpHandler {
     private String unescape(String string) {
         try {
             // URLDecoder could be way more efficient, replace it one day
-            return URLDecoder.decode(string, "utf-8");
+            return URLDecoder.decode(string, UTF_8);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
@@ -392,23 +420,15 @@ public class DomainHttpServer implements HttpHandler {
         return parameters;
     }
 
-    public void start() {
-        server.start();
+    public void start(HttpServer httpServer) {
+        httpServer.createContext(DOMAIN_API_CONTEXT, this);
     }
 
-    public void stop() {
-        server.stop(0);
+    public void stop(HttpServer httpServer) {
+        httpServer.removeContext(DOMAIN_API_CONTEXT);
         modelController = null;
     }
 
-    public static DomainHttpServer create(InetSocketAddress socket, int backlog, ModelController modelController,
-            Executor executor, File serverTempDir) throws IOException {
-        HttpServer server = HttpServer.create(socket, backlog);
-        DomainHttpServer me = new DomainHttpServer(server, modelController, serverTempDir);
-        server.createContext(DOMAIN_API_CONTEXT, me);
-        server.createContext(ConsoleHandler.CONTEXT, new ConsoleHandler());
-        server.setExecutor(executor);
-
-        return new DomainHttpServer(server, modelController, serverTempDir);
-    }
 }
+
+
