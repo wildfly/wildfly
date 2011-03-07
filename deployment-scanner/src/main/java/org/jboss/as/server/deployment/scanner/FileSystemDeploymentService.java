@@ -313,9 +313,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     continue;
                 }
                 if (registeredDeployments.contains(deploymentName)) {
-                    events.add(new ReplaceTask(deploymentName, deploymentFile));
+                    events.add(new ReplaceTask(deploymentName, deploymentFile, child.lastModified()));
                 } else {
-                    events.add(new DeployTask(deploymentName, deploymentFile));
+                    events.add(new DeployTask(deploymentName, deploymentFile, child.lastModified()));
                 }
                 toRemove.remove(deploymentName);
             } else if (fileName.endsWith(FAILED_DEPLOY)) {
@@ -407,11 +407,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
         final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
         final File deployMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DO_DEPLOY);
         if (deployMarker.exists() && !deployMarker.delete()) {
-            log.warnf("Unable to remove marger file %s", deployMarker);
+            log.warnf("Unable to remove marker file %s", deployMarker);
         }
         final File deployedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DEPLOYED);
         if (deployedMarker.exists() && !deployedMarker.delete()) {
-            log.warnf("Unable to remove marger file %s", deployMarker);
+            log.warnf("Unable to remove marker file %s", deployedMarker);
         }
         FileOutputStream fos = null;
         try {
@@ -427,12 +427,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private abstract class ScannerTask {
         protected final String deploymentName;
-        protected final File parent;
+        protected final String parent;
         private final String inProgressMarkerSuffix;
 
         private ScannerTask(final String deploymentName, final File parent, final String inProgressMarkerSuffix) {
             this.deploymentName = deploymentName;
-            this.parent = parent;
+            this.parent = parent.getAbsolutePath();
             this.inProgressMarkerSuffix = inProgressMarkerSuffix;
             File marker = new File(parent, deploymentName + inProgressMarkerSuffix);
             createMarkerFile(marker);
@@ -444,21 +444,21 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         protected abstract void handleFailureResult(final ModelNode result);
 
-        protected void createMarkerFile(final File deployedMarker) {
+        protected void createMarkerFile(final File marker) {
             FileOutputStream fos = null;
             try {
-                deployedMarker.createNewFile();
-                fos = new FileOutputStream(deployedMarker);
+                marker.createNewFile();
+                fos = new FileOutputStream(marker);
                 fos.write(deploymentName.getBytes());
             } catch (IOException io) {
-                log.errorf(io, "Caught exception writing deployment marker file %s", deployedMarker.getAbsolutePath());
+                log.errorf(io, "Caught exception writing deployment marker file %s", marker.getAbsolutePath());
             } finally {
                 safeClose(fos);
             }
         }
 
         protected void removeInProgressMarker() {
-            File marker = new File(parent, deploymentName + inProgressMarkerSuffix);
+            File marker = new File(new File(parent), deploymentName + inProgressMarkerSuffix);
             if (marker.exists() && !marker.delete()) {
                 log.warnf("Cannot delete deployment progress marker file %s", marker);
             }
@@ -467,10 +467,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private abstract class ContentAddingTask extends ScannerTask {
         protected final File deploymentFile;
+        protected final long doDeployTimestamp;
 
-        protected ContentAddingTask(final String deploymentName, final File deploymentFile) {
+        protected ContentAddingTask(final String deploymentName, final File deploymentFile, long markerTimestamp) {
             super(deploymentName, deploymentFile.getParentFile(), DEPLOYING);
             this.deploymentFile = deploymentFile;
+            this.doDeployTimestamp = markerTimestamp;
         }
 
         @Override
@@ -492,15 +494,18 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleSuccessResult() {
-            final File doDeployMarker = new File(parent, deploymentFile.getName() + DO_DEPLOY);
-            if (!doDeployMarker.delete()) {
-                log.errorf("Failed to delete deployment marker file %s", doDeployMarker.getAbsolutePath());
+            final File doDeployMarker = new File(new File(parent), deploymentFile.getName() + DO_DEPLOY);
+            if (doDeployMarker.lastModified() <= doDeployTimestamp) {
+                if (!doDeployMarker.delete()) {
+                    log.errorf("Failed to delete deployment marker file %s", doDeployMarker.getAbsolutePath());
+                }
             }
+            // else they copied it in again while deployment was happening; we'll pick it up next scan
 
             // Remove any previous failure marker
             final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
             if (failedMarker.exists() && !failedMarker.delete()) {
-                log.warnf("Unable to remove marger file %s", failedMarker);
+                log.warnf("Unable to remove marker file %s", failedMarker);
             }
 
             // Remove the in-progress marker
@@ -516,8 +521,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private final class DeployTask extends ContentAddingTask {
-        private DeployTask(final String deploymentName, final File deploymentFile) {
-            super(deploymentName, deploymentFile);
+        private DeployTask(final String deploymentName, final File deploymentFile, long markerTimestamp) {
+            super(deploymentName, deploymentFile, markerTimestamp);
         }
 
         @Override
@@ -540,8 +545,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private final class ReplaceTask extends ContentAddingTask {
-        private ReplaceTask(String deploymentName, File deploymentFile) {
-            super(deploymentName, deploymentFile);
+        private ReplaceTask(String deploymentName, File deploymentFile, long markerTimestamp) {
+            super(deploymentName, deploymentFile, markerTimestamp);
         }
 
         @Override

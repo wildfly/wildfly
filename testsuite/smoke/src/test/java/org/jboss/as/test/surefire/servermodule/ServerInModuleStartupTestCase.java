@@ -242,6 +242,15 @@ public class ServerInModuleStartupTestCase {
                     } finally {
                         StreamUtils.safeClose(in);
                     }
+                    // Create the .dodeploy file
+                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(dodeploy));
+                    try {
+                        out.write("test-deployment.sar".getBytes());
+                    } finally {
+                        StreamUtils.safeClose(out);
+                    }
+                    Assert.assertTrue(dodeploy.exists());
                 }
 
                 @Override
@@ -252,6 +261,19 @@ public class ServerInModuleStartupTestCase {
 
                 @Override
                 public void undeploy() {
+                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                    for (int i = 0; i < 100; i++) {
+                        if (!dodeploy.exists() && deployed.exists()) {
+                            break;
+                        }
+                        // Wait for the last action to complete :(
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
                     //Delete file from deploy directory
                     deployed.delete();
                 }

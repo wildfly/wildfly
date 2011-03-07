@@ -3,12 +3,21 @@
  */
 package org.jboss.as.server.deployment.scanner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,8 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -31,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.server.ServerController;
@@ -107,7 +120,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
     public void testIgnoreNoMarker() throws Exception {
         File f1 = createFile("foo.war");
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.testee.scan();
         assertTrue(ts.repo.content.isEmpty());
         assertTrue(f1.exists());
@@ -119,7 +132,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
@@ -135,7 +148,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File war = createFile(nestedDir, "foo.war");
         File dodeploy = createFile(nestedDir, "foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(nestedDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
@@ -153,7 +166,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.DEPLOYED);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(2);
         ts.testee.scan();
         assertEquals(2, ts.repo.content.size());
@@ -172,7 +185,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeFailureResponse(1, 1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
@@ -193,7 +206,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File deployed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.DEPLOYED);
         File failed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.FAILED_DEPLOY);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeFailureResponse(2, 2);
         ts.testee.scan();
         assertEquals(2, ts.repo.content.size());
@@ -218,7 +231,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File deployed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         File failed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeFailureResponse(2, 1);
         // Retry fails as well
         ts.controller.addCompositeFailureResponse(1, 1);
@@ -245,7 +258,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File deployed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         File failed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeFailureResponse(2, 1);
         // Retry succeeds
         ts.controller.addCompositeSuccessResponse(1);
@@ -267,8 +280,8 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File f4 = createFile(new File(tmpDir, "nested"), "nested-ok" + FileSystemDeploymentService.DEPLOYED);
 
         // We expect 2 requests for children names due to subdir "nested"
-        MockServerController sc = new MockServerController("ok", "nested-ok");
-        sc.responses.add(sc.responses.get(0));
+        MockServerController sc = new MockServerController(new MockDeploymentRepository(), "ok", "nested-ok");
+//        sc.responses.add(sc.responses.get(0));
         createTestee(sc);
 
         Assert.assertFalse(f1.exists());
@@ -283,7 +296,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         TesteeSet ts = createTestee("foo.war");
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
@@ -298,22 +311,38 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         TesteeSet ts = createTestee("foo.war");
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] bytes = ts.controller.deployed.get("foo.war");
+        assertTrue(Arrays.equals(bytes, ts.repo.content.iterator().next()));
 
         dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(2, ts.repo.content.size());
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] newbytes = ts.controller.deployed.get("foo.war");
+        assertFalse(Arrays.equals(newbytes, bytes));
+        boolean installed = false;
+        for (byte[] content : ts.repo.content) {
+            if (Arrays.equals(newbytes, content)) {
+                installed = true;
+                break;
+            }
+        }
+        assertTrue(installed);
     }
 
     @Test
@@ -325,7 +354,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.DEPLOYED);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(2);
         ts.testee.scan();
         assertEquals(2, ts.repo.content.size());
@@ -338,7 +367,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         dodeploy1 = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(2);
         ts.testee.scan();
         assertEquals(4, ts.repo.content.size());
@@ -357,7 +386,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
         TesteeSet ts = createTestee("foo.war");
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
@@ -367,7 +396,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(failed.exists());
 
         dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeFailureResponse(1, 1);
         ts.testee.scan();
         assertEquals(2, ts.repo.content.size());
@@ -388,7 +417,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File deployed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         File failed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(2);
         ts.testee.scan();
         assertEquals(2, ts.repo.content.size());
@@ -401,7 +430,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         dodeploy1 = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeFailureResponse(2, 1);
         // Retry fails as well
         ts.controller.addCompositeFailureResponse(1, 1);
@@ -428,7 +457,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File deployed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         File failed2 = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
         TesteeSet ts = createTestee();
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(2);
         ts.testee.scan();
         assertEquals(2, ts.repo.content.size());
@@ -441,7 +470,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         dodeploy1 = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeFailureResponse(2, 1);
         // Retry succeeds
         ts.controller.addCompositeSuccessResponse(1);
@@ -460,27 +489,74 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File war = createFile("foo.war");
         File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
-        TesteeSet ts = createTestee("foo.war");
-        ts.controller.addGetDeploymentNamesResponse();
+        TesteeSet ts = createTestee();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
 
         assertTrue(deployed.delete());
-        ts.controller.addGetDeploymentNamesResponse();
+//        ts.controller.addGetDeploymentNamesResponse();
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertEquals(1, ts.repo.content.size());
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertFalse(deployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
+    }
+
+    @Test
+    public void testRedeployUndeploy() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+//        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertEquals(1, ts.repo.content.size());
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] bytes = ts.controller.deployed.get("foo.war");
+        assertTrue(Arrays.equals(bytes, ts.repo.content.iterator().next()));
+
+        dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+//        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertEquals(2, ts.repo.content.size());
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] newbytes = ts.controller.deployed.get("foo.war");
+        assertFalse(Arrays.equals(newbytes, bytes));
+
+        assertTrue(deployed.delete());
+//        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertEquals(2, ts.repo.content.size());
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
     }
 
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {
-        return createTestee(new MockServerController(existingContent));
+        return createTestee(new MockServerController(new MockDeploymentRepository(), existingContent));
     }
 
     private TesteeSet createTestee(final MockServerController sc) throws OperationFailedException {
@@ -546,10 +622,27 @@ public class FileSystemDeploymentServiceUnitTestCase {
     private static class MockServerController implements ServerController {
 
         private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
-        private final List<ModelNode> responses = new ArrayList<ModelNode>(1);
+        private final List<Response> responses = new ArrayList<Response>(1);
+        private final Map<String, byte[]> added = new HashMap<String, byte[]>();
+        private final Map<String, byte[]> deployed = new HashMap<String, byte[]>();
 
-        MockServerController(String... existingDeployments) {
-            addGetDeploymentNamesResponse(existingDeployments);
+        private static class Response {
+            private final boolean ok;
+            private final ModelNode rsp;
+            Response(boolean ok, ModelNode rsp) {
+                this.ok = ok;
+                this.rsp = rsp;
+            }
+        }
+
+        MockServerController(DeploymentRepository repo, String... existingDeployments) {
+            for (String dep : existingDeployments) {
+                try {
+                    added.put(dep, repo.addDeploymentContent(dep, dep, null));
+                } catch (IOException e) {
+                    // impossible
+                }
+            }
         }
 
         public void addCompositeSuccessResponse(int count) {
@@ -561,7 +654,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
                 result.get("step-" + i, RESULT);
             }
 
-            addResponse(rsp);
+            responses.add(new Response(true, rsp));
         }
 
         public void addCompositeFailureResponse(int count, int failureStep) {
@@ -592,22 +685,18 @@ public class FileSystemDeploymentServiceUnitTestCase {
             rsp.get(FAILURE_DESCRIPTION).set(new ModelNode().set("badness happened"));
             rsp.get(ROLLED_BACK).set(true);
 
-            addResponse(rsp);
+            responses.add(new Response(true, rsp));
         }
 
-        void addResponse(ModelNode response) {
-            responses.add(response);
-        }
-
-        void addGetDeploymentNamesResponse(String... deployments) {
+        private ModelNode getDeploymentNamesResponse() {
             ModelNode content = new ModelNode();
             content.get(OUTCOME).set(SUCCESS);
             ModelNode result = content.get(RESULT);
             result.setEmptyList();
-            for (String deployment : deployments) {
+            for (String deployment : added.keySet()) {
                 result.add(deployment);
             }
-            addResponse(content);
+            return content;
         }
 
         @Override
@@ -617,12 +706,63 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         @Override
         public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-            if (responses.isEmpty()) {
-                Assert.fail("unexpected request " + executionContext.getOperation());
-                return null; // unreachable
+            ModelNode op = executionContext.getOperation();
+            requests.add(op);
+            return processOp(op);
+        }
+
+        private ModelNode processOp(ModelNode op) {
+
+            String opName = op.require(OP).asString();
+            if (READ_CHILDREN_NAMES_OPERATION.equals(opName)) {
+                return getDeploymentNamesResponse();
             }
-            requests.add(executionContext.getOperation());
-            return responses.remove(0);
+            else if (COMPOSITE.equals(opName)) {
+                for (ModelNode child : op.require(STEPS).asList()) {
+                    opName = child.require(OP).asString();
+                    if (COMPOSITE.equals(opName)) {
+                        return processOp(child);
+                    }
+
+                    if (responses.isEmpty()) {
+                        Assert.fail("unexpected request " + op);
+                        return null; // unreachable
+                    }
+
+                    if (!responses.get(0).ok) {
+                        // don't change state for a failed response
+                        continue;
+                    }
+
+                    PathAddress address = PathAddress.pathAddress(child.require(OP_ADDR));
+                    if (ADD.equals(opName)) {
+                        added.put(address.getLastElement().getValue(), child.require(HASH).asBytes());
+                    }
+                    else if (REMOVE.equals(opName)) {
+                        added.remove(address.getLastElement().getValue());
+                    }
+                    else if ("deploy".equals(opName)) {
+                        String name = address.getLastElement().getValue();
+                        deployed.put(name, added.get(name));
+                    }
+                    else if ("undeploy".equals(opName)) {
+                        deployed.remove(address.getLastElement().getValue());
+                    }
+                    else if ("full-replace-deployment".equals(opName)) {
+                        String name = child.require(NAME).asString();
+                        byte[] hash = child.require(HASH).asBytes();
+                        added.put(name, hash);
+                        deployed.put(name, hash);
+                    }
+                    else {
+                        throw new IllegalArgumentException("unexpected step " + opName);
+                    }
+                }
+                return responses.remove(0).rsp;
+            }
+            else {
+                throw new IllegalArgumentException("unexpected operation " + opName);
+            }
         }
 
         @Override
