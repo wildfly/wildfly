@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -55,7 +55,7 @@ public final class ServiceBindingSourceDescription extends BindingSourceDescript
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<JndiInjectable> injector) {
-        serviceBuilder.addDependency(serviceName, JndiInjectable.class, injector);
+    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+        serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
 }

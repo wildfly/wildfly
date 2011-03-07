@@ -23,7 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.naming.ContextNames;
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -163,7 +163,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         // 3. The source is not a service and the resource is bound into JNDI (start->binding)
         // 4. The source is not a service and the resource is not bound (no dependency)
 
-        Value<JndiInjectable> resourceValue;
+        Value<ManagedReferenceFactory> resourceValue;
 
         // Check to see if this entry should actually be bound into JNDI.
         if (bindingName != null) {
@@ -193,9 +193,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
             }
             // The service builder for the binding
-            ServiceBuilder<JndiInjectable> sourceServiceBuilder = serviceTarget.addService(bindingServiceName, service);
+            ServiceBuilder<ManagedReferenceFactory> sourceServiceBuilder = serviceTarget.addService(bindingServiceName, service);
             // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
-            bindingDescription.getReferenceSourceDescription().getResourceValue(description, bindingDescription, sourceServiceBuilder, phaseContext, service.getJndiInjectableInjector());
+            bindingDescription.getReferenceSourceDescription().getResourceValue(description, bindingDescription, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
             resourceValue = sourceServiceBuilder
                     .addDependency(createServiceName)
                     .addDependency(bindingServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
@@ -205,7 +205,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         } else {
             // do not bind into JNDI
             // The resource value comes from the reference source, which may add a dependency on the original value to the start service
-            final InjectedValue<JndiInjectable> injectedValue = new InjectedValue<JndiInjectable>();
+            final InjectedValue<ManagedReferenceFactory> injectedValue = new InjectedValue<ManagedReferenceFactory>();
             bindingDescription.getReferenceSourceDescription().getResourceValue(description, bindingDescription, startBuilder, phaseContext, injectedValue);
             resourceValue = injectedValue;
         }

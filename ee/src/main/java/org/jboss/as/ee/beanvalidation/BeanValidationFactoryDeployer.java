@@ -27,12 +27,12 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ValueJndiInjectable;
+import org.jboss.as.naming.ValueManagedObject;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.as.server.ManagedReference;
-import org.jboss.as.server.ValueManagedReference;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -104,14 +104,14 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
 
         final ServiceName validatorFactoryServiceName = ContextNames.serviceNameOfContext(description.getAppName(),description.getModuleName(),componentName,"java:comp/ValidatorFactory");
         BinderService validatorFactoryBindingService = new BinderService("ValidatorFactory");
-        validatorFactoryBindingService.getJndiInjectableInjector().inject(new ValueJndiInjectable(new ImmediateValue<Object>(factory)));
+        validatorFactoryBindingService.getManagedObjectInjector().inject(new ValueManagedObject(new ImmediateValue<Object>(factory)));
         serviceTarget.addService(validatorFactoryServiceName, validatorFactoryBindingService)
             .addDependency(contextServiceName, NamingStore.class, validatorFactoryBindingService.getNamingStoreInjector())
             .install();
 
         final ServiceName validatorServiceName = ContextNames.serviceNameOfContext(description.getAppName(),description.getModuleName(),componentName,"java:comp/Validator");
         BinderService validatorBindingService = new BinderService("Validator");
-        validatorBindingService.getJndiInjectableInjector().inject(new ValidatorJndiInjectable(factory));
+        validatorBindingService.getManagedObjectInjector().inject(new ValidatorJndiInjectable(factory));
         serviceTarget.addService(validatorServiceName, validatorBindingService)
             .addDependency(contextServiceName, NamingStore.class, validatorBindingService.getNamingStoreInjector())
             .install();
@@ -122,7 +122,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
 
     }
 
-    private static final class ValidatorJndiInjectable implements JndiInjectable {
+    private static final class ValidatorJndiInjectable implements ManagedReferenceFactory {
         private final ValidatorFactory factory;
 
         public ValidatorJndiInjectable(ValidatorFactory factory) {

@@ -23,7 +23,7 @@ package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.ComponentInstanceManagedReference;
-import org.jboss.as.server.ManagedReference;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;

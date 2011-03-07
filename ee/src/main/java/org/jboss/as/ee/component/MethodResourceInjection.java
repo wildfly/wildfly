@@ -22,11 +22,12 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.msc.value.Value;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
-import org.jboss.as.naming.JndiInjectable;
-import org.jboss.msc.value.Value;
 
 /**
  * Resource injection capable of executing the resource injection using a Method instance.
@@ -42,7 +43,7 @@ public class MethodResourceInjection extends AbstractResourceInjection {
      * @param method The method value to use for injection
      * @param value The injection value
      */
-    public MethodResourceInjection(final Method method, final Value<JndiInjectable> value) {
+    public MethodResourceInjection(final Method method, final Value<ManagedReferenceFactory> value) {
         super(value, method.getParameterTypes()[0].isPrimitive());
         this.method = method;
     }

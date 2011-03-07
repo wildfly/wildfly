@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.ManagedReference;
+import org.jboss.as.naming.ManagedReference;
 
 /**
  * A managed reference to a non-proxies component instance.

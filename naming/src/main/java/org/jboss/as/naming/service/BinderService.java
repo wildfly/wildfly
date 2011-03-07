@@ -22,10 +22,8 @@
 
 package org.jboss.as.naming.service;
 
-import javax.naming.Name;
-import javax.naming.Reference;
-import org.jboss.as.naming.JndiInjectable;
-import org.jboss.as.naming.JndiInjectableObjectFactory;
+import org.jboss.as.naming.ManagedReferenceObjectFactory;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.util.NameParser;
 import org.jboss.msc.inject.Injector;
@@ -35,7 +33,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import javax.naming.Name;
 import javax.naming.NamingException;
+import javax.naming.Reference;
 
 /**
  * Service responsible for binding and unbinding a entry into a naming context.  This service can be used as a dependency for
@@ -43,10 +43,10 @@ import javax.naming.NamingException;
  *
  * @author John E. Bailey
  */
-public class BinderService implements Service<JndiInjectable> {
+public class BinderService implements Service<ManagedReferenceFactory> {
     private final InjectedValue<NamingStore> namingStoreValue = new InjectedValue<NamingStore>();
     private final String name;
-    private final InjectedValue<JndiInjectable> jndiInjectableInjector = new InjectedValue<JndiInjectable>();
+    private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
 
     /**
      * Construct new instance.
@@ -66,7 +66,7 @@ public class BinderService implements Service<JndiInjectable> {
     public synchronized void start(StartContext context) throws StartException {
         final NamingStore namingStore = namingStoreValue.getValue();
         try {
-            final Reference reference = JndiInjectableObjectFactory.createReference(context.getController().getName());
+            final Reference reference = ManagedReferenceObjectFactory.createReference(context.getController().getName());
             final Name name = NameParser.INSTANCE.parse(this.name);
             namingStore.bindCreatingParents(null, name, reference, Reference.class.getName());
         } catch (NamingException e) {
@@ -95,8 +95,8 @@ public class BinderService implements Service<JndiInjectable> {
      * @throws IllegalStateException
      */
     @SuppressWarnings("unchecked")
-    public synchronized JndiInjectable getValue() throws IllegalStateException {
-        return jndiInjectableInjector.getValue();
+    public synchronized ManagedReferenceFactory getValue() throws IllegalStateException {
+        return managedReferenceFactory.getValue();
     }
 
     /**
@@ -104,8 +104,8 @@ public class BinderService implements Service<JndiInjectable> {
      *
      * @return the injector
      */
-    public Injector<JndiInjectable> getJndiInjectableInjector() {
-        return jndiInjectableInjector;
+    public Injector<ManagedReferenceFactory> getManagedObjectInjector() {
+        return managedReferenceFactory;
     }
 
     /**

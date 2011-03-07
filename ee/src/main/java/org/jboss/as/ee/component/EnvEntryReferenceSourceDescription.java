@@ -22,8 +22,8 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.JndiInjectable;
-import org.jboss.as.naming.ValueJndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ValueManagedObject;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -47,7 +47,7 @@ public final class EnvEntryReferenceSourceDescription extends BindingSourceDescr
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<JndiInjectable> injector) {
-        injector.inject(new ValueJndiInjectable(Values.immediateValue(value)));
+    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+        injector.inject(new ValueManagedObject(Values.immediateValue(value)));
     }
 }

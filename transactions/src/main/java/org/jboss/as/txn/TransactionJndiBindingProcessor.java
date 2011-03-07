@@ -28,7 +28,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.naming.JndiInjectableAdaptor;
+import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -88,7 +88,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor{
         BinderService userTransactionBindingService = new BinderService("UserTransaction");
         serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
             .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class,
-                    new JndiInjectableAdaptor<UserTransaction>(userTransactionBindingService.getJndiInjectableInjector()))
+                    new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()))
             .addDependency(contextServiceName, NamingStore.class, userTransactionBindingService.getNamingStoreInjector())
             .install();
 
@@ -96,7 +96,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor{
         BinderService transactionSyncBinderService = new BinderService("TransactionSynchronizationRegistry");
         serviceTarget.addService(transactionSynchronizationRegistryName, transactionSyncBinderService)
             .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class,
-                    new JndiInjectableAdaptor<TransactionSynchronizationRegistry>(transactionSyncBinderService.getJndiInjectableInjector()))
+                    new ManagedReferenceInjector<TransactionSynchronizationRegistry>(transactionSyncBinderService.getManagedObjectInjector()))
             .addDependency(contextServiceName, NamingStore.class, transactionSyncBinderService.getNamingStoreInjector())
             .install();
     }

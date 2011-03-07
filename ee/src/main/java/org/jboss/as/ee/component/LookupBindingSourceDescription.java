@@ -23,7 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.naming.ContextNames;
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -41,14 +41,14 @@ public final class LookupBindingSourceDescription extends BindingSourceDescripti
         this.lookupName = lookupName;
     }
 
-    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription bindingDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<JndiInjectable> injector) {
+    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription bindingDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         if (lookupName.startsWith("java:")) {
             // Comes from a scoped dependency item
             final String compName = componentDescription.getNamingMode() == ComponentNamingMode.CREATE ? componentDescription.getComponentName() : componentDescription.getModuleName();
             final String moduleName = componentDescription.getModuleName();
             final String appName = componentDescription.getApplicationName();
             final ServiceName sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);
-            serviceBuilder.addDependency(sourceServiceName, JndiInjectable.class, injector);
+            serviceBuilder.addDependency(sourceServiceName, ManagedReferenceFactory.class, injector);
         }else {
             throw new RuntimeException("lookup name " + lookupName + " not supported, lookup in @Resource annotation must start with java in " + componentDescription.getComponentClassName());
         }

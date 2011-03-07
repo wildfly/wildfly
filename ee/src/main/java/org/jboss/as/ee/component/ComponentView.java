@@ -22,8 +22,8 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.JndiInjectable;
-import org.jboss.as.server.ManagedReference;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.ProxyFactory;
 
@@ -33,7 +33,7 @@ import org.jboss.invocation.proxy.ProxyFactory;
  *
  * @author John Bailey
  */
-public class ComponentView implements JndiInjectable {
+public class ComponentView implements ManagedReferenceFactory {
 
     private final Class<?> viewClass;
     private final ProxyFactory<?> proxyFactory;

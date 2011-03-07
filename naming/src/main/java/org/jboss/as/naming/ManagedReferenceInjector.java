@@ -19,29 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server;
+package org.jboss.as.naming;
 
-import org.jboss.msc.value.Value;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
- * A ManagedReference that simply holds a value'
+ * A n adaptor between value injectors and ManagedReferenceFactory
  *
  * @author Stuart Douglas
  */
-public class ValueManagedReference implements ManagedReference {
-    private final Value<Object> value;
+public class ManagedReferenceInjector<T> implements Injector<T> {
 
-    public ValueManagedReference(Value<Object> value) {
-        this.value = value;
+    private final Injector<ManagedReferenceFactory> injectable;
+
+    public ManagedReferenceInjector(Injector<ManagedReferenceFactory> injectable) {
+        this.injectable = injectable;
     }
 
     @Override
-    public void release() {
-
+    public void inject(T value) throws InjectionException {
+        injectable.inject(new ValueManagedObject(new ImmediateValue<Object>(value)));
     }
 
     @Override
-    public Object getInstance() {
-        return value.getValue();
+    public void uninject() {
+        injectable.uninject();
     }
 }

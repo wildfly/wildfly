@@ -21,7 +21,7 @@
  */
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.server.ManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.Set;

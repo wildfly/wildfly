@@ -26,7 +26,7 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ValueJndiInjectable;
+import org.jboss.as.naming.ValueManagedObject;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -110,7 +110,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
         BinderService beanManagerBindingService = new BinderService("BeanManager");
         serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService)
-                .addInjection(beanManagerBindingService.getJndiInjectableInjector(), new ValueJndiInjectable(injectedBeanManager))
+                .addInjection(beanManagerBindingService.getManagedObjectInjector(), new ValueManagedObject(injectedBeanManager))
                 .addDependency(contextServiceName, NamingStore.class, beanManagerBindingService.getNamingStoreInjector())
                 .addDependency(beanManagerServiceName, BeanManager.class, injectedBeanManager)
                 .install();

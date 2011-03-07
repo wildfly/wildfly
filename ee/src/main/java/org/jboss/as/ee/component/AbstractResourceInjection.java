@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.value.Value;
 
 /**
@@ -36,7 +36,7 @@ public abstract class AbstractResourceInjection implements ResourceInjection {
      * Flag specifying whether this injection target is primitive.
      */
     protected final boolean primitiveTarget;
-    private final Value<JndiInjectable> value;
+    private final Value<ManagedReferenceFactory> value;
 
     /**
      * Construct new instance.
@@ -44,7 +44,7 @@ public abstract class AbstractResourceInjection implements ResourceInjection {
      * @param value The value to inject
      * @param primitiveTarget Is the injection target a primitive value
      */
-    protected AbstractResourceInjection(final Value<JndiInjectable> value, final boolean primitiveTarget) {
+    protected AbstractResourceInjection(final Value<ManagedReferenceFactory> value, final boolean primitiveTarget) {
         this.value = value;
         this.primitiveTarget = primitiveTarget;
     }

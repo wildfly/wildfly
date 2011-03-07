@@ -24,7 +24,8 @@ package org.jboss.as.ee.component;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import org.jboss.as.naming.JndiInjectable;
+
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.msc.value.Value;
 
@@ -60,7 +61,7 @@ public interface ResourceInjection {
          * @param value The value for injection
          * @return The injection instance
          */
-        public static ResourceInjection create(final InjectionTargetDescription resourceConfiguration, final Class<?> beanClass, final ClassReflectionIndex<?> reflectionIndex, final Value<JndiInjectable> value) {
+        public static ResourceInjection create(final InjectionTargetDescription resourceConfiguration, final Class<?> beanClass, final ClassReflectionIndex<?> reflectionIndex, final Value<ManagedReferenceFactory> value) {
             final Class<?> argClass;
             try {
                 argClass = beanClass.getClassLoader().loadClass(resourceConfiguration.getValueClassName());

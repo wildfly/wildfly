@@ -221,7 +221,7 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                     final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
                     final BinderService binderService = new BinderService("jaas");
                     target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
-                            .addInjection(binderService.getJndiInjectableInjector(), securityDomainJndiInjectable)
+                            .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
                             .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
                             .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class, securityDomainJndiInjectable.getSecurityManagementInjector())
                             .setInitialMode(ServiceController.Mode.ACTIVE)

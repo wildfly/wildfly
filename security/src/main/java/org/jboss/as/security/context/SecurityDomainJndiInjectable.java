@@ -22,11 +22,11 @@
 
 package org.jboss.as.security.context;
 
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.server.ManagedReference;
-import org.jboss.as.server.ValueManagedReference;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.ImmediateValue;
@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public class SecurityDomainJndiInjectable implements InvocationHandler, JndiInjectable {
+public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedReferenceFactory {
 
     private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
 

@@ -22,9 +22,10 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Field;
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.value.Value;
+
+import java.lang.reflect.Field;
 
 /**
  * Resource injection capable of executing the resource injection using a Field instance.
@@ -40,7 +41,7 @@ public class FieldResourceInjection extends AbstractResourceInjection {
      * @param field The field on the target
      * @param value The injection value
      */
-    public FieldResourceInjection(final Field field, final Value<JndiInjectable> value) {
+    public FieldResourceInjection(final Field field, final Value<ManagedReferenceFactory> value) {
         super(value, field.getType().isPrimitive());
         this.field = field;
     }

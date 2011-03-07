@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -50,5 +50,5 @@ public abstract class BindingSourceDescription {
      * @param phaseContext the deployment phase context
      * @param injector the injector into which the value should be placed
      */
-    public abstract void getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<JndiInjectable> injector);
+    public abstract void getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector);
 }

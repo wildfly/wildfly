@@ -22,7 +22,7 @@
 package org.jboss.as.web.deployment;
 
 import org.apache.tomcat.InstanceManager;
-import org.jboss.as.server.ManagedReference;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.msc.service.ServiceName;
 

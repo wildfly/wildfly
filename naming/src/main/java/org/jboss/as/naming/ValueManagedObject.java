@@ -22,24 +22,39 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.msc.service.ServiceName;
-
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.Reference;
-import java.util.Hashtable;
+import org.jboss.msc.value.Value;
 
 /**
- * @author John Bailey
+ * A JNDI injectable which simply uses an MSC {@link Value}
+ * to fetch the injected value, and takes no action when the value is returned.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class JndiInjectableObjectFactory extends ServiceReferenceObjectFactory {
+public final class ValueManagedObject implements ManagedReferenceFactory {
+    private final Value<?> value;
 
-    public static Reference createReference(final ServiceName jndiInjectableServiceName) {
-        return ServiceReferenceObjectFactory.createReference(jndiInjectableServiceName, JndiInjectableObjectFactory.class);
+    /**
+     * Construct a new instance.
+     *
+     * @param value the value to wrap
+     */
+    public ValueManagedObject(final Value<?> value) {
+        this.value = value;
     }
 
-    public Object getObjectInstance(final Object serviceValue, final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
-        final JndiInjectable jndiInjectable = JndiInjectable.class.cast(serviceValue);
-        return jndiInjectable.getReference().getInstance();
+    @Override
+    public ManagedReference getReference() {
+        return new ManagedReference() {
+            @Override
+            public void release() {
+
+            }
+
+            @Override
+            public Object getInstance() {
+                return value.getValue();
+            }
+        };
     }
+
 }

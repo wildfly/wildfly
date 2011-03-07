@@ -19,26 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server;
+package org.jboss.as.naming;
 
 /**
- * A reference to a container managed object
+ * Creates container managed references.
+ * <p/>
+ * Usages of these references is very much implementation specific, however implementers should be
+ * careful to make sure that the references are idempotent.
+ *
  *
  * @author Stuart Douglas
  */
-public interface ManagedReference {
-    /**
-     * Release the reference. Depending on the implementation this may destroy
-     * the underlying object.
-     * <p/>
-     * Implementers should take care to make this method idempotent,
-     * as it may be called multiple times.
-     */
-    void release();
+public interface ManagedReferenceFactory {
 
     /**
      *
-     * @return The object this reference refers to.
+     * @return A reference to a managed object.
      */
-    Object getInstance();
+    ManagedReference getReference();
 }

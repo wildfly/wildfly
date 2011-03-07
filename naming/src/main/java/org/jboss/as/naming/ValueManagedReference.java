@@ -21,30 +21,27 @@
  */
 package org.jboss.as.naming;
 
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
 
 /**
- * A n adaptor between value injectors and JndiInjectable
+ * A ManagedReference that simply holds a value'
  *
  * @author Stuart Douglas
  */
-public class JndiInjectableAdaptor<T> implements Injector<T> {
+public class ValueManagedReference implements ManagedReference {
+    private final Value<Object> value;
 
-    private final Injector<JndiInjectable> injectable;
-
-    public JndiInjectableAdaptor(Injector<JndiInjectable> injectable) {
-        this.injectable = injectable;
+    public ValueManagedReference(Value<Object> value) {
+        this.value = value;
     }
 
     @Override
-    public void inject(T value) throws InjectionException {
-        injectable.inject(new ValueJndiInjectable(new ImmediateValue<Object>(value)));
+    public void release() {
+
     }
 
     @Override
-    public void uninject() {
-        injectable.uninject();
+    public Object getInstance() {
+        return value.getValue();
     }
 }
