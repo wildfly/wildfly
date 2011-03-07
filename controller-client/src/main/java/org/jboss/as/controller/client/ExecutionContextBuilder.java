@@ -43,5 +43,17 @@ public interface ExecutionContextBuilder {
             }
             return new ExecutionContextImpl(operation);
         }
+
+        public static ExecutionContextBuilder copy(ExecutionAttachments attachments, ModelNode operation) {
+            if (operation == null) {
+                throw new IllegalArgumentException("Null operation");
+            }
+            ExecutionContextImpl ctx = new ExecutionContextImpl(operation);
+            for (InputStream in : attachments.getInputStreams()) {
+                ctx.addInputStream(in);
+            }
+            return ctx;
+        }
+
     }
 }

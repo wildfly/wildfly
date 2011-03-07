@@ -99,7 +99,7 @@ public class GlobalOperationHandlers {
                 if (operation.get(RECURSIVE).asBoolean(false)) {
                     // FIXME security checks JBAS-8842
                     result = context.getSubModel().clone();
-                    addProxyNodes(address, result, context.getRegistry());
+                    addProxyNodes(context, address, result, context.getRegistry());
 
                 } else {
                     result = new ModelNode();
@@ -168,7 +168,7 @@ public class GlobalOperationHandlers {
             return new BasicOperationResult();
         }
 
-        void addProxyNodes(final PathAddress address, final ModelNode result, final ModelNodeRegistration registry) throws Exception {
+        void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode result, final ModelNodeRegistration registry) throws Exception {
             Set<ProxyController> proxyControllers = registry.getProxyControllers(address);
             if (proxyControllers.size() > 0) {
                 final ModelNode operation = new ModelNode();
@@ -177,7 +177,7 @@ public class GlobalOperationHandlers {
                 operation.get(ADDRESS).set(new ModelNode());
 
                 for (ProxyController proxyController : proxyControllers) {
-                    final ModelNode proxyResult = proxyController.execute(ExecutionContextBuilder.Factory.create(operation).build());
+                    final ModelNode proxyResult = proxyController.execute(ExecutionContextBuilder.Factory.copy(context, operation).build());
                     addProxyResultToMainResult(proxyController.getProxyNodeAddress(), result, proxyResult);
                 }
             }
@@ -403,11 +403,7 @@ public class GlobalOperationHandlers {
                 final Locale locale = getLocale(operation);
                 final ModelNode result = descriptionProvider.getModelDescription(locale);
 
-                addDescription(result, recursive, operations, registry, address, locale);
-
-//                if (recursive) {
-//                    addProxyNodes(address, result, operations, locale, context.getRegistry());
-//                }
+                addDescription(context, result, recursive, operations, registry, address, locale);
 
                 resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                 resultHandler.handleResultComplete();
@@ -417,36 +413,7 @@ public class GlobalOperationHandlers {
             return new BasicOperationResult();
         }
 
-//        void addProxyNodes(final PathAddress address, final ModelNode result, final boolean operations, final Locale locale, final ModelNodeRegistration registry) throws Exception {
-//            Set<ProxyController> proxyControllers = registry.getProxyControllers(address);
-//            if (proxyControllers.size() > 0) {
-//                final ModelNode operation = new ModelNode();
-//                operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
-//                operation.get(RECURSIVE).set(true);
-//                operation.get(OPERATIONS).set(operations);
-//                if (locale != null) {
-//                    operation.get(OPERATIONS).set(locale.toString());
-//                }
-//                operation.get(ADDRESS).set(new ModelNode());
-//
-//                for (ProxyController proxyController : proxyControllers) {
-//                    final ModelNode proxyResult = proxyController.execute(operation);
-//                    addProxyResultToMainResult(proxyController.getProxyNodeAddress(), result, proxyResult);
-//                }
-//            }
-//        }
-//
-//        void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
-//            ModelNode resultNode = mainResult;
-//            for (Iterator<PathElement> it = address.iterator() ; it.hasNext() ; ) {
-//                PathElement element = it.next();
-//                resultNode = resultNode.require(CHILDREN).require(element.getKey()).require(MODEL_DESCRIPTION).get(element.getValue());
-//            }
-//            resultNode.set(proxyResult.clone());
-//        }
-
-
-        private void addDescription(final ModelNode result, final boolean recursive, final boolean operations, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
+        private void addDescription(final OperationContext context, final ModelNode result, final boolean recursive, final boolean operations, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
 
             if (operations) {
                 final Map<String, DescriptionProvider> ops = registry.getOperationDescriptions(address);
@@ -497,11 +464,11 @@ public class GlobalOperationHandlers {
                         if (locale != null) {
                             operation.get(OPERATIONS).set(locale.toString());
                         }
-                        child = proxyControllers.iterator().next().execute(ExecutionContextBuilder.Factory.create(operation).build()).get(RESULT);
+                        child = proxyControllers.iterator().next().execute(ExecutionContextBuilder.Factory.copy(context, operation).build()).get(RESULT);
 
                     } else {
                         child = provider.getModelDescription(locale);
-                        addDescription(child, recursive, operations, registry, childAddress, locale);
+                        addDescription(context, child, recursive, operations, registry, childAddress, locale);
                     }
                     result.get(CHILDREN, element.getKey(),MODEL_DESCRIPTION, element.getValue()).set(child);
                 }
