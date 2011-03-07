@@ -22,15 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
 import org.jboss.as.server.deployment.Attachable;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -45,15 +36,28 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 /**
  * A processor which adds class path entries for each manifest entry.
  * <p>
  * This processor examines all class path entries found.
  * <ul>
  * <li>
- * Class-Path entries that are part of ear/lib are handled by {@link EarLibManifestClassPathProcessor}</li>
+ * If the Class-Path entry points to a jar in ear/lib then it is ignored.
+ * </li>
  * <li>
  * If the Class-Path entry is external to the deployment then it is handled by the external jar service.</li>
+ * <li>
+ * If the entry refers to a sibling deployment then a dependency is added on that deployment. If this deployment is
+ * not present then this deployment will block until it is.</li>
  * <li>
  * If the Class-Path entry points to a jar inside the ear that is not a deployment and not a /lib jar then a reference is added
  * to this jars {@link AdditionalModuleSpecification}</li>
@@ -132,7 +136,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                         target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, additionalModules.get(classPathFile)
                                 .getModuleIdentifier());
                     } else {
-                        throw new DeploymentUnitProcessingException("Class Path entry " + item + " in "
+                        log.warn("Class Path entry " + item + " in "
                                 + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
                     }
                 } else if(isInside(classPathFile,deploymentDirRoot)) {
@@ -141,7 +145,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
                         target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES,ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + classPathFile.getName()));
                     } else {
-                        throw new DeploymentUnitProcessingException("Class Path entries that references nestled jars inside another deployment are disallowed");
+                        log.warn("Class Path entries that references nestled jars inside another deployment are disallowed");
                     }
                 } else {
                     ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(classPathFile);
