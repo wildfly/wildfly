@@ -59,6 +59,8 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         locations.put(DotName.createSimple("javax.transaction.UserTransaction"), "java:comp/UserTransaction");
         locations.put(DotName.createSimple("javax.transaction.TransactionSynchronizationRegistry"), "java:comp/TransactionSynchronizationRegistry");
         locations.put(DotName.createSimple("javax.enterprise.inject.spi.BeanManager"), "java:comp/BeanManager");
+        locations.put(DotName.createSimple("javax.validation.Validator"), "java:comp/Validator");
+        locations.put(DotName.createSimple("javax.validation.ValidationFactory"), "java:comp/ValidationFactory");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
     }
 

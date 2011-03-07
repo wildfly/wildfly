@@ -27,6 +27,7 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.ComponentInstallProcessor;
 import org.jboss.as.ee.component.ComponentInterceptorAnnotationParsingProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
@@ -83,6 +84,7 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_AROUNDINVOKE_ANNOTATION, new InterceptorAnnotationParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_VALIDATOR_FACTORY, new BeanValidationFactoryDeployer());
 
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());

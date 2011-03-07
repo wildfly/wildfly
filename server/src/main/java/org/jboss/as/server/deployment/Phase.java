@@ -250,6 +250,7 @@ public enum Phase {
     public static final int POST_MODULE_LIEFCYCLE_ANNOTATION            = 0x0900;
     public static final int POST_MODULE_AROUNDINVOKE_ANNOTATION         = 0x1000;
     public static final int POST_MODULE_RESOURCE_INJECTION_ANNOTATION   = 0x1100;
+    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x1200;
 
     // INSTALL
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;

@@ -1,0 +1,137 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.as.ee.beanvalidation;
+
+import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.naming.JndiInjectable;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ValueJndiInjectable;
+import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.ManagedReference;
+import org.jboss.as.server.ValueManagedReference;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
+
+import javax.validation.ValidatorFactory;
+
+/**
+ * Creates a bean validation factory and adds it to the deployment and binds it to JNDI.
+ * <p/>
+ * We use a lazy wrapper around the ValidatorFactory to stop it being initialized until it is used.
+ * TODO: it would be neat if hibernate validator could make use of our annotation scanning etc
+ *
+ * @author Stuart Douglas
+ */
+public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
+    @Override
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        if(module == null || moduleDescription == null) {
+            return;
+        }
+        final LazyValidatorFactory factory  = new LazyValidatorFactory(module.getClassLoader());
+        deploymentUnit.putAttachment(BeanValidationAttachments.VALIDATOR_FACTORY,factory);
+
+        bindFactoryToJndi(factory,deploymentUnit,phaseContext,moduleDescription);
+
+    }
+
+    private void bindFactoryToJndi(LazyValidatorFactory factory, DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext,EEModuleDescription moduleDescription) {
+
+        if(moduleDescription == null) {
+            return;
+        }
+
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        //if this is a war we need to bind to the modules comp namespace
+        if(DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(), moduleDescription.getModuleName());
+            bindServices(factory,deploymentUnit, serviceTarget,moduleDescription, moduleDescription.getModuleName(), moduleContextServiceName);
+        }
+
+        for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
+            if(component.getNamingMode() == ComponentNamingMode.CREATE) {
+                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getAppName(),moduleDescription.getModuleName(),component.getComponentName());
+                bindServices(factory,deploymentUnit, serviceTarget,moduleDescription, moduleDescription.getModuleName(), compContextServiceName);
+            }
+        }
+
+    }
+
+    /**
+     * Binds the java:comp/UserTransaction service and the java:comp/TransactionSyncronizationService
+     *
+     * @param factory The ValidatorFactory to bind
+     * @param deploymentUnit The deployment unit
+     * @param serviceTarget The service target
+     * @param contextServiceName The service name of the context to bind to
+     */
+    private void bindServices(LazyValidatorFactory factory, DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
+
+        final ServiceName validatorFactoryServiceName = ContextNames.serviceNameOfContext(description.getAppName(),description.getModuleName(),componentName,"java:comp/ValidatorFactory");
+        BinderService validatorFactoryBindingService = new BinderService("ValidatorFactory");
+        validatorFactoryBindingService.getJndiInjectableInjector().inject(new ValueJndiInjectable(new ImmediateValue<Object>(factory)));
+        serviceTarget.addService(validatorFactoryServiceName, validatorFactoryBindingService)
+            .addDependency(contextServiceName, NamingStore.class, validatorFactoryBindingService.getNamingStoreInjector())
+            .install();
+
+        final ServiceName validatorServiceName = ContextNames.serviceNameOfContext(description.getAppName(),description.getModuleName(),componentName,"java:comp/Validator");
+        BinderService validatorBindingService = new BinderService("Validator");
+        validatorBindingService.getJndiInjectableInjector().inject(new ValidatorJndiInjectable(factory));
+        serviceTarget.addService(validatorServiceName, validatorBindingService)
+            .addDependency(contextServiceName, NamingStore.class, validatorBindingService.getNamingStoreInjector())
+            .install();
+
+    }
+    @Override
+    public void undeploy(DeploymentUnit context) {
+
+    }
+
+    private static final class ValidatorJndiInjectable implements JndiInjectable {
+        private final ValidatorFactory factory;
+
+        public ValidatorJndiInjectable(ValidatorFactory factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public ManagedReference getReference() {
+            return new ValueManagedReference(new ImmediateValue<Object>(factory.getValidator()));
+        }
+    }
+}

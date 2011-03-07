@@ -19,29 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server;
+package org.jboss.as.ee.beanvalidation;
 
-import org.jboss.msc.value.Value;
+import org.jboss.as.server.deployment.AttachmentKey;
+
+import javax.validation.ValidatorFactory;
 
 /**
- * A ManagedReference that simply holds a value'
- *
  * @author Stuart Douglas
  */
-public class ValueManagedReference implements ManagedReference {
-    private final Value<Object> value;
+public class BeanValidationAttachments {
 
-    public ValueManagedReference(Value<Object> value) {
-        this.value = value;
-    }
+    public static final AttachmentKey<ValidatorFactory> VALIDATOR_FACTORY = AttachmentKey.create(ValidatorFactory.class);
 
-    @Override
-    public void release() {
+    private BeanValidationAttachments() {
 
-    }
-
-    @Override
-    public Object getInstance() {
-        return value.getValue();
     }
 }

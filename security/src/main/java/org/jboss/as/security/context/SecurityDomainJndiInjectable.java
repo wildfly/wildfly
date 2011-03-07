@@ -29,6 +29,7 @@ import org.jboss.as.server.ManagedReference;
 import org.jboss.as.server.ValueManagedReference;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.SecurityConstants;
@@ -70,7 +71,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, JndiInje
             throw new IllegalStateException("Unable to get module classloader", e);
         }
         Class<?>[] interfaces = { Context.class };
-        return new ValueManagedReference(Proxy.newProxyInstance(loader, interfaces, this));
+        return new ValueManagedReference(new ImmediateValue<Object>(Proxy.newProxyInstance(loader, interfaces, this)));
     }
 
     /**
