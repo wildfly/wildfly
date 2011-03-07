@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
@@ -93,8 +94,10 @@ public class Util {
 
     public static void copyParamsToModel(final ModelNode operation, final ModelNode model) {
         Set<String> keys = operation.keys();
+        // Remove general operation params
         keys.remove(OP);
         keys.remove(OP_ADDR);
+        keys.remove(ROLLBACK_ON_RUNTIME_FAILURE);
         for (String key : keys) {
             model.get(key).set(operation.get(key));
         }

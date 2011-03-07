@@ -132,10 +132,6 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
         keys.remove(Element.IDENTITY_TRUST.getLocalName());
         keys.remove(Element.MAPPING.getLocalName());
 
-        if (!keys.isEmpty()) {
-            throw new UnsupportedOperationException("Unsupported elements for a security domain");
-        }
-
         ApplicationPolicy applicationPolicy = new ApplicationPolicy(securityDomain);
         ModelNode node = null;
         List<ModelNode> modules;

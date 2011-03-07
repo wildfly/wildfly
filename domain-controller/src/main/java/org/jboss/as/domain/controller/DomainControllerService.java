@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -197,6 +199,7 @@ public final class DomainControllerService implements Service<DomainController> 
         };
         for (ModelNode update : updates) {
             count.incrementAndGet();
+            update.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             domainModel.execute(ExecutionContextBuilder.Factory.create(update).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {

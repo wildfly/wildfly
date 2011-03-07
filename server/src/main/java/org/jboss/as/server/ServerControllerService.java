@@ -22,6 +22,8 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+
 import java.io.File;
 import java.security.AccessController;
 import java.util.ArrayList;
@@ -176,6 +178,7 @@ final class ServerControllerService implements Service<ServerController> {
         };
         for (ModelNode update : updates) {
             count.incrementAndGet();
+            update.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             serverController.execute(ExecutionContextBuilder.Factory.create(update).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {

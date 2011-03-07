@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -139,6 +140,7 @@ public class HostControllerBootstrap {
         };
         for(final ModelNode operation : operations) {
             count.incrementAndGet();
+            operation.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             hostModel.execute(ExecutionContextBuilder.Factory.create(operation).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {
