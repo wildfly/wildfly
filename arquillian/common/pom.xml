@@ -56,6 +56,7 @@
         <dependency>
           <groupId>org.jboss.arquillian.protocol</groupId>
           <artifactId>arquillian-protocol-servlet-3</artifactId>
+          <scope>provided</scope>
         </dependency>
         <dependency>
           <groupId>org.jboss.arquillian.testenricher</groupId>
