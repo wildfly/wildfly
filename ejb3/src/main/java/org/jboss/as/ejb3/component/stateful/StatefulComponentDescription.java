@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+package org.jboss.as.ejb3.component.stateful;
 
-import javax.ejb.TransactionManagementType;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * User: jpai
  */
-public abstract class EJBComponentDescription extends AbstractComponentDescription {
-
-    private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
+public class StatefulComponentDescription extends SessionBeanComponentDescription {
 
     /**
      * Construct a new instance.
@@ -41,20 +38,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      * @param moduleName         the module name
      * @param applicationName    the application name
      */
-    public EJBComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
+    public StatefulComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
         super(componentName, componentClassName, moduleName, applicationName);
-    }
-
-    @Override
-    protected AbstractComponentConfiguration constructComponentConfiguration() {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponentDescription.constructComponentConfiguration");
-    }
-
-    public TransactionManagementType getTransactionManagementType() {
-        return transactionManagementType;
-    }
-
-    public void setTransactionManagementType(TransactionManagementType transactionManagementType) {
-        this.transactionManagementType = transactionManagementType;
     }
 }

@@ -204,8 +204,8 @@ public enum Phase {
     public static final int PARSE_OSGI_PROPERTIES                       = 0x0900;
     // create and attach EJB metadata for EJB deployments
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x0980;
-    // create and attach the ComponentConfiguration for EJBs
-    public static final int PARSE_EJB_COMPONENT_CONFIG                  = 0x09C0;
+    // create and attach the component description out of EJB annotations
+    public static final int PARSE_EJB_ANNOTATION                        = 0x09C0;
     public static final int PARSE_WEB_DEPLOYMENT                        = 0x0A00;
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0B00;
     public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0C00;

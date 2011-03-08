@@ -114,6 +114,8 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             // no ejb-jar.xml found, nothing to do!
             return;
         }
+        // Mark it as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
 
         // get the XMLStreamReader and parse the ejb-jar.xml
         MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();

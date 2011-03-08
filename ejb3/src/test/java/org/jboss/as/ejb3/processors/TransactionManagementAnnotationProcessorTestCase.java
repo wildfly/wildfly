@@ -22,17 +22,27 @@
 package org.jboss.as.ejb3.processors;
 
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.Indexer;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -53,22 +63,23 @@ public class TransactionManagementAnnotationProcessorTestCase {
         InputStream stream = cls.getClassLoader().getResourceAsStream(cls.getName().replace('.', '/') + ".class");
         try {
             indexer.index(stream);
-        }
-        finally {
+        } finally {
             stream.close();
         }
     }
 
     @Test
     public void test1() throws Exception {
-        DeploymentUnit deploymentUnit = null;
+        DeploymentUnit deploymentUnit = this.getDeploymentUnit();
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
         DeploymentPhaseContext phaseContext = null;
         Indexer indexer = new Indexer();
         index(indexer, MyBean.class);
         index(indexer, SubBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        EJBComponentDescription componentDescription = new EJBComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
@@ -80,7 +91,7 @@ public class TransactionManagementAnnotationProcessorTestCase {
      */
     @Test
     public void testDefault() {
-        EJBComponentDescription componentDescription = new EJBComponentDescription("TestBean", "TestClass", "TestModule", "TestApp");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription("TestBean", "TestClass", "TestModule", "TestApp");
         assertEquals(TransactionManagementType.CONTAINER, componentDescription.getTransactionManagementType());
     }
 
@@ -89,17 +100,82 @@ public class TransactionManagementAnnotationProcessorTestCase {
      */
     @Test
     public void testSubClass() throws Exception {
-        DeploymentUnit deploymentUnit = null;
+        DeploymentUnit deploymentUnit = this.getDeploymentUnit();
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
         DeploymentPhaseContext phaseContext = null;
         Indexer indexer = new Indexer();
         index(indexer, MyBean.class);
         index(indexer, SubBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        EJBComponentDescription componentDescription = new EJBComponentDescription(SubBean.class.getSimpleName(), SubBean.class.getName(), "TestModule", "TestApp");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(SubBean.class.getSimpleName(), SubBean.class.getName(), "TestModule", "TestApp");
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
         assertEquals(TransactionManagementType.CONTAINER, componentDescription.getTransactionManagementType());
+    }
+
+    private DeploymentUnit getDeploymentUnit() {
+        return new DeploymentUnit() {
+            private Map<AttachmentKey<?>, Object> attachments = new HashMap();
+
+            @Override
+            public ServiceName getServiceName() {
+                throw new RuntimeException("NYI");
+            }
+
+            @Override
+            public DeploymentUnit getParent() {
+                throw new RuntimeException("NYI");
+            }
+
+            @Override
+            public String getName() {
+                throw new RuntimeException("NYI");
+            }
+
+            @Override
+            public ServiceRegistry getServiceRegistry() {
+                throw new RuntimeException("NYI");
+            }
+
+            @Override
+            public boolean hasAttachment(AttachmentKey<?> key) {
+                return this.attachments.containsKey(key);
+            }
+
+            @Override
+            public <T> T getAttachment(AttachmentKey<T> key) {
+                if (key == null) {
+                    return null;
+                }
+                return key.cast(attachments.get(key));
+            }
+
+            @Override
+            public <T> List<T> getAttachmentList(AttachmentKey<? extends List<T>> key) {
+                throw new RuntimeException("NYI");
+            }
+
+            @Override
+            public <T> T putAttachment(AttachmentKey<T> key, T value) {
+                if (key == null) {
+                    throw new IllegalArgumentException("key is null");
+                }
+                return key.cast(attachments.put(key, key.cast(value)));
+            }
+
+            @Override
+            public <T> T removeAttachment(AttachmentKey<T> key) {
+                throw new RuntimeException("NYI");
+            }
+
+            @Override
+            public <T> void addToAttachmentList(AttachmentKey<AttachmentList<T>> key, T value) {
+                throw new RuntimeException("NYI");
+            }
+        };
+
     }
 }
