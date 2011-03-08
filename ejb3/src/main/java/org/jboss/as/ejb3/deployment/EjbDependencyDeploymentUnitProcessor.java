@@ -29,10 +29,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+
+import static org.jboss.as.ejb3.deployment.EjbDeploymentMarker.isEjbDeployment;
 
 /**
  * Responsible for adding appropriate Java EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
@@ -61,8 +62,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         // fetch the EjbJarMetaData
-        EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-        if (ejbJarMetaData == null) {
+        if (!isEjbDeployment(deploymentUnit)) {
             // nothing to do
             return;
         }
