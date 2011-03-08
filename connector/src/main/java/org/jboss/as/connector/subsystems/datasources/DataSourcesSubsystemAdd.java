@@ -86,10 +86,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.processors.DataSourceDefinitionDeployer;
 import org.jboss.as.connector.deployers.processors.DataSourcesAttachmentProcessor;
+import org.jboss.as.connector.deployers.processors.DirectDataSourceDescription;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
@@ -202,8 +205,9 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                     serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
                             .setInitialMode(Mode.ACTIVE).install();
 
-                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES,
-                            new DataSourcesAttachmentProcessor(datasources));
+                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES, new DataSourcesAttachmentProcessor(datasources));
+                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION, new DataSourceDefinitionDeployer());
+
                     resultHandler.handleResultComplete();
                 }
             });

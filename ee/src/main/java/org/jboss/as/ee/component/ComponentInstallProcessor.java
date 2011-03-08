@@ -180,6 +180,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 } else {
                     serviceBindingName = fullBindingName.substring(idx + 1);
                 }
+
             } else if (namingMode == ComponentNamingMode.CREATE) {
                 fullBindingName = "java:comp/env/" + bindingName;
                 serviceBindingName = "env/" + bindingName;

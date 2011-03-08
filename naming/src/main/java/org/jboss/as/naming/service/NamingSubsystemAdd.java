@@ -50,6 +50,7 @@ import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -94,11 +95,7 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
                             .install();
 
                     // Create the java:global namespace
-                    try {
-                        namingStore.createSubcontext((Context) namingStore.lookup(new CompositeName()), new CompositeName("global"));
-                    } catch (NamingException e) {
-                        throw new OperationFailedException(new ModelNode().set("Unable to create java:global context - " + e.getMessage()));
-                    }
+                    addGlobalContextFactory(target, "global");
 
                     // Create the EE namespace
                     addContextFactory(target, "app");
@@ -126,6 +123,14 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
 
     private static void addContextFactory(final ServiceTarget target, final String contextName) {
         final EEContextService eeContextService = new EEContextService(contextName);
+        target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(contextName), eeContextService)
+            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, eeContextService.getJavaContextInjector())
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
+    }
+
+    private static void addGlobalContextFactory(final ServiceTarget target, final String contextName) {
+        final GlobalContextService eeContextService = new GlobalContextService(contextName);
         target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(contextName), eeContextService)
             .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, eeContextService.getJavaContextInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
