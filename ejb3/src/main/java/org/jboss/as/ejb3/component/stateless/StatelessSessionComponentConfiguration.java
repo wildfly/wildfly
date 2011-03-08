@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
  * @author Jaikiran Pai
@@ -38,6 +39,9 @@ public class StatelessSessionComponentConfiguration extends SessionBeanComponent
      */
     public StatelessSessionComponentConfiguration(final EJBComponentDescription description) {
         super(description);
+
+        // TODO: use a proper instance association interceptor
+        addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new DummyComponentInterceptor()));
     }
 
     @Override
