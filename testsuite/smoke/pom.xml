@@ -133,7 +133,7 @@
                               <include>org/jboss/as/test/embedded/mgmt/*TestCase.java</include>
                               <!--  The other demos don't work -->
                               <!-- include>org/jboss/as/test/embedded/configadmin/*TestCase.java</include -->
-                              <!-- include>org/jboss/as/test/embedded/demos/rar/*TestCase.java</include -->
+                              <include>org/jboss/as/test/embedded/demos/rar/*TestCase.java</include>
                               <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
                            </includes>
                        </configuration>

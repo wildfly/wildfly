@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modules xmlns="urn:jboss:surefire-module:1.0" targetNs="urn:jboss:module:1.0">
-   <!--  
+   <!--
        The jboss.surefire.module is added automatically by the framework and looks like this:
-       
+
        <module name="jboss.surefire.module">
            <main-class name="org.apache.maven.surefire.booter.SurefireBooter"/>
            <resources>
@@ -10,20 +10,20 @@
                <resource-root path="$org.jboss.maven.surefire.modular:surefire-booter$"/>
            </resources>
        </module>
-       
+
        To add more resources add a
        <test-resource-resources>
-           <resource-root path="$junit:junit$"/>>  
+           <resource-root path="$junit:junit$"/>>
            <resource-root path="$$CLASSES$$"/>
            <resource-root path="$$TEST.CLASSES$$"/>
        </test-resource-resources>
-     
+
        To add dependencies to the module add a section
        <test-resource-dependencies>
-           <module name="$groupId:artifactId$"/>>       
+           <module name="$groupId:artifactId$"/>>
        </test-resource-dependencies>
-       
-       
+
+
        $groupId:artifactId$ gets the dependency jar from maven using the version used by the project using this plugin
        $$CLASS$$ is the target/classes directory of the project using this plugin
        $$TEST.CLASSES$$ is the target/test-classes directory of the project using this plugin
@@ -33,9 +33,10 @@
         <resource-root path="$org.jboss.as:jboss-as-arquillian-common$"/>
         <resource-root path="$$TEST.CLASSES$$"/>
     </test-module-resources>
-       
+
     <test-module-dependencies>
         <!-- Modules needed for the test -->
+        <module name="javax.resource.api"/>
         <module name="javaee.api"/>
         <module name="org.hornetq"/>
         <module name="org.jboss.as.demos"/>
@@ -46,20 +47,21 @@
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.as.controller-client"/>
-        
+
         <!-- Arquillian dependencies -->
         <module services="import" name="org.jboss.surefire.arquillian-deps"/>
     </test-module-dependencies>
-    
+
     <module name="org.jboss.as.demos">
         <resources>
             <resource-root path="$org.jboss.as:jboss-as-demos$"/>
         </resources>
         <dependencies>
+            <module name="javax.resource.api"/>
             <module name="javax.servlet.api"/>
             <module name="javax.ws.rs.api"/>
             <module name="org.jboss.msc"/>
         </dependencies>
     </module>
-    
+
 </modules>

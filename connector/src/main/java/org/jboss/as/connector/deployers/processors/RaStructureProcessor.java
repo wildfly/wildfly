@@ -22,10 +22,6 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.List;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,6 +36,10 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Deployment processor used to determine the structure of RAR deployments.
@@ -73,8 +73,8 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
         if (!deploymentRootName.endsWith(RAR_EXTENSION)) {
             return;
         }
-        // we do not load classes from the module resource root
-        ModuleRootMarker.mark(resourceRoot, false);
+        //this violates the spec, but everyone expects it to work
+        ModuleRootMarker.mark(resourceRoot, true);
 
         try {
             final List<VirtualFile> childArchives = deploymentRoot.getChildren(CHILD_ARCHIVE_FILTER);

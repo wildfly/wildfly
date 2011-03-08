@@ -22,9 +22,6 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeploymentService;
@@ -52,8 +49,11 @@ import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -79,10 +79,11 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         if(connectorXmlDescriptor == null) {
             return;  // Skip non ra deployments
         }
-        final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = phaseContext
-                .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = deploymentUnit
+                .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
+
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());

@@ -337,7 +337,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         @Override
         protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
             /* TODO: We need security context service to implement it! */
-            throw new DeployException("TODO: We need security context service to implement it!");
+            return null;//throw new DeployException("TODO: We need security context service to implement it!");
         }
 
     }

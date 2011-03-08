@@ -12,7 +12,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
-public class RarConfigProcessor implements DeploymentUnitProcessor {
+public class RarDependencyProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier JAVAX_ID = ModuleIdentifier.create("javax.resource.api");
     private static ModuleIdentifier LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
@@ -22,6 +22,7 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier VALIDATION_ID = ModuleIdentifier.create("javax.validation.api");
     private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
     private static ModuleIdentifier COMMON_CORE_ID = ModuleIdentifier.create("org.jboss.common-core");
+    private static ModuleIdentifier RESOURCE_API_ID = ModuleIdentifier.create("javax.resource.api");
 
     private static ModuleIdentifier SYSTEM_ID = ModuleIdentifier.create("javax.api");
 
@@ -46,6 +47,7 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, VALIDATION_ID, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, COMMON_CORE_ID, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, RESOURCE_API_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {
