@@ -358,7 +358,7 @@
                 <plugin>
                     <groupId>org.jboss.maven.surefire.modular</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                   <version>1.0.0.Alpha2</version>
+                   <version>1.0.0.Alpha3</version>
                 </plugin>
             </plugins>
         </pluginManagement>
