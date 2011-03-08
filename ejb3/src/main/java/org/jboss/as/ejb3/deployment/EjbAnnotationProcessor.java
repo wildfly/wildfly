@@ -42,7 +42,6 @@ import org.jboss.logging.Logger;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,6 +53,12 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
      * Logger
      */
     private static final Logger logger = Logger.getLogger(EjbAnnotationProcessor.class);
+
+    private static enum SessionBeanType {
+        STATELESS,
+        STATEFUL,
+        SINGLETON
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -69,16 +74,36 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             }
             return;
         }
-        // Find any session bean annotations
-        final List<AnnotationInstance> sessionBeanAnnotations = this.getSessionBeans(compositeIndex);
-        if (sessionBeanAnnotations == null || sessionBeanAnnotations.isEmpty()) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("No session bean annotations found in unit: " + deploymentUnit);
-            }
-            return;
+        // Find any @Stateless bean annotations
+        final List<AnnotationInstance> slsbAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Stateless.class.getName()));
+        if (slsbAnnotations != null && !slsbAnnotations.isEmpty()) {
+            this.processSessionBeans(deploymentUnit, slsbAnnotations, EjbAnnotationProcessor.SessionBeanType.STATELESS);
+            // mark this as an EJB deployment
+            EjbDeploymentMarker.mark(deploymentUnit);
         }
-        // Mark it as a EJB deployment
-        EjbDeploymentMarker.mark(deploymentUnit);
+
+        // Find and process any @Stateful bean annotations
+        final List<AnnotationInstance> sfsbAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Stateful.class.getName()));
+        if (sfsbAnnotations != null && !sfsbAnnotations.isEmpty()) {
+            this.processSessionBeans(deploymentUnit, sfsbAnnotations, EjbAnnotationProcessor.SessionBeanType.STATEFUL);
+            // mark this as an EJB deployment
+            EjbDeploymentMarker.mark(deploymentUnit);
+        }
+
+        // Find and process any @Singleton bean annotations
+        final List<AnnotationInstance> singletonBeanAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Singleton.class.getName()));
+        if (singletonBeanAnnotations != null && !singletonBeanAnnotations.isEmpty()) {
+            this.processSessionBeans(deploymentUnit, singletonBeanAnnotations, EjbAnnotationProcessor.SessionBeanType.SINGLETON);
+            // mark this as an EJB deployment
+            EjbDeploymentMarker.mark(deploymentUnit);
+        }
+
+    }
+
+    private void processSessionBeans(DeploymentUnit deploymentUnit, List<AnnotationInstance> sessionBeanAnnotations, SessionBeanType sessionBeanType) {
+        // get the module description
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final String applicationName = moduleDescription.getAppName();
 
         // process these session bean annotations and create component descriptions out of it
         for (AnnotationInstance sessionBeanAnnotation : sessionBeanAnnotations) {
@@ -90,73 +115,27 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             }
             final ClassInfo classInfo = (ClassInfo) target;
             final String beanClassName = classInfo.name().toString();
-
-            // Get the bean name from the annotation
-            final AnnotationValue nameValue = sessionBeanAnnotation.value();
+            final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
+
             SessionBeanComponentDescription sessionBeanDescription = null;
-            String annotation = sessionBeanAnnotation.name().toString();
-            if (Stateless.class.getName().equals(annotation)) {
-                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
-            } else if (Stateful.class.getName().equals(annotation)) {
-                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
-            } else if (Singleton.class.getName().equals(annotation)) {
-                // TODO: We might need a SingletonComponentDescription. This is just temporary for now
-                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
-            } else {
-                throw new IllegalArgumentException("Unknown session bean type: " + annotation);
+            switch (sessionBeanType) {
+                case STATELESS:
+                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
+                    break;
+                case STATEFUL:
+                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
+                    break;
+                case SINGLETON:
+                    // TODO: We might need a Singleton specific component description. For now use StatelessComponentDescription
+                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
             // Add this component description to the module description
             moduleDescription.addComponent(sessionBeanDescription);
-
-            //final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(beanName);
-
-            // TODO: Add the bean views
-            //slsbDescription.getViewClassNames().add(beanClassName);
-
-            // TODO: Bind the view(s) to its two JNDI locations
-//            final BindingDescription moduleBinding = new BindingDescription();
-//            moduleBinding.setAbsoluteBinding(true);
-//            moduleBinding.setBindingName("java:module/" + beanName);
-//            moduleBinding.setBindingType(beanClassName);
-//            moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseName.append("VIEW").append(beanClassName)));
-//            slsbDescription.getBindings().add(moduleBinding);
-//            final BindingDescription appBinding = new BindingDescription();
-//            appBinding.setAbsoluteBinding(true);
-//            appBinding.setBindingName("java:app/" + moduleDescription.getModuleName() + "/" + beanName);
-//            appBinding.setBindingType(beanClassName);
-//            appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseName.append("VIEW").append(beanClassName)));
-//            slsbDescription.getBindings().add(appBinding);
-//            moduleDescription.addComponent(slsbDescription);
         }
-    }
-
-    /**
-     * Returns a list of session bean annotations (@Stateless, @Stateful and @Singleton)
-     * <p/>
-     * Returns an empty list if no session bean annotations were found
-     *
-     * @param index The composite annotation index
-     * @return
-     */
-    private List<AnnotationInstance> getSessionBeans(CompositeIndex index) {
-        List<AnnotationInstance> sessionBeans = new ArrayList<AnnotationInstance>();
-        // @Stateless
-        List<AnnotationInstance> slsbs = index.getAnnotations(DotName.createSimple(Stateless.class.getName()));
-        if (slsbs != null) {
-            sessionBeans.addAll(slsbs);
-        }
-        // @Stateful
-        List<AnnotationInstance> sfsbs = index.getAnnotations(DotName.createSimple(Stateful.class.getName()));
-        if (sfsbs != null) {
-            sessionBeans.addAll(sfsbs);
-        }
-        // @Singleton
-        List<AnnotationInstance> singletons = index.getAnnotations(DotName.createSimple(Singleton.class.getName()));
-        if (singletons != null) {
-            sessionBeans.addAll(singletons);
-        }
-        return sessionBeans;
     }
 
     @Override
