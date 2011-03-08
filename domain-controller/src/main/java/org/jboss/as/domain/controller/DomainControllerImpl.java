@@ -23,10 +23,14 @@
 package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -40,6 +44,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -61,6 +69,7 @@ import org.jboss.as.controller.AbstractModelController;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ControllerTransaction;
 import org.jboss.as.controller.ControllerTransactionContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -161,8 +170,9 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     @Override
     public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
 
+        ModelNode operation = executionContext.getOperation();
         // See who handles this op
-        OperationRouting routing = determineRouting(executionContext.getOperation());
+        OperationRouting routing = determineRouting(operation);
         if (routing.isRouteToMaster()) {
             return masterDomainControllerClient.execute(executionContext, handler);
         }
@@ -173,6 +183,10 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
 
         // Else we are responsible for coordinating a multi-host op
+
+        // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
+        ModelNode rolloutPlan = operation.has(ROLLOUT_PLAN) ? operation.remove(ROLLOUT_PLAN) : new ModelNode();
+
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
@@ -195,10 +209,19 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             transaction.commit();
             throw new UnsupportedOperationException("implement reporting of domain-level failure");
         } else {
-            transaction.commit();
-
             // Formulate plan
             Map<String, Map<ServerIdentity, ModelNode>> opsByGroup = getOpsByGroup(hostResults);
+            try {
+                rolloutPlan = getRolloutPlan(rolloutPlan, opsByGroup);
+            }
+            catch (OperationFailedException ofe) {
+                transaction.setRollbackOnly();
+                handler.handleFailed(ofe.getFailureDescription());
+                return new BasicOperationResult();
+            }
+            finally {
+                transaction.commit();
+            }
 
             // Push to servers (via hosts)
 
@@ -404,6 +427,79 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                     }
                 }
             }
+        }
+        return result;
+    }
+
+    private ModelNode getRolloutPlan(ModelNode rolloutPlan, Map<String, Map<ServerIdentity, ModelNode>> opsByGroup) throws OperationFailedException {
+
+        if (rolloutPlan == null || !rolloutPlan.isDefined()) {
+            rolloutPlan = getDefaultRolloutPlan(opsByGroup);
+        }
+        else {
+            // Validate that plan covers all groups
+            Set<String> found = new HashSet<String>();
+            if (rolloutPlan.hasDefined(IN_SERIES)) {
+                for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
+                    if (series.hasDefined(CONCURRENT_GROUPS)) {
+                        for(Property prop : series.get(SERVER_GROUP).asPropertyList()) {
+                            validateServerGroupPlan(found, prop);
+                        }
+                    }
+                    else if (series.hasDefined(SERVER_GROUP)) {
+                        Property prop = series.get(SERVER_GROUP).asProperty();
+                        validateServerGroupPlan(found, prop);
+                    }
+                    else {
+                        throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. %s is not a valid child of node %s", series, IN_SERIES)));
+                    }
+                }
+            }
+
+            Set<String> groups = new HashSet<String>(opsByGroup.keySet());
+            groups.removeAll(found);
+            if (!groups.isEmpty()) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Plan operations affect server groups %s that are not reflected in the rollout plan", groups)));
+            }
+        }
+        return rolloutPlan;
+    }
+
+    private void validateServerGroupPlan(Set<String> found, Property prop) throws OperationFailedException {
+        if (found.add(prop.getName())) {
+            throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s appears more than once in the plan.", prop.getName())));
+        }
+        ModelNode plan = prop.getValue();
+        if (plan.hasDefined(MAX_FAILURE_PERCENTAGE)) {
+            if (plan.has(MAX_FAILED_SERVERS)) {
+                plan.remove(MAX_FAILED_SERVERS);
+            }
+            int max = plan.get(MAX_FAILURE_PERCENTAGE).asInt();
+            if (max < 0 || max > 100) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s has a %s value of %s; must be between 0 and 100.", prop.getName(), MAX_FAILURE_PERCENTAGE, max)));
+            }
+        }
+        if (plan.hasDefined(MAX_FAILED_SERVERS)) {
+            int max = plan.get(MAX_FAILED_SERVERS).asInt();
+            if (max < 0) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s has a %s value of %s; cannot be less than 0.", prop.getName(), MAX_FAILED_SERVERS, max)));
+            }
+        }
+    }
+
+    private ModelNode getDefaultRolloutPlan(Map<String, Map<ServerIdentity, ModelNode>> opsByGroup) {
+        ModelNode result = new ModelNode();
+        if (opsByGroup.size() > 0) {
+            ModelNode groups = result.get(IN_SERIES).add().get(CONCURRENT_GROUPS);
+
+            ModelNode groupPlan = new ModelNode();
+            groupPlan.get(ROLLING_TO_SERVERS).set(false);
+            groupPlan.get(MAX_FAILED_SERVERS).set(0);
+
+            for (String group : opsByGroup.keySet()) {
+                groups.add(group, groupPlan);
+            }
+            result.get(ROLLBACK_ACROSS_GROUPS).set(true);
         }
         return result;
     }

@@ -47,6 +47,7 @@ public class ModelDescriptionConstants {
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
     public static final String COMPOSITE = "composite";
+    public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
     public static final String COMPENSATING_OPERATION = "compensating-operation";
@@ -71,6 +72,7 @@ public class ModelDescriptionConstants {
     public static final String INET_ADDRESS = "inet-address";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
+    public static final String IN_SERIES = "in-series";
     public static final String JVM = "jvm";
     public static final String JVM_TYPE = "type";
     public static final String LOCAL = "local";
@@ -78,6 +80,8 @@ public class ModelDescriptionConstants {
     public static final String MANAGEMENT = "management";
     public static final String MASK = "mask";
     public static final String MAX = "max";
+    public static final String MAX_FAILED_SERVERS = "max-failed-servers";
+    public static final String MAX_FAILURE_PERCENTAGE = "max-failure-percentage";
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MAX_THREADS = "max-threads";
@@ -127,9 +131,11 @@ public class ModelDescriptionConstants {
     public static final String RECURSIVE = "recursive";
     public static final String REQUIRED = "required";
     public static final String RESULT = "result";
+    public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLED_BACK = "rolled-back";
+    public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String RUNNING_SERVER = "server";
