@@ -32,8 +32,10 @@ import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Stateful Session Bean
@@ -65,15 +67,6 @@ public class StatefulSessionComponent extends AbstractComponent {
         });
     }
 
-    protected AbstractComponentInstance constructComponentInstance(Object instance) {
-        return new StatefulSessionComponentInstance(this, instance);
-    }
-
-    @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, Iterable<Interceptor> preDestroyInterceptors) {
-        return new StatefulSessionComponentInstance(this, instance);
-    }
-
     @Override
     public Interceptor createClientInterceptor(Class<?> view) {
         final Serializable sessionId = createSession();
@@ -101,5 +94,10 @@ public class StatefulSessionComponent extends AbstractComponent {
 
     protected Cache<StatefulSessionComponentInstance> getCache() {
         return cache;
+    }
+
+    @Override
+    protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        return new StatefulSessionComponentInstance(this, instance, preDestroyInterceptors, context);
     }
 }

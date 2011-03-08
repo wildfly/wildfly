@@ -25,8 +25,10 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Author : Jaikiran Pai
@@ -39,7 +41,7 @@ public class StatelessSessionComponentInstance extends AbstractComponentInstance
      * @param component   the component
      * @param instance    the object instance
      */
-    protected StatelessSessionComponentInstance(final AbstractComponent component, final Object instance) {
-        super(component, instance, Collections.<Interceptor>emptyList());
+    protected StatelessSessionComponentInstance(final AbstractComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        super(component, instance, preDestroyInterceptors, context);
     }
 }

@@ -30,6 +30,7 @@ import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -77,15 +78,6 @@ public class StatelessSessionComponent extends AbstractComponent {
         this.componentInterceptors = componentInterceptors;
     }
 
-    protected AbstractComponentInstance constructComponentInstance(Object instance) {
-        return new StatelessSessionComponentInstance(this, instance);
-    }
-
-    @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, Iterable<Interceptor> preDestroyInterceptors) {
-        return new StatelessSessionComponentInstance(this, instance);
-    }
-
     // TODO: I need to understand what exactly is this method meant for
     @Override
     public Interceptor createClientInterceptor(Class<?> viewClass) {
@@ -107,5 +99,11 @@ public class StatelessSessionComponent extends AbstractComponent {
         // TODO: Use a pool
         return super.createInstance();
     }
+
+    @Override
+    protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        return new StatelessSessionComponentInstance(this, instance, preDestroyInterceptors, context);
+    }
+
 
 }

@@ -24,10 +24,12 @@ package org.jboss.as.ejb3.component.stateful;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ejb3.cache.spi.Identifiable;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.util.id.GUID;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -35,8 +37,8 @@ import java.util.Collections;
 public class StatefulSessionComponentInstance extends AbstractComponentInstance implements Identifiable {
     private final GUID id;
 
-    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance) {
-        super(component, instance, Collections.<Interceptor>emptyList());
+    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        super(component, instance, preDestroyInterceptors, context);
         this.id = new GUID();
     }
 

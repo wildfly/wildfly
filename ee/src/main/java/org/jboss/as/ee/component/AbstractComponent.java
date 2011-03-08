@@ -299,6 +299,11 @@ public abstract class AbstractComponent implements Component {
         return namespaceContextSelectorInjector.getValue();
     }
 
+    // TODO: Jaikiran - Temporary to avoid compilation errors
+    InjectedValue<NamespaceContextSelector> getNamespaceContextSelectorInjector() {
+        return namespaceContextSelectorInjector;
+    }
+
     /**
      * {@inheritDoc}
      */
