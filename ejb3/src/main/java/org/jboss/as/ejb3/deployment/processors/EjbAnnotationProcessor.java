@@ -38,19 +38,12 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
 
-import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jaikiran Pai
@@ -123,8 +116,9 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             }
             final ClassInfo sessionBeanClassInfo = (ClassInfo) target;
             final String beanClassName = sessionBeanClassInfo.name().toString();
+            final String ejbName = sessionBeanClassInfo.name().local();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
+            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
 
             SessionBeanComponentDescription sessionBeanDescription = null;
             switch (sessionBeanType) {
