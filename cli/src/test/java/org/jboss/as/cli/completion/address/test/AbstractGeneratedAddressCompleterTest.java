@@ -21,17 +21,13 @@
  */
 package org.jboss.as.cli.completion.address.test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
 
-import org.jboss.as.cli.completion.mock.MockCommandContext;
 import org.jboss.as.cli.completion.mock.MockNode;
-import org.jboss.as.cli.completion.mock.MockOperationCandidatesProvider;
-import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.junit.Test;
 
@@ -39,20 +35,15 @@ import org.junit.Test;
  *
  * @author Alexey Loubyansky
  */
-public abstract class AbstractOperationAddressCompleterTest {
+public abstract class AbstractGeneratedAddressCompleterTest extends AbstractAddressCompleterTest {
 
-    private MockCommandContext ctx;
-    private OperationRequestCompleter completer;
-    private MockNode root = new MockNode("root");
-
-    protected AbstractOperationAddressCompleterTest() {
+    protected AbstractGeneratedAddressCompleterTest() {
         init();
     }
 
     protected void init() {
-        ctx = new MockCommandContext();
-        ctx.setOperationCandidatesProvider(new MockOperationCandidatesProvider(root));
-        completer = new OperationRequestCompleter(ctx);
+
+        super.init();
         initModel();
 
         int prefixLevel = getPrefixLevel();
@@ -122,14 +113,14 @@ public abstract class AbstractOperationAddressCompleterTest {
     private String getBufferPrefix() {
         int bufferLevel = getBufferLevel();
         if(bufferLevel < 2) {
-            return "";
+            return "./";
         }
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder("./");
         for(int i = getPrefixLevel() + 1; i < getPrefixLevel() + bufferLevel; ++i) {
             sb.append("link").append(i);
             if(i % 2 == 0) {
-                sb.append(',');
+                sb.append('/');
             } else {
                 sb.append('=');
             }
@@ -143,20 +134,6 @@ public abstract class AbstractOperationAddressCompleterTest {
 
     protected String getNoMatch() {
         return "nomatch";
-    }
-
-    protected List<String> fetchCandidates(String buffer) {
-        List<String> candidates = new ArrayList<String>();
-        completer.complete(buffer, 0, candidates);
-        return candidates;
-    }
-
-    protected MockNode addRoot(String name) {
-        return root.addChild(name);
-    }
-
-    protected MockNode removeRoot(String name) {
-        return root.remove(name);
     }
 
 /*    private List<String> applyLevel(List<String> candidates) {

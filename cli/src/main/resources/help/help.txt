@@ -1,25 +1,32 @@
 Supported commands:
-/connect [host]:[port] - connects to the specified host and port (default host is localhost, default port is 9999)
-/help (or /h) - prints this message
-/quit (or /q) - quit the command line interface
+connect [host]:[port]	- connect to the specified host and port (default host is localhost, default port is 9999).
+help (or h)				- print this message.
+quit (or q)				- quit the command line interface.
 
-/prefix [node-type [=node-name [,node-type[=node-name]]]] (alias /to) - sets the node address prefix
- which is added to the operation request. The prefix can end on node-type.
- In that case, to execute an operation just a node-name would be sufficient (e.g. logging:read-resource).
- To move to the parent node from the current one use '..' (e.g. '/to ..').
- To move to the node type from the current node use 'type' (e.g. '/to .type').
- The root is specified with '~' (e.g. '/to ~' or '/to ~other=thing').
- Executing the command w/o arguments prints the current prefix.
+cn [node-type [=node-name (,node-type[=node-name])*]] (or /cd)	- change the current node path to the argument.
+						The current node path is used as the address for the entered operations.
+						If needed, entered operations can as well specify a relative to the current node path address.
+						The current node path can end on node-type. In that case, to execute an operation
+						just a node-name would be sufficient (e.g. logging:read-resource).
+						To move to the parent node from the current one use '..' (e.g. 'cd ..').
+						To move to the node type from the current node use '.type' (e.g. 'cd .type').
+						The root is specified with '/' (e.g. 'cd /' or 'cd /other=thing').
+						The root can only be referenced at the beginning of the node path (not in the middle).
 
-To use tab-completion for the commands, start with '/' (tab-completion for command's arguments isn't supported yet).
-Commands not prefixed with '/' are treated as operation requests.
+Tab-completion is supported for the commands, just press the tab key to start
+(tab-completion for command's arguments isn't supported yet).
+
+To use tab completion for operations requests start with './' or '/' and press the tab key
+which will list the available node types or names.
+If the operation request doesn't require a node path then start with ':' and press the tab key
+('/:' and './:' are also possible).
+
 Operation requests are expected to follow the following format:
 
-[node-type=node-name [, node-type=node-name]*] : operation-name ([name=value [, name=value]*])
+[node-type=node-name (, node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')']
 
-e.g. profile=production,subsystem=threads,bounded-queue-thread-pool=pool1:write-core-threads(count=0, per-cpu=20)
+e.g. /subsystem=web/connector=http:read-resource(recursive=1)
 
-Whitespaces between separators are insignificant.
-If the address part is not specified then the operation should start with ':' followed by the operation name.
-If the operation has no arguments then the brackets '()' are optional.
-Tab-completion is supported for operations as well, that includes node types and names, operation names and their properties.
+Whitespaces between the separators are insignificant.
+If the operation doesn't require arguments then the brackets '()' are optional.
+Tab-completion for operation requests supports node types and names, operation names and the property names.

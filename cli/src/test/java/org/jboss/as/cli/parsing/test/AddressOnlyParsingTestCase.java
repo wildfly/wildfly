@@ -167,7 +167,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
         prefix.toNodeType("a");
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
 
-        parser.parse("b,", handler);
+        parser.parse("b/", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
@@ -223,7 +223,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testOneNodeWithNodeSeparator() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse("subsystem=logging,", handler);
+        parser.parse("subsystem=logging/", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
@@ -251,7 +251,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testEndsOnType() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse("a=b,c", handler);
+        parser.parse("a=b/c", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
@@ -322,7 +322,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
         prefix.toNode("a", "b");
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
 
-        parser.parse("~", handler);
+        parser.parse("/", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
@@ -331,7 +331,8 @@ public class AddressOnlyParsingTestCase extends TestCase {
         assertFalse(handler.endsOnArgumentListStart());
         assertFalse(handler.endsOnArgumentSeparator());
         assertFalse(handler.endsOnArgumentValueSeparator());
-        assertFalse(handler.endsOnNodeSeparator());
+        // root is also a separator
+        assertTrue(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
         assertFalse(handler.isRequestComplete());
 
@@ -348,7 +349,8 @@ public class AddressOnlyParsingTestCase extends TestCase {
         prefix.toNode("a", "b");
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
 
-        parser.parse("c=d,~,e=f", handler);
+        //parser.parse("c=d,~,e=f", handler);
+        parser.parse("/e=f", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
@@ -403,7 +405,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse("c=d,..,e=f", handler);
+        parser.parse("c=d/../e=f", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
@@ -464,7 +466,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
         prefix.toNodeType("a");
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
 
-        parser.parse("b,.type,c", handler);
+        parser.parse("b/.type/c", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());

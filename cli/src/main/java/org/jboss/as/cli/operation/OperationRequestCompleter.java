@@ -50,13 +50,27 @@ public class OperationRequestCompleter implements Completor {
     @Override
     public int complete(String buffer, int cursor, List candidates) {
 
-        if(!buffer.isEmpty() && buffer.charAt(0) == '/')
+        // if it ends on .. there shouldn't be completion since the node is selected and it doesn't end on a separator
+        if(buffer.endsWith("..")) {
+            return 0;
+        }
+
+        final String request;
+        final int requestStartIndex;
+        if(buffer.startsWith("./")) {
+            requestStartIndex = 2;
+            request = buffer.substring(requestStartIndex);
+        } else if(buffer.charAt(0) == ':' || buffer.charAt(0) == '/' || buffer.startsWith("..")) {
+            requestStartIndex = 0;
+            request = buffer;
+        } else {
             return -1;
+        }
 
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(new DefaultOperationRequestAddress(ctx.getPrefix()));
 
         try {
-            ctx.getOperationRequestParser().parse(buffer, handler);
+            ctx.getOperationRequestParser().parse(request, handler);
         } catch (OperationFormatException e1) {
             return -1;
         }
@@ -79,10 +93,10 @@ public class OperationRequestCompleter implements Completor {
                 return -1;
             }
 
-            if(handler.endsOnArgumentListStart()/*specifiedNames.isEmpty()*/) {
+            if(handler.endsOnArgumentListStart()) {
                 candidates.addAll(propertyNames);
                 Collections.sort(candidates);
-                return handler.getLastSeparatorIndex() + 1;
+                return requestStartIndex + handler.getLastSeparatorIndex() + 1;
             }
 
             Set<String> specifiedNames = handler.getPropertyNames();
@@ -102,7 +116,7 @@ public class OperationRequestCompleter implements Completor {
                     candidates.addAll(propertyNames);
                     Collections.sort(candidates);
                 }
-                return handler.getLastSeparatorIndex() + 1;
+                return requestStartIndex + handler.getLastSeparatorIndex() + 1;
             }
 
             for(String candidate : propertyNames) {
@@ -112,7 +126,7 @@ public class OperationRequestCompleter implements Completor {
             }
 
             Collections.sort(candidates);
-            return handler.getLastSeparatorIndex() + 1;
+            return requestStartIndex + handler.getLastSeparatorIndex() + 1;
         }
 
         if(handler.hasOperationName() || handler.endsOnAddressOperationNameSeparator()) {
@@ -135,7 +149,7 @@ public class OperationRequestCompleter implements Completor {
             }
 
             Collections.sort(candidates);
-            return handler.getLastSeparatorIndex() + 1;
+            return requestStartIndex + handler.getLastSeparatorIndex() + 1;
         }
 
         final OperationRequestAddress address = handler.getAddress();
@@ -143,7 +157,9 @@ public class OperationRequestCompleter implements Completor {
         final String chunk;
         if (address.isEmpty() || handler.endsOnNodeSeparator()
                 || handler.endsOnNodeTypeNameSeparator()
-                || address.equals(ctx.getPrefix())) {
+                || address.equals(ctx.getPrefix())
+                // TODO this is not nice
+                || buffer.endsWith("..")) {
             chunk = null;
         } else if (address.endsOnType()) {
             chunk = address.getNodeType();
@@ -174,6 +190,6 @@ public class OperationRequestCompleter implements Completor {
         }
 
         Collections.sort(candidates);
-        return handler.getLastSeparatorIndex() + 1;
+        return requestStartIndex + handler.getLastSeparatorIndex() + 1;
     }
 }

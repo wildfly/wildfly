@@ -65,7 +65,7 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
             throw new OperationFormatException(
                     "The node name is not a valid identifier '"
                             + nodeName
-                            + "' or the format is wrong for prefix '"
+                            + "' or the format is wrong for operation '"
                             + operationStr + "'");
         }
         validatedNodeName(nodeName);
@@ -142,7 +142,7 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
             throw new OperationFormatException(
                     "The node type or name is not a valid identifier '"
                             + typeOrName
-                            + "' or the format is wrong for prefix '"
+                            + "' or the format is wrong for opreation '"
                             + operationStr + "'");
         }
 

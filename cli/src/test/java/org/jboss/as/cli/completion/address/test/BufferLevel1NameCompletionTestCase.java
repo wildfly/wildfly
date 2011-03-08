@@ -30,15 +30,15 @@ import org.junit.Test;
  *
  * @author Alexey Loubyansky
  */
-public class BufferLevel1NameCompletionTestCase extends AbstractOperationAddressCompleterTest {
+public class BufferLevel1NameCompletionTestCase extends AbstractGeneratedAddressCompleterTest {
 
     @Test
     public void testStringValues() {
 
         assertAllCandidates(Arrays.asList("last2", "link2", "other2"));
         assertSelectedCandidates(Arrays.asList("last2", "link2"));
-        assertBufferPrefix("link1=");
-        assertContextPrefix("~");
+        assertBufferPrefix("./link1=");
+        assertContextPrefix("/");
     }
 
     @Override

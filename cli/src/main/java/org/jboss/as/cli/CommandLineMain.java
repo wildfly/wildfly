@@ -53,7 +53,7 @@ public class CommandLineMain {
         registerHandler(new HelpHandler(), "help", "h");
         registerHandler(new QuitHandler(), "quit", "q");
         registerHandler(new ConnectHandler(), "connect");
-        registerHandler(new PrefixHandler(), "prefix", "to");
+        registerHandler(new PrefixHandler(), "cd", "cn");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {
@@ -83,8 +83,8 @@ public class CommandLineMain {
         console.addCompletor(new OperationRequestCompleter(cmdCtx));
 
         cmdCtx.log("You are disconnected at the moment." +
-                " Type /connect to connect to the server or" +
-                " /help for the list of supported commands.");
+                " Type 'connect' to connect to the server or" +
+                " 'help' for the list of supported commands.");
 
         while (!cmdCtx.terminate) {
             String line = console.readLine("[" + cmdCtx.getPrefixFormatter().format(cmdCtx.getPrefix()) + "] ");
@@ -94,8 +94,19 @@ public class CommandLineMain {
                 continue;
             }
 
-            if (line.charAt(0) == '/') {
-                String cmd = line.substring(1).toLowerCase();
+            if(isOperation(line)) {
+                final String opReq;
+                if(line.startsWith("./")) {
+                    // TODO this has to be added to the operation request parser
+                    opReq = line.substring(2);
+                } else {
+                    opReq = line;
+                }
+                cmdCtx.cmdArgs = opReq;
+                operationHandler.handle(cmdCtx);
+
+            } else {
+                String cmd = line.toLowerCase();
                 cmdCtx.cmdArgs = null;
                 for (int i = 0; i < cmd.length(); ++i) {
                     if (Character.isWhitespace(cmd.charAt(i))) {
@@ -110,13 +121,15 @@ public class CommandLineMain {
                 } else {
                     cmdCtx.log("Unexpected command '"
                             + line
-                            + "'. Type /help for the list of supported commands.");
+                            + "'. Type 'help' for the list of supported commands.");
                 }
-            } else {
-                cmdCtx.cmdArgs = line;
-                operationHandler.handle(cmdCtx);
             }
         }
+    }
+
+    private static boolean isOperation(String line) {
+        char firstChar = line.charAt(0);
+        return firstChar == '.' || firstChar == ':' || firstChar == '/' || line.startsWith("..") || line.startsWith(".type");
     }
 
     private static class CommandContextImpl implements CommandContext {

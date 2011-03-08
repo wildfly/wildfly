@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli;
 
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Set;
 
@@ -46,22 +46,22 @@ public class CommandCompleter implements Completor {
     @Override
     public int complete(String buffer, int cursor, List candidates) {
 
-        if(buffer.length() < 1)
-            return -1;
-        if(buffer.charAt(0) != '/')
-            return -1;
-
-        if(buffer.length() == 1) {
+        if(buffer.isEmpty()) {
             candidates.addAll(commands);
-        } else {
-            String start = buffer.substring(1);
-            for (String command : commands) {
-                if (command.startsWith(start))
-                    candidates.add(command);
-            }
+            return 0;
         }
-        Collections.sort(candidates);
-        return 1;
+
+        char firstChar = buffer.charAt(0);
+        if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
+            return -1;
+        }
+
+        for (String command : commands) {
+            if (command.startsWith(buffer))
+                candidates.add(command);
+        }
+
+        return 0;
     }
 
 }

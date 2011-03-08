@@ -27,7 +27,7 @@ import org.jboss.as.cli.operation.OperationRequestParser;
 /**
  * Default implementation of CommandParser which expects the following command format:
  *
- * node-type=node-name [, node-type=node-name]* : operation-name ( [name=value [, name=value]*] )
+ * [node-type=node-name (, node-type=node-name)*] : operation-name ['(' name=value (, name=value)* ')' ]
  *
  * the whitespaces are insignificant. E.g.
  *
@@ -44,15 +44,15 @@ import org.jboss.as.cli.operation.OperationRequestParser;
  */
 public class DefaultOperationRequestParser implements OperationRequestParser {
 
-    public static final String FORMAT = "node-type=node-name [, node-type=node-name]* : operation-name ( [name=value [, name=value]*] )";
+    public static final String FORMAT = "[node-type=node-name (, node-type=node-name)*] : operation-name [ '(' name=value (, name=value)* ')' ]";
     public static final char NODE_TYPE_NAME_SEPARATOR = '=';
-    public static final char NODE_SEPARATOR = ',';
+    public static final char NODE_SEPARATOR = '/';
     public static final char ADDRESS_OPERATION_NAME_SEPARATOR = ':';
     public static final char ARGUMENTS_LIST_START = '(';
     public static final char ARGUMENT_NAME_VALUE_SEPARATOR = '=';
     public static final char ARGUMENT_SEPARATOR = ',';
     public static final char ARGUMENTS_LIST_END = ')';
-    public static final String ROOT_NODE = "~";
+    public static final String ROOT_NODE = "/";
     public static final String PARENT_NODE = "..";
     public static final String NODE_TYPE = ".type";
 
@@ -92,14 +92,17 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                         throw new OperationFormatException(
                                 "Node type/name is missing or the format is wrong for the prefix '"
                                         + operationRequest.substring(0, addressLength) + "'");
+                    } else if(nodeSepIndex == 0) {
+                        handler.rootNode();
                     }
                 } else {
 
                     int typeNameSep = node.indexOf(NODE_TYPE_NAME_SEPARATOR);
                     if (typeNameSep < 0) {
+                        /* root node is allowed only at the beginning of the address
                         if (ROOT_NODE.equals(node)) {
                             handler.rootNode();
-                        } else if (PARENT_NODE.equals(node)) {
+                        } else*/ if (PARENT_NODE.equals(node)) {
                             handler.parentNode();
                         } else if (NODE_TYPE.equals(node)) {
                             handler.nodeType();

@@ -41,7 +41,7 @@ public class DefaultPrefixFormatter implements PrefixFormatter {
 
         Iterator<Node> iterator = prefix.iterator();
         if(!iterator.hasNext()) {
-            return "~";
+            return "/";
         }
 
         StringBuilder builder = new StringBuilder();
@@ -52,7 +52,7 @@ public class DefaultPrefixFormatter implements PrefixFormatter {
                 builder.append('=').append(next.getName());
             }
             if(iterator.hasNext())
-                builder.append(',');
+                builder.append('/');
         }
         return builder.toString();
     }
