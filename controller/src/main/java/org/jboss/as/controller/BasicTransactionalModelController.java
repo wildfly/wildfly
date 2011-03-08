@@ -139,7 +139,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
             if (operationHandler == null) {
                 throw new IllegalStateException("No handler for " + operationName + " at address " + address);
             }
-            System.out.println("Using " + operationHandler + " for " + operationName + " on " + address);
+
             final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
             try {
                 final OperationResult result = operationHandler.execute(context, executionContext.getOperation(), handler);

@@ -51,7 +51,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -82,6 +84,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.domain.controller.plan.RolloutPlanController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -112,6 +115,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     }
 
     private final Map<String, HostControllerClient> hosts = new ConcurrentHashMap<String, HostControllerClient>();
+    private final Map<String, HostControllerClient> immutableHosts = Collections.unmodifiableMap(hosts);
     private final String localHostName;
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -218,12 +222,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             }
         }
 
-        for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
-            System.out.println("======================================================");
-            System.out.println(entry.getKey());
-            System.out.println("======================================================");
-            System.out.println(entry.getValue());
-        }
+//        for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+//            System.out.println("======================================================");
+//            System.out.println(entry.getKey());
+//            System.out.println("======================================================");
+//            System.out.println(entry.getValue());
+//        }
 
         if (transaction.isRollbackOnly()) {
             transaction.commit();
@@ -236,6 +240,9 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             handler.handleFailed(null);
             return new BasicOperationResult();
         } else {
+            // TODO formulate the domain-level result
+            //....
+
             // Formulate plan
             Map<String, Map<ServerIdentity, ModelNode>> opsByGroup = getOpsByGroup(hostResults);
             try {
@@ -253,8 +260,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             }
 
             ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
-            // Push to servers (via hosts)
 
+            // Push to servers (via hosts)
+            RolloutPlanController controller = new RolloutPlanController(opsByGroup, rolloutPlan, handler, immutableHosts, scheduledExecutorService);
+
+            controller.execute();
             // Rollback if necessary
 
 //            throw new UnsupportedOperationException("implement formulating and implementing a multi-server plan");
@@ -450,12 +460,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         Map<String, Map<ServerIdentity, ModelNode>> result = new HashMap<String, Map<ServerIdentity, ModelNode>>();
 
         for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
-            ModelNode hostResult = entry.getValue();
-            if (hostResult.hasDefined("server-operations")) {
+            ModelNode hostResult = entry.getValue().get(RESULT);
+            if (hostResult.hasDefined(SERVER_OPERATIONS)) {
                 String host = entry.getKey();
-                for (ModelNode item : hostResult.get("server-operations").asList()) {
-                    ModelNode op = item.require("operation");
-                    for (Property prop : item.require("servers").asPropertyList()) {
+                for (ModelNode item : hostResult.get(SERVER_OPERATIONS).asList()) {
+                    ModelNode op = item.require(OP);
+                    for (Property prop : item.require(SERVERS).asPropertyList()) {
                         String group = prop.getValue().asString();
                         Map<ServerIdentity, ModelNode> groupMap = result.get(group);
                         if (groupMap == null) {

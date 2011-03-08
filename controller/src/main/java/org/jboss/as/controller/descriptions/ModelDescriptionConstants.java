@@ -63,6 +63,7 @@ public class ModelDescriptionConstants {
     public static final String FAILED = "failed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FIXED_PORT = "fixed-port";
+    public static final String GRACEFUL_SHUTDOWN_TIMEOUT = "graceful-shutdown-timeout";
     public static final String GROUP = "group";
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
@@ -135,6 +136,7 @@ public class ModelDescriptionConstants {
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String RECURSIVE = "recursive";
     public static final String REQUIRED = "required";
+    public static final String RESPONSE = "response";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
@@ -147,9 +149,12 @@ public class ModelDescriptionConstants {
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SERVER = "server";
+    public static final String SERVERS = "servers";
     public static final String SERVER_CONFIG = "server-config";
     public static final String SERVER_GROUP = "server-group";
+    public static final String SERVER_GROUPS = "server-groups";
     public static final String SERVER_OPERATIONS = "server-operations";
+    public static final String SHUTDOWN = "shutdown";
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
     public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";

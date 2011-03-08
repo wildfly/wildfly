@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
@@ -38,14 +38,13 @@ import org.jboss.dmr.ModelNode;
  * Thread-Safety: This class is immutable, but is intended to only have its
  * {@link #run()} method executed once.
  */
-class ServerRestartTask<I> extends AbstractServerUpdateTask {
+class ServerRestartTask extends AbstractServerUpdateTask {
 
-    private final DomainController domainController;
+    private final HostControllerClient domainController;
     private final long gracefulTimeout;
 
-    ServerRestartTask(final DomainController domainController,
+    ServerRestartTask(final HostControllerClient domainController,
             final ServerIdentity serverId,
-            final boolean forRollback,
             final ServerUpdatePolicy updatePolicy,
             final ServerUpdateResultHandler resultHandler,
             final long gracefulTimeout) {
