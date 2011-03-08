@@ -16,6 +16,18 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
+import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
+import org.jboss.arquillian.spi.Configuration;
+import org.jboss.arquillian.spi.ContainerMethodExecutor;
+import org.jboss.arquillian.spi.Context;
+import org.jboss.arquillian.spi.LifecycleException;
+import org.jboss.as.arquillian.container.AbstractDeployableContainer;
+import org.jboss.as.arquillian.container.JBossAsContainerConfiguration;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+
+import javax.management.MBeanServerConnection;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,19 +37,6 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-
-import javax.management.MBeanServerConnection;
-
-import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
-import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
-import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
-import org.jboss.arquillian.spi.Configuration;
-import org.jboss.arquillian.spi.ContainerMethodExecutor;
-import org.jboss.arquillian.spi.Context;
-import org.jboss.arquillian.spi.LifecycleException;
-import org.jboss.as.arquillian.container.AbstractDeployableContainer;
-import org.jboss.as.arquillian.container.JBossAsContainerConfiguration;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 
 /**
  * JBossASEmbeddedContainer
@@ -50,6 +49,7 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
     private final Logger log = Logger.getLogger(JBossAsManagedContainer.class.getName());
     private MBeanServerConnectionProvider provider;
     private Process process;
+    private Thread shutdownThread;
 
     @Override
     public void setup(Context context, Configuration configuration) {
@@ -114,6 +114,22 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
                 Thread.sleep(100);
                 timeout -= 100;
             }
+            final Process proc = process;
+            shutdownThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (proc != null) {
+                        proc.destroy();
+                        try {
+                            proc.waitFor();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
+            Runtime.getRuntime().addShutdownHook(shutdownThread);
+
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
@@ -121,6 +137,10 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
 
     @Override
     public void stop(Context context) throws LifecycleException {
+        if(shutdownThread != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownThread);
+            shutdownThread = null;
+        }
         try {
             if (process != null) {
                 process.destroy();
