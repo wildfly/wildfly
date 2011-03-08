@@ -22,31 +22,27 @@
 
 package org.jboss.as.security;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.security.CommonAttributes.MODULE_OPTIONS;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.dmr.ModelNode;
@@ -104,6 +100,7 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     // add parsed security domain to the Configuration
                     final ApplicationPolicyRegistration loginConfig = getConfiguration(context.getServiceRegistry());
@@ -120,17 +117,29 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
     }
 
     private ApplicationPolicy createApplicationPolicy(String securityDomain, ModelNode operation) {
-        Set<String> keys = new HashSet<String>(operation.keys());
-        keys.remove(OP);
-        keys.remove(OP_ADDR);
-        keys.remove(NAME);
-        keys.remove(Element.ACL.getLocalName());
-        keys.remove(Element.AUDIT.getLocalName());
-        keys.remove(Element.AUTHENTICATION.getLocalName());
-        keys.remove(Element.AUTHENTICATION_JASPI.getLocalName());
-        keys.remove(Element.AUTHORIZATION.getLocalName());
-        keys.remove(Element.IDENTITY_TRUST.getLocalName());
-        keys.remove(Element.MAPPING.getLocalName());
+
+        // BES 2011/03/07. This "unexpected keys" check should be avoided, particularly since
+        // the method doesn't do anything with unknown keys. There are two problems with the check:
+        // 1) The operation may include children useful to the controller but not this hander;
+        // for example ROLLBACNK_ON_RUNTIME_FAILURE
+        // 2) It limits forward compatibility; e.g. a new, optional, param could be added in a later minor
+        // release and get pushed around a domain. Servers in the domain running an earlier version will see
+        // the param. They can just ignore it.
+//        Set<String> keys = new HashSet<String>(operation.keys());
+//        keys.remove(OP);
+//        keys.remove(OP_ADDR);
+//        keys.remove(NAME);
+//        keys.remove(Element.ACL.getLocalName());
+//        keys.remove(Element.AUDIT.getLocalName());
+//        keys.remove(Element.AUTHENTICATION.getLocalName());
+//        keys.remove(Element.AUTHENTICATION_JASPI.getLocalName());
+//        keys.remove(Element.AUTHORIZATION.getLocalName());
+//        keys.remove(Element.IDENTITY_TRUST.getLocalName());
+//        keys.remove(Element.MAPPING.getLocalName());
+//
+//        if (!keys.isEmpty()) {
+//            throw new UnsupportedOperationException("Unsupported elements for a security domain");
+//        }
 
         ApplicationPolicy applicationPolicy = new ApplicationPolicy(securityDomain);
         ModelNode node = null;

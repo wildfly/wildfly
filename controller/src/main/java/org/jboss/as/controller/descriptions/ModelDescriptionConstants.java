@@ -130,6 +130,7 @@ public class ModelDescriptionConstants {
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLED_BACK = "rolled-back";
+    public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String RUNNING_SERVER = "server";
     public static final String SCHEMA_LOCATION = "schema-location";
