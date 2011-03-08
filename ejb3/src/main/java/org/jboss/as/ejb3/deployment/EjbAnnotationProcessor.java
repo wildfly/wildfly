@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -38,7 +38,6 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
@@ -90,7 +89,7 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
                 continue;
             }
             final ClassInfo classInfo = (ClassInfo) target;
-            final String beanClassName = classInfo.name().local();
+            final String beanClassName = classInfo.name().toString();
 
             // Get the bean name from the annotation
             final AnnotationValue nameValue = sessionBeanAnnotation.value();
