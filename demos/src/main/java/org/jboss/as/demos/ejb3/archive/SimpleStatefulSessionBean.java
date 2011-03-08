@@ -21,9 +21,12 @@
  */
 package org.jboss.as.demos.ejb3.archive;
 
+import javax.ejb.Stateful;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
+@Stateful
 public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
     private String state;
 

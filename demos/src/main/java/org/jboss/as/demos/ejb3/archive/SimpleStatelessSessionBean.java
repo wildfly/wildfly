@@ -21,11 +21,14 @@
  */
 package org.jboss.as.demos.ejb3.archive;
 
+import javax.ejb.Stateless;
+
 /**
- * A simple stateless session bean that is deployed via a descriptor.
+ * A simple stateless session bean.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
+@Stateless
 public class SimpleStatelessSessionBean extends SimpleInterceptor implements SimpleStatelessSessionLocal {
    public String echo(String msg) {
       return "Echo " + msg;

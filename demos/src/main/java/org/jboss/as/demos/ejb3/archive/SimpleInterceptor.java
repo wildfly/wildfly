@@ -21,13 +21,15 @@
  */
 package org.jboss.as.demos.ejb3.archive;
 
+import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class SimpleInterceptor {
-   public Object aroundInvoke(InvocationContext ctx) throws Exception {
-      return getClass().getSimpleName() + "#" + ctx.proceed();
-   }
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext ctx) throws Exception {
+        return getClass().getSimpleName() + "#" + ctx.proceed();
+    }
 }
