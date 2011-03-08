@@ -49,6 +49,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -79,7 +80,7 @@ public class SecurityExtension implements Extension {
         registration.registerOperationHandler(ADD, SecuritySubsystemAdd.INSTANCE, SecuritySubsystemDescriptions.SUBSYSTEM_ADD,
                 false);
         registration.registerOperationHandler(DESCRIBE, SecurityDescribeHandler.INSTANCE,
-                SecuritySubsystemDescriptions.SUBSYSTEM_DESCRIBE, false);
+                SecuritySubsystemDescriptions.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
 
         // security domains
         final ModelNodeRegistration securityDomain = registration.registerSubModel(PathElement

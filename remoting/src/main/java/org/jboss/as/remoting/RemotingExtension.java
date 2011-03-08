@@ -81,6 +81,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -109,7 +110,7 @@ public class RemotingExtension implements Extension {
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(RemotingSubsystemProviders.SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, RemotingSubsystemAdd.INSTANCE, RemotingSubsystemProviders.SUBSYSTEM_ADD, false);
-        subsystem.registerOperationHandler(DESCRIBE, RemotingSubsystemDescribeHandler.INSTANCE, RemotingSubsystemDescribeHandler.INSTANCE, false);
+        subsystem.registerOperationHandler(DESCRIBE, RemotingSubsystemDescribeHandler.INSTANCE, RemotingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         // Remoting connectors
         final ModelNodeRegistration connectors = subsystem.registerSubModel(PathElement.pathElement(CONNECTOR), RemotingSubsystemProviders.CONNECTOR_SPEC);

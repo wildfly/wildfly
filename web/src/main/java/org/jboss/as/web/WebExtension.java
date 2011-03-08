@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.logging.Logger;
 
 /**
@@ -55,7 +56,7 @@ public class WebExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(WebSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
+        registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
         // connector
         final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, WebSubsystemProviders.CONNECTOR);

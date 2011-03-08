@@ -65,6 +65,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
@@ -91,7 +92,7 @@ public class ConnectorExtension implements Extension {
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, ConnectorSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(REMOVE, ConnectorSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE, ConnectorSubsystemDescribeHandler.INSTANCE, false);
+        subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE, ConnectorSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
     }
 
     @Override

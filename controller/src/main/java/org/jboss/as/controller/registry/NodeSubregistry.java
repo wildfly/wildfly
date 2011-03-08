@@ -99,7 +99,7 @@ final class NodeSubregistry {
         }
     }
 
-    void getHandlers(final ListIterator<PathElement> iterator, final String child, final Map<String, DescriptionProvider> providers, final boolean inherited) {
+    void getHandlers(final ListIterator<PathElement> iterator, final String child, final Map<String, OperationEntry> providers, final boolean inherited) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
         final AbstractNodeRegistration childRegistry = snapshot.get(child);
         final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");

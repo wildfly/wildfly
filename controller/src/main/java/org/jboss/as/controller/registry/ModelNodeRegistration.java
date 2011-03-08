@@ -54,9 +54,33 @@ public interface ModelNodeRegistration {
      * @param operationName the operation name
      * @param handler the operation handler
      * @param descriptionProvider the description provider for this operation
-     * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise  @throws IllegalArgumentException if either parameter is {@code null}
+     * @throws IllegalArgumentException if either parameter is {@code null}
+     */
+    void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider);
+
+    /**
+     * Register an operation handler for this model node.
+     *
+     * @param operationName the operation name
+     * @param handler the operation handler
+     * @param descriptionProvider the description provider for this operation
+     * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
+     * @throws IllegalArgumentException if either parameter is {@code null}
      */
     void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
+
+    /**
+     * Register an operation handler for this model node.
+     *
+     * @param operationName the operation name
+     * @param handler the operation handler
+     * @param descriptionProvider the description provider for this operation
+     * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
+     * @param entryType the operation entry type
+     * @throws IllegalArgumentException if either parameter is {@code null}
+     */
+    void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
+
 
     /**
      * Records that the given attribute can be both read from and written to, and
@@ -174,7 +198,7 @@ public interface ModelNodeRegistration {
      * @param inherited true to include inherited operations
      * @return the operation map
      */
-    Map<String, DescriptionProvider> getOperationDescriptions(PathAddress address, boolean inherited);
+    Map<String, OperationEntry> getOperationDescriptions(PathAddress address, boolean inherited);
 
     /**
      * If there is a proxy controller registered under any part of the registered address it will be returned.

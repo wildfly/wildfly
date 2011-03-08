@@ -101,6 +101,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -132,7 +133,7 @@ public class ThreadsExtension implements Extension {
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
         subsystem.registerOperationHandler(ADD, ThreadsSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE, ThreadsSubsystemDescribeHandler.INSTANCE, false);
+        subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE, ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         final ModelNodeRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY), THREAD_FACTORY_DESC);
         threadFactories.registerOperationHandler(ADD, ThreadFactoryAdd.INSTANCE, ADD_THREAD_FACTORY_DESC, false);

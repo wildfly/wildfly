@@ -83,10 +83,12 @@ import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers.ResolveAddressOperationHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -543,6 +545,7 @@ public class GlobalOperationsTestCase {
         assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
         assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
         assertTrue(ops.contains(READ_RESOURCE_OPERATION));
+        assertFalse(ops.contains(ResolveAddressOperationHandler.OPERATION_NAME));
         for (String op : ops) {
             assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
         }
@@ -855,6 +858,8 @@ public class GlobalOperationsTestCase {
                 }
             });
 
+
+            getRegistry().registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
             getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
@@ -863,7 +868,6 @@ public class GlobalOperationsTestCase {
             getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
-
 
 
             ModelNodeRegistration profileReg = getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {

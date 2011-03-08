@@ -48,6 +48,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -79,7 +80,7 @@ public class ManagedBeansExtension implements Extension {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         nodeRegistration.registerOperationHandler(ADD, ManagedBeansSubsystemAdd.INSTANCE, DESCRIPTION, false);
-        nodeRegistration.registerOperationHandler(DESCRIBE, ManagedBeansDescribeHandler.INSTANCE, ManagedBeansDescribeHandler.INSTANCE, false);
+        nodeRegistration.registerOperationHandler(DESCRIBE, ManagedBeansDescribeHandler.INSTANCE, ManagedBeansDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerXMLElementWriter(parser);
 
     }

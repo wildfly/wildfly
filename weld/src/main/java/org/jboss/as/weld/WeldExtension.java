@@ -50,6 +50,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
@@ -79,7 +80,7 @@ public class WeldExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, WeldSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
-        registration.registerOperationHandler(DESCRIBE, WeldSubsystemDescribeHandler.INSTANCE, WeldSubsystemDescribeHandler.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, WeldSubsystemDescribeHandler.INSTANCE, WeldSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);
     }
 

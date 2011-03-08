@@ -63,6 +63,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -287,7 +288,7 @@ public class BasicModelController extends AbstractModelController implements Mod
             // Ugly. We register a handler for reading the config as xml to avoid leaking internals
             // via the ModelController or OperationContext interfaces.
             XmlMarshallingHandler handler = new XmlMarshallingHandler();
-            this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, handler, handler, false);
+            this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, handler, handler, false, OperationEntry.EntryType.PRIVATE);
         }
     }
 

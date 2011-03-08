@@ -39,6 +39,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 
 final class ConcreteNodeRegistration extends AbstractNodeRegistration {
@@ -95,13 +96,13 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, DescriptionProvider> providers, final boolean inherited) {
+    void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
 
         if (!iterator.hasNext() || inherited) {
             for (final Map.Entry<String, OperationEntry> entry : operationsUpdater.get(this).entrySet()) {
                 if (!providers.containsKey(entry.getKey())) {
                     if (!iterator.hasNext() || (inherited && entry.getValue().isInherited())) {
-                        providers.put(entry.getKey(), entry.getValue().getDescriptionProvider());
+                        providers.put(entry.getKey(), entry.getValue());
                     }
                 }
             }
@@ -123,8 +124,8 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
-        if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited)) != null) {
+    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
+        if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType)) != null) {
             throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
@@ -374,29 +375,5 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
-
-    private static final class OperationEntry {
-        private final OperationHandler operationHandler;
-        private final DescriptionProvider descriptionProvider;
-        private final boolean inherited;
-
-        private OperationEntry(final OperationHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited) {
-            this.operationHandler = operationHandler;
-            this.descriptionProvider = descriptionProvider;
-            this.inherited = inherited;
-        }
-
-        OperationHandler getOperationHandler() {
-            return operationHandler;
-        }
-
-        DescriptionProvider getDescriptionProvider() {
-            return descriptionProvider;
-        }
-
-        boolean isInherited() {
-            return inherited;
-        }
-    }
 }
 

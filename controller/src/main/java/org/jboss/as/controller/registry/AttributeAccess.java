@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationHandler;
  *
  * @author Brian Stansberry
  */
-public class AttributeAccess {
+public final class AttributeAccess {
 
     /**
      * The {@link AttributeAccess.AccessType}.

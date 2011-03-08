@@ -50,6 +50,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -74,7 +75,7 @@ public class JMXExtension implements Extension {
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(JMXSubsystemProviders.SUBSYSTEM);
         // Subsystem operation handlers
         registration.registerOperationHandler(ADD, JMXSubsystemAdd.INSTANCE, JMXSubsystemProviders.SUBSYTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, JMXDescribeHandler.INSTANCE, JMXDescribeHandler.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, JMXDescribeHandler.INSTANCE, JMXDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(JMXConnectorAdd.OPERATION_NAME, JMXConnectorAdd.INSTANCE, JMXSubsystemProviders.JMX_CONNECTOR_ADD, false);
         registration.registerOperationHandler(JMXConnectorRemove.OPERATION_NAME, JMXConnectorRemove.INSTANCE, JMXSubsystemProviders.JMX_CONNECTOR_REMOVE, false);
 

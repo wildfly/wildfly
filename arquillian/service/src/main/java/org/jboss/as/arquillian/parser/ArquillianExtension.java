@@ -22,8 +22,6 @@
 
 package org.jboss.as.arquillian.parser;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -35,10 +33,12 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -49,6 +49,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -70,7 +71,7 @@ public class ArquillianExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(ArquillianProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, ArquillianSubsystemAdd.INSTANCE, ArquillianProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, ArquillianSubsystemDescribeHandler.INSTANCE, ArquillianSubsystemDescribeHandler.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, ArquillianSubsystemDescribeHandler.INSTANCE, ArquillianSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);
     }
 

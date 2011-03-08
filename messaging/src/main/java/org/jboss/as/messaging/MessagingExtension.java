@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 
 /**
  * Domain extension that integrates HornetQ.
@@ -49,7 +50,7 @@ public class MessagingExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, MessagingSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
+        registration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
 
         subsystem.registerXMLElementWriter(MessagingSubsystemParser.getInstance());
 

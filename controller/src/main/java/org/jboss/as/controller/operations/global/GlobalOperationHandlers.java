@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -66,6 +67,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -343,12 +345,14 @@ public class GlobalOperationHandlers {
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final ModelNodeRegistration registry = context.getRegistry();
-                final Map<String, DescriptionProvider> descriptionProviders = registry.getOperationDescriptions(PathAddress.pathAddress(operation.require(ADDRESS)), true);
+                final Map<String, OperationEntry> operations = registry.getOperationDescriptions(PathAddress.pathAddress(operation.require(ADDRESS)), true);
 
                 final ModelNode result = new ModelNode();
-                if (descriptionProviders.size() > 0) {
-                    for (final String s : descriptionProviders.keySet()) {
-                        result.add(s);
+                if (operations.size() > 0) {
+                    for(final Entry<String, OperationEntry> entry : operations.entrySet()) {
+                        if(entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
+                            result.add(entry.getKey());
+                        }
                     }
                 } else {
                     result.setEmptyList();
@@ -416,11 +420,14 @@ public class GlobalOperationHandlers {
         private void addDescription(final OperationContext context, final ModelNode result, final boolean recursive, final boolean operations, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
 
             if (operations) {
-                final Map<String, DescriptionProvider> ops = registry.getOperationDescriptions(address, true);
+                final Map<String, OperationEntry> ops = registry.getOperationDescriptions(address, true);
                 if (ops.size() > 0) {
 
-                    for (final Map.Entry<String, DescriptionProvider> entry : ops.entrySet()) {
-                        result.get(OPERATIONS, entry.getKey()).set(entry.getValue().getModelDescription(locale));
+                    for (final Map.Entry<String, OperationEntry> entry : ops.entrySet()) {
+                        if(entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
+                            final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
+                            result.get(OPERATIONS, entry.getKey()).set(provider.getModelDescription(locale));
+                        }
                     }
 
                 } else {

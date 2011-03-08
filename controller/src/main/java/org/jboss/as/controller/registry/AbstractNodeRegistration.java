@@ -22,18 +22,19 @@
 
 package org.jboss.as.controller.registry;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
 
 /**
  * A registry of model node information.  This registry is thread-safe.
@@ -56,7 +57,19 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited);
+    public void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider) {
+        registerOperationHandler(operationName, handler, descriptionProvider, false);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
+        registerOperationHandler(operationName, handler, descriptionProvider, inherited, OperationEntry.EntryType.PUBLIC);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
 
     /** {@inheritDoc} */
     @Override
@@ -95,13 +108,13 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      * @return the handlers
      */
     @Override
-    public Map<String, DescriptionProvider> getOperationDescriptions(final PathAddress address, boolean inherited) {
-        Map<String, DescriptionProvider> providers = new HashMap<String, DescriptionProvider>();
+    public Map<String, OperationEntry> getOperationDescriptions(final PathAddress address, boolean inherited) {
+        Map<String, OperationEntry> providers = new TreeMap<String, OperationEntry>();
         getOperationDescriptions(address.iterator(), providers, inherited);
         return providers;
     }
 
-    abstract void getOperationDescriptions(ListIterator<PathElement> iterator, Map<String, DescriptionProvider> providers, boolean inherited);
+    abstract void getOperationDescriptions(ListIterator<PathElement> iterator, Map<String, OperationEntry> providers, boolean inherited);
 
     /** {@inheritDoc} */
     @Override

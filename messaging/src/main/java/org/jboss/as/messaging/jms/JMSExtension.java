@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 
 /**
  * The JMS extension.
@@ -54,7 +55,7 @@ public class JMSExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(JMSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, JMSSubsystemAdd.INSTANCE, JMSSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, JMSSubsystemDescribeHandler.INSTANCE, JMSSubsystemProviders.SUBSYSTEM_DESCRIBE, false);
+        registration.registerOperationHandler(DESCRIBE, JMSSubsystemDescribeHandler.INSTANCE, JMSSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parsers);
         // Connection factories
         final ModelNodeRegistration cfs = registration.registerSubModel(CFS_PATH, JMSSubsystemProviders.CF);

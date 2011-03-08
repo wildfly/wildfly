@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -57,7 +58,7 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
+    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
@@ -87,7 +88,7 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, DescriptionProvider> providers, final boolean inherited) {
+    void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
 
     }
 

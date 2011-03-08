@@ -39,6 +39,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -56,7 +57,7 @@ public class LoggingExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(LoggingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewLoggingSubsystemAdd.ADD_INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.SET_ROOT_LOGGER, false);
         registration.registerOperationHandler(RootLoggerRemove.OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.getInstance());

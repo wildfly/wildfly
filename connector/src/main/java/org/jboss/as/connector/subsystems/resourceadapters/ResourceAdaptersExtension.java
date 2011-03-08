@@ -84,6 +84,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
@@ -120,7 +121,7 @@ public class ResourceAdaptersExtension implements Extension {
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, ResourceAdaptersSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false);
+        subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
     }
 
