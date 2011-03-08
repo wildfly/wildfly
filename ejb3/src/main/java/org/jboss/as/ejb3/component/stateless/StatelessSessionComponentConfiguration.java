@@ -22,21 +22,26 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.component.EJBComponentConfiguration;
-import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.ee.component.AbstractComponent;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 
 /**
- * Author : Jaikiran Pai
+ * @author Jaikiran Pai
  */
-public class StatelessSessionComponentFactory extends AbstractSessionComponentFactory {
+public class StatelessSessionComponentConfiguration extends SessionBeanComponentConfiguration {
 
-    public Component createComponent(DeploymentUnit deploymentUnit, EJBComponentConfiguration componentConfiguration) {
-        ClassLoader cl = this.getClassLoader(deploymentUnit);
-        DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
-        return new StatelessSessionComponent(componentConfiguration);
+    /**
+     * Construct a new instance.
+     *
+     * @param description the original component description
+     */
+    public StatelessSessionComponentConfiguration(final EJBComponentDescription description) {
+        super(description);
+    }
+
+    @Override
+    public AbstractComponent constructComponent() {
+        return new StatelessSessionComponent(this);
     }
 }

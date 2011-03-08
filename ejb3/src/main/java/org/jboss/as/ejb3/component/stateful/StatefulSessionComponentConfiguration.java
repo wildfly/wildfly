@@ -21,28 +21,24 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponentConfiguration extends EJBComponentConfiguration {
-    public StatefulSessionComponentConfiguration(final EJBComponentDescription description) {
-        this(description, new StatefulSessionComponentFactory());
-    }
+public class StatefulSessionComponentConfiguration extends SessionBeanComponentConfiguration {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param description       the original component description
-     * @param componentFactory  the component factory to use to create the actual component
-     */
-    protected StatefulSessionComponentConfiguration(final EJBComponentDescription description, final AbstractSessionComponentFactory componentFactory) {
-        super(description, componentFactory);
+    public StatefulSessionComponentConfiguration(final EJBComponentDescription description) {
+        super(description);
 
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));
+    }
+
+    @Override
+    public AbstractComponent constructComponent() {
+        return new StatefulSessionComponent(this);
     }
 }

@@ -45,11 +45,6 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
         super(componentName, componentClassName, moduleName, applicationName);
     }
 
-    @Override
-    protected AbstractComponentConfiguration constructComponentConfiguration() {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponentDescription.constructComponentConfiguration");
-    }
-
     public TransactionManagementType getTransactionManagementType() {
         return transactionManagementType;
     }

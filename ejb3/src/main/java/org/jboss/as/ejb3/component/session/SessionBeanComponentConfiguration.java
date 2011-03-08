@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.Component;
+package org.jboss.as.ejb3.component.session;
+
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
-import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Jaikiran Pai
  */
-public class StatefulSessionComponentFactory extends AbstractSessionComponentFactory {
-    public Component createComponent(DeploymentUnit deploymentUnit, EJBComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
-        ClassLoader cl = getClassLoader(deploymentUnit);
-        DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
-        return new StatefulSessionComponent(componentConfiguration);
+public abstract class SessionBeanComponentConfiguration extends EJBComponentConfiguration {
+
+    /**
+     * Construct a new instance.
+     *
+     * @param description the original component description
+     */
+    public SessionBeanComponentConfiguration(final EJBComponentDescription description) {
+        super(description);
     }
 }

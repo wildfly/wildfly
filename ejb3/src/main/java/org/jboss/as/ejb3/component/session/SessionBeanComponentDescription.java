@@ -27,7 +27,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 /**
  * @author Jaikiran Pai
  */
-public class SessionBeanComponentDescription extends EJBComponentDescription {
+public abstract class SessionBeanComponentDescription extends EJBComponentDescription {
 
     /**
      * Construct a new instance.

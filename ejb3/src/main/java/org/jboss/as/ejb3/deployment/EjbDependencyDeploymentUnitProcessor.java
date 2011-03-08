@@ -67,7 +67,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
             return;
         }
 
-        final ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
     }

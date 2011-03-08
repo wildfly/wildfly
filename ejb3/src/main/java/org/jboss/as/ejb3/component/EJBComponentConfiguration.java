@@ -23,29 +23,23 @@ package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ejb3.component.session.AbstractSessionComponentFactory;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJBComponentConfiguration extends AbstractComponentConfiguration {
+public abstract class EJBComponentConfiguration extends AbstractComponentConfiguration {
     /**
      * Construct a new instance.
      *
      * @param description the original component description
      */
-    public EJBComponentConfiguration(final EJBComponentDescription description, final AbstractSessionComponentFactory factory) {
+    public EJBComponentConfiguration(final EJBComponentDescription description) {
         super(description);
     }
 
     protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
         super.getComponentSystemInterceptorFactories().add(interceptorFactory);
-    }
-
-    @Override
-    public AbstractComponent constructComponent() {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponentConfiguration.constructComponent");
     }
 
     /**
