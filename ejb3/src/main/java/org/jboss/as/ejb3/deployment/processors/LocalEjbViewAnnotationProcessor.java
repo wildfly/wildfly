@@ -75,7 +75,6 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         for (String viewClassName : localBusinessInterfaces) {
             final BindingDescription globalBinding = new BindingDescription();
             globalBinding.setAbsoluteBinding(true);
-            globalBinding.setDependency(true);
             globalBinding.setBindingName("java:global/" + globalJNDIBaseName + "!" + viewClassName);
             globalBinding.setBindingType(viewClassName);
             globalBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
