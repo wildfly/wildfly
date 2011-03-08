@@ -52,4 +52,12 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     public void setTransactionManagementType(TransactionManagementType transactionManagementType) {
         this.transactionManagementType = transactionManagementType;
     }
+
+    public String getEJBName() {
+        return this.getComponentName();
+    }
+
+    public String getEJBClassName() {
+        return this.getComponentClassName();
+    }
 }

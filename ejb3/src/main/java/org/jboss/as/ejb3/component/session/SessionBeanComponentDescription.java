@@ -22,7 +22,15 @@
 
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ee.component.BindingDescription;
+import org.jboss.as.ee.component.ServiceBindingSourceDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Jaikiran Pai
@@ -40,4 +48,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public SessionBeanComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
         super(componentName, componentClassName, moduleName, applicationName);
     }
+
+    public void addLocalBusinessInterfaceViews(Collection<String> classNames) {
+        this.getViewClassNames().addAll(classNames);
+    }
+
 }

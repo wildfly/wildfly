@@ -20,8 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.deployment;
+package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -47,7 +49,7 @@ import java.io.InputStream;
  * This {@link DeploymentUnitProcessor deployment unit processor} looks for ejb-jar.xml in META-INF of a .jar
  * and WEB-INF of a .war file. If it finds the ejb-jar.xml in these locations, it parses that file and creates
  * {@link EjbJarMetaData} out of it. The {@link EjbJarMetaData} is then attached to the {@link DeploymentUnit}
- * with {@link EjbDeploymentAttachmentKeys#EJB_JAR_METADATA} as the key.
+ * with {@link org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys#EJB_JAR_METADATA} as the key.
  * <p/>
  * <p/>
  * Author: Jaikiran Pai

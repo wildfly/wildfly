@@ -20,12 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.deployment;
+package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -37,12 +38,19 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
 
+import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jaikiran Pai
@@ -77,7 +85,7 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         // Find any @Stateless bean annotations
         final List<AnnotationInstance> slsbAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Stateless.class.getName()));
         if (slsbAnnotations != null && !slsbAnnotations.isEmpty()) {
-            this.processSessionBeans(deploymentUnit, slsbAnnotations, EjbAnnotationProcessor.SessionBeanType.STATELESS);
+            this.processSessionBeans(deploymentUnit, compositeIndex, slsbAnnotations, EjbAnnotationProcessor.SessionBeanType.STATELESS);
             // mark this as an EJB deployment
             EjbDeploymentMarker.mark(deploymentUnit);
         }
@@ -85,7 +93,7 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         // Find and process any @Stateful bean annotations
         final List<AnnotationInstance> sfsbAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Stateful.class.getName()));
         if (sfsbAnnotations != null && !sfsbAnnotations.isEmpty()) {
-            this.processSessionBeans(deploymentUnit, sfsbAnnotations, EjbAnnotationProcessor.SessionBeanType.STATEFUL);
+            this.processSessionBeans(deploymentUnit, compositeIndex, sfsbAnnotations, EjbAnnotationProcessor.SessionBeanType.STATEFUL);
             // mark this as an EJB deployment
             EjbDeploymentMarker.mark(deploymentUnit);
         }
@@ -93,14 +101,14 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         // Find and process any @Singleton bean annotations
         final List<AnnotationInstance> singletonBeanAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Singleton.class.getName()));
         if (singletonBeanAnnotations != null && !singletonBeanAnnotations.isEmpty()) {
-            this.processSessionBeans(deploymentUnit, singletonBeanAnnotations, EjbAnnotationProcessor.SessionBeanType.SINGLETON);
+            this.processSessionBeans(deploymentUnit, compositeIndex, singletonBeanAnnotations, EjbAnnotationProcessor.SessionBeanType.SINGLETON);
             // mark this as an EJB deployment
             EjbDeploymentMarker.mark(deploymentUnit);
         }
 
     }
 
-    private void processSessionBeans(DeploymentUnit deploymentUnit, List<AnnotationInstance> sessionBeanAnnotations, SessionBeanType sessionBeanType) {
+    private void processSessionBeans(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex, List<AnnotationInstance> sessionBeanAnnotations, SessionBeanType sessionBeanType) {
         // get the module description
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final String applicationName = moduleDescription.getAppName();
@@ -113,8 +121,8 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
                 logger.warn(sessionBeanAnnotation.name() + " annotation is expected to be only on classes. " + target + " is not a class");
                 continue;
             }
-            final ClassInfo classInfo = (ClassInfo) target;
-            final String beanClassName = classInfo.name().toString();
+            final ClassInfo sessionBeanClassInfo = (ClassInfo) target;
+            final String beanClassName = sessionBeanClassInfo.name().toString();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
 
@@ -133,6 +141,7 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
                 default:
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
+
             // Add this component description to the module description
             moduleDescription.addComponent(sessionBeanDescription);
         }

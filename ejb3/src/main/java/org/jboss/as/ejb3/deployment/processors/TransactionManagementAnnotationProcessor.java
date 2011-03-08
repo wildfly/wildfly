@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.processors;
+package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
@@ -51,7 +51,7 @@ public class TransactionManagementAnnotationProcessor extends AbstractComponentC
             return; // We can't continue without the annotation index info.
         }
         // Only process EJB deployments
-        if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) {
+        if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit) || !(componentDescription instanceof EJBComponentDescription)) {
             return;
         }
         processTransactionManagement(classInfo, index, (EJBComponentDescription) componentDescription);

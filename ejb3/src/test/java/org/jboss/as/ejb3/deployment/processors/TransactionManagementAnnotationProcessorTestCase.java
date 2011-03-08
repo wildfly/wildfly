@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.processors;
+package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
@@ -33,7 +33,6 @@ import org.jboss.jandex.Indexer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
