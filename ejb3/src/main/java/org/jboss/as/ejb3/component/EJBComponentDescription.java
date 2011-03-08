@@ -24,10 +24,14 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 
+import javax.ejb.TransactionManagementType;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBComponentDescription extends AbstractComponentDescription {
+    private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
+
     /**
      * Construct a new instance.
      *
@@ -36,12 +40,20 @@ public class EJBComponentDescription extends AbstractComponentDescription {
      * @param moduleName         the module name
      * @param applicationName    the application name
      */
-    protected EJBComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
+    public EJBComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
         super(componentName, componentClassName, moduleName, applicationName);
     }
 
     @Override
     protected AbstractComponentConfiguration constructComponentConfiguration() {
         throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponentDescription.constructComponentConfiguration");
+    }
+
+    public TransactionManagementType getTransactionManagementType() {
+        return transactionManagementType;
+    }
+
+    public void setTransactionManagementType(TransactionManagementType transactionManagementType) {
+        this.transactionManagementType = transactionManagementType;
     }
 }
