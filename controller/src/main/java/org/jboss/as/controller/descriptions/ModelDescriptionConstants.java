@@ -57,6 +57,8 @@ public class ModelDescriptionConstants {
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
+    public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
+    public static final String DOMAIN_RESULTS = "domain-results";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
@@ -66,6 +68,9 @@ public class ModelDescriptionConstants {
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HTTP_API = "http-api";
     public static final String HOST = "host";
+    public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
+    public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
+    public static final String IGNORED = "ignored";
     public static final String INCLUDE = "include";
     public static final String INCLUDES = "includes";
     public static final String INCLUDE_RUNTIME = "include-runtime";
@@ -144,6 +149,7 @@ public class ModelDescriptionConstants {
     public static final String SERVER = "server";
     public static final String SERVER_CONFIG = "server-config";
     public static final String SERVER_GROUP = "server-group";
+    public static final String SERVER_OPERATIONS = "server-operations";
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
     public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";

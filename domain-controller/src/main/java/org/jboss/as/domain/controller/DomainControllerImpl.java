@@ -22,12 +22,16 @@
 
 package org.jboss.as.domain.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
@@ -58,6 +62,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +83,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 
@@ -185,16 +192,29 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         // Else we are responsible for coordinating a multi-host op
 
         // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
-        ModelNode rolloutPlan = operation.has(ROLLOUT_PLAN) ? operation.remove(ROLLOUT_PLAN) : new ModelNode();
-
+        ModelNode rolloutPlan = operation.has(ROLLOUT_PLAN) ? operation.remove(ROLLOUT_PLAN) : null;
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
         Map<String, ModelNode> hostResults = pushToHosts(executionContext, routing, transaction);
-        for (ModelNode hostResult : hostResults.values()) {
-            if (hostResult.hasDefined(OUTCOME) && FAILED.equals(hostResult.get(OUTCOME).asString())) {
-                transaction.setRollbackOnly();
-                break;
+        ModelNode masterFailureResult = null;
+        ModelNode hostFailureResults = null;
+        ModelNode masterResult = hostResults.get(localHostName);
+        if (masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
+            transaction.setRollbackOnly();
+            masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+        }
+        else {
+            for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+                ModelNode hostResult = entry.getValue();
+                if (hostResult.hasDefined(OUTCOME) && FAILED.equals(hostResult.get(OUTCOME).asString())) {
+                    if (hostFailureResults == null) {
+                        transaction.setRollbackOnly();
+                        hostFailureResults = new ModelNode();
+                    }
+                    ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+                    hostFailureResults.add(entry.getKey(), desc);
+                }
             }
         }
 
@@ -207,7 +227,14 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         if (transaction.isRollbackOnly()) {
             transaction.commit();
-            throw new UnsupportedOperationException("implement reporting of domain-level failure");
+            if (masterFailureResult != null) {
+                handler.handleResultFragment(new String[]{DOMAIN_FAILURE_DESCRIPTION}, masterFailureResult);
+            }
+            else if (hostFailureResults != null) {
+                handler.handleResultFragment(new String[]{HOST_FAILURE_DESCRIPTIONS}, hostFailureResults);
+            }
+            handler.handleFailed(null);
+            return new BasicOperationResult();
         } else {
             // Formulate plan
             Map<String, Map<ServerIdentity, ModelNode>> opsByGroup = getOpsByGroup(hostResults);
@@ -216,20 +243,23 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             }
             catch (OperationFailedException ofe) {
                 transaction.setRollbackOnly();
-                handler.handleFailed(ofe.getFailureDescription());
+                // treat as a master DC failure
+                handler.handleResultFragment(new String[]{DOMAIN_FAILURE_DESCRIPTION}, ofe.getFailureDescription());
+                handler.handleFailed(null);
                 return new BasicOperationResult();
             }
             finally {
                 transaction.commit();
             }
 
+            ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
             // Push to servers (via hosts)
 
             // Rollback if necessary
 
 //            throw new UnsupportedOperationException("implement formulating and implementing a multi-server plan");
             handler.handleResultComplete();
-            return new BasicOperationResult();
+            return new BasicOperationResult(compensatingOperation);
         }
     }
 
@@ -323,6 +353,15 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     @Override
     public FileRepository getFileRepository() {
         return fileRepository;
+    }
+
+    @Override
+    public void setInitialDomainModel(ModelNode initialModel) {
+        if (masterDomainControllerClient == null) {
+            throw new IllegalStateException("Cannot set initial domain model on non-slave DomainController");
+        }
+        // FIXME cast is poor
+        ((DomainModelImpl) localDomainModel).setInitialDomainModel(initialModel);
     }
 
     private Map<String, ModelNode> pushToHosts(final ExecutionContext executionContext, final OperationRouting routing, final ControllerTransaction transaction) {
@@ -504,6 +543,73 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return result;
     }
 
+    private ModelNode getCompensatingOperation(ModelNode operation, Map<String, ModelNode> hostResults) {
+
+        ModelNode result = null;
+        if (isMultistepOperation(operation)) {
+
+            SortedSet<String> keys = new TreeSet<String>(operation.get(STEPS).keys());
+            Map<String, ModelNode> compSteps = new HashMap<String, ModelNode>();
+            // See if master responded; if yes use that for all possible steps
+            ModelNode masterResult = hostResults.get(localHostName);
+            if (masterResult != null && !IGNORED.equals(masterResult.get(OUTCOME).asString())
+                    && masterResult.hasDefined(COMPENSATING_OPERATION)) {
+                for (Property prop : masterResult.get(COMPENSATING_OPERATION).asPropertyList()) {
+                    ModelNode value = prop.getValue();
+                    if (value.getType() == ModelType.OBJECT) {
+                        compSteps.put(prop.getName(), value);
+                    }
+                }
+            }
+            if (compSteps.size() < keys.size()) {
+                // See if other hosts handled other steps
+                for (ModelNode hostResult : hostResults.values()) {
+                    if (hostResult != null && !IGNORED.equals(hostResult.get(OUTCOME).asString())
+                            && hostResult.hasDefined(COMPENSATING_OPERATION)) {
+
+                        for (Property prop : masterResult.get(COMPENSATING_OPERATION).asPropertyList()) {
+                            if (!compSteps.containsKey(prop.getName())) {
+                                ModelNode value = prop.getValue();
+                                if (value.getType() == ModelType.OBJECT) {
+                                    compSteps.put(prop.getName(), value);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            result = new ModelNode();
+            for (String step : keys) {
+                ModelNode stepComp = compSteps.get(step);
+                if (stepComp != null && stepComp.isDefined()) {
+                    result.add(stepComp);
+                }
+            }
+        }
+        else {
+            // See if master responded; if yes use that; if not use first host that responded
+            ModelNode masterResult = hostResults.get(localHostName);
+            if (masterResult != null && !IGNORED.equals(masterResult.get(OUTCOME).asString())) {
+                result = masterResult.get(COMPENSATING_OPERATION);
+            }
+            if (result == null) {
+                for (ModelNode hostResult : hostResults.values()) {
+                    if (hostResult != null && !IGNORED.equals(hostResult.get(OUTCOME).asString())) {
+                        result = hostResult.get(COMPENSATING_OPERATION);
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean isMultistepOperation(ModelNode operation) {
+        // TODO deal with wildcard ops
+        return COMPOSITE.equals(operation.require(OP).asString());
+    }
+
     private class OperationRouting {
 
         private final boolean routeToMaster;
@@ -533,15 +639,6 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         private Set<String> getHosts() {
             return hosts;
         }
-    }
-
-    @Override
-    public void setInitialDomainModel(ModelNode initialModel) {
-        if (masterDomainControllerClient == null) {
-            throw new IllegalStateException("Cannot set initial domain model on non-slave DomainController");
-        }
-        // FIXME cast is poor
-        ((DomainModelImpl) localDomainModel).setInitialDomainModel(initialModel);
     }
 
     private class LocalHostControllerClient implements HostControllerClient {

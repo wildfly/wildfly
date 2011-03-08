@@ -27,8 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
@@ -49,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -270,15 +273,15 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         ModelNode operation = executionContext.getOperation();
         ParsedOp parsedOp = parseOperation(operation, 0);
         ModelNode domainOp = parsedOp.getDomainOperation();
-        ModelNode opResult = null;
+        ModelNode overallResult = null;
         if (domainOp != null) {
-            opResult = super.execute(executionContext.clone(domainOp), transaction);
+            ModelNode opResult = super.execute(executionContext.clone(domainOp), transaction);
+            overallResult = createOverallResult(opResult, parsedOp);
         }
         else {
-            opResult = new ModelNode();
-            opResult.get(OUTCOME).set(SUCCESS);
+            overallResult = new ModelNode();
+            overallResult.get(OUTCOME).set(IGNORED);
         }
-        ModelNode overallResult = createOverallResult(opResult, parsedOp);
         return overallResult;
     }
 
@@ -343,19 +346,24 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         ModelNode overallResult = new ModelNode();
         overallResult.get(OUTCOME).set(SUCCESS);
         ModelNode domainResult = parsedOp.getFormattedDomainResult(resultNode);
-        overallResult.get(RESULT, "domain-results").set(domainResult);
+        overallResult.get(RESULT, DOMAIN_RESULTS).set(domainResult);
         Map<Set<ServerIdentity>, ModelNode> serverOps = parsedOp.getServerOps(getDomainModel(), getHostModel());
-        ModelNode serverOpsNode = overallResult.get(RESULT, "server-operations");
+        ModelNode serverOpsNode = overallResult.get(RESULT, SERVER_OPERATIONS);
         for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : serverOps.entrySet()) {
             ModelNode setNode = serverOpsNode.add();
             ModelNode serverNode = setNode.get("servers");
             for (ServerIdentity server : entry.getKey()) {
                 serverNode.add(server.getServerName(), server.getServerGroupName());
             }
-            setNode.get("operation").set(entry.getValue());
+            setNode.get(OP).set(entry.getValue());
         }
-        ModelNode compOp = opResult.has(COMPENSATING_OPERATION) ? opResult.get(COMPENSATING_OPERATION) : new ModelNode();
-        overallResult.get(COMPENSATING_OPERATION).set(compOp);
+        ModelNode compOp = opResult.has(COMPENSATING_OPERATION) ? opResult.get(COMPENSATING_OPERATION) : null;
+        if (compOp != null) {
+            if (compOp.isDefined()) {
+                compOp = parsedOp.getFormattedDomainCompensatingOp(compOp);
+            }
+            overallResult.get(COMPENSATING_OPERATION).set(compOp);
+        }
         return overallResult;
     }
 
@@ -388,9 +396,10 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
     }
 
     private interface ParsedOp {
+        ModelNode getDomainOperation();
         Map<Set<ServerIdentity>, ModelNode> getServerOps(ModelNode domainModel, ModelNode hostModel);
         ModelNode getFormattedDomainResult(ModelNode resultNode);
-        ModelNode getDomainOperation();
+        ModelNode getFormattedDomainCompensatingOp(ModelNode unformatted);
     }
 
     private class SimpleParsedOp implements ParsedOp {
@@ -440,6 +449,11 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
             ModelNode formatted = new ModelNode();
             formatted.get(domainStep).set(resultNode);
             return formatted;
+        }
+
+        @Override
+        public ModelNode getFormattedDomainCompensatingOp(ModelNode unformatted) {
+            return unformatted;
         }
     }
 
@@ -568,10 +582,29 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
                 if (po.getDomainOperation() != null) {
                     String label = "step-" + (++resultStep);
                     ModelNode stepResultNode = resultNode.get(label);
+                    ModelNode formattedStepResultNode = po.getFormattedDomainResult(stepResultNode);
+                    formatted.get("step-" + (i+1)).set(formattedStepResultNode);
+                }
+                else {
+                    formatted.get("step-" + (i+1), OUTCOME).set(IGNORED);
+                }
+            }
+            return formatted;
+        }
+
+        @Override
+        public ModelNode getFormattedDomainCompensatingOp(ModelNode unformatted) {
+            ModelNode formatted = new ModelNode();
+            int resultStep = 0;
+            for (int i = 0; i < steps.size(); i++) {
+                ParsedOp po = steps.get(i);
+                if (po.getDomainOperation() != null) {
+                    String label = "step-" + (++resultStep);
+                    ModelNode stepResultNode = unformatted.get(label);
                     formatted.get("step-" + (i+1)).set(stepResultNode);
                 }
                 else {
-                    formatted.get("step-" + (i+1), OUTCOME).set("ignored");
+                    formatted.get("step-" + (i+1)).set(IGNORED);
                 }
             }
             return formatted;

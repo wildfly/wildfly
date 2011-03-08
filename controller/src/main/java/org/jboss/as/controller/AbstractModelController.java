@@ -80,8 +80,9 @@ public abstract class AbstractModelController implements ModelController {
             public void handleFailed(final ModelNode failureDescription) {
                 synchronized (finalResult) {
                     if (status.compareAndSet(0, 3)) {
-//                        finalResult.remove(RESULT);
-                        finalResult.get(FAILURE_DESCRIPTION).set(failureDescription);
+                        if (failureDescription != null && failureDescription.isDefined()) {
+                            finalResult.get(FAILURE_DESCRIPTION).set(failureDescription);
+                        }
                     }
                     finalResult.notify();
                 }
