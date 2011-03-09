@@ -85,6 +85,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
+import org.jboss.as.domain.controller.plan.RolloutPlanController.Result;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -260,6 +261,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             }
 
             ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
+
+            if(opsByGroup.size() == 0) {
+                handler.handleResultComplete();
+                return new BasicOperationResult(compensatingOperation);
+            }
 
             // Push to servers (via hosts)
             RolloutPlanController controller = new RolloutPlanController(opsByGroup, rolloutPlan, handler, immutableHosts, scheduledExecutorService, false);

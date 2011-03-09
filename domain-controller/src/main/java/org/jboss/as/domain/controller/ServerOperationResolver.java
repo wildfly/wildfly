@@ -275,6 +275,9 @@ public class ServerOperationResolver {
         if (forDomain && hostModel.hasDefined(PATH) && hostModel.get(PATH).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
+        } else if (! operation.hasDefined(PATH)) {
+            // don't push named only paths
+            result = Collections.emptyMap();
         }
         else if (hostModel.hasDefined(SERVER_CONFIG)) {
             Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
