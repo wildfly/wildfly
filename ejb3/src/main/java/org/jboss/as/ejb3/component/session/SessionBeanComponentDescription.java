@@ -55,6 +55,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     public void addLocalBusinessInterfaceViews(Collection<String> classNames) {
         this.getViewClassNames().addAll(classNames);
+        for (String viewClassName : classNames) {
+            viewTypes.put(viewClassName, MethodIntf.LOCAL);
+        }
     }
 
     public void addNoInterfaceView() {

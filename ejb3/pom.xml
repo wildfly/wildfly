@@ -46,7 +46,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>*TestCase.java</include>
+                        <include>org/jboss/as/ejb3/**/*TestCase.java</include>
                     </includes>
                 </configuration>
             </plugin>

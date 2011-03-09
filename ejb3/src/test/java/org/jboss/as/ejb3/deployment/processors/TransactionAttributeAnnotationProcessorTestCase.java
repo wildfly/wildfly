@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -34,6 +35,8 @@ import org.junit.Test;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 
 import static org.jboss.as.ejb3.TestHelper.index;
 import static org.jboss.as.ejb3.TestHelper.mockDeploymentUnit;
@@ -87,9 +90,12 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         index(indexer, ViewB.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
-        componentDescription.getViewClassNames().add(ViewA.class.getName());
-        componentDescription.getViewClassNames().add(ViewB.class.getName());
+        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        Collection<String> views = new HashSet<String>();
+        views.add(ViewA.class.getName());
+        views.add(ViewB.class.getName());
+        componentDescription.addLocalBusinessInterfaceViews(views);
+        
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
