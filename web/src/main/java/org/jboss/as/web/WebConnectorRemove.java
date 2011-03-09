@@ -64,7 +64,7 @@ public class WebConnectorRemove implements ModelRemoveOperationHandler {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceController<?> service = context.getServiceRegistry()
-                            .getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
+                            .getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
                     if (service != null) {
                         service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
                     } else {
