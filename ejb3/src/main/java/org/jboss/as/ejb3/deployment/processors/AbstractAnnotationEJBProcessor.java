@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -38,8 +38,8 @@ import org.jboss.jandex.DotName;
 public abstract class AbstractAnnotationEJBProcessor<D extends EJBComponentDescription> extends AbstractComponentConfigProcessor {
     protected abstract Class<D> getComponentDescriptionType();
 
-    protected abstract void processAnnotations(final ClassInfo beanClass, final CompositeIndex index, D componentDescription)  throws DeploymentUnitProcessingException;
-    
+    protected abstract void processAnnotations(final ClassInfo beanClass, final CompositeIndex index, D componentDescription) throws DeploymentUnitProcessingException;
+
     @Override
     protected final void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final ClassInfo beanClass = index.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));

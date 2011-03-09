@@ -116,10 +116,11 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     }
 
     public abstract MethodIntf getMethodIntf(String viewClassName);
-    
+
     /**
      * Style 1 (13.3.7.2.1 @1)
-     * @param methodIntf            the method-intf the annotations apply to or null if EJB class itself
+     *
+     * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
      * @param transactionAttribute
      */
     public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute) {
@@ -131,7 +132,8 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
 
     /**
      * Style 2 (13.3.7.2.1 @2)
-     * @param methodIntf            the method-intf the annotations apply to or null if EJB class itself
+     *
+     * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
      * @param transactionAttribute
      * @param methodName
      */
@@ -144,7 +146,8 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
 
     /**
      * Style 3 (13.3.7.2.1 @3)
-     * @param methodIntf            the method-intf the annotations apply to or null if EJB class itself
+     *
+     * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
      * @param transactionAttribute
      * @param methodName
      * @param methodParams

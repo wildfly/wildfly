@@ -38,7 +38,7 @@ import java.util.Map;
 
 /**
  * This processor must be after the view annotation processors.
- * 
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationEJBProcessor<EJBComponentDescription> {
@@ -52,16 +52,17 @@ public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationE
     @Override
     protected void processAnnotations(ClassInfo beanClass, CompositeIndex index, EJBComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         processViewAnnotations(index, componentDescription);
-        
+
         processClassAnnotations(beanClass, null, index, componentDescription);
     }
 
     /**
      * @param beanClass
-     * @param methodIntf        the method-intf the annotations apply to or null if EJB class itself
+     * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
      * @param index
      * @param componentDescription
      * @throws DeploymentUnitProcessingException
+     *
      */
     private void processClassAnnotations(ClassInfo beanClass, MethodIntf methodIntf, CompositeIndex index, EJBComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final DotName superName = beanClass.superName();
@@ -70,7 +71,7 @@ public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationE
             if (superClass != null)
                 processClassAnnotations(superClass, methodIntf, index, componentDescription);
         }
-        
+
         final Map<DotName, List<AnnotationInstance>> classAnnotations = beanClass.annotations();
         if (classAnnotations == null)
             return;
@@ -85,8 +86,7 @@ public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationE
             if (target instanceof ClassInfo) {
                 // Style 1
                 componentDescription.setTransactionAttribute(methodIntf, transactionAttributeType);
-            }
-            else if (target instanceof MethodInfo) {
+            } else if (target instanceof MethodInfo) {
                 // Style 3
                 final MethodInfo method = (MethodInfo) target;
                 componentDescription.setTransactionAttribute(methodIntf, transactionAttributeType, method.name(), toString(method.args()));
@@ -103,8 +103,8 @@ public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationE
         }
     }
 
-    private static String[] toString(Object a[]) {
-        final String result[] = new String[a.length];
+    private static String[] toString(Object[] a) {
+        final String[] result = new String[a.length];
         for (int i = 0; i < result.length; i++) {
             result[i] = a[i].toString();
         }

@@ -29,7 +29,7 @@ import java.util.Arrays;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class ArrayKey {
-    private final Object a[];
+    private final Object[] a;
     private final int hashCode;
     private transient String s;
 
