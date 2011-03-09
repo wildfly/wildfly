@@ -183,6 +183,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
 
         ModelNode operation = executionContext.getOperation();
+
+        if (operation.get(OP).asString().equals(HostControllerClient.EXECUTE_ON_DOMAIN)) {
+            return localDomainModel.execute(executionContext.clone(operation.require(HostControllerClient.DOMAIN_OP)), handler);
+        }
+
         // See who handles this op
         OperationRouting routing = determineRouting(operation);
         if (routing.isRouteToMaster()) {
@@ -198,6 +203,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
         ModelNode rolloutPlan = operation.has(ROLLOUT_PLAN) ? operation.remove(ROLLOUT_PLAN) : null;
+
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
@@ -394,6 +400,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     }
 
     private Map<String, ModelNode> pushToHosts(final ExecutionContext executionContext, final OperationRouting routing, final ControllerTransaction transaction) {
+
         final Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>();
         final Map<String, Future<ModelNode>> futures = new HashMap<String, Future<ModelNode>>();
 

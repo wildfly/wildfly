@@ -58,6 +58,7 @@ import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerImpl;
 import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.HostControllerClient;
@@ -79,15 +80,6 @@ import org.jboss.dmr.ModelNode;
  * @version $Revision: 1.1 $
  */
 public class DomainControllerOperationHandlerImpl extends ModelControllerOperationHandlerImpl {
-
-    public static final byte HANDLER_ID = (byte)0x10;
-    public static final byte EXECUTE_TRANSACTIONAL_REQUEST = (byte)0x21;
-    public static final byte EXECUTE_TRANSACTIONAL_RESPONSE = (byte)0x22;
-    public static final byte TRANSACTION_COMMIT_REQUEST = (byte)0x23;
-    public static final byte TRANSACTION_COMMIT_RESPONSE = (byte)0x24;
-    public static final byte TRANSACTION_ROLLBACK_REQUEST = (byte)0x25;
-    public static final byte TRANSACTION_ROLLBACK_RESPONSE = (byte)0x26;
-    public static final byte TRANSACTION_ID = (byte)0x30;
 
     public DomainControllerOperationHandlerImpl(DomainController modelController, MessageHandler initiatingHandler) {
         super(modelController, initiatingHandler);
@@ -382,7 +374,7 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
             @Override
             protected byte getHandlerId() {
-                return HANDLER_ID;
+                return TransactionalModelControllerOperationHandler.HANDLER_ID;
             }
         }
 
@@ -423,18 +415,18 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
 
             @Override
             protected byte getRequestCode() {
-                return EXECUTE_TRANSACTIONAL_REQUEST;
+                return TransactionalModelControllerOperationHandler.EXECUTE_TRANSACTIONAL_REQUEST;
             }
 
             @Override
             protected byte getResponseCode() {
-                return EXECUTE_TRANSACTIONAL_RESPONSE;
+                return TransactionalModelControllerOperationHandler.EXECUTE_TRANSACTIONAL_RESPONSE;
             }
 
             /** {@inheritDoc} */
             @Override
             protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
-                output.write(TRANSACTION_ID);
+                output.write(TransactionalModelControllerOperationHandler.TRANSACTION_ID);
                 transactionId.writeExternal(output);
                 output.write(ModelControllerClientProtocol.PARAM_OPERATION);
                 executionContext.getOperation().writeExternal(output);

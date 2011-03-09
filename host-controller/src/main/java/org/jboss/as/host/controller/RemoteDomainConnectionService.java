@@ -46,6 +46,7 @@ import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
@@ -83,6 +84,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     private volatile Connection connection;
     private volatile ProxyController client;
     private volatile ModelControllerOperationHandler operationHandler;
+    private volatile TransactionalModelControllerOperationHandler txOperationHandler;
 
     RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
@@ -108,6 +110,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
             connection = protocolClient.connect();
             client = RemoteProxyController.create(connection, PathAddress.EMPTY_ADDRESS);
             operationHandler = ModelControllerOperationHandler.Factory.create(slave, initialMessageHandler);
+            txOperationHandler = new TransactionalModelControllerOperationHandler(slave, initialMessageHandler);
         } catch (IOException e) {
             log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
             throw new IllegalStateException(e);
@@ -389,6 +392,9 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
         protected MessageHandler getHandlerForId(byte handlerId) {
             if (handlerId == ModelControllerClientProtocol.HANDLER_ID) {
                 return operationHandler;
+            }
+            if (handlerId == TransactionalModelControllerOperationHandler.HANDLER_ID) {
+                return txOperationHandler;
             }
             return null;
         }
