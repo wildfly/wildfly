@@ -39,6 +39,7 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Type;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.Local;
@@ -49,10 +50,31 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Processes {@link Local @Local} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
+ * out of it.
+ * <p/>
+ * This processor also sets up the necessary local view jndi bindings.
+ *
  * @author Jaikiran Pai
  */
 public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProcessor {
 
+    /**
+     * Logger
+     */
+    private static final Logger logger = Logger.getLogger(LocalEjbViewAnnotationProcessor.class);
+
+    /**
+     * Creates bindings for each of the local business interface view of a session bean.
+     * Also, adds the local business interface views to the component description.
+     *
+     * @param deploymentUnit       The deployment unit
+     * @param phaseContext         The phase context
+     * @param compositeIndex       The composite annotation index
+     * @param componentDescription The component description
+     * @throws DeploymentUnitProcessingException
+     *
+     */
     @Override
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex compositeIndex, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final ClassInfo sessionBeanClass = compositeIndex.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
@@ -64,23 +86,57 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
             return;
         }
         SessionBeanComponentDescription sessionBeanComponentDescription = (SessionBeanComponentDescription) componentDescription;
+        // fetch the local business interfaces of the bean
         Collection<String> localBusinessInterfaces = this.getLocalBusinessInterfaces(compositeIndex, sessionBeanClass);
+        if (logger.isTraceEnabled()) {
+            logger.trace("Session bean: " + sessionBeanComponentDescription.getEJBName() + " has " + localBusinessInterfaces.size() + " local business interfaces namely: " + localBusinessInterfaces);
+        }
+        // add it to the component description
         sessionBeanComponentDescription.addLocalBusinessInterfaceViews(localBusinessInterfaces);
 
         // TODO: For EJB3 application name applies only for .ear deployments.
         String applicationName = null; //sessionBeanComponentDescription.getApplicationName();
-        String globalJNDIBaseName = (applicationName != null ? applicationName + "/" : "") + sessionBeanComponentDescription.getModuleName() + "/" + sessionBeanComponentDescription.getEJBName();
+        String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBeanComponentDescription.getModuleName() + "/" + sessionBeanComponentDescription.getEJBName();
+        String appJNDIBaseName = "java:app/" + sessionBeanComponentDescription.getModuleName() + "/" + sessionBeanComponentDescription.getEJBName();
+        String moduleJNDIBaseName = "java:module/" + sessionBeanComponentDescription.getEJBName();
 
+        // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
         ServiceName baseServiceName = deploymentUnit.getServiceName().append("component").append(sessionBeanComponentDescription.getComponentName());
+        // now create the bindings
         for (String viewClassName : localBusinessInterfaces) {
             final BindingDescription globalBinding = new BindingDescription();
             globalBinding.setAbsoluteBinding(true);
-            globalBinding.setBindingName("java:global/" + globalJNDIBaseName + "!" + viewClassName);
+            String globalJNDIName = globalJNDIBaseName + "!" + viewClassName;
+            globalBinding.setBindingName(globalJNDIName);
             globalBinding.setBindingType(viewClassName);
             globalBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
+            // add the binding to the component description
             componentDescription.getBindings().add(globalBinding);
-        }
+            logger.debug("Added java:global jndi binding at " + globalJNDIName + " for local view: " + viewClassName + " of session bean: " + sessionBeanComponentDescription.getEJBName());
 
+//            // java:app bindings
+//            final BindingDescription appBinding = new BindingDescription();
+//            appBinding.setAbsoluteBinding(true);
+//            String appJNDIName = appJNDIBaseName + "!" + viewClassName;
+//            appBinding.setBindingName(appJNDIName);
+//            appBinding.setBindingType(viewClassName);
+//            appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
+//            // add the binding to the component description
+//            componentDescription.getBindings().add(appBinding);
+//            logger.debug("Added java:app jndi binding at " + appJNDIName + " for local view: " + viewClassName + " of session bean: " + sessionBeanComponentDescription.getEJBName());
+//
+//            // java:module bindings
+//            final BindingDescription moduleBinding = new BindingDescription();
+//            moduleBinding.setAbsoluteBinding(true);
+//            String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
+//            moduleBinding.setBindingName(moduleJNDIName);
+//            moduleBinding.setBindingType(viewClassName);
+//            moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
+//            // add the binding to the component description
+//            componentDescription.getBindings().add(moduleBinding);
+//            logger.debug("Added java:module jndi binding at " + moduleJNDIName + " for local view: " + viewClassName + " of session bean: " + sessionBeanComponentDescription.getEJBName());
+
+        }
 
     }
 
@@ -91,6 +147,7 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         if (annotationsOnBean == null || annotationsOnBean.isEmpty()) {
             String defaultLocalBusinessInterface = this.getDefaultLocalInterface(sessionBeanClass);
             if (defaultLocalBusinessInterface != null) {
+                logger.debug("Session bean class: " + sessionBeanClass + " has no explicit local business interfaces, marking " + defaultLocalBusinessInterface + " as the (implicit) default local business interface");
                 return Collections.singleton(defaultLocalBusinessInterface);
             }
 
@@ -100,6 +157,7 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         if (ejbLocalAnnotations == null || ejbLocalAnnotations.isEmpty()) {
             String defaultLocalBusinessInterface = this.getDefaultLocalInterface(sessionBeanClass);
             if (defaultLocalBusinessInterface != null) {
+                logger.debug("Session bean class: " + sessionBeanClass + " has no explicit local business interfaces, marking " + defaultLocalBusinessInterface + " as the (implicit) default local business interface");
                 return Collections.singleton(defaultLocalBusinessInterface);
             }
 

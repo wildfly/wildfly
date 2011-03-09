@@ -32,6 +32,7 @@ import org.jboss.as.ejb3.deployment.processors.EjbAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbJarParsingDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.LocalEjbViewAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.NoInterfaceViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
@@ -65,7 +66,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementAnnotationProcessor());
-            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_LOCAL_VIEW_ANNOTATION, new LocalEjbViewAnnotationProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_NO_INTERFACE_VIEW_ANNOTATION, new NoInterfaceViewAnnotationProcessor());
             // add the real deployment processor
             // TODO: add the proper deployment processors
             // updateContext.addDeploymentProcessor(processor, priority);

@@ -38,6 +38,11 @@ import java.util.List;
 public abstract class SessionBeanComponentDescription extends EJBComponentDescription {
 
     /**
+     * Flag marking the presence/absence of a no-interface view on the session bean
+     */
+    private boolean noInterfaceViewPresent;
+
+    /**
      * Construct a new instance.
      *
      * @param componentName      the component name
@@ -51,6 +56,15 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     public void addLocalBusinessInterfaceViews(Collection<String> classNames) {
         this.getViewClassNames().addAll(classNames);
+    }
+
+    public void addNoInterfaceView() {
+        this.noInterfaceViewPresent = true;
+        this.getViewClassNames().add(this.getEJBClassName());
+    }
+
+    public boolean hasNoInterfaceView() {
+        return this.noInterfaceViewPresent;
     }
 
 }
