@@ -260,9 +260,12 @@ public enum Phase {
     public static final int POST_MODULE_LIEFCYCLE_ANNOTATION            = 0x0900;
     public static final int POST_MODULE_AROUNDINVOKE_ANNOTATION         = 0x1000;
     public static final int POST_MODULE_RESOURCE_INJECTION_ANNOTATION   = 0x1100;
-    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x1200;
+    public static final int POST_MODULE_EJB_INJECTION_ANNOTATION        = 0x12C0;
+    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x1300;
+    public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x2000;
 
     // INSTALL
+    public static final int INSTALL_EAR_AGGREGATE_COMPONENT_INDEX       = 0x0000;
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;
     public static final int INSTALL_APP_CONTEXT                         = 0x0200;
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0300;

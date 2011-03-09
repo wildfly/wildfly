@@ -66,7 +66,7 @@ public class StatelessBeanTestCase {
         SimpleStatelessSessionLocal localBean = (SimpleStatelessSessionLocal) ctx.lookup("java:global/ejb3-slsb-example/" + SimpleStatelessSessionBean.class.getSimpleName() + "!" + SimpleStatelessSessionLocal.class.getName());
         String message = "Zzzzzzzz.....!";
         String echo = localBean.echo(message);
-        String expectedEcho = SimpleStatelessSessionBean.class.getSimpleName() + "#" + "Echo " + message;
+        String expectedEcho = SimpleStatelessSessionBean.class.getSimpleName() + "#" + "Echo " + message + " -- (1:Other, 2:Other, 3:Other)" ;
 
         Assert.assertEquals("Unexpected echo message received from stateless bean", expectedEcho, echo);
 
