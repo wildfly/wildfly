@@ -27,4 +27,5 @@ package org.jboss.as.demos.ejb3.archive;
 public interface SimpleStatefulSessionLocal {
     String echo(String msg);
     void setState(String s);
+    String getState();
 }

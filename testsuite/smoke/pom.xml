@@ -122,6 +122,7 @@
                               <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/client/messaging/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/ds/*TestCase.java</include>
+                              <include>org/jboss/as/test/embedded/demos/ejb3/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/jaxrs/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
                               <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
@@ -159,7 +160,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <!--  standard surefire options -->
-                    <redirectTestOutputToFile>false</redirectTestOutputToFile>                    
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>

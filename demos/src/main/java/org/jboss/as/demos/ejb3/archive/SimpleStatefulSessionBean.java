@@ -39,4 +39,9 @@ public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
         System.out.println("Called setState on " + this);
         this.state = s;
     }
+
+    @Override
+    public String getState() {
+        return this.state;
+    }
 }
