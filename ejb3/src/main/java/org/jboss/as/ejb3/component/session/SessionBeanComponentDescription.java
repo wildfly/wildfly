@@ -22,15 +22,10 @@
 
 package org.jboss.as.ejb3.component.session;
 
-import org.jboss.as.ee.component.BindingDescription;
-import org.jboss.as.ee.component.ServiceBindingSourceDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.ejb3.component.MethodIntf;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * @author Jaikiran Pai
@@ -63,8 +58,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         this.getViewClassNames().add(this.getEJBClassName());
     }
 
+    @Override
+    public MethodIntf getMethodIntf(String viewClassName) {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.session.SessionBeanComponentDescription.getMethodIntf");
+    }
+
     public boolean hasNoInterfaceView() {
         return this.noInterfaceViewPresent;
     }
-
 }

@@ -21,17 +21,32 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class EJBComponentDescription extends AbstractComponentDescription {
-
+    /**
+     * EJB 3.1 FR 13.3.7, the default transaction attribute is <i>REQUIRED</i>.
+     */
+    private TransactionAttributeType beanTransactionAttribute = TransactionAttributeType.REQUIRED;
+    /**
+     * EJB 3.1 FR 13.3.1, the default transaction management type is container-managed transaction demarcation.
+     */
     private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
+
+    private Map<MethodIntf, TransactionAttributeType> txPerViewStyle1;
+    private Map<MethodIntf, Map<String, TransactionAttributeType>> txPerViewStyle2;
+    private Map<MethodIntf, Map<String, Map<ArrayKey, TransactionAttributeType>>> txPerViewStyle3;
+
+    // style 1 == beanTransactionAttribute
+    private Map<String, TransactionAttributeType> txStyle2;
+    private Map<String, Map<ArrayKey, TransactionAttributeType>> txStyle3;
 
     /**
      * Construct a new instance.
@@ -45,8 +60,73 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
         super(componentName, componentClassName, moduleName, applicationName);
     }
 
+    private static <K, V> V get(Map<K, V> map, K key) {
+        if (map == null)
+            return null;
+        return map.get(key);
+    }
+
+    public TransactionAttributeType getTransactionAttribute(MethodIntf methodIntf, String methodName, String... methodParams) {
+        assert methodIntf != null : "methodIntf is null";
+        assert methodName != null : "methodName is null";
+        assert methodParams != null : "methodParams is null";
+
+        ArrayKey methodParamsKey = new ArrayKey(methodParams);
+        TransactionAttributeType txAttr = get(get(get(txPerViewStyle3, methodIntf), methodName), methodParamsKey);
+        if (txAttr != null)
+            return txAttr;
+        txAttr = get(get(txPerViewStyle2, methodIntf), methodName);
+        if (txAttr != null)
+            return txAttr;
+        txAttr = get(txPerViewStyle1, methodIntf);
+        if (txAttr != null)
+            return txAttr;
+        txAttr = get(get(txStyle3, methodName), methodParamsKey);
+        if (txAttr != null)
+            return txAttr;
+        txAttr = get(txStyle2, methodName);
+        if (txAttr != null)
+            return txAttr;
+        return beanTransactionAttribute;
+    }
+
     public TransactionManagementType getTransactionManagementType() {
         return transactionManagementType;
+    }
+
+    public abstract MethodIntf getMethodIntf(String viewClassName);
+    
+    /**
+     * Style 1 (13.3.7.2.1 @1)
+     * @param methodIntf            the method-intf the annotations apply to or null if EJB class itself
+     * @param transactionAttribute
+     */
+    public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute) {
+        if (methodIntf == null)
+            this.beanTransactionAttribute = transactionAttribute;
+        else
+            throw new RuntimeException("NYI");
+    }
+
+    /**
+     * Style 2 (13.3.7.2.1 @2)
+     * @param methodIntf            the method-intf the annotations apply to or null if EJB class itself
+     * @param transactionAttribute
+     * @param methodName
+     */
+    public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, String methodName) {
+        throw new RuntimeException("NYI");
+    }
+
+    /**
+     * Style 3 (13.3.7.2.1 @3)
+     * @param methodIntf            the method-intf the annotations apply to or null if EJB class itself
+     * @param transactionAttribute
+     * @param methodName
+     * @param methodParams
+     */
+    public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, String methodName, String... methodParams) {
+        throw new RuntimeException("NYI");
     }
 
     public void setTransactionManagementType(TransactionManagementType transactionManagementType) {

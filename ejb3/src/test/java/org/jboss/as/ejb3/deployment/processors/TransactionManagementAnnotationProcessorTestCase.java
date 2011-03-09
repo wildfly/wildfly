@@ -36,13 +36,12 @@ import org.junit.Test;
 
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.jboss.as.ejb3.TestHelper.index;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -56,15 +55,6 @@ public class TransactionManagementAnnotationProcessorTestCase {
 
     private static class SubBean extends MyBean {
 
-    }
-
-    private static void index(Indexer indexer, Class<?> cls) throws IOException {
-        InputStream stream = cls.getClassLoader().getResourceAsStream(cls.getName().replace('.', '/') + ".class");
-        try {
-            indexer.index(stream);
-        } finally {
-            stream.close();
-        }
     }
 
     @Test
