@@ -46,6 +46,6 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
      * @return the ejb-name
      */
     public String getName() {
-        return getDescription().getComponentName();
+        return getComponentName();
     }
 }

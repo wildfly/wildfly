@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public abstract class AbstractComponentConfiguration {
 
-    private final AbstractComponentDescription description;
+    private final String componentName;
     private final List<ComponentLifecycle> postConstructLifecycles = new ArrayList<ComponentLifecycle>();
     private final List<ComponentLifecycle> preDestroyLifecycles = new ArrayList<ComponentLifecycle>();
     private final List<LifecycleInterceptorFactory> postConstructInterceptorLifecycles = new ArrayList<LifecycleInterceptorFactory>();
@@ -64,16 +64,8 @@ public abstract class AbstractComponentConfiguration {
      * @param description the original component description
      */
     protected AbstractComponentConfiguration(final AbstractComponentDescription description) {
-        this.description = description;
-    }
-
-    /**
-     * Get the original component description.
-     *
-     * @return the component description
-     */
-    public AbstractComponentDescription getDescription() {
-        return description;
+        // Do not keep a reference to description, so it can be GC-ed.
+        this.componentName = description.getComponentName();
     }
 
     /**
@@ -83,6 +75,10 @@ public abstract class AbstractComponentConfiguration {
      */
     public Class<?> getComponentClass() {
         return componentClass;
+    }
+
+    public String getComponentName() {
+        return componentName;
     }
 
     /**

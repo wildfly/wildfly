@@ -64,7 +64,7 @@ public class WeldInjectionFactory implements InjectionFactory{
      */
     @Override
     public ComponentInjector createInjector(AbstractComponentConfiguration component) {
-        final ServiceName serviceName = deploymentUnit.getServiceName().append("component",component.getDescription().getComponentName(),"weldinjector");
+        final ServiceName serviceName = deploymentUnit.getServiceName().append("component",component.getComponentName(),"weldinjector");
         WeldComponentInjectionService service = new WeldComponentInjectionService(serviceName,component.getComponentClass(),classLoader);
         serviceTarget.addService(serviceName,service)
                 .addDependency(beanManagerServiceName, BeanManagerImpl.class, service.getBeanManager())
