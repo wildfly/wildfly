@@ -22,10 +22,9 @@
   -->
 
 <!--
-  Set these VM properties in your IDE debugger
-
-    -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-    -Djboss.home=../../build/target/jboss-7.0.0.Alpha2
+  To run a single smoke test in the debugger, run surefire like this and connect your remote debugger to port 5005
+  
+  mvn -Pmodular-embedded -DskipTests -Dtest=SimpleArchiveProviderTestCase -Dmaven.surefire.debug=true test
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -49,118 +48,33 @@
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-demos</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>false</skipTests>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <enableAssertions>true</enableAssertions>
-                    <systemProperties>
-                        <property>
-                          <name>java.util.logging.manager</name>
-                          <value>org.jboss.logmanager.LogManager</value>
-                        </property>
-                        <property>
-                          <name>jboss.home</name>
-                          <value>${jboss.home}</value>
-                        </property>
-                        <property>
-                          <name>jboss.embedded.root</name>
-                          <value>target/embedded</value>
-                        </property>
-                        <property>
-                          <name>jaxp.debug</name>
-                          <value>true</value>
-                        </property>
-                    </systemProperties>
-                    <includes>
-                        <include>org/jboss/as/test/flat/**/*TestCase.java</include>
-                    </includes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <!-- (Legacy) Tests not using arquillian  -->
-                        <id>default-test</id>
-                        <configuration>
-                            <includes>
-                                <include>org/jboss/as/test/flat/**/*TestCase.java</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>             
-            </plugin>
-            <plugin>
                 <groupId>org.jboss.maven.surefire.modular</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>1.0.0.Alpha2</version>
-                <executions>
-                    <execution>
-                       <id>xml-parsing</id>
-                        <phase>test</phase>
-                       <goals>
-                           <goal>test</goal>
-                       </goals>
-                       <configuration>
-                           <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/xml-module-def.xml</moduleDefinitionFile>
-                           <includes>
-                               <include>org/jboss/as/test/surefire/xml/*TestCase.java</include>
-                           </includes>
-                       </configuration>
-                    </execution>
-                    <execution>
-                       <id>modular-arquillian</id>
-                        <phase>test</phase>
-	                    <goals>
-	                        <goal>test</goal>
-	                    </goals>
-                       <configuration>
-                           <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/demos-arquillian-module-def.xml</moduleDefinitionFile>
-                           <includes>
-                              <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/client/messaging/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/ds/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/ejb3/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/jaxrs/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/managedbean/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/sar/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/serviceloader/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/war/*TestCase.java</include>
-                              <!--  FIXME this does not exist -->
-                              <include>org/jboss/as/test/embedded/demos/web/connector/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/demos/ws/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/domain/xml/*TestCase.java</include>
-                              <include>org/jboss/as/test/embedded/osgi/SimpleArquillianTestCase.java</include>
-                              <include>org/jboss/as/test/embedded/mgmt/*TestCase.java</include>
-                              <!--  The other demos don't work -->
-                              <!-- include>org/jboss/as/test/embedded/configadmin/*TestCase.java</include -->
-                              <include>org/jboss/as/test/embedded/demos/rar/*TestCase.java</include>
-                              <!-- include>org/jboss/as/test/embedded/**/*TestCase.java</include -->
-                           </includes>
-                       </configuration>
-                    </execution>
-                    <execution>
-                       <id>modular-serverfactory</id>
-                        <phase>test</phase>
-                       <goals>
-                           <goal>test</goal>
-                       </goals>
-                       <configuration>
-                           <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/server-module-def.xml</moduleDefinitionFile>
-                           <includes>
-                               <include>org/jboss/as/test/surefire/servermodule/*TestCase.java</include>
-                           </includes>
-                       </configuration>
-                    </execution>
-                </executions>
                 <configuration>
                     <skipTests>false</skipTests>
                     <!--  standard surefire options -->
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>
@@ -180,9 +94,6 @@
                            <value>target/temp-config</value>
                         </property>
                     </systemProperties>
-                    <includes>
-                        <include>org/jboss/as/test/surefire/**/*TestCase.java</include>
-                    </includes>
                     <!-- Extra forked plugin options -->
                     <logModule>org.jboss.logmanager</logModule>
                     <logConfiguration>${jboss.home}/standalone/configuration/logging.properties</logConfiguration>
@@ -194,22 +105,120 @@
         </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-demos</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-embedded</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
+    <profiles>
+        <profile>
+            <id>flat</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                            <enableAssertions>true</enableAssertions>
+                            <includes>
+                                <include>org/jboss/as/test/flat/**/*TestCase.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>modular-xml</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.maven.surefire.modular</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                               <id>xml-parsing</id>
+                                <phase>test</phase>
+                               <goals>
+                                   <goal>test</goal>
+                               </goals>
+                               <configuration>
+                                   <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/xml-module-def.xml</moduleDefinitionFile>
+                                   <includes>
+                                       <include>org/jboss/as/test/surefire/xml/*TestCase.java</include>
+                                   </includes>
+                               </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>modular-embedded</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.maven.surefire.modular</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                               <id>modular-arquillian</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                               <configuration>
+                                   <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/demos-arquillian-module-def.xml</moduleDefinitionFile>
+                                   <includes>
+                                      <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
+                                   </includes>
+                                   <excludes>
+                                      <exclude>org/jboss/as/test/embedded/nothing-to-exclude/*TestCase.java</exclude>
+                                   </excludes>
+                               </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>modular-servermodule</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.maven.surefire.modular</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                               <id>modular-serverfactory</id>
+                               <phase>test</phase>
+                               <goals>
+                                   <goal>test</goal>
+                               </goals>
+                               <configuration>
+                                   <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/server-module-def.xml</moduleDefinitionFile>
+                                   <includes>
+                                       <include>org/jboss/as/test/surefire/servermodule/*TestCase.java</include>
+                                   </includes>
+                               </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
 </project>
+
