@@ -38,6 +38,7 @@ public class OperationContextImpl implements OperationContext {
     private final ModelController controller;
     private final ModelNodeRegistration registry;
     private final ModelNode subModel;
+    private final ModelProvider modelProvider;
     private final ExecutionAttachments executionAttachments;
 
     /**
@@ -46,25 +47,30 @@ public class OperationContextImpl implements OperationContext {
      * @param controller the model controller
      * @param registry the registry
      * @param subModel the affected submodel
+     * @param modelProvider TODO
      */
-    public OperationContextImpl(final ModelController controller, final ModelNodeRegistration registry, final ModelNode subModel, final ExecutionAttachments executionAttachments) {
+    public OperationContextImpl(final ModelController controller, final ModelNodeRegistration registry, final ModelNode subModel, ModelProvider modelProvider, final ExecutionAttachments executionAttachments) {
         this.controller = controller;
         this.registry = registry;
         this.subModel = subModel;
+        this.modelProvider = modelProvider;
         this.executionAttachments = executionAttachments;
     }
 
     /** {@inheritDoc} */
+    @Override
     public ModelController getController() {
         return controller;
     }
 
     /** {@inheritDoc} */
+    @Override
     public ModelNodeRegistration getRegistry() {
         return registry;
     }
 
     /** {@inheritDoc} */
+    @Override
     public ModelNode getSubModel() {
         final ModelNode subModel = this.subModel;
         if (subModel == null) {
@@ -73,6 +79,13 @@ public class OperationContextImpl implements OperationContext {
         return subModel;
     }
 
+    @Override
+    public ModelNode getSubModel(PathAddress address) throws IllegalArgumentException {
+        ModelNode model = modelProvider.getModel();
+        return address.navigate(model, false).clone();
+    }
+
+    @Override
     public RuntimeOperationContext getRuntimeContext() {
         return null;
     }

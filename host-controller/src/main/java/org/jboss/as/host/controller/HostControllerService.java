@@ -32,7 +32,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.HostControllerProxy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -52,22 +51,20 @@ public class HostControllerService implements Service<HostControllerProxy> {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
     private final HostModel hostModel;
-    private final FileRepository repository;
     private final String name;
 
     private HostControllerProxy proxyController;
 
-    HostControllerService(final String name, final HostModel hostModel, final FileRepository repository) {
+    HostControllerService(final String name, final HostModel hostModel) {
         this.name = name;
         this.hostModel = hostModel;
-        this.repository = repository;
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
         final ServerInventory serverInventory = this.serverInventory.getValue();
-        final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory, repository);
+        final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory);
         serverInventory.setHostController(controller);
         hostModel.setHostController(controller);
         this.proxyController = new HostControllerProxy() {

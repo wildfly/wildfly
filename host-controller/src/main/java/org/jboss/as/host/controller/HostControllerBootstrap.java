@@ -54,14 +54,16 @@ import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
+import org.jboss.as.domain.controller.DomainDeploymentRepository;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.controller.HostControllerProxy;
+import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.process.ProcessControllerClient;
+import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -180,8 +182,7 @@ public class HostControllerBootstrap {
             .install();
 
         final String name = rawModel.get(NAME).asString();
-        final FileRepository repository = new LocalFileRepository(environment);
-        final HostControllerService hc = new HostControllerService(name, hostModel, repository);
+        final HostControllerService hc = new HostControllerService(name, hostModel);
         serviceTarget.addService(HostController.SERVICE_NAME, hc)
             .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, hc.getServerInventory())
             .addDependency(ServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
@@ -199,7 +200,7 @@ public class HostControllerBootstrap {
             .install();
 
         // install the domain controller
-        activateDomainController(environment, rawModel, serviceTarget, repository, environment.isBackupDomainFiles(), environment.isUseCachedDc());
+        activateDomainController(environment, rawModel, serviceTarget, environment.isBackupDomainFiles(), environment.isUseCachedDc());
 
         if (rawModel.get(MANAGEMENT).hasDefined(HTTP_API)) {
             final HttpManagementService service = new HttpManagementService();
@@ -230,25 +231,28 @@ public class HostControllerBootstrap {
      * @param environment the host controller environment
      * @param host the host model
      * @param serviceTarget the service target
-     * @param repository the local file repository
+     * @param fileRepository the local file repository
      * @param backupDomainFiles whether the remote domain controller should be backed up
      * @param useCachedDc Pass in true if this is a slave domain controller, and we want to be able
      */
     static void activateDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget,
-            final FileRepository repository, final boolean backupDomainFiles, final boolean useCachedDc) {
+            final boolean backupDomainFiles, final boolean useCachedDc) {
+
+        final FileRepository fileRepository = new LocalFileRepository(environment);
         boolean slave = !host.get(DOMAIN_CONTROLLER, LOCAL).isDefined();
         if (slave) {
-            installRemoteDomainControllerConnection(environment, host, serviceTarget, repository);
+            installRemoteDomainControllerConnection(environment, host, serviceTarget, fileRepository);
         }
-        installLocalDomainController(environment, host, serviceTarget, slave, repository, backupDomainFiles, useCachedDc);
+        installLocalDomainController(environment, host, serviceTarget, slave, fileRepository, backupDomainFiles, useCachedDc);
     }
 
     static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, final boolean isSlave,
-            final FileRepository repository, final boolean backupDomainFiles, final boolean useCachedDc) {
+            final FileRepository fileRepository, final boolean backupDomainFiles, final boolean useCachedDc) {
         final String hostName = host.get(NAME).asString();
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, isSlave);
-        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, repository, backupDomainFiles, useCachedDc);
+        DeploymentRepository deploymentRepository = new DomainDeploymentRepository(environment.getDomainDeploymentDir());
+        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, deploymentRepository, fileRepository, backupDomainFiles, useCachedDc);
         ServiceBuilder<DomainController> builder = serviceTarget.addService(DomainController.SERVICE_NAME, dcService);
         if (isSlave) {
             builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());

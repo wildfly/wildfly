@@ -48,7 +48,7 @@ public interface OperationContext extends ExecutionAttachments {
     ModelNodeRegistration getRegistry();
 
     /**
-     * Get the a view of the sub-model that this operation affects, if it does affect
+     * Gets a view of the sub-model that this operation affects, if it does affect
      * a model element.
      *
      * @return the sub-model view
@@ -56,6 +56,15 @@ public interface OperationContext extends ExecutionAttachments {
      */
     ModelNode getSubModel() throws IllegalArgumentException;
 
+    /**
+     * Gets a read-only view of the sub-model at the given address.
+     *
+     * @param the address. Cannot be {@code null}
+     *
+     * @return the sub-model view
+     * @throws IllegalArgumentException if no sub-model is associated with this operation
+     */
+    ModelNode getSubModel(PathAddress address) throws IllegalArgumentException;
 
     /**
      * Get access to the runtime context for this operation

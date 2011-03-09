@@ -31,6 +31,7 @@ import java.util.Set;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -458,10 +459,38 @@ public class ServerOperationResolver {
                 result = Collections.singletonMap(servers, serverOp);
             }
         }
+        else if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName)) {
+            String propName = operation.require(NAME).asString();
+            Set<String> groups = getServerGroupsForDeployment(propName, domain);
+            Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();
+            for (String group : groups) {
+                allServers.addAll(getServersForGroup(group, host));
+            }
+            return Collections.singletonMap(allServers, operation);
+        }
+
         if (result == null) {
             result = Collections.emptyMap();
         }
+
         return result;
+    }
+
+    private Set<String> getServerGroupsForDeployment(String deploymentName, ModelNode domainModel) {
+        Set<String> groups;
+        if (domainModel.hasDefined(SERVER_GROUP)) {
+            groups = new HashSet<String>();
+            for (Property prop : domainModel.get(SERVER_GROUP).asPropertyList()) {
+                ModelNode serverGroup = prop.getValue();
+                if (serverGroup.hasDefined(DEPLOYMENT) && serverGroup.get(DEPLOYMENT).hasDefined(deploymentName)) {
+                    groups.add(prop.getName());
+                }
+            }
+        }
+        else {
+            groups = Collections.emptySet();
+        }
+        return groups;
     }
 
     private boolean hasSystemProperty(ModelNode resource, String propName) {

@@ -60,6 +60,7 @@ import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelImpl;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.HostControllerProxy;
 import org.jboss.as.host.controller.HostModel;
 import org.jboss.as.server.ServerControllerModelUtil;
@@ -431,7 +432,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private static class TestDomainController extends DomainModelImpl {
         protected TestDomainController(ExtensibleConfigurationPersister configurationPersister) {
-            super(configurationPersister, MockHostControllerProxy.INSTANCE);
+            super(configurationPersister, MockHostControllerProxy.INSTANCE, MockDeploymentRepository.INSTANCE, MockFileRepository.INSTANCE);
         }
 
         @Override
@@ -444,6 +445,48 @@ public class ParseAndMarshalModelsTestCase {
                 ConfigurationPersisterProvider configurationPersisterFactory) {
             // ignore
         }
+    }
+
+    private static class MockDeploymentRepository implements DeploymentRepository {
+
+        private static final MockDeploymentRepository INSTANCE = new MockDeploymentRepository();
+
+        @Override
+        public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
+            return null;
+        }
+
+        @Override
+        public boolean hasDeploymentContent(byte[] hash) {
+            return true;
+        }
+
+    }
+
+    private static class MockFileRepository implements FileRepository {
+
+        private static final MockFileRepository INSTANCE = new MockFileRepository();
+
+        @Override
+        public File getFile(String relativePath) {
+            return null;
+        }
+
+        @Override
+        public File getConfigurationFile(String relativePath) {
+            return null;
+        }
+
+        @Override
+        public File[] getDeploymentFiles(byte[] deploymentHash) {
+            return null;
+        }
+
+        @Override
+        public File getDeploymentRoot(byte[] deploymentHash) {
+            return null;
+        }
+
     }
 
     private static class MockHostControllerProxy implements HostControllerProxy {

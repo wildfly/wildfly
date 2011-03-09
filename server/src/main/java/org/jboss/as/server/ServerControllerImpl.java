@@ -151,18 +151,18 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     /** {@inheritDoc} */
     @Override
-    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, ExecutionContext executionContext) {
+    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final ExecutionContext executionContext, final ModelProvider modelProvider) {
         if (operationHandler instanceof BootOperationHandler) {
             if (getState() == State.STARTING) {
-                return new BootContextImpl(subModel, getRegistry(), deployers, executionContext);
+                return new BootContextImpl(subModel, getRegistry(), deployers, modelProvider, executionContext);
             } else {
                 state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
-                return super.getOperationContext(subModel, operationHandler, executionContext);
+                return super.getOperationContext(subModel, operationHandler, executionContext, modelProvider);
             }
         } else if (!(getState() == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
-            return new ServerOperationContextImpl(this, getRegistry(), subModel, executionContext);
+            return new ServerOperationContextImpl(this, getRegistry(), subModel, modelProvider, executionContext);
         } else {
-            return super.getOperationContext(subModel, operationHandler, executionContext);
+            return super.getOperationContext(subModel, operationHandler, executionContext, modelProvider);
         }
     }
 
@@ -230,8 +230,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private int ourStamp = -1;
         private RuntimeTask runtimeTask;
 
-        public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel, ExecutionAttachments executionAttachments) {
-            super(controller, registry, subModel, executionAttachments);
+        public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel, ModelProvider modelProvider, ExecutionAttachments executionAttachments) {
+            super(controller, registry, subModel, modelProvider, executionAttachments);
         }
 
         @Override
@@ -283,8 +283,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers;
 
-        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry, final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers, ExecutionAttachments executionAttachments) {
-            super(ServerControllerImpl.this, registry, subModel, executionAttachments);
+        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry, final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers, ModelProvider modelProvider, ExecutionAttachments executionAttachments) {
+            super(ServerControllerImpl.this, registry, subModel, modelProvider, executionAttachments);
             this.deployers = deployers;
         }
 
@@ -539,6 +539,11 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             @Override
             public ModelNode getSubModel() throws IllegalArgumentException {
                 return delegate.getSubModel();
+            }
+
+            @Override
+            public ModelNode getSubModel(PathAddress address) throws IllegalArgumentException {
+                return delegate.getSubModel(address);
             }
 
             @Override

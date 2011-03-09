@@ -42,6 +42,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -58,7 +59,8 @@ public final class DomainControllerService implements Service<DomainController> 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final ExtensibleConfigurationPersister configurationPersister;
-    private final FileRepository localRepository;
+    private final DeploymentRepository deploymentRepository;
+    private final FileRepository localFileRepository;
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
     private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
     private final InjectedValue<HostControllerProxy> hostController = new InjectedValue<HostControllerProxy>();
@@ -67,11 +69,12 @@ public final class DomainControllerService implements Service<DomainController> 
     private final boolean useCachedDc;
     private DomainControllerSlave controller;
 
-    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName, final FileRepository localRepository,
-            final boolean backupDomainFiles, final boolean useCachedDc) {
+    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName,
+            final DeploymentRepository deploymentRepository, final FileRepository localFileRepository, final boolean backupDomainFiles, final boolean useCachedDc) {
         this.configurationPersister = configurationPersister;
         this.localHostName = localHostName;
-        this.localRepository = localRepository;
+        this.deploymentRepository = deploymentRepository;
+        this.localFileRepository = localFileRepository;
         this.backupDomainFiles = backupDomainFiles;
         this.useCachedDc = useCachedDc;
     }
@@ -118,7 +121,7 @@ public final class DomainControllerService implements Service<DomainController> 
 
         log.info("Starting Domain Controller");
         DomainModel domainModel = loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localRepository);
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository);
     }
 
     private DomainControllerSlave startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
@@ -135,9 +138,10 @@ public final class DomainControllerService implements Service<DomainController> 
     }
 
     private DomainControllerSlave startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
-
-        final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue());
-        final DomainControllerSlave controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localRepository, masterClient);
+        // By having a remote repo as a secondary content will be synced only if needed
+        FallbackRepository fileRepository = new FallbackRepository(localFileRepository, masterClient.getRemoteFileRepository());
+        final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue(), deploymentRepository, fileRepository);
+        final DomainControllerSlave controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
         try {
             masterClient.register(hostController.getValue().getName(), controller);
         } catch (IllegalStateException e) {
@@ -157,11 +161,11 @@ public final class DomainControllerService implements Service<DomainController> 
 
     private DomainControllerSlave startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         final DomainModel domainModel = loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localRepository, masterClient);
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
     }
 
     private DomainModel loadLocalDomainModel() throws StartException {
-        DomainModelImpl domainModel = new DomainModelImpl(configurationPersister, hostController.getValue());
+        DomainModelImpl domainModel = new DomainModelImpl(configurationPersister, hostController.getValue(), deploymentRepository, localFileRepository);
         final List<ModelNode> updates;
         try {
              updates = configurationPersister.load();
@@ -219,7 +223,7 @@ public final class DomainControllerService implements Service<DomainController> 
         log.debug("Backing up the remote domain controller files");
 
         //Copy the original host since it will be overwritten by the copy from the domain
-        final File originalHost = localRepository.getConfigurationFile("host.xml");
+        final File originalHost = localFileRepository.getConfigurationFile("host.xml");
         File hostBackup;
         try {
             hostBackup = File.createTempFile("host", "xml", originalHost.getParentFile());

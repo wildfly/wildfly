@@ -38,8 +38,6 @@ import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FallbackRepository;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -55,15 +53,12 @@ public class HostControllerImpl implements HostController {
     private final String name;
     private final HostModel hostModel;
     private final ServerInventory serverInventory;
-    private final FileRepository localRepository;
 
     private volatile DomainController domainController;
-    private volatile FileRepository remoteRepository;
 
-    HostControllerImpl(final String name, final HostModel model, final ServerInventory serverInventory, final FileRepository repository) {
+    HostControllerImpl(final String name, final HostModel model, final ServerInventory serverInventory) {
         this.name = name;
         this.hostModel = model;
-        this.localRepository = repository;
         this.serverInventory = serverInventory;
     }
 
@@ -153,9 +148,6 @@ public class HostControllerImpl implements HostController {
     @Override
     public void startServers(DomainController domainController) {
         this.domainController = domainController;
-        // By having a remote repo as a secondary content will be synced only if needed
-        FallbackRepository repository = new FallbackRepository(localRepository, domainController.getFileRepository());
-        this.remoteRepository = repository;
 
         // start servers
         final ModelNode rawModel = hostModel.getHostModel();

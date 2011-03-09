@@ -92,7 +92,7 @@ public class BasicModelController extends AbstractModelController implements Mod
         public OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address,
                 final OperationHandler operationHandler, final ExecutionContext executionContext) {
             final ModelNode subModel = getOperationSubModel(modelSource, operationHandler, address);
-            return BasicModelController.this.getOperationContext(subModel, operationHandler, executionContext);
+            return BasicModelController.this.getOperationContext(subModel, operationHandler, executionContext, modelSource);
         }
     };
     private final ConfigurationPersisterProvider configPersisterProvider = new ConfigurationPersisterProvider() {
@@ -297,13 +297,14 @@ public class BasicModelController extends AbstractModelController implements Mod
      * {@link OperationContext}.
      *
      * @param subModel the submodel affected by the operation
-     * @param operation the operation itself
      * @param operationHandler the operation handler which will run the operation
      * @param executionContext the exectution context
+     * @param modelProvider source for the overall model
+     * @param operation the operation itself
      * @return the operation context
      */
-    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final ExecutionContext executionContext) {
-        return new OperationContextImpl(this, getRegistry(), subModel, executionContext);
+    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final ExecutionContext executionContext, ModelProvider modelProvider) {
+        return new OperationContextImpl(this, getRegistry(), subModel, modelProvider, executionContext);
     }
 
     /**
@@ -811,6 +812,7 @@ public class BasicModelController extends AbstractModelController implements Mod
             final ModelNode failureResult = new ModelNode();
             final ExecutionContext resolveContext = ExecutionContextBuilder.Factory.create(resolveOperation).build();
             final ResultHandler resolveHandler = new ResultHandler() {
+                @Override
                 public void handleResultFragment(String[] location, ModelNode result) {
                     synchronized(failureResult) {
                         if (status.get() == 0) {
@@ -818,12 +820,14 @@ public class BasicModelController extends AbstractModelController implements Mod
                         }
                     }
                 }
+                @Override
                 public void handleResultComplete() {
                     synchronized(failureResult) {
                         status.compareAndSet(0, 1);
                         failureResult.notify();
                     }
                 }
+                @Override
                 public void handleFailed(ModelNode failureDescription) {
                     synchronized(failureResult) {
                         failureResult.set(failureDescription);
@@ -831,6 +835,7 @@ public class BasicModelController extends AbstractModelController implements Mod
                         failureResult.notify();
                     }
                 }
+                @Override
                 public void handleCancellation() {
                     synchronized(failureResult) {
                         status.compareAndSet(0, 3);
