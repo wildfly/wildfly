@@ -85,7 +85,6 @@
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP8</version.org.jboss.arquillian>
-        <version.org.jboss.arquillian.testenricher.cdi>1.0.0.Alpha4.SP1</version.org.jboss.arquillian.testenricher.cdi>
         <version.org.jboss.classfilewriter>1.0.0.Alpha4</version.org.jboss.classfilewriter>
         <version.org.jboss.ejb3.effigy>0.2.0</version.org.jboss.ejb3.effigy>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
@@ -2240,7 +2239,7 @@
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-cdi</artifactId>
-                <version>${version.org.jboss.arquillian.testenricher.cdi}</version>
+                <version>${version.org.jboss.arquillian}</version>
             </dependency>
 
             <dependency>
