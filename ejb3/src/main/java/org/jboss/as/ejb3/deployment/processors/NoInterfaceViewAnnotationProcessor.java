@@ -97,27 +97,27 @@ public class NoInterfaceViewAnnotationProcessor extends AbstractComponentConfigP
         componentDescription.getBindings().add(globalBinding);
         logger.debug("Added java:global jndi binding at " + globalJNDIName + " for no-interface view of session bean: " + sessionBeanComponentDescription.getEJBName());
 
-//        // java:app bindings
-//        final BindingDescription appBinding = new BindingDescription();
-//        appBinding.setAbsoluteBinding(true);
-//        String appJNDIName = appJNDIBaseName + "!" + ejbClassName;
-//        appBinding.setBindingName(appJNDIName);
-//        appBinding.setBindingType(ejbClassName);
-//        appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(ejbClassName)));
-//        // add the binding to the component description
-//        componentDescription.getBindings().add(appBinding);
-//        logger.debug("Added java:app jndi binding at " + appJNDIName + " for no-interface view of session bean: " + sessionBeanComponentDescription.getEJBName());
-//
-//        // java:module bindings
-//        final BindingDescription moduleBinding = new BindingDescription();
-//        moduleBinding.setAbsoluteBinding(true);
-//        String moduleJNDIName = moduleJNDIBaseName + "!" + ejbClassName;
-//        moduleBinding.setBindingName(moduleJNDIName);
-//        moduleBinding.setBindingType(ejbClassName);
-//        moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(ejbClassName)));
-//        // add the binding to the component description
-//        componentDescription.getBindings().add(moduleBinding);
-//        logger.debug("Added java:module jndi binding at " + moduleJNDIName + " for no-interface view of session bean: " + sessionBeanComponentDescription.getEJBName());
+        // java:app bindings
+        final BindingDescription appBinding = new BindingDescription();
+        appBinding.setAbsoluteBinding(true);
+        String appJNDIName = appJNDIBaseName + "!" + ejbClassName;
+        appBinding.setBindingName(appJNDIName);
+        appBinding.setBindingType(ejbClassName);
+        appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(ejbClassName)));
+        // add the binding to the component description
+        componentDescription.getBindings().add(appBinding);
+        logger.debug("Added java:app jndi binding at " + appJNDIName + " for no-interface view of session bean: " + sessionBeanComponentDescription.getEJBName());
+
+        // java:module bindings
+        final BindingDescription moduleBinding = new BindingDescription();
+        moduleBinding.setAbsoluteBinding(true);
+        String moduleJNDIName = moduleJNDIBaseName + "!" + ejbClassName;
+        moduleBinding.setBindingName(moduleJNDIName);
+        moduleBinding.setBindingType(ejbClassName);
+        moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(ejbClassName)));
+        // add the binding to the component description
+        componentDescription.getBindings().add(moduleBinding);
+        logger.debug("Added java:module jndi binding at " + moduleJNDIName + " for no-interface view of session bean: " + sessionBeanComponentDescription.getEJBName());
 
     }
 
