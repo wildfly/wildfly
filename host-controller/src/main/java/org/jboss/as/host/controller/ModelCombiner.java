@@ -320,8 +320,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         }
     }
 
-    static final String SOCKET_BINDING_GROUP_NAME = "default";
-
     private void addSocketBindings(List<ModelNode> updates, int portOffSet, String bindingRef) {
         final Set<String> processed = new HashSet<String>();
         final Map<String, ModelNode> groups = new LinkedHashMap<String, ModelNode>();
@@ -338,28 +336,28 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         if(group == null) {
             throw new IllegalArgumentException("undefined socket binding group " + bindingRef);
         }
-        final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME));
+        final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, bindingRef));
         final ModelNode groupAdd = SocketBindingGroupAddHandler.getOperation(groupAddress, group);
         groupAdd.get(PORT_OFFSET).set(portOffSet);
         updates.add(groupAdd);
-        mergeBindingGroups(updates, groups, group, processed, group.get(INTERFACE));
+        mergeBindingGroups(updates, groups, bindingRef, group, processed, group.get(INTERFACE));
     }
 
-    private void mergeBindingGroups(List<ModelNode> updates, Map<String, ModelNode> groups, ModelNode group, Set<String> processed, ModelNode parentInterface) {
-        addSocketBindings(updates, group, group.get(DEFAULT_INTERFACE));
+    private void mergeBindingGroups(List<ModelNode> updates, Map<String, ModelNode> groups, final String groupName, ModelNode group, Set<String> processed, ModelNode parentInterface) {
+        addSocketBindings(updates, group, groupName, group.get(DEFAULT_INTERFACE));
         if(group.has(INCLUDE) && group.get(INCLUDE).isDefined()) {
             for(final ModelNode include : group.get(INCLUDE).asList()) {
                 final String ref = include.asString();
                 if(processed.add(ref)) {
                     final ModelNode includedGroup = groups.get(ref);
                     final ModelNode defaultInterface = group.hasDefined(INTERFACE) ? group.get(INTERFACE) : parentInterface;
-                    addSocketBindings(updates, includedGroup, defaultInterface);
+                    addSocketBindings(updates, includedGroup, groupName, defaultInterface);
                 }
             }
         }
     }
 
-    private void addSocketBindings(List<ModelNode> updates, ModelNode group, ModelNode defaultInterface) {
+    private void addSocketBindings(List<ModelNode> updates, ModelNode group, final String groupName, ModelNode defaultInterface) {
         for(final Property socketBinding : group.get(SOCKET_BINDING).asPropertyList()) {
             final String name = socketBinding.getName();
             final ModelNode binding = socketBinding.getValue();
@@ -369,7 +367,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             if(!binding.get(DEFAULT_INTERFACE).isDefined()) {
                 binding.get(DEFAULT_INTERFACE).set(defaultInterface);
             }
-            updates.add(SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME),
+            updates.add(SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
                     PathElement.pathElement(SOCKET_BINDING, name)), binding));
         }
     }
