@@ -66,35 +66,32 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode model = context.getSubModel();
         final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
-        try {
-            if (model.get(START).asBoolean()) {
-                String msg = String.format("Deployment %s must be undeployed before being removed", model.get(NAME).asString());
-                throw new OperationFailedException(new ModelNode().set(msg));
-            }
-            else {
-                if (context.getRuntimeContext() != null) {
-                    context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                        public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                            String deploymentUnitName = model.require(NAME).asString();
-                            final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                            final ServiceRegistry serviceRegistry = context.getServiceRegistry();
-                            final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                            if (controller != null) {
-                                controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                            } else {
-                                resultHandler.handleResultComplete();
-                            }
-                        }
-                    });
 
-                } else {
-                    resultHandler.handleResultComplete();
-                }
+        if (model.get(START).asBoolean()) {
+            String msg = String.format("Deployment %s must be undeployed before being removed", model.get(NAME).asString());
+            throw new OperationFailedException(new ModelNode().set(msg));
+        }
+        else {
+            if (context.getRuntimeContext() != null) {
+                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                    public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                        String deploymentUnitName = model.require(NAME).asString();
+                        final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                        final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                        final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                        if (controller != null) {
+                            controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                        } else {
+                            resultHandler.handleResultComplete();
+                        }
+                    }
+                });
+
+            } else {
+                resultHandler.handleResultComplete();
             }
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
-        }
+
         return new BasicOperationResult(compensatingOp);
     }
 }

@@ -63,16 +63,12 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, De
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode model = context.getSubModel();
-            ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
-            redeploy(model, context, resultHandler);
 
-            return new BasicOperationResult(compensatingOp);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+        ModelNode model = context.getSubModel();
+        ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
+        redeploy(model, context, resultHandler);
+
+        return new BasicOperationResult(compensatingOp);
     }
 
     private void redeploy(final ModelNode model, final OperationContext context, final ResultHandler resultHandler) {

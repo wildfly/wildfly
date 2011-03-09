@@ -68,16 +68,12 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, D
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            ModelNode model = context.getSubModel();
-            model.get(START).set(false);
-            ModelNode compensatingOp = DeploymentDeployHandler.getOperation(operation.get(OP_ADDR));
-            undeploy(model, context, resultHandler);
-            return new BasicOperationResult(compensatingOp);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+
+        ModelNode model = context.getSubModel();
+        model.get(START).set(false);
+        ModelNode compensatingOp = DeploymentDeployHandler.getOperation(operation.get(OP_ADDR));
+        undeploy(model, context, resultHandler);
+        return new BasicOperationResult(compensatingOp);
     }
 
     private void undeploy(final ModelNode model, OperationContext context, final ResultHandler resultHandler) {

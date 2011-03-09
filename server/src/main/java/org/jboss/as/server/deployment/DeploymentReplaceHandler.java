@@ -77,6 +77,13 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
         String name = operation.require(NAME).asString();
         String toReplace = operation.require(TO_REPLACE).asString();
 
+        if (name.equals(toReplace)) {
+            throw operationFailed(String.format("Cannot use %s with the same value for parameters %s and %s. " +
+                    "Use %s to redeploy the same content or %s to replace content with a new version with the same name.",
+                    OPERATION_NAME, NAME, TO_REPLACE, DeploymentRedeployHandler.OPERATION_NAME,
+                    DeploymentFullReplaceHandler.OPERATION_NAME));
+        }
+
         ModelNode deployNode = deployments.hasDefined(name) ? deployments.get(name) : null;
         ModelNode replaceNode = deployments.hasDefined(toReplace) ? deployments.get(toReplace) : null;
         if (deployNode == null) {

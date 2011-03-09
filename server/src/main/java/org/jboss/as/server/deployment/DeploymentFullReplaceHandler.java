@@ -117,6 +117,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         }
 
         boolean start = replaceNode.get(START).asBoolean();
+
         ModelNode deployNode = new ModelNode();
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
@@ -126,8 +127,11 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         deployments.get(name).set(deployNode);
 
         ModelNode compensatingOp = operation.clone();
-        compensatingOp.get(HASH).set(replaceNode.get(HASH));
-        compensatingOp.get(START).set(start);
+        compensatingOp.get(RUNTIME_NAME).set(replaceNode.get(RUNTIME_NAME).asString());
+        compensatingOp.get(HASH).set(replaceNode.get(HASH).asBytes());
+        if (operation.hasDefined(INPUT_STREAM_INDEX)) {
+            operation.remove(INPUT_STREAM_INDEX);
+        }
 
         if (start) {
             DeploymentHandlerUtil.replace(deployNode, name, context, resultHandler);
