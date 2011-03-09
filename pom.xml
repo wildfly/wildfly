@@ -85,7 +85,6 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
-        <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP8</version.org.jboss.arquillian>
         <version.org.jboss.classfilewriter>1.0.0.Alpha4</version.org.jboss.classfilewriter>
@@ -262,7 +261,6 @@
                     </configuration>
                 </plugin>
 
-
                 <!-- Attach sources -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -359,6 +357,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.jboss.maven.surefire.modular</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                   <version>1.0.0.Alpha2</version>
                 </plugin>
             </plugins>
         </pluginManagement>
