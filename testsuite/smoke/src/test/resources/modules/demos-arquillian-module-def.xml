@@ -41,12 +41,14 @@
         <module name="org.hornetq"/>
         <module name="org.jboss.as.controller-client"/>
         <module name="org.jboss.as.demos"/>
+        <module name="org.jboss.as.osgi"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.standalone"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.threads"/>
+        <module name="org.osgi.core"/>
 
         <!-- Arquillian dependencies -->
         <module services="import" name="org.jboss.surefire.arquillian-deps"/>

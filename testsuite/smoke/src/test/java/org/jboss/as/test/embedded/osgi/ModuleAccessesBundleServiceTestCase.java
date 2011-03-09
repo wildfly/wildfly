@@ -37,6 +37,7 @@ import org.jboss.arquillian.api.DeploymentProvider;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.embedded.osgi.api.Echo;
 import org.jboss.as.test.embedded.osgi.bundle.TargetBundleActivator;
+import org.jboss.as.test.embedded.osgi.bundle.TargetBundleEchoImpl;
 import org.jboss.as.test.embedded.osgi.module.ClientModuleActivator;
 import org.jboss.as.test.embedded.osgi.module.EchoInvokerService;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -153,7 +154,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
 
     private static JavaArchive getTargetBundleArchive() throws Exception {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TARGET_BUNDLE_NAME);
-        archive.addClass(TargetBundleActivator.class);
+        archive.addClasses(TargetBundleActivator.class, TargetBundleEchoImpl.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();

@@ -31,12 +31,12 @@ import org.osgi.framework.BundleContext;
 
 public class TargetBundleActivator implements BundleActivator
 {
-   private static final Logger log = Logger.getLogger(TargetBundleActivator.class);
+   static final Logger log = Logger.getLogger(TargetBundleActivator.class);
 
    @Override
    public void start(final BundleContext context) throws Exception
    {
-      context.registerService(Echo.class.getName(), new EchoImpl(), null);
+      context.registerService(Echo.class.getName(), new TargetBundleEchoImpl(), null);
 
       ModuleClassLoader classLoader = (ModuleClassLoader)getClass().getClassLoader();
       ModuleIdentifier identifier = classLoader.getModule().getIdentifier();
@@ -46,15 +46,5 @@ public class TargetBundleActivator implements BundleActivator
    @Override
    public void stop(BundleContext context) throws Exception
    {
-   }
-
-   static class EchoImpl implements Echo
-   {
-      @Override
-      public String echo(String message)
-      {
-         log.infof("Echo: %s", message);
-         return message;
-      }
    }
 }

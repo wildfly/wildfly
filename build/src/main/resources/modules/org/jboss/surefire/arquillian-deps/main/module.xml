@@ -29,22 +29,21 @@
  -->
 <module xmlns="urn:jboss:module:1.0" name="org.jboss.surefire.arquillian-deps">
     <dependencies>
+       <module name="javax.api" export="true"/>
+       <module name="javax.inject.api" export="true"/>
        <module name="junit.junit" export="true"/>
+       <module name="org.jboss.arquillian.junit" export="true"/>
        <module name="org.jboss.arquillian.protocol.jmx" export="true"/>
        <module name="org.jboss.arquillian.protocol.osgi" export="true"/>
        <module name="org.jboss.arquillian.spi" export="true"/>
        <module name="org.jboss.arquillian.testenricher.msc" export="true"/>
        <module name="org.jboss.arquillian.testenricher.osgi" export="true"/>
        <module name="org.jboss.as.jmx" export="true"/>
-       <module name="org.osgi.core" export="true"/>
-       <module name="org.jboss.osgi.spi" export="true"/>
        <module name="org.jboss.as.server" export="true"/>
-       <module name="org.jboss.arquillian.junit" export="true"/>
        <module name="org.jboss.marshalling.river" export="true"/>
-       <module name="javax.inject.api" export="true"/>
-       <module name="javax.api" export="true"/>
+       <module name="org.jboss.osgi.spi" export="true"/>
        <module name="org.jboss.shrinkwrap.api" export="true"/>
-       <!-- Needed for Shrinkwraps TCCL -->
-       <module services="export" name="org.jboss.shrinkwrap.impl" export="true"/>
+       <module name="org.jboss.shrinkwrap.impl" services="export" export="true"/>
+       <module name="org.osgi.core" export="true"/>
     </dependencies>
 </module>

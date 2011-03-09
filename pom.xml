@@ -86,7 +86,7 @@
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
-        <version.org.jboss.arquillian>1.0.0.Alpha4.SP9-SNAPSHOT</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian>1.0.0.Alpha4.SP9</version.org.jboss.arquillian>
         <version.org.jboss.classfilewriter>1.0.0.Alpha4</version.org.jboss.classfilewriter>
         <version.org.jboss.ejb3.effigy>0.2.0</version.org.jboss.ejb3.effigy>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>

@@ -38,9 +38,9 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.osgi.service.ConfigAdminListener;
 import org.jboss.as.osgi.service.ConfigAdminService;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
-import org.jboss.as.osgi.service.ConfigAdminListener;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -50,7 +50,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A test that shows how an MSC service can be configured through the {@link ConfigAdminServiceImpl}.
+ * A test that shows how an MSC service can be configured through the {@link ConfigAdminService}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 11-Dec-2010
@@ -124,8 +124,10 @@ public class ConfigAdminTestCase {
             @Override
             public void configurationModified(String pid, Dictionary<String, String> props) {
                 int index = invocationCount.getAndIncrement();
-                dictionaries[index] = props;
-                latches[index].countDown();
+                if (index < 2) {
+                    dictionaries[index] = props;
+                    latches[index].countDown();
+                }
             }
 
             @Override
