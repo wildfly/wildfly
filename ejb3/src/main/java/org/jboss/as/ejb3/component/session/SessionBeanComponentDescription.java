@@ -26,6 +26,8 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Jaikiran Pai
@@ -36,6 +38,8 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * Flag marking the presence/absence of a no-interface view on the session bean
      */
     private boolean noInterfaceViewPresent;
+
+    private Map<String, MethodIntf> viewTypes = new HashMap<String, MethodIntf>();
 
     /**
      * Construct a new instance.
@@ -56,11 +60,14 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public void addNoInterfaceView() {
         this.noInterfaceViewPresent = true;
         this.getViewClassNames().add(this.getEJBClassName());
+        viewTypes.put(getEJBClassName(), MethodIntf.LOCAL);
     }
 
     @Override
     public MethodIntf getMethodIntf(String viewClassName) {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.session.SessionBeanComponentDescription.getMethodIntf");
+        MethodIntf methodIntf = viewTypes.get(viewClassName);
+        assert methodIntf != null : "no view type known for " + viewClassName;
+        return methodIntf;
     }
 
     public boolean hasNoInterfaceView() {

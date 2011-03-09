@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.AbstractComponentDescription;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -40,13 +41,33 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      */
     private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
 
-    private Map<MethodIntf, TransactionAttributeType> txPerViewStyle1;
-    private Map<MethodIntf, Map<String, TransactionAttributeType>> txPerViewStyle2;
-    private Map<MethodIntf, Map<String, Map<ArrayKey, TransactionAttributeType>>> txPerViewStyle3;
+    private final Map<MethodIntf, TransactionAttributeType> txPerViewStyle1 = new HashMap<MethodIntf, TransactionAttributeType>();;
+    private final PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>> txPerViewStyle2 = new PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>>() {
+        @Override
+        Map<String, TransactionAttributeType> populate() {
+            return new HashMap<String, TransactionAttributeType>();
+        }
+    };
+    private final PopulatingMap<MethodIntf, PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>> txPerViewStyle3 = new PopulatingMap<MethodIntf, PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>>() {
+        @Override
+        PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>> populate() {
+            return new PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>() {
+                @Override
+                Map<ArrayKey, TransactionAttributeType> populate() {
+                    return new HashMap<ArrayKey, TransactionAttributeType>();
+                }
+            };
+        }
+    };
 
     // style 1 == beanTransactionAttribute
-    private Map<String, TransactionAttributeType> txStyle2;
-    private Map<String, Map<ArrayKey, TransactionAttributeType>> txStyle3;
+    private final Map<String, TransactionAttributeType> txStyle2 = new HashMap<String, TransactionAttributeType>();
+    private final PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>> txStyle3 = new PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>() {
+        @Override
+        Map<ArrayKey, TransactionAttributeType> populate() {
+            return new HashMap<ArrayKey, TransactionAttributeType>();
+        }
+    };
 
     /**
      * Construct a new instance.
@@ -105,7 +126,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
         if (methodIntf == null)
             this.beanTransactionAttribute = transactionAttribute;
         else
-            throw new RuntimeException("NYI");
+            txPerViewStyle1.put(methodIntf, transactionAttribute);
     }
 
     /**
@@ -115,7 +136,10 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      * @param methodName
      */
     public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, String methodName) {
-        throw new RuntimeException("NYI");
+        if (methodIntf == null)
+            txStyle2.put(methodName, transactionAttribute);
+        else
+            txPerViewStyle2.pick(methodIntf).put(methodName, transactionAttribute);
     }
 
     /**
@@ -126,7 +150,11 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      * @param methodParams
      */
     public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, String methodName, String... methodParams) {
-        throw new RuntimeException("NYI");
+        ArrayKey methodParamsKey = new ArrayKey(methodParams);
+        if (methodIntf != null)
+            txStyle3.pick(methodName).put(methodParamsKey, transactionAttribute);
+        else
+            txPerViewStyle3.pick(methodIntf).pick(methodName).put(methodParamsKey, transactionAttribute);
     }
 
     public void setTransactionManagementType(TransactionManagementType transactionManagementType) {

@@ -34,7 +34,6 @@ import org.junit.Test;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.jboss.as.ejb3.TestHelper.index;
 import static org.jboss.as.ejb3.TestHelper.mockDeploymentUnit;
@@ -45,8 +44,18 @@ import static org.junit.Assert.assertEquals;
  */
 public class TransactionAttributeAnnotationProcessorTestCase {
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
-    private static class MyBean {
+    private static class MyBean implements ViewA, ViewB {
+        public void doSomething() { }
+    }
 
+    private static interface ViewA {
+        @TransactionAttribute(TransactionAttributeType.NEVER)
+        void doSomething();
+    }
+
+    private static interface ViewB {
+        @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+        void doSomething();
     }
 
     @Test
@@ -60,6 +69,27 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
         EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
+        processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
+
+        assertEquals(TransactionAttributeType.MANDATORY, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, "anyMethod"));
+    }
+
+    @Test
+    public void testViews() throws Exception {
+        DeploymentUnit deploymentUnit = mockDeploymentUnit();
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
+        DeploymentPhaseContext phaseContext = null;
+        Indexer indexer = new Indexer();
+        index(indexer, MyBean.class);
+        index(indexer, ViewA.class);
+        index(indexer, ViewB.class);
+        CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
+
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        componentDescription.getViewClassNames().add(ViewA.class.getName());
+        componentDescription.getViewClassNames().add(ViewB.class.getName());
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
