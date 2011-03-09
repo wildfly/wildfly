@@ -56,7 +56,6 @@ public class SpecifiedPathAddHandler extends PathAddHandler {
                     } else {
                         RelativePathService.addService(name, path, relativeTo, target);
                     }
-                    resultHandler.handleResultComplete();
                 }
             });
         } else {
