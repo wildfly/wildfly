@@ -66,6 +66,16 @@ public interface ComponentEntry {
     Interceptor getEntryPoint(Method method) throws IllegalArgumentException;
 
     /**
+     * Determine whether a given method on this view is asynchronous.  The method must be one of the exact {@code Method} instances
+     * returned by {@link #allowedMethods()}.
+     *
+     * @param method the method to check
+     * @return {@code true} if the method is asynchronous, {@code false} otherwise
+     * @throws IllegalArgumentException if the method is not known to the component
+     */
+    boolean isAsynchronous(Method method) throws IllegalArgumentException;
+
+    /**
      * Destroy this handler.  This method should be called when the client proxy is no longer
      * in use; this may destroy the instance, or do nothing at all.
      */
