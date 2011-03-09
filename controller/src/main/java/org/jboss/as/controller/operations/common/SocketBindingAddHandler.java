@@ -119,6 +119,7 @@ public class SocketBindingAddHandler implements ModelAddOperationHandler, Descri
     }
 
     protected OperationResult installSocketBinding(String name, ModelNode operation, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) throws OperationFailedException {
+        resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOp);
     }
 

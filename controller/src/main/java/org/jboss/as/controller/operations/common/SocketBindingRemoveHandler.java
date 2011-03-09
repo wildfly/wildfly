@@ -62,8 +62,6 @@ public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, 
         String name = address.getLastElement().getValue();
         ModelNode model = context.getSubModel();
 
-        resultHandler.handleResultComplete();
-
         ModelNode compensating = SocketBindingAddHandler.getOperation(opAddr, model);
         return uninstallSocketBinding(name, model, context, resultHandler, compensating);
     }
@@ -74,6 +72,7 @@ public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, 
     }
 
     protected OperationResult uninstallSocketBinding(String name, ModelNode model, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
+        resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOp);
     }
 
