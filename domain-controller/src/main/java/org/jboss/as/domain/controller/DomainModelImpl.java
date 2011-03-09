@@ -262,7 +262,6 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         if (HostControllerClient.EXECUTE_ON_DOMAIN.equals(op.require(OP).asString())) {
             if (!op.hasDefined(OP_ADDR) || op.get(OP_ADDR).asInt() == 0) {
                 ModelNode onDomain = op.require(HostControllerClient.DOMAIN_OP);
-                System.out.println("Executing on domain");
                 return executeOnDomain(executionContext.clone(onDomain), transaction);
             }
         }

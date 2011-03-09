@@ -262,14 +262,27 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
 
             // Push to servers (via hosts)
-            RolloutPlanController controller = new RolloutPlanController(opsByGroup, rolloutPlan, handler, immutableHosts, scheduledExecutorService);
+            RolloutPlanController controller = new RolloutPlanController(opsByGroup, rolloutPlan, handler, immutableHosts, scheduledExecutorService, false);
+            RolloutPlanController.Result controllerResult = controller.execute();
 
-            controller.execute();
             // Rollback if necessary
-
-//            throw new UnsupportedOperationException("implement formulating and implementing a multi-server plan");
-            handler.handleResultComplete();
-            return new BasicOperationResult(compensatingOperation);
+            switch (controllerResult) {
+                case FAILED: {
+                    controller.rollback();
+                    handler.handleFailed(new ModelNode().set("Operation was not applied successfully to any servers"));
+                    return new BasicOperationResult(compensatingOperation);
+                }
+                case PARTIAL: {
+                    controller.rollback();
+                    // fall through
+                }
+                case SUCCESS: {
+                    handler.handleResultComplete();
+                    return new BasicOperationResult(compensatingOperation);
+                }
+                default:
+                    throw new IllegalStateException("Unknown result " + controllerResult);
+            }
         }
     }
 
