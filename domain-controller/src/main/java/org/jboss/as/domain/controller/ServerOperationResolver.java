@@ -229,7 +229,7 @@ public class ServerOperationResolver {
         ModelNode serverOp = operation.clone();
         PathAddress serverAddress = address.subAddress(1);
         serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
-        return Collections.singletonMap(allServers, operation);
+        return Collections.singletonMap(allServers, serverOp);
     }
     private Map<Set<ServerIdentity>, ModelNode> getServerInterfaceOperations(ModelNode operation, PathAddress address,
             ModelNode hostModel, boolean forDomain) {
