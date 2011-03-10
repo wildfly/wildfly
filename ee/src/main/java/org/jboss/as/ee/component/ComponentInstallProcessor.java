@@ -96,13 +96,18 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 }
             }
 
-
             final ServiceName createServiceName = baseName.append("CREATE");
             final ServiceName startServiceName = baseName.append("START");
             final ComponentCreateService createService = new ComponentCreateService(configuration);
             final ServiceBuilder<Component> createBuilder = serviceTarget.addService(createServiceName, createService);
             final ComponentStartService startService = new ComponentStartService();
             final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
+
+            // Add all service dependencies
+            Map<ServiceName, InjectedValue<Object>> injections = configuration.getDependencyInjections();
+            for (Map.Entry<ServiceName, ServiceBuilder.DependencyType> entry : description.getDependencies().entrySet()) {
+                createBuilder.addDependency(entry.getValue(), entry.getKey(), injections.get(entry.getKey()));
+            }
 
             final ServiceName appContextServiceName = ContextNames.contextServiceNameOfApplication(applicationName);
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(applicationName, moduleName);

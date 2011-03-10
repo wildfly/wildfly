@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -34,6 +33,8 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * The construction parameter set passed in to an abstract component.
@@ -48,15 +49,15 @@ public abstract class AbstractComponentConfiguration {
     private final List<LifecycleInterceptorFactory> postConstructInterceptorLifecycles = new ArrayList<LifecycleInterceptorFactory>();
     private final List<LifecycleInterceptorFactory> preDestroyInterceptorLifecycles = new ArrayList<LifecycleInterceptorFactory>();
     private final List<ResourceInjection> resourceInjections = new ArrayList<ResourceInjection>();
-    private final Map<Class<?>,List<ResourceInjection>> interceptorResourceInjections = new HashMap<Class<?>,List<ResourceInjection>>();
+    private final Map<Class<?>,List<ResourceInjection>> interceptorResourceInjections = new IdentityHashMap<Class<?>,List<ResourceInjection>>();
     private final List<InterceptorFactory> componentSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
     private final Map<Class<?>, ComponentInvocationHandler> views = new IdentityHashMap<Class<?>, ComponentInvocationHandler>();
     private final Map<Method, InterceptorFactory> interceptorFactoryMap = new IdentityHashMap<Method, InterceptorFactory>();
     private final Map<Class<?>, ProxyFactory<?>> proxyFactories = new IdentityHashMap<Class<?>, ProxyFactory<?>>();
     private final List<ComponentInjector> componentInjectors = new ArrayList<ComponentInjector>();
+    private final Map<ServiceName, InjectedValue<Object>> dependencyInjections = new HashMap<ServiceName, InjectedValue<Object>>();
     private Class<?> componentClass;
     private Interceptor componentInterceptor;
-    private NamespaceContextSelector namespaceContextSelector;
 
     /**
      * Construct a new instance.
@@ -164,6 +165,24 @@ public abstract class AbstractComponentConfiguration {
 
     public List<ComponentInjector> getComponentInjectors() {
         return Collections.unmodifiableList(componentInjectors);
+    }
+
+    /**
+     * Get an injected value from a service name.
+     *
+     * @param dependencyName the dependency name
+     * @return the injected value holder
+     */
+    public InjectedValue<?> getInjection(ServiceName dependencyName) {
+        final InjectedValue<?> injection = dependencyInjections.get(dependencyName);
+        if (injection == null) {
+            throw new IllegalStateException("No injection found for dependency " + dependencyName);
+        }
+        return injection;
+    }
+
+    Map<ServiceName, InjectedValue<Object>> getDependencyInjections() {
+        return dependencyInjections;
     }
 
     /**

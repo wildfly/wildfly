@@ -50,6 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -76,6 +79,8 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
     private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
 
     private final Map<String,InterceptorDescription> allInterceptors = new HashMap<String,InterceptorDescription>();
+
+    private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
 
     private final Set<String> viewClassNames = new HashSet<String>();
     private ComponentNamingMode namingMode = ComponentNamingMode.NONE;
@@ -327,8 +332,30 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
     }
 
     /**
-     * Create the component configuration which will be used to construct the component instance.
+     * Add a dependency to this component.  If the same dependency is added multiple times, only the first will
+     * take effect.
      *
+     * @param serviceName the service name of the dependency
+     * @param type the type of the dependency (required or optional)
+     */
+    public void addDependency(ServiceName serviceName, ServiceBuilder.DependencyType type) {
+        if (serviceName == null) {
+            throw new IllegalArgumentException("serviceName is null");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("type is null");
+        }
+        final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = this.dependencies;
+        final ServiceBuilder.DependencyType dependencyType = dependencies.get(serviceName);
+        if (dependencyType == ServiceBuilder.DependencyType.REQUIRED) {
+            dependencies.put(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+        } else {
+            dependencies.put(serviceName, type);
+        }
+    }
+
+    /**
+     * Create the component configuration which will be used to construct the component instance.
      *
      * @param phaseContext the deployment phase context
      * @param componentClass the component class
@@ -460,6 +487,22 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
                 }
             }
         }
+
+        // Now add dependencies
+        final Map<ServiceName, InjectedValue<Object>> dependencyInjections = configuration.getDependencyInjections();
+        for (Map.Entry<ServiceName, ServiceBuilder.DependencyType> entry : dependencies.entrySet()) {
+            InjectedValue<Object> value = new InjectedValue<Object>();
+            dependencyInjections.put(entry.getKey(), value);
+        }
+    }
+
+    /**
+     * Get the dependency map.
+     *
+     * @return the dependency map
+     */
+    public Map<ServiceName, ServiceBuilder.DependencyType> getDependencies() {
+        return dependencies;
     }
 
     private void registerComponentInterceptor(InterceptorDescription interceptor, AbstractComponentConfiguration configuration, Module module, DeploymentReflectionIndex index, List<InterceptorFactory> interceptorFactories) throws DeploymentUnitProcessingException {
