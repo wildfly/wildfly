@@ -59,10 +59,7 @@
         <version.com.sun.httpserver>20100812-JBoss</version.com.sun.httpserver>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
-        <version.javax.faces.jsf-api>2.0.0-Beta2</version.javax.faces.jsf-api>
-        <!-- [JBAS-8932] weld subsystem build fails on unsatisfied javax.faces dependency
-        <version.javax.faces.jsf-api>2.0.4-b09</version.javax.faces.jsf-api -->
-        <version.javax.faces.jsf-api>2.0.0-Beta2</version.javax.faces.jsf-api>
+        <version.javax.faces.jsf-api>2.0.4-b09</version.javax.faces.jsf-api>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail.mail>1.4.2</version.javax.mail.mail>
