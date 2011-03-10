@@ -25,6 +25,7 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -32,7 +33,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.management.MBeanServerConnection;
@@ -40,13 +43,11 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.jboss.as.domain.client.api.DomainClient;
-import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
-import org.jboss.as.domain.client.api.deployment.DeploymentPlanBuilder;
-import org.jboss.as.domain.client.api.deployment.DeploymentSetActionsCompleteBuilder;
-import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
+import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.client.api.deployment.DuplicateDeploymentNameException;
-import org.jboss.as.domain.client.api.deployment.RemoveDeploymentPlanBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -63,18 +64,17 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 public class DomainDeploymentUtils implements Closeable {
 
     private final List<Deployment> deployments = new ArrayList<Deployment>();
-    private final DomainClient client;
-    private final DomainDeploymentManager manager;
+    private final ModelControllerClient client;
+//    private final DomainDeploymentManager manager;
     private boolean injectedClient = true;
 
     public DomainDeploymentUtils() throws UnknownHostException {
-        this(DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999));
+        this(ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999));
         this.injectedClient = false;
     }
 
-    public DomainDeploymentUtils(DomainClient client) throws UnknownHostException {
+    public DomainDeploymentUtils(ModelControllerClient client) throws UnknownHostException {
         this.client = client;
-        manager = client.getDeploymentManager();
     }
 
     public DomainDeploymentUtils(String archiveName, Package pkg) throws UnknownHostException {
@@ -96,26 +96,35 @@ public class DomainDeploymentUtils implements Closeable {
     }
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
-        DeploymentPlanBuilder builder = manager.newDeploymentPlan();
-        DeploymentSetActionsCompleteBuilder deployBuilder = null;
+        ModelNode op = new ModelNode();
+        ExecutionContextBuilder builder = ExecutionContextBuilder.Factory.create(op);
+        op.get("operation").set("composite");
+        op.get("address").setEmptyList();
+        ModelNode steps = op.get("steps");
         for (Deployment deployment : deployments) {
-            deployBuilder = deployment.addDeployment(manager, builder);
-            builder = deployBuilder;
+            steps.add(deployment.addDeployment(builder));
         }
-        DeploymentPlan plan = deployBuilder.toServerGroup("main-server-group")
-                                           .rollingToServerGroup("other-server-group")
-                                           .build();
-        manager.execute(plan).get();
+        op.get("rollout-plan").set(getRolloutPlan());
+        execute(builder.build());
     }
 
-    public synchronized void undeploy() throws ExecutionException, InterruptedException {
-        DeploymentPlanBuilder builder = manager.newDeploymentPlan();
-        RemoveDeploymentPlanBuilder removeBuilder = null;
+    public synchronized void undeploy() throws IOException {
+        ModelNode op = new ModelNode();
+        op.get("operation").set("composite");
+        op.get("address").setEmptyList();
+        ModelNode steps = op.get("steps");
+        boolean execute = false;
+        Set<String> deployed = getDeploymentNames();
         for (Deployment deployment : deployments) {
-            removeBuilder = deployment.removeDeployment(builder);
-            builder = removeBuilder;
+            if (deployed.contains(deployment.archiveName)) {
+                steps.add(deployment.removeDeployment());
+                execute = true;
+            }
         }
-        manager.execute(removeBuilder.toServerGroup("main-server-group").build()).get();
+        if (execute) {
+            op.get("rollout-plan").set(getRolloutPlan());
+            ModelNode result = client.execute(op);
+        }
     }
 
     public MBeanServerConnection getServerOneConnection() throws Exception {
@@ -141,6 +150,52 @@ public class DomainDeploymentUtils implements Closeable {
         if (!injectedClient) {
             safeClose(client);
         }
+    }
+
+    private Set<String> getDeploymentNames() throws IOException {
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-children-names");
+        op.get("child-type").set("deployment");
+
+        ModelNode result = execute(op);
+        Set<String> names = new HashSet<String>();
+        for (ModelNode deployment : result.asList()) {
+            names.add(deployment.asString());
+        }
+        return names;
+    }
+
+    private ModelNode execute(ModelNode op) throws IOException {
+        return execute(ExecutionContextBuilder.Factory.create(op).build());
+    }
+
+    private ModelNode execute(ExecutionContext op) throws IOException {
+        ModelNode result = client.execute(op);
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            return result.get("result");
+        }
+        else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        }
+        else if (result.hasDefined("domain-failure-description")) {
+            throw new RuntimeException(result.get("domain-failure-description").toString());
+        }
+        else if (result.hasDefined("host-failure-descriptions")) {
+            throw new RuntimeException(result.get("host-failure-descriptions").toString());
+        }
+        else {
+            System.out.println(result);
+            throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
+        }
+    }
+
+    private static ModelNode getRolloutPlan() {
+        ModelNode result = new ModelNode();
+        ModelNode series = result.get("in-series");
+        series.add().get("server-group", "main-server-group");
+        series.add().get("server-group", "other-server-group");
+        result.get("rollback-across-groups").set(true);
+        return result;
     }
 
     private class Deployment {
@@ -178,30 +233,71 @@ public class DomainDeploymentUtils implements Closeable {
             }
         }
 
-        public synchronized DeploymentSetActionsCompleteBuilder addDeployment(DomainDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
+        public synchronized ModelNode addDeployment(ExecutionContextBuilder context) throws IOException {
 
 
-            // THIS DOES NOT CURRENTLY WORK
-            throw new UnsupportedOperationException("Convert to detyped API");
-//            System.out.println("Deploying " + realArchive.getName());
-//            DomainModel dm = client.getDomainModel();
-//            DeploymentSetActionsCompleteBuilder result;
-//            DeploymentUnitElement due = dm.getDeployment(archiveName);
-//            if (due  != null) {
-//                result = builder.replace(archiveName, realArchive);
-//                if (!due.isStart()) {
-//                    result = result.deploy(archiveName);
-//                }
-//            }
-//            else {
-//                result = builder.add(archiveName, realArchive).andDeploy();
-//            }
-//            return result;
+            System.out.println("Deploying " + realArchive.getName());
+            Set<String> deployments = getDeploymentNames();
+            int index = context.getInputStreamCount();
+            context.addInputStream(new FileInputStream(realArchive));
+            ModelNode result = new ModelNode();
+            if (deployments.contains(archiveName)) {
+                result.get("operation").set("full-replace-deployment");
+                result.get("name").set(archiveName);
+                result.get("input-stream-index").set(index);
+            }
+            else {
+                result.get("operation").set("composite");
+                ModelNode steps = result.get("steps");
+                ModelNode add = steps.add();
+                add.get("operation").set("add");
+                add.get("address").add("deployment", archiveName);
+                add.get("input-stream-index").set(index);
+                ModelNode mainAdd = steps.add();
+                mainAdd.get("operation").set("add");
+                mainAdd.get("address").add("server-group", "main-server-group");
+                mainAdd.get("address").add("deployment", archiveName);
+                ModelNode mainDeploy = steps.add();
+                mainDeploy.get("operation").set("deploy");
+                mainDeploy.get("address").add("server-group", "main-server-group");
+                mainDeploy.get("address").add("deployment", archiveName);
+                ModelNode otherAdd = steps.add();
+                otherAdd.get("operation").set("add");
+                otherAdd.get("address").add("server-group", "other-server-group");
+                otherAdd.get("address").add("deployment", archiveName);
+                ModelNode otherDeploy = steps.add();
+                otherDeploy.get("operation").set("deploy");
+                otherDeploy.get("address").add("server-group", "other-server-group");
+                otherDeploy.get("address").add("deployment", archiveName);
+            }
+            return result;
         }
 
-        public synchronized RemoveDeploymentPlanBuilder removeDeployment(DeploymentPlanBuilder builder) {
+        public synchronized ModelNode removeDeployment() {
             System.out.println("Undeploying " + realArchive.getName());
-            return builder.undeploy(archiveName).andRemoveUndeployed();
+            ModelNode result = new ModelNode();
+            result.get("operation").set("composite");
+            ModelNode steps = result.get("steps");
+            ModelNode mainUndeploy = steps.add();
+            mainUndeploy.get("operation").set("undeploy");
+            mainUndeploy.get("address").add("server-group", "main-server-group");
+            mainUndeploy.get("address").add("deployment", archiveName);
+            ModelNode mainRemove = steps.add();
+            mainRemove.get("operation").set("remove");
+            mainRemove.get("address").add("server-group", "main-server-group");
+            mainRemove.get("address").add("deployment", archiveName);
+            ModelNode otherUndeploy = steps.add();
+            otherUndeploy.get("operation").set("undeploy");
+            otherUndeploy.get("address").add("server-group", "other-server-group");
+            otherUndeploy.get("address").add("deployment", archiveName);
+            ModelNode otherRemove = steps.add();
+            otherRemove.get("operation").set("remove");
+            otherRemove.get("address").add("server-group", "other-server-group");
+            otherRemove.get("address").add("deployment", archiveName);
+            ModelNode domainRemove = steps.add();
+            domainRemove.get("operation").set("remove");
+            domainRemove.get("address").add("deployment", archiveName);
+            return result;
         }
 
         private File getSourceMetaInfDir() {
