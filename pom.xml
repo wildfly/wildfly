@@ -85,7 +85,7 @@
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP9</version.org.jboss.arquillian>
         <version.org.jboss.classfilewriter>1.0.0.Alpha4</version.org.jboss.classfilewriter>
-        <version.org.jboss.ejb3.effigy>0.2.0</version.org.jboss.ejb3.effigy>
+        <version.org.jboss.ejb3>2.0.0-alpha-1</version.org.jboss.ejb3>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
@@ -345,7 +345,7 @@
                                             <exclude>jboss.web:el-api</exclude>
                                             <exclude>jboss.web:jsp-api</exclude>
                                             <exclude>jboss.web:servlet-api</exclude>
-                                            
+
                                             <!-- [JBAS-8874] Woodstox dependency causes smoke test failures -->
                                             <exclude>org.codehaus.woodstox:woodstox-core-asl</exclude>
                                             <exclude>org.codehaus.woodstox:wstx-lgpl</exclude>
@@ -434,15 +434,15 @@
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-common-schemas</artifactId>
                     </exclusion>
-                </exclusions> 
+                </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-common-schemas</artifactId>
                 <version>${version.org.apache.cxf}</version>
-            </dependency>    
-            
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-common-utilities</artifactId>
@@ -456,9 +456,9 @@
                         <groupId>org.codehaus.woodstox</groupId>
                         <artifactId>woodstox-core-asl</artifactId>
                     </exclusion>
-                </exclusions> 
-            </dependency> 
-            
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-coloc</artifactId>
@@ -487,15 +487,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -503,7 +503,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -513,8 +513,8 @@
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>     
-            
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-http</artifactId>
@@ -542,7 +542,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-object</artifactId>
@@ -554,7 +554,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-soap</artifactId>
@@ -563,11 +563,11 @@
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-tools-common</artifactId>
-                    </exclusion>      
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-databinding-jaxb</artifactId>
-                    </exclusion>  
+                    </exclusion>
                     <exclusion>
                         <groupId>javax.xml.bind</groupId>
                         <artifactId>jaxb-api</artifactId>
@@ -590,7 +590,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-xml</artifactId>
@@ -599,10 +599,10 @@
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-databinding-jaxb</artifactId>
-                    </exclusion>   
-               </exclusions> 
-            </dependency>  
-            
+                    </exclusion>
+               </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-core</artifactId>
@@ -617,8 +617,8 @@
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency> 
-            
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-databinding-aegis</artifactId>
@@ -634,13 +634,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-databinding-jaxb</artifactId>
                 <version>${version.org.apache.cxf}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
@@ -697,15 +697,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -713,7 +713,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -728,13 +728,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-simple</artifactId>
                 <version>${version.org.apache.cxf}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-management</artifactId>
@@ -751,15 +751,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -767,7 +767,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -778,7 +778,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
@@ -795,15 +795,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -811,7 +811,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -826,7 +826,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-jms</artifactId>
@@ -859,15 +859,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -875,7 +875,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -886,7 +886,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-local</artifactId>
@@ -898,13 +898,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-addr</artifactId>
                 <version>${version.org.apache.cxf}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-rm</artifactId>
@@ -941,15 +941,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -957,7 +957,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -968,7 +968,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-policy</artifactId>
@@ -997,15 +997,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1013,7 +1013,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1024,7 +1024,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-security</artifactId>
@@ -1064,7 +1064,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-common</artifactId>
@@ -1080,7 +1080,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-java2ws</artifactId>
@@ -1145,15 +1145,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1161,7 +1161,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1172,7 +1172,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-validator</artifactId>
@@ -1245,15 +1245,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1261,7 +1261,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1272,7 +1272,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-wsdlto-core</artifactId>
@@ -1309,15 +1309,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1325,7 +1325,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1356,15 +1356,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1372,7 +1372,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1407,15 +1407,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1423,7 +1423,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1450,15 +1450,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1466,7 +1466,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1493,15 +1493,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1509,7 +1509,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1532,15 +1532,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1548,7 +1548,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1575,15 +1575,15 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-asm</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-beans</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-context</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-core</artifactId>
@@ -1591,7 +1591,7 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-expression</artifactId>
-                    </exclusion>   
+                    </exclusion>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-tx</artifactId>
@@ -1799,7 +1799,7 @@
                 <artifactId>jboss-as-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
-                        
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jaxrs</artifactId>
@@ -1970,7 +1970,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-xjc</artifactId>
@@ -1987,7 +1987,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>com.sun.xml.messaging.saaj</groupId>
                 <artifactId>saaj-impl</artifactId>
@@ -1999,7 +1999,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>javassist</groupId>
                 <artifactId>javassist</artifactId>
@@ -2141,7 +2141,7 @@
                 <groupId>org.jboss.classfilewriter</groupId>
                 <artifactId>jboss-classfilewriter</artifactId>
                 <version>${version.org.jboss.classfilewriter}</version>
-            </dependency>	
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss</groupId>
@@ -2231,7 +2231,7 @@
                 <groupId>org.jboss.arquillian.protocol</groupId>
               <artifactId>arquillian-protocol-jmx</artifactId>
                 <version>${version.org.jboss.arquillian}</version>
-                
+
             </dependency>
 
             <dependency>
@@ -2292,7 +2292,19 @@
             <dependency>
                 <groupId>org.jboss.ejb3.effigy</groupId>
                 <artifactId>jboss-ejb3-effigy-int2</artifactId>
-                <version>${version.org.jboss.ejb3.effigy}</version>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.tx2</groupId>
+                <artifactId>jboss-ejb3-tx2-impl</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

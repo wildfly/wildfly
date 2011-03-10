@@ -21,14 +21,28 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ejb3.EJBUtilities;
+import org.jboss.as.ejb3.tx.CMTTxInterceptor;
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.msc.service.ServiceBuilder;
+
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class EJBComponentConfiguration extends AbstractComponentConfiguration {
+    private ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
+
     /**
      * Construct a new instance.
      *
@@ -36,6 +50,21 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
      */
     public EJBComponentConfiguration(final EJBComponentDescription description) {
         super(description);
+
+        description.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
+
+        // CMTTx
+        if (description.getTransactionManagementType().equals(TransactionManagementType.CONTAINER)) {
+            // slurp some memory
+            txAttrs = new ConcurrentHashMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>>();
+
+            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
+                @Override
+                protected Interceptor create(Component component, InterceptorFactoryContext context) {
+                    return new CMTTxInterceptor((TransactionalComponent) component);
+                }
+            });
+        }
     }
 
     protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
@@ -47,5 +76,9 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
      */
     public String getName() {
         return getComponentName();
+    }
+
+    ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
+        return txAttrs;
     }
 }

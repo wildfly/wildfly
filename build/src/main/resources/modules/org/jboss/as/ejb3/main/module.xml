@@ -36,6 +36,7 @@
         <module name="org.jboss.as.managed-beans"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.common-core"/>
         <module name="org.jboss.ejb3"/>
         <!-- For Interceptor -->

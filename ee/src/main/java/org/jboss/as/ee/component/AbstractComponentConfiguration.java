@@ -25,6 +25,8 @@ package org.jboss.as.ee.component;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,8 +35,6 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * The construction parameter set passed in to an abstract component.
@@ -170,6 +170,10 @@ public abstract class AbstractComponentConfiguration {
             throw new IllegalStateException("No injection found for dependency " + dependencyName);
         }
         return injection;
+    }
+
+    public <T> T getInjectionValue(ServiceName dependencyName, Class<T> valueType) {
+        return valueType.cast(getInjection(dependencyName).getValue());
     }
 
     Map<ServiceName, InjectedValue<Object>> getDependencyInjections() {

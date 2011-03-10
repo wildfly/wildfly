@@ -27,6 +27,16 @@
     </resources>
 
     <dependencies>
+        <!-- EJB API -->
+        <module name="javax.ejb.api"/>
+        <!-- Interceptor API -->
+        <module name="javax.interceptor.api"/>
+        <!-- org.jboss.util.deadlock.ApplicationDeadlockException -->
+        <module name="org.jboss.common-core"/>
+        <!-- TX services -->
+        <module name="org.jboss.integration.jboss-transaction-spi"/>
+        <!-- Logging -->
+        <module name="org.jboss.logging"/>
         <!-- the EE metadata -->
         <module name="org.jboss.metadata"/>
     </dependencies>

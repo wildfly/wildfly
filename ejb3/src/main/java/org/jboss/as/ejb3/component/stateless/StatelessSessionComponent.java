@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -39,7 +40,7 @@ import java.util.List;
  * <p/>
  * Author : Jaikiran Pai
  */
-public class StatelessSessionComponent extends AbstractComponent {
+public class StatelessSessionComponent extends EJBComponent {
 
 
     /**

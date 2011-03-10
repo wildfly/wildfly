@@ -61,11 +61,15 @@
         -->
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-as-ee</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jboss-as-ee</artifactId>
+            <artifactId>jboss-as-transactions</artifactId>
         </dependency>
 
         <dependency>
@@ -87,6 +91,11 @@
         <dependency>
             <groupId>org.jboss.ejb3.effigy</groupId>
             <artifactId>jboss-ejb3-effigy-int2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.tx2</groupId>
+            <artifactId>jboss-ejb3-tx2-impl</artifactId>
         </dependency>
 
         <dependency>

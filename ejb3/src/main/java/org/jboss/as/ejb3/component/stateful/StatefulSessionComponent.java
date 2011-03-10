@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.cache.NoPassivationCache;
 import org.jboss.as.ejb3.cache.spi.Cache;
 import org.jboss.as.ejb3.cache.spi.StatefulObjectFactory;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -42,7 +43,7 @@ import java.util.List;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponent extends AbstractComponent {
+public class StatefulSessionComponent extends EJBComponent {
     private Cache<StatefulSessionComponentInstance> cache;
 
     /**

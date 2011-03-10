@@ -25,8 +25,11 @@ package org.jboss.as.ejb3;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.ejb3.deployment.processors.EjbAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
@@ -39,7 +42,12 @@ import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationPr
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+
+import javax.transaction.TransactionManager;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -58,12 +66,25 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
+
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    final EJBUtilities utilities = new EJBUtilities();
+                    serviceTarget.addService(EJBUtilities.SERVICE_NAME, utilities)
+                        .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+                    resultHandler.handleResultComplete(); // TODO: Listener
+                }
+            });
 
             // add the metadata parser deployment processor
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());

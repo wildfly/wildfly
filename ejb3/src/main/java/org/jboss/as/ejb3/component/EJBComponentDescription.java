@@ -21,12 +21,16 @@
  */
 package org.jboss.as.ejb3.component;
 
+import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -170,5 +174,48 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
 
     public String getEJBClassName() {
         return this.getComponentClassName();
+    }
+
+    @Override
+    protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) {
+        super.processComponentMethod(configuration, componentMethod);
+
+        // TODO: a temporary measure until EJBTHREE-2120 is fully resolved
+        MethodIntf methodIntf = MethodIntf.BEAN;
+        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, componentMethod);
+    }
+
+    @Override
+    protected void processViewMethod(AbstractComponentConfiguration configuration, Class<?> viewClass, Method viewMethod, Method componentMethod) {
+        super.processViewMethod(configuration, viewClass, viewMethod, componentMethod);
+
+        MethodIntf methodIntf = getMethodIntf(viewClass.getName());
+        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, viewMethod);
+    }
+
+    private void processTxAttr(EJBComponentConfiguration configuration, MethodIntf methodIntf, Method method) {
+        String methodName = method.getName();
+        TransactionAttributeType txAttr = getTransactionAttribute(methodIntf, methodName, toString(method.getParameterTypes()));
+
+        ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs = configuration.getTxAttrs();
+        ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = txAttrs.get(methodIntf);
+        if (perMethodIntf == null) {
+            perMethodIntf = new ConcurrentHashMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>();
+            txAttrs.put(methodIntf, perMethodIntf);
+        }
+        ConcurrentMap<ArrayKey, TransactionAttributeType> perMethod = perMethodIntf.get(methodName);
+        if (perMethod == null) {
+            perMethod = new ConcurrentHashMap<ArrayKey, TransactionAttributeType>();
+            perMethodIntf.put(methodName, perMethod);
+        }
+        perMethod.put(new ArrayKey(method.getParameterTypes()), txAttr);
+    }
+
+    private static String[] toString(Class<?>[] a) {
+        final String[] result = new String[a.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = a[i].getName();
+        }
+        return result;
     }
 }

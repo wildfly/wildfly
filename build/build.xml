@@ -315,11 +315,11 @@
         <module-def name="org.jboss.arquillian.protocol.jmx">
             <maven-resource group="org.jboss.arquillian.protocol" artifact="arquillian-protocol-jmx"/>
         </module-def>
-        
+
         <module-def name="org.jboss.arquillian.protocol.osgi">
             <maven-resource group="org.jboss.arquillian.protocol" artifact="arquillian-protocol-osgi"/>
         </module-def>
-        
+
         <module-def name="org.jboss.arquillian.spi">
             <maven-resource group="org.jboss.arquillian" artifact="arquillian-spi"/>
         </module-def>
@@ -435,7 +435,7 @@
         <module-def name="org.jboss.as.osgi.configadmin">
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-configadmin"/>
         </module-def>
-    	
+
         <module-def name="org.jboss.as.osgi">
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
         </module-def>
@@ -507,9 +507,13 @@
         </module-def>
 
         <module-def name="org.jboss.ejb3">
+            <!-- all maven artifacts that live on the org.jboss.ejb3 release cycle -->
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-api"/>
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-common"/>
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-int2"/>
+
+            <maven-resource group="org.jboss.ejb3.tx2" artifact="jboss-ejb3-tx2-impl"/>
+            <maven-resource group="org.jboss.ejb3.tx2" artifact="jboss-ejb3-tx2-spi"/>
         </module-def>
 
         <module-def name="org.jboss.integration.jboss-jca-spi">
@@ -545,7 +549,7 @@
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-deployers-common"/>
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-validator"/>
         </module-def>
-    	
+
         <module-def name="org.jboss.jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
@@ -596,7 +600,7 @@
         <module-def name="org.jboss.logmanager">
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
         </module-def>
-        
+
         <module-def name="org.jboss.logmanager.log4j">
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager-log4j"/>
         </module-def>
@@ -625,39 +629,39 @@
         <module-def name="org.jboss.netty">
             <maven-resource group="org.jboss.netty" artifact="netty"/>
         </module-def>
-        
+
         <module-def name="org.jboss.osgi.common">
             <maven-resource group="org.jboss.osgi.common" artifact="jboss-osgi-common"/>
         </module-def>
-        
+
         <module-def name="org.jboss.osgi.deployment">
             <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
         </module-def>
-        
+
         <module-def name="org.jboss.osgi.framework">
             <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
         </module-def>
-        
+
         <module-def name="org.jboss.osgi.jmx">
             <maven-resource group="org.jboss.osgi.jmx" artifact="jboss-osgi-jmx"/>
         </module-def>
-        
+
         <module-def name="org.jboss.osgi.resolver">
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
         </module-def>
-        
+
         <module-def name="org.jboss.osgi.spi">
             <maven-resource group="org.jboss.osgi.spi" artifact="jbosgi-spi"/>
         </module-def>
-        
+
         <module-def name="org.jboss.osgi.vfs">
             <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
             <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
         </module-def>
-        
+
         <module-def name="org.jboss.remoting3">
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
@@ -677,11 +681,11 @@
         <module-def name="org.jboss.shrinkwrap.api">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
         </module-def>
-        
+
         <module-def name="org.jboss.shrinkwrap.spi">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-spi"/>
         </module-def>
-        
+
         <module-def name="org.jboss.shrinkwrap.impl">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-impl-base"/>
         </module-def>
