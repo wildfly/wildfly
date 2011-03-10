@@ -286,6 +286,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 if (descriptionGroup != null) {
                     filter.setDescriptionGroup(descriptionGroup);
                 }
+                filters.add(filter);
                 FilterMappingMetaData filterMapping = new FilterMappingMetaData();
                 filterMapping.setFilterName(filter.getName());
                 List<String> urlPatterns = new ArrayList<String>();
@@ -298,14 +299,16 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     }
                 }
                 urlPatternsValue = annotation.value();
-                for (String urlPattern : urlPatternsValue.asStringArray()) {
-                    urlPatterns.add(urlPattern);
+                if (urlPatternsValue != null) {
+                    for (String urlPattern : urlPatternsValue.asStringArray()) {
+                        urlPatterns.add(urlPattern);
+                    }
                 }
                 if (urlPatterns.size() > 0) {
                     filterMapping.setUrlPatterns(urlPatterns);
                 }
                 AnnotationValue servletNamesValue = annotation.value("servletNames");
-                if (servletNames != null) {
+                if (servletNamesValue != null) {
                     for (String servletName : servletNamesValue.asStringArray()) {
                         servletNames.add(servletName);
                     }
@@ -319,7 +322,9 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                         dispatchers.add(DispatcherType.valueOf(dispatcherValue));
                     }
                 }
-                filterMapping.setDispatchers(dispatchers);
+                if (dispatchers.size() > 0) {
+                    filterMapping.setDispatchers(dispatchers);
+                }
                 if (urlPatterns.size() > 0 || servletNames.size() > 0) {
                     filterMappings.add(filterMapping);
                 }
@@ -346,6 +351,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                         listener.setDescriptionGroup(descriptionGroup);
                     }
                 }
+                listeners.add(listener);
             }
             metaData.setListeners(listeners);
         }
@@ -458,6 +464,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 }
                 ServletSecurityMetaData servletSecurity = new ServletSecurityMetaData();
                 AnnotationValue httpConstraintValue = annotation.value();
+                List<String> rolesAllowed = new ArrayList<String>();
                 if (httpConstraintValue != null) {
                     AnnotationInstance httpConstraint = httpConstraintValue.asNested();
                     AnnotationValue httpConstraintERSValue = httpConstraint.value();
@@ -470,13 +477,12 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     }
                     AnnotationValue rolesAllowedValue = httpConstraint.value("rolesAllowed");
                     if (rolesAllowedValue != null) {
-                        List<String> rolesAllowed = new ArrayList<String>();
                         for (String role : rolesAllowedValue.asStringArray()) {
                             rolesAllowed.add(role);
                         }
-                        servletSecurity.setRolesAllowed(rolesAllowed);
                     }
                 }
+                servletSecurity.setRolesAllowed(rolesAllowed);
                 AnnotationValue httpMethodConstraintsValue = annotation.value("httpMethodConstraints");
                 if (httpMethodConstraintsValue != null) {
                     AnnotationInstance[] httpMethodConstraints = httpMethodConstraintsValue.asNestedArray();
@@ -497,13 +503,13 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                                 methodConstraint.setTransportGuarantee(TransportGuaranteeType.valueOf(httpMethodConstraintTGValue.asEnum()));
                             }
                             AnnotationValue rolesAllowedValue = httpMethodConstraint.value("rolesAllowed");
+                            rolesAllowed = new ArrayList<String>();
                             if (rolesAllowedValue != null) {
-                                List<String> rolesAllowed = new ArrayList<String>();
                                 for (String role : rolesAllowedValue.asStringArray()) {
                                     rolesAllowed.add(role);
                                 }
-                                servletSecurity.setRolesAllowed(rolesAllowed);
                             }
+                            methodConstraint.setRolesAllowed(rolesAllowed);
                             methodConstraints.add(methodConstraint);
                         }
                         servletSecurity.setHttpMethodConstraints(methodConstraints);
