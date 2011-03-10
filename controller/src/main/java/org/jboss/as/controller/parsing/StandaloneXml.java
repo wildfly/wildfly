@@ -424,7 +424,7 @@ public class StandaloneXml extends CommonXml {
         writer.writeStartDocument();
         writer.writeStartElement(Element.SERVER.getLocalName());
 
-        if (hasDefinedChild(modelNode, NAME)) {
+        if (modelNode.hasDefined(NAME)) {
             writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
         }
 
@@ -432,22 +432,22 @@ public class StandaloneXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
 
-        if (hasDefinedChild(modelNode, EXTENSION)) {
+        if (modelNode.hasDefined(EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
         }
 
-        if(hasDefinedChild(modelNode, PATH)) {
+        if(modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
-        if (hasDefinedChild(modelNode, MANAGEMENT)) {
+        if (modelNode.hasDefined(MANAGEMENT)) {
             writeManagement(writer, modelNode.get(MANAGEMENT));
         }
         writeServerProfile(writer, context);
-        if (hasDefinedChild(modelNode, INTERFACE)) {
+        if (modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
         }
 
-        if (hasDefinedChild(modelNode, SOCKET_BINDING_GROUP)) {
+        if (modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             Set<String> groups = modelNode.get(SOCKET_BINDING_GROUP).keys();
             if (groups.size() > 1) {
                 throw new IllegalStateException(String.format("Model contains multiple %s nodes", SOCKET_BINDING_GROUP));
@@ -457,11 +457,11 @@ public class StandaloneXml extends CommonXml {
             }
         }
 
-        if (hasDefinedChild(modelNode, SYSTEM_PROPERTIES)) {
+        if (modelNode.hasDefined(SYSTEM_PROPERTIES)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
         }
 
-        if (hasDefinedChild(modelNode, DEPLOYMENT)) {
+        if (modelNode.hasDefined(DEPLOYMENT)) {
             writeServerDeployments(writer, modelNode.get(DEPLOYMENT));
         }
 

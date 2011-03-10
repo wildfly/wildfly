@@ -93,7 +93,7 @@ public class HostXml extends CommonXml {
         writer.writeStartDocument();
         writer.writeStartElement(Element.HOST.getLocalName());
 
-        if (hasDefinedChild(modelNode, NAME)) {
+        if (modelNode.hasDefined(NAME)) {
             writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
         }
 

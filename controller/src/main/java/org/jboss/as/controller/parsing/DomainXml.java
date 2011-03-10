@@ -99,36 +99,36 @@ public class DomainXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
 
-        if (hasDefinedChild(modelNode, EXTENSION)) {
+        if (modelNode.hasDefined(EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
         }
-        if(hasDefinedChild(modelNode, PATH)) {
+        if(modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
-        if(hasDefinedChild(modelNode, PROFILE)) {
+        if(modelNode.hasDefined(PROFILE)) {
             writer.writeStartElement(Element.PROFILES.getLocalName());
             for(final Property profile : modelNode.get(PROFILE).asPropertyList()) {
                 writeProfile(writer, profile.getName(), profile.getValue(), context);
             }
             writer.writeEndElement();
         }
-        if(hasDefinedChild(modelNode, INTERFACE)) {
+        if(modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
         }
-        if(hasDefinedChild(modelNode, SOCKET_BINDING_GROUP)) {
+        if(modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
             for(final Property property : modelNode.get(SOCKET_BINDING_GROUP).asPropertyList()) {
                 writeSocketBindingGroup(writer, property.getValue(), false);
             }
             writer.writeEndElement();
         }
-        if(hasDefinedChild(modelNode, SYSTEM_PROPERTIES)) {
+        if(modelNode.hasDefined(SYSTEM_PROPERTIES)) {
             writeProperties(writer, modelNode, Element.SYSTEM_PROPERTIES);
         }
-        if(hasDefinedChild(modelNode, DEPLOYMENT)) {
+        if(modelNode.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, modelNode);
         }
-        if(hasDefinedChild(modelNode, SERVER_GROUP)) {
+        if(modelNode.hasDefined(SERVER_GROUP)) {
             writer.writeStartElement(Element.SERVER_GROUPS.getLocalName());
             for(final Property property : modelNode.get(SERVER_GROUP).asPropertyList()) {
                 writeServerGroup(writer, property.getName(), property.getValue());

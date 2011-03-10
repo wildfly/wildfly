@@ -1380,10 +1380,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         writer.writeAttribute(attribute.getLocalName(), value);
     }
 
-    protected static boolean hasDefinedChild(ModelNode node, String child) {
-        return node.has(child) && node.get(child).isDefined();
-    }
-
     protected void writeJVMElement(final XMLExtendedStreamWriter writer, final String jvmName, final ModelNode jvmElement) throws XMLStreamException {
         writer.writeStartElement(Element.JVM.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), jvmName);
