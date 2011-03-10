@@ -1870,9 +1870,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                     attribute.getLocalName() + " is not a valid multicast address",
                                     reader.getLocation(), e);
                         }
+                        break;
                     }
                     case MULTICAST_PORT: {
                         binding.get(MULTICAST_PORT).set(parseBoundedIntegerAttribute(reader, i, 1, 65535));
+                        required.remove(Attribute.PORT);
                         break;
                     }
                     default:
