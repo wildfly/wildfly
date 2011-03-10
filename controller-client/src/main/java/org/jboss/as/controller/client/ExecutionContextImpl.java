@@ -60,6 +60,12 @@ class ExecutionContextImpl implements ExecutionContextBuilder, ExecutionContext 
     }
 
     @Override
+    public int getInputStreamCount() {
+        List<InputStream> list = inputStreams;
+        return list == null ? 0 : list.size();
+    }
+
+    @Override
     public ExecutionContext build() {
         return this;
     }

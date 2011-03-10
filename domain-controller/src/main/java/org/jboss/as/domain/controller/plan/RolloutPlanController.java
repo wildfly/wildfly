@@ -103,13 +103,17 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                 ConcurrentGroupServerUpdatePolicy parent = new ConcurrentGroupServerUpdatePolicy(predecessor, groupNames);
                 for (Property prop : groupPolicies) {
 
+                    final String serverGroupName = prop.getName();
+                    final Map<ServerIdentity, ModelNode> groupEntry = opsByGroup.get(serverGroupName);
+                    if (groupEntry == null) {
+                        continue;
+                    }
+
                     final List<Runnable> groupTasks = new ArrayList<Runnable>();
                     final ModelNode policyNode = prop.getValue();
                     final boolean rollingGroup = policyNode.hasDefined(ROLLING_TO_SERVERS) && policyNode.get(ROLLING_TO_SERVERS).asBoolean();
                     seriesTasks.add(rollingGroup ? new RollingUpdateTask(groupTasks) : new ConcurrentUpdateTask(groupTasks, executor));
 
-                    final String serverGroupName = prop.getName();
-                    final Map<ServerIdentity, ModelNode> groupEntry = opsByGroup.get(serverGroupName);
                     final Set<ServerIdentity> servers = groupEntry.keySet();
                     ServerUpdatePolicy policy;
                     if (forRollback) {

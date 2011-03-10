@@ -113,7 +113,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         } else if (operation.hasDefined(HASH)){
             hash = operation.get(HASH).asBytes();
         } else {
-            throw new OperationFailedException(new ModelNode().set("Neither an attachment or a hash were passed in"));
+            throw new OperationFailedException(new ModelNode().set("Neither an attachment nor a hash were passed in"));
         }
 
         if (deploymentRepository.hasDeploymentContent(hash)) {

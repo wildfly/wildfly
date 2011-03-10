@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.ExtensionContext;
@@ -89,11 +90,13 @@ class DomainModelUtil {
         rootModel.get(NAMESPACES).setEmptyList();
         rootModel.get(SCHEMA_LOCATIONS).setEmptyList();
         rootModel.get(EXTENSION);
-        rootModel.get(INTERFACE);
-        rootModel.get(PROFILE);
-        rootModel.get(SERVER_GROUP);
-        rootModel.get(SOCKET_BINDING_GROUP);
         rootModel.get(PATH);
+        rootModel.get(PROFILE);
+        rootModel.get(INTERFACE);
+        rootModel.get(SOCKET_BINDING_GROUP);
+        rootModel.get(SYSTEM_PROPERTIES).setEmptyObject();
+        rootModel.get(DEPLOYMENT);
+        rootModel.get(SERVER_GROUP);
         rootModel.get(HOST);
         return rootModel;
     }

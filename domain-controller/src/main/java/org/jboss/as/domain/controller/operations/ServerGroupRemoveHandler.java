@@ -22,14 +22,15 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,9 +44,7 @@ public class ServerGroupRemoveHandler implements ModelRemoveOperationHandler {
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getEmptyOperation(ADD, operation.get(OP_ADDR));
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);

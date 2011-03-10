@@ -34,6 +34,8 @@ public interface ExecutionContextBuilder {
 
     ExecutionContextBuilder addInputStream(InputStream in);
 
+    int getInputStreamCount();
+
     ExecutionContext build();
 
     public static class Factory{

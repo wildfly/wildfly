@@ -64,8 +64,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,7 +83,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
-import org.jboss.as.domain.controller.plan.RolloutPlanController.Result;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -203,7 +200,6 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
         ModelNode rolloutPlan = operation.has(ROLLOUT_PLAN) ? operation.remove(ROLLOUT_PLAN) : null;
-
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
@@ -541,7 +537,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     }
 
     private void validateServerGroupPlan(Set<String> found, Property prop) throws OperationFailedException {
-        if (found.add(prop.getName())) {
+        if (!found.add(prop.getName())) {
             throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s appears more than once in the plan.", prop.getName())));
         }
         ModelNode plan = prop.getValue();
@@ -584,7 +580,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         ModelNode result = null;
         if (isMultistepOperation(operation)) {
 
-            SortedSet<String> keys = new TreeSet<String>(operation.get(STEPS).keys());
+            int stepCount = operation.get(STEPS).asInt();
             Map<String, ModelNode> compSteps = new HashMap<String, ModelNode>();
             // See if master responded; if yes use that for all possible steps
             ModelNode masterResult = hostResults.get(localHostName);
@@ -597,7 +593,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                     }
                 }
             }
-            if (compSteps.size() < keys.size()) {
+            if (compSteps.size() < stepCount) {
                 // See if other hosts handled other steps
                 for (ModelNode hostResult : hostResults.values()) {
                     if (hostResult != null && !IGNORED.equals(hostResult.get(OUTCOME).asString())
@@ -616,11 +612,15 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             }
 
             result = new ModelNode();
-            for (String step : keys) {
+            for (int i = 1; i <= stepCount; i++) {
+                String step = "step-" + i;
                 ModelNode stepComp = compSteps.get(step);
                 if (stepComp != null && stepComp.isDefined()) {
-                    result.add(stepComp);
+                    result.get("steps").add(stepComp);
                 }
+            }
+            if (result.isDefined()) {
+                result.get(OP).set(COMPOSITE);
             }
         }
         else {
