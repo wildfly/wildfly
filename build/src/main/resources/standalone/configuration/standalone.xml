@@ -59,6 +59,7 @@
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.messaging"/>
+        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -342,6 +343,33 @@
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
+            <cache-container name="hibernate" default-cache="local-query">
+                <local-cache name="entity">
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="local-query">
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="timestamps">
+                    <eviction strategy="NONE"/>
+                </local-cache>
+            </cache-container>
+        </subsystem>
+       </subsystem>
+       <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+            <mod-cluster-config>
+               <proxy-conf>
+                 <httpd-conf proxy-list="localhost:6666">
+                   <advertise-socket name="mod_cluster" />
+                   <ssl name="mod_cluster" />
+                 </httpd-conf>
+                 <nodes-conf/>
+               </proxy-conf>
+            </mod-cluster-config>
+       </subsystem>
     </profile>
 
     <interfaces>
