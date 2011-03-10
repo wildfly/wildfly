@@ -22,7 +22,6 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
@@ -96,7 +95,7 @@ public class GlobalOperationHandlers {
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
-                final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
+                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
                 final ModelNode result;
                 if (operation.get(RECURSIVE).asBoolean(false)) {
                     // FIXME security checks JBAS-8842
@@ -143,17 +142,21 @@ public class GlobalOperationHandlers {
                                 final ModelNode attributeOperation = operation.clone();
                                 attributeOperation.get(NAME).set(attributeName);
                                 handler.execute(context, attributeOperation, new ResultHandler() {
+                                    @Override
                                     public void handleResultFragment(final String[] location, final ModelNode attributeResult) {
                                         result.get(attributeName).set(attributeResult);
                                     }
+                                    @Override
                                     public void handleResultComplete() {
                                         // TODO
                                     }
+                                    @Override
                                     public void handleFailed(ModelNode failureDescription) {
                                         if(type != AccessType.METRIC) {
                                             resultHandler.handleFailed(failureDescription);
                                         }
                                     }
+                                    @Override
                                     public void handleCancellation() {
                                         resultHandler.handleCancellation();
                                     }
@@ -176,7 +179,7 @@ public class GlobalOperationHandlers {
                 final ModelNode operation = new ModelNode();
                 operation.get(OP).set(READ_RESOURCE_OPERATION);
                 operation.get(RECURSIVE).set(true);
-                operation.get(ADDRESS).set(new ModelNode());
+                operation.get(OP_ADDR).set(new ModelNode());
 
                 for (ProxyController proxyController : proxyControllers) {
                     final ModelNode proxyResult = proxyController.execute(ExecutionContextBuilder.Factory.copy(context, operation).build());
@@ -205,7 +208,7 @@ public class GlobalOperationHandlers {
             OperationResult handlerResult = new BasicOperationResult();
             try {
                 final String attributeName = operation.require(NAME).asString();
-                final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
+                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
                 final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(address, attributeName);
                 if (attributeAccess == null) {
                     final Set<String> children = context.getRegistry().getChildNames(address);
@@ -241,7 +244,7 @@ public class GlobalOperationHandlers {
             OperationResult handlerResult = null;
             try {
                 final String attributeName = operation.require(NAME).asString();
-                final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.require(ADDRESS)), attributeName);
+                final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.get(OP_ADDR)), attributeName);
                 if (attributeAccess == null) {
                     throw new OperationFailedException(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
                 } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
@@ -274,7 +277,7 @@ public class GlobalOperationHandlers {
                     resultHandler.handleResultComplete();
                 } else {
 
-                    final Set<String> childNames = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.require(ADDRESS)));
+                    final Set<String> childNames = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.get(OP_ADDR)));
 
                     if (!childNames.contains(childName)) {
                         resultHandler.handleFailed(new ModelNode().set("No known child called " + childName)); //TODO i18n
@@ -317,7 +320,7 @@ public class GlobalOperationHandlers {
                     resultHandler.handleResultComplete();
                 } else {
 
-                    Set<String> childTypes = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.require(ADDRESS)));
+                    Set<String> childTypes = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.get(OP_ADDR)));
                     final ModelNode result = new ModelNode();
                     for (final String key : childTypes) {
                         final ModelNode node = new ModelNode();
@@ -345,7 +348,7 @@ public class GlobalOperationHandlers {
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final ModelNodeRegistration registry = context.getRegistry();
-                final Map<String, OperationEntry> operations = registry.getOperationDescriptions(PathAddress.pathAddress(operation.require(ADDRESS)), true);
+                final Map<String, OperationEntry> operations = registry.getOperationDescriptions(PathAddress.pathAddress(operation.get(OP_ADDR)), true);
 
                 final ModelNode result = new ModelNode();
                 if (operations.size() > 0) {
@@ -377,7 +380,7 @@ public class GlobalOperationHandlers {
                 String operationName = operation.require(NAME).asString();
 
                 final ModelNodeRegistration registry = context.getRegistry();
-                final DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.pathAddress(operation.require(ADDRESS)), operationName);
+                final DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.pathAddress(operation.get(OP_ADDR)), operationName);
 
                 final ModelNode result = descriptionProvider == null ? new ModelNode() : descriptionProvider.getModelDescription(getLocale(operation));
 
@@ -402,7 +405,7 @@ public class GlobalOperationHandlers {
                 final boolean recursive = operation.get(RECURSIVE).isDefined() ? operation.get(RECURSIVE).asBoolean() : false;
 
                 final ModelNodeRegistration registry = context.getRegistry();
-                final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
+                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
                 final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
                 final Locale locale = getLocale(operation);
                 final ModelNode result = descriptionProvider.getModelDescription(locale);
@@ -465,7 +468,7 @@ public class GlobalOperationHandlers {
 
                         final ModelNode operation = new ModelNode();
                         operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
-                        operation.get(ADDRESS).set(new ModelNode());
+                        operation.get(OP_ADDR).set(new ModelNode());
                         operation.get(RECURSIVE).set(true);
                         operation.get(OPERATIONS).set(operations);
                         if (locale != null) {
@@ -491,6 +494,7 @@ public class GlobalOperationHandlers {
         public static final String ORIGINAL_OPERATION = "original-operation";
 
         /** {@inheritDoc} */
+        @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS_PARAM));
             final String operationName = operation.require(ORIGINAL_OPERATION).asString();
@@ -507,6 +511,7 @@ public class GlobalOperationHandlers {
                     newOperation.get(OP_ADDR).set(address.subAddress(proxyAddress.size()).toModelNode());
                     final ExecutionContext executionContext = ExecutionContextBuilder.Factory.create(newOperation).build();
                     proxy.execute(executionContext, new ResultHandler() {
+                        @Override
                         public void handleResultFragment(String[] location, ModelNode result) {
                             synchronized(failureResult) {
                                 if(status.get() == 0) {
@@ -516,6 +521,7 @@ public class GlobalOperationHandlers {
                                 }
                             }
                         }
+                        @Override
                         public void handleResultComplete() {
                             synchronized(failureResult) {
                                 status.compareAndSet(0, 1);
@@ -524,6 +530,7 @@ public class GlobalOperationHandlers {
                                 }
                             }
                         }
+                        @Override
                         public void handleFailed(ModelNode failureDescription) {
                             synchronized(failureResult) {
                                 if(failureDescription != null)  {
@@ -535,6 +542,7 @@ public class GlobalOperationHandlers {
                                 }
                             }
                         }
+                        @Override
                         public void handleCancellation() {
                             synchronized(failureResult) {
                                 status.compareAndSet(0, 3);
@@ -578,6 +586,7 @@ public class GlobalOperationHandlers {
         }
 
         /** {@inheritDoc} */
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return new ModelNode();
         }
