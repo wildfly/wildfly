@@ -40,9 +40,9 @@ class ArrayKey {
 
     @Override
     public boolean equals(Object obj) {
-        if (!obj.getClass().isArray())
+        if (!(obj instanceof ArrayKey))
             return false;
-        return Arrays.equals(a, (Object[]) obj);
+        return Arrays.equals(a, ((ArrayKey) obj).a);
     }
 
     @Override
