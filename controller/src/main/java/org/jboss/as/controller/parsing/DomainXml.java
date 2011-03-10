@@ -123,10 +123,10 @@ public class DomainXml extends CommonXml {
             writer.writeEndElement();
         }
         if(modelNode.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, modelNode, Element.SYSTEM_PROPERTIES);
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
         }
         if(modelNode.hasDefined(DEPLOYMENT)) {
-            writeDomainDeployments(writer, modelNode);
+            writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
         }
         if(modelNode.hasDefined(SERVER_GROUP)) {
             writer.writeStartElement(Element.SERVER_GROUPS.getLocalName());
@@ -639,7 +639,7 @@ public class DomainXml extends CommonXml {
         }
 
         if(group.hasDefined(DEPLOYMENT)) {
-            writeDomainDeployments(writer, group);
+            writeDomainDeployments(writer, group.get(DEPLOYMENT));
         }
         // System properties
         if(group.hasDefined(SYSTEM_PROPERTIES)) {
