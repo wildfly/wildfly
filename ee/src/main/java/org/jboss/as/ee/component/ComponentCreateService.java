@@ -65,6 +65,8 @@ public final class ComponentCreateService implements Service<Component> {
         // First, system interceptors (one of which should associate)
         final ArrayList<Interceptor> rootInterceptors = new ArrayList<Interceptor>();
         final SimpleInterceptorFactoryContext interceptorFactoryContext = new SimpleInterceptorFactoryContext();
+        // TODO: a contract for ComponentInterceptorFactory
+        interceptorFactoryContext.getContextData().put(Component.class, component);
         for (InterceptorFactory factory : componentConfiguration.getComponentSystemInterceptorFactories()) {
             rootInterceptors.add(factory.create(interceptorFactoryContext));
         }
