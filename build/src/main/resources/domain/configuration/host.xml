@@ -22,7 +22,8 @@
 
 <host xmlns="urn:jboss:domain:1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
+      xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
+      name="local">
 
     <management>
        <native-api interface="public" port="9999"/>
