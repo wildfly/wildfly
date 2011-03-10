@@ -443,6 +443,7 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
                     // The final interceptor invokes the method on the associated instance
                     interceptorFactories.add(new MethodInvokingInterceptorFactory(AbstractComponent.INSTANCE_FACTORY, componentMethod));
                     componentToInterceptorFactory.put(componentMethod, Interceptors.getChainedInterceptorFactory(interceptorFactories));
+                    processComponentMethod(configuration, componentMethod);
                 }
             }
             currentClass = currentClass.getSuperclass();
@@ -474,6 +475,7 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
                     // Create the mapping of this view method to the interceptor factory for the target method
                     viewToInterceptorFactory.put(viewMethod, componentToInterceptorFactory.get(componentMethod));
                 }
+                processViewMethod(configuration, viewClass, viewMethod, componentMethod);
             }
         }
 
@@ -492,6 +494,14 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
      */
     public Map<ServiceName, ServiceBuilder.DependencyType> getDependencies() {
         return dependencies;
+    }
+
+    protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) {
+        // do nothing
+    }
+
+    protected void processViewMethod(AbstractComponentConfiguration configuration, Class<?> viewClass, Method viewMethod, Method componentMethod) {
+        // do nothing
     }
 
     private void registerComponentInterceptor(InterceptorDescription interceptor, AbstractComponentConfiguration configuration, Module module, DeploymentReflectionIndex index, List<InterceptorFactory> interceptorFactories) throws DeploymentUnitProcessingException {
