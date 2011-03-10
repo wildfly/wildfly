@@ -132,7 +132,9 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
      private void getAllComponentClasses(WebMetaData metaData,Set<String> classes) {
          if(metaData.getServlets() != null)
              for(ServletMetaData servlet : metaData.getServlets()) {
-                 classes.add(servlet.getServletClass());
+                 if (servlet.getServletClass() != null) {
+                     classes.add(servlet.getServletClass());
+                 }
              }
          if(metaData.getFilters() != null)
              for(FilterMetaData filter : metaData.getFilters()) {
@@ -147,7 +149,9 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
      private void getAllComponentClasses(WebFragmentMetaData metaData,Set<String> classes) {
          if(metaData.getServlets() != null)
              for(ServletMetaData servlet : metaData.getServlets()) {
-                 classes.add(servlet.getServletClass());
+                 if (servlet.getServletClass() != null) {
+                     classes.add(servlet.getServletClass());
+                 }
              }
          if(metaData.getFilters() != null)
              for(FilterMetaData filter : metaData.getFilters()) {
