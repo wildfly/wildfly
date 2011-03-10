@@ -22,6 +22,7 @@
 
 package org.jboss.as.arquillian.service;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -106,7 +107,34 @@ public class ArquillianService implements Service<ArquillianService> {
 
                 @Override
                 public TestResult runTestMethod(String className, String methodName, Map<String, String> props) {
+                    Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
+                    ContextManager contextManager = initializeContextManager(className, properties);
+                    try {
+                        // actually run the tests
+                        return super.runTestMethod(className, methodName, props);
+                    } finally {
+                        contextManager.teardown(properties);
+                    }
+                }
 
+                @Override
+                public InputStream runTestMethodEmbedded(String className, String methodName, Map<String, String> props) {
+                    Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
+                    ContextManager contextManager = initializeContextManager(className, properties);
+                    try {
+                        // actually run the tests
+                        return super.runTestMethodEmbedded(className, methodName, props);
+                    } finally {
+                        contextManager.teardown(properties);
+                    }
+                }
+
+                @Override
+                protected TestClassLoader getTestClassLoader() {
+                    return testClassLoader;
+                }
+
+                private ContextManager initializeContextManager(String className, Map<String, Object> properties) {
                     final ContextManagerBuilder builder = new ContextManagerBuilder();
                     ArquillianConfig config = getConfig(className);
                     if (config != null) {
@@ -118,21 +146,9 @@ public class ArquillianService implements Service<ArquillianService> {
                         builder.addAll(deployment);
                     }
 
-                    Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
                     ContextManager contextManager = builder.build();
                     contextManager.setup(properties);
-
-                    try {
-                        // actually run the tests
-                        return super.runTestMethod(className, methodName, props);
-                    } finally {
-                        contextManager.teardown(properties);
-                    }
-                }
-
-                @Override
-                protected TestClassLoader getTestClassLoader() {
-                    return testClassLoader;
+                    return contextManager;
                 }
             };
             jmxTestRunner.registerMBean(mbeanServer);
