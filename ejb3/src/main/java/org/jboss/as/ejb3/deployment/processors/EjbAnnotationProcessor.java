@@ -24,8 +24,9 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.component.session.singleton.SingletonComponentDescription;
+import org.jboss.as.ejb3.component.session.stateful.StatefulComponentDescription;
+import org.jboss.as.ejb3.component.session.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -129,8 +130,7 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
                     sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
                     break;
                 case SINGLETON:
-                    // TODO: We might need a Singleton specific component description. For now use StatelessComponentDescription
-                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
+                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);

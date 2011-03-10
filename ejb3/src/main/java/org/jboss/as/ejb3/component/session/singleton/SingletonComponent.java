@@ -20,28 +20,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateless;
+package org.jboss.as.ejb3.component.session.singleton;
 
 import org.jboss.as.ee.component.AbstractComponent;
+import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
- * Author : Jaikiran Pai
+ * @author Jaikiran Pai
  */
-public class StatelessSessionComponentInstance extends AbstractComponentInstance {
+public class SingletonComponent extends AbstractComponent {
 
     /**
      * Construct a new instance.
      *
-     * @param component   the component
-     * @param instance    the object instance
+     * @param configuration the component configuration
      */
-    protected StatelessSessionComponentInstance(final AbstractComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        super(component, instance, preDestroyInterceptors, context);
+    protected SingletonComponent(final EJBComponentConfiguration configuration) {
+        super(configuration);
+    }
+
+    @Override
+    protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        throw new RuntimeException("NYI");
+    }
+
+    @Override
+    public Interceptor createClientInterceptor(Class<?> view) {
+        return new Interceptor() {
+
+            @Override
+            public Object processInvocation(InterceptorContext context) throws Exception {
+                // setup the component being invoked
+                context.putPrivateData(Component.class, SingletonComponent.this);
+                return context.proceed();
+            }
+        };
     }
 }

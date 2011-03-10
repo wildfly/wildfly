@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateless;
+package org.jboss.as.ejb3.component.session.stateless;
 
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
@@ -78,7 +78,6 @@ public class StatelessSessionComponent extends AbstractComponent {
         this.componentInterceptors = componentInterceptors;
     }
 
-    // TODO: I need to understand what exactly is this method meant for
     @Override
     public Interceptor createClientInterceptor(Class<?> viewClass) {
         // TODO: Needs to be implemented
