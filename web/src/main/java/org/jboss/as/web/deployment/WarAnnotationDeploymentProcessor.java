@@ -238,7 +238,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 filter.setFilterClass(classInfo.toString());
-                AnnotationValue nameValue = annotation.value("name");
+                AnnotationValue nameValue = annotation.value("filterName");
                 if (nameValue == null || nameValue.asString().isEmpty()) {
                     filter.setName(classInfo.toString());
                 } else {
