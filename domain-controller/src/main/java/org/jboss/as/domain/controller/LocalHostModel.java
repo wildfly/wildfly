@@ -21,19 +21,17 @@
 */
 package org.jboss.as.domain.controller;
 
-import java.util.NoSuchElementException;
-
-import org.jboss.as.controller.TransactionalProxyController;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Proxy to the local host controller.
+ * Encapsulates the local host model.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface HostControllerProxy extends TransactionalProxyController {
+public interface LocalHostModel {
 
     /**
      * Gets the name of the host.
@@ -49,20 +47,18 @@ public interface HostControllerProxy extends TransactionalProxyController {
     ModelNode getHostModel();
 
     /**
+     * Gets the {@link ExtensibleConfigurationPersister} used for persisting the host model.
+     *
+     * @return the configuration persister. Will not be {@code null}
+     */
+    ExtensibleConfigurationPersister getConfigurationPersister();
+
+    /**
      * Gets the registry for host model resources.
      *
      * @return the registry. Will not be {@code null}
      */
     ModelNodeRegistration getRegistry();
-
-    /**
-     * Gets the name of the server group to which the given server belongs.
-     *
-     * @param serverName the name of the server
-     * @return the name of the server group. Will not be {@code null}
-     * @throws NoSuchElementException if the server does not exist
-     */
-    String getServerGroupName(String serverName);
 
     /**
      * Starts all the servers in the host configuration whose {@code start} attribute is {@code true}.

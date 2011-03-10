@@ -80,6 +80,19 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
+    public void registerSubModel(final PathElement address, final ModelNodeRegistration subModel) {
+        if (address == null) {
+            throw new IllegalArgumentException("address is null");
+        }
+        if (subModel == null) {
+            throw new IllegalArgumentException("subModel is null");
+        }
+        final String key = address.getKey();
+        final NodeSubregistry child = getOrCreateSubregistry(key);
+        child.register(address.getValue(), subModel);
+    }
+
+    @Override
     OperationHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
         final OperationEntry entry = operationsUpdater.get(this, operationName);
         if (entry != null && entry.isInherited()) {
@@ -156,6 +169,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
 
+    @Override
     public void unregisterProxyController(final PathElement address) throws IllegalArgumentException {
         final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
         final NodeSubregistry subregistry = snapshot.get(address.getKey());

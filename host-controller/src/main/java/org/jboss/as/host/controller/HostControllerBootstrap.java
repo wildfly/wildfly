@@ -47,16 +47,18 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
 import org.jboss.as.domain.controller.DomainDeploymentRepository;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.HostControllerProxy;
+import org.jboss.as.domain.controller.LocalHostModel;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
@@ -108,8 +110,9 @@ public class HostControllerBootstrap {
      */
     public void start() throws Exception {
         final File configDir = environment.getDomainConfigurationDir();
+        final ModelNode hostModelNode = HostModelUtil.createCoreModel();
         final ExtensibleConfigurationPersister configurationPersister = createHostConfigurationPersister(configDir);
-        final HostModel hostModel = new HostModel(configurationPersister);
+        final ModelNodeRegistration hostRegistry = HostModelUtil.createHostRegistry(configurationPersister);
 
         // Load the host model
         final List<ModelNode> operations = configurationPersister.load();
@@ -140,10 +143,17 @@ public class HostControllerBootstrap {
                 }
             }
         };
+
+        final class BootstrapModelController extends BasicModelController {
+            BootstrapModelController() {
+                super(hostModelNode, configurationPersister, hostRegistry);
+            }
+        }
+        final BasicModelController bootstrapContoller = new BootstrapModelController();
         for(final ModelNode operation : operations) {
             count.incrementAndGet();
             operation.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            hostModel.execute(ExecutionContextBuilder.Factory.create(operation).build(), resultHandler);
+            bootstrapContoller.execute(ExecutionContextBuilder.Factory.create(operation).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {
             // some action?
@@ -159,10 +169,9 @@ public class HostControllerBootstrap {
         // Install the process controller client
         final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
         serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
-        // Get the raw model
-        final ModelNode rawModel = hostModel.getHostModel();
+
         // manually install the network interface services
-        activateNetworkInterfaces(rawModel, serviceTarget);
+        activateNetworkInterfaces(hostModelNode, serviceTarget);
         //
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
@@ -173,16 +182,16 @@ public class HostControllerBootstrap {
             .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
             .install();
         //
-        final String mgmtNetwork = rawModel.get(MANAGEMENT, NATIVE_API, INTERFACE).asString();
-        final int mgmtPort = rawModel.get(MANAGEMENT, NATIVE_API, PORT).asInt();
+        final String mgmtNetwork = hostModelNode.get(MANAGEMENT, NATIVE_API, INTERFACE).asString();
+        final int mgmtPort = hostModelNode.get(MANAGEMENT, NATIVE_API, PORT).asInt();
         final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
             .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
             .install();
 
-        final String name = rawModel.get(NAME).asString();
-        final HostControllerService hc = new HostControllerService(name, hostModel);
+        final String name = hostModelNode.get(NAME).asString();
+        final HostControllerService hc = new HostControllerService(name, hostModelNode, configurationPersister, hostRegistry);
         serviceTarget.addService(HostController.SERVICE_NAME, hc)
             .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, hc.getServerInventory())
             .addDependency(ServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
@@ -200,14 +209,14 @@ public class HostControllerBootstrap {
             .install();
 
         // install the domain controller
-        activateDomainController(environment, rawModel, serviceTarget, environment.isBackupDomainFiles(), environment.isUseCachedDc());
+        activateDomainController(environment, hostModelNode, serviceTarget, environment.isBackupDomainFiles(), environment.isUseCachedDc());
 
-        if (rawModel.get(MANAGEMENT).hasDefined(HTTP_API)) {
+        if (hostModelNode.get(MANAGEMENT).hasDefined(HTTP_API)) {
             final HttpManagementService service = new HttpManagementService();
             serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
-                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(rawModel.get(MANAGEMENT, HTTP_API).require(INTERFACE).asString()), NetworkInterfaceBinding.class, service.getInterfaceInjector())
+                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostModelNode.get(MANAGEMENT, HTTP_API).require(INTERFACE).asString()), NetworkInterfaceBinding.class, service.getInterfaceInjector())
                     .addDependency(DomainController.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
-                    .addInjection(service.getPortInjector(), rawModel.get(MANAGEMENT, HTTP_API).require(PORT).asInt())
+                    .addInjection(service.getPortInjector(), hostModelNode.get(MANAGEMENT, HTTP_API).require(PORT).asInt())
                     .addDependency(executorServiceName, ExecutorService.class, service.getExecutorServiceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .addListener(new ResultHandler.ServiceStartListener(resultHandler))
@@ -258,7 +267,7 @@ public class HostControllerBootstrap {
             builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());
         }
         builder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, dcService.getScheduledExecutorServiceInjector())
-            .addDependency(HostController.SERVICE_NAME, HostControllerProxy.class, dcService.getHostControllerServiceInjector())
+            .addDependency(HostController.SERVICE_NAME, LocalHostModel.class, dcService.getHostControllerServiceInjector())
             .install();
 
         //Install the domain controller operation handler

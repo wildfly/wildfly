@@ -45,8 +45,23 @@ public interface ModelNodeRegistration {
      * @param descriptionProvider source for descriptive information describing this
      *                            portion of the model (must not be {@code null})
      * @return a model node registration which may be used to add operations
+     *
+     * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      */
     ModelNodeRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
+
+    /**
+     * Register the existence of an addressable sub-node of this model node.
+     *
+     * @param address the address of the submodel (may include a wildcard)
+     * @param subModel registry for the submodel. Must have been created by the same {@link Factory} that
+     *                 created this ModelNodeRegistration
+     *
+     * @throws IllegalArgumentException if a submodel is already registered at {@code address} or if
+     *              {@code subModel} was created by a different {@link Factory} than the creator of
+     *              this object
+     */
+    void registerSubModel(PathElement address, ModelNodeRegistration subModel);
 
     /**
      * Register an operation handler for this model node.

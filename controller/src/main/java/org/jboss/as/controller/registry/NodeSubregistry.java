@@ -64,10 +64,20 @@ final class NodeSubregistry {
 
     ModelNodeRegistration register(final String elementValue, final DescriptionProvider provider) {
         final AbstractNodeRegistration newRegistry = new ConcreteNodeRegistration(elementValue, this, provider);
+        register(elementValue, newRegistry);
+        return newRegistry;
+    }
+
+    void register(final String elementValue, final ModelNodeRegistration subModel) {
+        AbstractNodeRegistration newRegistry = null;
+        if (subModel instanceof AbstractNodeRegistration) {
+            newRegistry = (AbstractNodeRegistration) subModel;
+        }
+        else {
+
+        }
         final AbstractNodeRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
-        if (appearingRegistry == null) {
-            return newRegistry;
-        } else {
+        if (appearingRegistry != null) {
             throw new IllegalArgumentException("A node is already registered at '" + getLocationString() + elementValue + ")'");
         }
     }

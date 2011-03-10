@@ -22,17 +22,10 @@
 
 package org.jboss.as.host.controller;
 
-import java.util.concurrent.CancellationException;
-
-import org.jboss.as.controller.ControllerTransactionContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.HostControllerProxy;
+import org.jboss.as.domain.controller.LocalHostModel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -46,53 +39,33 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  */
-public class HostControllerService implements Service<HostControllerProxy> {
+public class HostControllerService implements Service<LocalHostModel> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
-    private final HostModel hostModel;
+    private final ModelNode hostModel;
+    private final ExtensibleConfigurationPersister configPersister;
+    private final ModelNodeRegistration registry;
     private final String name;
 
-    private HostControllerProxy proxyController;
+    private LocalHostModel proxyController;
 
-    HostControllerService(final String name, final HostModel hostModel) {
+    HostControllerService(final String name, final ModelNode hostModel,
+            final ExtensibleConfigurationPersister configPersister, final ModelNodeRegistration registry) {
         this.name = name;
         this.hostModel = hostModel;
+        this.configPersister = configPersister;
+        this.registry = registry;
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
         final ServerInventory serverInventory = this.serverInventory.getValue();
-        final HostControllerImpl controller = new HostControllerImpl(name, hostModel, serverInventory);
+        final HostControllerImpl controller = new HostControllerImpl(name, hostModel, configPersister, registry, serverInventory);
         serverInventory.setHostController(controller);
-        hostModel.setHostController(controller);
-        this.proxyController = new HostControllerProxy() {
-
-            @Override
-            public OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction) {
-                return controller.execute(executionContext, handler, transaction);
-            }
-
-            @Override
-            public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-                return controller.execute(executionContext);
-            }
-
-            @Override
-            public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
-                return controller.execute(executionContext, handler);
-            }
-
-            @Override
-            public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) {
-                return controller.execute(executionContext, transaction);
-            }
-
-            @Override
-            public PathAddress getProxyNodeAddress() {
-                return PathAddress.pathAddress(PathElement.pathElement("host", name));
-            }
+        controller.registerInternalOperations();
+        this.proxyController = new LocalHostModel() {
 
             @Override
             public void startServers(DomainController domainController) {
@@ -111,17 +84,17 @@ public class HostControllerService implements Service<HostControllerProxy> {
 
             @Override
             public ModelNode getHostModel() {
-                return hostModel.getHostModel();
-            }
-
-            @Override
-            public String getServerGroupName(String serverName) {
-                return hostModel.getServerGroupName(serverName);
+                return hostModel;
             }
 
             @Override
             public ModelNodeRegistration getRegistry() {
-                return hostModel.getRegistry();
+                return registry;
+            }
+
+            @Override
+            public ExtensibleConfigurationPersister getConfigurationPersister() {
+                return configPersister;
             }
         };
     }
@@ -134,8 +107,8 @@ public class HostControllerService implements Service<HostControllerProxy> {
 
     /** {@inheritDoc} */
     @Override
-    public synchronized HostControllerProxy getValue() throws IllegalStateException, IllegalArgumentException {
-        final HostControllerProxy controller = this.proxyController;
+    public synchronized LocalHostModel getValue() throws IllegalStateException, IllegalArgumentException {
+        final LocalHostModel controller = this.proxyController;
         if(controller == null) {
             throw new IllegalArgumentException();
         }

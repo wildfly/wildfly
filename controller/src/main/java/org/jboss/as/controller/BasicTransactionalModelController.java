@@ -30,6 +30,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -48,7 +49,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
      * @param configurationPersister the configuration persister to use to store changes
      */
     protected BasicTransactionalModelController(final ConfigurationPersister configurationPersister) {
-        this(new ModelNode().setEmptyObject(), configurationPersister, null);
+        this(new ModelNode().setEmptyObject(), configurationPersister, (DescriptionProvider) null);
     }
 
     /**
@@ -70,6 +71,17 @@ public class BasicTransactionalModelController extends BasicModelController impl
      */
     protected BasicTransactionalModelController(final ModelNode model, final ConfigurationPersister configurationPersister, DescriptionProvider rootDescriptionProvider) {
         super(model, configurationPersister, rootDescriptionProvider);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param model the model
+     * @param configurationPersister the configuration persister to use to store changes
+     * @param rootRegistry the ModelNodeRegistration for the root resource
+     */
+    protected BasicTransactionalModelController(final ModelNode model, final ConfigurationPersister configurationPersister, final ModelNodeRegistration rootRegistry) {
+        super(model, configurationPersister, rootRegistry);
     }
 
     @Override

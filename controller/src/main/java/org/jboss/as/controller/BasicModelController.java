@@ -108,7 +108,7 @@ public class BasicModelController extends AbstractModelController implements Mod
      * @param configurationPersister the configuration persister to use to store changes
      */
     protected BasicModelController(final ConfigurationPersister configurationPersister) {
-        this(new ModelNode().setEmptyObject(), configurationPersister, null);
+        this(new ModelNode().setEmptyObject(), configurationPersister, (DescriptionProvider) null);
     }
 
     /**
@@ -129,8 +129,24 @@ public class BasicModelController extends AbstractModelController implements Mod
      * @param rootDescriptionProvider the description provider of the root element
      */
     protected BasicModelController(final ModelNode model, final ConfigurationPersister configurationPersister, DescriptionProvider rootDescriptionProvider) {
+        this(model, configurationPersister, createRootRegistry(rootDescriptionProvider));
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param model the model
+     * @param configurationPersister the configuration persister to use to store changes
+     * @param rootRegistry the ModelNodeRegistration for the root resource
+     */
+    protected BasicModelController(final ModelNode model, final ConfigurationPersister configurationPersister, ModelNodeRegistration rootRegistry) {
         this.model = model;
         this.configurationPersister = configurationPersister;
+        this.registry = rootRegistry;
+    }
+
+    private static ModelNodeRegistration createRootRegistry(DescriptionProvider rootDescriptionProvider) {
+
         // TODO - remove this and require unit test subclasses to pass in an equivalent mock
         if (rootDescriptionProvider == null) {
             rootDescriptionProvider = new DescriptionProvider() {
@@ -140,7 +156,7 @@ public class BasicModelController extends AbstractModelController implements Mod
                 }
             };
         }
-        this.registry = ModelNodeRegistration.Factory.create(rootDescriptionProvider);
+        return ModelNodeRegistration.Factory.create(rootDescriptionProvider);
     }
 
     /**
@@ -432,7 +448,7 @@ public class BasicModelController extends AbstractModelController implements Mod
         private final ParameterValidator stepsValidator = new ModelTypeValidator(ModelType.LIST);
 
         /** The execution context for the composite operation */
-        private final ExecutionContext executionContext;
+        protected final ExecutionContext executionContext;
 
         protected final boolean rollbackOnRuntimeFailure;
         /** The handler passed in by the user */
@@ -566,12 +582,16 @@ public class BasicModelController extends AbstractModelController implements Mod
 
         protected void recordModelComplete() {
             modelComplete.set(true);
-            if (modelUpdated) {
+            if (isModelUpdated()) {
                 updateModelAndPersist();
             }
             if (unfinishedCount.get() == 0) {
                 handleSuccess();
             }
+        }
+
+        protected boolean isModelUpdated() {
+            return modelUpdated;
         }
 
         protected void updateModelAndPersist() {
@@ -584,6 +604,10 @@ public class BasicModelController extends AbstractModelController implements Mod
 
         protected final String getStepKey(int id) {
             return "step-" + (id + 1);
+        }
+
+        protected OperationResult executeStep(final ModelNode step, final ResultHandler stepResultHandler) {
+            return BasicModelController.this.execute(executionContext.clone(step), stepResultHandler, this, this, this, resolve);
         }
 
         // --------- Methods called by other classes in this file
@@ -602,7 +626,7 @@ public class BasicModelController extends AbstractModelController implements Mod
                 else {
                     final Integer id = Integer.valueOf(i);
                     final ResultHandler stepResultHandler = getStepResultHandler(id);
-                    final OperationResult result = BasicModelController.this.execute(executionContext.clone(step), stepResultHandler, this, this, this, resolve);
+                    final OperationResult result = executeStep(step, stepResultHandler);
                     recordRollbackOp(id, result.getCompensatingOperation());
                 }
             }

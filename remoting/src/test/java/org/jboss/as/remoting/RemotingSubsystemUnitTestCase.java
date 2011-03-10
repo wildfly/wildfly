@@ -155,7 +155,7 @@ public class RemotingSubsystemUnitTestCase {
                 public List<ModelNode> load() throws ConfigurationPersistenceException {
                     return null;
                 }
-            }, null);
+            }, (DescriptionProvider) null);
         }
 
         /** {@inheritDoc} */

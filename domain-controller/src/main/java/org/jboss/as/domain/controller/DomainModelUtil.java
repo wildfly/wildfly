@@ -101,7 +101,7 @@ class DomainModelUtil {
         return rootModel;
     }
 
-    static ExtensionContext initialize(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
+    static ExtensionContext initializeDomainLevel(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
         // Global operations
 
         root.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);

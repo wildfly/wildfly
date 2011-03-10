@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 import javax.xml.namespace.QName;
 
@@ -41,34 +40,31 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.HostControllerProxy;
-import org.jboss.as.host.controller.HostModel;
+import org.jboss.as.domain.controller.LocalHostModel;
+import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 
 /**
@@ -234,7 +230,7 @@ public class ParseAndMarshalModelsTestCase {
         TestHostController controller = new TestHostController(persister);
         executeOperations(controller, ops);
 
-        ModelNode model = controller.getHostModel().clone();
+        ModelNode model = controller.getHostModel();
         persister.store(model);
         return model;
     }
@@ -412,15 +408,14 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private static class TestHostController extends HostModel {
+    private static class TestHostController extends BasicModelController {
 
         public TestHostController(ExtensibleConfigurationPersister configurationPersister) {
-            super(configurationPersister);
+            super(HostModelUtil.createCoreModel(), configurationPersister, HostModelUtil.createHostRegistry(configurationPersister));
         }
 
-        @Override
-        protected ModelNode getHostModel() {
-            return super.getHostModel();
+        public ModelNode getHostModel() {
+            return getModel().clone();
         }
 
         @Override
@@ -489,34 +484,9 @@ public class ParseAndMarshalModelsTestCase {
 
     }
 
-    private static class MockHostControllerProxy implements HostControllerProxy {
+    private static class MockHostControllerProxy implements LocalHostModel {
 
         private static final MockHostControllerProxy INSTANCE = new MockHostControllerProxy();
-        @Override
-        public PathAddress getProxyNodeAddress() {
-            return PathAddress.pathAddress(PathElement.pathElement("host", getName()));
-        }
-
-        @Override
-        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler,
-                ControllerTransactionContext transaction) {
-            throw new UnsupportedOperationException();
-        }
 
         @Override
         public String getName() {
@@ -525,17 +495,16 @@ public class ParseAndMarshalModelsTestCase {
 
         @Override
         public ModelNode getHostModel() {
-            throw new UnsupportedOperationException();
+            return new ModelNode();
         }
 
         @Override
         public ModelNodeRegistration getRegistry() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getServerGroupName(String serverName) {
-            throw new UnsupportedOperationException();
+            return ModelNodeRegistration.Factory.create(new DescriptionProvider() {
+                @Override
+                public ModelNode getModelDescription(Locale locale) {
+                    return new ModelNode();
+                }});
         }
 
         @Override
@@ -546,6 +515,34 @@ public class ParseAndMarshalModelsTestCase {
         @Override
         public void stopServers() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ExtensibleConfigurationPersister getConfigurationPersister() {
+            return new ExtensibleConfigurationPersister(){
+
+                @Override
+                public void store(ModelNode model) throws ConfigurationPersistenceException {
+                }
+
+                @Override
+                public void marshallAsXml(ModelNode model, OutputStream output)
+                        throws ConfigurationPersistenceException {
+                }
+
+                @Override
+                public List<ModelNode> load() throws ConfigurationPersistenceException {
+                    return null;
+                }
+
+                @Override
+                public void registerSubsystemWriter(String name, XMLElementWriter<SubsystemMarshallingContext> writer) {
+                }
+
+                @Override
+                public void registerSubsystemDeploymentWriter(String name,
+                        XMLElementWriter<SubsystemMarshallingContext> writer) {
+                }};
         }
 
     }

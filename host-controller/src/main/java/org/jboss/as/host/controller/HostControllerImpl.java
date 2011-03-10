@@ -22,22 +22,23 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
-import java.util.concurrent.CancellationException;
-
-import org.jboss.as.controller.ControllerTransactionContext;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.BasicTransactionalModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.host.controller.operations.ServerRestartHandler;
+import org.jboss.as.host.controller.operations.ServerStartHandler;
+import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -45,20 +46,20 @@ import org.jboss.logging.Logger;
 /**
  * @author Emanuel Muckenhuber
  */
-public class HostControllerImpl implements HostController {
+public class HostControllerImpl extends BasicTransactionalModelController implements HostController {
 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     private final String name;
-    private final HostModel hostModel;
     private final ServerInventory serverInventory;
 
     private volatile DomainController domainController;
 
-    HostControllerImpl(final String name, final HostModel model, final ServerInventory serverInventory) {
+    HostControllerImpl(final String name, final ModelNode model, final ExtensibleConfigurationPersister configurationPersister,
+            final ModelNodeRegistration registry, final ServerInventory serverInventory) {
+        super(model, configurationPersister, registry);
         this.name = name;
-        this.hostModel = model;
         this.serverInventory = serverInventory;
     }
 
@@ -70,38 +71,12 @@ public class HostControllerImpl implements HostController {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction) {
-        return hostModel.execute(executionContext, handler, transaction);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
-        return hostModel.execute(executionContext, handler);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-
-        return hostModel.execute(executionContext);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) throws CancellationException {
-
-        return hostModel.execute(executionContext, transaction);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public ServerStatus startServer(String serverName) {
         if (domainController == null) {
             throw new IllegalStateException(String.format("Domain Controller is not available; cannot start server %s", serverName));
         }
         final ServerInventory servers = this.serverInventory;
-        return servers.startServer(serverName, hostModel.getHostModel(), domainController);
+        return servers.startServer(serverName, getModel().clone(), domainController);
     }
 
     /** {@inheritDoc} */
@@ -117,7 +92,7 @@ public class HostControllerImpl implements HostController {
             throw new IllegalStateException(String.format("Domain Controller is not available; cannot restart server %s", serverName));
         }
         final ServerInventory servers = this.serverInventory;
-        return servers.restartServer(serverName, gracefulTimeout, hostModel.getHostModel(), domainController);
+        return servers.restartServer(serverName, gracefulTimeout, getModel().clone(), domainController);
     }
 
     /** {@inheritDoc} */
@@ -135,14 +110,17 @@ public class HostControllerImpl implements HostController {
 
     @Override
     public void registerRunningServer(String serverName, Connection connection) {
-        PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
-        ProxyController serverController = RemoteProxyController.create(connection, PathAddress.pathAddress(element));
-        hostModel.registerProxy(serverController);
+        final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
+        final ProxyController serverController = RemoteProxyController.create(connection, PathAddress.pathAddress(PathElement.pathElement(HOST, name), element));
+        getRegistry().registerProxyController(element, serverController);
+        getModel().get(element.getKey(), element.getValue());
     }
 
     @Override
     public void unregisterRunningServer(String serverName) {
-        hostModel.unregisterProxy(serverName);
+        PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
+        getModel().get(element.getKey()).remove(element.getValue());
+        getRegistry().unregisterProxyController(element);
     }
 
     @Override
@@ -150,7 +128,7 @@ public class HostControllerImpl implements HostController {
         this.domainController = domainController;
 
         // start servers
-        final ModelNode rawModel = hostModel.getHostModel();
+        final ModelNode rawModel = getModel();
         if(rawModel.hasDefined(SERVER_CONFIG)) {
             final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
@@ -169,7 +147,7 @@ public class HostControllerImpl implements HostController {
     public void stopServers() {
         this.domainController = null;
         // stop servers
-        final ModelNode rawModel = hostModel.getHostModel();
+        final ModelNode rawModel = getModel();
         if(rawModel.hasDefined(SERVER_CONFIG) ) {
             final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
@@ -182,5 +160,18 @@ public class HostControllerImpl implements HostController {
                 }
             }
         }
+    }
+
+    @Override
+    protected void registerInternalOperations() {
+        super.registerInternalOperations();
+
+        ServerStartHandler startHandler = new ServerStartHandler(this);
+        ServerRestartHandler restartHandler = new ServerRestartHandler(this);
+        ServerStopHandler stopHandler = new ServerStopHandler(this);
+        ModelNodeRegistration registry = getRegistry();
+        registry.registerOperationHandler(ServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
+        registry.registerOperationHandler(ServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
+        registry.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
     }
 }

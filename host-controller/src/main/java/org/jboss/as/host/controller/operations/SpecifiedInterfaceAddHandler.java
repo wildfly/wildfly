@@ -33,7 +33,6 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.host.controller.HostOperationContext;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -57,8 +56,9 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
 
     @Override
     protected OperationResult installInterface(final String name, final ParsedInterfaceCriteria criteria, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
-        if (context instanceof HostOperationContext) {
+        if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
                     ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));

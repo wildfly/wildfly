@@ -33,10 +33,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,16 +49,24 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.BasicTransactionalModelController;
+import org.jboss.as.controller.ControllerResource;
 import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelProvider;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ExecutionContext;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
@@ -73,40 +84,83 @@ import org.jboss.modules.ModuleLoadException;
 public class DomainModelImpl extends BasicTransactionalModelController implements DomainModel {
 
     private final ExtensionContext extensionContext;
-    private final HostControllerProxy hostController;
     private final ServerOperationResolver serverOperationResolver;
     private final String localHostName;
+    private final ModelNode hostModel;
+    private final ExtensibleConfigurationPersister injectedHostPersister;
+    private final ConfigurationPersister delegatingHostPersister = new ConfigurationPersister() {
+
+        @Override
+        public void store(ModelNode model) throws ConfigurationPersistenceException {
+            // We'll be given the whole model but we only persist the host part
+            injectedHostPersister.store(model.get(HOST, localHostName));
+        }
+
+        @Override
+        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
+            injectedHostPersister.marshallAsXml(model, output);
+        }
+
+        @Override
+        public List<ModelNode> load() throws ConfigurationPersistenceException {
+            throw new UnsupportedOperationException("load() should not be called as part of operation handling");
+        }
+
+    };
+    private final ConfigurationPersisterProvider hostPersisterProvider = new ConfigurationPersisterProvider() {
+        @Override
+        public ConfigurationPersister getConfigurationPersister() {
+            return delegatingHostPersister;
+        }
+    };
 
     /** Constructor for a master DC. */
-    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final HostControllerProxy localHostProxy,
+    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
             final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
-        super(DomainModelUtil.createCoreModel(), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
-        ModelNodeRegistration registry = getRegistry();
-        this.extensionContext = DomainModelUtil.initialize(registry, configurationPersister, deploymentRepo, fileRepository);
-        registerInternalOperations();
-        initializeExtensions(getModel());
-        this.hostController = localHostProxy;
-        this.localHostName = hostController.getName();
-        this.serverOperationResolver = new ServerOperationResolver(localHostName);
-        registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
+        this(null, configurationPersister, localHostProxy, deploymentRepo, fileRepository);
     }
 
     /** Constructor for a slave DC. */
-    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final HostControllerProxy localHostProxy,
+    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
             final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
-        super(model, configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
+        super(getInitialModel(model), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
+        this.localHostName = localHostProxy.getName();
         ModelNodeRegistration registry = getRegistry();
-        this.extensionContext = DomainModelUtil.initialize(registry, configurationPersister, deploymentRepo, fileRepository);
+        this.extensionContext = DomainModelUtil.initializeDomainLevel(registry, configurationPersister, deploymentRepo, fileRepository);
+        registry.registerSubModel(PathElement.pathElement(HOST, localHostName), localHostProxy.getRegistry());
         registerInternalOperations();
-        this.hostController = localHostProxy;
-        this.localHostName = hostController.getName();
+        this.hostModel = localHostProxy.getHostModel();
+        this.injectedHostPersister = localHostProxy.getConfigurationPersister();
+        ModelNode ourModel = getModel();
+        ourModel.get(HOST, localHostName).set(this.hostModel);
         this.serverOperationResolver = new ServerOperationResolver(localHostName);
-        registry.registerProxyController(localHostProxy.getProxyNodeAddress().getLastElement(), localHostProxy);
+        if (model == null) {
+            initializeExtensions(ourModel);
+        }
+    }
+
+    private static ModelNode getInitialModel(final ModelNode model) {
+        return model == null ? DomainModelUtil.createCoreModel() : model;
+    }
+
+    public ModelNode getDomainAndHostModel() {
+        return super.getModel().clone();
     }
 
     @Override
     public ModelNode getDomainModel() {
-        return super.getModel().clone();
+        ModelNode model = super.getModel().clone();
+        // trim off the host model
+        model.get(HOST).set(new ModelNode());
+        return model;
+    }
+
+    @Override
+    protected MultiStepOperationController getMultiStepOperationController(ExecutionContext executionContext, ResultHandler handler,
+            ModelProvider modelSource, final ConfigurationPersisterProvider persisterProvider, ControllerTransactionContext transaction) throws OperationFailedException {
+
+        DualRootConfigurationPersisterProvider confPerstProvider = (DualRootConfigurationPersisterProvider) persisterProvider;
+        return new TransactionalMultiStepOperationController(executionContext, handler, modelSource, confPerstProvider, transaction);
     }
 
     private void initializeExtensions(ModelNode model) {
@@ -126,7 +180,12 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
     }
 
     void setInitialDomainModel(ModelNode domainModel) {
-        getModel().set(domainModel);
+        ModelNode root = getModel();
+        // Preserve the "host" subtree
+        ModelNode host = root.get(HOST);
+        root.set(domainModel);
+        root.get(HOST).set(host);
+        // Now we know what extensions are needed
         initializeExtensions(domainModel);
     }
 
@@ -142,6 +201,24 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
             }
         }
         return super.execute(executionContext, transaction);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler, final ControllerTransactionContext transaction) {
+        boolean forHost = isOperationForHost(executionContext.getOperation());
+        ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(getConfigurationPersisterProvider(), hostPersisterProvider, forHost);
+        return execute(executionContext, handler, getModelProvider(), getOperationContextFactory(), persisterProvider, transaction);
+    }
+
+    private static boolean isOperationForHost(ModelNode operation) {
+        if (operation.hasDefined(OP_ADDR)) {
+            ModelNode address = operation.get(OP_ADDR);
+            if (address.asInt() > 0 && HOST.equals(address.get(0).asProperty().getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ModelNode executeOnDomain(final ExecutionContext executionContext, final ControllerTransactionContext transaction) {
@@ -243,26 +320,18 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
     }
 
     private String getServerGroup(String serverName) {
-        return hostController.getServerGroupName(serverName);
+        return getModel().require(HOST).require(localHostName).require(SERVER_CONFIG).require(serverName).require(SERVER_GROUP).asString();
     }
 
     private ModelNode getHostModel() {
-        return hostController.getHostModel();
+        return getModel().require(HOST).require(localHostName);
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress domainOpAddress, ModelNode domainModel, ModelNode hostModel) {
         Map<Set<ServerIdentity>, ModelNode> result = null;
-        if (domainOpAddress.size() > 0 && HOST.equals(domainOpAddress.getElement(0).getKey())) {
-            OperationHandler handler = hostController.getRegistry().getOperationHandler(domainOpAddress, domainOp.require(OP).asString());
-            if (!(handler instanceof ModelUpdateOperationHandler)) {
-                result = Collections.emptyMap();
-            }
-        }
-        else {
-            OperationHandler handler = getRegistry().getOperationHandler(domainOpAddress, domainOp.require(OP).asString());
-            if (!(handler instanceof ModelUpdateOperationHandler)) {
-                result = Collections.emptyMap();
-            }
+        OperationHandler handler = getRegistry().getOperationHandler(domainOpAddress, domainOp.require(OP).asString());
+        if (!(handler instanceof ModelUpdateOperationHandler)) {
+            result = Collections.emptyMap();
         }
         if (result == null) {
             result = serverOperationResolver.getServerOperations(domainOp, domainOpAddress, domainModel, hostModel);
@@ -484,5 +553,115 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
             }
             return formatted;
         }
+    }
+
+    /**
+     * Hack to pass both the domain and host configuration persisters through to
+     * TransactionalMultiStepOperationController via the getMultiStepOperationController method.
+     */
+    private static class DualRootConfigurationPersisterProvider implements ConfigurationPersisterProvider {
+
+        private final ConfigurationPersisterProvider domainProvider;
+        private final ConfigurationPersisterProvider hostProvider;
+        private final boolean forHost;
+
+        DualRootConfigurationPersisterProvider(final ConfigurationPersisterProvider domainProvider,
+                final ConfigurationPersisterProvider hostProvider, final boolean forHost) {
+            this.domainProvider = domainProvider;
+            this.hostProvider = hostProvider;
+            this.forHost = forHost;
+        }
+
+        @Override
+        public ConfigurationPersister getConfigurationPersister() {
+            return forHost ? hostProvider.getConfigurationPersister() : domainProvider.getConfigurationPersister();
+        }
+
+    }
+
+    protected class TransactionalMultiStepOperationController extends MultiStepOperationController {
+
+        protected final ControllerTransactionContext transaction;
+        protected boolean hostModelUpdated;
+        protected final ConfigurationPersisterProvider hostPersisterProvider;
+        /** Instead of persisting, this persister records that host model was modified and needs to be persisted when all steps are done. */
+        protected final ConfigurationPersisterProvider localHostConfigPersisterProvider = new ConfigurationPersisterProvider() {
+            @Override
+            public org.jboss.as.controller.persistence.ConfigurationPersister getConfigurationPersister() {
+                return new ConfigurationPersister() {
+                    @Override
+                    public void store(ModelNode model) throws ConfigurationPersistenceException {
+                        hostModelUpdated = true;
+                    }
+
+                    @Override
+                    public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
+                        // an UnsupportedOperationException is also fine if this delegation needs to be removed
+                        // in some refactor someday
+                        DomainModelImpl.this.injectedHostPersister.marshallAsXml(model, output);
+                    }
+
+                    @Override
+                    public List<ModelNode> load() throws ConfigurationPersistenceException {
+                        throw new UnsupportedOperationException("load() should not be called as part of operation handling");
+                    }
+                };
+            }
+        };
+
+        protected TransactionalMultiStepOperationController(final ExecutionContext executionContext, final ResultHandler resultHandler,
+                final ModelProvider modelSource, final DualRootConfigurationPersisterProvider persisterProvider,
+                final ControllerTransactionContext transaction) throws OperationFailedException {
+
+            super(executionContext, resultHandler, modelSource, persisterProvider.domainProvider);
+            this.transaction = transaction;
+            this.hostPersisterProvider = persisterProvider.hostProvider;
+        }
+
+        @Override
+        protected OperationResult executeStep(final ModelNode step, final ResultHandler stepResultHandler) {
+            boolean forHost = isOperationForHost(executionContext.getOperation());
+            ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(this, localHostConfigPersisterProvider, forHost);
+            return DomainModelImpl.this.execute(executionContext.clone(step), stepResultHandler, this, this, persisterProvider, resolve);
+        }
+
+        @Override
+        protected boolean isModelUpdated() {
+            return modelUpdated || hostModelUpdated;
+        }
+
+        /** Instead of updating and persisting, we register a resource that does it at commit */
+        @Override
+        protected void updateModelAndPersist() {
+            ControllerResource resource = new ControllerResource() {
+
+                @Override
+                public void commit() {
+                    TransactionalMultiStepOperationController.this.commit();
+                }
+
+                @Override
+                public void rollback() {
+                    // no-op
+                }
+
+            };
+            transaction.registerResource(resource);
+        }
+
+        private void commit() {
+
+            final ModelNode model = modelSource.getModel();
+            synchronized (model) {
+                model.set(localModel);
+            }
+            if (modelUpdated) {
+                DomainModelImpl.this.persistConfiguration(model, injectedConfigPersisterProvider);
+            }
+            if (hostModelUpdated) {
+                DomainModelImpl.this.persistConfiguration(model, hostPersisterProvider);
+            }
+        }
+
     }
 }

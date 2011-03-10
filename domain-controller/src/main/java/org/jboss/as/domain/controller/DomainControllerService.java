@@ -63,7 +63,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private final FileRepository localFileRepository;
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
     private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
-    private final InjectedValue<HostControllerProxy> hostController = new InjectedValue<HostControllerProxy>();
+    private final InjectedValue<LocalHostModel> hostController = new InjectedValue<LocalHostModel>();
     private final String localHostName;
     private final boolean backupDomainFiles;
     private final boolean useCachedDc;
@@ -109,7 +109,7 @@ public final class DomainControllerService implements Service<DomainController> 
         return scheduledExecutorService;
     }
 
-    public Injector<HostControllerProxy> getHostControllerServiceInjector() {
+    public Injector<LocalHostModel> getHostControllerServiceInjector() {
         return hostController;
     }
 
