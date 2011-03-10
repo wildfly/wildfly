@@ -26,7 +26,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 import org.jboss.as.server.client.api.deployment.DeploymentAction;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
@@ -55,35 +54,48 @@ public final class RemoteDeployer implements Deployer {
     }
 
     @Override
-    public void deploy(final URL url) throws Exception {
-        final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().add(url).andDeploy();
+    public void deploy(final URL archiveURL) throws Exception {
+        final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().add(archiveURL).andDeploy();
         final DeploymentPlan plan = builder.build();
         final DeploymentAction deployAction = builder.getLastAction();
-        final String uniqueId = executeDeploymentPlan(plan, deployAction);
-        url2Id.put(url, uniqueId);
+        final String uniqueId = deployAction.getDeploymentUnitUniqueName();
+        try {
+            executeDeploymentPlan(plan, deployAction);
+        } finally {
+            url2Id.put(archiveURL, uniqueId);
+        }
     }
 
     @Override
-    public void undeploy(final URL archive) throws Exception {
+    public void undeploy(final URL archiveURL) throws Exception {
         final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-        final String uniqueName = url2Id.get(archive);
+        final String uniqueName = url2Id.get(archiveURL);
         final DeploymentPlan plan = builder.undeploy(uniqueName).remove(uniqueName).build();
-        final Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-        url2Id.remove(archive);
-        future.get();
+        final DeploymentAction deployAction = builder.getLastAction();
+        try {
+            executeDeploymentPlan(plan, deployAction);
+        } finally {
+            url2Id.remove(archiveURL);
+        }
     }
 
-    private String executeDeploymentPlan(final DeploymentPlan plan, final DeploymentAction deployAction) throws Exception {
-        final ServerDeploymentPlanResult planResult = deploymentManager.execute(plan).get();
+    private void executeDeploymentPlan(final DeploymentPlan plan, final DeploymentAction deployAction) throws Exception {
+        try {
+            final ServerDeploymentPlanResult planResult = deploymentManager.execute(plan).get();
 
-        final ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(deployAction.getId());
-        if (actionResult != null) {
-            final Exception deploymentException = (Exception) actionResult.getDeploymentException();
-            if (deploymentException != null)
-                throw deploymentException;
+            if (deployAction != null) {
+                final ServerDeploymentActionResult actionResult = planResult
+                .getDeploymentActionResult(deployAction.getId());
+                if (actionResult != null) {
+                    final Exception deploymentException = (Exception) actionResult.getDeploymentException();
+                    if (deploymentException != null)
+                        throw deploymentException;
+                }
+            }
+        } catch (final Exception e) {
+            LOGGER.fatal(e.getMessage(), e);
+            throw e;
         }
-
-        return deployAction.getDeploymentUnitUniqueName();
     }
 
 }
