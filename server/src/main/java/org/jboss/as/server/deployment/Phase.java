@@ -175,15 +175,15 @@ public enum Phase {
 
     // STRUCTURE
     public static final int STRUCTURE_MOUNT                             = 0x0000;
-    public static final int STRUCTURE_RAR                               = 0x0100;
-    public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0200;
-    public static final int STRUCTURE_WAR                               = 0x0300;
-    public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0400;
-    public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0500;
-    public static final int STRUCTURE_EAR_JBOSS_APP_XML_PARSE           = 0x0600;
-    public static final int STRUCTURE_EAR                               = 0x0700;
-    public static final int STRUCTURE_MANIFEST                          = 0x0800;
-    public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0900;
+    public static final int STRUCTURE_MANIFEST                          = 0x0100;
+    public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0200;
+    public static final int STRUCTURE_RAR                               = 0x0300;
+    public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0400;
+    public static final int STRUCTURE_WAR                               = 0x0500;
+    public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0600;
+    public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0700;
+    public static final int STRUCTURE_EAR_JBOSS_APP_XML_PARSE           = 0x0800;
+    public static final int STRUCTURE_EAR                               = 0x0900;
     public static final int STRUCTURE_SERVICE_MODULE_LOADER             = 0x0A00;
     public static final int STRUCTURE_ANNOTATION_INDEX                  = 0x0B00;
     public static final int STRUCTURE_EJB_JAR_IN_EAR                    = 0x0C00;
