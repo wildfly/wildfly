@@ -26,19 +26,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.ejb.EJB;
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingDescription;
-import org.jboss.as.ee.component.BindingSourceDescription;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.InjectionTargetDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ee.component.LazyBindingSourceDescription;
 import org.jboss.as.ee.component.LookupBindingSourceDescription;
 import org.jboss.as.ee.component.ServiceBindingSourceDescription;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -50,8 +46,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -136,7 +130,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
                         .append("component").append(beanName).append("VIEW").append(bindingDescription.getBindingType());
                 bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(beanServiceName));
             } else {
-                bindingDescription.setReferenceSourceDescription(new TypeBasedBindingSourceDescription(bindingDescription.getBindingType()));
+                bindingDescription.setReferenceSourceDescription(new LazyBindingSourceDescription());
             }
         }
         return bindingDescription;
@@ -208,34 +202,5 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
 
     private boolean isEmpty(final String string) {
         return string == null || string.isEmpty();
-    }
-
-    private class TypeBasedBindingSourceDescription extends BindingSourceDescription {
-        private final String viewType;
-
-        private TypeBasedBindingSourceDescription(String viewType) {
-            this.viewType = viewType;
-        }
-
-        public void getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
-            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-            final EEApplicationDescription applicationComponentDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
-            if (applicationComponentDescription == null) {
-                return; // Not an EE deployment
-            }
-            final Set<AbstractComponentDescription> componentDescriptions = applicationComponentDescription.getComponentsForViewName(viewType);
-            if (componentDescriptions == null) {
-                throw new IllegalArgumentException("@EJB annotation target can not be resolved.  No beans defined with the required view [" + viewType + "]");
-            }
-            if (!componentDescriptions.isEmpty()) {
-                if (componentDescriptions.size() > 1) {
-                    throw new IllegalArgumentException("@EJB annotation target can not be resolved.  Ambiguous required view [" + viewType + "]");
-                }
-                final AbstractComponentDescription targetComponentDescription = componentDescriptions.iterator().next();
-                final ServiceName beanServiceName = deploymentUnit.getServiceName()
-                        .append("component").append(targetComponentDescription.getComponentName()).append("VIEW").append(viewType);
-                serviceBuilder.addDependency(beanServiceName, ManagedReferenceFactory.class, injector);
-            }
-        }
     }
 }

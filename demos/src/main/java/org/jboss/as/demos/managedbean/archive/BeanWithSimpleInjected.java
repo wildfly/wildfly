@@ -42,8 +42,11 @@ public class BeanWithSimpleInjected extends BeanParent {
 
     private final Logger log = Logger.getLogger(BeanWithSimpleInjected.class);
 
-    @Resource(lookup="java:module/SimpleManagedBean")
+    @Resource
     private SimpleManagedBean simple;
+
+    @Resource(lookup="java:module/SimpleManagedBean")
+    private SimpleManagedBean simple2;
 
     @Inject
     private CDIManagedBean bean;

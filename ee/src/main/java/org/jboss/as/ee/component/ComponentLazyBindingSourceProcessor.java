@@ -22,15 +22,29 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
+ * {@link DeploymentUnitProcessor} which registers a {@link LazyBindingSourceDescription.LazyBingingSourceDescriptionHandler}
+ * capable of determining the value for injections of component types.
+ *
  * @author John Bailey
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class Attachments {
-    public static final AttachmentKey<EEApplicationDescription> EE_APPLICATION_DESCRIPTION = AttachmentKey.create(EEApplicationDescription.class);
-    public static final AttachmentKey<EEModuleDescription> EE_MODULE_DESCRIPTION = AttachmentKey.create(EEModuleDescription.class);
-    public static final AttachmentKey<AttachmentList<LazyBindingSourceDescription.LazyBingingSourceDescriptionHandler>> LAZY_BINDING_SOURCES_HANDLERS = AttachmentKey.createList(LazyBindingSourceDescription.LazyBingingSourceDescriptionHandler.class);
+public class ComponentLazyBindingSourceProcessor implements DeploymentUnitProcessor {
+
+    /**
+     * {@inheritDoc}
+     */
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        phaseContext.addToAttachmentList(Attachments.LAZY_BINDING_SOURCES_HANDLERS, ComponentLazyBindingSourceHandler.INSTANCE);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void undeploy(DeploymentUnit context) {
+    }
 }
