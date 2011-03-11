@@ -190,11 +190,11 @@ public class BasicTransactionalModelController extends BasicModelController impl
     }
 
     protected class UpdateModelControllerResource implements ControllerResource {
-        private final PathAddress address;
-        private final ModelNode subModel;
-        private final boolean isRemove;
-        private final ModelProvider modelProvider;
-        private final ConfigurationPersisterProvider persisterProvider;
+        protected final PathAddress address;
+        protected final ModelNode subModel;
+        protected final boolean isRemove;
+        protected final ModelProvider modelProvider;
+        protected final ConfigurationPersisterProvider persisterProvider;
 
         public UpdateModelControllerResource(final OperationHandler handler, final PathAddress address, final ModelNode subModel, final ModelProvider modelProvider, final ConfigurationPersisterProvider persisterProvider) {
             if (handler instanceof ModelUpdateOperationHandler) {

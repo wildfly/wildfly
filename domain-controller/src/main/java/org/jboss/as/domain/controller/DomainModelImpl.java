@@ -227,8 +227,9 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         ModelNode domainOp = parsedOp.getDomainOperation();
         ModelNode overallResult = null;
         if (domainOp != null) {
-            ModelNode opResult = super.execute(executionContext.clone(domainOp), transaction);
-            overallResult = createOverallResult(opResult, parsedOp);
+            DelegatingControllerTransactionContext delegateTx = new DelegatingControllerTransactionContext(transaction);
+            ModelNode opResult = super.execute(executionContext.clone(domainOp), delegateTx);
+            overallResult = createOverallResult(opResult, parsedOp, delegateTx);
         }
         else {
             overallResult = new ModelNode();
@@ -289,7 +290,7 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         return result;
     }
 
-    private ModelNode createOverallResult(ModelNode opResult, ParsedOp parsedOp) {
+    private ModelNode createOverallResult(ModelNode opResult, ParsedOp parsedOp, DelegatingControllerTransactionContext tx) {
         if (!SUCCESS.equals(opResult.get(OUTCOME).asString())) {
             return opResult;
         }
@@ -299,7 +300,12 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         overallResult.get(OUTCOME).set(SUCCESS);
         ModelNode domainResult = parsedOp.getFormattedDomainResult(resultNode);
         overallResult.get(RESULT, DOMAIN_RESULTS).set(domainResult);
-        Map<Set<ServerIdentity>, ModelNode> serverOps = parsedOp.getServerOps(getDomainModel(), getHostModel());
+        ModelNode fullModel = tx.targetResource == null ? null : tx.targetResource.getUncommittedModel();
+        if (fullModel == null) {
+            fullModel = getDomainAndHostModel();
+        }
+        ModelNode hostModel = fullModel.get(HOST, localHostName);
+        Map<Set<ServerIdentity>, ModelNode> serverOps = parsedOp.getServerOps(fullModel, hostModel);
         ModelNode serverOpsNode = overallResult.get(RESULT, SERVER_OPERATIONS);
         for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : serverOps.entrySet()) {
             ModelNode setNode = serverOpsNode.add();
@@ -555,6 +561,47 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         }
     }
 
+    private static interface UncommittedModelProviderControllerResource extends ControllerResource {
+        ModelNode getUncommittedModel();
+    }
+
+    private class DelegatingControllerTransactionContext implements ControllerTransactionContext {
+
+        private final ControllerTransactionContext delegate;
+        private UncommittedModelProviderControllerResource targetResource;
+
+        private DelegatingControllerTransactionContext(final ControllerTransactionContext delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public ModelNode getTransactionId() {
+            return delegate.getTransactionId();
+        }
+
+        @Override
+        public void registerResource(ControllerResource resource) {
+            delegate.registerResource(resource);
+            if (resource instanceof UncommittedModelProviderControllerResource) {
+                if (targetResource != null) {
+                    throw new IllegalStateException("UncommittedModelProviderControllerResource already registered");
+                }
+                targetResource = (UncommittedModelProviderControllerResource) resource;
+            }
+        }
+
+        @Override
+        public void deregisterResource(ControllerResource resource) {
+            delegate.deregisterResource(resource);
+        }
+
+        @Override
+        public void setRollbackOnly() {
+            delegate.setRollbackOnly();
+        }
+
+    }
+
     /**
      * Hack to pass both the domain and host configuration persisters through to
      * TransactionalMultiStepOperationController via the getMultiStepOperationController method.
@@ -633,7 +680,7 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         /** Instead of updating and persisting, we register a resource that does it at commit */
         @Override
         protected void updateModelAndPersist() {
-            ControllerResource resource = new ControllerResource() {
+            ControllerResource resource = new UncommittedModelProviderControllerResource() {
 
                 @Override
                 public void commit() {
@@ -643,6 +690,11 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
                 @Override
                 public void rollback() {
                     // no-op
+                }
+
+                @Override
+                public ModelNode getUncommittedModel() {
+                    return localModel;
                 }
 
             };
@@ -663,5 +715,30 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
             }
         }
 
+    }
+
+    private class DomainModelControllerResource extends UpdateModelControllerResource implements UncommittedModelProviderControllerResource {
+
+        public DomainModelControllerResource(final OperationHandler handler, final PathAddress address, final ModelNode subModel,
+                final ModelProvider modelProvider, final ConfigurationPersisterProvider persisterProvider) {
+            super(handler, address, subModel, modelProvider, persisterProvider);
+        }
+
+        @Override
+        public ModelNode getUncommittedModel() {
+            ModelNode model = null;
+            if (address != null) {
+                model = modelProvider.getModel();
+                synchronized (model) {
+                    model = model.clone();
+                }
+                if (isRemove) {
+                    address.remove(model);
+                } else {
+                    address.navigate(model, true).set(subModel);
+                }
+            }
+            return model;
+        }
     }
 }
