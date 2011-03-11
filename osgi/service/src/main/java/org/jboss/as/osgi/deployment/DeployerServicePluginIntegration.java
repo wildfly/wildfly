@@ -50,6 +50,7 @@ import org.jboss.osgi.deployment.deployer.SystemDeployerService;
 import org.jboss.osgi.framework.bundle.BundleManager;
 import org.jboss.osgi.framework.plugin.AbstractDeployerServicePlugin;
 import org.jboss.osgi.framework.plugin.DeployerServicePlugin;
+import org.jboss.osgi.framework.plugin.ServiceManagerPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -65,10 +66,12 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private ServerDeploymentManager deploymentManager;
+    private ServiceContainer serviceContainer;
 
-    public DeployerServicePluginIntegration(BundleManager bundleManager, ServerDeploymentManager deploymentManager) {
+    public DeployerServicePluginIntegration(BundleManager bundleManager, ServiceContainer serviceContainer, ServerDeploymentManager deploymentManager) {
         super(bundleManager);
         this.deploymentManager = deploymentManager;
+        this.serviceContainer = serviceContainer;
     }
 
     @Override
@@ -83,7 +86,6 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
 
                 Bundle bundle = null;
                 String contextName = DeploymentHolderService.getContextName(dep);
-                ServiceContainer serviceContainer = getBundleManager().getServiceContainer();
                 DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
                 try {
 
@@ -163,7 +165,7 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                     // we unregister the deployment explicitly from the {@link BundleManager}
                     String contextName = DeploymentHolderService.getContextName(dep);
                     ServiceName serviceName = OSGiDeploymentService.getServiceName(contextName);
-                    ServiceController<?> controller = getBundleManager().getServiceContainer().getService(serviceName);
+                    ServiceController<?> controller = serviceContainer.getService(serviceName);
                     if (controller == null) {
                         getBundleManager().uninstallBundle(dep);
                         return;

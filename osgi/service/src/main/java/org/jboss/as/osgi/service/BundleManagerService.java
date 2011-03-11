@@ -120,9 +120,10 @@ public class BundleManagerService implements Service<BundleManager> {
             bundleManager.addPlugin(SystemModuleProviderPlugin.class, new FrameworkModuleProvider(bundleManager));
 
             // Setup the {@link DeployerServicePlugin}
-            ServerController serverController = injectedServerController.getValue();
-            ServerDeploymentManager deploymentManager = new ModelControllerServerDeploymentManager(serverController);
-            bundleManager.addPlugin(DeployerServicePlugin.class, new DeployerServicePluginIntegration(bundleManager, deploymentManager));
+            ServiceContainer serviceContainer = context.getController().getServiceContainer();
+            ServerDeploymentManager deploymentManager = new ModelControllerServerDeploymentManager(injectedServerController.getValue());
+            DeployerServicePluginIntegration plugin = new DeployerServicePluginIntegration(bundleManager, serviceContainer, deploymentManager);
+            bundleManager.addPlugin(DeployerServicePlugin.class, plugin);
 
             // Setup the {@link ModuleLoaderPlugin}
             ServiceModuleLoader moduleLoader = injectedServiceModuleLoader.getValue();
