@@ -158,4 +158,34 @@ public class OperationParsingTestCase extends TestCase {
         assertTrue(args.contains("recursive"));
         assertEquals("true", handler.getPropertyValue("recursive"));
     }
+
+    @Test
+    public void testComposite() throws Exception {
+
+        final String op = "composite";
+        final String propName = "steps";
+        final String propValue = "[{\"operation\"=>\"add-system-property\",\"name\"=>\"test\",\"value\"=\"newValue\"},{\"operation\"=>\"add-system-property\",\"name\"=>\"test2\",\"value\"=>\"test2\"}]";
+
+        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+
+        parser.parse(':' + op + '(' + propName + '=' + propValue + ')', handler);
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertTrue(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnArgumentListStart());
+        assertFalse(handler.endsOnArgumentSeparator());
+        assertFalse(handler.endsOnArgumentValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.isRequestComplete());
+
+        assertEquals("composite", handler.getOperationName());
+
+        Set<String> args = handler.getPropertyNames();
+        assertEquals(1, args.size());
+        assertTrue(args.contains(propName));
+        assertEquals(propValue, handler.getPropertyValue(propName));
+    }
 }

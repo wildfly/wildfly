@@ -162,13 +162,13 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
      }
 
     @Override
-    protected void validatedNodeTypeOrName(String typeOrName)
+    public void nodeTypeOrName(String typeOrName)
             throws OperationFormatException {
 
         if(prefix.endsOnType()) {
-            validatedNodeName(typeOrName);
+            nodeName(typeOrName);
         } else {
-            validatedNodeType(typeOrName);
+            nodeType(typeOrName);
         }
     }
 

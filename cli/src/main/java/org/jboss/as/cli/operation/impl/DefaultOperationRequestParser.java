@@ -23,6 +23,7 @@ package org.jboss.as.cli.operation.impl;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.parsing.ParsingUtil;
 
 /**
  * Default implementation of CommandParser which expects the following command format:
@@ -159,10 +160,12 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
         else {
             operationName = operationRequest.substring(aoSep + 1, argListStartIndex).trim();
             handler.operationName(operationName);
-            handler.propertyListStart(argListStartIndex);
+//            handler.propertyListStart(argListStartIndex);
         }
 
-        final boolean argListEndPresent = operationRequest.charAt(operationRequest.length() - 1) == ARGUMENTS_LIST_END;
+        ParsingUtil.parseParameters(operationRequest, argListStartIndex, handler);
+
+/*        final boolean argListEndPresent = operationRequest.charAt(operationRequest.length() - 1) == ARGUMENTS_LIST_END;
         final int argsLength;
         if(argListEndPresent) {
            argsLength = operationRequest.length() - 1;
@@ -210,6 +213,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
         if(argListEndPresent) {
             handler.propertyListEnd(operationRequest.length() - 1);
         }
+*/
     }
 
 }

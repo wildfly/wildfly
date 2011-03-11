@@ -252,16 +252,16 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedNodeTypeOrName(String typeOrName) {
+    public void nodeTypeOrName(String typeOrName) throws OperationFormatException {
 
         if(address == null) {
             address = new DefaultOperationRequestAddress();
         }
 
         if(address.endsOnType()) {
-            address.toNode(typeOrName);
+            nodeName(typeOrName);
         } else {
-            address.toNodeType(typeOrName);
+            nodeType(typeOrName);
         }
         separator = SEPARATOR_NONE;
     }

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.operation.impl;
 
+import java.util.regex.Pattern;
+
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser.CallbackHandler;
 
@@ -30,7 +32,11 @@ import org.jboss.as.cli.operation.OperationRequestParser.CallbackHandler;
  */
 public abstract class ValidatingOperationCallbackHandler implements CallbackHandler {
 
-    private String operationStr;
+    private static final Pattern ALPHANUMERICS_PATTERN = Pattern.compile("[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
+    private static final Pattern NODE_NAME_PATTERN = Pattern.compile("\\*|[^*\\p{Space}\\p{Cntrl}]+");
+
+
+    protected String operationStr;
 
     @Override
     public void start(String operationString) {
@@ -43,13 +49,7 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
     @Override
     public void nodeType(String nodeType) throws OperationFormatException {
 
-        if (!Util.isValidIdentifier(nodeType)) {
-            throw new OperationFormatException(
-                    "The node type is not a valid identifier '"
-                            + nodeType
-                            + "' or the format is wrong for prefix '"
-                            + operationStr + "'");
-        }
+        assertValidType(nodeType);
         validatedNodeType(nodeType);
     }
 
@@ -61,13 +61,7 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
     @Override
     public void nodeName(String nodeName) throws OperationFormatException {
 
-        if (!Util.isValidIdentifier(nodeName)) {
-            throw new OperationFormatException(
-                    "The node name is not a valid identifier '"
-                            + nodeName
-                            + "' or the format is wrong for operation '"
-                            + operationStr + "'");
-        }
+        assertValidNodeName(nodeName);
         validatedNodeName(nodeName);
     }
 
@@ -80,9 +74,10 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
     public void operationName(String operationName)
             throws OperationFormatException {
 
-        if(!Util.isValidIdentifier(operationName)) {
-            throw new OperationFormatException("Operation name '" + operationName + "' is not a valid identifier or command '" + operationStr + "' doesn't follow the format...");
+        if (operationName == null || !ALPHANUMERICS_PATTERN.matcher(operationName).matches()) {
+            throw new OperationFormatException("'" + operationName + "' is not a valid operation name.");
         }
+
         validatedOperationName(operationName);
     }
 
@@ -95,13 +90,7 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
     public void propertyName(String propertyName)
             throws OperationFormatException {
 
-        if (!Util.isValidIdentifier(propertyName)) {
-            throw new OperationFormatException(
-                    "Argument name '"
-                            + propertyName
-                            + "' is not a valid identifier or the format is wrong for the property list.");
-        }
-
+        assertValidParameterName(propertyName);
         validatedPropertyName(propertyName);
     }
 
@@ -114,17 +103,10 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
     public void property(String name, String value, int nameValueSeparatorIndex)
             throws OperationFormatException {
 
-        if (!Util.isValidIdentifier(name)) {
-            throw new OperationFormatException(
-                    "Argument name '"
-                            + name
-                            + "' is not a valid identifier or the format is wrong for the argument list.");
-        }
+        assertValidParameterName(name);
 
         if (value.isEmpty()) {
-            throw new OperationFormatException(
-                    "The argument value is missing or the format is wrong for argument '"
-                            + value + "'");
+            throw new OperationFormatException("Parameter '" + value + "' is missing value.");
         }
 
         validatedProperty(name, value, nameValueSeparatorIndex);
@@ -132,23 +114,25 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
 
     protected abstract void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException;
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#nodeTypeOrName(java.lang.String)
-     */
-    @Override
-    public void nodeTypeOrName(String typeOrName) throws OperationFormatException {
-
-        if (!Util.isValidIdentifier(typeOrName)) {
-            throw new OperationFormatException(
-                    "The node type or name is not a valid identifier '"
-                            + typeOrName
-                            + "' or the format is wrong for opreation '"
-                            + operationStr + "'");
+    protected void assertValidType(String nodeType)
+            throws OperationFormatException {
+        if (nodeType == null || !ALPHANUMERICS_PATTERN.matcher(nodeType).matches()) {
+            throw new OperationFormatException("'" + nodeType + "' is not a valid node type name.");
         }
-
-        validatedNodeTypeOrName(typeOrName);
     }
 
-    protected abstract void validatedNodeTypeOrName(String typeOrName) throws OperationFormatException;
+    protected void assertValidNodeName(String nodeName)
+            throws OperationFormatException {
+        if (nodeName == null || !NODE_NAME_PATTERN.matcher(nodeName).matches()) {
+            throw new OperationFormatException("'" + nodeName + "' is not a valid node name.");
+        }
+    }
+
+    protected void assertValidParameterName(String name)
+            throws OperationFormatException {
+        if (name == null || !ALPHANUMERICS_PATTERN.matcher(name).matches()) {
+            throw new OperationFormatException("'" + name + "' is not a valid parameter name.");
+        }
+    }
 
 }
