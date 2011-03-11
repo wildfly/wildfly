@@ -182,21 +182,27 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         ModelNode operation = executionContext.getOperation();
 
+        //System.out.println("------ operation " + operation);
+
         if (operation.get(OP).asString().equals(HostControllerClient.EXECUTE_ON_DOMAIN)) {
+            //System.out.println("------ execute locally ");
             return localDomainModel.execute(executionContext.clone(operation.require(HostControllerClient.DOMAIN_OP)), handler);
         }
 
         // See who handles this op
         OperationRouting routing = determineRouting(operation);
         if (routing.isRouteToMaster()) {
+            //System.out.println("------ route to master ");
             return masterDomainControllerClient.execute(executionContext, handler);
         }
         else if (routing.isLocalOnly()) {
             // It's either for a domain-level resource, which the DomainModel will handle directly,
             // or it's for a host resource, which the DomainModel will proxy off to the local HostController
+            //System.out.println("------ route locally ");
             return localDomainModel.execute(executionContext, handler);
         }
 
+        //System.out.println("---- Push to hosts");
         // Else we are responsible for coordinating a multi-host op
 
         // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
@@ -208,7 +214,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         ModelNode masterFailureResult = null;
         ModelNode hostFailureResults = null;
         ModelNode masterResult = hostResults.get(localHostName);
-        if (masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
+        if (masterResult != null && masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
             transaction.setRollbackOnly();
             masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
         }
@@ -471,7 +477,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
                 @Override
                 public ModelNode call() throws Exception {
-                    return client.execute(executionContext, transaction);
+                    //System.out.println("------ pushing to host " + host);
+                    try {
+                        return client.execute(executionContext, transaction);
+                    } finally {
+                        //System.out.println("------ pushed to host " + host);
+                    }
                 }
 
             };

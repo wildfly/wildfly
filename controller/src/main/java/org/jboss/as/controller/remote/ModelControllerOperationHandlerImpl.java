@@ -267,7 +267,8 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                     synchronized (outputStream) {
                         outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
                         outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                        result.getCompensatingOperation().writeExternal(outputStream);
+                        ModelNode compensating = result.getCompensatingOperation() != null ? result.getCompensatingOperation() : new ModelNode();
+                        compensating.writeExternal(outputStream);
                         outputStream.flush();
                     }
                     break;
