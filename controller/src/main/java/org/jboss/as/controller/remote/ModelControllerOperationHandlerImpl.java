@@ -39,7 +39,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
@@ -121,7 +121,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
     }
 
     private abstract class ExecuteOperation extends ManagementResponse {
-        ExecutionContextBuilder builder;
+        OperationBuilder builder;
 
         ExecuteOperation() {
             super(getInitiatingHandler());
@@ -130,7 +130,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         @Override
         protected void readRequest(final InputStream inputStream) throws IOException {
             expectHeader(inputStream, ModelControllerClientProtocol.PARAM_OPERATION);
-            builder = ExecutionContextBuilder.Factory.create(readNode(inputStream));
+            builder = OperationBuilder.Factory.create(readNode(inputStream));
 
             int cmd = inputStream.read();
             if (cmd == ModelControllerClientProtocol.PARAM_REQUEST_END) {

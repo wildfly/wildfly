@@ -3,7 +3,7 @@
  */
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 
 
 /**
@@ -13,5 +13,5 @@ import org.jboss.as.controller.client.ExecutionContext;
  */
 public interface OperationContextFactory {
 
-    OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address, final OperationHandler operationHandler, final ExecutionContext executionContext);
+    OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address, final OperationHandler operationHandler, final Operation operation);
 }

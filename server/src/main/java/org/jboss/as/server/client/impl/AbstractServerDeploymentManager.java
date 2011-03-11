@@ -42,8 +42,8 @@ import static org.jboss.as.server.client.ClientConstants.DEPLOYMENT_UNDEPLOY_OPE
 
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.server.client.api.deployment.DeploymentPlan;
 import org.jboss.as.server.client.api.deployment.InitialDeploymentPlanBuilder;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
@@ -75,14 +75,14 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
             throw new IllegalArgumentException("Plan was not created by this manager");
         }
         DeploymentPlanImpl planImpl = (DeploymentPlanImpl) plan;
-        ExecutionContext operation = getCompositeOperation(planImpl);
+        Operation operation = getCompositeOperation(planImpl);
         Future<ModelNode> nodeFuture = executeOperation(operation);
         return new ServerDeploymentPlanResultFuture(planImpl, nodeFuture);
     }
 
-    protected abstract Future<ModelNode> executeOperation(ExecutionContext context);
+    protected abstract Future<ModelNode> executeOperation(Operation context);
 
-    private ExecutionContext getCompositeOperation(DeploymentPlanImpl plan) {
+    private Operation getCompositeOperation(DeploymentPlanImpl plan) {
 
         ModelNode op = new ModelNode();
         op.get(OP).set(COMPOSITE);
@@ -92,7 +92,7 @@ abstract class AbstractServerDeploymentManager implements ServerDeploymentManage
         op.get(ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isGlobalRollback());
         // FIXME deal with shutdown params
 
-        ExecutionContextBuilder builder = ExecutionContextBuilder.Factory.create(op);
+        OperationBuilder builder = OperationBuilder.Factory.create(op);
 
         int stream = 0;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {

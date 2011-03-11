@@ -40,7 +40,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
@@ -73,13 +73,13 @@ public class WildcardUnitTestCase extends TestCase {
         read.get(OP).set("read-resource");
         read.get(OP_ADDR).set(address);
 
-        System.out.println(controller.execute(ExecutionContextBuilder.Factory.create(read).build()));
+        System.out.println(controller.execute(OperationBuilder.Factory.create(read).build()));
 
         final ModelNode describe = new ModelNode();
         describe.get(OP).set("describe");
         describe.get(OP_ADDR).set(address);
 
-        System.out.println(controller.execute(ExecutionContextBuilder.Factory.create(describe).build()));
+        System.out.println(controller.execute(OperationBuilder.Factory.create(describe).build()));
 
     }
 

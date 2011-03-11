@@ -54,9 +54,9 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeOperationContext;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.client.ExecutionAttachments;
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -151,30 +151,30 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     /** {@inheritDoc} */
     @Override
-    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final ExecutionContext executionContext, final ModelProvider modelProvider) {
+    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final Operation operation, final ModelProvider modelProvider) {
         if (operationHandler instanceof BootOperationHandler) {
             if (getState() == State.STARTING) {
-                return new BootContextImpl(subModel, getRegistry(), deployers, modelProvider, executionContext);
+                return new BootContextImpl(subModel, getRegistry(), deployers, modelProvider, operation);
             } else {
                 state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
-                return super.getOperationContext(subModel, operationHandler, executionContext, modelProvider);
+                return super.getOperationContext(subModel, operationHandler, operation, modelProvider);
             }
         } else if (!(getState() == State.RESTART_REQUIRED && operationHandler instanceof ModelUpdateOperationHandler)) {
-            return new ServerOperationContextImpl(this, getRegistry(), subModel, modelProvider, executionContext);
+            return new ServerOperationContextImpl(this, getRegistry(), subModel, modelProvider, operation);
         } else {
-            return super.getOperationContext(subModel, operationHandler, executionContext, modelProvider);
+            return super.getOperationContext(subModel, operationHandler, operation, modelProvider);
         }
     }
 
     @Override
-    protected OperationResult doExecute(OperationContext context, ExecutionContext executionContext, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelProvider modelProvider, ConfigurationPersisterProvider configurationPersisterFactory) throws OperationFailedException {
-        boolean rollback = isRollbackOnRuntimeFailure(context, executionContext.getOperation());
+    protected OperationResult doExecute(OperationContext context, Operation operation, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address, ModelProvider modelProvider, ConfigurationPersisterProvider configurationPersisterFactory) throws OperationFailedException {
+        boolean rollback = isRollbackOnRuntimeFailure(context, operation.getOperation());
         RollbackAwareResultHandler rollbackAwareHandler = null;
         if (rollback) {
             rollbackAwareHandler = new RollbackAwareResultHandler(resultHandler);
             resultHandler = rollbackAwareHandler;
         }
-        final OperationResult result = super.doExecute(context, executionContext, operationHandler, resultHandler, address, modelProvider, configurationPersisterFactory);
+        final OperationResult result = super.doExecute(context, operation, operationHandler, resultHandler, address, modelProvider, configurationPersisterFactory);
         if(context instanceof ServerOperationContextImpl) {
             if (rollbackAwareHandler != null) {
                 rollbackAwareHandler.setRollbackOperation(result.getCompensatingOperation());
@@ -214,9 +214,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     }
 
     @Override
-    protected MultiStepOperationController getMultiStepOperationController(ExecutionContext executionContext, ResultHandler handler,
+    protected MultiStepOperationController getMultiStepOperationController(Operation operation, ResultHandler handler,
             ModelProvider modelSource, ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
-        return new ServerMultiStepOperationController(executionContext, handler, modelSource, configurationPersisterProvider);
+        return new ServerMultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider);
     }
 
     private boolean isRollbackOnRuntimeFailure(OperationContext context, ModelNode operation) {
@@ -230,7 +230,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private int ourStamp = -1;
         private RuntimeTask runtimeTask;
 
-        public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel, ModelProvider modelProvider, ExecutionAttachments executionAttachments) {
+        public ServerOperationContextImpl(ModelController controller, ModelNodeRegistration registry, ModelNode subModel, ModelProvider modelProvider, OperationAttachments executionAttachments) {
             super(controller, registry, subModel, modelProvider, executionAttachments);
         }
 
@@ -283,7 +283,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers;
 
-        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry, final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers, ModelProvider modelProvider, ExecutionAttachments executionAttachments) {
+        private BootContextImpl(final ModelNode subModel, final ModelNodeRegistration registry, final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers, ModelProvider modelProvider, OperationAttachments executionAttachments) {
             super(ServerControllerImpl.this, registry, subModel, modelProvider, executionAttachments);
             this.deployers = deployers;
         }
@@ -395,7 +395,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
                 @Override
                 public void run() {
-                    execute(ExecutionContextBuilder.Factory.create(rollbackOperation).build(), rollbackHandler);
+                    execute(OperationBuilder.Factory.create(rollbackOperation).build(), rollbackHandler);
                 }
 
             };
@@ -414,16 +414,16 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     private class ServerMultiStepOperationController extends MultiStepOperationController {
 
-        private ServerMultiStepOperationController(final ExecutionContext executionContext, final ResultHandler resultHandler,
+        private ServerMultiStepOperationController(final Operation operation, final ResultHandler resultHandler,
                 final ModelProvider modelSource, final ConfigurationPersisterProvider injectedConfigPersisterProvider) throws OperationFailedException {
-            super(executionContext, resultHandler, modelSource, injectedConfigPersisterProvider);
+            super(operation, resultHandler, modelSource, injectedConfigPersisterProvider);
         }
 
         @Override
         public OperationContext getOperationContext(ModelProvider modelSource, PathAddress address,
-                OperationHandler operationHandler, ExecutionContext executionContext) {
-            OperationContext delegate = super.getOperationContext(modelSource, address, operationHandler, executionContext);
-            return delegate.getRuntimeContext() == null ? delegate : new StepRuntimeOperationContext(Integer.valueOf(currentOperation), ServerOperationContext.class.cast(delegate), executionContext);
+                OperationHandler operationHandler, Operation operation) {
+            OperationContext delegate = super.getOperationContext(modelSource, address, operationHandler, operation);
+            return delegate.getRuntimeContext() == null ? delegate : new StepRuntimeOperationContext(Integer.valueOf(currentOperation), ServerOperationContext.class.cast(delegate), operation);
         }
 
         @Override
@@ -439,7 +439,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-                        ServerControllerImpl.this.execute(ExecutionContextBuilder.Factory.create(compensatingOp).build(), rollbackResultHandler);
+                        ServerControllerImpl.this.execute(OperationBuilder.Factory.create(compensatingOp).build(), rollbackResultHandler);
                     }
                 };
                 ServerControllerImpl.this.executorService.execute(r);
@@ -528,9 +528,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
             private final Integer id;
             private final ServerOperationContext delegate;
-            private final ExecutionAttachments executionAttachments;
+            private final OperationAttachments executionAttachments;
 
-            private StepRuntimeOperationContext(final Integer id, final ServerOperationContext delegate, ExecutionAttachments executionAttachments) {
+            private StepRuntimeOperationContext(final Integer id, final ServerOperationContext delegate, OperationAttachments executionAttachments) {
                 this.id = id;
                 this.delegate = delegate;
                 this.executionAttachments = executionAttachments;

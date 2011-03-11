@@ -37,7 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
@@ -204,7 +204,7 @@ public final class DomainControllerService implements Service<DomainController> 
         for (ModelNode update : updates) {
             count.incrementAndGet();
             update.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            domainModel.execute(ExecutionContextBuilder.Factory.create(update).build(), resultHandler);
+            domainModel.execute(OperationBuilder.Factory.create(update).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {
             // some action?

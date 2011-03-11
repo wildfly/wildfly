@@ -35,7 +35,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
@@ -68,7 +68,7 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
                 final ModelNode includeAddress = address.subAddress(0, address.size() - 1).append(PathElement.pathElement(PROFILE, include.asString())).toModelNode();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(includeAddress);
-                final ModelNode newOpResult = context.getController().execute(ExecutionContextBuilder.Factory.create(newOp).build());
+                final ModelNode newOpResult = context.getController().execute(OperationBuilder.Factory.create(newOp).build());
                 if (FAILED.equals(newOpResult.get(OUTCOME).asString())) {
                     throw new OperationFailedException(newOpResult.get(FAILURE_DESCRIPTION));
                 }
@@ -83,7 +83,7 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
                 final ModelNode subsystemAddress = address.append(PathElement.pathElement(SUBSYSTEM, subsystemName)).toModelNode();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(subsystemAddress);
-                final ModelNode newOpResult = context.getController().execute(ExecutionContextBuilder.Factory.create(newOp).build());
+                final ModelNode newOpResult = context.getController().execute(OperationBuilder.Factory.create(newOp).build());
                 if (FAILED.equals(newOpResult.get(OUTCOME).asString())) {
                     throw new OperationFailedException(newOpResult.get(FAILURE_DESCRIPTION));
                 }

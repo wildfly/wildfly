@@ -21,7 +21,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -92,7 +92,7 @@ public class DomainHttpServer implements HttpHandler {
 
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
-            response = modelController.execute(ExecutionContextBuilder.Factory.create(dmr).build());
+            response = modelController.execute(OperationBuilder.Factory.create(dmr).build());
         } catch (Throwable t) {
             log.error("Unexpected error executing model request", t);
             http.sendResponseHeaders(500, -1);

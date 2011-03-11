@@ -25,7 +25,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -85,20 +85,20 @@ public class BasicTransactionalModelController extends BasicModelController impl
     }
 
     @Override
-    public ModelNode execute(final ExecutionContext executionContext, final ControllerTransactionContext transaction) {
+    public ModelNode execute(final Operation executionContext, final ControllerTransactionContext transaction) {
         return super.execute(executionContext, transaction);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler) {
+    public OperationResult execute(final Operation executionContext, final ResultHandler handler) {
         ControllerTransaction transaction = null;
         try {
             final PathAddress address = PathAddress.pathAddress(executionContext.getOperation().get(OP_ADDR));
 
             final ProxyController proxyExecutor = getRegistry().getProxyController(address);
             if (proxyExecutor != null) {
-                ExecutionContext newContext = executionContext.clone();
+                Operation newContext = executionContext.clone();
                 newContext.getOperation().get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
                 return proxyExecutor.execute(newContext, handler);
             }
@@ -122,12 +122,12 @@ public class BasicTransactionalModelController extends BasicModelController impl
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler, final ControllerTransactionContext transaction) {
+    public OperationResult execute(final Operation executionContext, final ResultHandler handler, final ControllerTransactionContext transaction) {
 
         return execute(executionContext, handler, getModelProvider(), getOperationContextFactory(), getConfigurationPersisterProvider(), transaction);
     }
 
-    protected OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ModelProvider modelSource,
+    protected OperationResult execute(Operation executionContext, ResultHandler handler, ModelProvider modelSource,
             OperationContextFactory contextFactory, ConfigurationPersisterProvider configurationPersisterProvider,
             ControllerTransactionContext transaction) {
 
@@ -136,7 +136,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
 
             final ProxyController proxyExecutor = getRegistry().getProxyController(address);
             if (proxyExecutor != null) {
-                ExecutionContext newContext = executionContext.clone();
+                Operation newContext = executionContext.clone();
                 newContext.getOperation().get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
                 return proxyExecutor.execute(newContext, handler);
             }
@@ -173,7 +173,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
         }
     }
 
-    protected MultiStepOperationController getMultiStepOperationController(ExecutionContext executionContext, ResultHandler handler,
+    protected MultiStepOperationController getMultiStepOperationController(Operation executionContext, ResultHandler handler,
             ModelProvider modelSource, final ConfigurationPersisterProvider persisterProvider, ControllerTransactionContext transaction) throws OperationFailedException {
         return new TransactionalMultiStepOperationController(executionContext, handler, modelSource, persisterProvider, transaction);
     }
@@ -239,7 +239,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
 
         protected final ControllerTransactionContext transaction;
 
-        protected TransactionalMultiStepOperationController(final ExecutionContext executionContext, final ResultHandler resultHandler,
+        protected TransactionalMultiStepOperationController(final Operation executionContext, final ResultHandler resultHandler,
                 final ModelProvider modelSource, final ConfigurationPersisterProvider persisterProvider,
                 final ControllerTransactionContext transaction) throws OperationFailedException {
             super(executionContext, resultHandler, modelSource, persisterProvider);

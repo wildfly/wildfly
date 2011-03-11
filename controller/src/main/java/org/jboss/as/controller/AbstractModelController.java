@@ -32,7 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,12 +46,12 @@ public abstract class AbstractModelController implements ModelController {
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(final ExecutionContext executionContext) {
+    public ModelNode execute(final Operation operation) {
         final ControllerTransactionContext transaction = null;
-        return execute(executionContext, transaction);
+        return execute(operation, transaction);
     }
 
-    protected ModelNode execute(final ExecutionContext executionContext, final ControllerTransactionContext transaction) {
+    protected ModelNode execute(final Operation operation, final ControllerTransactionContext transaction) {
         final AtomicInteger status = new AtomicInteger();
         final ModelNode finalResult = new ModelNode();
         // Make the "outcome" child come first
@@ -98,7 +98,7 @@ public abstract class AbstractModelController implements ModelController {
                 }
             }
         };
-        final OperationResult handlerResult = transaction == null ? execute(executionContext, resultHandler) : execute(executionContext, resultHandler, transaction);
+        final OperationResult handlerResult = transaction == null ? execute(operation, resultHandler) : execute(operation, resultHandler, transaction);
         boolean intr = false;
         try {
             synchronized (finalResult) {
@@ -135,7 +135,7 @@ public abstract class AbstractModelController implements ModelController {
 
     }
 
-    protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler, final ControllerTransactionContext transaction) {
+    protected OperationResult execute(final Operation operation, final ResultHandler handler, final ControllerTransactionContext transaction) {
         throw new UnsupportedOperationException("Transactional operations are not supported");
     }
 

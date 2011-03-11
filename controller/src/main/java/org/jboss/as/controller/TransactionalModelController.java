@@ -21,7 +21,7 @@
  */
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
 
@@ -33,6 +33,6 @@ import org.jboss.dmr.ModelNode;
  */
 public interface TransactionalModelController extends ModelController {
 
-    ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction);
-    OperationResult execute(ExecutionContext executionContext, ResultHandler handler, ControllerTransactionContext transaction);
+    ModelNode execute(Operation operation, ControllerTransactionContext transaction);
+    OperationResult execute(Operation operation, ResultHandler handler, ControllerTransactionContext transaction);
 }

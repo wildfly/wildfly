@@ -58,8 +58,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -182,7 +182,7 @@ public class GlobalOperationHandlers {
                 operation.get(OP_ADDR).set(new ModelNode());
 
                 for (ProxyController proxyController : proxyControllers) {
-                    final ModelNode proxyResult = proxyController.execute(ExecutionContextBuilder.Factory.copy(context, operation).build());
+                    final ModelNode proxyResult = proxyController.execute(OperationBuilder.Factory.copy(context, operation).build());
                     addProxyResultToMainResult(proxyController.getProxyNodeAddress(), result, proxyResult);
                 }
             }
@@ -474,7 +474,7 @@ public class GlobalOperationHandlers {
                         if (locale != null) {
                             operation.get(OPERATIONS).set(locale.toString());
                         }
-                        child = proxyControllers.iterator().next().execute(ExecutionContextBuilder.Factory.copy(context, operation).build()).get(RESULT);
+                        child = proxyControllers.iterator().next().execute(OperationBuilder.Factory.copy(context, operation).build()).get(RESULT);
 
                     } else {
                         child = provider.getModelDescription(locale);
@@ -509,8 +509,8 @@ public class GlobalOperationHandlers {
                     final PathAddress proxyAddress = proxy.getProxyNodeAddress();
                     final ModelNode newOperation = operation.clone();
                     newOperation.get(OP_ADDR).set(address.subAddress(proxyAddress.size()).toModelNode());
-                    final ExecutionContext executionContext = ExecutionContextBuilder.Factory.create(newOperation).build();
-                    proxy.execute(executionContext, new ResultHandler() {
+                    final Operation operationContext = OperationBuilder.Factory.create(newOperation).build();
+                    proxy.execute(operationContext, new ResultHandler() {
                         @Override
                         public void handleResultFragment(String[] location, ModelNode result) {
                             synchronized(failureResult) {

@@ -21,41 +21,29 @@
 */
 package org.jboss.as.controller.client;
 
-import java.io.InputStream;
-
 import org.jboss.dmr.ModelNode;
 
 /**
+ * The context representing an operation passed in to the model controller
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public interface ExecutionContextBuilder {
+public interface Operation extends OperationAttachments {
 
-    ExecutionContextBuilder addInputStream(InputStream in);
+    /**
+     * The operation to execute
+     *
+     * @return the operation
+     */
+    ModelNode getOperation();
 
-    int getInputStreamCount();
+    /**
+     * Clones this operation.
+     */
+    Operation clone();
 
-    ExecutionContext build();
-
-    public static class Factory{
-        public static ExecutionContextBuilder create(ModelNode operation) {
-            if (operation == null) {
-                throw new IllegalArgumentException("Null operation");
-            }
-            return new ExecutionContextImpl(operation);
-        }
-
-        public static ExecutionContextBuilder copy(ExecutionAttachments attachments, ModelNode operation) {
-            if (operation == null) {
-                throw new IllegalArgumentException("Null operation");
-            }
-            ExecutionContextImpl ctx = new ExecutionContextImpl(operation);
-            for (InputStream in : attachments.getInputStreams()) {
-                ctx.addInputStream(in);
-            }
-            return ctx;
-        }
-
-    }
+    /**
+     * Clones this operation, but overrides the raw operation node
+     */
+    Operation clone(ModelNode operation);
 }

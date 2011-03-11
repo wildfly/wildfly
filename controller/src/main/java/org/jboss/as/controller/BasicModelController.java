@@ -51,8 +51,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -90,9 +90,9 @@ public class BasicModelController extends AbstractModelController implements Mod
     private final OperationContextFactory contextFactory = new OperationContextFactory() {
         @Override
         public OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address,
-                final OperationHandler operationHandler, final ExecutionContext executionContext) {
+                final OperationHandler operationHandler, final Operation operation) {
             final ModelNode subModel = getOperationSubModel(modelSource, operationHandler, address);
-            return BasicModelController.this.getOperationContext(subModel, operationHandler, executionContext, modelSource);
+            return BasicModelController.this.getOperationContext(subModel, operationHandler, operation, modelSource);
         }
     };
     private final ConfigurationPersisterProvider configPersisterProvider = new ConfigurationPersisterProvider() {
@@ -184,72 +184,72 @@ public class BasicModelController extends AbstractModelController implements Mod
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler) {
-        return execute(executionContext, handler, modelSource, contextFactory, configPersisterProvider);
+    public OperationResult execute(final Operation operation, final ResultHandler handler) {
+        return execute(operation, handler, modelSource, contextFactory, configPersisterProvider);
     }
 
     /**
      * Execute an operation using the given resources.
      *
-     * @param executionContext the operation to execute
+     * @param operation the operation to execute
      * @param handler the result handler
      * @param modelSource source for the model
      * @param contextFactory factory for the OperationContext to pass to the handler for the operation
      * @param configurationPersisterProvider
      * @return
      */
-    protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler,
+    protected OperationResult execute(final Operation operation, final ResultHandler handler,
             final ModelProvider modelSource, final OperationContextFactory contextFactory,
             final ConfigurationPersisterProvider configurationPersisterProvider) {
-        return execute(executionContext, handler, modelSource, contextFactory, configurationPersisterProvider, true);
+        return execute(operation, handler, modelSource, contextFactory, configurationPersisterProvider, true);
     }
 
-    protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler,
+    protected OperationResult execute(final Operation operation, final ResultHandler handler,
             final ModelProvider modelSource, final OperationContextFactory contextFactory,
             final ConfigurationPersisterProvider configurationPersisterProvider, boolean resolve) {
         try {
-            final PathAddress address = PathAddress.pathAddress(executionContext.getOperation().get(ModelDescriptionConstants.OP_ADDR));
+            final PathAddress address = PathAddress.pathAddress(operation.getOperation().get(ModelDescriptionConstants.OP_ADDR));
             final boolean multiTarget = address.isMultiTarget();
             if(multiTarget && resolve) {
                 final MultiTargetAction action = new MultiTargetAction(address);
-                return action.execute(executionContext, handler, modelSource, contextFactory, configurationPersisterProvider);
+                return action.execute(operation, handler, modelSource, contextFactory, configurationPersisterProvider);
             }
 
             final ProxyController proxyExecutor = registry.getProxyController(address);
             if (proxyExecutor != null) {
-                ExecutionContext newContext = executionContext.clone();
+                Operation newContext = operation.clone();
                 newContext.getOperation().get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
                 return proxyExecutor.execute(newContext, handler);
             }
 
             try {
-                if (isMultiStepOperation(executionContext, address)) {
-                    MultiStepOperationController multistepController = getMultiStepOperationController(executionContext, handler, modelSource, configurationPersisterProvider);
+                if (isMultiStepOperation(operation, address)) {
+                    MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider);
                     return multistepController.execute(handler);
                 }
 
-                final String operationName = executionContext.getOperation().require(ModelDescriptionConstants.OP).asString();
+                final String operationName = operation.getOperation().require(ModelDescriptionConstants.OP).asString();
                 final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
                 if (operationHandler == null) {
                     throw new IllegalStateException("No handler for " + operationName + " at address " + address);
                 }
 
-                final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
+                final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, operation);
 
-                return doExecute(context, executionContext, operationHandler, handler, address, modelSource, configurationPersisterProvider);
+                return doExecute(context, operation, operationHandler, handler, address, modelSource, configurationPersisterProvider);
             } catch (OperationFailedException e) {
                 handler.handleFailed(e.getFailureDescription());
                 return new BasicOperationResult();
             }
         } catch (final Throwable t) {
-            log.errorf(t, "operation (%s) failed - address: (%s)", executionContext.getOperation().get(OP), executionContext.getOperation().get(OP_ADDR));
+            log.errorf(t, "operation (%s) failed - address: (%s)", operation.getOperation().get(OP), operation.getOperation().get(OP_ADDR));
             handler.handleFailed(getFailureResult(t));
             return new BasicOperationResult();
         }
     }
 
-    protected MultiStepOperationController getMultiStepOperationController(final ExecutionContext executionContext, final ResultHandler handler, final ModelProvider modelSource, final ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
-        return new MultiStepOperationController(executionContext, handler, modelSource, configurationPersisterProvider);
+    protected MultiStepOperationController getMultiStepOperationController(final Operation operation, final ResultHandler handler, final ModelProvider modelSource, final ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
+        return new MultiStepOperationController(operation, handler, modelSource, configurationPersisterProvider);
     }
 
     protected ModelNode getOperationSubModel(ModelProvider modelSource, OperationHandler operationHandler, PathAddress address) {
@@ -269,8 +269,8 @@ public class BasicModelController extends AbstractModelController implements Mod
         return subModel;
     }
 
-    protected boolean isMultiStepOperation(ExecutionContext executionContext, PathAddress address) {
-        return address.size() == 0 && COMPOSITE.equals(executionContext.getOperation().require(OP).asString());
+    protected boolean isMultiStepOperation(Operation operation, PathAddress address) {
+        return address.size() == 0 && COMPOSITE.equals(operation.getOperation().require(OP).asString());
     }
 
     /**
@@ -320,7 +320,7 @@ public class BasicModelController extends AbstractModelController implements Mod
      * @param operation the operation itself
      * @return the operation context
      */
-    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final ExecutionContext executionContext, ModelProvider modelProvider) {
+    protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final Operation executionContext, ModelProvider modelProvider) {
         return new OperationContextImpl(this, getRegistry(), subModel, modelProvider, executionContext);
     }
 
@@ -331,7 +331,7 @@ public class BasicModelController extends AbstractModelController implements Mod
      *
      *
      * @param context the context for the operation
-     * @param executionContext the operation itself
+     * @param operation the operation itself
      * @param operationHandler the operation handler which will run the operation
      * @param resultHandler the result handler for this operation
      * @param address
@@ -339,10 +339,10 @@ public class BasicModelController extends AbstractModelController implements Mod
      * @param configurationPersisterFactory factory for the configuration persister
      * @param subModel @return a handle which can be used to asynchronously cancel the operation
      */
-    protected OperationResult doExecute(final OperationContext context, final ExecutionContext executionContext,
+    protected OperationResult doExecute(final OperationContext context, final Operation operation,
             final OperationHandler operationHandler, final ResultHandler resultHandler,
             final PathAddress address, ModelProvider modelProvider, final ConfigurationPersisterProvider configurationPersisterFactory) throws OperationFailedException {
-        final OperationResult result = operationHandler.execute(context, executionContext.getOperation(), resultHandler);
+        final OperationResult result = operationHandler.execute(context, operation.getOperation(), resultHandler);
         if (operationHandler instanceof ModelUpdateOperationHandler) {
             final ModelNode model = modelProvider.getModel();
             synchronized (model) {
@@ -448,8 +448,8 @@ public class BasicModelController extends AbstractModelController implements Mod
 
         private final ParameterValidator stepsValidator = new ModelTypeValidator(ModelType.LIST);
 
-        /** The execution context for the composite operation */
-        protected final ExecutionContext executionContext;
+        /** The original operation for the composite operation */
+        protected final Operation operationContext;
 
         protected final boolean rollbackOnRuntimeFailure;
         /** The handler passed in by the user */
@@ -503,10 +503,10 @@ public class BasicModelController extends AbstractModelController implements Mod
         /** Flag indicating whether wildcards should be resolved or not. */
         protected boolean resolve = true;
 
-        protected MultiStepOperationController(final ExecutionContext executionContext, final ResultHandler resultHandler,
+        protected MultiStepOperationController(final Operation operationContext, final ResultHandler resultHandler,
                 final ModelProvider modelSource, final ConfigurationPersisterProvider injectedConfigPersisterProvider) throws OperationFailedException {
-            this.executionContext = executionContext;
-            final ModelNode operation = executionContext.getOperation();
+            this.operationContext = operationContext;
+            final ModelNode operation = operationContext.getOperation();
             stepsValidator.validateParameter(STEPS, operation.get(STEPS));
             this.resultHandler = resultHandler;
             this.steps = operation.require(STEPS).asList();
@@ -608,7 +608,7 @@ public class BasicModelController extends AbstractModelController implements Mod
         }
 
         protected OperationResult executeStep(final ModelNode step, final ResultHandler stepResultHandler) {
-            return BasicModelController.this.execute(executionContext.clone(step), stepResultHandler, this, this, this, resolve);
+            return BasicModelController.this.execute(operationContext.clone(step), stepResultHandler, this, this, this, resolve);
         }
 
         // --------- Methods called by other classes in this file
@@ -771,7 +771,7 @@ public class BasicModelController extends AbstractModelController implements Mod
 
         @Override
         public OperationContext getOperationContext(ModelProvider modelSource, PathAddress address,
-                OperationHandler operationHandler, ExecutionContext executionContext) {
+                OperationHandler operationHandler, Operation executionContext) {
             return BasicModelController.this.contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
         }
 
@@ -822,7 +822,7 @@ public class BasicModelController extends AbstractModelController implements Mod
             this.address = address;
         }
 
-        protected OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler,
+        protected OperationResult execute(final Operation executionContext, final ResultHandler handler,
                 final ModelProvider modelSource, final OperationContextFactory contextFactory,
                 final ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
             // Resolve the address first
@@ -835,7 +835,7 @@ public class BasicModelController extends AbstractModelController implements Mod
             final Collection<ModelNode> resolved = new ArrayList<ModelNode>();
             final AtomicInteger status = new AtomicInteger();
             final ModelNode failureResult = new ModelNode();
-            final ExecutionContext resolveContext = ExecutionContextBuilder.Factory.create(resolveOperation).build();
+            final Operation resolveContext = OperationBuilder.Factory.create(resolveOperation).build();
             final ResultHandler resolveHandler = new ResultHandler() {
                 @Override
                 public void handleResultFragment(String[] location, ModelNode result) {
@@ -894,7 +894,7 @@ public class BasicModelController extends AbstractModelController implements Mod
             }
         }
 
-        protected OperationResult executeMultiOperation(final Collection<ModelNode> resolved, final ExecutionContext executionContext, final ResultHandler handler,
+        protected OperationResult executeMultiOperation(final Collection<ModelNode> resolved, final Operation executionContext, final ResultHandler handler,
                 final ModelProvider modelSource, final OperationContextFactory contextFactory,
                 final ConfigurationPersisterProvider configurationPersisterProvider) throws OperationFailedException {
             // unresolved might be a failure?
@@ -909,7 +909,7 @@ public class BasicModelController extends AbstractModelController implements Mod
                 newOperation.get(ModelDescriptionConstants.OP_ADDR).set(a);
                 multiStep.get(STEPS).add(newOperation);
             }
-            final ExecutionContext multiContext = executionContext.clone(multiStep);
+            final Operation multiContext = executionContext.clone(multiStep);
             final MultiStepOperationController multistepController = BasicModelController.this.getMultiStepOperationController(multiContext, handler, modelSource, configurationPersisterProvider);
             multistepController.resolve = false; // tell the multi step controller not to resolve again
             // Execute multi step operation

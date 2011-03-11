@@ -31,7 +31,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
@@ -54,7 +54,7 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(ExecutionContext executionContext) {
+    protected Future<ModelNode> executeOperation(Operation executionContext) {
         Handler handler = new Handler(executionContext);
         OperationResult c = client.execute(executionContext, handler.resultHandler);
         handler.setCancellable(c.getCancellable());
@@ -67,14 +67,14 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
             RUNNING, CANCELLED, DONE
         }
 
-        private final ExecutionContext executionContext;
+        private final Operation executionContext;
         private AtomicReference<State> state = new AtomicReference<State>(State.RUNNING);
         private final Thread runner = Thread.currentThread();
         private final ModelNode result = new ModelNode();
         private Cancellable cancellable;
         private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
 
-        private Handler(ExecutionContext executionContext) {
+        private Handler(Operation executionContext) {
             this.executionContext = executionContext;
         }
 

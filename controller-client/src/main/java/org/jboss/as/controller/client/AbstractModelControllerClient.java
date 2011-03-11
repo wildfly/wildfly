@@ -58,17 +58,17 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     }
 
     public OperationResult execute(ModelNode operation, ResultHandler handler) {
-        return execute(ExecutionContextBuilder.Factory.create(operation).build(), handler);
+        return execute(OperationBuilder.Factory.create(operation).build(), handler);
     }
 
     public ModelNode execute(ModelNode operation) throws CancellationException, IOException {
-        return execute(ExecutionContextBuilder.Factory.create(operation).build());
+        return execute(OperationBuilder.Factory.create(operation).build());
     }
 
     @Override
-    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler) {
-        if (executionContext == null) {
-            throw new IllegalArgumentException("Null execution context");
+    public OperationResult execute(final Operation operation, final ResultHandler handler) {
+        if (operation == null) {
+            throw new IllegalArgumentException("Null operation");
         }
         if (handler == null) {
             throw new IllegalArgumentException("Null handler");
@@ -79,7 +79,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             @Override
             public void run() {
                 try {
-                    Future<Void> f = new ExecuteAsynchronousRequest(result, executionContext, handler).execute(getConnectionStrategy());
+                    Future<Void> f = new ExecuteAsynchronousRequest(result, operation, handler).execute(getConnectionStrategy());
 
                     while (true) {
                         try {
@@ -110,12 +110,12 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     }
 
     @Override
-    public ModelNode execute(final ExecutionContext executionContext) throws CancellationException, IOException {
-        if (executionContext == null) {
-            throw new IllegalArgumentException("Null execution context");
+    public ModelNode execute(final Operation operation) throws CancellationException, IOException {
+        if (operation == null) {
+            throw new IllegalArgumentException("Null operation");
         }
         try {
-            return new ExecuteSynchronousRequest(executionContext).executeForResult(getConnectionStrategy());
+            return new ExecuteSynchronousRequest(operation).executeForResult(getConnectionStrategy());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof IOException) {
                 throw new IOException(e);
@@ -150,18 +150,18 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     }
 
     private abstract class ExecuteRequest<T> extends ModelControllerRequest<T> {
-        private final ExecutionContext executionContext;
+        private final Operation operation;
 
-        public ExecuteRequest(ExecutionContext executionContext) {
-            this.executionContext = executionContext;
+        public ExecuteRequest(Operation executionContext) {
+            this.operation = executionContext;
         }
 
         /** {@inheritDoc} */
         @Override
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
             output.write(ModelControllerClientProtocol.PARAM_OPERATION);
-            executionContext.getOperation().writeExternal(output);
-            List<InputStream> streams = executionContext.getInputStreams();
+            operation.getOperation().writeExternal(output);
+            List<InputStream> streams = operation.getInputStreams();
             for (InputStream in : streams) {
                 output.write(ModelControllerClientProtocol.PARAM_INPUT_STREAM);
                 //Just copy the stream contents for now - remoting will handle this better
@@ -192,8 +192,8 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
 
     private class ExecuteSynchronousRequest extends ExecuteRequest<ModelNode> {
 
-        ExecuteSynchronousRequest(ExecutionContext executionContext) {
-            super(executionContext);
+        ExecuteSynchronousRequest(Operation operation) {
+            super(operation);
         }
 
         @Override
@@ -219,8 +219,8 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
         private final AsynchronousOperation result;
         private final ResultHandler handler;
 
-        ExecuteAsynchronousRequest(AsynchronousOperation result, ExecutionContext executionContext, ResultHandler handler) {
-            super(executionContext);
+        ExecuteAsynchronousRequest(AsynchronousOperation result, Operation operation, ResultHandler handler) {
+            super(operation);
             this.result = result;
             this.handler = handler;
         }

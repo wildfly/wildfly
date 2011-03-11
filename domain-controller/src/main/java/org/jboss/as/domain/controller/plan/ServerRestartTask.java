@@ -24,7 +24,7 @@ package org.jboss.as.domain.controller.plan;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -57,7 +57,7 @@ class ServerRestartTask extends AbstractServerUpdateTask {
     protected void processUpdates() {
 
         ModelNode restartOp = getRestartOp();
-        ModelNode rsp = domainController.execute(ExecutionContextBuilder.Factory.create(restartOp).build());
+        ModelNode rsp = domainController.execute(OperationBuilder.Factory.create(restartOp).build());
         // FIXME what if it's a rollback case?
         updatePolicy.recordServerResult(serverId, rsp);
 

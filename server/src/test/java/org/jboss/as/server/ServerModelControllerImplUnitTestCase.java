@@ -26,8 +26,8 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -158,7 +158,7 @@ public class ServerModelControllerImplUnitTestCase {
     @Test
     public void testOperationFailedExecutionNoRollback() throws Exception {
 
-        ExecutionContext op = getOperation("bad", "attr1", 5, "good");
+        Operation op = getOperation("bad", "attr1", 5, "good");
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -176,7 +176,7 @@ public class ServerModelControllerImplUnitTestCase {
     @Test
     public void testHandleFailedExecutionNoRollback() throws Exception {
 
-        ExecutionContext op = getOperation("handleFailed", "attr1", 5, "good");
+        Operation op = getOperation("handleFailed", "attr1", 5, "good");
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -194,7 +194,7 @@ public class ServerModelControllerImplUnitTestCase {
     @Test
     public void testUnhandledFailureExecutionNoRollback() throws Exception {
 
-        ExecutionContext op = getOperation("evil", "attr1", 5, "good");
+        Operation op = getOperation("evil", "attr1", 5, "good");
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -234,19 +234,19 @@ public class ServerModelControllerImplUnitTestCase {
         assertEquals(1, result.get("result").asInt());
     }
 
-    public static ExecutionContext getOperation(String opName, String attr, int val) {
+    public static Operation getOperation(String opName, String attr, int val) {
         return getOperation(opName, attr, val, null, false);
     }
 
-    public static ExecutionContext getOperation(String opName, String attr, int val, boolean async) {
+    public static Operation getOperation(String opName, String attr, int val, boolean async) {
         return getOperation(opName, attr, val, null, async);
     }
 
-    public static ExecutionContext getOperation(String opName, String attr, int val, String rollbackName) {
+    public static Operation getOperation(String opName, String attr, int val, String rollbackName) {
         return getOperation(opName, attr, val, rollbackName, false);
     }
 
-    public static ExecutionContext getOperation(String opName, String attr, int val, String rollbackName, boolean async) {
+    public static Operation getOperation(String opName, String attr, int val, String rollbackName, boolean async) {
         ModelNode op = new ModelNode();
         op.get("operation").set(opName);
         op.get("address").setEmptyList();
@@ -256,7 +256,7 @@ public class ServerModelControllerImplUnitTestCase {
         if (async) {
             op.get("async").set(true);
         }
-        return ExecutionContextBuilder.Factory.create(op).build();
+        return OperationBuilder.Factory.create(op).build();
     }
 
     public static class GoodHandler implements ModelUpdateOperationHandler {

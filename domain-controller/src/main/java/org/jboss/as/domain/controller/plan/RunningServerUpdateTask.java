@@ -25,7 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
@@ -71,7 +71,7 @@ class RunningServerUpdateTask extends AbstractServerUpdateTask {
         logger.debugf("Applying operation to  %s", serverId);
         ModelNode op = getServerOp();
         ModelNode rsp =
-            controllerClient.execute(ExecutionContextBuilder.Factory.create(op).build());
+            controllerClient.execute(OperationBuilder.Factory.create(op).build());
         updatePolicy.recordServerResult(serverId, rsp);
 
         resultHandler.handleServerUpdateResult(serverId, rsp);

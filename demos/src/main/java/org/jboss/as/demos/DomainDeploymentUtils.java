@@ -43,8 +43,8 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.client.api.deployment.DuplicateDeploymentNameException;
 import org.jboss.dmr.ModelNode;
@@ -97,7 +97,7 @@ public class DomainDeploymentUtils implements Closeable {
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         ModelNode op = new ModelNode();
-        ExecutionContextBuilder builder = ExecutionContextBuilder.Factory.create(op);
+        OperationBuilder builder = OperationBuilder.Factory.create(op);
         op.get("operation").set("composite");
         op.get("address").setEmptyList();
         ModelNode steps = op.get("steps");
@@ -166,10 +166,10 @@ public class DomainDeploymentUtils implements Closeable {
     }
 
     private ModelNode execute(ModelNode op) throws IOException {
-        return execute(ExecutionContextBuilder.Factory.create(op).build());
+        return execute(OperationBuilder.Factory.create(op).build());
     }
 
-    private ModelNode execute(ExecutionContext op) throws IOException {
+    private ModelNode execute(Operation op) throws IOException {
         ModelNode result = client.execute(op);
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             return result.get("result");
@@ -233,7 +233,7 @@ public class DomainDeploymentUtils implements Closeable {
             }
         }
 
-        public synchronized ModelNode addDeployment(ExecutionContextBuilder context) throws IOException {
+        public synchronized ModelNode addDeployment(OperationBuilder context) throws IOException {
 
 
             System.out.println("Deploying " + realArchive.getName());

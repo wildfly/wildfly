@@ -88,7 +88,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -272,7 +272,7 @@ public class ThreadsSubsystemTestCase {
 
         TestResultHandler handler = new TestResultHandler();
         controller.executeForResult(updates.get(0));
-        controller.execute(ExecutionContextBuilder.Factory.create(updates.get(1)).build(), handler);
+        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
 
         checkFullTreadFactory();
 
@@ -377,7 +377,7 @@ public class ThreadsSubsystemTestCase {
 
         TestResultHandler handler = new TestResultHandler();
         controller.executeForResult(updates.get(0));
-        controller.execute(ExecutionContextBuilder.Factory.create(updates.get(1)).build(), handler);
+        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
 
         checkFullUnboundedThreadPool();
 
@@ -483,7 +483,7 @@ public class ThreadsSubsystemTestCase {
 
         TestResultHandler handler = new TestResultHandler();
         controller.executeForResult(updates.get(0));
-        controller.execute(ExecutionContextBuilder.Factory.create(updates.get(1)).build(), handler);
+        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
 
         checkFullScheduledThreadPool();
 
@@ -590,7 +590,7 @@ public class ThreadsSubsystemTestCase {
 
         TestResultHandler handler = new TestResultHandler();
         controller.executeForResult(updates.get(0));
-        controller.execute(ExecutionContextBuilder.Factory.create(updates.get(1)).build(), handler);
+        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
 
         checkFullQueuelessThreadPool();
 
@@ -704,7 +704,7 @@ public class ThreadsSubsystemTestCase {
 
         TestResultHandler handler = new TestResultHandler();
         controller.executeForResult(updates.get(0));
-        controller.execute(ExecutionContextBuilder.Factory.create(updates.get(1)).build(), handler);
+        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
 
         checkFullBoundedQueueThreadPool();
 
@@ -837,7 +837,7 @@ public class ThreadsSubsystemTestCase {
          * Override to get the actual result from the response.
          */
         public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-            ModelNode rsp = super.execute(ExecutionContextBuilder.Factory.create(operation).build());
+            ModelNode rsp = super.execute(OperationBuilder.Factory.create(operation).build());
             if (FAILED.equals(rsp.get(OUTCOME).asString())) {
                 throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
             }

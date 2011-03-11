@@ -24,7 +24,7 @@ package org.jboss.as.demos.description.runner;
 
 import java.net.InetAddress;
 
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -51,7 +51,7 @@ public class ExampleRunner {
             request.get("address").setEmptyList();
             // request.get("address").set("subsystem", "threads");
             request.get("recursive").set(true);
-            ModelNode r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
+            ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
             System.out.println(r);
 
             System.out.println("Dumping resource description tree\n");
@@ -60,7 +60,7 @@ public class ExampleRunner {
             request.get("address").setEmptyList();
             request.get("operations").set(true);
             request.get("recursive").set(true);
-            r = client.execute(ExecutionContextBuilder.Factory.create(request).build());
+            r = client.execute(OperationBuilder.Factory.create(request).build());
             System.out.println(r);
 
         } finally {

@@ -61,7 +61,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -156,7 +156,7 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
     }
 
     @Override
-    protected MultiStepOperationController getMultiStepOperationController(ExecutionContext executionContext, ResultHandler handler,
+    protected MultiStepOperationController getMultiStepOperationController(Operation executionContext, ResultHandler handler,
             ModelProvider modelSource, final ConfigurationPersisterProvider persisterProvider, ControllerTransactionContext transaction) throws OperationFailedException {
 
         DualRootConfigurationPersisterProvider confPerstProvider = (DualRootConfigurationPersisterProvider) persisterProvider;
@@ -192,23 +192,23 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
 
 
     @Override
-    public ModelNode execute(ExecutionContext executionContext, ControllerTransactionContext transaction) {
-        ModelNode op = executionContext.getOperation();
+    public ModelNode execute(Operation operation, ControllerTransactionContext transaction) {
+        ModelNode op = operation.getOperation();
         if (HostControllerClient.EXECUTE_ON_DOMAIN.equals(op.require(OP).asString())) {
             if (!op.hasDefined(OP_ADDR) || op.get(OP_ADDR).asInt() == 0) {
                 ModelNode onDomain = op.require(HostControllerClient.DOMAIN_OP);
-                return executeOnDomain(executionContext.clone(onDomain), transaction);
+                return executeOnDomain(operation.clone(onDomain), transaction);
             }
         }
-        return super.execute(executionContext, transaction);
+        return super.execute(operation, transaction);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler, final ControllerTransactionContext transaction) {
-        boolean forHost = isOperationForHost(executionContext.getOperation());
+    public OperationResult execute(final Operation operation, final ResultHandler handler, final ControllerTransactionContext transaction) {
+        boolean forHost = isOperationForHost(operation.getOperation());
         ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(getConfigurationPersisterProvider(), hostPersisterProvider, forHost);
-        return execute(executionContext, handler, getModelProvider(), getOperationContextFactory(), persisterProvider, transaction);
+        return execute(operation, handler, getModelProvider(), getOperationContextFactory(), persisterProvider, transaction);
     }
 
     private static boolean isOperationForHost(ModelNode operation) {
@@ -221,14 +221,14 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         return false;
     }
 
-    private ModelNode executeOnDomain(final ExecutionContext executionContext, final ControllerTransactionContext transaction) {
-        ModelNode operation = executionContext.getOperation();
-        ParsedOp parsedOp = parseOperation(operation, 0);
+    private ModelNode executeOnDomain(final Operation operation, final ControllerTransactionContext transaction) {
+        ModelNode op = operation.getOperation();
+        ParsedOp parsedOp = parseOperation(op, 0);
         ModelNode domainOp = parsedOp.getDomainOperation();
         ModelNode overallResult = null;
         if (domainOp != null) {
             DelegatingControllerTransactionContext delegateTx = new DelegatingControllerTransactionContext(transaction);
-            ModelNode opResult = super.execute(executionContext.clone(domainOp), delegateTx);
+            ModelNode opResult = super.execute(operation.clone(domainOp), delegateTx);
             overallResult = createOverallResult(opResult, parsedOp, delegateTx);
         }
         else {
@@ -656,20 +656,20 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
             }
         };
 
-        protected TransactionalMultiStepOperationController(final ExecutionContext executionContext, final ResultHandler resultHandler,
+        protected TransactionalMultiStepOperationController(final Operation operation, final ResultHandler resultHandler,
                 final ModelProvider modelSource, final DualRootConfigurationPersisterProvider persisterProvider,
                 final ControllerTransactionContext transaction) throws OperationFailedException {
 
-            super(executionContext, resultHandler, modelSource, persisterProvider.domainProvider);
+            super(operation, resultHandler, modelSource, persisterProvider.domainProvider);
             this.transaction = transaction;
             this.hostPersisterProvider = persisterProvider.hostProvider;
         }
 
         @Override
         protected OperationResult executeStep(final ModelNode step, final ResultHandler stepResultHandler) {
-            boolean forHost = isOperationForHost(executionContext.getOperation());
+            boolean forHost = isOperationForHost(operationContext.getOperation());
             ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(this, localHostConfigPersisterProvider, forHost);
-            return DomainModelImpl.this.execute(executionContext.clone(step), stepResultHandler, this, this, persisterProvider, resolve);
+            return DomainModelImpl.this.execute(operationContext.clone(step), stepResultHandler, this, this, persisterProvider, resolve);
         }
 
         @Override

@@ -38,7 +38,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.server.ServerControllerImpl.RegisteredProcessor;
 import org.jboss.as.server.deployment.Attachments;
@@ -179,7 +179,7 @@ final class ServerControllerService implements Service<ServerController> {
         for (ModelNode update : updates) {
             count.incrementAndGet();
             update.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            serverController.execute(ExecutionContextBuilder.Factory.create(update).build(), resultHandler);
+            serverController.execute(OperationBuilder.Factory.create(update).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {
             // some action?

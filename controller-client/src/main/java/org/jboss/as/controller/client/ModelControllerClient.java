@@ -45,7 +45,6 @@ public interface ModelControllerClient extends Closeable {
      */
     OperationResult execute(ModelNode operation, ResultHandler handler);
 
-
     /**
      * Execute an operation synchronously.
      *
@@ -60,22 +59,22 @@ public interface ModelControllerClient extends Closeable {
     /**
      * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler.
      *
-     * @param executionContext the operation to execute
+     * @param operation the operation to execute
      * @param handler the result handler
      * @return a handle which may be used to cancel the operation
      */
-    OperationResult execute(ExecutionContext executionContext, ResultHandler handler);
+    OperationResult execute(Operation operation, ResultHandler handler);
 
     /**
      * Execute an operation synchronously.
      *
-     * @param executionContext the operation to execute
+     * @param operation the operation to execute
      * @return the result
      * @throws CancellationException if the operation was cancelled due to interruption (the thread's interrupt
      * status will be set)
      * @throws IOException if an error happened talking to the remote host
      */
-    ModelNode execute(ExecutionContext executionContext) throws CancellationException, IOException;
+    ModelNode execute(Operation operation) throws CancellationException, IOException;
 
     class Factory {
         /**

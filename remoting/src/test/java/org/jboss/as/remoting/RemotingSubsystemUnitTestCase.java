@@ -33,7 +33,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -165,7 +165,7 @@ public class RemotingSubsystemUnitTestCase {
         }
 
         public ModelNode execute(ModelNode operation) {
-            return super.execute(ExecutionContextBuilder.Factory.create(operation).build());
+            return super.execute(OperationBuilder.Factory.create(operation).build());
         }
     }
 

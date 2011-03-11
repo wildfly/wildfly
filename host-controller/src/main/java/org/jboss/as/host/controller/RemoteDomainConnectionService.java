@@ -42,7 +42,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.controller.remote.RemoteProxyController;
@@ -142,13 +142,13 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     }
 
     @Override
-    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
-        return client.execute(executionContext, handler);
+    public OperationResult execute(Operation operation, ResultHandler handler) {
+        return client.execute(operation, handler);
     }
 
     @Override
-    public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-        return client.execute(executionContext);
+    public ModelNode execute(Operation operation) throws CancellationException {
+        return client.execute(operation);
     }
 
     /** {@inheritDoc} */

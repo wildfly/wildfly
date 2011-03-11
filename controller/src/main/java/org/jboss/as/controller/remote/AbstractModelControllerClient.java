@@ -44,7 +44,7 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.TransactionalModelController;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
@@ -67,9 +67,9 @@ abstract class AbstractModelControllerClient implements TransactionalModelContro
     }
 
     @Override
-    public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler) {
-        if (executionContext == null) {
-            throw new IllegalArgumentException("Null execution context");
+    public OperationResult execute(final Operation operation, final ResultHandler handler) {
+        if (operation == null) {
+            throw new IllegalArgumentException("Null operation");
         }
         if (handler == null) {
             throw new IllegalArgumentException("Null handler");
@@ -80,7 +80,7 @@ abstract class AbstractModelControllerClient implements TransactionalModelContro
             @Override
             public void run() {
                 try {
-                    Future<Void> f = new ExecuteAsynchronousRequest(result, executionContext, handler).execute(getConnectionStrategy());
+                    Future<Void> f = new ExecuteAsynchronousRequest(result, operation, handler).execute(getConnectionStrategy());
 
                     while (true) {
                         try {
@@ -113,12 +113,12 @@ abstract class AbstractModelControllerClient implements TransactionalModelContro
     }
 
     @Override
-    public ModelNode execute(final ExecutionContext executionContext) throws CancellationException {
-        if (executionContext == null) {
-            throw new IllegalArgumentException("Null execution context");
+    public ModelNode execute(final Operation operation) throws CancellationException {
+        if (operation == null) {
+            throw new IllegalArgumentException("Null operation");
         }
         try {
-            return new ExecuteSynchronousRequest(executionContext).executeForResult(getConnectionStrategy());
+            return new ExecuteSynchronousRequest(operation).executeForResult(getConnectionStrategy());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof CancellationException) {
                 throw new CancellationException(e.getCause().getMessage());
@@ -149,18 +149,18 @@ abstract class AbstractModelControllerClient implements TransactionalModelContro
     }
 
     private abstract class ExecuteRequest<T> extends ModelControllerRequest<T> {
-        private final ExecutionContext executionContext;
+        private final Operation operation;
 
-        public ExecuteRequest(ExecutionContext executionContext) {
-            this.executionContext = executionContext;
+        public ExecuteRequest(Operation executionContext) {
+            this.operation = executionContext;
         }
 
         /** {@inheritDoc} */
         @Override
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
             output.write(ModelControllerClientProtocol.PARAM_OPERATION);
-            executionContext.getOperation().writeExternal(output);
-            List<InputStream> streams = executionContext.getInputStreams();
+            operation.getOperation().writeExternal(output);
+            List<InputStream> streams = operation.getInputStreams();
             for (InputStream in : streams) {
                 output.write(ModelControllerClientProtocol.PARAM_INPUT_STREAM);
                 //Just copy the stream contents for now - remoting will handle this better
@@ -191,8 +191,8 @@ abstract class AbstractModelControllerClient implements TransactionalModelContro
 
     private class ExecuteSynchronousRequest extends ExecuteRequest<ModelNode> {
 
-        ExecuteSynchronousRequest(ExecutionContext executionContext) {
-            super(executionContext);
+        ExecuteSynchronousRequest(Operation operation) {
+            super(operation);
         }
 
         @Override
@@ -218,8 +218,8 @@ abstract class AbstractModelControllerClient implements TransactionalModelContro
         private final AsynchronousOperation result;
         private final ResultHandler handler;
 
-        ExecuteAsynchronousRequest(AsynchronousOperation result, ExecutionContext executionContext, ResultHandler handler) {
-            super(executionContext);
+        ExecuteAsynchronousRequest(AsynchronousOperation result, Operation operation, ResultHandler handler) {
+            super(operation);
             this.result = result;
             this.handler = handler;
         }

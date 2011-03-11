@@ -40,7 +40,7 @@ import javax.jms.TextMessage;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.fakejndi.FakeJndi;
@@ -137,7 +137,7 @@ public class ExampleRunner {
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(ExecutionContextBuilder.Factory.create(update).build());
+        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

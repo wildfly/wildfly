@@ -79,7 +79,7 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -1144,7 +1144,7 @@ public class GlobalOperationsTestCase {
          * Override to get the actual result from the response.
          */
         public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-            ModelNode rsp = super.execute(ExecutionContextBuilder.Factory.create(operation).build());
+            ModelNode rsp = super.execute(OperationBuilder.Factory.create(operation).build());
             if (FAILED.equals(rsp.get(OUTCOME).asString())) {
                 throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
             }

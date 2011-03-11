@@ -28,12 +28,12 @@ import java.util.List;
 
 import org.jboss.dmr.ModelNode;
 
-class ExecutionContextImpl implements ExecutionContextBuilder, ExecutionContext {
+class OperationImpl implements OperationBuilder, Operation {
 
     private final ModelNode operation;
     private volatile List<InputStream> inputStreams;
 
-    ExecutionContextImpl(ModelNode operation) {
+    OperationImpl(ModelNode operation) {
         this.operation = operation;
     }
 
@@ -51,7 +51,7 @@ class ExecutionContextImpl implements ExecutionContextBuilder, ExecutionContext 
     }
 
     @Override
-    public ExecutionContextBuilder addInputStream(InputStream in) {
+    public OperationBuilder addInputStream(InputStream in) {
         if (inputStreams == null) {
             inputStreams = new ArrayList<InputStream>();
         }
@@ -66,14 +66,14 @@ class ExecutionContextImpl implements ExecutionContextBuilder, ExecutionContext 
     }
 
     @Override
-    public ExecutionContext build() {
+    public Operation build() {
         return this;
     }
 
 
     @Override
-    public ExecutionContext clone() {
-        ExecutionContextImpl copy = new ExecutionContextImpl(operation.clone());
+    public Operation clone() {
+        OperationImpl copy = new OperationImpl(operation.clone());
         if (inputStreams != null) {
             copy.inputStreams = new ArrayList<InputStream>(inputStreams);
         }
@@ -81,11 +81,11 @@ class ExecutionContextImpl implements ExecutionContextBuilder, ExecutionContext 
     }
 
     @Override
-    public ExecutionContext clone(final ModelNode operation) {
+    public Operation clone(final ModelNode operation) {
         if (operation == null) {
             throw new IllegalArgumentException("Null operation");
         }
-        ExecutionContextImpl copy = new ExecutionContextImpl(operation);
+        OperationImpl copy = new OperationImpl(operation);
         if (inputStreams != null) {
             copy.inputStreams = new ArrayList<InputStream>(inputStreams);
         }

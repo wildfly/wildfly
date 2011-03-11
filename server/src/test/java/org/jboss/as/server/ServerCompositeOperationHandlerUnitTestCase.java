@@ -18,8 +18,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.controller.client.ExecutionContext;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.server.ServerModelControllerImplUnitTestCase.BadHandler;
 import org.jboss.as.server.ServerModelControllerImplUnitTestCase.EvilHandler;
 import org.jboss.as.server.ServerModelControllerImplUnitTestCase.GoodHandler;
@@ -78,8 +78,8 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     }
 
     private void goodCompositeExecutionTest(boolean async) throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2, async);
-        ExecutionContext step2 = getOperation("good", "attr2", 1, async);
+        Operation step1 = getOperation("good", "attr1", 2, async);
+        Operation step2 = getOperation("good", "attr2", 1, async);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
         assertEquals("success", result.get("outcome").asString());
         assertEquals(2, result.get("result").asInt());
@@ -104,8 +104,8 @@ public class ServerCompositeOperationHandlerUnitTestCase {
 
     @Test
     public void testOperationFailedExecution() throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2);
-        ExecutionContext step2 = getOperation("bad", "attr2", 1);
+        Operation step1 = getOperation("good", "attr1", 2);
+        Operation step2 = getOperation("bad", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get("failure-description").toString().indexOf("this request is bad") > - 1);
@@ -118,9 +118,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
 
     @Test
     public void testOperationFailedExecutionNoRollback() throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2);
-        ExecutionContext step2 = getOperation("bad", "attr2", 1);
-        ExecutionContext op = getCompositeOperation(null, step1, step2);
+        Operation step1 = getOperation("good", "attr1", 2);
+        Operation step2 = getOperation("bad", "attr2", 1);
+        Operation op = getCompositeOperation(null, step1, step2);
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -134,8 +134,8 @@ public class ServerCompositeOperationHandlerUnitTestCase {
 
     @Test
     public void testUnhandledFailureExecution() throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2);
-        ExecutionContext step2 = getOperation("evil", "attr2", 1);
+        Operation step1 = getOperation("good", "attr1", 2);
+        Operation step2 = getOperation("evil", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
@@ -148,9 +148,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
 
     @Test
     public void testUnhandledFailureExecutionNoRollback() throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2);
-        ExecutionContext step2 = getOperation("evil", "attr2", 1);
-        ExecutionContext op = getCompositeOperation(null, step1, step2);
+        Operation step1 = getOperation("good", "attr1", 2);
+        Operation step2 = getOperation("evil", "attr2", 1);
+        Operation op = getCompositeOperation(null, step1, step2);
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -173,8 +173,8 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     }
 
     private void handleFailedExecutionTest(boolean async) throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2, async);
-        ExecutionContext step2 = getOperation("handleFailed", "attr2", 1, async);
+        Operation step1 = getOperation("good", "attr1", 2, async);
+        Operation step2 = getOperation("handleFailed", "attr2", 1, async);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get("failure-description").toString().indexOf("handleFailed") > - 1);
@@ -187,9 +187,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
 
     @Test
     public void testHandleFailedExecutionNoRollback() throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2);
-        ExecutionContext step2 = getOperation("handleFailed", "attr2", 1);
-        ExecutionContext op = getCompositeOperation(null, step1, step2);
+        Operation step1 = getOperation("good", "attr1", 2);
+        Operation step2 = getOperation("handleFailed", "attr2", 1);
+        Operation op = getCompositeOperation(null, step1, step2);
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -212,13 +212,13 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     }
 
     private void goodNestedCompositeTest(boolean async) throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2, async);
-        ExecutionContext step2 = getOperation("good", "attr2", 1, async);
-        ExecutionContext comp1 = getCompositeOperation(null, step1, step2);
-        ExecutionContext step3 = getOperation("good", "attr1", 20, async);
-        ExecutionContext step4 = getOperation("good", "attr2", 10, async);
-        ExecutionContext comp2 = getCompositeOperation(null, step3, step4);
-        ExecutionContext op = getCompositeOperation(null, comp1, comp2);
+        Operation step1 = getOperation("good", "attr1", 2, async);
+        Operation step2 = getOperation("good", "attr2", 1, async);
+        Operation comp1 = getCompositeOperation(null, step1, step2);
+        Operation step3 = getOperation("good", "attr1", 20, async);
+        Operation step4 = getOperation("good", "attr2", 10, async);
+        Operation comp2 = getCompositeOperation(null, step3, step4);
+        Operation op = getCompositeOperation(null, comp1, comp2);
 //        System.out.println(op);
         ModelNode result = controller.execute(op);
 //        System.out.println(result);
@@ -237,13 +237,13 @@ public class ServerCompositeOperationHandlerUnitTestCase {
 
     @Test
     public void testBadNestedComposite() throws Exception {
-        ExecutionContext step1 = getOperation("good", "attr1", 2);
-        ExecutionContext step2 = getOperation("good", "attr2", 1);
-        ExecutionContext comp1 = getCompositeOperation(null, step1, step2);
-        ExecutionContext step3 = getOperation("good", "attr1", 20);
-        ExecutionContext step4 = getOperation("bad", "attr2", 10);
-        ExecutionContext comp2 = getCompositeOperation(null, step3, step4);
-        ExecutionContext op = getCompositeOperation(null, comp1, comp2);
+        Operation step1 = getOperation("good", "attr1", 2);
+        Operation step2 = getOperation("good", "attr2", 1);
+        Operation comp1 = getCompositeOperation(null, step1, step2);
+        Operation step3 = getOperation("good", "attr1", 20);
+        Operation step4 = getOperation("bad", "attr2", 10);
+        Operation comp2 = getCompositeOperation(null, step3, step4);
+        Operation op = getCompositeOperation(null, comp1, comp2);
         System.out.println(op);
         ModelNode result = controller.execute(op);
         System.out.println(result);
@@ -253,18 +253,18 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
     }
 
-    public static ExecutionContext getCompositeOperation(Boolean rollback, ExecutionContext... steps) {
+    public static Operation getCompositeOperation(Boolean rollback, Operation... steps) {
 
         ModelNode op = new ModelNode();
         op.get("operation").set("composite");
         op.get("address").setEmptyList();
-        for (ExecutionContext step : steps) {
+        for (Operation step : steps) {
             op.get("steps").add(step.getOperation());
         }
         if (rollback != null) {
             op.get("rollback-on-runtime-failure").set(rollback);
         }
-        return ExecutionContextBuilder.Factory.create(op).build();
+        return OperationBuilder.Factory.create(op).build();
     }
 
     private static class TestModelController extends ServerControllerImpl {

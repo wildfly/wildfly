@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 
@@ -39,7 +39,6 @@ import org.jboss.dmr.ModelNode;
  * the ModelController client protocol
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class RemoteProxyController implements ProxyController {
 
@@ -82,13 +81,13 @@ public class RemoteProxyController implements ProxyController {
     }
 
     @Override
-    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
-        return delegate.execute(executionContext, handler);
+    public OperationResult execute(Operation operation, ResultHandler handler) {
+        return delegate.execute(operation, handler);
     }
 
     @Override
-    public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-        return delegate.execute(executionContext);
+    public ModelNode execute(Operation operation) throws CancellationException {
+        return delegate.execute(operation);
     }
 
     @Override

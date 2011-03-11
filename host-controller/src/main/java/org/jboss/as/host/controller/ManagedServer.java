@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.server.ServerStartTask;
@@ -138,14 +138,14 @@ class ManagedServer implements ModelController {
 
     /** {@inheritDoc} */
     @Override
-    public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+    public OperationResult execute(Operation operation, ResultHandler handler) {
         // TODO use serverManagementConnection to execute the operation
         return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
+    public ModelNode execute(Operation operation) throws CancellationException {
         // TODO use serverManagementConnection to execute the operation
         return null;
     }

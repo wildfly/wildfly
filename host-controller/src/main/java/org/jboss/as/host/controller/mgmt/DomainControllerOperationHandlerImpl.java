@@ -54,7 +54,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerImpl;
 import org.jboss.as.controller.remote.RemoteProxyController;
@@ -290,25 +290,25 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         }
 
         @Override
-        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
-            return remote.execute(executionContext, handler);
+        public OperationResult execute(Operation operation, ResultHandler handler) {
+            return remote.execute(operation, handler);
         }
 
         @Override
-        public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-            return remote.execute(executionContext);
+        public ModelNode execute(Operation operation) throws CancellationException {
+            return remote.execute(operation);
         }
 
         @Override
-        public ModelNode execute(final ExecutionContext executionContext, ControllerTransactionContext transaction) throws CancellationException {
-            return super.execute(executionContext, transaction);
+        public ModelNode execute(final Operation operation, ControllerTransactionContext transaction) throws CancellationException {
+            return super.execute(operation, transaction);
         }
 
         @Override
-        public OperationResult execute(final ExecutionContext executionContext, final ResultHandler handler,
+        public OperationResult execute(final Operation operation, final ResultHandler handler,
                 final ControllerTransactionContext transaction) {
 
-            if (executionContext == null) {
+            if (operation == null) {
                 throw new IllegalArgumentException("Null execution context");
             }
             if (handler == null) {
@@ -323,7 +323,7 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
                 @Override
                 public void run() {
                     try {
-                        Future<Void> f = new ExecuteTransactionalRequest(result, executionContext, handler, transaction.getTransactionId()).execute(connectionStrategy);
+                        Future<Void> f = new ExecuteTransactionalRequest(result, operation, handler, transaction.getTransactionId()).execute(connectionStrategy);
 
                         while (true) {
                             try {
@@ -402,13 +402,13 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
         private class ExecuteTransactionalRequest extends ModelControllerRequest<Void> {
 
             private final AsynchronousOperation result;
-            private final ExecutionContext executionContext;
+            private final Operation operation;
             private final ResultHandler handler;
             private final ModelNode transactionId;
 
-            ExecuteTransactionalRequest(AsynchronousOperation result, ExecutionContext executionContext, ResultHandler handler, ModelNode transactionId) {
+            ExecuteTransactionalRequest(AsynchronousOperation result, Operation operation, ResultHandler handler, ModelNode transactionId) {
                 this.result = result;
-                this.executionContext = executionContext;
+                this.operation = operation;
                 this.handler = handler;
                 this.transactionId = transactionId;
             }
@@ -429,9 +429,9 @@ public class DomainControllerOperationHandlerImpl extends ModelControllerOperati
                 output.write(TransactionalModelControllerOperationHandler.TRANSACTION_ID);
                 transactionId.writeExternal(output);
                 output.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                executionContext.getOperation().writeExternal(output);
+                operation.getOperation().writeExternal(output);
 
-                List<InputStream> streams = executionContext.getInputStreams();
+                List<InputStream> streams = operation.getInputStreams();
                 for (InputStream in : streams) {
                     output.write(ModelControllerClientProtocol.PARAM_INPUT_STREAM);
                     //Just copy the stream contents for now - remoting will handle this better

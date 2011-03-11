@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -153,7 +153,7 @@ public class HostControllerBootstrap {
         for(final ModelNode operation : operations) {
             count.incrementAndGet();
             operation.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            bootstrapContoller.execute(ExecutionContextBuilder.Factory.create(operation).build(), resultHandler);
+            bootstrapContoller.execute(OperationBuilder.Factory.create(operation).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {
             // some action?

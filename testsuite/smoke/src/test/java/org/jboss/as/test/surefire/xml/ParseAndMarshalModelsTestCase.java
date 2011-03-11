@@ -41,7 +41,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ExecutionContextBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
@@ -251,7 +251,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private void executeOperations(ModelController controller, List<ModelNode> ops) {
         for (final ModelNode op : ops) {
-            controller.execute(ExecutionContextBuilder.Factory.create(op).build(),
+            controller.execute(OperationBuilder.Factory.create(op).build(),
                     new org.jboss.as.controller.ResultHandler() {
 
                 @Override

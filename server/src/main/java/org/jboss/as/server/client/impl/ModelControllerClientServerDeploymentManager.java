@@ -28,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.Cancellable;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationResult;
 import org.jboss.as.controller.client.ResultHandler;
@@ -54,9 +54,9 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(ExecutionContext executionContext) {
-        Handler handler = new Handler(executionContext);
-        OperationResult c = client.execute(executionContext, handler.resultHandler);
+    protected Future<ModelNode> executeOperation(Operation operation) {
+        Handler handler = new Handler(operation);
+        OperationResult c = client.execute(operation, handler.resultHandler);
         handler.setCancellable(c.getCancellable());
         return handler;
     }
@@ -68,15 +68,15 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
             RUNNING, CANCELLED, DONE
         }
 
-        private final ExecutionContext executionContext;
+        private final Operation operation;
         private AtomicReference<State> state = new AtomicReference<State>(State.RUNNING);
         private final Thread runner = Thread.currentThread();
         private final ModelNode result = new ModelNode();
         private Cancellable cancellable;
         private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
 
-        private Handler(ExecutionContext executionContext) {
-            this.executionContext = executionContext;
+        private Handler(Operation operation) {
+            this.operation = operation;
         }
 
         private final ResultHandler resultHandler = new ResultHandler() {
@@ -108,7 +108,7 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
         };
 
         synchronized void cleanUpAndNotify() {
-            for (InputStream in : executionContext.getInputStreams()) {
+            for (InputStream in : operation.getInputStreams()) {
                 StreamUtils.safeClose(in);
             }
             notifyAll();
