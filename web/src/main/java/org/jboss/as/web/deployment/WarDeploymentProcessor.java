@@ -22,6 +22,14 @@
 
 package org.jboss.as.web.deployment;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.core.StandardContext;
@@ -39,21 +47,15 @@ import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -140,9 +142,10 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
 
-        final Map<String, ComponentInstantiator> components  = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
-        if(components != null) {
-            for(Map.Entry<String, ComponentInstantiator> entry : components.entrySet()) {
+        final Map<String, ComponentInstantiator> components = deploymentUnit
+                .getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
+        if (components != null) {
+            for (Map.Entry<String, ComponentInstantiator> entry : components.entrySet()) {
                 injectionContainer.addInstantiator(entry.getKey(), entry.getValue());
             }
         }
@@ -168,8 +171,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Get the realm details from the domain model
         JBossWebRealm realm = new JBossWebRealm();
-        String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY
-                : metaDataSecurityDomain;
+        String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
+                .unprefixSecurityDomain(metaDataSecurityDomain);
 
         // Set the current tccl and save it
         ClassLoader tcl = SecurityActions.getContextClassLoader();
@@ -187,15 +190,15 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (NamingException e1) {
             throw new RuntimeException(e1);
         } finally {
-                SecurityActions.setContextClassLoader(tcl);
+            SecurityActions.setContextClassLoader(tcl);
         }
 
         try {
             ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
-            serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService).addDependency(
-                    WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
-                    .addDependencies(injectionContainer.getServiceNames())
+            serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService)
+                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class,
+                            new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames())
                     .addDependency(namespaceSelectorServiceName, NamespaceContextSelector.class,
                             webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE).install();
         } catch (ServiceRegistryException e) {
