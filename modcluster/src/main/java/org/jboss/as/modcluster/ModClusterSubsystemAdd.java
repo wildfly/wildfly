@@ -51,17 +51,20 @@ class ModClusterSubsystemAdd implements ModelAddOperationHandler {
         compensatingOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
         compensatingOperation.get(ModelDescriptionConstants.OP_ADDR).set(operation.require(ModelDescriptionConstants.OP_ADDR));
 
+        final ModelNode config = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
+
+        context.getSubModel().set(config);
+
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     // Add mod_cluster service
-                    final ModelNode config = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
                     final ModClusterService service = new ModClusterService(config.clone());
-                    context.getServiceTarget().addService(ModClusterService.NAME, service).
-                    setInitialMode(Mode.ACTIVE).
-                    addDependency(WebSubsystemServices.JBOSS_WEB).
-                    install();
-                    resultHandler.handleResultComplete();
+                    context.getServiceTarget().addService(ModClusterService.NAME, service)
+                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                        .addDependency(WebSubsystemServices.JBOSS_WEB)
+                        .setInitialMode(Mode.ACTIVE)
+                        .install();
                 }
             });
         } else {

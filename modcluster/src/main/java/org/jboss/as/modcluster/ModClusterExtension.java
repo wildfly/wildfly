@@ -103,8 +103,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         log.debugf("Activating Mod_cluster Extension");
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
-        nodeRegistration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, DESCRIPTION,
-                false);
+        nodeRegistration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, DESCRIPTION);
 
         registration.registerXMLElementWriter(parser);
     }
@@ -266,6 +265,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                 default:
                     unexpectedAttribute(reader, i);
             }
+        }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            //TODO: Just read it...
         }
         return conf;
     }
