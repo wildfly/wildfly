@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.demos.ejb3.mbean;
 
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Jaikiran Pai
  */
-public interface TestMBean {
-    Object exec(Class<?> cls) throws Exception;
+public class SingletonBeanAccessThread implements Callable<Object> {
 
-    Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception;
+    private String jndiName;
 
-    int invokeSingleton(String jndiName, int numThreads, int numTimes) throws Exception;
+    private int numTimes;
 
-    int lookupSingleton(String jndiName, int numThreads, int numTimes) throws Exception;
+    private CountDownLatch latch;
+
+    public SingletonBeanAccessThread(CountDownLatch latch, String jndiName, int numTimes) {
+        this.jndiName = jndiName;
+        this.numTimes = numTimes;
+        this.latch = latch;
+    }
+
+    @Override
+    public Object call() throws Exception {
+        try {
+
+            for (int i = 0; i < numTimes; i++) {
+                Context ctx = new InitialContext();
+                SimpleSingletonLocal bean = (SimpleSingletonLocal) ctx.lookup(jndiName);
+                bean.increment();
+            }
+        } finally {
+            latch.countDown();
+        }
+        return null;
+    }
 }

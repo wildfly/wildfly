@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.session.singleton;
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
  * @author Jaikiran Pai
@@ -38,6 +39,9 @@ public class SingletonComponentConfiguration extends SessionBeanComponentConfigu
      */
     public SingletonComponentConfiguration(final EJBComponentDescription description) {
         super(description);
+
+        // instance associating interceptor
+        this.addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
     }
 
     @Override

@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -66,6 +67,7 @@ public abstract class AbstractComponent implements Component {
         }
     };
 
+    private final String componentName;
     private final Class<?> componentClass;
     private final List<ResourceInjection> resourceInjections;
     private final List<ComponentLifecycle> postConstructMethods;
@@ -85,6 +87,7 @@ public abstract class AbstractComponent implements Component {
      * @param configuration the component configuration
      */
     protected AbstractComponent(final AbstractComponentConfiguration configuration) {
+        componentName = configuration.getComponentName();
         componentClass = configuration.getComponentClass();
         resourceInjections = configuration.getResourceInjections();
         postConstructMethods = configuration.getPostConstructLifecycles();
@@ -119,7 +122,7 @@ public abstract class AbstractComponent implements Component {
         Object objectInstance = createObjectInstance();
 
         List<Interceptor> preDestoryInterceptors = new ArrayList<Interceptor>();
-        createPreDestroyMethods(interceptorContext,preDestoryInterceptors);
+        createPreDestroyMethods(interceptorContext, preDestoryInterceptors);
 
         //apply injections, and add the clean up interceptors to the pre destroy chain
         //we want interceptors that clean up injections to be last in the interceptor chain
@@ -127,7 +130,7 @@ public abstract class AbstractComponent implements Component {
         preDestoryInterceptors.addAll(applyInjections(objectInstance));
 
         performPostConstructLifecycle(objectInstance, interceptorContext);
-        return constructComponentInstance(objectInstance, preDestoryInterceptors,interceptorContext);
+        return constructComponentInstance(objectInstance, preDestoryInterceptors, interceptorContext);
     }
 
     /**
@@ -138,7 +141,7 @@ public abstract class AbstractComponent implements Component {
      */
     protected Object createObjectInstance() {
         try {
-            Object instance =  componentClass.newInstance();
+            Object instance = componentClass.newInstance();
             return instance;
         } catch (InstantiationException e) {
             InstantiationError error = new InstantiationError(e.getMessage());
@@ -155,7 +158,7 @@ public abstract class AbstractComponent implements Component {
      * Construct the component instance.  The object instance will have injections and lifecycle invocations completed
      * already.
      *
-     * @param instance           the object instance to wrap
+     * @param instance               the object instance to wrap
      * @param preDestroyInterceptors the interceptors to run on pre-destroy
      * @return the component instance
      */
@@ -168,6 +171,15 @@ public abstract class AbstractComponent implements Component {
      */
     public Class<?> getComponentClass() {
         return componentClass;
+    }
+
+    /**
+     * Get the name of this bean component.
+     *
+     * @return
+     */
+    public String getComponentName() {
+        return this.componentName;
     }
 
     /**
@@ -184,9 +196,9 @@ public abstract class AbstractComponent implements Component {
             }
         }
         List<ComponentInjector.InjectionHandle> injectionHandles = new ArrayList<ComponentInjector.InjectionHandle>();
-        for(ComponentInjector injector : componentInjectors) {
-                injectionHandles.add(injector.inject(instance));
-         }
+        for (ComponentInjector injector : componentInjectors) {
+            injectionHandles.add(injector.inject(instance));
+        }
         return Collections.<Interceptor>singletonList(new DisinjectionInterceptor(injectionHandles));
     }
 
@@ -238,7 +250,7 @@ public abstract class AbstractComponent implements Component {
     }
 
     protected void createPreDestroyMethods(final InterceptorFactoryContext context, List<Interceptor> interceptors) {
-        for(LifecycleInterceptorFactory method : preDestroyInterceptorsMethods) {
+        for (LifecycleInterceptorFactory method : preDestroyInterceptorsMethods) {
             interceptors.add(method.create(context));
         }
     }
@@ -257,7 +269,7 @@ public abstract class AbstractComponent implements Component {
             try {
                 while (preDestroyInterceptors.hasNext()) {
                     try {
-                        final Interceptor interceptor =preDestroyInterceptors.next();
+                        final Interceptor interceptor = preDestroyInterceptors.next();
                         final InterceptorContext context = new InterceptorContext();
                         //as we use LifecycleInterceptorFactory we do not need to set the method
                         context.setTarget(instance);
@@ -342,7 +354,7 @@ public abstract class AbstractComponent implements Component {
     /**
      * Interceptor that cleans up injected resources
      */
-    private static class DisinjectionInterceptor implements Interceptor{
+    private static class DisinjectionInterceptor implements Interceptor {
 
         private final List<ComponentInjector.InjectionHandle> injections;
 
@@ -352,7 +364,7 @@ public abstract class AbstractComponent implements Component {
 
         @Override
         public Object processInvocation(InterceptorContext context) throws Exception {
-            for(ComponentInjector.InjectionHandle injectionHandle : injections) {
+            for (ComponentInjector.InjectionHandle injectionHandle : injections) {
                 injectionHandle.uninject();
             }
             return null;

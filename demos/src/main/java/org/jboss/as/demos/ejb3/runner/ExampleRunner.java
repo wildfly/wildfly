@@ -22,6 +22,7 @@
 package org.jboss.as.demos.ejb3.runner;
 
 import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
 import org.jboss.as.demos.ejb3.mbean.ExerciseStateful;
@@ -38,38 +39,46 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class ExampleRunner {
-   private static <T> T createProxy(MBeanServerConnection mbeanServer, String lookupName, Class<T> intf) {
-       final InvocationHandler handler = new TestMBeanInvocationHandler(mbeanServer, lookupName);
-       final Class<?>[] interfaces = { intf };
-       return intf.cast(Proxy.newProxyInstance(intf.getClassLoader(), interfaces, handler));
-   }
+    private static <T> T createProxy(MBeanServerConnection mbeanServer, String lookupName, Class<T> intf) {
+        final InvocationHandler handler = new TestMBeanInvocationHandler(mbeanServer, lookupName);
+        final Class<?>[] interfaces = {intf};
+        return intf.cast(Proxy.newProxyInstance(intf.getClassLoader(), interfaces, handler));
+    }
 
-   private static void doStatefulMagic(MBeanServerConnection server) throws Exception {
-       String msg = (String) server.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "exec", new Object[] { ExerciseStateful.class }, new String[] { Class.class.getName() });
-       System.out.println(msg);
-   }
+    private static void doStatefulMagic(MBeanServerConnection server) throws Exception {
+        String msg = (String) server.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "exec", new Object[]{ExerciseStateful.class}, new String[]{Class.class.getName()});
+        System.out.println(msg);
+    }
 
-   public static void main(String[] args) throws Exception {
-      DeploymentUtils utils = new DeploymentUtils("ejb3-example.jar", SimpleStatelessSessionBean.class.getPackage());
-      try {
-         utils.addDeployment("ejb3-mbean.sar", Test.class.getPackage());
-         utils.deploy();
+    private static void workOnSingletoBean(MBeanServerConnection server, String jndiName, int numThreads, int numTimes) throws Exception {
+        int singletonBeanInstances = (Integer) server.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "lookupSingleton", new Object[]{jndiName, numThreads, numTimes}, new String[]{String.class.getName(), Integer.TYPE.getName(), Integer.TYPE.getName()});
+        System.out.println("Number of singleton bean instances created is: " + singletonBeanInstances);
 
-         /*
-         InitialContext ctx = new InitialContext();
-         SimpleStatelessSessionLocal bean = (SimpleStatelessSessionLocal) ctx.lookup("java:global/ejb3-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName());
-         String msg = bean.echo("Hello world");
-         */
-         MBeanServerConnection mbeanServer = utils.getConnection();
 
-         SimpleStatelessSessionLocal bean = createProxy(mbeanServer, "java:global/ejb3-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName(), SimpleStatelessSessionLocal.class);
-         String msg = bean.echo("Hello world");
-         System.out.println(msg);
+        int count = (Integer) server.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "invokeSingleton", new Object[]{jndiName, numThreads, numTimes}, new String[]{String.class.getName(), Integer.TYPE.getName(), Integer.TYPE.getName()});
+        System.out.println("Count is: " + count);
+    }
 
-         doStatefulMagic(mbeanServer);
-      } finally {
-         utils.undeploy();
-         safeClose(utils);
-      }
-   }
+    public static void main(String[] args) throws Exception {
+        DeploymentUtils utils = new DeploymentUtils("ejb3-example.jar", SimpleStatelessSessionBean.class.getPackage());
+        try {
+            utils.addDeployment("ejb3-mbean.sar", Test.class.getPackage());
+            utils.deploy();
+
+            MBeanServerConnection mbeanServer = utils.getConnection();
+
+            SimpleStatelessSessionLocal bean = createProxy(mbeanServer, "java:global/ejb3-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName(), SimpleStatelessSessionLocal.class);
+            String msg = bean.echo("Hello world");
+            System.out.println(msg);
+
+            doStatefulMagic(mbeanServer);
+
+            String singletonBeanJndiName = "java:global/ejb3-example/SimpleSingletonBean!" + SimpleSingletonLocal.class.getName();
+            workOnSingletoBean(mbeanServer, singletonBeanJndiName, 100, 10);
+
+        } finally {
+            utils.undeploy();
+            safeClose(utils);
+        }
+    }
 }

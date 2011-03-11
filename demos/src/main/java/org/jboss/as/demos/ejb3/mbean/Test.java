@@ -21,10 +21,16 @@
  */
 package org.jboss.as.demos.ejb3.mbean;
 
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
+
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * For the moment there is no remoting, so we need to call the EJB from within.
@@ -39,20 +45,53 @@ public class Test implements TestMBean {
     }
 
     @Override
-   public Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception {
-      InitialContext ctx = new InitialContext();
-      Object bean = ctx.lookup(name);
-      Method method = bean.getClass().getMethod(methodName, parameterTypes);
-      try {
-         return method.invoke(bean, params);
-      }
-      catch(InvocationTargetException e) {
-         Throwable t = e.getTargetException();
-         if (t instanceof Exception)
-            throw (Exception) t;
-         if (t instanceof Error)
-            throw (Error) t;
-         throw e;
-      }
-   }
+    public Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception {
+        InitialContext ctx = new InitialContext();
+        Object bean = ctx.lookup(name);
+        Method method = bean.getClass().getMethod(methodName, parameterTypes);
+        try {
+            return method.invoke(bean, params);
+        } catch (InvocationTargetException e) {
+            Throwable t = e.getTargetException();
+            if (t instanceof Exception)
+                throw (Exception) t;
+            if (t instanceof Error)
+                throw (Error) t;
+            throw e;
+        }
+    }
+
+    @Override
+    public int lookupSingleton(String jndiName, int numThreads, int numTimes) throws Exception {
+        CountDownLatch latch = new CountDownLatch(numThreads);
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        Thread[] threads = new Thread[numThreads];
+        for (int i = 0; i < numThreads; i++) {
+            SingletonBeanLookupThread singletonBeanLookupThread = new SingletonBeanLookupThread(latch, jndiName, numTimes);
+            executor.submit(singletonBeanLookupThread);
+        }
+        latch.await();
+
+        Context ctx = new InitialContext();
+        SimpleSingletonLocal bean = (SimpleSingletonLocal) ctx.lookup(jndiName);
+        System.out.println("Getting instance count");
+        return bean.getBeanInstanceCount();
+    }
+
+    @Override
+    public int invokeSingleton(String jndiName, int numThreads, int numTimes) throws Exception {
+        CountDownLatch latch = new CountDownLatch(numThreads);
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        Thread[] threads = new Thread[numThreads];
+        for (int i = 0; i < numThreads; i++) {
+            SingletonBeanAccessThread singletonBeanAccessThread = new SingletonBeanAccessThread(latch, jndiName, numTimes);
+            executor.submit(singletonBeanAccessThread);
+        }
+        latch.await();
+
+        Context ctx = new InitialContext();
+        SimpleSingletonLocal counter = (SimpleSingletonLocal) ctx.lookup(jndiName);
+        return counter.getCount();
+    }
+
 }

@@ -27,12 +27,10 @@ import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
-import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -43,10 +41,6 @@ import java.util.List;
  */
 public class StatelessSessionComponent extends AbstractComponent {
 
-
-    // TODO: Need to use the right "name" for the @Resource
-    @Resource
-    private JBossSessionBeanEffigy sessionBeanEffigy;
 
     /**
      * The component level interceptors that will be applied during the invocation
@@ -85,7 +79,8 @@ public class StatelessSessionComponent extends AbstractComponent {
 
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
-                // setup the component being invoked
+                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
+                // runs on remote clients.
                 context.putPrivateData(Component.class, StatelessSessionComponent.this);
                 return context.proceed();
             }

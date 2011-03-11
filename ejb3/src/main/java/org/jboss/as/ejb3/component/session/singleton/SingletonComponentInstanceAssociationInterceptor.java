@@ -1,0 +1,60 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.ejb3.component.session.singleton;
+
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+
+/**
+ * Responsible for associating the single component instance for a singleton bean during invocation.
+ *
+ * @author Jaikiran Pai
+ */
+public class SingletonComponentInstanceAssociationInterceptor implements Interceptor {
+
+    @Override
+    public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
+        SingletonComponent singletonComponent = this.getComponent(interceptorContext, SingletonComponent.class);
+        // get the component instance
+        ComponentInstance singletonComponentInstance = singletonComponent.getComponentInstance();
+        if (singletonComponent == null) {
+            throw new Exception("Component instance isn't available for invocation: " + interceptorContext);
+        }
+        interceptorContext.putPrivateData(ComponentInstance.class, singletonComponentInstance);
+        return interceptorContext.proceed();
+    }
+
+    private <C extends Component> C getComponent(InterceptorContext context, Class<C> componentType) {
+        Component component = context.getPrivateData(Component.class);
+        if (component == null) {
+            throw new IllegalStateException("Component not set in InterceptorContext: " + context);
+        }
+        if (!componentType.isInstance(component)) {
+            throw new RuntimeException("Component " + component + " is not of expected type: " + componentType);
+        }
+        return componentType.cast(component);
+    }
+
+}

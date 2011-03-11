@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -38,6 +39,8 @@ import java.util.List;
  */
 public class SingletonComponent extends AbstractComponent {
 
+    private SingletonComponentInstance singletonComponentInstance;
+
     /**
      * Construct a new instance.
      *
@@ -48,8 +51,20 @@ public class SingletonComponent extends AbstractComponent {
     }
 
     @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        throw new RuntimeException("NYI");
+    public synchronized  ComponentInstance createInstance() {
+        if (this.singletonComponentInstance != null) {
+            throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
+        }
+        return super.createInstance();
+    }
+
+    @Override
+    protected synchronized AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        if (this.singletonComponentInstance != null) {
+            throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
+        }
+        this.singletonComponentInstance = new SingletonComponentInstance(this, instance, preDestroyInterceptors, context);
+        return this.singletonComponentInstance;
     }
 
     @Override
@@ -58,10 +73,18 @@ public class SingletonComponent extends AbstractComponent {
 
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
-                // setup the component being invoked
+                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
+                // runs on remote clients.
                 context.putPrivateData(Component.class, SingletonComponent.this);
                 return context.proceed();
             }
         };
+    }
+
+    synchronized ComponentInstance getComponentInstance() {
+        if (this.singletonComponentInstance == null) {
+            this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+        }
+        return this.singletonComponentInstance;
     }
 }

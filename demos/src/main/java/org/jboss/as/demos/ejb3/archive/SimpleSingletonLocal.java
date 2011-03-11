@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
 
-import java.util.concurrent.Callable;
+package org.jboss.as.demos.ejb3.archive;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Jaikiran Pai
  */
-public interface TestMBean {
-    Object exec(Class<?> cls) throws Exception;
+public interface SimpleSingletonLocal {
 
-    Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception;
+    int getBeanInstanceCount();
 
-    int invokeSingleton(String jndiName, int numThreads, int numTimes) throws Exception;
+    void increment();
 
-    int lookupSingleton(String jndiName, int numThreads, int numTimes) throws Exception;
+    int getCount();
+
+    void doNothing();
 }
