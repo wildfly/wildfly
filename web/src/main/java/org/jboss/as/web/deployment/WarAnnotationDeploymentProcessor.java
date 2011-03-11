@@ -36,6 +36,8 @@ import javax.servlet.annotation.WebListener;
 import javax.servlet.annotation.WebServlet;
 
 import org.jboss.annotation.javaee.Descriptions;
+import org.jboss.annotation.javaee.DisplayNames;
+import org.jboss.annotation.javaee.Icons;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -51,8 +53,13 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
-import org.jboss.metadata.annotation.creator.ProcessorUtils;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
+import org.jboss.metadata.javaee.spec.DescriptionImpl;
+import org.jboss.metadata.javaee.spec.DescriptionsImpl;
+import org.jboss.metadata.javaee.spec.DisplayNameImpl;
+import org.jboss.metadata.javaee.spec.DisplayNamesImpl;
+import org.jboss.metadata.javaee.spec.IconImpl;
+import org.jboss.metadata.javaee.spec.IconsImpl;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.RunAsMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
@@ -179,7 +186,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                             initParam.setParamName(initParamName.asString());
                             initParam.setParamValue(initParamValue.asString());
                             if (initParamDescription != null) {
-                                Descriptions descriptions = ProcessorUtils.getDescription(initParamDescription.asString());
+                                Descriptions descriptions = getDescription(initParamDescription.asString());
                                 if (descriptions != null) {
                                     initParam.setDescriptions(descriptions);
                                 }
@@ -194,7 +201,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 AnnotationValue smallIconValue = annotation.value("smallIcon");
                 AnnotationValue largeIconValue = annotation.value("largeIcon");
                 DescriptionGroupMetaData descriptionGroup =
-                    ProcessorUtils.getDescriptionGroup((descriptionValue == null) ? "" : descriptionValue.asString(),
+                    getDescriptionGroup((descriptionValue == null) ? "" : descriptionValue.asString(),
                             (displayNameValue == null) ? "" : displayNameValue.asString(),
                             (smallIconValue == null) ? "" : smallIconValue.asString(),
                             (largeIconValue == null) ? "" : largeIconValue.asString());
@@ -264,7 +271,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                             initParam.setParamName(initParamName.asString());
                             initParam.setParamValue(initParamValue.asString());
                             if (initParamDescription != null) {
-                                Descriptions descriptions = ProcessorUtils.getDescription(initParamDescription.asString());
+                                Descriptions descriptions = getDescription(initParamDescription.asString());
                                 if (descriptions != null) {
                                     initParam.setDescriptions(descriptions);
                                 }
@@ -279,7 +286,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 AnnotationValue smallIconValue = annotation.value("smallIcon");
                 AnnotationValue largeIconValue = annotation.value("largeIcon");
                 DescriptionGroupMetaData descriptionGroup =
-                    ProcessorUtils.getDescriptionGroup((descriptionValue == null) ? "" : descriptionValue.asString(),
+                    getDescriptionGroup((descriptionValue == null) ? "" : descriptionValue.asString(),
                             (displayNameValue == null) ? "" : displayNameValue.asString(),
                             (smallIconValue == null) ? "" : smallIconValue.asString(),
                             (largeIconValue == null) ? "" : largeIconValue.asString());
@@ -346,7 +353,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 listener.setListenerClass(classInfo.toString());
                 AnnotationValue descriptionValue = annotation.value();
                 if (descriptionValue != null) {
-                    DescriptionGroupMetaData descriptionGroup = ProcessorUtils.getDescriptionGroup(descriptionValue.asString());
+                    DescriptionGroupMetaData descriptionGroup = getDescriptionGroup(descriptionValue.asString());
                     if (descriptionGroup != null) {
                         listener.setDescriptionGroup(descriptionGroup);
                     }
@@ -519,6 +526,68 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
         return metaData;
+    }
+
+    protected Descriptions getDescription(String description) {
+        DescriptionsImpl descriptions = null;
+        if (description.length() > 0) {
+            DescriptionImpl di = new DescriptionImpl();
+            di.setDescription(description);
+            descriptions = new DescriptionsImpl();
+            descriptions.add(di);
+        }
+        return descriptions;
+    }
+
+    protected DisplayNames getDisplayName(String displayName) {
+        DisplayNamesImpl displayNames = null;
+        if (displayName.length() > 0) {
+            DisplayNameImpl dn = new DisplayNameImpl();
+            dn.setDisplayName(displayName);
+            displayNames = new DisplayNamesImpl();
+            displayNames.add(dn);
+        }
+        return displayNames;
+    }
+
+    protected Icons getIcons(String smallIcon, String largeIcon) {
+        IconsImpl icons = null;
+        if (smallIcon.length() > 0 || largeIcon.length() > 0) {
+            IconImpl i = new IconImpl();
+            i.setSmallIcon(smallIcon);
+            i.setLargeIcon(largeIcon);
+            icons = new IconsImpl();
+            icons.add(i);
+        }
+        return icons;
+    }
+
+    protected DescriptionGroupMetaData getDescriptionGroup(String description) {
+        DescriptionGroupMetaData dg = null;
+        if (description.length() > 0) {
+            dg = new DescriptionGroupMetaData();
+            Descriptions descriptions = getDescription(description);
+            dg.setDescriptions(descriptions);
+        }
+        return dg;
+    }
+
+    protected DescriptionGroupMetaData getDescriptionGroup(String description, String displayName, String smallIcon,
+            String largeIcon) {
+        DescriptionGroupMetaData dg = null;
+        if (description.length() > 0 || displayName.length() > 0 || smallIcon.length() > 0 || largeIcon.length() > 0) {
+            dg = new DescriptionGroupMetaData();
+            Descriptions descriptions = getDescription(description);
+            if (descriptions != null)
+                dg.setDescriptions(descriptions);
+            DisplayNames displayNames = getDisplayName(displayName);
+            if (displayNames != null)
+                dg.setDisplayNames(displayNames);
+            Icons icons = getIcons(smallIcon, largeIcon);
+            if (icons != null)
+                dg.setIcons(icons);
+        }
+        return dg;
     }
 
 }
