@@ -4,6 +4,7 @@
 package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
@@ -217,8 +218,6 @@ public class ServerOperationResolver {
         return groups;
     }
 
-
-
     private Map<Set<ServerIdentity>, ModelNode> getServerProfileOperations(ModelNode operation, PathAddress address,
             ModelNode domain, ModelNode host) {
         if (address.size() == 1) {
@@ -242,8 +241,10 @@ public class ServerOperationResolver {
         if (forDomain && hostModel.hasDefined(INTERFACE) && hostModel.get(INTERFACE).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
-        }
-        else if (hostModel.hasDefined(SERVER_CONFIG)) {
+        } else if (ADD.equals(operation.get(OP).asString()) && ! operation.has(CRITERIA)) {
+            // don't create named interfaces
+            result = Collections.emptyMap();
+        } else if (hostModel.hasDefined(SERVER_CONFIG)) {
             Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
                 ModelNode server = prop.getValue();
@@ -264,6 +265,7 @@ public class ServerOperationResolver {
             }
 
             ModelNode serverOp = operation.clone();
+            serverOp.get(OP_ADDR).setEmptyList().add(INTERFACE, pathName);
             result = Collections.singletonMap(servers, serverOp);
         }
         else {
@@ -279,7 +281,7 @@ public class ServerOperationResolver {
         if (forDomain && hostModel.hasDefined(PATH) && hostModel.get(PATH).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
-        } else if (! operation.hasDefined(PATH)) {
+        } else if (ADD.equals(operation.get(OP).asString()) && ! operation.hasDefined(PATH)) {
             // don't push named only paths
             result = Collections.emptyMap();
         }
@@ -304,6 +306,7 @@ public class ServerOperationResolver {
             }
 
             ModelNode serverOp = operation.clone();
+            serverOp.get(OP_ADDR).setEmptyList().add(PATH, pathName);
             result = Collections.singletonMap(servers, serverOp);
         }
         else {
@@ -520,6 +523,7 @@ public class ServerOperationResolver {
         }
         else {
             HostKey hostKey = HostKey.forName(address.getElement(1).getKey());
+            address = address.subAddress(1); // Get rid of the host=hostName
             switch (hostKey) {
                 case PATH: {
                     return getServerPathOperations(operation, address, host, false);

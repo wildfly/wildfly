@@ -51,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
@@ -305,9 +306,18 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                 targetHost = first.getValue().asString();
             }
         }
-
         if (localHostName.equals(targetHost)) {
-            routing = new OperationRouting(false);
+            if(isReadOnly(operation, address)) {
+                return new OperationRouting(false);
+            }
+            // Check if the target is an actual server
+            if(address.size() > 1) {
+                Property first = address.get(1);
+                if (SERVER.equals(first.getName())) {
+                    return new OperationRouting(false);
+                }
+            }
+            routing = new OperationRouting(Collections.singleton(targetHost));
         }
         else if (masterDomainControllerClient != null) {
             // TODO a slave could conceivably handle locally read-only requests for the domain model
