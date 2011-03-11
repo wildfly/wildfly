@@ -46,7 +46,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.ExecutionContext;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
@@ -774,13 +774,13 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public OperationResult execute(ExecutionContext executionContext, ResultHandler handler) {
+        public OperationResult execute(Operation operation, ResultHandler handler) {
             throw new UnsupportedOperationException("not supported");
         }
 
         @Override
-        public ModelNode execute(ExecutionContext executionContext) throws CancellationException {
-            ModelNode op = executionContext.getOperation();
+        public ModelNode execute(Operation operation) throws CancellationException {
+            ModelNode op = operation.getOperation();
             requests.add(op);
             return processOp(op);
         }
