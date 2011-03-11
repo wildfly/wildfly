@@ -31,6 +31,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.processors.EjbAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbJarParsingDeploymentUnitProcessor;
