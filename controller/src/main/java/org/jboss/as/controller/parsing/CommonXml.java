@@ -1364,15 +1364,17 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
             Element element) throws XMLStreamException {
-        writer.writeStartElement(element.getLocalName());
         final List<Property> properties = modelNode.asPropertyList();
-        for (Property prop : properties) {
-            writer.writeStartElement(Element.PROPERTY.getLocalName());
-            writeAttribute(writer, Attribute.NAME, prop.getName());
-            writeAttribute(writer, Attribute.VALUE, prop.getValue().asString());
+        if (properties.size() > 0) {
+            writer.writeStartElement(element.getLocalName());
+            for (Property prop : properties) {
+                writer.writeStartElement(Element.PROPERTY.getLocalName());
+                writeAttribute(writer, Attribute.NAME, prop.getName());
+                writeAttribute(writer, Attribute.VALUE, prop.getValue().asString());
+                writer.writeEndElement();
+            }
             writer.writeEndElement();
         }
-        writer.writeEndElement();
     }
 
     protected static void writeAttribute(XMLExtendedStreamWriter writer, Attribute attribute, String value)

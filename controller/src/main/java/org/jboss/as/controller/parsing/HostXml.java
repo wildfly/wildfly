@@ -42,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
@@ -107,8 +108,8 @@ public class HostXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES);
+        if (modelNode.hasDefined(SYSTEM_PROPERTIES)) {
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
         }
 
         if (modelNode.hasDefined(MANAGEMENT)) {
