@@ -41,13 +41,13 @@
     <modules>
         <module>common</module>
         <module>service</module>
-        <module>cdi-testenricher-service</module>
         <module>container-embedded</module>
         <module>container-managed</module>
         <module>container-remote</module>
-        <module>jsfunit-processor-service</module>
-        <module>resource-testenricher-service</module>
-        <module>servlet-protocol</module>
+        <module>processor-jsfunit</module>
+        <module>protocol-servlet</module>
+        <module>testenricher-cdi</module>
+        <module>testenricher-resource</module>
     </modules>
 
     <packaging>pom</packaging>

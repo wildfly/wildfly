@@ -37,34 +37,11 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-servlet-protocol</artifactId>
+    <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
 
     <name>JBoss Application Server: Arquillian Common</name>
 
     <packaging>jar</packaging>
-    
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-jmx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian</groupId>
-            <artifactId>arquillian-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.jsfunit</groupId>
-            <artifactId>jboss-jsfunit-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap</groupId>
-            <artifactId>shrinkwrap-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-        </dependency>
-    </dependencies>
     
 </project>

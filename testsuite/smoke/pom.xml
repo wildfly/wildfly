@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-servlet-protocol</artifactId>
+            <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

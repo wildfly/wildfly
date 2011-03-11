@@ -423,22 +423,22 @@
         
         <dependency>
            <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-arquillian-cdi-testenricher-service</artifactId>
+           <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
         </dependency>
 
         <dependency>
            <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-arquillian-jsfunit-processor-service</artifactId>
+           <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
         </dependency>
 
         <dependency>
           <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-resource-testenricher-service</artifactId>
+          <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
         </dependency>
 
         <dependency>
           <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-servlet-protocol</artifactId>
+          <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
         </dependency>
 
         <dependency>

@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--
-      Here to use the JSFUnitApplicationArchiveProcessor without using the JSFUnitArchiveAppender brought in by org.jboss.jsfunit:jboss-jsfunit  
+      Here since the arquillian Resource test enricher does not have a META-INF/services/org.jboss.arquillian.spi.TestEnricher  
      -->
 
     <parent>
@@ -37,10 +37,10 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-jsfunit-processor-service</artifactId>
+    <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Arquillian Common</name>
+    <name>JBoss Application Server: Arquillian Testenricher Resource</name>
 
     <packaging>jar</packaging>
     

@@ -327,7 +327,7 @@
 
         <module-def name="org.jboss.arquillian.testenricher.cdi">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/>
-        	   <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-cdi-testenricher-service"/>
+        	   <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-cdi"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.jmx">
@@ -344,7 +344,7 @@
 
         <module-def name="org.jboss.arquillian.testenricher.resource">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-resource"/>
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-resource-testenricher-service"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-resource"/>
         </module-def>
 
         <module-def name="org.jboss.as.aggregate" />
@@ -354,7 +354,7 @@
         </module-def>
     	
         <module-def name="org.jboss.as.arquillian.protocol.servlet">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-servlet-protocol"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-protocol-servlet"/>
         </module-def>
     	
         <module-def name="org.jboss.as.arquillian.service">
@@ -579,7 +579,7 @@
         </module-def>
 
         <module-def name="org.jboss.jsfunit.jsfunit-arquillian-processor">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-jsfunit-processor-service"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-processor-jsfunit"/>
         </module-def>
     	
         <module-def name="org.jboss.jts">
