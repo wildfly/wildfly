@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -118,8 +120,8 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         private final ServiceTarget target;
         private final String deploymentName;
         private final AtomicInteger count = new AtomicInteger();
-        private final Map<ServiceName, StartException> startExceptions = new IdentityHashMap<ServiceName, StartException>();
-        private final Set<ServiceName> failedDependencies = new HashSet<ServiceName>();
+        private final Map<ServiceName, StartException> startExceptions = Collections.synchronizedMap(new HashMap<ServiceName, StartException>());
+        private final Set<ServiceName> failedDependencies = Collections.synchronizedSet(new HashSet<ServiceName>());
         private final DeploymentCompletionCallback callback;
 
 
