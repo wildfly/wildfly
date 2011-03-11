@@ -27,6 +27,7 @@
         <module name="javax.el.api" export="true"/>
         <module name="javax.servlet.api" export="true"/>
         <module name="javax.servlet.jsp.api" export="true"/>
+        <module name="javax.servlet.jstl" export="true"/>
         <module name="javax.validation.api" export="true"/>
     </dependencies>
 
