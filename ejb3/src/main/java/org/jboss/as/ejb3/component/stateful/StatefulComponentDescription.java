@@ -20,32 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.session.singleton;
+package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
-import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
 /**
- * @author Jaikiran Pai
+ * User: jpai
  */
-public class SingletonComponentConfiguration extends SessionBeanComponentConfiguration {
+public class StatefulComponentDescription extends SessionBeanComponentDescription {
 
     /**
      * Construct a new instance.
      *
-     * @param description the original component description
+     * @param componentName      the component name
+     * @param componentClassName the component instance class name
+     * @param moduleName         the module name
+     * @param applicationName    the application name
      */
-    public SingletonComponentConfiguration(final EJBComponentDescription description) {
-        super(description);
-
-        // instance associating interceptor
-        this.addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
+    public StatefulComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
+        super(componentName, componentClassName, moduleName, applicationName);
     }
 
     @Override
-    public AbstractComponent constructComponent() {
-        return new SingletonComponent(this);
+    protected AbstractComponentConfiguration constructComponentConfiguration() {
+        return new StatefulSessionComponentConfiguration(this);
     }
 }

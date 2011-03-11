@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.session.stateless;
+package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
 /**

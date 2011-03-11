@@ -74,7 +74,6 @@ public class Test implements TestMBean {
 
         Context ctx = new InitialContext();
         SimpleSingletonLocal bean = (SimpleSingletonLocal) ctx.lookup(jndiName);
-        System.out.println("Getting instance count");
         return bean.getBeanInstanceCount();
     }
 

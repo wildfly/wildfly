@@ -20,27 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.session.singleton;
+package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.AbstractComponentInstance;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.util.List;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
- * @author  Jaikiran Pai
+ * @author Jaikiran Pai
  */
-public class SingletonComponentInstance extends AbstractComponentInstance {
+public class StatelessSessionComponentConfiguration extends SessionBeanComponentConfiguration {
 
     /**
      * Construct a new instance.
      *
-     * @param component the component
-     * @param instance  the object instance
+     * @param description the original component description
      */
-    public SingletonComponentInstance(final AbstractComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
-        super(component, instance, preDestroyInterceptors, factoryContext);
+    public StatelessSessionComponentConfiguration(final EJBComponentDescription description) {
+        super(description);
+
+        // TODO: use a proper instance association interceptor
+        addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new DummyComponentInterceptor()));
+    }
+
+    @Override
+    public AbstractComponent constructComponent() {
+        return new StatelessSessionComponent(this);
     }
 }

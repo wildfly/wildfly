@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ejb3.component.session.singleton.SingletonComponentDescription;
+import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;

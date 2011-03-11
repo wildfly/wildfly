@@ -22,17 +22,14 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ejb3.component.session.singleton.SingletonComponentDescription;
+import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Startup;
 import java.util.List;
 import java.util.Map;

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.session.stateless;
+package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
@@ -34,70 +34,56 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import java.util.List;
 
 /**
- * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans
- * <p/>
- * <p/>
- * Author : Jaikiran Pai
+ * @author Jaikiran Pai
  */
-public class StatelessSessionComponent extends AbstractComponent {
+public class SingletonComponent extends AbstractComponent {
 
-
-    /**
-     * The component level interceptors that will be applied during the invocation
-     * on the bean
-     */
-    private List<Interceptor> componentInterceptors;
-
-    // some more injectable resources
-    // @Resource
-    // private Pool pool;
+    private SingletonComponentInstance singletonComponentInstance;
 
     /**
-     * Constructs a StatelessEJBComponent for a stateless session bean
+     * Construct a new instance.
      *
-     * @param componentConfiguration
+     * @param configuration the component configuration
      */
-    public StatelessSessionComponent(final EJBComponentConfiguration componentConfiguration) {
-        this(componentConfiguration, null);
-    }
-
-    /**
-     * Constructs a StatelessEJBComponent for a stateless session bean
-     *
-     * @param componentConfiguration
-     * @param componentInterceptors
-     */
-    public StatelessSessionComponent(final EJBComponentConfiguration componentConfiguration, List<Interceptor> componentInterceptors) {
-        super(componentConfiguration);
-        this.componentInterceptors = componentInterceptors;
+    protected SingletonComponent(final EJBComponentConfiguration configuration) {
+        super(configuration);
     }
 
     @Override
-    public Interceptor createClientInterceptor(Class<?> viewClass) {
-        // TODO: Needs to be implemented
+    public synchronized  ComponentInstance createInstance() {
+        if (this.singletonComponentInstance != null) {
+            throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
+        }
+        return super.createInstance();
+    }
+
+    @Override
+    protected synchronized AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+        if (this.singletonComponentInstance != null) {
+            throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
+        }
+        this.singletonComponentInstance = new SingletonComponentInstance(this, instance, preDestroyInterceptors, context);
+        return this.singletonComponentInstance;
+    }
+
+    @Override
+    public Interceptor createClientInterceptor(Class<?> view) {
         return new Interceptor() {
 
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
                 // TODO: FIXME: Component shouldn't be attached in a interceptor context that
                 // runs on remote clients.
-                context.putPrivateData(Component.class, StatelessSessionComponent.this);
+                context.putPrivateData(Component.class, SingletonComponent.this);
                 return context.proceed();
             }
         };
     }
 
-    //TODO: This should be getInstance()
-    @Override
-    public ComponentInstance createInstance() {
-        // TODO: Use a pool
-        return super.createInstance();
+    synchronized ComponentInstance getComponentInstance() {
+        if (this.singletonComponentInstance == null) {
+            this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+        }
+        return this.singletonComponentInstance;
     }
-
-    @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        return new StatelessSessionComponentInstance(this, instance, preDestroyInterceptors, context);
-    }
-
-
 }

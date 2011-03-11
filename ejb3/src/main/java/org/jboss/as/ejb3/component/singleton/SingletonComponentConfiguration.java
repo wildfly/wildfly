@@ -20,30 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.session.stateful;
+package org.jboss.as.ejb3.component.singleton;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ee.component.AbstractComponent;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
-public class StatefulComponentDescription extends SessionBeanComponentDescription {
+public class SingletonComponentConfiguration extends SessionBeanComponentConfiguration {
 
     /**
      * Construct a new instance.
      *
-     * @param componentName      the component name
-     * @param componentClassName the component instance class name
-     * @param moduleName         the module name
-     * @param applicationName    the application name
+     * @param description the original component description
      */
-    public StatefulComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
-        super(componentName, componentClassName, moduleName, applicationName);
+    public SingletonComponentConfiguration(final EJBComponentDescription description) {
+        super(description);
+
+        // instance associating interceptor
+        this.addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
     }
 
     @Override
-    protected AbstractComponentConfiguration constructComponentConfiguration() {
-        return new StatefulSessionComponentConfiguration(this);
+    public AbstractComponent constructComponent() {
+        return new SingletonComponent(this);
     }
 }

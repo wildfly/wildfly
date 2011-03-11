@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.session.singleton.SingletonComponentDescription;
-import org.jboss.as.ejb3.component.session.stateful.StatefulComponentDescription;
-import org.jboss.as.ejb3.component.session.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;

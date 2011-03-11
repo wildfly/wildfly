@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,28 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.ejb3.component.stateful;
 
-package org.jboss.as.ejb3.component.session.stateless;
-
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ejb3.cache.spi.Identifiable;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.util.id.GUID;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Author : Jaikiran Pai
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatelessSessionComponentInstance extends AbstractComponentInstance {
+public class StatefulSessionComponentInstance extends AbstractComponentInstance implements Identifiable {
+    private final GUID id;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param component   the component
-     * @param instance    the object instance
-     */
-    protected StatelessSessionComponentInstance(final AbstractComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
         super(component, instance, preDestroyInterceptors, context);
+        this.id = new GUID();
+    }
+
+    public Serializable getId() {
+        return id;
     }
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.session.singleton;
+package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -44,6 +44,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      */
     private ConcurrencyManagementType concurrencyManagementType;
 
+
     /**
      * Construct a new instance.
      *
@@ -64,6 +65,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     /**
      * Returns true if the singleton bean is marked for init-on-startup (a.k.a @Startup). Else
      * returns false
+     * <p/>
      *
      * @return
      */
@@ -76,6 +78,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      */
     public void initOnStartup() {
         this.initOnStartup = true;
+
     }
 
     /**
@@ -102,6 +105,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         this.concurrencyManagementType = ConcurrencyManagementType.BEAN;
     }
 
+
     /**
      * Marks this singleton bean for container managed concurrency.
      *
@@ -112,5 +116,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             throw new IllegalStateException(this.getEJBName() + " bean has been marked for " + this.concurrencyManagementType + " cannot change it now!");
         }
         this.concurrencyManagementType = ConcurrencyManagementType.CONTAINER;
+
     }
 }
