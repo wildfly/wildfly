@@ -87,7 +87,7 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         }
         SessionBeanComponentDescription sessionBeanComponentDescription = (SessionBeanComponentDescription) componentDescription;
         // fetch the local business interfaces of the bean
-        Collection<String> localBusinessInterfaces = this.getLocalBusinessInterfaces(compositeIndex, sessionBeanClass);
+        Collection<String> localBusinessInterfaces = this.getLocalBusinessInterfaces(sessionBeanComponentDescription, compositeIndex, sessionBeanClass);
         if (logger.isTraceEnabled()) {
             logger.trace("Session bean: " + sessionBeanComponentDescription.getEJBName() + " has " + localBusinessInterfaces.size() + " local business interfaces namely: " + localBusinessInterfaces);
         }
@@ -142,7 +142,7 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
 
     // TODO: This isn't yet completely implemented. This currently only takes into account @Local annotation on the
     // bean implementation class. This further has to check for @Local on the interfaces implemented by the bean
-    private Collection<String> getLocalBusinessInterfaces(CompositeIndex compositeIndex, ClassInfo sessionBeanClass) {
+    private Collection<String> getLocalBusinessInterfaces(SessionBeanComponentDescription description, CompositeIndex compositeIndex, ClassInfo sessionBeanClass) throws DeploymentUnitProcessingException {
         Map<DotName, List<AnnotationInstance>> annotationsOnBean = sessionBeanClass.annotations();
         if (annotationsOnBean == null || annotationsOnBean.isEmpty()) {
             String defaultLocalBusinessInterface = this.getDefaultLocalInterface(sessionBeanClass);
@@ -174,6 +174,13 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
             throw new RuntimeException("@Local should only appear on a class. Target: " + target + " is not a class");
         }
         AnnotationValue ejbLocalAnnValue = ejbLocalAnnotation.value();
+        if (ejbLocalAnnValue == null) {
+            DotName[] interfaces = sessionBeanClass.interfaces();
+            if (interfaces.length != 1)
+                throw new DeploymentUnitProcessingException("Bean " + description + " specifies @Local, but does not implement 1 interface");
+            localBusinessInterfaces.add(interfaces[0].toString());
+            return localBusinessInterfaces;
+        }
         Type[] localInterfaceTypes = ejbLocalAnnValue.asClassArray();
         for (Type localInterface : localInterfaceTypes) {
             localBusinessInterfaces.add(localInterface.name().toString());
