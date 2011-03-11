@@ -22,11 +22,13 @@
 package org.jboss.as.demos.ejb3.archive;
 
 import javax.ejb.Stateful;
+import javax.interceptor.Interceptors;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Stateful
+@Interceptors(SimpleInterceptor.class)
 public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
     private String state;
 

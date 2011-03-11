@@ -23,6 +23,7 @@ package org.jboss.as.demos.ejb3.archive;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.interceptor.Interceptors;
 
 /**
  * A simple stateless session bean.
@@ -30,6 +31,7 @@ import javax.ejb.Stateless;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Stateless
+@Interceptors(SimpleInterceptor.class)
 public class SimpleStatelessSessionBean extends SimpleInterceptor implements SimpleStatelessSessionLocal {
     @EJB(beanName = "OtherStatelessSessionBean")
     private OtherStatelessSessionLocal other;

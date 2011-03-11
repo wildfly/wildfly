@@ -26,6 +26,7 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.demos.ejb3.archive.SimpleInterceptor;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -66,7 +67,7 @@ public class StatelessBeanTestCase {
         SimpleStatelessSessionLocal localBean = (SimpleStatelessSessionLocal) ctx.lookup("java:global/ejb3-slsb-example/" + SimpleStatelessSessionBean.class.getSimpleName() + "!" + SimpleStatelessSessionLocal.class.getName());
         String message = "Zzzzzzzz.....!";
         String echo = localBean.echo(message);
-        String expectedEcho = SimpleStatelessSessionBean.class.getSimpleName() + "#" + "Echo " + message + " -- (1:Other, 2:Other, 3:Other)" ;
+        String expectedEcho = SimpleInterceptor.class.getSimpleName() + "#" + SimpleStatelessSessionBean.class.getSimpleName() + "#" + "Echo " + message + " -- (1:Other, 2:Other, 3:Other)" ;
 
         Assert.assertEquals("Unexpected echo message received from stateless bean", expectedEcho, echo);
 

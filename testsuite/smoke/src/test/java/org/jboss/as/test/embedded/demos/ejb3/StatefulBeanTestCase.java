@@ -26,12 +26,12 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.demos.ejb3.archive.SimpleInterceptor;
 import org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -69,7 +69,7 @@ public class StatefulBeanTestCase {
         localSfsb.setState(state);
 
         String storedState = localSfsb.getState();
-        Assert.assertEquals("Unexpected state returned from stateful session bean", state, storedState);
+        Assert.assertEquals("Unexpected state returned from stateful session bean", SimpleInterceptor.class.getSimpleName() + "#" + state, storedState);
 
     }
 }
