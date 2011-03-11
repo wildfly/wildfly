@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -51,6 +54,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.client.ExecutionContextBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.EmbeddedServerFactory;
@@ -190,51 +194,75 @@ public class ServerInModuleStartupTestCase {
     @Test
     public void testFilesystemDeployment() throws Exception {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
-        final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(InetAddress.getByName("localhost"), 9999);
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
         archive.as(ZipExporter.class).exportZip(file, true);
 
-        final File deployDir = new File(System.getProperty(ServerEnvironment.HOME_DIR), "standalone/deployments");
-        Assert.assertTrue(deployDir.exists());
-        final File target = new File(deployDir, "test-deployment.sar");
-        final File deployed = new File(deployDir, "test-deployment.sar.deployed");
-        Assert.assertFalse(target.exists());
 
-        testDeployments(new DeploymentExecutor() {
-            @Override
-            public void initialDeploy() throws IOException {
-                //Copy file to deploy directory
-                final InputStream in = new BufferedInputStream(new FileInputStream(file));
-                try {
-                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
+        final File deployDir = new File("target", "deployments");
+        deployDir.mkdirs();
+        Assert.assertTrue(deployDir.exists());
+
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+        ModelNode addr = new ModelNode();
+        addr.add("subsystem", "deployment-scanner");
+        addr.add("scanner", "test");
+        add.get(OP_ADDR).set(addr);
+        add.get("path").set(deployDir.getAbsolutePath());
+        add.get("scan-enabled").set(true);
+        add.get("scan-interval").set(1000);
+
+        ModelNode result = client.execute(add);
+        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.require(ModelDescriptionConstants.OUTCOME).asString());
+
+        try {
+            final File target = new File(deployDir, "test-deployment.sar");
+            final File deployed = new File(deployDir, "test-deployment.sar.deployed");
+            Assert.assertFalse(target.exists());
+
+            testDeployments(new DeploymentExecutor() {
+                @Override
+                public void initialDeploy() throws IOException {
+                    //Copy file to deploy directory
+                    final InputStream in = new BufferedInputStream(new FileInputStream(file));
                     try {
-                        int i = in.read();
-                        while (i != -1) {
-                            out.write(i);
-                            i = in.read();
+                        final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
+                        try {
+                            int i = in.read();
+                            while (i != -1) {
+                                out.write(i);
+                                i = in.read();
+                            }
+                        } finally {
+                            StreamUtils.safeClose(out);
                         }
                     } finally {
-                        StreamUtils.safeClose(out);
+                        StreamUtils.safeClose(in);
                     }
-                } finally {
-                    StreamUtils.safeClose(in);
                 }
-            }
 
-            @Override
-            public void fullReplace() throws IOException {
-                //Copy file to deploy directory again
-                initialDeploy();
-            }
+                @Override
+                public void fullReplace() throws IOException {
+                    //Copy file to deploy directory again
+                    initialDeploy();
+                }
 
-            @Override
-            public void undeploy() {
-                //Delete file from deploy directory
-                deployed.delete();
+                @Override
+                public void undeploy() {
+                    //Delete file from deploy directory
+                    deployed.delete();
+                }
+            });
+        } finally {
+            try {
+                client.execute(result.get(ModelDescriptionConstants.COMPENSATING_OPERATION));
+            } catch (Exception e) {
+                client.close();
             }
-        });
+        }
     }
 
     private void testDeployments(DeploymentExecutor deploymentExecutor) throws Exception {

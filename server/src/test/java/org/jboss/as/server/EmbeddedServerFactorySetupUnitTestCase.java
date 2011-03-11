@@ -66,8 +66,9 @@ public class EmbeddedServerFactorySetupUnitTestCase {
         props.setProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
         EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
 
-        Assert.assertEquals(3, props.size());
+        Assert.assertEquals(4, props.size());
         Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
+        assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 1);
     }
@@ -80,7 +81,7 @@ public class EmbeddedServerFactorySetupUnitTestCase {
         EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(4, props.size());
         Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
-        Assert.assertEquals(alternativeServer.getAbsolutePath(), props.getProperty(ServerEnvironment.SERVER_BASE_DIR));
+        assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 2);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 2);
     }
@@ -92,8 +93,9 @@ public class EmbeddedServerFactorySetupUnitTestCase {
         props.setProperty(ServerEnvironment.SERVER_DATA_DIR, alternativeDataDir.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_CONFIG_DIR, alternativeConfigDir.getAbsolutePath());
         EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
-        Assert.assertEquals(3, props.size());
+        Assert.assertEquals(4, props.size());
         Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
+        assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 3);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 4);
     }
@@ -108,7 +110,7 @@ public class EmbeddedServerFactorySetupUnitTestCase {
         EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(4, props.size());
         Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
-        Assert.assertEquals(alternativeServer.getAbsolutePath(), props.getProperty(ServerEnvironment.SERVER_BASE_DIR));
+        assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 3);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 4);
     }
@@ -122,7 +124,7 @@ public class EmbeddedServerFactorySetupUnitTestCase {
         EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(4, props.size());
         Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
-        Assert.assertEquals(alternativeServer.getAbsolutePath(), props.getProperty(ServerEnvironment.SERVER_BASE_DIR));
+        assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 2);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 4);
     }
@@ -133,7 +135,7 @@ public class EmbeddedServerFactorySetupUnitTestCase {
         File dir = new File(dirName);
         Assert.assertTrue(dir.exists());
         Assert.assertTrue(dir.isDirectory());
-        File expected = new File(dir, String.valueOf(id));
+        File expected = id >= 0 ? new File(dir, String.valueOf(id)) : dir;
         Assert.assertTrue(expected.exists());
 
 
@@ -146,6 +148,7 @@ public class EmbeddedServerFactorySetupUnitTestCase {
         }
         Assert.fail(dir + " is not a child of " + embeddedRoot);
     }
+
 
     private File createRootDir() {
         File root = new File("target/server-home");

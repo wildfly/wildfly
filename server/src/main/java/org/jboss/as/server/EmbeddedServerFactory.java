@@ -198,6 +198,7 @@ public class EmbeddedServerFactory {
         copyDirectory(originalConfigDir, configDir);
         copyDirectory(orginalDataDir, dataDir);
 
+        props.put(ServerEnvironment.SERVER_BASE_DIR, tempRoot.getAbsolutePath());
         props.put(ServerEnvironment.SERVER_CONFIG_DIR, configDir.getAbsolutePath());
         props.put(ServerEnvironment.SERVER_DATA_DIR, dataDir.getAbsolutePath());
 
