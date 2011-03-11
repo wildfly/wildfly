@@ -57,6 +57,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.domain.controller.HostControllerClient.DOMAIN_OP;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -185,8 +186,26 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         //System.out.println("------ operation " + operation);
 
         if (operation.get(OP).asString().equals(HostControllerClient.EXECUTE_ON_DOMAIN)) {
-            //System.out.println("------ execute locally ");
-            return localDomainModel.execute(operationContext.clone(operation.require(HostControllerClient.DOMAIN_OP)), handler);
+            ControllerTransaction transaction = new ControllerTransaction();
+            try {
+                ModelNode query = localDomainModel.execute(operationContext, transaction);
+                //System.out.println("------ "  + query);
+                handler.handleResultFragment(new String[0], query);
+                handler.handleResultComplete();
+                return new BasicOperationResult();
+            } catch (final Throwable t) {
+                log.errorf(t, "domain operation (%s) failed - address: (%s)", operationContext.getOperation().get(DOMAIN_OP).get(OP), operationContext.getOperation().get(DOMAIN_OP).get(OP_ADDR));
+                if (transaction != null) {
+                    transaction.setRollbackOnly();
+                }
+                handler.handleFailed(getFailureResult(t));
+                return new BasicOperationResult();
+            }
+            finally {
+                if (transaction != null) {
+                    transaction.commit();
+                }
+            }
         }
 
         // See who handles this op
@@ -211,9 +230,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
         Map<String, ModelNode> hostResults = pushToHosts(operationContext, routing, transaction);
+        //System.out.println("---- Pushed to hosts");
         ModelNode masterFailureResult = null;
         ModelNode hostFailureResults = null;
         ModelNode masterResult = hostResults.get(localHostName);
+        //System.out.println("-----Checking host results");
         if (masterResult != null && masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
             transaction.setRollbackOnly();
             masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
@@ -478,12 +499,14 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                 @Override
                 public ModelNode call() throws Exception {
                     try {
-                        return client.execute(operation, transaction);
+                        //System.out.println("------ pushing to host " + host);
+                        ModelNode node = client.execute(operation, transaction);
+                        //System.out.println("---- host result " + node);
+                        return node;
                     } finally {
                         //System.out.println("------ pushed to host " + host);
                     }
                 }
-
             };
 
             futures.put(host, scheduledExecutorService.submit(callable));

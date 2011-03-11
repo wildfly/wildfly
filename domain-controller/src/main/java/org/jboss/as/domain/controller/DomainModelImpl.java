@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -326,7 +327,7 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
     }
 
     private String getServerGroup(String serverName) {
-        return getModel().require(HOST).require(localHostName).require(SERVER_CONFIG).require(serverName).require(SERVER_GROUP).asString();
+        return getModel().require(HOST).require(localHostName).require(SERVER_CONFIG).require(serverName).require(GROUP).asString();
     }
 
     private ModelNode getHostModel() {

@@ -94,13 +94,15 @@ public class BasicTransactionalModelController extends BasicModelController impl
     public OperationResult execute(final Operation executionContext, final ResultHandler handler) {
         ControllerTransaction transaction = null;
         try {
-            final PathAddress address = PathAddress.pathAddress(executionContext.getOperation().get(OP_ADDR));
+            if (executionContext.getOperation().get(OP_ADDR).hasDefined(OP_ADDR)) {
+                final PathAddress address = PathAddress.pathAddress(executionContext.getOperation().get(OP_ADDR));
 
-            final ProxyController proxyExecutor = getRegistry().getProxyController(address);
-            if (proxyExecutor != null) {
-                Operation newContext = executionContext.clone();
-                newContext.getOperation().get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
-                return proxyExecutor.execute(newContext, handler);
+                final ProxyController proxyExecutor = getRegistry().getProxyController(address);
+                if (proxyExecutor != null) {
+                    Operation newContext = executionContext.clone();
+                    newContext.getOperation().get(OP_ADDR).set(address.subAddress(proxyExecutor.getProxyNodeAddress().size()).toModelNode());
+                    return proxyExecutor.execute(newContext, handler);
+                }
             }
             transaction = new ControllerTransaction();
             return execute(executionContext, handler, transaction);
