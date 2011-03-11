@@ -238,6 +238,7 @@ public class BasicModelController extends AbstractModelController implements Mod
 
                 return doExecute(context, operation, operationHandler, handler, address, modelSource, configurationPersisterProvider);
             } catch (OperationFailedException e) {
+                log.debugf(e, "operation (%s) failed - address: (%s)", operation.getOperation().get(OP), operation.getOperation().get(OP_ADDR));
                 handler.handleFailed(e.getFailureDescription());
                 return new BasicOperationResult();
             }
