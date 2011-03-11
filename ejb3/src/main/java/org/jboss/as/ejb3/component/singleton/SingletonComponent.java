@@ -86,4 +86,15 @@ public class SingletonComponent extends AbstractComponent {
         }
         return this.singletonComponentInstance;
     }
+
+    @Override
+    public void stop() {
+        synchronized (this.singletonComponentInstance) {
+            if (this.singletonComponentInstance != null) {
+                this.destroyInstance(this.singletonComponentInstance);
+                this.singletonComponentInstance = null;
+            }
+        }
+        super.stop();
+    }
 }
