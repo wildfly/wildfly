@@ -222,19 +222,20 @@ public class BasicModelController extends AbstractModelController implements Mod
                 return proxyExecutor.execute(newContext, handler);
             }
 
-            if (isMultiStepOperation(executionContext, address)) {
-                MultiStepOperationController multistepController = getMultiStepOperationController(executionContext, handler, modelSource, configurationPersisterProvider);
-                return multistepController.execute(handler);
-            }
-
-            final String operationName = executionContext.getOperation().require(ModelDescriptionConstants.OP).asString();
-            final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
-            if (operationHandler == null) {
-                throw new IllegalStateException("No handler for " + operationName + " at address " + address);
-            }
-
-            final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
             try {
+                if (isMultiStepOperation(executionContext, address)) {
+                    MultiStepOperationController multistepController = getMultiStepOperationController(executionContext, handler, modelSource, configurationPersisterProvider);
+                    return multistepController.execute(handler);
+                }
+
+                final String operationName = executionContext.getOperation().require(ModelDescriptionConstants.OP).asString();
+                final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
+                if (operationHandler == null) {
+                    throw new IllegalStateException("No handler for " + operationName + " at address " + address);
+                }
+
+                final OperationContext context = contextFactory.getOperationContext(modelSource, address, operationHandler, executionContext);
+
                 return doExecute(context, executionContext, operationHandler, handler, address, modelSource, configurationPersisterProvider);
             } catch (OperationFailedException e) {
                 handler.handleFailed(e.getFailureDescription());
