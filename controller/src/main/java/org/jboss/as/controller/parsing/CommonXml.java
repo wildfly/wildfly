@@ -29,18 +29,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -305,11 +305,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case NATIVE_API: {
+                        case NATIVE_INTERFACE: {
                             parseNativeManagementSocket(reader, address, list);
                             break;
                         }
-                        case HTTP_API: {
+                        case HTTP_INTERFACE: {
                             parseHttpManagementSocket(reader, address, list);
                             break;
                         }
@@ -461,7 +461,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         mgmtSocket.get(INTERFACE).set(interfaceName);
         mgmtSocket.get(PORT).set(port);
         mgmtSocket.get(OP).set(ADD);
-        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT, HTTP_API);
+        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT_INTERFACES, HTTP_INTERFACE);
 
         list.add(mgmtSocket);
 
@@ -517,7 +517,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         mgmtSocket.get(INTERFACE).set(interfaceName);
         mgmtSocket.get(PORT).set(port);
         mgmtSocket.get(OP).set(ADD);
-        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT, NATIVE_API);
+        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT_INTERFACES, NATIVE_INTERFACE);
         list.add(mgmtSocket);
 
         reader.discardRemainder();
@@ -1461,14 +1461,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode serverManagement) throws XMLStreamException {
-        writer.writeStartElement(Element.MANAGEMENT.getLocalName());
+        writer.writeStartElement(Element.MANAGEMENT_INTERFACES.getLocalName());
 
-        if (serverManagement.hasDefined(NATIVE_API)) {
-            writeManagementProtocol(Element.NATIVE_API, writer, serverManagement.get(NATIVE_API));
+        if (serverManagement.hasDefined(NATIVE_INTERFACE)) {
+            writeManagementProtocol(Element.NATIVE_INTERFACE, writer, serverManagement.get(NATIVE_INTERFACE));
         }
 
-        if (serverManagement.hasDefined(HTTP_API)) {
-            writeManagementProtocol(Element.HTTP_API, writer, serverManagement.get(HTTP_API));
+        if (serverManagement.hasDefined(HTTP_INTERFACE)) {
+            writeManagementProtocol(Element.HTTP_INTERFACE, writer, serverManagement.get(HTTP_INTERFACE));
         }
 
         writer.writeEndElement();

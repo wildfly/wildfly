@@ -31,7 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -112,8 +112,8 @@ public class HostXml extends CommonXml {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
         }
 
-        if (modelNode.hasDefined(MANAGEMENT)) {
-            writeManagement(writer, modelNode.get(MANAGEMENT));
+        if (modelNode.hasDefined(MANAGEMENT_INTERFACES)) {
+            writeManagement(writer, modelNode.get(MANAGEMENT_INTERFACES));
         }
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
@@ -203,7 +203,7 @@ public class HostXml extends CommonXml {
             parseSystemProperties(reader, address, list);
             element = nextElement(reader);
         }
-        if (element == Element.MANAGEMENT) {
+        if (element == Element.MANAGEMENT_INTERFACES) {
             parseManagement(reader, address, list);
             element = nextElement(reader);
         }

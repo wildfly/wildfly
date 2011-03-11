@@ -27,7 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
@@ -85,17 +85,17 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, NAME, NILLABLE).set(true);
         root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
 
-        root.get(ATTRIBUTES, MANAGEMENT, DESCRIPTION).set(bundle.getString("host.management"));
-        root.get(ATTRIBUTES, MANAGEMENT, TYPE).set(ModelType.OBJECT);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("host.management.interface"));
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("host.management.port"));
-        root.get(ATTRIBUTES, MANAGEMENT, VALUE_TYPE, PORT, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT, REQUIRED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT, HEAD_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, DESCRIPTION).set(bundle.getString("host.management"));
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, TYPE).set(ModelType.OBJECT);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("host.management.interface"));
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("host.management.port"));
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, PORT, REQUIRED).set(false);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, REQUIRED).set(true);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, HEAD_COMMENT_ALLOWED).set(true);
+        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, TAIL_COMMENT_ALLOWED).set(false);
 
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, DESCRIPTION).set(bundle.getString("host.domain-controller"));
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, TYPE).set(ModelType.OBJECT);

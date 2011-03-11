@@ -67,7 +67,7 @@ public class ModelDescriptionConstants {
     public static final String GROUP = "group";
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
-    public static final String HTTP_API = "http-api";
+    public static final String HTTP_INTERFACE = "http-interface";
     public static final String HOST = "host";
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
     public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
@@ -83,7 +83,7 @@ public class ModelDescriptionConstants {
     public static final String JVM_TYPE = "type";
     public static final String LOCAL = "local";
     public static final String LOCALE = "locale";
-    public static final String MANAGEMENT = "management";
+    public static final String MANAGEMENT_INTERFACES = "management-interfaces";
     public static final String MASK = "mask";
     public static final String MAX = "max";
     public static final String MAX_FAILED_SERVERS = "max-failed-servers";
@@ -101,7 +101,7 @@ public class ModelDescriptionConstants {
     public static final String NAME = "name";
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
-    public static final String NATIVE_API = "native-api";
+    public static final String NATIVE_INTERFACE = "native-interface";
     public static final String NETWORK = "network";
     public static final String NILLABLE = "nillable";
     public static final String NOT = "not";

@@ -25,12 +25,12 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_API;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_API;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
@@ -182,8 +182,9 @@ public class HostControllerBootstrap {
             .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
             .install();
         //
-        final String mgmtNetwork = hostModelNode.get(MANAGEMENT, NATIVE_API, INTERFACE).asString();
-        final int mgmtPort = hostModelNode.get(MANAGEMENT, NATIVE_API, PORT).asInt();
+        final String mgmtNetwork = hostModelNode.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, INTERFACE).asString();
+        final int mgmtPort = hostModelNode.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, PORT).asInt();
+
         final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
             .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
@@ -211,12 +212,12 @@ public class HostControllerBootstrap {
         // install the domain controller
         activateDomainController(environment, hostModelNode, serviceTarget, environment.isBackupDomainFiles(), environment.isUseCachedDc());
 
-        if (hostModelNode.get(MANAGEMENT).hasDefined(HTTP_API)) {
+        if (hostModelNode.get(MANAGEMENT_INTERFACES).hasDefined(HTTP_INTERFACE)) {
             final HttpManagementService service = new HttpManagementService();
             serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
-                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostModelNode.get(MANAGEMENT, HTTP_API).require(INTERFACE).asString()), NetworkInterfaceBinding.class, service.getInterfaceInjector())
+                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostModelNode.get(MANAGEMENT_INTERFACES, HTTP_INTERFACE).require(INTERFACE).asString()), NetworkInterfaceBinding.class, service.getInterfaceInjector())
                     .addDependency(DomainController.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
-                    .addInjection(service.getPortInjector(), hostModelNode.get(MANAGEMENT, HTTP_API).require(PORT).asInt())
+                    .addInjection(service.getPortInjector(), hostModelNode.get(MANAGEMENT_INTERFACES, HTTP_INTERFACE).require(PORT).asInt())
                     .addDependency(executorServiceName, ExecutorService.class, service.getExecutorServiceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .addListener(new ResultHandler.ServiceStartListener(resultHandler))

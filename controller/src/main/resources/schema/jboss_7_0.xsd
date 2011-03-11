@@ -70,7 +70,7 @@
                 <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="system-properties" type="properties" minOccurs="0"/>
-                <xs:element name="management" type="managementType" minOccurs="0"/>
+                <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
                 <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
@@ -104,7 +104,7 @@
             <xs:sequence>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="profile" type="standalone-profileType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
@@ -122,16 +122,16 @@
         </xs:complexType>
     </xs:element>
     
-    <xs:complexType name="managementProtocolType">
+    <xs:complexType name="management-interfaceType">
         <xs:annotation>
             <xs:documentation>
-                Configuration of a host's or standalone server's management protocol.
+                Configuration of a host's or standalone server's exposed management interface.
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="interface" type="xs:string" use="required">        
             <xs:annotation>
                 <xs:documentation>
-                    Interface on which the host's socket for intra-domain
+                    Network interface on which the host's socket for
                     management communication should be opened.
                 </xs:documentation>
             </xs:annotation>
@@ -139,17 +139,17 @@
         <xs:attribute name="port" type="xs:int" use="required">        
             <xs:annotation>
                 <xs:documentation>
-                    Port on which the host's socket for intra-domain
+                    Port on which the host's socket for
                     management communication should be opened.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="managementType">
+    <xs:complexType name="management-interfacesType">
         <xs:all minOccurs="0">
-            <xs:element name="native-api" type="managementProtocolType"/>
-            <xs:element name="http-api" type="managementProtocolType"/>
+            <xs:element name="native-interface" type="management-interfaceType"/>
+            <xs:element name="http-interface" type="management-interfaceType"/>
         </xs:all>
     </xs:complexType>
 

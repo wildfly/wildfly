@@ -54,7 +54,7 @@ public enum Element {
 
     HEAP("heap"),
     HOST("host"),
-    HTTP_API("http-api"),
+    HTTP_INTERFACE("http-interface"),
 
     INCLUDE("include"),
     INET_ADDRESS("inet-address"),
@@ -71,11 +71,11 @@ public enum Element {
     LOCAL("local"),
     LOOPBACK("loopback"),
 
-    MANAGEMENT("management"),
+    MANAGEMENT_INTERFACES("management-interfaces"),
     MULTICAST("multicast"),
 
     NAME("name"),
-    NATIVE_API("native-api"),
+    NATIVE_INTERFACE("native-interface"),
     NIC("nic"),
     NIC_MATCH("nic-match"),
     NOT("not"),

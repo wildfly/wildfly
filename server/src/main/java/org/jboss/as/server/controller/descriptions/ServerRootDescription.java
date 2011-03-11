@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
@@ -84,9 +84,9 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, NAME, NILLABLE).set(true);
         root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
 
-        root.get(CHILDREN, MANAGEMENT, DESCRIPTION).set(bundle.getString("server.management"));
-        root.get(CHILDREN, MANAGEMENT, MIN_OCCURS).set(0);
-        root.get(CHILDREN, MANAGEMENT, MODEL_DESCRIPTION);
+        root.get(CHILDREN, MANAGEMENT_INTERFACES, DESCRIPTION).set(bundle.getString("server.management"));
+        root.get(CHILDREN, MANAGEMENT_INTERFACES, MIN_OCCURS).set(0);
+        root.get(CHILDREN, MANAGEMENT_INTERFACES, MODEL_DESCRIPTION);
 
         root.get(ATTRIBUTES, PROFILE_NAME, DESCRIPTION).set(bundle.getString("server.profile"));
         root.get(ATTRIBUTES, PROFILE_NAME, TYPE).set(ModelType.STRING);

@@ -29,7 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -149,7 +149,7 @@ public class StandaloneXml extends CommonXml {
             parsePaths(reader, address, list, true);
             element = nextElement(reader);
         }
-        if (element == Element.MANAGEMENT) {
+        if (element == Element.MANAGEMENT_INTERFACES) {
             parseManagement(reader, address, list);
             element = nextElement(reader);
         }
@@ -439,8 +439,8 @@ public class StandaloneXml extends CommonXml {
         if(modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
-        if (modelNode.hasDefined(MANAGEMENT)) {
-            writeManagement(writer, modelNode.get(MANAGEMENT));
+        if (modelNode.hasDefined(MANAGEMENT_INTERFACES)) {
+            writeManagement(writer, modelNode.get(MANAGEMENT_INTERFACES));
         }
         writeServerProfile(writer, context);
         if (modelNode.hasDefined(INTERFACE)) {
