@@ -21,10 +21,6 @@
  */
 package org.jboss.as.server.moduleservice;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.jar.JarFile;
-
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
@@ -35,6 +31,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFSUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.jar.JarFile;
 
 /**
  * Service that manages the module spec for external modules (i.e. modules that reside outside of the application server).
@@ -66,6 +66,8 @@ public class ExternalModuleSpecService implements Service<ModuleSpec> {
         }
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         addResourceRoot(specBuilder, jarFile);
+        //TODO: We need some way of configuring module dependencies for external archives
+        specBuilder.addDependency(DependencySpec.createModuleDependencySpec(ModuleIdentifier.create("javaee.api")));
         specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         // TODO: external resource need some kind of dependency mechanism
         moduleSpec = specBuilder.create();
