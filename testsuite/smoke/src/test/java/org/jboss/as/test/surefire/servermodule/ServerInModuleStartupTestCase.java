@@ -201,6 +201,7 @@ public class ServerInModuleStartupTestCase {
 
 
         final File deployDir = new File("target", "deployments");
+        cleanFile(deployDir);
         deployDir.mkdirs();
         Assert.assertTrue(deployDir.exists());
 
@@ -255,6 +256,23 @@ public class ServerInModuleStartupTestCase {
 
                 @Override
                 public void fullReplace() throws IOException {
+                    // The test is going to call this as soon as the deployment sends a notification
+                    // but often before the scanner has completed the process and deleted the
+                    // .dodpeloy put down by initialDeploy(). So pause a bit to let that complete
+                    // so we don't end up having our own file deleted
+                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                    for (int i = 0; i < 100; i++) {
+                        if (!dodeploy.exists()) {
+                            break;
+                        }
+                        // Wait for the last action to complete :(
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
                     //Copy file to deploy directory again
                     initialDeploy();
                 }
@@ -317,6 +335,14 @@ public class ServerInModuleStartupTestCase {
             mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
         }
 
+    }
+
+    private static void cleanFile(File toClean) {
+        if (toClean.isDirectory()) {
+            for (File child : toClean.listFiles())
+                cleanFile(child);
+        }
+        toClean.delete();
     }
 
     private interface DeploymentExecutor {
