@@ -22,10 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -41,6 +37,10 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A processor which adds extension-list resource roots.
@@ -64,8 +64,6 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
         final List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         final Set<ServiceName> nextPhaseDeps = new HashSet<ServiceName>();
         for (ResourceRoot resourceRoot : allResourceRoots) {
-            if (!ModuleRootMarker.isModuleRoot(resourceRoot))
-                continue;
             final AttachmentList<ExtensionListEntry> entries = resourceRoot.getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
             if (entries != null) {
 
