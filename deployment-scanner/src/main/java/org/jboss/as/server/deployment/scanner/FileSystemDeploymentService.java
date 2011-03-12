@@ -82,11 +82,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
     // FIXME get this list from elsewhere
     private static final Set<String> ARCHIVES = new HashSet<String>(Arrays.asList(".jar", ".war", ".ear", ".rar", ".sar", ".beans"));
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
-    static final String DEPLOYED = ".deployed";
+    static final String DEPLOYED = ".isdeployed";
     static final String FAILED_DEPLOY = ".faileddeploy";
     static final String DO_DEPLOY = ".dodeploy";
     static final String DEPLOYING = ".deploying";
     static final String UNDEPLOYING = ".undeploying";
+    static final String UNDEPLOYED = ".undeployed";
 
     private File deploymentDir;
     private long scanInterval = 0;
@@ -436,6 +437,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             this.inProgressMarkerSuffix = inProgressMarkerSuffix;
             File marker = new File(parent, deploymentName + inProgressMarkerSuffix);
             createMarkerFile(marker);
+            deleteUndeployedMarker();
         }
 
         protected abstract ModelNode getUpdate();
@@ -454,6 +456,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 log.errorf(io, "Caught exception writing deployment marker file %s", marker.getAbsolutePath());
             } finally {
                 safeClose(fos);
+            }
+        }
+
+        protected void deleteUndeployedMarker() {
+            final File undeployedMarker = new File(parent, deploymentName + UNDEPLOYED);
+            if (undeployedMarker.exists() && !undeployedMarker.delete()) {
+                log.warnf("Unable to remove marker file %s", undeployedMarker);
             }
         }
 
@@ -630,6 +639,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
             // Remove the in-progress marker
             removeInProgressMarker();
+
+            final File deployedMarker = new File(parent, deploymentName + UNDEPLOYED);
+            createMarkerFile(deployedMarker);
 
             deployed.remove(deploymentName);
         }

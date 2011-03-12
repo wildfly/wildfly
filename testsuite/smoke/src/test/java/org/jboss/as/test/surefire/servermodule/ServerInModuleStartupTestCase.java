@@ -52,8 +52,8 @@ import javax.management.ObjectName;
 
 import junit.framework.Assert;
 
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
@@ -220,7 +220,7 @@ public class ServerInModuleStartupTestCase {
 
         try {
             final File target = new File(deployDir, "test-deployment.sar");
-            final File deployed = new File(deployDir, "test-deployment.sar.deployed");
+            final File deployed = new File(deployDir, "test-deployment.sar.isdeployed");
             Assert.assertFalse(target.exists());
 
             testDeployments(new DeploymentExecutor() {
