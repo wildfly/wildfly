@@ -39,6 +39,7 @@
         <module name="org.jboss.as.managed-beans"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.web"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.modules"/>
