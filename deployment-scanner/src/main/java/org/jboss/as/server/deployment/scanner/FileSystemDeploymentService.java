@@ -500,7 +500,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             InputStream inputStream = null;
             try {
                 inputStream = new FileInputStream(deploymentFile);
-                hash = deploymentRepository.addDeploymentContent(deploymentName, deploymentName, inputStream);
+                hash = deploymentRepository.addDeploymentContent(inputStream);
             } catch (IOException e) {
                 log.error("Failed to add content to deployment repository for [" + deploymentName + "]", e);
             } finally {

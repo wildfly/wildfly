@@ -389,7 +389,7 @@ public class ParseAndMarshalModelsTestCase {
                         }
 
                         @Override
-                        public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
+                        public byte[] addDeploymentContent(InputStream stream) throws IOException {
                             return null;
                         }
                     },
@@ -447,7 +447,7 @@ public class ParseAndMarshalModelsTestCase {
         private static final MockDeploymentRepository INSTANCE = new MockDeploymentRepository();
 
         @Override
-        public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
+        public byte[] addDeploymentContent(InputStream stream) throws IOException {
             return null;
         }
 

@@ -92,7 +92,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         } else if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             InputStream in = getContents(context, operation);
             try {
-                hash = deploymentRepository.addDeploymentContent(name, runtimeName, in);
+                hash = deploymentRepository.addDeploymentContent(in);
             } catch (IOException e) {
                 throw new OperationFailedException(new ModelNode().set(e.toString()));
             }

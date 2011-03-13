@@ -39,6 +39,8 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
@@ -86,6 +88,7 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
                                     NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                                     NetworkInterfaceBinding.class, service.getInterfaceInjector())
                             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
+                            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.getServerEnvironmentInjector())
                             .addInjection(service.getPortInjector(), port)
                             .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool())
                             .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -105,5 +108,4 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
         // TODO Auto-generated method stub
         return new ModelNode();
     }
-
 }

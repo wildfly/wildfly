@@ -18,9 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -31,7 +28,6 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -52,8 +48,6 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
 
     protected AbstractDeploymentUploadHandler(final DeploymentRepository deploymentRepository) {
         this.deploymentRepository = deploymentRepository;
-        this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
-        this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
     }
 
     /**
@@ -64,11 +58,9 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
         try {
             validator.validate(operation);
 
-            String name = operation.get(NAME).asString();
-            String runtimeName = has(operation, RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
             InputStream is = getContentInputStream(context, operation);
             try {
-                byte[] hash = deploymentRepository.addDeploymentContent(name, runtimeName, is);
+                byte[] hash = deploymentRepository.addDeploymentContent(is);
                 resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
             }
             finally {
@@ -83,10 +75,6 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
     }
 
     protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws OperationFailedException;
-
-    private static boolean has(ModelNode node, String child) {
-        return node.has(child) && node.get(child).isDefined();
-    }
 
     private static void safeClose(InputStream is) {
         if (is != null) {

@@ -35,14 +35,12 @@ public interface DeploymentRepository {
     /**
      * Add the given content to the repository.
      *
-     * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
-     * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
      * @param stream stream from which the content can be read. Cannot be <code>null</code>
      * @return the hash of the content that will be used as an internal identifier
      *         for the content. Will not be <code>null</code>
      * @throws IOException
      */
-    byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException;
+    byte[] addDeploymentContent(InputStream stream) throws IOException;
 
     /**
      * Gets whether content with the given hash is stored in the repository.

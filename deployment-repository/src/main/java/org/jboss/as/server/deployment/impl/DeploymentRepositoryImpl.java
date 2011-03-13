@@ -45,7 +45,6 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
     protected static final String CONTENT = "content";
-    private static final String ATTACHMENTS = "attachments";
     private final File repoRoot;
     protected final MessageDigest messageDigest;
 
@@ -73,12 +72,9 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
     }
 
     @Override
-    public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
-
-        log.debugf("Adding content with name %s", name);
-
+    public byte[] addDeploymentContent(InputStream stream) throws IOException {
         byte[] sha1Bytes = null;
-        File tmp = File.createTempFile(name, "tmp", repoRoot);
+        File tmp = File.createTempFile(CONTENT, "tmp", repoRoot);
         FileOutputStream fos = new FileOutputStream(tmp);
         synchronized (messageDigest) {
             messageDigest.reset();
@@ -102,10 +98,10 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
             if (!tmp.delete()) {
                 tmp.deleteOnExit();
             }
-            log.debugf("Content with name %s was already present in repository at location %s", name, realFile.getAbsolutePath());
+            log.debugf("Content was already present in repository at location %s", realFile.getAbsolutePath());
         } else {
             moveTempToPermanent(tmp, realFile);
-            log.infof("Content with name %s added at location %s", name, realFile.getAbsolutePath());
+            log.infof("Content added at location %s",realFile.getAbsolutePath());
         }
 
         return sha1Bytes;

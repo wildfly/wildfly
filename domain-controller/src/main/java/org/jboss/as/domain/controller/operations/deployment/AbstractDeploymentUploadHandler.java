@@ -64,11 +64,9 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
         try {
             validator.validate(operation);
 
-            String name = operation.get(NAME).asString();
-            String runtimeName = has(operation, RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
             InputStream is = getContentInputStream(context, operation);
             try {
-                byte[] hash = deploymentRepository.addDeploymentContent(name, runtimeName, is);
+                byte[] hash = deploymentRepository.addDeploymentContent(is);
                 resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
             }
             finally {
@@ -83,10 +81,6 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
     }
 
     protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws OperationFailedException;
-
-    private static boolean has(ModelNode node, String child) {
-        return node.has(child) && node.get(child).isDefined();
-    }
 
     private static void safeClose(InputStream is) {
         if (is != null) {

@@ -102,7 +102,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             InputStream in = getContents(context, operation);
             try {
                 try {
-                    hash = deploymentRepository.addDeploymentContent(name, runtimeName, in);
+                    hash = deploymentRepository.addDeploymentContent(in);
                 } catch (IOException e) {
                     throw new OperationFailedException(new ModelNode().set(e.toString()));
                 }

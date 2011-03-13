@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.DomainHttpServer;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -48,6 +49,7 @@ public class HttpManagementService implements Service<HttpManagementService>  {
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ServerEnvironment> serverEnvironmentValue = new InjectedValue<ServerEnvironment>();
     private DomainHttpServer server;
 
     /**
@@ -62,8 +64,10 @@ public class HttpManagementService implements Service<HttpManagementService>  {
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
         final Integer port = portValue.getValue();
         final InetSocketAddress bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
+        final ServerEnvironment serverEnvironment = serverEnvironmentValue.getValue();
+
         try {
-            server = DomainHttpServer.create(bindAddress, 50, modelController, executorService);
+            server = DomainHttpServer.create(bindAddress, 50, modelController, executorService, serverEnvironment.getServerTempDir());
             server.start();
         } catch (Exception e) {
             throw new StartException("Failed to start server socket", e);
@@ -120,5 +124,14 @@ public class HttpManagementService implements Service<HttpManagementService>  {
      */
     public Injector<ModelController> getModelControllerInjector() {
         return modelControllerValue;
+    }
+
+    /**
+     * Get the server environment injector.
+     *
+     * @return The injector
+     */
+    public Injector<ServerEnvironment> getServerEnvironmentInjector() {
+        return serverEnvironmentValue;
     }
 }

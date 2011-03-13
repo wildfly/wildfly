@@ -649,7 +649,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         private Set<byte[]> content = new HashSet<byte[]>(2);
 
         @Override
-        public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
+        public byte[] addDeploymentContent(InputStream stream) throws IOException {
             byte[] bytes = new byte[20];
             random.nextBytes(bytes);
             content.add(bytes);
@@ -712,7 +712,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         MockServerController(DeploymentRepository repo, String... existingDeployments) {
             for (String dep : existingDeployments) {
                 try {
-                    added.put(dep, repo.addDeploymentContent(dep, dep, null));
+                    added.put(dep, repo.addDeploymentContent(null));
                 } catch (IOException e) {
                     // impossible
                 }
