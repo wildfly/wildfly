@@ -32,13 +32,16 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
  */
 public class SingletonComponentConfiguration extends SessionBeanComponentConfiguration {
 
+    private boolean initOnStartup;
+
     /**
      * Construct a new instance.
      *
      * @param description the original component description
      */
-    public SingletonComponentConfiguration(final EJBComponentDescription description) {
+    public SingletonComponentConfiguration(final SingletonComponentDescription description) {
         super(description);
+        this.initOnStartup = description.isInitOnStartup();
 
         // instance associating interceptor
         this.addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
@@ -47,5 +50,9 @@ public class SingletonComponentConfiguration extends SessionBeanComponentConfigu
     @Override
     public AbstractComponent constructComponent() {
         return new SingletonComponent(this);
+    }
+
+    public boolean isInitOnStartup() {
+        return this.initOnStartup;
     }
 }

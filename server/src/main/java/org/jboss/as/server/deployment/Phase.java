@@ -250,6 +250,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x0110;
     public static final int POST_MODULE_EJB_LOCAL_VIEW_ANNOTATION       = 0x0111;
     public static final int POST_MODULE_EJB_NO_INTERFACE_VIEW_ANNOTATION    = 0x0112;
+    public static final int POST_MODULE_EJB_STARTUP_ANNOTATION          = 0x0113;
     public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x0200;
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0300;
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0400;

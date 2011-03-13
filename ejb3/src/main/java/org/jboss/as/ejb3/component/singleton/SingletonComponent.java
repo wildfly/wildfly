@@ -30,27 +30,35 @@ import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.logging.Logger;
 
 import java.util.List;
 
 /**
+ * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
+ *
  * @author Jaikiran Pai
  */
 public class SingletonComponent extends AbstractComponent {
 
+    private static final Logger logger = Logger.getLogger(SingletonComponent.class);
+
     private SingletonComponentInstance singletonComponentInstance;
+
+    private boolean initOnStartup;
 
     /**
      * Construct a new instance.
      *
      * @param configuration the component configuration
      */
-    protected SingletonComponent(final EJBComponentConfiguration configuration) {
+    public SingletonComponent(final SingletonComponentConfiguration configuration) {
         super(configuration);
+        this.initOnStartup = configuration.isInitOnStartup();
     }
 
     @Override
-    public synchronized  ComponentInstance createInstance() {
+    public synchronized ComponentInstance createInstance() {
         if (this.singletonComponentInstance != null) {
             throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
         }
@@ -88,13 +96,26 @@ public class SingletonComponent extends AbstractComponent {
     }
 
     @Override
-    public void stop() {
-        synchronized (this.singletonComponentInstance) {
-            if (this.singletonComponentInstance != null) {
-                this.destroyInstance(this.singletonComponentInstance);
-                this.singletonComponentInstance = null;
-            }
+    public void start() {
+        super.start();
+        if (this.initOnStartup) {
+            // Do not call createInstance() because we can't ever assume that the singleton instance
+            // hasn't already been created.
+            logger.debug(this.getComponentName() + " bean is a @Startup (a.k.a init-on-startup) bean, creating/getting the singleton instance");
+            this.getComponentInstance();
         }
+    }
+
+    @Override
+    public void stop() {
+        this.destroySingletonInstance();
         super.stop();
+    }
+
+    private synchronized void destroySingletonInstance() {
+        if (this.singletonComponentInstance != null) {
+            this.destroyInstance(this.singletonComponentInstance);
+            this.singletonComponentInstance = null;
+        }
     }
 }

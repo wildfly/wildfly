@@ -34,6 +34,7 @@ import org.jboss.as.ejb3.deployment.processors.EjbJarParsingDeploymentUnitProces
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.LocalEjbViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.NoInterfaceViewAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.StartupAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
@@ -53,13 +54,15 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
         //
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-        if(context instanceof BootOperationContext) {
+        if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
 
             // add the metadata parser deployment processor
@@ -70,6 +73,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_LOCAL_VIEW_ANNOTATION, new LocalEjbViewAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_NO_INTERFACE_VIEW_ANNOTATION, new NoInterfaceViewAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_INJECTION_ANNOTATION, new EjbResourceInjectionAnnotationProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_STARTUP_ANNOTATION, new StartupAnnotationProcessor());
 
             // add the real deployment processor
             // TODO: add the proper deployment processors
