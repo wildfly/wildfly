@@ -21,14 +21,7 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.enterprise.inject.spi.Extension;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-
+import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -60,6 +53,15 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.validation.spi.ValidationServices;
+
+import javax.enterprise.inject.spi.Extension;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import javax.validation.ValidatorFactory;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Deployment processor that installs the weld services and all other required services
@@ -101,8 +103,12 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         globalBeanDeploymentModules.add(rootBeanDeploymentModule);
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+
         for (DeploymentUnit subDeployment : subDeployments) {
             final BeanDeploymentModule bdm = subDeployment.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
+            if(bdm == null) {
+                continue;
+            }
             // add the modules bdas to the global set of bdas
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
             if (bdm != null) {
@@ -127,6 +133,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module);
 
         final WeldContainer weldContainer = new WeldContainer(deployment, Environments.EE_INJECT);
+        //hook up validation service
+        //TODO: we need to change weld so this is a per-BDA service
+        final ValidatorFactory factory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+        weldContainer.addWeldService(ValidationServices.class,new WeldValidationServices(factory));
 
         final WeldService weldService = new WeldService(weldContainer);
         final ServiceName weldServiceName = deploymentUnit.getServiceName().append(WeldService.SERVICE_NAME);
@@ -141,7 +151,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         installResourceInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installSecurityService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installTransactionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
-        installValidationService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
 
         weldServiceBuilder.install();
 
@@ -229,19 +238,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 .getWeldTransactionServices());
 
         return weldTransactionServiceName;
-    }
-
-    private ServiceName installValidationService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-            WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
-        final WeldValidationServices service = new WeldValidationServices();
-
-        final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldValidationServices.SERVICE_NAME);
-
-        serviceTarget.addService(serviceName, service).install();
-
-        weldServiceBuilder.addDependency(serviceName, WeldValidationServices.class, weldService.getValidationServices());
-
-        return serviceName;
     }
 
     @Override

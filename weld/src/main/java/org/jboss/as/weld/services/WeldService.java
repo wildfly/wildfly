@@ -28,7 +28,6 @@ import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
 import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
-import org.jboss.as.weld.services.bootstrap.WeldValidationServices;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -43,7 +42,6 @@ import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
-import org.jboss.weld.validation.spi.ValidationServices;
 
 /**
  * The weld service.
@@ -67,7 +65,6 @@ public class WeldService implements Service<WeldContainer> {
     private final InjectedValue<WeldResourceInjectionServices> resourceInjectionServices = new InjectedValue<WeldResourceInjectionServices>();
     private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
     private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
-    private final InjectedValue<WeldValidationServices> validationServices = new InjectedValue<WeldValidationServices>();
 
     public WeldService(WeldContainer weldContainer) {
         this.weldContainer = weldContainer;
@@ -81,7 +78,6 @@ public class WeldService implements Service<WeldContainer> {
             weldContainer.addWeldService(EjbServices.class, ejbServices.getValue());
             weldContainer.addWeldService(SecurityServices.class, securityServices.getValue());
             weldContainer.addWeldService(TransactionServices.class, weldTransactionServices.getValue());
-            weldContainer.addWeldService(ValidationServices.class, validationServices.getValue());
 
             // TODO: this is a complete hack. We will need one instance of each service per bean deployment archive
             for (BeanDeploymentArchive bda : weldContainer.getBeanDeploymentArchives()) {
@@ -92,7 +88,11 @@ public class WeldService implements Service<WeldContainer> {
             // start weld
             weldContainer.start();
         } catch (Exception e) {
-            weldContainer.stop();
+            try {
+                weldContainer.stop();
+            } catch(Exception ex) {
+
+            }
             throw new StartException(e);
         }
     }
@@ -130,10 +130,6 @@ public class WeldService implements Service<WeldContainer> {
 
     public InjectedValue<WeldSecurityServices> getSecurityServices() {
         return securityServices;
-    }
-
-    public InjectedValue<WeldValidationServices> getValidationServices() {
-        return validationServices;
     }
 
 }

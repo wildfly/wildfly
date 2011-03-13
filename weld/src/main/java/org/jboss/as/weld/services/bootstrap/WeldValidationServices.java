@@ -21,35 +21,25 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import javax.validation.ValidatorFactory;
-
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.weld.validation.spi.ValidationServices;
 
-public class WeldValidationServices implements Service<WeldValidationServices>, ValidationServices {
+import javax.validation.ValidatorFactory;
 
-    public static final ServiceName SERVICE_NAME = ServiceName.of("WeldValidationServices");
+/**
+ * Implementation of ValidationServices
+ */
+public class WeldValidationServices implements ValidationServices {
 
-    @Override
-    public void start(StartContext context) throws StartException {
-    }
 
-    @Override
-    public void stop(StopContext context) {
-    }
+    private final ValidatorFactory factory;
 
-    @Override
-    public WeldValidationServices getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public WeldValidationServices(ValidatorFactory factory) {
+        this.factory = factory;
     }
 
     @Override
     public ValidatorFactory getDefaultValidatorFactory() {
-        throw new RuntimeException("not implemented");
+        return factory;
     }
 
     @Override

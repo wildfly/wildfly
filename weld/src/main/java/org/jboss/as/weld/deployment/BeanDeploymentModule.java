@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.deployment;
 
+import org.jboss.weld.bootstrap.api.Service;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -79,6 +81,18 @@ public class BeanDeploymentModule {
             for (BeanDeploymentModule bdm : modules) {
                 bda.addBeanDeploymentArchives(bdm.beanDeploymentArchives);
             }
+        }
+    }
+
+    /**
+     * Adds a service to all bean deployment archives in the module
+     * @param clazz The service type
+     * @param service The service
+     * @param <S> The service type
+     */
+    public synchronized <S extends Service> void addService(Class<S> clazz, S service) {
+        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
+            bda.getServices().add(clazz,service);
         }
     }
 

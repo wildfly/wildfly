@@ -21,10 +21,6 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.net.MalformedURLException;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.AttachmentList;
@@ -42,6 +38,10 @@ import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.xml.BeansXmlParser;
+
+import java.net.MalformedURLException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Deployment processor that finds <literal>beans.xml</literal> files and attaches the information to the deployment
@@ -93,7 +93,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             // look for WEB-INF/beans.xml
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(WEB_INF_BEANS_XML);
-            if (rootBeansXml.isFile()) {
+            if (rootBeansXml.exists() && rootBeansXml.isFile()) {
                 log.debugf("Found beans.xml: %s", rootBeansXml);
                 beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser),true));
             }
