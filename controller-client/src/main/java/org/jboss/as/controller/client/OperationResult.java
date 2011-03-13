@@ -25,22 +25,27 @@ package org.jboss.as.controller.client;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Interface for capturing th results of a model operation.
+ * Interface for capturing the results of a model operation.
  *
  * @author John Bailey
  */
 public interface OperationResult {
+
     /**
-     * Get a handle which will allow a task to be canceled.
+     * Get a handle which may allow a task to be canceled.
      *
      * @return The handle
      */
     Cancellable getCancellable();
 
     /**
-     * Get the compensating operation for the operation run.
+     * Get the compensating operation for the operation run. Note that
+     * this call may block until request execution proceeds to the
+     * point where a compensating operation is available.
      *
-     * @return the compensating operation
+     * @return the compensating operation. May return an undefined node
+     *         if there was no compensating operation or the request was
+     *         cancelled before the compensating operation was provided.
      */
     ModelNode getCompensatingOperation();
 }

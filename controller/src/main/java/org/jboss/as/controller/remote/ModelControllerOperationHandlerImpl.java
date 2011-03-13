@@ -39,8 +39,8 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.StreamUtils;
@@ -238,6 +238,12 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                 }
             });
 
+            synchronized (outputStream) {
+                outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                ModelNode compensating = result.getCompensatingOperation() != null ? result.getCompensatingOperation() : new ModelNode();
+                compensating.writeExternal(outputStream);
+            }
+
             if (completeLatch.getCount() == 0) {
                 //It was handled synchronously or has completed by now
             } else {
@@ -266,9 +272,6 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                 case 1: {
                     synchronized (outputStream) {
                         outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
-                        outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                        ModelNode compensating = result.getCompensatingOperation() != null ? result.getCompensatingOperation() : new ModelNode();
-                        compensating.writeExternal(outputStream);
                         outputStream.flush();
                     }
                     break;

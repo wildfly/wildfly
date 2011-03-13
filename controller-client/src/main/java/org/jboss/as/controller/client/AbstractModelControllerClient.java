@@ -57,10 +57,12 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
     public AbstractModelControllerClient() {
     }
 
+    @Override
     public OperationResult execute(ModelNode operation, ResultHandler handler) {
         return execute(OperationBuilder.Factory.create(operation).build(), handler);
     }
 
+    @Override
     public ModelNode execute(ModelNode operation) throws CancellationException, IOException {
         return execute(OperationBuilder.Factory.create(operation).build());
     }
@@ -99,12 +101,14 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             }
         });
         return new OperationResult() {
+            @Override
             public Cancellable getCancellable() {
                 return result;
             }
 
+            @Override
             public ModelNode getCompensatingOperation() {
-                return null;
+                return result.getCompensatingOperation();
             }
         };
     }
@@ -219,7 +223,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
         private final AsynchronousOperation result;
         private final ResultHandler handler;
 
-        ExecuteAsynchronousRequest(AsynchronousOperation result, Operation operation, ResultHandler handler) {
+        ExecuteAsynchronousRequest(final AsynchronousOperation result, final Operation operation, final ResultHandler handler) {
             super(operation);
             this.result = result;
             this.handler = handler;
@@ -243,6 +247,10 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                 while (true) {
                     int command = input.read();
                     switch (command) {
+                        case ModelControllerClientProtocol.PARAM_OPERATION : {
+                            result.setCompensatingOperation(readNode(input));
+                            break;
+                        }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT:{
                             expectHeader(input, ModelControllerClientProtocol.PARAM_LOCATION);
                             int length = StreamUtils.readInt(input);
@@ -260,15 +268,12 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED:{
-                            expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
                             ModelNode node = readNode(input);
                             // FIXME need some sort of translation
                             handler.handleException(new RuntimeException(node.toString()));
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:{
-                            expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
-                            ModelNode node = readNode(input); // TODO: Where does this go
                             handler.handleResultComplete();
                             break LOOP;
                         }
@@ -324,10 +329,15 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
 
 
     private class AsynchronousOperation implements Cancellable {
+
+        SimpleFuture<ModelNode> compensatingOperation = new SimpleFuture<ModelNode>();
+        // GuardedBy compensatingOperation
+        private boolean compensatingOpSet = false;
         SimpleFuture<Integer> asynchronousId = new SimpleFuture<Integer>();
 
         @Override
         public boolean cancel() throws IOException {
+            setCompensatingOperation(null);
             try {
                 int i = asynchronousId.get().intValue();
                 if (i >= 0) {
@@ -343,6 +353,26 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
 
         void setAsynchronousId(int i) {
             asynchronousId.set(Integer.valueOf(i));
+        }
+
+        void setCompensatingOperation(ModelNode compensatingOp) {
+            synchronized (compensatingOperation) {
+                if (!compensatingOpSet) {
+                    compensatingOperation.set(compensatingOp);
+                    compensatingOpSet = true;
+                }
+            }
+        }
+
+        ModelNode getCompensatingOperation() {
+            try {
+                return compensatingOperation.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Could not obtain compensating operation", e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException("Could not obtain compensating operation", e);
+            }
         }
     }
 
