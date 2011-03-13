@@ -29,8 +29,8 @@ import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 
@@ -126,8 +126,8 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
         }
 
         @Override
-        public void handleException(final Exception e) {
-            //TODO
+        public void handleFailed(ModelNode failureDescription) {
+            delegate.handleFailed(failureDescription);
         }
     }
 }

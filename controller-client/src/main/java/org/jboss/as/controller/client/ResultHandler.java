@@ -25,6 +25,10 @@ package org.jboss.as.controller.client;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Callback handler that allows callers to be notified of events as
+ * {@link ModelControllerClient#execute(ModelNode, ResultHandler) operation execution}
+ * proceeds.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface ResultHandler {
@@ -49,9 +53,9 @@ public interface ResultHandler {
     void handleCancellation();
 
     /**
-     * An exception occurred talking to the remote host
+     * Handle an operation failure.
      *
-     * @param e the exception
+     * @param failureDescription the failure description
      */
-    void handleException(Exception e);
+    void handleFailed(ModelNode failureDescription);
 }

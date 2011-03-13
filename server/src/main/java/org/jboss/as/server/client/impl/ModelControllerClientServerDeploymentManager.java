@@ -28,8 +28,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.Cancellable;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationResult;
 import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.as.protocol.StreamUtils;
@@ -100,7 +100,9 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
             }
 
             @Override
-            public void handleException(Exception e) {
+            public void handleFailed(ModelNode failureDescription) {
+                String message = failureDescription.isDefined() ? failureDescription.toString() : "Operation failed with no failure description";
+                Exception e = new Exception(message);
                 exception.compareAndSet(null, e);
                 state.compareAndSet(State.RUNNING, State.DONE);
                 cleanUpAndNotify();

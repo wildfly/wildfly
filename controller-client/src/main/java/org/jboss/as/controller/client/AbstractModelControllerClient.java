@@ -269,8 +269,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED:{
                             ModelNode node = readNode(input);
-                            // FIXME need some sort of translation
-                            handler.handleException(new RuntimeException(node.toString()));
+                            handler.handleFailed(node);
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE:{
@@ -287,7 +286,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                     }
                 }
             } catch (Exception e) {
-                handler.handleException(e);
+                handler.handleFailed(new ModelNode().set(e.toString()));
             }
             return null;
         }
