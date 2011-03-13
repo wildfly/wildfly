@@ -7,13 +7,13 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * TODO add class javadoc for MasterDomainControllerClient
+ * Client for interacting with the master {@link DomainController} on a remote host.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
 public interface MasterDomainControllerClient extends ModelController {
 
+    /** Standard service name to use for a service that returns a MasterDomainControllerClient */
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "connection");
 
     /**
@@ -25,7 +25,16 @@ public interface MasterDomainControllerClient extends ModelController {
      */
     void register(String hostName, DomainControllerSlave domainController);
 
+    /**
+     * Unregister with the remote domain controller.
+     */
     void unregister();
 
+    /**
+     * Gets a {@link FileRepository} capable of retrieving files from the
+     * master domain controller.
+     *
+     * @return the file repository
+     */
     FileRepository getRemoteFileRepository();
 }

@@ -20,12 +20,17 @@ public class ControllerTransaction implements ControllerTransactionContext {
     private final Set<ControllerResource> resources = new HashSet<ControllerResource>();
     private volatile boolean rollbackOnly;
     private final ModelNode id;
+    private final long creationTime = System.currentTimeMillis();
 
     public ControllerTransaction() {
         final UUID uuid = UUID.randomUUID();
         id = new ModelNode();
         id.add(uuid.getMostSignificantBits());
         id.add(uuid.getLeastSignificantBits());
+    }
+
+    public ControllerTransaction(ModelNode id) {
+        this.id = id;
     }
 
     public void commit() {
@@ -40,6 +45,10 @@ public class ControllerTransaction implements ControllerTransactionContext {
     @Override
     public ModelNode getTransactionId() {
         return id;
+    }
+
+    public long getCreationTime() {
+        return creationTime;
     }
 
     @Override

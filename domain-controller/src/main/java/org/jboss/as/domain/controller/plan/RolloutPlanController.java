@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.domain.controller.HostControllerClient;
+import org.jboss.as.domain.controller.DomainControllerSlaveClient;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.AbstractServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
@@ -58,13 +58,13 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
     private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
-    private final Map<String, HostControllerClient> hostControllerClients;
+    private final Map<String, DomainControllerSlaveClient> hostControllerClients;
     private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
     private final boolean forRollback;
 
     public RolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
             final ModelNode rolloutPlan, final ResultHandler resultHandler,
-            final Map<String, HostControllerClient> hostControllerClients, final ExecutorService executor, boolean forRollback) {
+            final Map<String, DomainControllerSlaveClient> hostControllerClients, final ExecutorService executor, boolean forRollback) {
 
         this.executor = executor;
         this.rolloutPlan = rolloutPlan;
@@ -184,7 +184,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
 
     private Runnable createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
         Runnable result;
-        HostControllerClient client = hostControllerClients.get(serverIdentity.getHostName());
+        DomainControllerSlaveClient client = hostControllerClients.get(serverIdentity.getHostName());
         if (client == null) {
             // TODO host disappeared
             result = new Runnable() {

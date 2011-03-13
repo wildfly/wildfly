@@ -22,12 +22,15 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.TransactionalProxyController;
+import org.jboss.as.controller.TransactionalModelController;
 
 /**
+ * Interface used by a master {@link DomainController} to talk to a {@link DomainControllerSlave slave domain controller}.
+ *
  * @author Emanuel Muckenhuber
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface HostControllerClient extends TransactionalProxyController {
+public interface DomainControllerSlaveClient extends TransactionalModelController {
 
     String EXECUTE_ON_DOMAIN = "execute-on-domain";
     String DOMAIN_OP = "domain-op";

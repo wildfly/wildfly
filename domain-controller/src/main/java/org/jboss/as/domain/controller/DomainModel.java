@@ -22,16 +22,37 @@
 
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.TransactionalModelController;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * {@link TransactionalModelController} that manages a given host's {@link DomainController}'s
+ * copy of the domain-wide management model, it's own host-wide model and its
+ * proxy connections to the host's servers.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface DomainModel extends TransactionalModelController {
 
     /**
-     * Get a snapshot of the underlying model.
+     * Execute the given operation against the local domain-wide and host-wide management
+     * model, returning the result as well as information about what operations are needed
+     * to effect the operation on the servers managed by this host.
+     *
+     * @param operation the operation
+     * @param transaction transactional context in which the operation should be executed. Changes
+     *                    made by {@code operation} should not be visible to other threads until
+     *                    the transaction is committed.
+     *
+     * @return the operation result included information on how to apply the operation to
+     *         the servers managed by this host
+     */
+    ModelNode executeForDomain(final Operation operation, final ControllerTransactionContext transaction);
+
+    /**
+     * Get a snapshot of the underlying domain-wide model.
      *
      * @return the model.
      */

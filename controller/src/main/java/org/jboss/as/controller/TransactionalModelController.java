@@ -21,18 +21,43 @@
  */
 package org.jboss.as.controller;
 
+import java.util.concurrent.CancellationException;
+
 import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
 
 /**
- * TODO add class javadoc for TransactionalModelController
+ * A {@link ModelController} that can participate in a simple one-phase
+ * commit "transaction"only applying changes to the model
+ * when the transaction is committed.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
 public interface TransactionalModelController extends ModelController {
 
+    /**
+     * Execute an operation synchronously, but only apply any changes to the model
+     * upon transaction commit.
+     *
+     * @param operation the operation to execute
+     * @param transaction the transaction. Will not be {@code null}
+     *
+     * @return the result
+     * @throws CancellationException if the operation was cancelled due to interruption (the thread's interrupt
+     * status will be set)
+     */
     ModelNode execute(Operation operation, ControllerTransactionContext transaction);
+
+    /**
+     * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler,
+     * but only apply any changes to the model upon transaction commit.
+     *
+     * @param operation the operation to execute
+     * @param handler the result handler
+     * @param transaction the transaction. Will not be {@code null}
+     *
+     * @return a handle which may be used to cancel the operation or obtain a compensating operation
+     */
     OperationResult execute(Operation operation, ResultHandler handler, ControllerTransactionContext transaction);
 }

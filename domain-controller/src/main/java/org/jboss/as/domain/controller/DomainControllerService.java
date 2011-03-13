@@ -67,7 +67,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private final String localHostName;
     private final boolean backupDomainFiles;
     private final boolean useCachedDc;
-    private DomainControllerSlave controller;
+    private DomainController controller;
 
     public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName,
             final DeploymentRepository deploymentRepository, final FileRepository localFileRepository, final boolean backupDomainFiles, final boolean useCachedDc) {
@@ -117,15 +117,15 @@ public final class DomainControllerService implements Service<DomainController> 
         return masterDomainControllerClient;
     }
 
-    private DomainControllerSlave startMasterDomainController() throws StartException {
+    private DomainController startMasterDomainController() throws StartException {
 
         log.info("Starting Domain Controller");
         DomainModel domainModel = loadLocalDomainModel();
         return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository);
     }
 
-    private DomainControllerSlave startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
-        DomainControllerSlave remoteController = startRemoteSlaveDomainController(masterClient);
+    private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+        DomainController remoteController = startRemoteSlaveDomainController(masterClient);
         if (remoteController != null) {
             return remoteController;
         }
@@ -137,11 +137,11 @@ public final class DomainControllerService implements Service<DomainController> 
         }
     }
 
-    private DomainControllerSlave startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+    private DomainController startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         // By having a remote repo as a secondary content will be synced only if needed
         FallbackRepository fileRepository = new FallbackRepository(localFileRepository, masterClient.getRemoteFileRepository());
         final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue(), deploymentRepository, fileRepository);
-        final DomainControllerSlave controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
+        final DomainControllerImpl controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
         try {
             masterClient.register(hostController.getValue().getName(), controller);
         } catch (IllegalStateException e) {
@@ -159,7 +159,7 @@ public final class DomainControllerService implements Service<DomainController> 
         return controller;
     }
 
-    private DomainControllerSlave startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
+    private DomainController startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         final DomainModel domainModel = loadLocalDomainModel();
         return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
     }

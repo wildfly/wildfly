@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -56,6 +55,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelProvider;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
@@ -164,6 +164,18 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         return new TransactionalMultiStepOperationController(executionContext, handler, modelSource, confPerstProvider, transaction);
     }
 
+    @Override
+    protected ControllerResource getControllerResource(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler,
+            final ResultHandler resultHandler, final PathAddress address, final ModelProvider modelProvider, final ConfigurationPersisterProvider persisterProvider) {
+        ControllerResource resource = null;
+
+        if (operationHandler instanceof ModelUpdateOperationHandler) {
+            resource = new DomainModelControllerResource(operationHandler, address, context.getSubModel(), modelProvider, persisterProvider);
+        }
+
+        return resource;
+    }
+
     private void initializeExtensions(ModelNode model) {
         // If we were provided a model, we're a slave and need to initialize all extensions
         if (model != null && model.hasDefined(EXTENSION)) {
@@ -190,20 +202,6 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         initializeExtensions(domainModel);
     }
 
-
-
-    @Override
-    public ModelNode execute(Operation operation, ControllerTransactionContext transaction) {
-        ModelNode op = operation.getOperation();
-        if (HostControllerClient.EXECUTE_ON_DOMAIN.equals(op.require(OP).asString())) {
-            if (!op.hasDefined(OP_ADDR) || op.get(OP_ADDR).asInt() == 0) {
-                ModelNode onDomain = op.require(HostControllerClient.DOMAIN_OP);
-                return executeOnDomain(operation.clone(onDomain), transaction);
-            }
-        }
-        return super.execute(operation, transaction);
-    }
-
     /** {@inheritDoc} */
     @Override
     public OperationResult execute(final Operation operation, final ResultHandler handler, final ControllerTransactionContext transaction) {
@@ -222,7 +220,8 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         return false;
     }
 
-    private ModelNode executeOnDomain(final Operation operation, final ControllerTransactionContext transaction) {
+    @Override
+    public ModelNode executeForDomain(final Operation operation, final ControllerTransactionContext transaction) {
         ModelNode op = operation.getOperation();
         ParsedOp parsedOp = parseOperation(op, 0);
         ModelNode domainOp = parsedOp.getDomainOperation();
@@ -328,10 +327,6 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
 
     private String getServerGroup(String serverName) {
         return getModel().require(HOST).require(localHostName).require(SERVER_CONFIG).require(serverName).require(GROUP).asString();
-    }
-
-    private ModelNode getHostModel() {
-        return getModel().require(HOST).require(localHostName);
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress domainOpAddress, ModelNode domainModel, ModelNode hostModel) {

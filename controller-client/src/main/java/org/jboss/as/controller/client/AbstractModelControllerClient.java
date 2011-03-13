@@ -329,14 +329,14 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
 
     private class AsynchronousOperation implements Cancellable {
 
-        SimpleFuture<ModelNode> compensatingOperation = new SimpleFuture<ModelNode>();
+        private SimpleFuture<ModelNode> compensatingOperation = new SimpleFuture<ModelNode>();
         // GuardedBy compensatingOperation
         private boolean compensatingOpSet = false;
-        SimpleFuture<Integer> asynchronousId = new SimpleFuture<Integer>();
+        private SimpleFuture<Integer> asynchronousId = new SimpleFuture<Integer>();
 
         @Override
         public boolean cancel() throws IOException {
-            setCompensatingOperation(null);
+            setCompensatingOperation(new ModelNode());
             try {
                 int i = asynchronousId.get().intValue();
                 if (i >= 0) {

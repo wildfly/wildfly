@@ -22,14 +22,14 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.TransactionalModelController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface DomainController extends ModelController {
+public interface DomainController extends TransactionalModelController {
 
     /**
      * {@link ServiceName} under which a DomainController instance should be registered
@@ -44,7 +44,7 @@ public interface DomainController extends ModelController {
      *
      * @return a copy of the domain level model
      */
-    ModelNode addClient(final HostControllerClient hostControllerClient);
+    ModelNode addClient(final DomainControllerSlaveClient hostControllerClient);
 
     /**
      * Deregisters a previously registered Host Controller.

@@ -57,13 +57,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.domain.controller.HostControllerClient.DOMAIN_OP;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -91,13 +89,13 @@ import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 
 /**
+ * Standard {@link DomainController} implementation.
+ *
  * @author Emanuel Muckenhuber
  */
-public class DomainControllerImpl extends AbstractModelController implements DomainControllerSlave {
+public class DomainControllerImpl extends AbstractModelController implements DomainController, DomainControllerSlave {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-
-    private static final List<Property> EMPTY_ADDRESS = Collections.emptyList();
 
     // FIXME this is an overly primitive way to check for read-only ops
     private static final Set<String> READ_ONLY_OPERATIONS;
@@ -114,8 +112,8 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         READ_ONLY_OPERATIONS = Collections.unmodifiableSet(roops);
     }
 
-    private final Map<String, HostControllerClient> hosts = new ConcurrentHashMap<String, HostControllerClient>();
-    private final Map<String, HostControllerClient> immutableHosts = Collections.unmodifiableMap(hosts);
+    private final Map<String, DomainControllerSlaveClient> hosts = new ConcurrentHashMap<String, DomainControllerSlaveClient>();
+    private final Map<String, DomainControllerSlaveClient> immutableHosts = Collections.unmodifiableMap(hosts);
     private final String localHostName;
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -126,7 +124,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         this.scheduledExecutorService = scheduledExecutorService;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
-        this.hosts.put(hostName, new LocalHostControllerClient());
+        this.hosts.put(hostName, new LocalDomainModelAdapter());
         this.fileRepository = fileRepository;
         this.masterDomainControllerClient = null;
 
@@ -139,12 +137,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
         this.fileRepository = new FallbackRepository(fileRepository, masterDomainControllerClient.getRemoteFileRepository());
-        this.hosts.put(hostName, new LocalHostControllerClient());
+        this.hosts.put(hostName, new LocalDomainModelAdapter());
     }
 
     /** {@inheritDoc} */
     @Override
-    public ModelNode addClient(final HostControllerClient client) {
+    public ModelNode addClient(final DomainControllerSlaveClient client) {
         Logger.getLogger("org.jboss.domain").info("register host " + client.getId());
         this.hosts.put(client.getId(), client);
         return localDomainModel.getDomainModel();
@@ -177,52 +175,67 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
     }
 
+    /**
+     * Routes the request to {@link #execute(Operation, ResultHandler)}
+     *
+     * {@inheritDoc}
+     */
+    @Override
+    public ModelNode execute(final Operation operation) {
+        final ControllerTransactionContext transaction = null;
+        // Use the superclass method to avoid treating this as a "executeOnDomain" call
+        return super.execute(operation, transaction);
+    }
+
+    /**
+     * Routes the request to {@link DomainModel#executeForDomain(Operation, ControllerTransactionContext)}
+     */
+    @Override
+    public ModelNode execute(final Operation operation, final ControllerTransactionContext transaction) {
+        return localDomainModel.executeForDomain(operation, transaction);
+    }
+
+    /**
+     * Throws {@link UnsupportedOperationException}.
+     */
+    @Override
+    public OperationResult execute(final Operation operation, final ResultHandler handler, final ControllerTransactionContext transaction) {
+        throw new UnsupportedOperationException("Transactional operations with a passed in ResultHandler are not supported");
+    }
 
     @Override
     public OperationResult execute(Operation operationContext, ResultHandler handler) {
 
         ModelNode operation = operationContext.getOperation();
 
-        //System.out.println("------ operation " + operation);
-
-        if (operation.get(OP).asString().equals(HostControllerClient.EXECUTE_ON_DOMAIN)) {
-            ControllerTransaction transaction = new ControllerTransaction();
-            try {
-                ModelNode query = localDomainModel.execute(operationContext, transaction);
-                //System.out.println("------ "  + query);
-                handler.handleResultFragment(new String[0], query);
-                handler.handleResultComplete();
-                return new BasicOperationResult();
-            } catch (final Throwable t) {
-                log.errorf(t, "domain operation (%s) failed - address: (%s)", operationContext.getOperation().get(DOMAIN_OP).get(OP), operationContext.getOperation().get(DOMAIN_OP).get(OP_ADDR));
-                if (transaction != null) {
-                    transaction.setRollbackOnly();
-                }
-                handler.handleFailed(getFailureResult(t));
-                return new BasicOperationResult();
-            }
-            finally {
-                if (transaction != null) {
-                    transaction.commit();
-                }
-            }
-        }
+//        System.out.println("------ operation " + operation);
 
         // See who handles this op
         OperationRouting routing = determineRouting(operation);
-        if (routing.isRouteToMaster()) {
+        if (!routing.isLocalOnly() && masterDomainControllerClient != null) {
             //System.out.println("------ route to master ");
-            return masterDomainControllerClient.execute(operationContext, handler);
+            // Per discussion on 2011/03/07, routing requests from a slave to the
+            // master may overly complicate the security infrastructure. Therefore,
+            // the ability to do this is being disabled until it's clear that it's
+            // not a problem
+//            return masterDomainControllerClient.execute(operationContext, handler);
+            PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
+            handler.handleFailed(new ModelNode().set("Operations for address " + addr +
+                    " can only handled by the master Domain Controller; this host is not the master Domain Controller"));
+            return new BasicOperationResult();
         }
-        else if (routing.isLocalOnly()) {
-            // It's either for a domain-level resource, which the DomainModel will handle directly,
-            // or it's for a host resource, which the DomainModel will proxy off to the local HostController
-            //System.out.println("------ route locally ");
-            return localDomainModel.execute(operationContext, handler);
+        else if (!routing.isTwoStep()) {
+            // It's either for a read of a domain-level resource or it's for a single host-level resource,
+            // either of which a single host client can handle directly
+            String host = routing.getSingleHost();
+//            System.out.println("------ route to host " + host);
+            DomainControllerSlaveClient hostClient = hosts.get(host);
+            return hostClient.execute(operationContext, handler);
         }
 
-        //System.out.println("---- Push to hosts");
-        // Else we are responsible for coordinating a multi-host op
+//        System.out.println("---- Push to hosts");
+        // Else we are responsible for coordinating a two-step op
+        // -- apply to DomainController models across domain and then push to servers
 
         // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
         ModelNode rolloutPlan = operation.has(ROLLOUT_PLAN) ? operation.remove(ROLLOUT_PLAN) : null;
@@ -230,11 +243,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
         Map<String, ModelNode> hostResults = pushToHosts(operationContext, routing, transaction);
-        //System.out.println("---- Pushed to hosts");
+        System.out.println("---- Pushed to hosts");
         ModelNode masterFailureResult = null;
         ModelNode hostFailureResults = null;
         ModelNode masterResult = hostResults.get(localHostName);
-        //System.out.println("-----Checking host results");
+        System.out.println("-----Checking host results");
         if (masterResult != null && masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
             transaction.setRollbackOnly();
             masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
@@ -326,74 +339,62 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         OperationRouting routing;
 
         String targetHost = null;
-        List<Property> address = operation.hasDefined(OP_ADDR) ? operation.get(OP_ADDR).asPropertyList() : EMPTY_ADDRESS;
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         if (address.size() > 0) {
-            Property first = address.get(0);
-            if (HOST.equals(first.getName())) {
-                targetHost = first.getValue().asString();
+            PathElement first = address.getElement(0);
+            if (HOST.equals(first.getKey())) {
+                targetHost = first.getValue();
             }
         }
-        if (localHostName.equals(targetHost)) {
+
+        if (targetHost != null) {
+            routing = null;
             if(isReadOnly(operation, address)) {
-                return new OperationRouting(false);
+                routing =  new OperationRouting(targetHost, false);
             }
             // Check if the target is an actual server
-            if(address.size() > 1) {
-                Property first = address.get(1);
-                if (SERVER.equals(first.getName())) {
-                    return new OperationRouting(false);
+            else if(address.size() > 1) {
+                PathElement first = address.getElement(1);
+                if (SERVER.equals(first.getKey())) {
+                    routing =  new OperationRouting(targetHost, false);
                 }
             }
-            routing = new OperationRouting(Collections.singleton(targetHost));
+            if (routing == null) {
+                routing = new OperationRouting(targetHost, true);
+            }
         }
         else if (masterDomainControllerClient != null) {
             // TODO a slave could conceivably handle locally read-only requests for the domain model
-            routing = new OperationRouting(true);
-        }
-        else if (targetHost != null) {
-            List<String> hosts = Collections.singletonList(targetHost);
-            routing = new OperationRouting(hosts);
+            routing = new OperationRouting();
         }
         else if (isReadOnly(operation, address)) {
             // Direct read of domain model
-            routing = new OperationRouting(false);
+            routing = new OperationRouting(localHostName, false);
         }
         else if (COMPOSITE.equals(operation.require(OP).asString())){
             // Recurse into the steps to see what's required
             if (operation.hasDefined(STEPS)) {
                 Set<String> allHosts = new HashSet<String>();
-                boolean routeToMaster = false;
-                boolean hasLocal = false;
+                boolean twoStep = false;
                 for (ModelNode step : operation.get(STEPS).asList()) {
                     OperationRouting stepRouting = determineRouting(step);
-                    if (stepRouting.isRouteToMaster()) {
-                        routeToMaster = true;
-                        break;
+                    if (stepRouting.isTwoStep()) {
+                        twoStep = true;
                     }
-                    else if (stepRouting.isLocalOnly()) {
-                        hasLocal = true;
-                    }
-                    else {
-                        allHosts.addAll(stepRouting.getHosts());
-                    }
+                    allHosts.addAll(stepRouting.getHosts());
                 }
 
-                if (routeToMaster) {
-                    routing = new OperationRouting(true);
-                }
-                else if (allHosts.size() == 0) {
-                    routing = new OperationRouting(false);
+                if (allHosts.size() == 1) {
+                    routing = new OperationRouting(allHosts.iterator().next(), twoStep);
                 }
                 else {
-                    if (hasLocal) {
-                        allHosts.add(localHostName);
-                    }
                     routing = new OperationRouting(allHosts);
                 }
             }
             else {
                 // empty; this will be an error but don't deal with it here
-                routing = new OperationRouting(false);
+                // Let our DomainModel deal with it
+                routing = new OperationRouting(localHostName, false);
             }
         }
         else {
@@ -403,11 +404,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return routing;
     }
 
-    private boolean isReadOnly(final ModelNode operation, final List<Property> address) {
+    private boolean isReadOnly(final ModelNode operation, final PathAddress address) {
         // FIXME this is an overly primitive way to check for read-only ops
         String opName = operation.require(OP).asString();
         boolean ro = READ_ONLY_OPERATIONS.contains(opName);
-        if (!ro && address.size() == 1 && DESCRIBE.equals(opName) && PROFILE.equals(address.get(0).getName())) {
+        if (!ro && address.size() == 1 && DESCRIBE.equals(opName) && PROFILE.equals(address.getElement(0).getKey())) {
             ro = true;
         }
         return ro;
@@ -437,20 +438,16 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         final Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>();
         final Map<String, Future<ModelNode>> futures = new HashMap<String, Future<ModelNode>>();
 
-        ModelNode wrapper = new ModelNode();
-        wrapper.get(OP).set(HostControllerClient.EXECUTE_ON_DOMAIN);
-        wrapper.get(HostControllerClient.DOMAIN_OP).set(operation.getOperation());
-
-        Operation wrapperOperation = operation.clone(wrapper);
         // Try and execute locally first; if it fails don't bother with the other hosts
         final Set<String> targets = routing.getHosts();
         if (targets.remove(localHostName)) {
+            Operation localOperation = operation;
             if (targets.size() > 0) {
                 // clone things so our local activity doesn't affect the op
                 // we send to the other hosts
-                wrapperOperation = wrapperOperation.clone(wrapper.clone());
+                localOperation = localOperation.clone(localOperation.getOperation().clone());
             }
-            pushToHost(wrapperOperation, transaction, localHostName, futures);
+            pushToHost(localOperation, transaction, localHostName, futures);
             processHostFuture(localHostName, futures.remove(localHostName), hostResults);
             ModelNode hostResult = hostResults.get(localHostName);
             if (!transaction.isRollbackOnly()) {
@@ -462,7 +459,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         if (!transaction.isRollbackOnly()) {
             for (final String host : targets) {
-                pushToHost(wrapperOperation, transaction, host, futures);
+                pushToHost(operation, transaction, host, futures);
             }
 
             log.debugf("Domain updates pushed to %s host controller(s)", futures.size());
@@ -492,7 +489,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
     private void pushToHost(final Operation operation, final ControllerTransaction transaction, final String host,
             final Map<String, Future<ModelNode>> futures) {
-        final HostControllerClient client = hosts.get(host);
+        final DomainControllerSlaveClient client = hosts.get(host);
         if (client != null) {
             final Callable<ModelNode> callable = new Callable<ModelNode>() {
 
@@ -691,20 +688,49 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
     private class OperationRouting {
 
+        private final Set<String> hosts = new HashSet<String>();
+        private final boolean twoStep;
         private final boolean routeToMaster;
-        private final boolean localOnly;
-        private final Set<String> hosts;
 
-        private OperationRouting(boolean routeToMaster) {
-            this.routeToMaster = routeToMaster;
-            this.localOnly = !routeToMaster;
-            this.hosts = Collections.emptySet();
+        /** Constructor for domain-level requests where we are not master */
+        private OperationRouting() {
+            twoStep = false;
+            routeToMaster = true;
         }
 
+        /**
+         * Constructor for a request routed to a single host
+         *
+         * @param host the name of the host
+         * @param twoStep true if a two-step execution is needed
+         */
+        private OperationRouting(String host, boolean twoStep) {
+            this.hosts.add(host);
+            this.twoStep = twoStep;
+            routeToMaster = true;
+        }
+
+        /**
+         * Constructor for a request routed to multiple hosts
+         *
+         * @param hosts the names of the hosts
+         */
         private OperationRouting(final Collection<String> hosts) {
-            this.routeToMaster = false;
-            this.localOnly = false;
-            this.hosts = new HashSet<String>(hosts);
+            this.hosts.addAll(hosts);
+            this.twoStep = true;
+            routeToMaster = true;
+        }
+
+        private Set<String> getHosts() {
+            return hosts;
+        }
+
+        private String getSingleHost() {
+            return hosts.size() == 1 ? hosts.iterator().next() : null;
+        }
+
+        private boolean isTwoStep() {
+            return twoStep;
         }
 
         private boolean isRouteToMaster() {
@@ -712,21 +738,15 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
 
         private boolean isLocalOnly() {
-            return localOnly;
-        }
-
-        private Set<String> getHosts() {
-            return hosts;
+            return localHostName.equals(getSingleHost());
         }
     }
 
-    private class LocalHostControllerClient implements HostControllerClient {
-
-        private final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(HOST, localHostName));
-        @Override
-        public PathAddress getProxyNodeAddress() {
-            return address;
-        }
+    /**
+     * Adapter to allow this domain controller to talk to the DomainModel via the same
+     * interface it uses for remote slave domain controllers.
+     */
+    private class LocalDomainModelAdapter implements DomainControllerSlaveClient {
 
         @Override
         public OperationResult execute(Operation operation, ResultHandler handler) {
@@ -740,13 +760,13 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         @Override
         public ModelNode execute(Operation operation, ControllerTransactionContext transaction) {
-            return localDomainModel.execute(operation, transaction);
+            return localDomainModel.executeForDomain(operation, transaction);
         }
 
         @Override
         public OperationResult execute(Operation operation, ResultHandler handler,
                 ControllerTransactionContext transaction) {
-            return localDomainModel.execute(operation, handler, transaction);
+            throw new UnsupportedOperationException("Transactional operations with a passed in ResultHandler are not supported");
         }
 
         @Override

@@ -101,6 +101,22 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         return initiatingHandler;
     }
 
+    protected int getNextAsynchronousRequestId() {
+        return currentAsynchronousRequestId.incrementAndGet();
+    }
+
+    protected void addAsynchronousOperation(int id, Cancellable operation) {
+        asynchOperations.put(id, operation);
+    }
+
+    protected Cancellable getAsynchronousOperation(int id) {
+        return asynchOperations.get(id);
+    }
+
+    protected void clearAsynchronousOperation(int id) {
+        asynchOperations.remove(id);
+    }
+
     public ManagementResponse operationFor(final byte commandByte) {
         switch (commandByte) {
             case ModelControllerClientProtocol.EXECUTE_ASYNCHRONOUS_REQUEST:
@@ -173,7 +189,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
     private class ExecuteAsynchronousOperation extends ExecuteOperation {
 
-        final int asynchronousRequestId = currentAsynchronousRequestId.incrementAndGet();
+        final int asynchronousRequestId = getNextAsynchronousRequestId();
 
         @Override
         protected final byte getResponseCode() {
@@ -203,7 +219,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                             outputStream.flush();
                         }
                     } catch (IOException e) {
-                        asynchOperations.remove(asynchronousRequestId);
+                        clearAsynchronousOperation(asynchronousRequestId);
                         exceptionHolder.setException(e);
                         completeLatch.countDown();
                     }
@@ -211,7 +227,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
                 @Override
                 public void handleResultComplete() {
-                    asynchOperations.remove(asynchronousRequestId);
+                    clearAsynchronousOperation(asynchronousRequestId);
                     if(!status.compareAndSet(0, 1)) {
                         throw new RuntimeException("Result already set");
                     }
@@ -220,7 +236,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
                 @Override
                 public void handleFailed(final ModelNode failureDescription) {
-                    asynchOperations.remove(asynchronousRequestId);
+                    clearAsynchronousOperation(asynchronousRequestId);
                     if(!status.compareAndSet(0, 2)) {
                         throw new RuntimeException("Result already set");
                     }
@@ -230,7 +246,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
                 @Override
                 public void handleCancellation() {
-                    asynchOperations.remove(asynchronousRequestId);
+                    clearAsynchronousOperation(asynchronousRequestId);
                     if(!status.compareAndSet(0, 3)) {
                         throw new RuntimeException("Result already set");
                     }
@@ -242,13 +258,14 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                 outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
                 ModelNode compensating = result.getCompensatingOperation() != null ? result.getCompensatingOperation() : new ModelNode();
                 compensating.writeExternal(outputStream);
+                outputStream.flush();
             }
 
             if (completeLatch.getCount() == 0) {
                 //It was handled synchronously or has completed by now
             } else {
                 //It was handled asynchronously
-                asynchOperations.put(Integer.valueOf(asynchronousRequestId), result.getCancellable());
+                addAsynchronousOperation(asynchronousRequestId, result.getCancellable());
                 synchronized (outputStream) {
                     outputStream.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
                     StreamUtils.writeInt(outputStream, asynchronousRequestId);
@@ -312,7 +329,7 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
             expectHeader(inputStream, ModelControllerClientProtocol.PARAM_REQUEST_ID);
             int operationId = StreamUtils.readInt(inputStream);
 
-            Cancellable operation = asynchOperations.get(Integer.valueOf(operationId));
+            Cancellable operation = getAsynchronousOperation(operationId);
             cancelled = operation!= null && operation.cancel();
         }
 

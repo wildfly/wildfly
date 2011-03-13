@@ -94,7 +94,7 @@ public class BasicTransactionalModelController extends BasicModelController impl
     public OperationResult execute(final Operation executionContext, final ResultHandler handler) {
         ControllerTransaction transaction = null;
         try {
-            if (executionContext.getOperation().get(OP_ADDR).hasDefined(OP_ADDR)) {
+            if (executionContext.getOperation().hasDefined(OP_ADDR)) {
                 final PathAddress address = PathAddress.pathAddress(executionContext.getOperation().get(OP_ADDR));
 
                 final ProxyController proxyExecutor = getRegistry().getProxyController(address);

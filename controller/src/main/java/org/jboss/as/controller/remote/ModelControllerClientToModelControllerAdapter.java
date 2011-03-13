@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class ModelControllerClientToModelControllerAdapter implements ModelController {
+public class ModelControllerClientToModelControllerAdapter implements ModelController {
 
     final ModelControllerClient client;
 
@@ -49,7 +49,7 @@ class ModelControllerClientToModelControllerAdapter implements ModelController {
      * @param address the address of the remote model controller to connect to
      * @param port the port of the remote model controller to connect to
      */
-    ModelControllerClientToModelControllerAdapter(final InetAddress address, final int port) {
+    public ModelControllerClientToModelControllerAdapter(final InetAddress address, final int port) {
         client = ModelControllerClient.Factory.create(address, port);
     }
 

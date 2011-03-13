@@ -28,6 +28,8 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Controls reads of and modifications to a managment model.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface ModelController {
@@ -37,7 +39,7 @@ public interface ModelController {
      *
      * @param operation the operation to execute
      * @param handler the result handler
-     * @return a handle which may be used to cancel the operation
+     * @return a handle which may be used to cancel the operation or obtain a compensating operation
      */
     OperationResult execute(Operation operation, ResultHandler handler);
 

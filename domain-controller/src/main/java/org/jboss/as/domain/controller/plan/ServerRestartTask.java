@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.HostControllerClient;
+import org.jboss.as.domain.controller.DomainControllerSlaveClient;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
@@ -40,10 +40,10 @@ import org.jboss.dmr.ModelNode;
  */
 class ServerRestartTask extends AbstractServerUpdateTask {
 
-    private final HostControllerClient domainController;
+    private final DomainControllerSlaveClient domainController;
     private final long gracefulTimeout;
 
-    ServerRestartTask(final HostControllerClient domainController,
+    ServerRestartTask(final DomainControllerSlaveClient domainController,
             final ServerIdentity serverId,
             final ServerUpdatePolicy updatePolicy,
             final ServerUpdateResultHandler resultHandler,
