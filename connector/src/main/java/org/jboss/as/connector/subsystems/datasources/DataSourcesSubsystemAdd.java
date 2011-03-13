@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.sql.Driver;
 import static org.jboss.as.connector.subsystems.datasources.Constants.*;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATION;
@@ -85,20 +86,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.DataSourceDefinitionDeployer;
-import org.jboss.as.connector.deployers.processors.DataSourcesAttachmentProcessor;
-import org.jboss.as.connector.deployers.processors.DirectDataSourceDescription;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
@@ -112,7 +114,6 @@ import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
-import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
 import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.ds.DataSourceImpl;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
@@ -122,11 +123,15 @@ import org.jboss.jca.common.metadata.ds.TimeOutImpl;
 import org.jboss.jca.common.metadata.ds.ValidationImpl;
 import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.util.Strings;
 
 /**
  * Handler for adding the datasource subsystem.
+ *
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
@@ -135,7 +140,9 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
     static final DataSourcesSubsystemAdd INSTANCE = new DataSourcesSubsystemAdd();
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemAdd");
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         // Populate subModel
@@ -202,10 +209,30 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                     } catch (ValidateException e) {
                         throw new OperationFailedException(e, operation);
                     }
-                    serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
-                            .setInitialMode(Mode.ACTIVE).install();
 
-                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCES, new DataSourcesAttachmentProcessor(datasources));
+                    for (DataSource dataSource : datasources.getDataSource()) {
+                        if (dataSource.isEnabled() != null && !dataSource.isEnabled()) {
+                            continue;
+                        }
+                        String jndiName = dataSource.getJndiName();
+                        if (dataSource.isUseJavaContext() != null && dataSource.isUseJavaContext().booleanValue() &&
+                                !jndiName.startsWith("java:/")) {
+                            jndiName = "java:/" + jndiName;
+                        }
+                        installDataSourceService(serviceTarget, jndiName, dataSource.getModule(), new LocalDataSourceService(jndiName, dataSource));
+
+                    }
+                    for (XaDataSource xaDataSource : datasources.getXaDataSource()) {
+                        if (xaDataSource.isEnabled() != null && !xaDataSource.isEnabled()) {
+                            continue;
+                        }
+                        String jndiName = xaDataSource.getJndiName();
+                        if (xaDataSource.isUseJavaContext() != null && xaDataSource.isUseJavaContext().booleanValue() &&
+                                !jndiName.startsWith("java:/")) {
+                            jndiName = "java:/" + jndiName;
+                        }
+                        installDataSourceService(serviceTarget, jndiName, xaDataSource.getModule(), new XaDataSourceService(jndiName, xaDataSource));
+                    }
                     updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION, new DataSourceDefinitionDeployer());
 
                     resultHandler.handleResultComplete();
@@ -219,6 +246,30 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         return new BasicOperationResult(compensatingOperation);
+    }
+
+    private void installDataSourceService(final ServiceTarget serviceTarget, final String jndiName, final String driver, final AbstractDataSourceService dataSourceService) {
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceBuilder<?> serviceBuilder = serviceTarget
+                .addService(dataSourceServiceName, dataSourceService)
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER,
+                        com.arjuna.ats.jbossatx.jta.TransactionManagerService.class,
+                        dataSourceService.getTransactionManagerInjector()).addDependency(NamingService.SERVICE_NAME);
+
+        final ServiceName driverServiceName = getDriverDependency(driver);
+        if (driverServiceName != null) {
+            serviceBuilder.addDependency(driverServiceName, Driver.class, dataSourceService.getDriverInjector());
+        }
+        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        serviceBuilder.install();
+
+        final BinderService binderService = new BinderService(jndiName.substring(6));
+        final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
+        serviceTarget.addService(binderServiceName, binderService)
+                .addDependency(dataSourceServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
+                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     private DataSources buildDataSourcesObject(ModelNode operation) throws ValidateException {
@@ -416,6 +467,35 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
         } else {
             return null;
         }
+    }
+
+    private ServiceName getDriverDependency(final String driver) {
+        String driverName = null;
+        Integer majorVersion = null;
+        Integer minorVersion = null;
+
+        String[] strings = Strings.split(driver, "#");
+        if (strings.length != 2) {
+            throw new IllegalArgumentException("module should define jdbc driver with this format: <driver-name>#<major-version>.<minor-version>");
+        }
+        driverName = strings[0];
+        strings = Strings.split(strings[1], ".", 2);
+        if (strings.length != 2) {
+            throw new IllegalArgumentException("module should define jdbc driver with this format: <driver-name>#<major-version>.<minor-version>");
+        }
+        try {
+            majorVersion = Integer.valueOf(strings[0]);
+            minorVersion = Integer.valueOf(strings[1]);
+        } catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException("module should define jdbc driver with this format: <driver-name>#<major-version>.<minor-version> "
+                    + "version number should be valid Integer");
+        }
+
+        if (driverName != null & majorVersion != null && minorVersion != null) {
+            return ServiceName.JBOSS.append("jdbc-driver", driverName,
+                    Integer.toString(majorVersion), Integer.toString(minorVersion));
+        }
+        return null;
     }
 
     private Long getLongIfSetOrGetDefault(ModelNode dataSourceNode, String key, Long defaultValue) {

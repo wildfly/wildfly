@@ -164,7 +164,7 @@
         </subsystem>               
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
-                <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
+                <datasource jndi-name="java:/H2DS" enabled="false" use-java-context="true" pool-name="H2DS">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver-class>org.h2.Driver</driver-class>
                     <module>org.h2.Driver#1.2</module>

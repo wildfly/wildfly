@@ -29,6 +29,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.annotation.api"/>

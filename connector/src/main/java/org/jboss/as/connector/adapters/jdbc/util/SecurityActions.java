@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.connector.adapters.jdbc.util;
 
-package org.jboss.as.connector.deployers.processors;
-
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.jca.common.api.metadata.ds.DataSources;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
- * Utility used to manage attaching an instance of {@link org.jboss.jca.common.api.metadata.ds.DataSources}.
+ * Privileged Blocks
  *
- * @author John Bailey
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public class DataSourcesAttachement {
-    private static final AttachmentKey<DataSources> ATTACHMENT_KEY = AttachmentKey.create(DataSources.class);
-
-    static DataSources getDataSourcesAttachment(final DeploymentUnit context) {
-        return context.getAttachment(ATTACHMENT_KEY);
+class SecurityActions {
+    /**
+     * Constructor
+     */
+    private SecurityActions() {
     }
 
-    static void attachDataSources(final DeploymentUnit context, final DataSources dataSources) {
-        context.putAttachment(ATTACHMENT_KEY, dataSources);
-    }
-
-    static void detachDataSources(final DeploymentUnit context) {
-        context.removeAttachment(ATTACHMENT_KEY);
+    /**
+     * Get a system property
+     *
+     * @param name The property name
+     * @return The property value
+     */
+    static String getSystemProperty(final String name) {
+        if (System.getSecurityManager() == null) {
+            return System.getProperty(name);
+        } else {
+            return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    return System.getProperty(name);
+                }
+            });
+        }
     }
 }
