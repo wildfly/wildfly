@@ -101,22 +101,22 @@ public class HostControllerServerClient implements Service<Void> {
     private class ServerRegisterRequest extends ManagementRequest<Void> {
         @Override
         protected byte getHandlerId() {
-            return NewDomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
+            return DomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
         }
 
         @Override
         protected byte getRequestCode() {
-            return NewDomainServerProtocol.REGISTER_REQUEST;
+            return DomainServerProtocol.REGISTER_REQUEST;
         }
 
         @Override
         protected byte getResponseCode() {
-            return NewDomainServerProtocol.REGISTER_RESPONSE;
+            return DomainServerProtocol.REGISTER_RESPONSE;
         }
 
         @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            output.write(NewDomainServerProtocol.PARAM_SERVER_NAME);
+            output.write(DomainServerProtocol.PARAM_SERVER_NAME);
             writeUTFZBytes(output, serverName);
         }
     }

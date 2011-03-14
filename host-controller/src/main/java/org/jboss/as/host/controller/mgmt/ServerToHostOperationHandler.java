@@ -36,7 +36,6 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
-import org.jboss.as.server.mgmt.domain.NewDomainServerProtocol;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -79,7 +78,7 @@ public class ServerToHostOperationHandler extends AbstractMessageHandler impleme
     /** {@inheritDoc} */
     @Override
     public byte getIdentifier() {
-        return NewDomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
+        return DomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
     }
 
     /** {@inheritDoc} */
@@ -112,14 +111,16 @@ public class ServerToHostOperationHandler extends AbstractMessageHandler impleme
         /** {@inheritDoc} */
         @Override
         protected byte getResponseCode() {
-            return NewDomainServerProtocol.REGISTER_RESPONSE;
+            return DomainServerProtocol.REGISTER_RESPONSE;
         }
 
+        @Override
         public void handle(final Connection connection, final InputStream input) throws IOException {
             this.connection = connection;
             super.handle(connection, input);
         }
 
+        @Override
         protected void readRequest(final InputStream input) throws IOException {
             expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
             final String serverName = readUTFZBytes(input);
