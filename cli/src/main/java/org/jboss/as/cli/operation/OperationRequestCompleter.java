@@ -189,6 +189,18 @@ public class OperationRequestCompleter implements Completor {
             }
         }
 
+        if(candidates.size() == 1 && !address.endsOnType()) {
+            String onlyType = (String) candidates.get(0);
+            address.toNodeType(onlyType);
+            List<String> childNames = provider.getNodeNames(address);
+            if (!childNames.isEmpty()) {
+                candidates.clear();
+                for (String name : childNames) {
+                    candidates.add(onlyType + '=' + name);
+                }
+            }
+        }
+
         Collections.sort(candidates);
         return requestStartIndex + handler.getLastSeparatorIndex() + 1;
     }
