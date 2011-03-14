@@ -217,6 +217,7 @@ public class HostControllerBootstrap {
             serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
                     .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostModelNode.get(MANAGEMENT_INTERFACES, HTTP_INTERFACE).require(INTERFACE).asString()), NetworkInterfaceBinding.class, service.getInterfaceInjector())
                     .addDependency(DomainController.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
+                    .addInjection(service.getTempDirInjector(), environment.getDomainTempDir().getAbsolutePath())
                     .addInjection(service.getPortInjector(), hostModelNode.get(MANAGEMENT_INTERFACES, HTTP_INTERFACE).require(PORT).asInt())
                     .addDependency(executorServiceName, ExecutorService.class, service.getExecutorServiceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE)

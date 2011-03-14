@@ -45,6 +45,7 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -88,7 +89,7 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
                                     NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                                     NetworkInterfaceBinding.class, service.getInterfaceInjector())
                             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
-                            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.getServerEnvironmentInjector())
+                            .addDependency(AbstractPathService.pathNameOf(ServerEnvironment.SERVER_TEMP_DIR), String.class, service.getTempDirInjector())
                             .addInjection(service.getPortInjector(), port)
                             .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool())
                             .setInitialMode(ServiceController.Mode.ACTIVE)
