@@ -23,11 +23,9 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.lang.reflect.Method;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +46,7 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
      * This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
      * match - specifically, they must equal the objects provided to the proxy.
      */
-    private final Map<Method, Interceptor> methodMap;
+    private Map<Method, Interceptor> methodMap;
 
     /**
      * Construct a new instance.
@@ -60,13 +58,6 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
         this.component = component;
         this.instance = instance;
         this.preDestroyInterceptors = preDestroyInterceptors;
-        final Map<Method, InterceptorFactory> factoryMap = component.getInterceptorFactoryMap();
-        final Map<Method, Interceptor> methodMap = new IdentityHashMap<Method, Interceptor>(factoryMap.size());
-        factoryContext.getContextData().put(AbstractComponent.INSTANCE_KEY, instance);
-        for (Map.Entry<Method, InterceptorFactory> entry : factoryMap.entrySet()) {
-            methodMap.put(entry.getKey(), entry.getValue().create(factoryContext));
-        }
-        this.methodMap = methodMap;
     }
 
     /** {@inheritDoc} */
@@ -93,4 +84,7 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
         return interceptor;
     }
 
+    void setMethodMap(Map<Method, Interceptor> methodMap) {
+        this.methodMap = methodMap;
+    }
 }

@@ -403,6 +403,7 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
                     componentMethods.put(MethodIdentifier.getIdentifierForMethod(componentMethod), componentMethod);
                     // assemble the final set of interceptor factories for this method.
                     final List<InterceptorFactory> interceptorFactories = new ArrayList<InterceptorFactory>();
+                    interceptorFactories.addAll(configuration.getComponentInstanceSystemInterceptorFactories());
                     // TODO: default-level interceptors if applicable
                     // TODO: This code should be somewhere else
                     //Now we need to create all our interceptors

@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +128,21 @@ public abstract class AbstractComponent implements Component {
         preDestoryInterceptors.addAll(applyInjections(objectInstance));
 
         performPostConstructLifecycle(objectInstance, interceptorContext);
-        return constructComponentInstance(objectInstance, preDestoryInterceptors, interceptorContext);
+
+        AbstractComponentInstance instance = constructComponentInstance(objectInstance, preDestoryInterceptors, interceptorContext);
+
+        // process the interceptors bound to individual methods
+        // the interceptors are tied to the lifecycle of the instance
+        final Map<Method, InterceptorFactory> factoryMap = getInterceptorFactoryMap();
+        final Map<Method, Interceptor> methodMap = new IdentityHashMap<Method, Interceptor>(factoryMap.size());
+        interceptorContext.getContextData().put(AbstractComponent.INSTANCE_KEY, objectInstance);
+        for (Map.Entry<Method, InterceptorFactory> entry : factoryMap.entrySet()) {
+            Method method = entry.getKey();
+            PerViewMethodInterceptorFactory.populate(interceptorContext, this, instance, method);
+            methodMap.put(method, entry.getValue().create(interceptorContext));
+        }
+        instance.setMethodMap(methodMap);
+        return instance;
     }
 
     /**
