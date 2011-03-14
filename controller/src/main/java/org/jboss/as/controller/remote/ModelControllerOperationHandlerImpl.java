@@ -279,7 +279,6 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                 case 2: {
                     synchronized (outputStream) {
                         outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
-                        outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
                         failureHolder.getFailure().writeExternal(outputStream);
                         outputStream.flush();
                     }
