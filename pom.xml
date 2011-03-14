@@ -107,7 +107,7 @@
         <version.org.jboss.metadata.ear>7.0.0.Alpha7</version.org.jboss.metadata.ear>
         <version.org.jboss.metadata.ejb>7.0.0.Alpha4</version.org.jboss.metadata.ejb>
         <version.org.jboss.metadata.web>7.0.0.Alpha7</version.org.jboss.metadata.web>
-        <version.org.jboss.modules.jboss-modules>1.0.0.Beta15</version.org.jboss.modules.jboss-modules>
+        <version.org.jboss.modules.jboss-modules>1.0.0.Beta16</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta7</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.common>1.0.6</version.org.jboss.osgi.common>
