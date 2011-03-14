@@ -96,17 +96,8 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
     public synchronized void stop(final StopContext context) {
         final String deploymentName = context.getController().getName().getSimpleName();
-        log.infof("Stopping deployment \"%s\"", deploymentName);
-        // Delete the first phase deployer
-        final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
-        final ServiceController<?> controller = context.getController().getServiceContainer().getService(serviceName);
-        if (controller != null) {
-            controller.setMode(ServiceController.Mode.REMOVE);
-            final MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
-            context.asynchronous();
-            controller.addListener(listener);
-            listener.done();
-        }
+        deploymentUnit = null;
+        log.infof("Stopped deployment %s in %dms", deploymentName, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
 
     public synchronized DeploymentUnit getValue() throws IllegalStateException, IllegalArgumentException {
