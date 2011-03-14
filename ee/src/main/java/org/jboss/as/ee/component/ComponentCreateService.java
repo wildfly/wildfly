@@ -97,4 +97,8 @@ public final class ComponentCreateService implements Service<Component> {
     public Injector<DeploymentUnit> getDeploymentUnitInjector() {
         return deploymentUnit;
     }
+
+    public AbstractComponentConfiguration getComponentConfiguration() {
+        return componentConfiguration;
+    }
 }

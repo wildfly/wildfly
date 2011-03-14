@@ -21,42 +21,41 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.as.weld.deployment.EjbDescriptorImpl;
+import org.jboss.as.weld.deployment.SessionObjectReferenceImpl;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
 
-public class WeldEjbServices implements Service<WeldEjbServices>, EjbServices {
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-    public static final ServiceName SERVICE_NAME = ServiceName.of("WeldEjbServices");
+/**
+ * EjbServices implementation
+ */
+public class WeldEjbServices implements EjbServices {
 
-    @Override
-    public void start(StartContext context) throws StartException {
+    private final ServiceRegistry serviceRegistry;
 
+    private volatile Map<String,InterceptorBindings> bindings = Collections.emptyMap();
+
+    public WeldEjbServices(ServiceRegistry serviceRegistry) {
+        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
-    public void stop(StopContext context) {
-    }
-
-    @Override
-    public WeldEjbServices getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    @Override
-    public void registerInterceptors(EjbDescriptor<?> ejbDescriptor, InterceptorBindings interceptorBindings) {
-        //throw new RuntimeException("not implemented");
+    public synchronized  void registerInterceptors(EjbDescriptor<?> ejbDescriptor, InterceptorBindings interceptorBindings) {
+        final Map<String,InterceptorBindings> bindings = new HashMap<String,InterceptorBindings>(this.bindings);
+        bindings.put(ejbDescriptor.getEjbName(),interceptorBindings);
+        this.bindings = bindings;
     }
 
     @Override
     public SessionObjectReference resolveEjb(EjbDescriptor<?> ejbDescriptor) {
-        throw new RuntimeException("not implemented");
+        return new SessionObjectReferenceImpl((EjbDescriptorImpl<?>) ejbDescriptor,serviceRegistry);
     }
 
     @Override
@@ -64,4 +63,7 @@ public class WeldEjbServices implements Service<WeldEjbServices>, EjbServices {
 
     }
 
+    public InterceptorBindings getBindings(String ejbName) {
+        return bindings.get(ejbName);
+    }
 }

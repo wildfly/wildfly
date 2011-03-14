@@ -30,6 +30,8 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.InterceptorInstanceFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Method;
@@ -77,6 +79,7 @@ public abstract class AbstractComponent implements Component {
     private Interceptor componentInterceptor;
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
     private final InjectedValue<NamespaceContextSelector> namespaceContextSelectorInjector = new InjectedValue<NamespaceContextSelector>();
+    private final Map<Class<?>, ServiceName> viewServices;
 
     private volatile boolean gate;
 
@@ -95,6 +98,7 @@ public abstract class AbstractComponent implements Component {
         preDestroyInterceptorsMethods = configuration.getPreDestroyInterceptorLifecycles();
         interceptorFactoryMap = configuration.getInterceptorFactoryMap();
         this.componentInjectors = configuration.getComponentInjectors();
+        this.viewServices = new HashMap<Class<?>, ServiceName>(configuration.getViewServices());
     }
 
     /**
@@ -386,5 +390,9 @@ public abstract class AbstractComponent implements Component {
             }
             return null;
         }
+    }
+
+    public Map<Class<?>, ServiceName> getViewServices() {
+        return Collections.unmodifiableMap(viewServices);
     }
 }

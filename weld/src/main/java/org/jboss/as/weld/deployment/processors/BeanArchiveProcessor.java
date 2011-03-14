@@ -136,7 +136,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 SessionBeanComponentDescription componentDescription = (SessionBeanComponentDescription) component;
                 //first we need to resolve the correct BDA for the bean
                 BeanDeploymentArchiveImpl bda = resolveSessionBeanBda(componentDescription.getEJBClassName(), bdaMap,rootBda,indexes);
-                bda.addEjbDescriptor(new EjbDescriptorImpl<Object>(componentDescription,bda));
+                bda.addEjbDescriptor(new EjbDescriptorImpl<Object>(componentDescription,bda,deploymentUnit));
             }
         }
     }

@@ -24,6 +24,9 @@ package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.Map;
 
 /**
  * Common contract for an EE component.  Implementations of this will be available as a service and can be used as the
@@ -108,4 +111,10 @@ public interface Component {
      * @return the selector
      */
     NamespaceContextSelector getNamespaceContextSelector();
+
+    /**
+     * The view service names keyed by the view class type.
+     * @return The view services for this component
+     */
+    Map<Class<?>,ServiceName> getViewServices();
 }

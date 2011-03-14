@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
@@ -57,6 +56,7 @@ public abstract class AbstractComponentConfiguration {
     private final Map<Class<?>, ProxyFactory<?>> proxyFactories = new IdentityHashMap<Class<?>, ProxyFactory<?>>();
     private final List<ComponentInjector> componentInjectors = new ArrayList<ComponentInjector>();
     private final Map<ServiceName, InjectedValue<Object>> dependencyInjections = new HashMap<ServiceName, InjectedValue<Object>>();
+    private final Map<Class<?>, ServiceName> viewServices = new HashMap<Class<?>, ServiceName>();
     private Class<?> componentClass;
     private List<InterceptorFactory> componentInstanceSystemInterceptorFactories = new LinkedList<InterceptorFactory>();
 
@@ -65,6 +65,7 @@ public abstract class AbstractComponentConfiguration {
      *
      * @param description the original component description
      */
+
     protected AbstractComponentConfiguration(final AbstractComponentDescription description) {
         // Do not keep a reference to description, so it can be GC-ed.
         this.componentName = description.getComponentName();
@@ -180,6 +181,11 @@ public abstract class AbstractComponentConfiguration {
 
     Map<ServiceName, InjectedValue<Object>> getDependencyInjections() {
         return dependencyInjections;
+    }
+
+
+    protected Map<Class<?>, ServiceName> getViewServices() {
+        return viewServices;
     }
 
     /**

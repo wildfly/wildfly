@@ -25,6 +25,8 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
@@ -36,7 +38,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A
+ * Implementation of EjbDescriptor
  * @author Stuart Douglas
  */
 public class EjbDescriptorImpl<T> implements EjbDescriptor<T>{
@@ -44,8 +46,9 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T>{
     private final EJBComponentDescription componentDescription;
     private final BeanDeploymentArchiveImpl beanDeploymentArchive;
     private final Set<BusinessInterfaceDescriptor<?>> localInterfaces;
+    private final ServiceName baseName;
 
-    public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive) {
+    public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive,DeploymentUnit deploymentUnit) {
         this.componentDescription = componentDescription;
         this.beanDeploymentArchive = beanDeploymentArchive;
         final Set<BusinessInterfaceDescriptor<?>> localInterfaces = new HashSet<BusinessInterfaceDescriptor<?>>();
@@ -53,6 +56,7 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T>{
             localInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive,className));
         }
         this.localInterfaces=localInterfaces;
+        this.baseName =  deploymentUnit.getServiceName().append("component").append(componentDescription.getComponentName());
     }
 
 
@@ -102,4 +106,21 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T>{
         //TODO: message driven beans
         return false;
     }
+
+    public EJBComponentDescription getComponentDescription() {
+        return componentDescription;
+    }
+
+    public ServiceName getBaseName() {
+        return baseName;
+    }
+
+    public ServiceName getCreateServiceName() {
+        return baseName.append("CREATE");
+    }
+
+    public ServiceName getStartServiceName() {
+        return baseName.append("START");
+    }
+
 }

@@ -157,6 +157,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 serviceTarget.addService(serviceName, viewService)
                         .addDependency(createServiceName, AbstractComponent.class, viewService.getComponentInjector())
                         .install();
+                configuration.getViewServices().put(viewClass,serviceName);
             }
 
             // Iterate through each binding/injection, creating the JNDI binding and wiring dependencies for each
