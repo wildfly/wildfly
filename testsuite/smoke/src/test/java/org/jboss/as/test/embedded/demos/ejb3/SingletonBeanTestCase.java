@@ -26,10 +26,10 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.demos.ejb3.archive.session.singleton.CallTrackerSingletonBean;
-import org.jboss.as.demos.ejb3.archive.session.singleton.SimpleSingletonBean;
-import org.jboss.as.demos.ejb3.archive.session.singleton.SimpleSingletonLocal;
-import org.jboss.as.demos.ejb3.archive.session.singleton.StartupSingleton;
+import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonBean;
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
+import org.jboss.as.demos.ejb3.archive.StartupSingleton;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -38,6 +38,11 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Testcase for testing the basic functionality of a EJB3 singleton session bean.
@@ -55,6 +60,7 @@ public class SingletonBeanTestCase {
         jar.addManifestResource("archives/ejb3-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
         jar.addPackage(SimpleSingletonBean.class.getPackage());
         jar.addPackage(StartupSingleton.class.getPackage());
+        jar.addClass(ReadOnlySingletonBean.class);
         return jar;
     }
 
@@ -86,7 +92,33 @@ public class SingletonBeanTestCase {
     @Test
     public void testReadOnlySingleton() throws Exception {
         Context ctx = new InitialContext();
-
+        ReadOnlySingletonBean readOnlySingletonBean = (ReadOnlySingletonBean) ctx.lookup("java:global/ejb3-singleton-bean-example/" + ReadOnlySingletonBean.class.getSimpleName() + "!" + ReadOnlySingletonBean.class.getName());
+        final int NUM_THREADS = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+        Future<String>[] results = new Future[NUM_THREADS];
+        for (int i = 0; i < NUM_THREADS; i++) {
+            results[i] = executor.submit(new ReadOnlySingletonBeanInvoker(readOnlySingletonBean, i));
+        }
+        for (int i = 0; i < NUM_THREADS; i++) {
+            String result = results[i].get(10, TimeUnit.SECONDS);
+            Assert.assertEquals("Unexpected value from singleton bean", String.valueOf(i), result);
+        }
     }
 
+    private class ReadOnlySingletonBeanInvoker implements Callable<String> {
+
+        private ReadOnlySingletonBean bean;
+
+        private int num;
+
+        ReadOnlySingletonBeanInvoker(ReadOnlySingletonBean bean, int num) {
+            this.bean = bean;
+            this.num = num;
+        }
+        
+        @Override
+        public String call() throws Exception {
+            return bean.twoSecondEcho(String.valueOf(this.num));
+        }
+    }
 }

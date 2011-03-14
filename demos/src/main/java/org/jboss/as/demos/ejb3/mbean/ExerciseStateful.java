@@ -21,7 +21,7 @@
  */
 package org.jboss.as.demos.ejb3.mbean;
 
-import org.jboss.as.demos.ejb3.archive.session.stateful.SimpleStatefulSessionLocal;
+import org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal;
 
 import javax.naming.InitialContext;
 import java.util.concurrent.Callable;

@@ -20,46 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.ejb3.mbean;
+package org.jboss.as.demos.ejb3.archive;
 
-import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
+import javax.ejb.Local;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
 
 /**
  * @author Jaikiran Pai
  */
-public class SingletonBeanLookupThread implements Callable<Object> {
+@Singleton
+@Local(SimpleSingletonLocal.class)
+public class SimpleSingletonBean implements SimpleSingletonLocal {
 
+    private int count;
 
-    private String jndiName;
+    private static int numInstancesCreated;
 
-    private int numTimes;
-
-    private CountDownLatch latch;
-
-    public SingletonBeanLookupThread(CountDownLatch latch, String jndiName, int numTimes) {
-        this.jndiName = jndiName;
-        this.numTimes = numTimes;
-        this.latch = latch;
+    public SimpleSingletonBean() {
+        numInstancesCreated++;
     }
 
     @Override
-    public Object call() throws Exception {
-        try {
+    public int getBeanInstanceCount() {
+        return this.numInstancesCreated;
+    }
 
-            for (int i = 0; i < numTimes; i++) {
-                Context ctx = new InitialContext();
-                SimpleSingletonLocal bean = (SimpleSingletonLocal) ctx.lookup(jndiName);
-                // invoke a no-op since the singleton bean instance gets created on invocation
-                bean.doNothing();
-            }
-        } finally {
-            latch.countDown();
-        }
-        return null;
+    @Override
+    public void increment() {
+        this.count++;
+    }
+
+    @Override
+    @Lock(value = LockType.READ)
+    public int getCount() {
+        return this.count;
+    }
+
+    @Override
+    public void doNothing() {
+
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,46 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.ejb3.archive.session.singleton;
+package org.jboss.as.demos.ejb3.archive;
 
-import javax.ejb.Local;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 
 /**
- * @author Jaikiran Pai
+ * @author John Bailey
  */
-@Singleton
-@Local(SimpleSingletonLocal.class)
-public class SimpleSingletonBean implements SimpleSingletonLocal {
-
-    private int count;
-
-    private static int numInstancesCreated;
-
-    public SimpleSingletonBean() {
-        numInstancesCreated++;
-    }
-
-    @Override
-    public int getBeanInstanceCount() {
-        return this.numInstancesCreated;
-    }
-
-    @Override
-    public void increment() {
-        this.count++;
-    }
-
-    @Override
-    @Lock(value = LockType.READ)
-    public int getCount() {
-        return this.count;
-    }
-
-    @Override
-    public void doNothing() {
-
+@Stateless
+public class OtherStatelessSessionBean implements OtherStatelessSessionLocal {
+    public String getName() {
+        return "Other";
     }
 }

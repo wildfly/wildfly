@@ -34,8 +34,10 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -45,7 +47,11 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
 
     private LockType beanLevelLockType;
 
+    private AccessTimeout beanLevelAccessTimeout;
+
     private Map<EJBBusinessMethod, LockType> methodLevelLockTypes;
+
+    private Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts;
 
 
     /**
@@ -58,7 +64,10 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
 
         if (description.allowsConcurrentAccess()) {
             this.beanLevelLockType = description.getBeanLevelLockType();
+            this.beanLevelAccessTimeout = description.getBeanLevelAccessTimeout();
+
             this.methodLevelLockTypes = description.getMethodApplicableLockTypes();
+            this.methodAccessTimeouts = description.getMethodApplicableAccessTimeouts();
 
             // container managed concurrency interceptor
             // TODO: Ideally, this should be a per bean instance (a.k.a ComponentInstance) interceptor.
@@ -97,6 +106,10 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
         return this.beanLevelLockType;
     }
 
+    public AccessTimeout getBeanLevelAccessTimeout() {
+        return this.beanLevelAccessTimeout;
+    }
+
     /**
      * Returns a map of lock types applicable for the bean methods. The returned map will contain the
      * lock type for a method, <i>only</i> if the lock type has been explicitly specified for the bean method.
@@ -107,6 +120,18 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
      */
     public Map<EJBBusinessMethod, LockType> getMethodApplicableLockTypes() {
         return this.methodLevelLockTypes;
+    }
+
+    /**
+     * Returns a map of {@link javax.ejb.AccessTimeout} applicable for the bean methods. The returned map will contain the
+     * access timeout for a method, <i>only</i> if the access timeout has been explicitly specified for the bean method.
+     * <p/>
+     * Returns an empty map if there are no explicit method level access timeout specified for the bean
+     *
+     * @return
+     */
+    public Map<EJBBusinessMethod, AccessTimeout> getMethodApplicableAccessTimeouts() {
+        return this.methodAccessTimeouts;
     }
 
     private boolean isContainerManagedConcurrency(SingletonComponentDescription singletonComponentDescription) {

@@ -22,7 +22,7 @@
 
 package org.jboss.as.demos.ejb3.mbean;
 
-import org.jboss.as.demos.ejb3.archive.session.singleton.SimpleSingletonLocal;
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;

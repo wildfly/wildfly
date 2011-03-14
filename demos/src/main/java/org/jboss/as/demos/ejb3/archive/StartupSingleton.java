@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.ejb3.archive.session.singleton;
+package org.jboss.as.demos.ejb3.archive;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -28,8 +28,6 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import java.util.List;
 
 /**

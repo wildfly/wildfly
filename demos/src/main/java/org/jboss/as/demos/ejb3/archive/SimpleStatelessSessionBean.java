@@ -19,9 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.archive.session.stateless;
-
-import org.jboss.as.demos.ejb3.archive.session.SimpleInterceptor;
+package org.jboss.as.demos.ejb3.archive;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,7 +36,7 @@ public class SimpleStatelessSessionBean extends SimpleInterceptor implements Sim
     @EJB(beanName = "OtherStatelessSessionBean")
     private OtherStatelessSessionLocal other;
 
-    @EJB(lookup = "java:module/OtherStatelessSessionBean!org.jboss.as.demos.ejb3.archive.session.stateless.OtherStatelessSessionLocal")
+    @EJB(lookup = "java:module/OtherStatelessSessionBean!org.jboss.as.demos.ejb3.archive.OtherStatelessSessionLocal")
     private OtherStatelessSessionLocal other2;
 
     @EJB

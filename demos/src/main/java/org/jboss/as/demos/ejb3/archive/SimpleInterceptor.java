@@ -19,11 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.archive.session.stateless;
+package org.jboss.as.demos.ejb3.archive;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface SimpleStatelessSessionLocal {
-   String echo(String msg);
+public class SimpleInterceptor {
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext ctx) throws Exception {
+        return getClass().getSimpleName() + "#" + ctx.proceed();
+    }
 }

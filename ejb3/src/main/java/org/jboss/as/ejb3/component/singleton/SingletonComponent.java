@@ -58,7 +58,11 @@ public class SingletonComponent extends EJBComponent implements LockableComponen
 
     private LockType beanLevelLockType;
 
+    private AccessTimeout beanLevelAccessTimeout;
+
     private Map<EJBBusinessMethod, LockType> methodLockTypes;
+
+    private Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts;
 
     /**
      * Construct a new instance.
@@ -70,7 +74,9 @@ public class SingletonComponent extends EJBComponent implements LockableComponen
         this.initOnStartup = configuration.isInitOnStartup();
 
         this.beanLevelLockType = configuration.getBeanLevelLockType();
+        this.beanLevelAccessTimeout = configuration.getBeanLevelAccessTimeout();
         this.methodLockTypes = configuration.getMethodApplicableLockTypes();
+        this.methodAccessTimeouts = configuration.getMethodApplicableAccessTimeouts();
     }
 
     @Override
@@ -145,7 +151,15 @@ public class SingletonComponent extends EJBComponent implements LockableComponen
 
     @Override
     public AccessTimeout getAccessTimeout(Method method) {
-        // TODO: Implement this
+        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), toString(method.getParameterTypes()));
+        AccessTimeout accessTimeout = this.methodAccessTimeouts.get(beanMethod);
+        if (accessTimeout != null) {
+            return accessTimeout;
+        }
+        // check bean level access timeout
+        if (this.beanLevelAccessTimeout != null) {
+            return this.beanLevelAccessTimeout;
+        }
         return null;
     }
 

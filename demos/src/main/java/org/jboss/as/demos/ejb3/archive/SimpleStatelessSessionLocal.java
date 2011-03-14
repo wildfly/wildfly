@@ -19,33 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.archive.session.stateful;
-
-import org.jboss.as.demos.ejb3.archive.session.SimpleInterceptor;
-
-import javax.ejb.Stateful;
-import javax.interceptor.Interceptors;
+package org.jboss.as.demos.ejb3.archive;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@Stateful
-@Interceptors(SimpleInterceptor.class)
-public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
-    private String state;
-
-    public String echo(String msg) {
-        System.out.println("Called echo on " + this);
-        return "Echo " + msg + ":" + state;
-    }
-
-    public void setState(String s) {
-        System.out.println("Called setState on " + this);
-        this.state = s;
-    }
-
-    @Override
-    public String getState() {
-        return this.state;
-    }
+public interface SimpleStatelessSessionLocal {
+   String echo(String msg);
 }

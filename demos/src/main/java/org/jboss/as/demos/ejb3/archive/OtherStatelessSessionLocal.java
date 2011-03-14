@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.ejb3.archive.session.singleton;
-
-import javax.ejb.LocalBean;
-import javax.ejb.Singleton;
-import java.util.ArrayList;
-import java.util.List;
+package org.jboss.as.demos.ejb3.archive;
 
 /**
- * @author Jaikiran Pai
+ * @author John Bailey
  */
-@Singleton
-@LocalBean
-public class CallTrackerSingletonBean {
-
-    private List<String> invocationLog = new ArrayList<String>();
-
-    public void addToInvocationLog(String msg) {
-        this.invocationLog.add(msg);
-    }
-
-    public boolean wasStartupSingletonBeanCreated() {
-        return this.invocationLog.contains(StartupSingleton.STARTUP_SINGLETON_POST_CONSTRUCT);
-    }
-
+public interface OtherStatelessSessionLocal {
+    String getName();
 }

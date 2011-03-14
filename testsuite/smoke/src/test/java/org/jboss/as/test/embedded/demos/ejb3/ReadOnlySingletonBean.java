@@ -20,18 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.ejb3.archive.session.singleton;
+package org.jboss.as.test.embedded.demos.ejb3;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.LocalBean;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jaikiran Pai
  */
-public interface SimpleSingletonLocal {
+@Singleton
+@LocalBean
+@Lock(value = LockType.READ)
+public class ReadOnlySingletonBean {
 
-    int getBeanInstanceCount();
 
-    void increment();
-
-    int getCount();
-
-    void doNothing();
+    @AccessTimeout(value = 1, unit = TimeUnit.SECONDS)
+    public String twoSecondEcho(String msg) {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return msg;
+    }
 }
