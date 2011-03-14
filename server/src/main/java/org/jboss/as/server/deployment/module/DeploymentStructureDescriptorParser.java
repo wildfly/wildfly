@@ -21,6 +21,25 @@
  */
 package org.jboss.as.server.deployment.module;
 
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,29 +54,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.jboss.as.server.deployment.AttachmentList;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.logging.Logger;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.filter.PathFilters;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VirtualFile;
+import java.util.Set;
 
 /**
  * Parses <code>jboss-structure.xml</code>, and merges the result with the deployment.
@@ -289,7 +287,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 moduleSpec.setChildFirst(result.rootDeploymentSpecification.getChildFirst());
             }
             // handle sub deployments
-            final AttachmentList<DeploymentUnit> subDeployments = deploymentUnit.getAttachment(Attachments.SUB_DEPLOYMENTS);
+            final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
             final Map<String, DeploymentUnit> subDeploymentMap = new HashMap<String, DeploymentUnit>();
             for (final DeploymentUnit subDeployment : subDeployments) {
                 final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
