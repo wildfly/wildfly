@@ -36,7 +36,7 @@ import java.util.Set;
  */
 public final class EEModuleDescription {
     private final String appName;
-    private final String moduleName;
+    private volatile String moduleName;
     private final Map<String, AbstractComponentDescription> componentsByName = new HashMap<String, AbstractComponentDescription>();
     private final Map<String, AbstractComponentDescription> componentsByClassName = new HashMap<String, AbstractComponentDescription>();
     private final List<InjectionFactory> injectionFactories = new ArrayList<InjectionFactory>();
@@ -91,6 +91,10 @@ public final class EEModuleDescription {
 
     public String getModuleName() {
         return moduleName;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
     }
 
     public AbstractComponentDescription getComponentByName(String name) {

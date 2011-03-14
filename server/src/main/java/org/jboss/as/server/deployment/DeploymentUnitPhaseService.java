@@ -22,12 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -38,6 +33,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * A service which executes a particular phase of deployment.
@@ -137,12 +136,10 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             if (deploymentUnit.getParent() != null) {
                 phaseServiceBuilder.addDependencies(deploymentUnit.getParent().getServiceName().append(nextPhase.name()));
             }
-            AttachmentList<DeploymentUnit> subdeployments = deploymentUnit.getAttachment(Attachments.SUB_DEPLOYMENTS);
-            if (subdeployments != null) {
-                // make sure all sub deployments have finished this phase before moving to the next one
-                for (DeploymentUnit du : subdeployments) {
-                    phaseServiceBuilder.addDependencies(du.getServiceName().append(phase.name()));
-                }
+            List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+            // make sure all sub deployments have finished this phase before moving to the next one
+            for (DeploymentUnit du : subDeployments) {
+                phaseServiceBuilder.addDependencies(du.getServiceName().append(phase.name()));
             }
 
             phaseServiceBuilder.install();

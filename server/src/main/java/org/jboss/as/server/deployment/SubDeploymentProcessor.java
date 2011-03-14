@@ -22,13 +22,13 @@
 
 package org.jboss.as.server.deployment;
 
-import java.util.List;
-
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
 
 /**
  * Deployment processor responsible to creating deployment unit services for sub-deployment.
@@ -55,6 +55,8 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();
                 phaseContext.addDeploymentDependency(serviceName, Attachments.SUB_DEPLOYMENTS);
+                //we also need a dep on the first phase of the sub deployments
+                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS,serviceName.append(ServiceName.of(Phase.STRUCTURE.name())));
             }
 
         }

@@ -54,7 +54,7 @@ public class SimpleAttachable implements Attachable {
     }
 
     /** {@inheritDoc} */
-    public <T> List<T> getAttachmentList(AttachmentKey<? extends List<T>> key) {
+    public synchronized <T> List<T> getAttachmentList(AttachmentKey<? extends List<T>> key) {
         if (key == null) {
             return null;
         }

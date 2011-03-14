@@ -51,7 +51,7 @@ public class WeldEjbServices implements Service<WeldEjbServices>, EjbServices {
 
     @Override
     public void registerInterceptors(EjbDescriptor<?> ejbDescriptor, InterceptorBindings interceptorBindings) {
-        throw new RuntimeException("not implemented");
+        //throw new RuntimeException("not implemented");
     }
 
     @Override

@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.ComponentInstallProcessor;
 import org.jboss.as.ee.component.ComponentInterceptorAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ComponentLazyBindingSourceProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
+import org.jboss.as.ee.component.EEModuleNameProcessor;
 import org.jboss.as.ee.component.InterceptorAnnotationParsingProcessor;
 import org.jboss.as.ee.component.LifecycleAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
@@ -84,6 +85,7 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EJB_JAR_IN_EAR, new EjbJarDeploymentProcessor());
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_MODULE_INIT, new EEModuleInitialProcessor());
 
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_MODULE_NAME, new EEModuleNameProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_LIB_CLASS_PATH, new EarLibManifestClassPathProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_BEAN_INTERCEPTOR_ANNOTATION, new ComponentInterceptorAnnotationParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
