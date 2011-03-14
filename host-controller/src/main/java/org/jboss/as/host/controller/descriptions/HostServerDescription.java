@@ -22,6 +22,7 @@
 package org.jboss.as.host.controller.descriptions;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -44,7 +45,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -82,9 +82,9 @@ public class HostServerDescription {
         root.get(ATTRIBUTES, GROUP, REQUIRED).set(true);
         root.get(ATTRIBUTES, GROUP, MIN_LENGTH).set(1);
 
-        root.get(ATTRIBUTES, START, DESCRIPTION).set(bundle.getString("server.start"));
-        root.get(ATTRIBUTES, START, TYPE).set(ModelType.BOOLEAN);
-        root.get(ATTRIBUTES, START, REQUIRED).set(true);
+        root.get(ATTRIBUTES, AUTO_START, DESCRIPTION).set(bundle.getString("server.start"));
+        root.get(ATTRIBUTES, AUTO_START, TYPE).set(ModelType.BOOLEAN);
+        root.get(ATTRIBUTES, AUTO_START, REQUIRED).set(true);
 
         root.get(ATTRIBUTES, PRIORITY, DESCRIPTION).set(bundle.getString("server.priority"));
         root.get(ATTRIBUTES, PRIORITY, TYPE).set(ModelType.INT);

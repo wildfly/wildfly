@@ -52,7 +52,6 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
 
     private volatile Map<String, AttributeAccess> attributes;
 
-
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "operations"));
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "attributes"));
@@ -356,6 +355,21 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
             final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
             for (NodeSubregistry subregistry : snapshot.values()) {
                 subregistry.getProxyControllers(iterator, null, controllers);
+            }
+        }
+    }
+
+    ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator) {
+        if(! iterator.hasNext()) {
+            return this;
+        } else {
+            final PathElement address = iterator.next();
+            final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
+            final NodeSubregistry subregistry = snapshot.get(address.getKey());
+            if (subregistry != null) {
+                return subregistry.getModelNodeRegistration(iterator, address.getValue());
+            } else {
+                return null;
             }
         }
     }

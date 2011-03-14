@@ -32,6 +32,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -159,6 +160,9 @@ public class DomainDeploymentUtils implements Closeable {
 
         ModelNode result = execute(op);
         Set<String> names = new HashSet<String>();
+        if(! result.isDefined()) {
+            return Collections.emptySet();
+        }
         for (ModelNode deployment : result.asList()) {
             names.add(deployment.asString());
         }

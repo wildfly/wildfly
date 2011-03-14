@@ -4,6 +4,7 @@
 package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -20,7 +21,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
@@ -178,7 +178,7 @@ public class ServerOperationResolver {
                     continue;
                 }
 
-                if (server.hasDefined(START) && !server.get(START).asBoolean()) {
+                if (server.hasDefined(AUTO_START) && !server.get(AUTO_START).asBoolean()) {
                     continue;
                 }
 
@@ -256,7 +256,7 @@ public class ServerOperationResolver {
                     continue;
                 }
 
-                if (server.hasDefined(START) && !server.get(START).asBoolean()) {
+                if (server.hasDefined(AUTO_START) && !server.get(AUTO_START).asBoolean()) {
                     continue;
                 }
 
@@ -297,7 +297,7 @@ public class ServerOperationResolver {
                     continue;
                 }
 
-                if (server.hasDefined(START) && !server.get(START).asBoolean()) {
+                if (server.hasDefined(AUTO_START) && !server.get(AUTO_START).asBoolean()) {
                     continue;
                 }
 
@@ -421,7 +421,7 @@ public class ServerOperationResolver {
                             ModelNode server = serverProp.getValue();
                             if (groupName.equals(server.require(GROUP).asString())
                                     && !hasSystemProperty(server, propName)
-                                    && (!server.hasDefined(START) || server.get(START).asBoolean())) {
+                                    && (!server.hasDefined(AUTO_START) || server.get(AUTO_START).asBoolean())) {
                                 servers.add(new ServerIdentity(localHostName, groupName, serverProp.getName()));
                             }
                         }
@@ -454,7 +454,7 @@ public class ServerOperationResolver {
                     for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
                         ModelNode server = serverProp.getValue();
                         if (!hasSystemProperty(server, propName)
-                                && (!server.hasDefined(START) || server.get(START).asBoolean())) {
+                                && (!server.hasDefined(AUTO_START) || server.get(AUTO_START).asBoolean())) {
                             String groupName = server.require(GROUP).asString();
                             ModelNode serverGroup = domain.get(GROUP, groupName);
                             if (!hasSystemProperty(serverGroup, propName)) {
@@ -564,7 +564,7 @@ public class ServerOperationResolver {
                 for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
                     ModelNode server = serverProp.getValue();
                     if (!hasSystemProperty(server, propName)
-                            && (!server.hasDefined(START) || server.get(START).asBoolean())) {
+                            && (!server.hasDefined(AUTO_START) || server.get(AUTO_START).asBoolean())) {
                         String groupName = server.require(GROUP).asString();
                         servers.add(new ServerIdentity(localHostName, groupName, serverProp.getName()));
                     }
@@ -601,7 +601,7 @@ public class ServerOperationResolver {
                 serverOp = operation.clone();
                 serverOp.get(OP_ADDR).setEmptyList();
             }
-            // TODO - deal with "add", "remove" and changing "start" attribute
+            // TODO - deal with "add", "remove" and changing "auto-start" attribute
         }
 
         if (serverOp == null) {

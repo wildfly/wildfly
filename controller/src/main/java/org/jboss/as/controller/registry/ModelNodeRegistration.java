@@ -246,6 +246,14 @@ public interface ModelNodeRegistration {
     Set<PathAddress> resolveAddress(PathAddress address);
 
     /**
+     * Get a sub model registration.
+     *
+     * @param address the address
+     * @return the node registration, <code>null</code> if there is none
+     */
+    ModelNodeRegistration getSubModel(PathAddress address);
+
+    /**
      * A factory for creating a new, root model node registration.
      */
     class Factory {

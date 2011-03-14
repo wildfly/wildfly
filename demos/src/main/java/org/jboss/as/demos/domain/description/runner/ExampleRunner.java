@@ -65,7 +65,7 @@ public class ExampleRunner {
             r = client.execute(OperationBuilder.Factory.create(request).build());
             System.out.println(r);
 
-            wildcards(client);
+            // wildcards(client);
 
         } finally {
             StreamUtils.safeClose(client);

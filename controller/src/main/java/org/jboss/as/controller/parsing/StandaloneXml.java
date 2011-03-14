@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -330,13 +331,7 @@ public class StandaloneXml extends CommonXml {
                             }
                             break;
                         }
-                        case ALLOWED: {
-                            if (!Boolean.parseBoolean(value)) {
-                                throw new XMLStreamException("Attribute '" + attribute.getLocalName() + "' is not allowed", reader.getLocation());
-                            }
-                            break;
-                        }
-                        case START: {
+                        case ENABLED: {
                             startInput = value;
                             break;
                         }
@@ -354,7 +349,7 @@ public class StandaloneXml extends CommonXml {
             if (hash == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
             }
-            final boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
+            final boolean enabled = startInput == null ? true : Boolean.parseBoolean(startInput);
 
             // Handle elements
             requireNoContent(reader);
@@ -363,9 +358,10 @@ public class StandaloneXml extends CommonXml {
             final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
             deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
             deploymentAdd.get(HASH).set(hash);
+            if(startInput != null) deploymentAdd.get(ENABLED).set(startInput);
             list.add(deploymentAdd);
 
-            if (toStart) {
+            if (enabled) {
                 final ModelNode deployDeployment = Util.getEmptyOperation("deploy", deploymentAddress);
                 list.add(deployDeployment);
             }
@@ -480,13 +476,13 @@ public class StandaloneXml extends CommonXml {
                 ModelNode deployment = modelNode.get(uniqueName);
                 String runtimeName = deployment.get(RUNTIME_NAME).asString();
                 String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
-                boolean start = deployment.get(START).asBoolean();
+                boolean enabled = deployment.get(ENABLED).asBoolean();
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
                 writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
                 writeAttribute(writer, Attribute.SHA1, sha1);
-                if (!start) {
-                    writeAttribute(writer, Attribute.START, "false");
+                if (!enabled) {
+                    writeAttribute(writer, Attribute.ENABLED, "false");
                 }
                 writer.writeEndElement();
 

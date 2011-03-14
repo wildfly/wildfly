@@ -19,12 +19,11 @@
 package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
@@ -116,13 +115,13 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             throw new OperationFailedException(new ModelNode().set(String.format("No deployment with name %s found", name)));
         }
 
-        boolean start = replaceNode.get(START).asBoolean();
+        boolean start = replaceNode.get(ENABLED).asBoolean();
 
         ModelNode deployNode = new ModelNode();
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(HASH).set(hash);
-        deployNode.get(START).set(start);
+        deployNode.get(ENABLED).set(start);
 
         deployments.get(name).set(deployNode);
 

@@ -345,6 +345,10 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
         ModelNode failure;
 
         public ModelNode getFailure() {
+            final ModelNode failure = this.failure;
+            if(failure == null) {
+                return new ModelNode();
+            }
             return failure;
         }
 

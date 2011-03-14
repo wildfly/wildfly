@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
@@ -36,7 +37,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -91,9 +91,9 @@ public class DeploymentDescription {
         root.get(ATTRIBUTES, HASH, MIN_LENGTH).set(20);
         root.get(ATTRIBUTES, HASH, MAX_LENGTH).set(20);
         root.get(ATTRIBUTES, HASH, NILLABLE).set(false);
-        root.get(ATTRIBUTES, START, TYPE).set(ModelType.BOOLEAN);
-        root.get(ATTRIBUTES, START, DESCRIPTION).set(bundle.getString("deployment.start"));
-        root.get(ATTRIBUTES, START, REQUIRED).set(true);
+        root.get(ATTRIBUTES, ENABLED, TYPE).set(ModelType.BOOLEAN);
+        root.get(ATTRIBUTES, ENABLED, DESCRIPTION).set(bundle.getString("deployment.start"));
+        root.get(ATTRIBUTES, ENABLED, REQUIRED).set(true);
         root.get(OPERATIONS);
         root.get(CHILDREN).setEmptyObject();
         return root;

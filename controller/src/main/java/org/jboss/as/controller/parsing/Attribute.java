@@ -39,10 +39,11 @@ public enum Attribute {
     SCHEMA_LOCATION("schemaLocation"),
 
     // domain 1.0 attributes in alpha order
-    ALLOWED("allowed"),
+    AUTO_START("auto-start"),
     DEFAULT_INTERFACE("default-interface"),
     DEBUG_ENABLED("debug-enabled"),
     DEBUG_OPTIONS("debug-options"),
+    ENABLED("enabled"),
     ENV_CLASSPATH_IGNORED("env-classpath-ignored"),
     FIXED_PORT("fixed-port"),
     GROUP("group"),
@@ -70,7 +71,6 @@ public enum Attribute {
     SHA1("sha1"),
     SIZE("size"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
-    START("start"),
     TYPE("type"),
     VALUE("value")
     ;

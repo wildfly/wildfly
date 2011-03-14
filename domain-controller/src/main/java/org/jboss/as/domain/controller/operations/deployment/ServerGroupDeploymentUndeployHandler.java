@@ -18,8 +18,8 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.util.Locale;
 
@@ -64,7 +64,7 @@ public class ServerGroupDeploymentUndeployHandler implements ModelUpdateOperatio
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
         ModelNode model = context.getSubModel();
-        model.get(START).set(false);
+        model.get(ENABLED).set(false);
         ModelNode compensatingOp = ServerGroupDeploymentDeployHandler.getOperation(operation.get(OP_ADDR));
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOp);

@@ -19,35 +19,33 @@
 package org.jboss.as.host.controller.operations;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.host.controller.HostController;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Restarts a server.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerRestartHandler implements OperationHandler, DescriptionProvider {
+public class ServerRestartHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "restart-server";
+    public static final String OPERATION_NAME = "restart";
 
-    private final ParameterValidator validator = new ModelTypeValidator(ModelType.STRING);
     private final HostController hostController;
 
     /**
@@ -63,10 +61,11 @@ public class ServerRestartHandler implements OperationHandler, DescriptionProvid
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
-        ModelNode serverName = operation.get(NAME);
-        validator.validateParameter(NAME, serverName);
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final PathElement element = address.getLastElement();
+        final String serverName = element.getValue();
 
-        ServerStatus status = hostController.restartServer(serverName.asString());
+        ServerStatus status = hostController.restartServer(serverName);
         resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, new ModelNode().set(status.toString()));
         resultHandler.handleResultComplete();
         return new BasicOperationResult();

@@ -21,22 +21,30 @@
  */
 package org.jboss.as.demos.domain.servers.runner;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.domain.client.api.ServerStatus;
-import org.jboss.staxmapper.XMLContentWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.staxmapper.XMLMapper;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Demonstration of basic aspects of administering servers via the domain management API.
@@ -50,210 +58,118 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        DomainClient client = null;
-//        try {
-//            client = DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-//
-//            System.out.println("\nReading the list of configured servers:");
-//            Map<ServerIdentity, ServerStatus> statuses = new HashMap<ServerIdentity, ServerStatus>(client.getServerStatuses());
-//            for(Map.Entry<ServerIdentity, ServerStatus> server : statuses.entrySet()) {
-//                ServerIdentity id = server.getKey();
-//                System.out.println("\nServer:\n");
-//                System.out.println("server name:         " + id.getServerName());
-//                System.out.println("host controller name: " + id.getHostName());
-//                System.out.println("server group name:   " + id.getServerGroupName());
-//                System.out.println("status:              " + server.getValue());
-//            }
-//            // Find some servers to manipulate
-//            List<ServerIdentity> servers = findUsefulServers(statuses, ServerStatus.STARTED);
-//
-//            for (ServerIdentity server : servers) {
-//                System.out.println("\nReading runtime configuration for " + server.getServerName() + "\n");
-//                ServerModel hc = client.getServerModel(server.getHostName(), server.getServerName());
-//                if (hc == null) {
-//                    System.out.println("ERROR: server model is null");
-//                }
-//                else {
-//                    System.out.println(writeModel("server", hc));
-//                }
-//            }
-//
-//            for (ServerIdentity server : servers) {
-//                System.out.println("\nStopping server " + server.getServerName() + "\n");
-//                ServerStatus status = client.stopServer(server.getHostName(), server.getServerName(), -1, TimeUnit.SECONDS);
-//                System.out.println("Stop executed. Server status is " + status);
-//                statuses.put(server, status);
-//            }
-//
-//            servers = findUsefulServers(statuses, ServerStatus.STOPPED);
-//
-//            for (ServerIdentity server : servers) {
-//                System.out.println("\nStarting server " + server.getServerName() + "\n");
-//                ServerStatus status = client.startServer(server.getHostName(), server.getServerName());
-//                System.out.println("Start executed. Server status is " + status);
-//                statuses.put(server, status);
-//            }
-//
-//            Thread.sleep(2000);
-//
-//            servers = findUsefulServers(statuses, ServerStatus.STARTED);
-//
-//            for (ServerIdentity server : servers) {
-//                System.out.println("\nRestarting server " + server.getServerName() + "\n");
-//                ServerStatus status = client.restartServer(server.getHostName(), server.getServerName(), -1, TimeUnit.SECONDS);
-//                System.out.println("Restart executed. Server status is " + status);
-//                statuses.put(server, status);
-//            }
-//
-//            Thread.sleep(2000);
-//
-//            System.out.println("\nCurrent server statuses\n");
-//            for(Map.Entry<ServerIdentity, ServerStatus> server : client.getServerStatuses().entrySet()) {
-//                ServerIdentity id = server.getKey();
-//                System.out.println("\nServer:\n");
-//                System.out.println("server name:         " + id.getServerName());
-//                System.out.println("host controller name: " + id.getHostName());
-//                System.out.println("server group name:   " + id.getServerGroupName());
-//                System.out.println("status:              " + server.getValue());
-//            }
-//
-//
-//            Thread.sleep(2000);
-//
-//            final String serverName = "example-server";
-//            System.out.println("\nCreating new server: " + serverName + "\n");
-//            final List<String> hostControllers = client.getHostControllerNames();
-//            final String hostControllerName = hostControllers.get(0);
-//            System.out.println("Adding to host controller: " + hostControllerName);
-//            final String serverGroup = client.getDomainModel().getServerGroupNames().iterator().next();
-//            System.out.println("Adding to server group: " + serverGroup);
-//            List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(2);
-//            updates.add(new HostServerAdd(serverName, serverGroup));
-//            updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingGroupUpdate("standard-sockets")));
-//            updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingPortOffsetUpdate(350)));
-//            List<HostUpdateResult<?>> results = client.applyHostUpdates(hostControllerName, updates);
-//            HostUpdateResult<?> result = results.get(0);
-//            System.out.println("Add success: " + result.isSuccess());
-//
-//            if(result.isSuccess()) {
-//                System.out.println("Starting server " + serverName);
-//                ServerStatus status = client.startServer(hostControllerName, serverName);
-//                System.out.println("Start executed. Server status is " + status);
-//
-//                Thread.sleep(1000);
-//
-//                System.out.println("\nStopping server " + serverName);
-//                status = client.stopServer(hostControllerName, serverName, -1, TimeUnit.SECONDS);
-//                System.out.println("Stop executed. Server status is " + status);
-//
-//                System.out.println("Removing server " + serverName);
-//                updates = new ArrayList<AbstractHostModelUpdate<?>>(1);
-//                updates.add(new HostServerRemove(serverName));
-//
-//                results = client.applyHostUpdates(hostControllerName, updates);
-//                result = results.get(0);
-//                System.out.println("Remove success: " + result.isSuccess());
-//            }
-//
-//        } finally {
-//            safeClose(client);
-//        }
-    }
-
-    private static String writeModel(final String element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {
-        final XMLMapper mapper = XMLMapper.Factory.create();
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final BufferedOutputStream bos = new BufferedOutputStream(baos);
-        final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
         try {
-            mapper.deparseDocument(new RootElementWriter(element, content), writer);
-        }
-        catch (XMLStreamException e) {
-            // Dump some diagnostics
-            System.out.println("XML Content that was written prior to exception:");
-            System.out.println(writer.toString());
-            throw e;
-        }
-        finally {
-            writer.close();
-            bos.close();
-        }
-        return new String(baos.toByteArray());
-    }
 
-    private static class RootElementWriter implements XMLContentWriter {
+            final ModelNode hostNamesOp = new ModelNode();
+            hostNamesOp.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
+            hostNamesOp.get(OP_ADDR).setEmptyList();
+            hostNamesOp.get(CHILD_TYPE).set(HOST);
 
-        private final String element;
-        private final XMLContentWriter content;
+            final ModelNode hostNames = client.execute(hostNamesOp);
 
-        RootElementWriter(final String element, final XMLContentWriter content) {
-            this.element = element;
-            this.content = content;
-        }
+            final Map<String, Set<String>> hosts = new HashMap<String, Set<String>>();
+            for(final ModelNode host : hostNames.get(RESULT).asList()) {
 
-        @Override
-        public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-            streamWriter.writeStartDocument();
-            streamWriter.writeStartElement(element);
-            content.writeContent(streamWriter);
-            streamWriter.writeEndDocument();
-        }
+                final String hostName = host.asString();
+                final Set<String> serverNames = new HashSet<String>();
+                hosts.put(host.asString(), serverNames);
 
-    }
+                final ModelNode serverOp = new ModelNode();
+                serverOp.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
+                serverOp.get(OP_ADDR).setEmptyList().add(HOST, host.asString());
+                serverOp.get(CHILD_TYPE).set(SERVER_CONFIG);
 
-    private static List<ServerIdentity> findUsefulServers(Map<ServerIdentity, ServerStatus> statuses, ServerStatus requiredStatus) {
-        ServerIdentity a = null;
-        ServerIdentity b = null;
+                final ModelNode serversResult = client.execute(serverOp);
+                for(final ModelNode server : serversResult.get(RESULT).asList()) {
+                    final String serverName = server.asString();
+                    serverNames.add(serverName);
 
-        for(Map.Entry<ServerIdentity, ServerStatus> server : statuses.entrySet()) {
-            ServerStatus status = server.getValue();
-            if (status == requiredStatus) {
-                ServerIdentity id   = server.getKey();
+                    final ModelNode serverAddress = new ModelNode();
+                    serverAddress.add(HOST, hostName);
+                    serverAddress.add(SERVER_CONFIG, serverName);
 
-                if (a == null) {
-                    a = id;
-                }
-                else if (b == null) {
-                    if ("other-server-group".equals(a.getServerGroupName())) {
-                        b = id;
+                    final ModelNode serverConfigOp = new ModelNode();
+                    serverConfigOp.get(OP).set(READ_RESOURCE_OPERATION);
+                    serverConfigOp.get(OP_ADDR).set(serverAddress);
+                    serverConfigOp.get(INCLUDE_RUNTIME).set(true);
+
+                    final ModelNode serverConfig = client.execute(serverConfigOp);
+
+                    System.out.println("\nServer:\n");
+                    System.out.println("server name:          " + serverName);
+                    System.out.println("host controller name: " + hostName);
+                    System.out.println("server group name:    " + serverConfig.get(RESULT, SERVER_GROUP).asString());
+                    System.out.println("status:               " + serverConfig.get(RESULT, "status"));
+
+                    if("STARTED".equals(serverConfig.get(RESULT, "status").asString())) {
+                        serverNames.add(serverName);
                     }
-                    else {
-                        b = a;
-                        a = id;
-                    }
-                }
-                else if (a.getHostName().equals(id.getHostName())) {
-                    if (b.getHostName().equals(id.getHostName())) {
-                        if ("other-server-group".equals(id.getServerGroupName())) {
-                            b = id;
-                        }
-                    }
-                    else if ("other-server-group".equals(id.getServerGroupName())) {
-                        a = id;
-                    }
-                }
-                else if ("other-server-group".equals(id.getServerGroupName())) {
-                    b = a;
-                    a = id;
-                }
-                else {
-                    b = id;
                 }
             }
-        }
 
-        if (a == null) {
-             throw new IllegalStateException("No started servers are available");
-        }
-        else {
-            List<ServerIdentity> result = new ArrayList<ServerIdentity>();
-            result.add(a);
-            if (b != null) {
-                result.add(b);
+            for(final Entry<String, Set<String>> entry : hosts.entrySet()) {
+                final String hostName = entry.getKey();
+
+                for(final String serverName : entry.getValue()) {
+                    final ModelNode address = new ModelNode();
+                    address.add(HOST, hostName);
+                    address.add(SERVER_CONFIG, serverName);
+
+                    runServerOperation(client, address, "stop");
+                }
             }
-            return result;
+
+            Thread.sleep(2000); //
+
+            for(final Entry<String, Set<String>> entry : hosts.entrySet()) {
+                final String hostName = entry.getKey();
+
+                for(final String serverName : entry.getValue()) {
+                    final ModelNode address = new ModelNode();
+                    address.add(HOST, hostName);
+                    address.add(SERVER_CONFIG, serverName);
+
+                    runServerOperation(client, address, "start");
+                }
+            }
+
+            Thread.sleep(10000); //
+
+            for(final Entry<String, Set<String>> entry : hosts.entrySet()) {
+                final String hostName = entry.getKey();
+
+                for(final String serverName : entry.getValue()) {
+                    final ModelNode address = new ModelNode();
+                    address.add(HOST, hostName);
+                    address.add(SERVER_CONFIG, serverName);
+
+                    runServerOperation(client, address, "restart");
+                }
+            }
+
+            Thread.sleep(2000); //
+
+
+        } finally {
+            StreamUtils.safeClose(client);
+        }
+    }
+
+
+    static ModelNode runServerOperation(final ModelControllerClient client, final ModelNode address, final String opName) throws Exception {
+        final ModelNode stopOperation = new ModelNode();
+        stopOperation.get(OP).set(opName);
+        stopOperation.get(OP_ADDR).set(address);
+
+        final ModelNode result = client.execute(stopOperation);
+        checkSuccess(result);
+        return result.get(RESULT);
+    }
+
+    static void checkSuccess(final ModelNode operationResult) throws OperationFailedException {
+        if(!SUCCESS.equals(operationResult.get(OUTCOME).asString())) {
+            throw new OperationFailedException(operationResult.get(FAILURE_DESCRIPTION));
         }
     }
 

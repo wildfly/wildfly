@@ -20,6 +20,7 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -55,7 +56,7 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         op.get(RUNTIME_NAME).set(state.get(RUNTIME_NAME));
         op.get(HASH).set(state.get(HASH));
-        op.get(START).set(state.get(START));
+        op.get(ENABLED).set(state.get(ENABLED));
         return op;
     }
 
@@ -90,7 +91,7 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(deployment.get(RUNTIME_NAME).asString());
         subModel.get(HASH).set(hash);
-        subModel.get(START).set(operation.has(START) && operation.get(START).asBoolean()); // TODO consider starting
+        subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));

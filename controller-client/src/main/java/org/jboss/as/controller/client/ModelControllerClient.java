@@ -25,6 +25,7 @@ package org.jboss.as.controller.client;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.protocol.Connection;
@@ -80,10 +81,20 @@ public interface ModelControllerClient extends Closeable {
         /**
          * Create a client instance for a remote address and port.
          *
-         * @param type The type to connect to
+         * @param hostName The host name to connect to
+         * @param port The remote port
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String hostName, int port) throws UnknownHostException {
+            return create(InetAddress.getByName(hostName), port);
+        }
+        /**
+         * Create a client instance for a remote address and port.
+         *
          * @param address The remote address to connect to
          * @param port The remote port
-         * @return A domain client
+         * @return A model controller client
          */
         public static ModelControllerClient create(final InetAddress address, final int port) {
             return new EstablishConnectionModelControllerClient(address, port);
@@ -91,9 +102,9 @@ public interface ModelControllerClient extends Closeable {
 
         /**
          * Create client instance using an existing connection
-         * @param type The type to connect to
+         *
          * @param connection the connection
-         * @return A domain client
+         * @return A model controller client
          */
         public static ModelControllerClient create(final Connection connection) {
             return new ExistingConnectionModelControllerClient(connection);

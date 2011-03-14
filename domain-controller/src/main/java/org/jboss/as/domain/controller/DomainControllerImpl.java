@@ -392,7 +392,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                 }
             }
             if (routing == null) {
-                routing = new OperationRouting(targetHost, true);
+                final String operationName = operation.get(OP).asString();
+                if("start".equals(operationName) || "stop".equals(operationName) || "restart".equals(operationName)) {
+                    routing = new OperationRouting(targetHost, false);
+                } else {
+                    routing = new OperationRouting(targetHost, true);
+                }
             }
         }
         else if (masterDomainControllerClient != null) {

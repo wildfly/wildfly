@@ -212,7 +212,7 @@
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group" type="xs:string" use="required"/>
-        <xs:attribute name="start" type="xs:boolean" default="true"/>
+        <xs:attribute name="auto-start" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="priorityType">
@@ -324,9 +324,9 @@
             </xs:annotation>
         </xs:attribute>
         <!--  TODO clarify what a value of 'false' means -->
-        <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
+        <xs:attribute name="enabled" use="optional" type="xs:boolean" default="true">
             <xs:annotation>
-                <xs:documentation>Whether the deployment starts automatically when the server starts up.
+                <xs:documentation>Whether the deployment deploy automatically when the server starts up.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -350,14 +350,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="mapped-deploymentType">
-                <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
-                    <xs:annotation>
-                        <xs:documentation>Whether the mapping the deployment to a server group is allowed.
-                        </xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
+            <xs:extension base="mapped-deploymentType" />
         </xs:complexContent>
     </xs:complexType>
 

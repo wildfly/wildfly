@@ -18,6 +18,7 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -62,7 +63,7 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode model = context.getSubModel();
         final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
-        if (model.hasDefined(START) && model.get(START).asBoolean()) {
+        if (model.hasDefined(ENABLED) && model.get(ENABLED).asBoolean()) {
             String msg = String.format("Deployment %s must be undeployed before being removed", model.get(NAME).asString());
             throw new OperationFailedException(new ModelNode().set(msg));
         }

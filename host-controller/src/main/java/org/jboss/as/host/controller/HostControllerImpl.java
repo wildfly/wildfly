@@ -22,11 +22,10 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-
 import org.jboss.as.controller.BasicTransactionalModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -38,6 +37,7 @@ import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.operations.ServerRestartHandler;
 import org.jboss.as.host.controller.operations.ServerStartHandler;
+import org.jboss.as.host.controller.operations.ServerStatusHandler;
 import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
@@ -67,6 +67,13 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
     @Override
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ServerStatus getServerStatus(String serverName) {
+        final ServerInventory servers = this.serverInventory;
+        return servers.determineServerStatus(serverName);
     }
 
     /** {@inheritDoc} */
@@ -132,7 +139,7 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
         if(rawModel.hasDefined(SERVER_CONFIG)) {
             final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
-                if(servers.get(serverName, START).asBoolean(true)) {
+                if(servers.get(serverName, AUTO_START).asBoolean(true)) {
                     try {
                         startServer(serverName);
                     } catch (Exception e) {
@@ -151,7 +158,7 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
         if(rawModel.hasDefined(SERVER_CONFIG) ) {
             final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
-                if(servers.get(serverName, START).asBoolean(true)) {
+                if(servers.get(serverName, AUTO_START).asBoolean(true)) {
                     try {
                         stopServer(serverName);
                     } catch (Exception e) {
@@ -170,8 +177,12 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
         ServerRestartHandler restartHandler = new ServerRestartHandler(this);
         ServerStopHandler stopHandler = new ServerStopHandler(this);
         ModelNodeRegistration registry = getRegistry();
-        registry.registerOperationHandler(ServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
-        registry.registerOperationHandler(ServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
-        registry.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
+        // Register server runtime operation handlers
+        ModelNodeRegistration servers = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(SERVER_CONFIG)));
+        servers.registerMetric(ServerStatusHandler.ATTRIBUTE_NAME, new ServerStatusHandler(this));
+        servers.registerOperationHandler(ServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
+        servers.registerOperationHandler(ServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
+        servers.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
+
     }
 }

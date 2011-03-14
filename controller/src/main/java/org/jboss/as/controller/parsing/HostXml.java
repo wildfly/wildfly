@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -437,7 +438,7 @@ public class HostXml extends CommonXml {
                         group = value;
                         break;
                     }
-                    case START: {
+                    case AUTO_START: {
                         start = Boolean.valueOf(value);
                         break;
                     }
@@ -511,7 +512,7 @@ public class HostXml extends CommonXml {
         }
 
         final boolean isStart = start == null ? true : start.booleanValue();
-        final ModelNode startUpdate = Util.getWriteAttributeOperation(address, "start", isStart);
+        final ModelNode startUpdate = Util.getWriteAttributeOperation(address, AUTO_START, isStart);
         list.add(startUpdate);
     }
 
@@ -546,8 +547,8 @@ public class HostXml extends CommonXml {
             if (server.hasDefined(GROUP)) {
                 writeAttribute(writer, Attribute.GROUP, server.get(GROUP).asString());
             }
-            if (server.hasDefined(START)) {
-                writeAttribute(writer, Attribute.START, server.get(START).asString());
+            if (server.hasDefined(AUTO_START)) {
+                writeAttribute(writer, Attribute.AUTO_START, server.get(AUTO_START).asString());
             }
             if (server.hasDefined(PATH)) {
                 writePaths(writer, server.get(PATH));

@@ -42,6 +42,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String ATTRIBUTES = "attributes";
+    public static final String AUTO_START = "auto-start";
     public static final String BYTES = "bytes";
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
@@ -59,6 +60,7 @@ public class ModelDescriptionConstants {
     public static final String DOMAIN_CONTROLLER = "domain-controller";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_RESULTS = "domain-results";
+    public static final String ENABLED = "enabled";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
     public static final String FAILURE_DESCRIPTION = "failure-description";

@@ -169,6 +169,14 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
+    public ModelNodeRegistration getSubModel(PathAddress address) {
+        return getNodeRegistration(address.iterator());
+    }
+
+    abstract ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator);
+
+    /** {@inheritDoc} */
+    @Override
     public Set<PathAddress> resolveAddress(final PathAddress address) {
         final Set<PathAddress> addresses = new HashSet<PathAddress>();
         resolveAddress(address, PathAddress.EMPTY_ADDRESS, addresses);

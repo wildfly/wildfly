@@ -143,6 +143,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
                     server.stopServerProcess();
                     server.removeServerProcess();
                     servers.remove(processName);
+                    hostController.unregisterRunningServer(serverName);
                 }
             }
         }

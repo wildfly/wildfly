@@ -21,9 +21,9 @@ package org.jboss.as.server.deployment;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import java.util.Locale;
 
 import org.jboss.as.controller.ModelUpdateOperationHandler;
@@ -64,7 +64,7 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Des
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
         ModelNode model = context.getSubModel();
-        model.get(START).set(true);
+        model.get(ENABLED).set(true);
         ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
         DeploymentHandlerUtil.deploy(model, context, resultHandler);
         return new BasicOperationResult(compensatingOp);

@@ -19,9 +19,9 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 
 import java.util.Locale;
@@ -109,7 +109,7 @@ public class ServerGroupDeploymentReplaceHandler implements ModelUpdateOperation
             deployNode = deployment.clone();
             deployments.get(name).set(deployNode);
         }
-        else if (deployNode.get(START).asBoolean()) {
+        else if (deployNode.get(ENABLED).asBoolean()) {
             throw operationFailed(String.format("Deployment %s is already started", toReplace));
         }
         else if (replaceNode == null) {
@@ -117,8 +117,8 @@ public class ServerGroupDeploymentReplaceHandler implements ModelUpdateOperation
         }
 
         // Update model
-        deployNode.get(START).set(true);
-        replaceNode.get(START).set(false);
+        deployNode.get(ENABLED).set(true);
+        replaceNode.get(ENABLED).set(false);
 
         ModelNode compensatingOp = operation.clone();
         compensatingOp.get(NAME).set(toReplace);

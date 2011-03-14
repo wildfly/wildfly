@@ -414,7 +414,7 @@ public class DomainXml extends CommonXml {
             String uniqueName = null;
             String runtimeName = null;
             byte[] hash = null;
-            String startInput = null;
+            String enabled = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
                 final String value = reader.getAttributeValue(i);
@@ -446,14 +446,8 @@ public class DomainXml extends CommonXml {
                             }
                             break;
                         }
-                        case ALLOWED: {
-                            if (! Boolean.parseBoolean(value)) {
-                                throw new XMLStreamException("Attribute '" + attribute.getLocalName() + "' is not allowed", reader.getLocation());
-                            }
-                            break;
-                        }
-                        case START: {
-                            startInput = value;
+                        case ENABLED: {
+                            enabled = value;
                             break;
                         }
                         default:
@@ -470,7 +464,7 @@ public class DomainXml extends CommonXml {
             if (hash == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
             }
-            final boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
+            final boolean toStart = enabled == null ? true : Boolean.parseBoolean(enabled);
 
             // Handle elements
             ParseUtils.requireNoContent(reader);
@@ -484,7 +478,7 @@ public class DomainXml extends CommonXml {
             deploymentAdd.get(REQUEST_PROPERTIES, "unique-name").set(uniqueName);
             deploymentAdd.get(REQUEST_PROPERTIES, "runtime-name").set(runtimeName);
             deploymentAdd.get(REQUEST_PROPERTIES, "sha1").set(hash);
-            deploymentAdd.get(REQUEST_PROPERTIES, "start").set(toStart);
+            deploymentAdd.get(REQUEST_PROPERTIES, "enabled").set(toStart);
             list.add(deploymentAdd);
         }
     }

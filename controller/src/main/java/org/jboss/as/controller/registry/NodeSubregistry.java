@@ -221,6 +221,15 @@ final class NodeSubregistry {
         return childRegistry.getProxyController(iterator);
     }
 
+    ModelNodeRegistration getModelNodeRegistration(final Iterator<PathElement> iterator, final String child) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
+        AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry == null) {
+            return null;
+        }
+        return childRegistry.getNodeRegistration(iterator);
+    }
+
     void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<ProxyController> controllers) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         if (child != null) {

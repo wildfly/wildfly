@@ -21,17 +21,21 @@
  */
 package org.jboss.as.demos.domain.configs.runner;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.jboss.staxmapper.XMLContentWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.staxmapper.XMLMapper;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Demonstration of basic aspects of reading domain and host controller configurations
@@ -43,69 +47,43 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        DomainClient client = null;
-//        try {
-//            client = DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-//
-//            System.out.println("\nReading the domain configuration:\n");
-//            System.out.println(writeModel("domain", client.getDomainModel()));
-//            System.out.println("\nReading the list of active host controllers:\n");
-//            List<String> hostControllers = client.getHostControllerNames();
-//            for (String hc : hostControllers) {
-//                System.out.println(hc);
-//            }
-//
-//            for (String hc : hostControllers) {
-//                System.out.println("\nReading host configuration for host controller " + hc + "\n");
-//                System.out.println(writeModel("host", client.getHostModel(hc)));
-//            }
-//
-//        } finally {
-//            safeClose(client);
-//        }
-    }
-
-    private static String writeModel(final String element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {
-        final XMLMapper mapper = XMLMapper.Factory.create();
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final BufferedOutputStream bos = new BufferedOutputStream(baos);
-        final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
         try {
-            mapper.deparseDocument(new RootElementWriter(element, content), writer);
-        }
-        catch (XMLStreamException e) {
-            // Dump some diagnostics
-            System.out.println("XML Content that was written prior to exception:");
-            System.out.println(writer.toString());
-            throw e;
-        }
-        finally {
-            writer.close();
-            bos.close();
-        }
-        return new String(baos.toByteArray());
-    }
+            final ModelNode domainOp = new ModelNode();
+            domainOp.get(OP).set(READ_RESOURCE_OPERATION);
+            domainOp.get(OP_ADDR).setEmptyList();
+            domainOp.get(RECURSIVE).set(true);
 
-    private static class RootElementWriter implements XMLContentWriter {
+            ModelNode result = client.execute(domainOp);
+            if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
+                throw new OperationFailedException(result.get(FAILURE_DESCRIPTION));
+            }
 
-        private final String element;
-        private final XMLContentWriter content;
+            System.out.println("-- domain configuration");
+            final ModelNode domainResult = result.get(RESULT).clone();
+            domainResult.remove(HOST); // TODO rework recursive=true, for now just purge the host output
+            System.out.println(domainResult);
+            System.out.println("--");
 
-        RootElementWriter(final String element, final XMLContentWriter content) {
-            this.element = element;
-            this.content = content;
+            final ModelNode hostOp = new ModelNode();
+            hostOp.get(OP).get(READ_RESOURCE_OPERATION);
+            hostOp.get(OP_ADDR).setEmptyList().add(HOST, "local");
+            hostOp.get(RECURSIVE).set(true);
+
+            result = client.execute(hostOp);
+            if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
+                throw new OperationFailedException(result.get(FAILURE_DESCRIPTION));
+            }
+
+            System.out.println("-- host configuration");
+            final ModelNode hostResult = result.get(RESULT).clone();
+            hostResult.remove(SERVER); // TODO rework recursive=true, for now just purge the server output
+            System.out.println();
+            System.out.println("--");
+
+        } finally {
+            StreamUtils.safeClose(client);
         }
-
-        @Override
-        public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-            streamWriter.writeStartDocument();
-            streamWriter.writeStartElement(element);
-            content.writeContent(streamWriter);
-            streamWriter.writeEndDocument();
-        }
-
     }
 
 }

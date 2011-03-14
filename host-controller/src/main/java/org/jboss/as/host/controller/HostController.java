@@ -43,6 +43,14 @@ public interface HostController extends TransactionalModelController {
     String getName();
 
     /**
+     * Get the status of a server.
+     *
+     * @param serverName the server name
+     * @return the serverStatus
+     */
+    ServerStatus getServerStatus(String serverName);
+
+    /**
      * Start a local server.
      *
      * @param serverName the server name to start

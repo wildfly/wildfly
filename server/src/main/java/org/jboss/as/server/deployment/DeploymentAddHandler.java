@@ -19,13 +19,12 @@
 package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
@@ -62,7 +61,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         op.get(RUNTIME_NAME).set(state.get(RUNTIME_NAME));
         op.get(HASH).set(state.get(HASH));
-        op.get(START).set(state.get(START));
+        op.get(ENABLED).set(state.get(ENABLED));
         return op;
     }
 
@@ -121,7 +120,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             subModel.get(NAME).set(name);
             subModel.get(RUNTIME_NAME).set(runtimeName);
             subModel.get(HASH).set(hash);
-            subModel.get(START).set(operation.has(START) && operation.get(START).asBoolean()); // TODO consider starting
+            subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
         }
         else {
             throw new OperationFailedException(new ModelNode().set(String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash))));

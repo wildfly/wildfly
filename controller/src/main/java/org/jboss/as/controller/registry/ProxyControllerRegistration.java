@@ -137,6 +137,11 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
         controllers.add(proxyController);
     }
 
+    @Override
+    ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator) {
+        return null;
+    }
+
     /** {@inheritDoc} */
     @Override
     void resolveAddress(final PathAddress address, final PathAddress base, final Set<PathAddress> addresses) {

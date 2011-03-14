@@ -54,7 +54,7 @@
             <!-- server-one inherits the default socket-group declared in the server-group -->
             <jvm name="default" /> 
         </server>
-        <server name="server-two" group="main-server-group" start="true">
+        <server name="server-two" group="main-server-group" auto-start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in 
                  the default socket-group declared in the server-group -->
             <socket-binding-group ref="standard-sockets" port-offset="150"/>
@@ -62,7 +62,7 @@
                 <heap size="64m" max-size="256m"/>
             </jvm>
         </server>
-        <server name="server-three" group="other-server-group" start="false">
+        <server name="server-three" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group --> 
             <socket-binding-group ref="standard-sockets" port-offset="250"/>
