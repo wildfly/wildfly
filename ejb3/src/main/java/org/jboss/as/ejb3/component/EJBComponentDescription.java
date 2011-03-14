@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentNamingMode;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
@@ -31,7 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.jboss.as.ee.component.ComponentNamingMode;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -200,6 +200,11 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
         TransactionAttributeType txAttr = getTransactionAttribute(methodIntf, methodName, toString(method.getParameterTypes()));
 
         ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs = configuration.getTxAttrs();
+        // TODO: this is ugly, the existence of CMTTxInterceptor is leading
+        if(txAttrs == null) {
+            // it's a BMT bean
+            return;
+        }
         ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = txAttrs.get(methodIntf);
         if (perMethodIntf == null) {
             perMethodIntf = new ConcurrentHashMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>();
