@@ -22,11 +22,10 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -39,7 +38,7 @@ import java.util.List;
  *
  * @author Jaikiran Pai
  */
-public class SingletonComponent extends AbstractComponent {
+public class SingletonComponent extends EJBComponent {
 
     private static final Logger logger = Logger.getLogger(SingletonComponent.class);
 
