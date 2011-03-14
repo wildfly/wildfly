@@ -88,7 +88,9 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
     private final ServerOperationResolver serverOperationResolver;
     private final String localHostName;
     private final ModelNode hostModel;
+    private final Map<String, DomainControllerSlaveClient> hosts;
     private final ExtensibleConfigurationPersister injectedHostPersister;
+    private final boolean master;
     private final ConfigurationPersister delegatingHostPersister = new ConfigurationPersister() {
 
         @Override
@@ -117,21 +119,26 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
 
     /** Constructor for a master DC. */
     protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
-        this(null, configurationPersister, localHostProxy, deploymentRepo, fileRepository);
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
+        this(null, configurationPersister, localHostProxy, deploymentRepo, fileRepository, hosts, true);
     }
 
     /** Constructor for a slave DC. */
     protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
+        this(model, configurationPersister, localHostProxy, deploymentRepo, fileRepository, hosts, false);
+    }
+
+    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts, final boolean master) {
         super(getInitialModel(model), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         this.localHostName = localHostProxy.getName();
         ModelNodeRegistration registry = getRegistry();
         if (model == null) {
-            this.extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository);
+            this.extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
         }
         else {
-            this.extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository);
+            this.extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
         }
         registry.registerSubModel(PathElement.pathElement(HOST, localHostName), localHostProxy.getRegistry());
         registerInternalOperations();
@@ -143,10 +150,16 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         if (model == null) {
             initializeExtensions(ourModel);
         }
+        this.hosts = Collections.unmodifiableMap(hosts);
+        this.master = master;
     }
 
     private static ModelNode getInitialModel(final ModelNode model) {
         return model == null ? DomainModelUtil.createCoreModel() : model;
+    }
+
+    public boolean isMaster() {
+        return master;
     }
 
     public ModelNode getDomainAndHostModel() {
@@ -159,6 +172,15 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         // trim off the host model
         model.get(HOST).set(new ModelNode());
         return model;
+    }
+
+    public Map<String, DomainControllerSlaveClient> getRemoteHosts(){
+        if (hosts.size() == 1 && hosts.containsKey(localHostName)) {
+            return Collections.emptyMap();
+        }
+        Map<String, DomainControllerSlaveClient> hosts = new HashMap<String, DomainControllerSlaveClient>(this.hosts);
+        hosts.remove(localHostName);
+        return hosts;
     }
 
     @Override

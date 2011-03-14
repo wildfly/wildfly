@@ -66,6 +66,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
     private final InjectedValue<LocalHostModel> hostController = new InjectedValue<LocalHostModel>();
     private final InjectedValue<NetworkInterfaceBinding> mgmtInterface = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<HostRegistryService> hostRegistry = new InjectedValue<HostRegistryService>();
     private final String localHostName;
     private final boolean backupDomainFiles;
     private final boolean useCachedDc;
@@ -126,11 +127,15 @@ public final class DomainControllerService implements Service<DomainController> 
         return mgmtInterface;
     }
 
+    public InjectedValue<HostRegistryService> getHostRegistryInjector() {
+        return hostRegistry;
+    }
+
     private DomainController startMasterDomainController() throws StartException {
 
         log.info("Starting Domain Controller");
         DomainModel domainModel = loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, deploymentRepository);
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, deploymentRepository, hostRegistry.getValue());
     }
 
     private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
@@ -149,8 +154,8 @@ public final class DomainControllerService implements Service<DomainController> 
     private DomainController startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         // By having a remote repo as a secondary content will be synced only if needed
         FallbackRepository fileRepository = new FallbackRepository(localFileRepository, masterClient.getRemoteFileRepository());
-        final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue(), deploymentRepository, fileRepository);
-        final DomainControllerImpl controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
+        final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue(), deploymentRepository, fileRepository, hostRegistry.getValue());
+        final DomainControllerImpl controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient, hostRegistry.getValue());
         try {
             masterClient.register(hostController.getValue().getName(), mgmtInterface.getValue().getAddress(), mgmtPort, controller);
         } catch (IllegalStateException e) {
@@ -170,11 +175,11 @@ public final class DomainControllerService implements Service<DomainController> 
 
     private DomainController startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         final DomainModel domainModel = loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient, hostRegistry.getValue());
     }
 
     private DomainModel loadLocalDomainModel() throws StartException {
-        DomainModelImpl domainModel = new DomainModelImpl(configurationPersister, hostController.getValue(), deploymentRepository, localFileRepository);
+        DomainModelImpl domainModel = new DomainModelImpl(configurationPersister, hostController.getValue(), deploymentRepository, localFileRepository, hostRegistry.getValue());
         final List<ModelNode> updates;
         try {
              updates = configurationPersister.load();

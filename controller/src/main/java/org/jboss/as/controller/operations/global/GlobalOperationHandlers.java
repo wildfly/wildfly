@@ -100,7 +100,7 @@ public class GlobalOperationHandlers {
                 if (operation.get(RECURSIVE).asBoolean(false)) {
                     // FIXME security checks JBAS-8842
                     result = context.getSubModel().clone();
-                    addProxyNodes(context, address, result, context.getRegistry());
+                    addProxyNodes(context, address, operation, result, context.getRegistry());
 
                 } else {
                     result = new ModelNode();
@@ -173,7 +173,7 @@ public class GlobalOperationHandlers {
             return new BasicOperationResult();
         }
 
-        void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode result, final ModelNodeRegistration registry) throws Exception {
+        protected void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) throws Exception {
             Set<ProxyController> proxyControllers = registry.getProxyControllers(address);
             if (proxyControllers.size() > 0) {
                 final ModelNode operation = new ModelNode();
@@ -183,12 +183,22 @@ public class GlobalOperationHandlers {
 
                 for (ProxyController proxyController : proxyControllers) {
                     final ModelNode proxyResult = proxyController.execute(OperationBuilder.Factory.copy(context, operation).build());
-                    addProxyResultToMainResult(proxyController.getProxyNodeAddress(), result, proxyResult);
+
+                    //Trim the address to not include the host=>hostB part if this is a slave controller
+                    PathAddress proxyAddress = proxyController.getProxyNodeAddress();
+//                    if (proxyAddress.size() > 1) {
+//                        if (proxyAddress.getElement(0).getKey().equals(HOST)) {
+//                            proxyAddress = proxyAddress.subAddress(1);
+//                            proxyResult =
+//                        }
+//                    }
+
+                    addProxyResultToMainResult(proxyAddress, result, proxyResult);
                 }
             }
         }
 
-        void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
+        protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
             ModelNode resultNode = mainResult;
             for (Iterator<PathElement> it = address.iterator() ; it.hasNext() ; ) {
                 PathElement element = it.next();

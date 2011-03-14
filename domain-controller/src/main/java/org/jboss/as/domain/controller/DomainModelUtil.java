@@ -53,6 +53,7 @@ import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
+import org.jboss.as.domain.controller.operations.ReadResourceHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
@@ -102,21 +103,21 @@ class DomainModelUtil {
     }
 
     static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
-        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, true);
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, DomainModelImpl model) {
+        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, true, model);
     }
 
     static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
-        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, false);
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, DomainModelImpl model) {
+        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, false, model);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final boolean isMaster) {
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final boolean isMaster, DomainModelImpl model) {
         // Global operations
 
         root.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
-        root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+        root.registerOperationHandler(READ_RESOURCE_OPERATION, new ReadResourceHandler(model), CommonProviders.READ_RESOURCE_PROVIDER, true);
         root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
         root.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
         root.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);

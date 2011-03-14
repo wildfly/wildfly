@@ -70,7 +70,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -120,7 +119,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         READ_ONLY_OPERATIONS = Collections.unmodifiableSet(roops);
     }
 
-    private final Map<String, DomainControllerSlaveClient> hosts = new ConcurrentHashMap<String, DomainControllerSlaveClient>();
+    private final Map<String, DomainControllerSlaveClient> hosts;
     private final String localHostName;
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -134,10 +133,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
     };
 
-    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository, DeploymentRepository deploymentRepository) {
+    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository,
+            DeploymentRepository deploymentRepository, Map<String, DomainControllerSlaveClient> hosts) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
+        this.hosts = hosts;
         this.hosts.put(hostName, new LocalDomainModelAdapter());
         this.fileRepository = fileRepository;
         this.deploymentRepository = deploymentRepository;
@@ -146,12 +147,13 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     }
 
     public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository,
-            final MasterDomainControllerClient masterDomainControllerClient) {
+            final MasterDomainControllerClient masterDomainControllerClient, Map<String, DomainControllerSlaveClient> hosts) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.masterDomainControllerClient = masterDomainControllerClient;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
         this.fileRepository = new FallbackRepository(fileRepository, masterDomainControllerClient.getRemoteFileRepository());
+        this.hosts = hosts;
         this.hosts.put(hostName, new LocalDomainModelAdapter());
         this.deploymentRepository = null;
     }

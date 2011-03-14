@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -54,6 +55,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerSlaveClient;
 import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostModel;
@@ -427,7 +429,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private static class TestDomainController extends DomainModelImpl {
         protected TestDomainController(ExtensibleConfigurationPersister configurationPersister) {
-            super(configurationPersister, MockHostControllerProxy.INSTANCE, MockDeploymentRepository.INSTANCE, MockFileRepository.INSTANCE);
+            super(configurationPersister, MockHostControllerProxy.INSTANCE, MockDeploymentRepository.INSTANCE, MockFileRepository.INSTANCE, new HashMap<String, DomainControllerSlaveClient>());
         }
 
         @Override

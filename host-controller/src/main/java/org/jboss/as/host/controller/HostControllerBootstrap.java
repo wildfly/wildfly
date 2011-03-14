@@ -58,6 +58,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
 import org.jboss.as.domain.controller.DomainDeploymentRepository;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.HostRegistryService;
 import org.jboss.as.domain.controller.LocalHostModel;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
@@ -263,6 +264,8 @@ public class HostControllerBootstrap {
         final String mgmtNetwork = host.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, INTERFACE).asString();
         final int mgmtPort = host.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, PORT).asInt();
 
+        serviceTarget.addService(HostRegistryService.SERVICE_NAME, new HostRegistryService()).install();
+
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, isSlave);
         DeploymentRepository deploymentRepository = new DomainDeploymentRepository(environment.getDomainDeploymentDir());
@@ -274,6 +277,7 @@ public class HostControllerBootstrap {
         builder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, dcService.getScheduledExecutorServiceInjector())
             .addDependency(HostController.SERVICE_NAME, LocalHostModel.class, dcService.getHostControllerServiceInjector())
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, dcService.getInterfaceInjector())
+            .addDependency(HostRegistryService.SERVICE_NAME, HostRegistryService.class, dcService.getHostRegistryInjector())
             .install();
 
         //Install the domain controller operation handler
