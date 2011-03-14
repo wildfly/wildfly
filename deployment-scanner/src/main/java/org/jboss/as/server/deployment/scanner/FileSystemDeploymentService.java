@@ -55,6 +55,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -80,8 +81,9 @@ import org.jboss.logging.Logger;
  */
 class FileSystemDeploymentService implements DeploymentScanner {
     // FIXME get this list from elsewhere
-    private static final Set<String> ARCHIVES = new HashSet<String>(Arrays.asList(".jar", ".war", ".ear", ".rar", ".sar", ".beans"));
+    private static final Pattern ARCHIVE_PATTERN = Pattern.compile("^.*\\.[SsWwJjEeRr][Aa][Rr]$");
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
+
     static final String DEPLOYED = ".isdeployed";
     static final String FAILED_DEPLOY = ".faileddeploy";
     static final String DO_DEPLOY = ".dodeploy";
@@ -96,6 +98,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final Lock scanLock = new ReentrantLock();
 
     private final Map<String, DeploymentMarker> deployed = new HashMap<String, DeploymentMarker>();
+    private final HashSet<String> noticeLogged = new HashSet<String>();
 
     private final ScheduledExecutorService scheduledExecutor;
     private final ServerController serverController;
@@ -190,8 +193,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         for (File child : children) {
             final String fileName = child.getName();
             if (child.isDirectory()) {
-                final int idx = fileName.lastIndexOf('.');
-                if (idx == -1 || !ARCHIVES.contains(fileName.substring(idx))) {
+                if (! isEEArchive(fileName)) {
                     establishDeployedContentList(child);
                 }
             } else if (fileName.endsWith(DEPLOYED)) {
@@ -322,13 +324,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
             } else if (fileName.endsWith(FAILED_DEPLOY)) {
                 final String deploymentName = fileName.substring(0, fileName.length() - FAILED_DEPLOY.length());
                 toRemove.remove(deploymentName);
+            } else if (isEEArchive(fileName) && !noticeLogged.contains(fileName) && !deployed.containsKey(fileName) && !new File(fileName + DO_DEPLOY).exists() && !new File(fileName + FAILED_DEPLOY).exists()) {
+                noticeLogged.add(fileName);
+                log.infof("Found %s in deployment directory. To trigger deployment create a file called %s%s", fileName, fileName, DO_DEPLOY);
             } else if (child.isDirectory()) {
-                int idx = fileName.lastIndexOf('.');
-                if (idx == -1 || !ARCHIVES.contains(fileName.substring(idx))) {
+                if (! isEEArchive(fileName)) {
                     scanDirectory(child, events, registeredDeployments, toRemove);
                 }
             }
         }
+    }
+
+    private boolean isEEArchive(String fileName) {
+        return ARCHIVE_PATTERN.matcher(fileName).matches();
     }
 
     private synchronized void startScan() {
@@ -644,6 +652,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             createMarkerFile(deployedMarker);
 
             deployed.remove(deploymentName);
+            noticeLogged.remove(deploymentName);
         }
 
         @Override
