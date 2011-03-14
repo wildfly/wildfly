@@ -127,7 +127,12 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         super(getInitialModel(model), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         this.localHostName = localHostProxy.getName();
         ModelNodeRegistration registry = getRegistry();
-        this.extensionContext = DomainModelUtil.initializeDomainLevel(registry, configurationPersister, deploymentRepo, fileRepository);
+        if (model == null) {
+            this.extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository);
+        }
+        else {
+            this.extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository);
+        }
         registry.registerSubModel(PathElement.pathElement(HOST, localHostName), localHostProxy.getRegistry());
         registerInternalOperations();
         this.hostModel = localHostProxy.getHostModel();

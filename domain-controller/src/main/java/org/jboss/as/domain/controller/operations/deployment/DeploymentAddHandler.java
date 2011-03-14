@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -43,7 +42,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
@@ -67,14 +65,16 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     }
 
     private final DeploymentRepository deploymentRepository;
+    private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
 
-    public DeploymentAddHandler(final DeploymentRepository deploymentRepository) {
+    public DeploymentAddHandler(final DeploymentRepository deploymentRepository, final boolean isMaster) {
         this.deploymentRepository = deploymentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
         this.validator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
+        this.isMaster = isMaster;
     }
 
     @Override
@@ -98,31 +98,26 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         byte[] hash;
         if (operation.hasDefined(INPUT_STREAM_INDEX) && operation.hasDefined(HASH)) {
             throw new OperationFailedException(new ModelNode().set("Can't pass in both an input-stream-index and a hash"));
-        } else if (operation.hasDefined(INPUT_STREAM_INDEX)) {
-            InputStream in = getContents(context, operation);
-            try {
-                try {
-                    hash = deploymentRepository.addDeploymentContent(in);
-                } catch (IOException e) {
-                    throw new OperationFailedException(new ModelNode().set(e.toString()));
-                }
-
-            } finally {
-                StreamUtils.safeClose(in);
-            }
-            // TOTAL HACK!!
-            // when we push this to slave DCs, we want to push the hash not the stream
-            // So, munge the operation :(
-            // Very fragile as this will break in the face of any defensive copying by the controller
-            operation.remove(INPUT_STREAM_INDEX);
-            operation.get(HASH).set(hash);
         } else if (operation.hasDefined(HASH)){
             hash = operation.get(HASH).asBytes();
+        } else if (operation.hasDefined(INPUT_STREAM_INDEX)) {
+
+            if (!isMaster) {
+                // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
+                throw new OperationFailedException(new ModelNode().set("A slave domain controller cannot accept deployment content uploads"));
+            }
+
+            try {
+                hash = DeploymentUploadUtil.storeDeploymentContent(context, operation, deploymentRepository);
+            } catch (IOException e) {
+                throw new OperationFailedException(new ModelNode().set(e.toString()));
+            }
+
         } else {
             throw new OperationFailedException(new ModelNode().set("Neither an attachment nor a hash were passed in"));
         }
 
-        if (deploymentRepository.hasDeploymentContent(hash)) {
+        if (!isMaster || deploymentRepository.hasDeploymentContent(hash)) {
             ModelNode subModel = context.getSubModel();
             subModel.get(NAME).set(name);
             subModel.get(RUNTIME_NAME).set(runtimeName);
@@ -134,18 +129,5 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
-    }
-
-    private InputStream getContents(OperationContext context, ModelNode operation) {
-        int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-        if (streamIndex > context.getInputStreams().size() - 1) {
-            throw new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
-        }
-
-        InputStream in = context.getInputStreams().get(streamIndex);
-        if (in == null) {
-            throw new IllegalStateException("Null stream at index " + streamIndex);
-        }
-        return in;
     }
 }

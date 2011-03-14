@@ -61,21 +61,26 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            validator.validate(operation);
 
-            InputStream is = getContentInputStream(context, operation);
+        if (deploymentRepository != null) {
             try {
-                byte[] hash = deploymentRepository.addDeploymentContent(is);
-                resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
+                validator.validate(operation);
+
+                InputStream is = getContentInputStream(context, operation);
+                try {
+                    byte[] hash = deploymentRepository.addDeploymentContent(is);
+                    resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
+                }
+                finally {
+                    safeClose(is);
+                }
             }
-            finally {
-                safeClose(is);
+            catch (IOException e) {
+                throw new OperationFailedException(new ModelNode().set(e.toString()));
             }
         }
-        catch (IOException e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
-        }
+        // else this is a slave domain controller and we should ignore this operation
+
         resultHandler.handleResultComplete();
         return new BasicOperationResult();
     }

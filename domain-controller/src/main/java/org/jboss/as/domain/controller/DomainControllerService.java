@@ -121,7 +121,7 @@ public final class DomainControllerService implements Service<DomainController> 
 
         log.info("Starting Domain Controller");
         DomainModel domainModel = loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository);
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, deploymentRepository);
     }
 
     private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {

@@ -101,7 +101,18 @@ class DomainModelUtil {
         return rootModel;
     }
 
-    static ExtensionContext initializeDomainLevel(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
+    static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
+        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, true);
+    }
+
+    static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository) {
+        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, false);
+    }
+
+    private static ExtensionContext initializeDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
+            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final boolean isMaster) {
         // Global operations
 
         root.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
@@ -121,13 +132,13 @@ class DomainModelUtil {
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(deploymentRepo);
+        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(isMaster ? deploymentRepo: null);
         root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh);
-        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(deploymentRepo);
+        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(isMaster ? deploymentRepo: null);
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh);
-        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(deploymentRepo);
+        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(isMaster ? deploymentRepo: null);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush);
-        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepo);
+        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepo, isMaster);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh);
 
         final ModelNodeRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.NAMED_INTERFACE_PROVIDER);
@@ -169,7 +180,7 @@ class DomainModelUtil {
 
         // Root Deployments
         final ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = new DeploymentAddHandler(deploymentRepo);
+        DeploymentAddHandler dah = new DeploymentAddHandler(deploymentRepo, isMaster);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE);
 

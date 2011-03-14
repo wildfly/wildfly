@@ -22,16 +22,20 @@
 
 package org.jboss.as.domain.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
@@ -82,8 +86,11 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
 import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
+import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -118,6 +125,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
     private final FileRepository fileRepository;
+    private final DeploymentRepository deploymentRepository;
     private final MasterDomainControllerClient masterDomainControllerClient;
     private final ServerOperationExecutor serverOperationExecutor = new ServerOperationExecutor() {
         @Override
@@ -126,12 +134,13 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
     };
 
-    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository) {
+    public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository, DeploymentRepository deploymentRepository) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
         this.hosts.put(hostName, new LocalDomainModelAdapter());
         this.fileRepository = fileRepository;
+        this.deploymentRepository = deploymentRepository;
         this.masterDomainControllerClient = null;
 
     }
@@ -144,6 +153,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         this.localDomainModel = domainModel;
         this.fileRepository = new FallbackRepository(fileRepository, masterDomainControllerClient.getRemoteFileRepository());
         this.hosts.put(hostName, new LocalDomainModelAdapter());
+        this.deploymentRepository = null;
     }
 
     /** {@inheritDoc} */
@@ -247,7 +257,18 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
-        Map<String, ModelNode> hostResults = pushToHosts(operationContext, routing, transaction);
+        Map<String, ModelNode> hostResults = null;
+        try {
+            hostResults = pushToHosts(operationContext, routing, transaction);
+        }
+        catch (Exception e) {
+            transaction.setRollbackOnly();
+            transaction.commit();
+            handler.handleResultFragment(new String[]{DOMAIN_FAILURE_DESCRIPTION}, new ModelNode().set(e.toString()));
+            handler.handleFailed(null);
+            return new BasicOperationResult();
+        }
+
 //        System.out.println("---- Pushed to hosts");
         ModelNode masterFailureResult = null;
         ModelNode hostFailureResults = null;
@@ -311,7 +332,9 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 //            System.out.println(rolloutPlan);
 
             ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
+
 //            System.out.println(compensatingOperation);
+
             if(opsByGroup.size() == 0) {
                 handler.handleResultComplete();
                 return new BasicOperationResult(compensatingOperation);
@@ -440,14 +463,21 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         ((DomainModelImpl) localDomainModel).setInitialDomainModel(initialModel);
     }
 
-    private Map<String, ModelNode> pushToHosts(final Operation operation, final OperationRouting routing, final ControllerTransaction transaction) {
+    private Map<String, ModelNode> pushToHosts(Operation operation, final OperationRouting routing,
+            final ControllerTransaction transaction) throws Exception {
 
         final Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>();
         final Map<String, Future<ModelNode>> futures = new HashMap<String, Future<ModelNode>>();
-
+        ModelNode opNode = operation.getOperation();
         // Try and execute locally first; if it fails don't bother with the other hosts
         final Set<String> targets = routing.getHosts();
         if (targets.remove(localHostName)) {
+
+            if (deploymentRepository != null) {
+                // Store any uploaded content now
+                storeDeploymentContent(operation, opNode);
+            }
+
             Operation localOperation = operation;
             if (targets.size() > 0) {
                 // clone things so our local activity doesn't affect the op
@@ -465,6 +495,10 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
 
         if (!transaction.isRollbackOnly()) {
+
+            // We don't push stream to slaves
+            operation = OperationBuilder.Factory.create(opNode).build();
+
             for (final String host : targets) {
                 pushToHost(operation, transaction, host, futures);
             }
@@ -479,6 +513,33 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
 
         return hostResults;
+    }
+
+    private void storeDeploymentContent(Operation operation, ModelNode opNode) throws Exception {
+        // A pretty painful hack. We analyze the operation for operations that include deployment content attachments; if found
+        // we store the content and replace the attachments
+
+        PathAddress address = PathAddress.pathAddress(opNode.get(OP_ADDR));
+        if (address.size() == 0) {
+            String opName = opNode.get(OP).asString();
+            if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName) && opNode.hasDefined(INPUT_STREAM_INDEX)) {
+                byte[] hash = DeploymentUploadUtil.storeDeploymentContent(operation, opNode, deploymentRepository);
+                opNode.remove(INPUT_STREAM_INDEX);
+                opNode.get(HASH).set(hash);
+            }
+            else if (COMPOSITE.equals(opName) && opNode.hasDefined(STEPS)){
+                // Check the steps
+                for (ModelNode childOp : opNode.get(STEPS).asList()) {
+                    storeDeploymentContent(operation, childOp);
+                }
+            }
+        }
+        else if (address.size() == 1 && DEPLOYMENT.equals(address.getElement(0).getKey())
+                && ADD.equals(opNode.get(OP).asString()) && opNode.hasDefined(INPUT_STREAM_INDEX)) {
+            byte[] hash = DeploymentUploadUtil.storeDeploymentContent(operation, opNode, deploymentRepository);
+            opNode.remove(INPUT_STREAM_INDEX);
+            opNode.get(HASH).set(hash);
+        }
     }
 
     private void processHostFuture(String host, Future<ModelNode> future, final Map<String, ModelNode> hostResults) {
