@@ -166,4 +166,13 @@ public class BindingDescription {
         }
         this.referenceSourceDescription = referenceSourceDescription;
     }
+
+    @Override
+    public String toString() {
+        return "BindingDescription{" +
+                "bindingName='" + bindingName + '\'' +
+                ", bindingType='" + bindingType + '\'' +
+                ", referenceSourceDescription=" + referenceSourceDescription +
+                '}';
+    }
 }
