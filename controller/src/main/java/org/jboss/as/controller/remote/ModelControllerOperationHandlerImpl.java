@@ -254,9 +254,11 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
                 }
             });
 
+            //Do this blocking operation outside the synch block or our result handler will deadlock
+            ModelNode compensating = result.getCompensatingOperation() != null ? result.getCompensatingOperation() : new ModelNode();
+
             synchronized (outputStream) {
                 outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                ModelNode compensating = result.getCompensatingOperation() != null ? result.getCompensatingOperation() : new ModelNode();
                 compensating.writeExternal(outputStream);
                 outputStream.flush();
             }
