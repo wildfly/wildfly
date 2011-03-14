@@ -44,7 +44,7 @@ public class DomainHttpServer implements HttpHandler {
 
     private static final int HTTP_INTERNAL_SERVER_ERROR_STATUS = 500;
     private static final String DOMAIN_API_CONTEXT = "/domain-api";
-    private static final String UPLOAD_OPERATION = "add-content";
+    private static final String UPLOAD_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
     private static final String POST_REQUEST_METHOD = "POST";
     private static final String GET_REQUEST_METHOD = "GET";
     private static final String MULTIPART_FORM_DATA_CONTENT_TYPE = "application/octet-stream";
@@ -58,8 +58,11 @@ public class DomainHttpServer implements HttpHandler {
      * Represents all possible management operations that can be executed using HTTP GET
      */
     enum GetOperation {
-        RESOURCE("read-resource"), ATTRIBUTE("read-attribute"), RESOURCE_DESCRIPTION("read-resource-description"), OPERATION_DESCRIPTION(
-                "read-operation-description"), OPERATION_NAMES("read-operation-names");
+        RESOURCE("read-resource"),
+        ATTRIBUTE("read-attribute"),
+        RESOURCE_DESCRIPTION("read-resource-description"),
+        OPERATION_DESCRIPTION("read-operation-description"),
+        OPERATION_NAMES("read-operation-names");
 
         private String realOperation;
 
@@ -95,7 +98,7 @@ public class DomainHttpServer implements HttpHandler {
         /*
          * Detect the file upload request. If it is not present, submit the incoming request to the normal handler.
          */
-        if (POST_REQUEST_METHOD.equals(requestMethod) && request.getQuery().contains(UPLOAD_OPERATION)) {
+        if (POST_REQUEST_METHOD.equals(requestMethod) && UPLOAD_REQUEST.equals(request.getPath())) {
             processUploadRequest(http);
         } else {
             processRequest(http);
