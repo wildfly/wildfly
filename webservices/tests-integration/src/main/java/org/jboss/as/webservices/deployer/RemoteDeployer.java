@@ -27,12 +27,12 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.server.client.api.deployment.DeploymentAction;
-import org.jboss.as.server.client.api.deployment.DeploymentPlan;
-import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentActionResult;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployer.Deployer;
 

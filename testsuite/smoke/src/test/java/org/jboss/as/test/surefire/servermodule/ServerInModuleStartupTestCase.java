@@ -54,13 +54,13 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.EmbeddedServerFactory;
 import org.jboss.as.server.Main;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;

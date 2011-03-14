@@ -16,7 +16,7 @@
  */
 package org.jboss.as.arquillian.service;
 
-import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 
 /**
  * A thread local {@link ServerDeploymentManager} association

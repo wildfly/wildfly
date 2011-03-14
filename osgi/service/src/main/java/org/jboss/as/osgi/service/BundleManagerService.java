@@ -26,14 +26,14 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.osgi.deployment.DeployerServicePluginIntegration;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
-import org.jboss.as.server.client.impl.ModelControllerServerDeploymentManager;
+import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;

@@ -25,7 +25,7 @@ import org.jboss.arquillian.api.ArchiveDeployer;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.TestEnricher;
 import org.jboss.as.arquillian.common.ArchiveDeployerImpl;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 
 /**
  * The {@link ArchiveDeployer} TestEnricher

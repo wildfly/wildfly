@@ -22,10 +22,10 @@
 package org.jboss.as.demos;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.server.client.api.deployment.DeploymentPlan;
-import org.jboss.as.server.client.api.deployment.DeploymentPlanBuilder;
-import org.jboss.as.server.client.api.deployment.DuplicateDeploymentNameException;
-import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.DuplicateDeploymentNameException;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
