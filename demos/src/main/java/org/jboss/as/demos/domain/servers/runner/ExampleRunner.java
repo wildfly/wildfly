@@ -67,7 +67,6 @@ public class ExampleRunner {
             hostNamesOp.get(CHILD_TYPE).set(HOST);
 
             final ModelNode hostNames = client.execute(hostNamesOp);
-
             final Map<String, Set<String>> hosts = new HashMap<String, Set<String>>();
             for(final ModelNode host : hostNames.get(RESULT).asList()) {
 

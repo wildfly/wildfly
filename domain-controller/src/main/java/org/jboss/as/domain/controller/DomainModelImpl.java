@@ -174,6 +174,12 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         return model;
     }
 
+    // FIXME the domainModel really should not expose hosts
+    public Set<String> getHostNames() {
+        return new HashSet<String>(hosts.keySet());
+    }
+
+    // FIXME the domainModel really should not expose hosts
     public Map<String, DomainControllerSlaveClient> getRemoteHosts(){
         if (hosts.size() == 1 && hosts.containsKey(localHostName)) {
             return Collections.emptyMap();

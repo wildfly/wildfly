@@ -78,6 +78,7 @@ public class GlobalOperationHandlers {
 
     public static final OperationHandler READ_RESOURCE = new ReadResourceHandler();
     public static final OperationHandler READ_ATTRIBUTE = new ReadAttributeHandler();
+    public static final OperationHandler READ_CHILDREN_NAMES = new ReadChildrenOperationHandler();
     public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
     public static final ResolveAddressOperationHandler RESOLVE = new ResolveAddressOperationHandler();
 
@@ -273,7 +274,7 @@ public class GlobalOperationHandlers {
     /**
      * {@link OperationHandler} querying the children names of a given "child-type".
      */
-    public static final ModelQueryOperationHandler READ_CHILDREN_NAMES = new ModelQueryOperationHandler() {
+    public static class ReadChildrenOperationHandler implements ModelQueryOperationHandler {
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
@@ -286,9 +287,8 @@ public class GlobalOperationHandlers {
                     resultHandler.handleResultFragment(new String[0], result);
                     resultHandler.handleResultComplete();
                 } else {
-
-                    final Set<String> childNames = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.get(OP_ADDR)));
-
+                    final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+                    final Set<String> childNames = context.getRegistry().getChildNames(address);
                     if (!childNames.contains(childName)) {
                         resultHandler.handleFailed(new ModelNode().set("No known child called " + childName)); //TODO i18n
                     } else {

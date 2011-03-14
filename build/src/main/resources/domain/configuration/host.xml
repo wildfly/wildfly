@@ -38,6 +38,9 @@
     </domain-controller>
 
     <interfaces>
+        <interface name="loopback">
+            <inet-address value="127.0.0.1"/>
+        </interface>
         <interface name="public">
             <any-ipv4-address />
         </interface>
