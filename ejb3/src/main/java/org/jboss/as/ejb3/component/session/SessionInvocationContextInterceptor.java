@@ -21,9 +21,11 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
+import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.ejb3.context.spi.SessionInvocationContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -67,6 +69,11 @@ class SessionInvocationContextInterceptor implements Interceptor {
         @Override
         public Map<String, Object> getContextData() {
             return context.getContextData();
+        }
+
+        @Override
+        public SessionContext getEJBContext() {
+            return ((SessionBeanComponentInstance) context.getPrivateData(ComponentInstance.class)).getSessionContext();
         }
 
         @Override

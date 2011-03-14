@@ -25,6 +25,7 @@ import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
+import org.jboss.as.demos.ejb3.mbean.ExerciseBMT;
 import org.jboss.as.demos.ejb3.mbean.ExerciseStateful;
 import org.jboss.as.demos.ejb3.mbean.Test;
 
@@ -32,6 +33,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.util.concurrent.Callable;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
@@ -45,8 +47,8 @@ public class ExampleRunner {
         return intf.cast(Proxy.newProxyInstance(intf.getClassLoader(), interfaces, handler));
     }
 
-    private static void doStatefulMagic(MBeanServerConnection server) throws Exception {
-        String msg = (String) server.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "exec", new Object[]{ExerciseStateful.class}, new String[]{Class.class.getName()});
+    private static void exec(MBeanServerConnection server, Class<? extends Callable<?>> callableClass) throws Exception {
+        String msg = (String) server.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "exec", new Object[]{callableClass}, new String[]{Class.class.getName()});
         System.out.println(msg);
     }
 
@@ -71,11 +73,12 @@ public class ExampleRunner {
             String msg = bean.echo("Hello world");
             System.out.println(msg);
 
-            doStatefulMagic(mbeanServer);
+            exec(mbeanServer, ExerciseStateful.class);
 
             String singletonBeanJndiName = "java:global/ejb3-example/SimpleSingletonBean!" + SimpleSingletonLocal.class.getName();
             workOnSingletoBean(mbeanServer, singletonBeanJndiName, 100, 10);
 
+            exec(mbeanServer, ExerciseBMT.class);
         } finally {
             utils.undeploy();
             safeClose(utils);

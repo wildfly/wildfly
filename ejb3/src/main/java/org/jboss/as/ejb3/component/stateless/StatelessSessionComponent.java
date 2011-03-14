@@ -25,8 +25,7 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
@@ -43,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  * <p/>
  * Author : Jaikiran Pai
  */
-public class StatelessSessionComponent extends EJBComponent {
+public class StatelessSessionComponent extends SessionBeanComponent {
     // some more injectable resources
     // @Resource
     private Pool<StatelessSessionComponentInstance> pool;
@@ -53,7 +52,7 @@ public class StatelessSessionComponent extends EJBComponent {
      *
      * @param componentConfiguration
      */
-    public StatelessSessionComponent(final EJBComponentConfiguration componentConfiguration) {
+    public StatelessSessionComponent(final StatelessSessionComponentConfiguration componentConfiguration) {
         super(componentConfiguration);
 
         StatelessObjectFactory<StatelessSessionComponentInstance> factory = new StatelessObjectFactory<StatelessSessionComponentInstance>() {

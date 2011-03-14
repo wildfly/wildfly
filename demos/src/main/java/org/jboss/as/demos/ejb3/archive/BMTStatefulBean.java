@@ -19,29 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateful;
+package org.jboss.as.demos.ejb3.archive;
 
-import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
-import org.jboss.ejb3.cache.Identifiable;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.util.id.GUID;
+import javax.annotation.Resource;
+import javax.ejb.LocalBean;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateful;
+import javax.ejb.TransactionManagement;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
 
-import java.io.Serializable;
-import java.util.List;
+import static javax.ejb.TransactionManagementType.BEAN;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable {
-    private final GUID id;
+@Stateful
+@LocalBean
+@TransactionManagement(BEAN)
+public class BMTStatefulBean {
+    @Resource
+    private SessionContext ctx;
 
-    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        super(component, instance, preDestroyInterceptors, context);
-        this.id = new GUID();
+    private String state;
+
+    public String commit() throws SystemException, RollbackException, HeuristicRollbackException, HeuristicMixedException {
+        ctx.getUserTransaction().commit();
+        return state;
     }
 
-    public Serializable getId() {
-        return id;
+    public void setup(String state) throws SystemException, NotSupportedException {
+        ctx.getUserTransaction().begin();
+        this.state = state;
     }
 }

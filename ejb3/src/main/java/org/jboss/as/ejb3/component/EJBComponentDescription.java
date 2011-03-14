@@ -196,15 +196,15 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     }
 
     private void processTxAttr(EJBComponentConfiguration configuration, MethodIntf methodIntf, Method method) {
+        if(configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
+            // it's a BMT bean
+            return;
+        }
+
         String methodName = method.getName();
         TransactionAttributeType txAttr = getTransactionAttribute(methodIntf, methodName, toString(method.getParameterTypes()));
 
         ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs = configuration.getTxAttrs();
-        // TODO: this is ugly, the existence of CMTTxInterceptor is leading
-        if(txAttrs == null) {
-            // it's a BMT bean
-            return;
-        }
         ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = txAttrs.get(methodIntf);
         if (perMethodIntf == null) {
             perMethodIntf = new ConcurrentHashMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>();

@@ -22,43 +22,72 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 
 import javax.ejb.ApplicationException;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponent extends AbstractComponent implements TransactionalComponent {
+public abstract class EJBComponent extends AbstractComponent implements org.jboss.ejb3.context.spi.EJBComponent, TransactionalComponent {
     private static Logger log = Logger.getLogger(EJBComponent.class);
 
     private final ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
 
     private final EJBUtilities utilities;
+    private final boolean isBeanManagedTransaction;
 
     /**
      * Construct a new instance.
      *
      * @param configuration the component configuration
      */
-    protected EJBComponent(final AbstractComponentConfiguration configuration) {
+    protected EJBComponent(final EJBComponentConfiguration configuration) {
         super(configuration);
 
         this.utilities = configuration.getInjectionValue(EJBUtilities.SERVICE_NAME, EJBUtilities.class);
 
         // slurp some memory
-        txAttrs = ((EJBComponentConfiguration) configuration).getTxAttrs();
+        txAttrs = configuration.getTxAttrs();
+        isBeanManagedTransaction = configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN);
     }
 
     @Override
     public ApplicationException getApplicationException(Class<?> exceptionClass) {
         throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getApplicationException");
+    }
+
+    @Override
+    public EJBHome getEJBHome() throws IllegalStateException {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getEJBHome");
+    }
+
+    @Override
+    public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getEJBLocalHome");
+    }
+
+    @Override
+    public boolean getRollbackOnly() throws IllegalStateException {
+        if(isBeanManagedTransaction())
+            throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation can use this method.");
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getRollbackOnly");
+    }
+
+    @Override
+    public TimerService getTimerService() throws IllegalStateException {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getTimerService");
     }
 
     @Deprecated
@@ -88,5 +117,33 @@ public abstract class EJBComponent extends AbstractComponent implements Transact
     @Override
     public int getTransactionTimeout(Method method) {
         return -1; // un-configured
+    }
+
+    @Override
+    public UserTransaction getUserTransaction() throws IllegalStateException {
+        if(!isBeanManagedTransaction())
+            throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with bean-managed transaction demarcation can use this method.");
+        return utilities.getUserTransaction();
+    }
+
+    private boolean isBeanManagedTransaction() {
+        return isBeanManagedTransaction;
+    }
+
+    @Override
+    public boolean isCallerInRole(Principal callerPrincipal, String roleName) throws IllegalStateException {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.isCallerInRole");
+    }
+
+    @Override
+    public Object lookup(String name) throws IllegalArgumentException {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.lookup");
+    }
+
+    @Override
+    public void setRollbackOnly() throws IllegalStateException {
+        if(isBeanManagedTransaction())
+            throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation can use this method.");
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.setRollbackOnly");
     }
 }

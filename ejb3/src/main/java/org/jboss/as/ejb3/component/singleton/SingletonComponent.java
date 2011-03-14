@@ -26,7 +26,7 @@ import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
-import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -37,8 +37,6 @@ import javax.ejb.AccessTimeout;
 import javax.ejb.LockType;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Jaikiran Pai
  */
-public class SingletonComponent extends EJBComponent implements LockableComponent {
+public class SingletonComponent extends SessionBeanComponent implements LockableComponent {
 
     private static final Logger logger = Logger.getLogger(SingletonComponent.class);
 

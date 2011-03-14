@@ -22,8 +22,7 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
@@ -32,7 +31,7 @@ import java.util.List;
 /**
  * @author  Jaikiran Pai
  */
-public class SingletonComponentInstance extends AbstractComponentInstance {
+public class SingletonComponentInstance extends SessionBeanComponentInstance {
 
     /**
      * Construct a new instance.
@@ -40,7 +39,7 @@ public class SingletonComponentInstance extends AbstractComponentInstance {
      * @param component the component
      * @param instance  the object instance
      */
-    public SingletonComponentInstance(final AbstractComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
+    public SingletonComponentInstance(final SingletonComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
         super(component, instance, preDestroyInterceptors, factoryContext);
     }
 }

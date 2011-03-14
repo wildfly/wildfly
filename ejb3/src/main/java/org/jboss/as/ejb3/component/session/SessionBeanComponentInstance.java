@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,28 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.ejb3.component.session;
 
-package org.jboss.as.ejb3.component.stateless;
-
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
+import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.ejb3.context.base.BaseSessionContext;
+import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.util.List;
 
 /**
- * Author : Jaikiran Pai
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatelessSessionComponentInstance extends SessionBeanComponentInstance {
+public abstract class SessionBeanComponentInstance extends AbstractComponentInstance {
+    private BaseSessionContext sessionContext;
 
     /**
      * Construct a new instance.
      *
-     * @param component   the component
-     * @param instance    the object instance
+     * @param component the component
+     * @param instance  the object instance
      */
-    protected StatelessSessionComponentInstance(final StatelessSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        super(component, instance, preDestroyInterceptors, context);
+    protected SessionBeanComponentInstance(final SessionBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
+        super(component, instance, preDestroyInterceptors, factoryContext);
+
+        this.sessionContext = new BaseSessionContext(component, instance);
+    }
+
+    protected SessionContext getSessionContext() {
+        return sessionContext;
     }
 }

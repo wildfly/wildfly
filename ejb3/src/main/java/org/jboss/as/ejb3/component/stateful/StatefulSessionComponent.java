@@ -23,8 +23,7 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
@@ -40,7 +39,7 @@ import java.util.List;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponent extends EJBComponent {
+public class StatefulSessionComponent extends SessionBeanComponent {
     private Cache<StatefulSessionComponentInstance> cache;
 
     /**
@@ -48,7 +47,7 @@ public class StatefulSessionComponent extends EJBComponent {
      *
      * @param configuration         the component configuration
      */
-    protected StatefulSessionComponent(final EJBComponentConfiguration configuration) {
+    protected StatefulSessionComponent(final StatefulSessionComponentConfiguration configuration) {
         super(configuration);
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();

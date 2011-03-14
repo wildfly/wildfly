@@ -24,9 +24,11 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.junit.Test;
 
+import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -43,6 +45,7 @@ public class EJBComponentDescriptionTestCase {
     @Test
     public void testNoTxAttrs() throws Exception {
         final EJBComponentConfiguration configuration = mock(EJBComponentConfiguration.class);
+        when(configuration.getTransactionManagementType()).thenReturn(TransactionManagementType.BEAN);
         final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", "TestModule", "TestApp") {
             @Override
             public MethodIntf getMethodIntf(String viewClassName) {

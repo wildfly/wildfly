@@ -40,7 +40,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class EJBComponentConfiguration extends AbstractComponentConfiguration {
-    private ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
+    private final TransactionManagementType transactionManagementType;
+    private final ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
 
     /**
      * Construct a new instance.
@@ -55,8 +56,10 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
         // CurrentInvocationContext
         addCurrentInvocationContextInterceptorFactory();
 
+        transactionManagementType = description.getTransactionManagementType();
+
         // CMTTx
-        if (description.getTransactionManagementType().equals(TransactionManagementType.CONTAINER)) {
+        if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
             // slurp some memory
             txAttrs = new ConcurrentHashMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>>();
 
@@ -67,6 +70,8 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
                 }
             });
         }
+        else
+            txAttrs = null;
     }
 
     protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
@@ -80,6 +85,10 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
      */
     public String getName() {
         return getComponentName();
+    }
+
+    TransactionManagementType getTransactionManagementType() {
+        return transactionManagementType;
     }
 
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {

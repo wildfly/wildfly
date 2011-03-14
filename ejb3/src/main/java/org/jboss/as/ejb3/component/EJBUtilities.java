@@ -30,6 +30,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 /**
  * The gas, water & energy for the EJB subsystem.
@@ -40,6 +41,7 @@ public class EJBUtilities implements Service<EJBUtilities> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
     private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
+    private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
 
     public TransactionManager getTransactionManager() {
         return transactionManagerValue.getOptionalValue();
@@ -47,6 +49,14 @@ public class EJBUtilities implements Service<EJBUtilities> {
 
     public Injector<TransactionManager> getTransactionManagerInjector() {
         return transactionManagerValue;
+    }
+
+    public UserTransaction getUserTransaction() {
+        return userTransactionValue.getOptionalValue();
+    }
+
+    public Injector<UserTransaction> getUserTransactionInjector() {
+        return userTransactionValue;
     }
 
     @Override
