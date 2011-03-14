@@ -351,11 +351,11 @@
         <module-def name="org.jboss.as.arquillian.common">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-common"/>
         </module-def>
-    	
+
         <module-def name="org.jboss.as.arquillian.protocol.servlet">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-protocol-servlet"/>
         </module-def>
-    	
+
         <module-def name="org.jboss.as.arquillian.service">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>
         </module-def>
@@ -508,6 +508,9 @@
 
         <module-def name="org.jboss.ejb3">
             <!-- all maven artifacts that live on the org.jboss.ejb3 release cycle -->
+            <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-base"/>
+            <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-spi"/>
+
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-api"/>
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-common"/>
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-int2"/>
@@ -553,7 +556,7 @@
         <module-def name="org.jboss.jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
-      
+
     	  <module-def name="org.jboss.jsfunit.arquillian">
             <maven-resource group="org.jboss.jsfunit" artifact="jsfunit-arquillian"/>
         </module-def>
@@ -578,13 +581,13 @@
             <maven-resource group="xalan" artifact="serializer"/>
             <maven-resource group="xerces" artifact="xercesImpl"/>
             <maven-resource group="xml-apis" artifact="xml-apis"/>
-        	
+
         </module-def>
 
         <module-def name="org.jboss.jsfunit.jsfunit-arquillian-processor">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-processor-jsfunit"/>
         </module-def>
-    	
+
         <module-def name="org.jboss.jts">
             <maven-resource group="org.jboss.jbossts" artifact="jbossjts"/>
         </module-def>
@@ -691,7 +694,7 @@
         </module-def>
 
     	  <module-def name="org.jboss.surefire.arquillian-deps"/>
-    	
+
         <module-def name="org.jboss.surefire.arquillian-jsfunit-deps"/>
 
     	  <module-def name="org.jboss.staxmapper">

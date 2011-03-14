@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.session;
 
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
  * @author Jaikiran Pai
@@ -37,5 +38,10 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
      */
     public SessionBeanComponentConfiguration(final EJBComponentDescription description) {
         super(description);
+    }
+
+    @Override
+    protected void addCurrentInvocationContextInterceptorFactory() {
+        addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
     }
 }

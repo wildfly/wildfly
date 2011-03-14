@@ -52,6 +52,9 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
 
         description.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
 
+        // CurrentInvocationContext
+        addCurrentInvocationContextInterceptorFactory();
+
         // CMTTx
         if (description.getTransactionManagementType().equals(TransactionManagementType.CONTAINER)) {
             // slurp some memory
@@ -69,6 +72,8 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
     protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
         super.getComponentSystemInterceptorFactories().add(interceptorFactory);
     }
+
+    protected abstract void addCurrentInvocationContextInterceptorFactory();
 
     /**
      * @return the ejb-name
