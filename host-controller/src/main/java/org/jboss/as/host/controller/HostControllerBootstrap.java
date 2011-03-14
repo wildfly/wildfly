@@ -247,7 +247,7 @@ public class HostControllerBootstrap {
             final boolean backupDomainFiles, final boolean useCachedDc) {
 
         final FileRepository fileRepository = new LocalFileRepository(environment);
-        boolean slave = !host.get(DOMAIN_CONTROLLER, LOCAL).isDefined();
+        boolean slave = !(host.get(DOMAIN_CONTROLLER).hasDefined(LOCAL));
         if (slave) {
             installRemoteDomainControllerConnection(environment, host, serviceTarget, fileRepository);
         }

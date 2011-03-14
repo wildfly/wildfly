@@ -517,10 +517,10 @@ public class HostXml extends CommonXml {
 
     private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         writer.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
-        if (modelNode.has(LOCAL)) {
+        if (modelNode.hasDefined(LOCAL)) {
             writer.writeEmptyElement(Element.LOCAL.getLocalName());
         }
-        if (modelNode.has(REMOTE)) {
+        else if (modelNode.hasDefined(REMOTE)) {
             writer.writeStartElement(Element.REMOTE.getLocalName());
             final ModelNode remote = modelNode.get(REMOTE);
             if (remote.has(HOST)) {
