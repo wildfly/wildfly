@@ -21,48 +21,60 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import javax.enterprise.inject.spi.InjectionPoint;
-
-import org.jboss.msc.service.Service;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 
+import javax.ejb.EJB;
+import javax.enterprise.inject.spi.InjectionPoint;
+import java.lang.reflect.Method;
+
 /**
- * Implementation of EjbInjectionServices. Not implemeneted yet
+ * Implementation of EjbInjectionServices.
  *
  * @author Stuart Douglas
  *
  */
-public class WeldEjbInjectionServices implements Service<WeldEjbInjectionServices>, EjbInjectionServices {
+public class WeldEjbInjectionServices implements EjbInjectionServices {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.of("WeldEjbInjectionServices");
+    private final ServiceRegistry serviceRegistry;
 
-    @Override
-    public void start(StartContext context) throws StartException {
+    private final EEModuleDescription moduleDescription;
 
-    }
 
-    @Override
-    public void stop(StopContext context) {
-
-    }
-
-    @Override
-    public WeldEjbInjectionServices getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription) {
+        this.serviceRegistry = serviceRegistry;
+        this.moduleDescription = moduleDescription;
     }
 
     @Override
     public Object resolveEjb(InjectionPoint injectionPoint) {
-        throw new RuntimeException("not implemented");
+        //TODO: some of this stuff should be cached
+        EJB ejb = injectionPoint.getAnnotated().getAnnotation(EJB.class);
+        if(ejb == null) {
+            throw new RuntimeException("@Ejb annotation not found on " + injectionPoint.getMember());
+        }
+        if (injectionPoint.getMember() instanceof Method && ((Method) injectionPoint.getMember()).getParameterTypes().length != 1)
+        {
+            throw new IllegalArgumentException("Injection point represents a method which doesn't follow JavaBean conventions (must have exactly one parameter) " + injectionPoint);
+        }
+        if(!ejb.lookup().equals("")) {
+            final ServiceName ejbServiceName = ContextNames.serviceNameOfContext(moduleDescription.getAppName(),moduleDescription.getModuleName(),moduleDescription.getModuleName(),ejb.lookup());
+            ServiceController<?> controller =  serviceRegistry.getRequiredService(ejbServiceName);
+            ManagedReferenceFactory factory = (ManagedReferenceFactory) controller.getValue();
+            return factory.getReference().getInstance();
+        } else {
+            //TODO: hook in the ejb resolver, when it exists
+            throw new RuntimeException("Currently only the lookup attribute is supported on CDI @EJB injection " + injectionPoint);
+        }
     }
 
     @Override
     public void cleanup() {
 
     }
-
 }

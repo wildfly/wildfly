@@ -22,7 +22,6 @@
 package org.jboss.as.weld.services;
 
 import org.jboss.as.weld.WeldContainer;
-import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
@@ -37,7 +36,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.ejb.spi.EjbServices;
-import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.security.spi.SecurityServices;
@@ -59,7 +57,6 @@ public class WeldService implements Service<WeldContainer> {
 
     private final WeldContainer weldContainer;
 
-    private final InjectedValue<WeldEjbInjectionServices> ejbInjectionServices = new InjectedValue<WeldEjbInjectionServices>();
     private final InjectedValue<WeldEjbServices> ejbServices = new InjectedValue<WeldEjbServices>();
     private final InjectedValue<WeldJpaInjectionServices> jpaInjectionServices = new InjectedValue<WeldJpaInjectionServices>();
     private final InjectedValue<WeldResourceInjectionServices> resourceInjectionServices = new InjectedValue<WeldResourceInjectionServices>();
@@ -81,7 +78,6 @@ public class WeldService implements Service<WeldContainer> {
 
             // TODO: this is a complete hack. We will need one instance of each service per bean deployment archive
             for (BeanDeploymentArchive bda : weldContainer.getBeanDeploymentArchives()) {
-                bda.getServices().add(EjbInjectionServices.class, ejbInjectionServices.getValue());
                 bda.getServices().add(JpaInjectionServices.class, jpaInjectionServices.getValue());
                 bda.getServices().add(ResourceInjectionServices.class, resourceInjectionServices.getValue());
             }
@@ -110,10 +106,6 @@ public class WeldService implements Service<WeldContainer> {
 
     public InjectedValue<WeldTransactionServices> getWeldTransactionServices() {
         return weldTransactionServices;
-    }
-
-    public InjectedValue<WeldEjbInjectionServices> getEjbInjectionServices() {
-        return ejbInjectionServices;
     }
 
     public InjectedValue<WeldEjbServices> getEjbServices() {

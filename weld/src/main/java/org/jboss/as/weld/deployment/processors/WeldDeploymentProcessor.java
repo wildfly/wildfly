@@ -22,6 +22,7 @@
 package org.jboss.as.weld.deployment.processors;
 
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -53,6 +54,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
 
 import javax.enterprise.inject.spi.Extension;
@@ -100,6 +102,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         // war deployments have access to the root level and all ejb jars
         final BeanDeploymentModule rootBeanDeploymentModule = deploymentUnit.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
 
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+
         globalBeanDeploymentModules.add(rootBeanDeploymentModule);
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
@@ -138,6 +142,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ValidatorFactory factory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
         weldContainer.addWeldService(ValidationServices.class,new WeldValidationServices(factory));
 
+        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(),eeModuleDescription);
+        weldContainer.addWeldService(EjbInjectionServices.class,ejbInjectionServices);
+
         final WeldService weldService = new WeldService(weldContainer);
         final ServiceName weldServiceName = deploymentUnit.getServiceName().append(WeldService.SERVICE_NAME);
         // add the weld service
@@ -145,7 +152,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
 
-        installEjbInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installEjbService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installJpaInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installResourceInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
@@ -154,19 +160,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldServiceBuilder.install();
 
-    }
-
-    private ServiceName installEjbInjectionService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-            WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
-        final WeldEjbInjectionServices service = new WeldEjbInjectionServices();
-
-        final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldEjbInjectionServices.SERVICE_NAME);
-
-        serviceTarget.addService(serviceName, service).install();
-
-        weldServiceBuilder.addDependency(serviceName, WeldEjbInjectionServices.class, weldService.getEjbInjectionServices());
-
-        return serviceName;
     }
 
     private ServiceName installEjbService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, WeldService weldService,

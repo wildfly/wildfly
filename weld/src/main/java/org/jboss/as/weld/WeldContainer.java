@@ -21,19 +21,18 @@
  */
 package org.jboss.as.weld;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.enterprise.inject.spi.BeanManager;
-
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+
+import javax.enterprise.inject.spi.BeanManager;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides access to a running weld deployment.
@@ -143,6 +142,7 @@ public class WeldContainer {
             throw new IllegalStateException("services cannot be added after weld has started");
         }
         deployment.getServices().add(type, service);
+        deployment.getAdditionalBeanDeploymentArchive().getServices().add(type,service);
     }
 
     /**
