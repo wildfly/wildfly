@@ -22,11 +22,10 @@
 
 package org.jboss.as.demos.ejb3.mbean;
 
-import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
+import org.jboss.as.demos.ejb3.archive.session.singleton.SimpleSingletonLocal;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 

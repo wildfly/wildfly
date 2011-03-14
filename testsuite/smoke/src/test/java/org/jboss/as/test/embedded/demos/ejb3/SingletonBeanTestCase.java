@@ -26,12 +26,10 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
-import org.jboss.as.demos.ejb3.archive.SimpleSingletonBean;
-import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
-import org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionBean;
-import org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal;
-import org.jboss.as.demos.ejb3.archive.StartupSingleton;
+import org.jboss.as.demos.ejb3.archive.session.singleton.CallTrackerSingletonBean;
+import org.jboss.as.demos.ejb3.archive.session.singleton.SimpleSingletonBean;
+import org.jboss.as.demos.ejb3.archive.session.singleton.SimpleSingletonLocal;
+import org.jboss.as.demos.ejb3.archive.session.singleton.StartupSingleton;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -82,6 +80,12 @@ public class SingletonBeanTestCase {
         Context ctx = new InitialContext();
         CallTrackerSingletonBean callTrackerSingletonBean = (CallTrackerSingletonBean) ctx.lookup("java:global/ejb3-singleton-bean-example/" + CallTrackerSingletonBean.class.getSimpleName() + "!" + CallTrackerSingletonBean.class.getName());
         Assert.assertTrue("@Startup singleton bean was not created", callTrackerSingletonBean.wasStartupSingletonBeanCreated());
+
+    }
+
+    @Test
+    public void testReadOnlySingleton() throws Exception {
+        Context ctx = new InitialContext();
 
     }
 

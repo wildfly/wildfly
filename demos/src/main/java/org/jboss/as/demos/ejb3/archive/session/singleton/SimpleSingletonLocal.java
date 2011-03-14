@@ -20,37 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.ejb3.archive;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.LocalBean;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.List;
+package org.jboss.as.demos.ejb3.archive.session.singleton;
 
 /**
  * @author Jaikiran Pai
  */
-@Startup
-@Singleton
-@LocalBean
-public class StartupSingleton {
+public interface SimpleSingletonLocal {
 
-    private List<String> invocationLog;
+    int getBeanInstanceCount();
 
-    @Resource(lookup = "java:module/ModuleName")
-    private String moduleName;
+    void increment();
 
-    public static final String STARTUP_SINGLETON_POST_CONSTRUCT = "StartupSingleton_PostConstruct";
+    int getCount();
 
-    @PostConstruct
-    public void postConstruct() throws Exception {
-        Context ctx = new InitialContext();
-        CallTrackerSingletonBean callTrackerSingletonBean = (CallTrackerSingletonBean) ctx.lookup("java:global/" + moduleName + "/" + CallTrackerSingletonBean.class.getSimpleName() + "!" + CallTrackerSingletonBean.class.getName());
-        callTrackerSingletonBean.addToInvocationLog(STARTUP_SINGLETON_POST_CONSTRUCT);
-    }
-
+    void doNothing();
 }

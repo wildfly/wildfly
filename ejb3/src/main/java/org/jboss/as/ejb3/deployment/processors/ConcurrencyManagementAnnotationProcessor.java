@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -37,12 +38,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Processes {@link ConcurrencyManagement} annotation on a singleton bean and updates the {@link SingletonComponentDescription}
- * with the relevant {@link ConcurrencyManagementType}
+ * Processes {@link ConcurrencyManagement} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),
+ * and updates the {@link SessionBeanComponentDescription} with the relevant {@link ConcurrencyManagementType}
  *
  * @author Jaikiran Pai
  */
-public class ConcurrencyManagementAnnotationProcessor extends AbstractAnnotationEJBProcessor<SingletonComponentDescription> {
+public class ConcurrencyManagementAnnotationProcessor extends AbstractAnnotationEJBProcessor<SessionBeanComponentDescription> {
 
     /**
      * Logger
@@ -50,12 +51,15 @@ public class ConcurrencyManagementAnnotationProcessor extends AbstractAnnotation
     private static final Logger logger = Logger.getLogger(ConcurrencyManagementAnnotationProcessor.class);
 
     @Override
-    protected Class<SingletonComponentDescription> getComponentDescriptionType() {
-        return SingletonComponentDescription.class;
+    protected Class<SessionBeanComponentDescription> getComponentDescriptionType() {
+        return SessionBeanComponentDescription.class;
     }
 
     @Override
-    protected void processAnnotations(ClassInfo beanClass, CompositeIndex compositeIndex, SingletonComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processAnnotations(ClassInfo beanClass, CompositeIndex compositeIndex, SessionBeanComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        if (!componentDescription.allowsConcurrentAccess()) {
+            return;
+        }
         Map<DotName, List<AnnotationInstance>> annotationsOnBean = beanClass.annotations();
         if (annotationsOnBean == null || annotationsOnBean.isEmpty()) {
             return;

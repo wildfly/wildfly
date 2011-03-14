@@ -37,7 +37,7 @@ public class StatelessSessionComponentConfiguration extends SessionBeanComponent
      *
      * @param description the original component description
      */
-    public StatelessSessionComponentConfiguration(final EJBComponentDescription description) {
+    public StatelessSessionComponentConfiguration(final StatelessComponentDescription description) {
         super(description);
 
         // TODO: use a proper instance association interceptor

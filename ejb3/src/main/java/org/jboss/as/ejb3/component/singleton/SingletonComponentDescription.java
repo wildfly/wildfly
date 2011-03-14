@@ -45,21 +45,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     private boolean initOnStartup;
 
     /**
-     * The {@link ConcurrencyManagementType} for this singleton bean
-     */
-    private ConcurrencyManagementType concurrencyManagementType;
-
-    /**
-     * The bean level {@link LockType} for this bean.
-     */
-    private LockType beanLevelLockType;
-
-    /**
-     * The {@link LockType} applicable for a specific bean method.
-     */
-    private Map<EJBBusinessMethod, LockType> methodLockTypes = new ConcurrentHashMap<EJBBusinessMethod, LockType>();
-
-    /**
      * Construct a new instance.
      *
      * @param componentName      the component name
@@ -95,87 +80,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
     }
 
-    /**
-     * Returns the concurrency management type for this singleton bean.
-     * <p/>
-     * This method returns null if the concurrency management type hasn't explicitly been set on this
-     * {@link SingletonComponentDescription}
-     *
-     * @return
-     */
-    public ConcurrencyManagementType getConcurrencyManagementType() {
-        return this.concurrencyManagementType;
-    }
-
-    /**
-     * Marks the singleton bean for bean managed concurrency.
-     *
-     * @throws IllegalStateException If the bean has already been marked for a different concurrency management type
-     */
-    public void beanManagedConcurrency() {
-        if (this.concurrencyManagementType != null && this.concurrencyManagementType != ConcurrencyManagementType.BEAN) {
-            throw new IllegalStateException(this.getEJBName() + " bean has been marked for " + this.concurrencyManagementType + " cannot change it now!");
-        }
-        this.concurrencyManagementType = ConcurrencyManagementType.BEAN;
-    }
-
-
-    /**
-     * Marks this singleton bean for container managed concurrency.
-     *
-     * @throws IllegalStateException If the bean has already been marked for a different concurrency management type
-     */
-    public void containerManagedConcurrency() {
-        if (this.concurrencyManagementType != null && this.concurrencyManagementType != ConcurrencyManagementType.CONTAINER) {
-            throw new IllegalStateException(this.getEJBName() + " bean has been marked for " + this.concurrencyManagementType + " cannot change it now!");
-        }
-        this.concurrencyManagementType = ConcurrencyManagementType.CONTAINER;
-
-    }
-
-    /**
-     * Sets the {@link LockType} applicable for the bean.
-     *
-     * @param locktype The lock type applicable for the bean
-     * @throws IllegalArgumentException If the bean has already been marked for a different {@link LockType} than the one passed
-     */
-    public void setBeanLevelLockType(LockType locktype) {
-        if (this.beanLevelLockType != null && this.beanLevelLockType != locktype) {
-            throw new IllegalArgumentException(this.getEJBName() + " bean has already been marked for " + this.beanLevelLockType + " lock type. Cannot change it to " + locktype);
-        }
-        this.beanLevelLockType = locktype;
-    }
-
-    /**
-     * Returns the {@link LockType} applicable for the bean.
-     *
-     * @return
-     */
-    public LockType getBeanLevelLockType() {
-        return this.beanLevelLockType;
-    }
-
-    /**
-     * Sets the {@link LockType} for the specific bean method represented by the <code>methodName</code> and <code>methodParamTypes</code>
-     *
-     * @param lockType         The applicable lock type for the method
-     * @param methodName       The name of the method
-     * @param methodParamTypes The method param types
-     */
-    public void setLockType(LockType lockType, String methodName, String... methodParamTypes) {
-        EJBBusinessMethod ejbMethod = new EJBBusinessMethod(methodName, methodParamTypes);
-        this.methodLockTypes.put(ejbMethod, lockType);
-    }
-
-    /**
-     * Returns a (unmodifiable) map of lock types applicable for the bean methods. The returned map will contain the
-     * lock type for a method, <i>only</i> if the lock type has been explicitly specified for the bean method.
-     * <p/>
-     * Returns an empty map if there are no explicit method level lock types specified for the bean
-     *
-     * @return
-     */
-    public Map<EJBBusinessMethod, LockType> getMethodApplicableLockTypes() {
-        return Collections.unmodifiableMap(this.methodLockTypes);
+    @Override
+    public boolean allowsConcurrentAccess() {
+        return true;
     }
 }

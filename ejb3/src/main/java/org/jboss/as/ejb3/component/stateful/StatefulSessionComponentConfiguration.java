@@ -31,7 +31,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
  */
 public class StatefulSessionComponentConfiguration extends SessionBeanComponentConfiguration {
 
-    public StatefulSessionComponentConfiguration(final EJBComponentDescription description) {
+    public StatefulSessionComponentConfiguration(final StatefulComponentDescription description) {
         super(description);
 
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));

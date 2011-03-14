@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
@@ -33,29 +32,28 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 
+import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Processes the {@link javax.ejb.Lock} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),
+ * Processes the {@link javax.ejb.AccessTimeout} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),
  * and its methods and updates the {@link SessionBeanComponentDescription} accordingly.
  * <p/>
- * For optimization, this processor should run after the {@link ConcurrencyManagementAnnotationProcessor} so that {@link LockType} processing
+ * For optimization, this processor should run after the {@link ConcurrencyManagementAnnotationProcessor} so that {@link javax.ejb.AccessTimeout} processing
  * can be skipped for beans with {@link javax.ejb.ConcurrencyManagementType#BEAN bean managed concurrency}.
  *
  * @author Jaikiran Pai
  */
-public class LockAnnotationProcessor extends AbstractAnnotationEJBProcessor<SessionBeanComponentDescription> {
-
-    private static final DotName LOCK_ANNOTATION_DOT_NAME = DotName.createSimple(Lock.class.getName());
+public class AccessTimeoutAnnotationProcessor extends AbstractAnnotationEJBProcessor<SessionBeanComponentDescription> {
 
     /**
      * Logger
      */
-    private static final Logger logger = Logger.getLogger(LockAnnotationProcessor.class);
+    private static final Logger logger = Logger.getLogger(AccessTimeoutAnnotationProcessor.class);
+
+    private static final DotName ACCESS_TIMEOUT_ANNOTATION_DOT_NAME = DotName.createSimple(AccessTimeout.class.getName());
 
     @Override
     protected Class<SessionBeanComponentDescription> getComponentDescriptionType() {
@@ -68,19 +66,19 @@ public class LockAnnotationProcessor extends AbstractAnnotationEJBProcessor<Sess
             return;
         }
         if (componentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
-            // skip @Lock processing for bean managed concurrency.
-            logger.debug("Skipping @Lock processing for bean: " + componentDescription.getEJBName() + " with BEAN managed concurrency management");
+            // skip @AccessTimeout processing for bean managed concurrency.
+            logger.debug("Skipping @AccessTimeout processing for bean: " + componentDescription.getEJBName() + " with BEAN managed concurrency management");
             return;
         }
-        this.processLockAnnotations(beanClass, compositeIndex, componentDescription);
+        this.processAccessTimeoutAnnotations(beanClass, compositeIndex, componentDescription);
     }
 
-    private void processLockAnnotations(ClassInfo beanClass, CompositeIndex compositeIndex, SessionBeanComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    private void processAccessTimeoutAnnotations(ClassInfo beanClass, CompositeIndex compositeIndex, SessionBeanComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final DotName superName = beanClass.superName();
         if (superName != null) {
             ClassInfo superClass = compositeIndex.getClassByName(superName);
             if (superClass != null)
-                processLockAnnotations(superClass, compositeIndex, componentDescription);
+                processAccessTimeoutAnnotations(superClass, compositeIndex, componentDescription);
         }
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = beanClass.annotations();
@@ -88,25 +86,25 @@ public class LockAnnotationProcessor extends AbstractAnnotationEJBProcessor<Sess
             return;
         }
 
-        List<AnnotationInstance> annotations = classAnnotations.get(LOCK_ANNOTATION_DOT_NAME);
+        List<AnnotationInstance> annotations = classAnnotations.get(ACCESS_TIMEOUT_ANNOTATION_DOT_NAME);
         if (annotations == null) {
             return;
         }
 
         for (AnnotationInstance annotationInstance : annotations) {
             AnnotationTarget target = annotationInstance.target();
-            LockType lockType = LockType.valueOf(annotationInstance.value().asEnum());
+            AccessTimeout accessTimeout = (AccessTimeout) annotationInstance.value().value();
             if (target instanceof ClassInfo) {
                 // bean level
-                componentDescription.setBeanLevelLockType(lockType);
-                logger.debug("Bean " + componentDescription.getEJBName() + " marked for lock type " + lockType);
+                componentDescription.setBeanLevelAccessTimeout(accessTimeout);
+                logger.debug("Bean " + componentDescription.getEJBName() + " marked for access timeout: " + accessTimeout);
             } else if (target instanceof MethodInfo) {
-                // method specific lock type
+                // method specific access timeout
                 final MethodInfo method = (MethodInfo) target;
                 String methodName = method.name();
                 String[] methodParams = toString(method.args());
-                componentDescription.setLockType(lockType, methodName, methodParams);
-                logger.debug("Method " + method.name() + methodParams + " on bean " + componentDescription.getEJBName() + " marked for lock type " + lockType);
+                componentDescription.setAccessTimeout(accessTimeout, methodName, methodParams);
+                logger.debug("Method " + method.name() + methodParams + " on bean " + componentDescription.getEJBName() + " marked for access timeout: " + accessTimeout);
             }
         }
     }

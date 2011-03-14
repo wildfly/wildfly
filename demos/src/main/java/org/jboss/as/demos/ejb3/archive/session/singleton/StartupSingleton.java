@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.archive;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+package org.jboss.as.demos.ejb3.archive.session.singleton;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.LocalBean;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import java.util.List;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Jaikiran Pai
  */
-public class SimpleInterceptor {
-    @AroundInvoke
-    public Object aroundInvoke(InvocationContext ctx) throws Exception {
-        return getClass().getSimpleName() + "#" + ctx.proceed();
+@Startup
+@Singleton
+@LocalBean
+public class StartupSingleton {
+
+    private List<String> invocationLog;
+
+    @Resource(lookup = "java:module/ModuleName")
+    private String moduleName;
+
+    @EJB
+    private CallTrackerSingletonBean callTrackerSingletonBean;
+
+    public static final String STARTUP_SINGLETON_POST_CONSTRUCT = "StartupSingleton_PostConstruct";
+
+    @PostConstruct
+    public void postConstruct() throws Exception {
+        this.callTrackerSingletonBean.addToInvocationLog(STARTUP_SINGLETON_POST_CONSTRUCT);
     }
+
 }

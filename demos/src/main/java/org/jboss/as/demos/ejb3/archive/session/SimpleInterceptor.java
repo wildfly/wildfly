@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.demos.ejb3.archive.session;
 
-package org.jboss.as.demos.ejb3.archive;
-
-import javax.ejb.Stateless;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
 /**
- * @author John Bailey
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@Stateless
-public class OtherStatelessSessionBean implements OtherStatelessSessionLocal {
-    public String getName() {
-        return "Other";
+public class SimpleInterceptor {
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext ctx) throws Exception {
+        return getClass().getSimpleName() + "#" + ctx.proceed();
     }
 }

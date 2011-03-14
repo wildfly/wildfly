@@ -26,9 +26,9 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.demos.ejb3.archive.SimpleInterceptor;
-import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
-import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
+import org.jboss.as.demos.ejb3.archive.session.SimpleInterceptor;
+import org.jboss.as.demos.ejb3.archive.session.stateless.SimpleStatelessSessionBean;
+import org.jboss.as.demos.ejb3.archive.session.stateless.SimpleStatelessSessionLocal;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -53,6 +53,7 @@ public class StatelessBeanTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-slsb-example.jar");
         jar.addManifestResource("archives/ejb3-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
         jar.addPackage(SimpleStatelessSessionBean.class.getPackage());
+        jar.addClass(SimpleInterceptor.class);
         return jar;
     }
 

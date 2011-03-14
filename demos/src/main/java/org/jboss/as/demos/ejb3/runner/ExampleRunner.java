@@ -22,9 +22,9 @@
 package org.jboss.as.demos.ejb3.runner;
 
 import org.jboss.as.demos.DeploymentUtils;
-import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
-import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
-import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
+import org.jboss.as.demos.ejb3.archive.session.singleton.SimpleSingletonLocal;
+import org.jboss.as.demos.ejb3.archive.session.stateless.SimpleStatelessSessionBean;
+import org.jboss.as.demos.ejb3.archive.session.stateless.SimpleStatelessSessionLocal;
 import org.jboss.as.demos.ejb3.mbean.ExerciseStateful;
 import org.jboss.as.demos.ejb3.mbean.Test;
 

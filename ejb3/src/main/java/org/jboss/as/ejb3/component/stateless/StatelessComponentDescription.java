@@ -47,4 +47,9 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     protected AbstractComponentConfiguration constructComponentConfiguration() {
         return new StatelessSessionComponentConfiguration(this);
     }
+
+    @Override
+    public boolean allowsConcurrentAccess() {
+        return false;
+    }
 }
