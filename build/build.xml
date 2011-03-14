@@ -328,8 +328,8 @@
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>
 
-        <module-def name="org.apache.ws.commons.xmlschema">
-            <maven-resource group="org.apache.ws.commons.schema" artifact="XmlSchema"/>
+    	<module-def name="org.apache.santuario.xmlsec">
+            <maven-resource group="org.apache.santuario" artifact="xmlsec"/>
         </module-def>
 
         <module-def name="org.apache.xalan">
@@ -339,6 +339,14 @@
 
         <module-def name="org.apache.xerces">
             <maven-resource group="xerces" artifact="xercesImpl"/>
+        </module-def>
+
+    	<module-def name="org.apache.ws.commons.xmlschema">
+            <maven-resource group="org.apache.ws.commons.schema" artifact="XmlSchema"/>
+        </module-def>
+
+    	<module-def name="org.apache.ws.security">
+            <maven-resource group="org.apache.ws.security" artifact="wss4j"/>
         </module-def>
 
         <module-def name="org.hibernate">

@@ -22,34 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.ws.jaxws-client">
+<module xmlns="urn:jboss:module:1.0" name="org.apache.santuario.xmlsec">
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="javax.api" />
-        <module name="javax.xml.bind.api" />
-        <module name="com.sun.xml.bind" services="import"/>
-        <module name="javax.xml.ws.api" />
-        <module name="org.jboss.ws.api" />
-        <module name="org.jboss.ws.spi" />
-        <module name="org.jboss.ws.common" />
-        <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="import"/>
-        <module name="org.apache.cxf" services="import">
-          <imports>
-            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
-            <include path="META-INF/"/>
-          </imports>
-        </module>
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" services="import">
-          <imports>
-            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
-            <include path="META-INF/"/>
-          </imports>
-        </module>
-        <module name="org.apache.neethi" />
-        <module name="org.jboss.logging" />
+      <module name="javax.api" />
+      <module name="org.apache.commons.logging" />
+      <module name="org.apache.xalan" />
     </dependencies>
 </module>

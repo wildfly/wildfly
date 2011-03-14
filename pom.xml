@@ -84,7 +84,7 @@
         <version.net.sourceforge.nekohtml.nekohtml>1.9.14</version.net.sourceforge.nekohtml.nekohtml>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
         <version.org.apache.ant>1.7.1</version.org.apache.ant>
-        <version.org.apache.cxf>2.3.1</version.org.apache.cxf>
+        <version.org.apache.cxf>2.3.3-patch-01</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.3.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
@@ -93,7 +93,9 @@
         <version.org.apache.neethi>2.0.4</version.org.apache.neethi>
         <version.org.apache.xalan>2.7.1-1.jbossorg</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
+        <version.org.apache.santuario.xmlsec>1.4.3</version.org.apache.santuario.xmlsec>
         <version.org.apache.ws.commons.xmlschema>1.4.5</version.org.apache.ws.commons.xmlschema>
+        <version.org.apache.ws.security>1.5.11</version.org.apache.ws.security>
         <version.org.hibernate>3.6.1.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>3.2.0.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
@@ -2090,9 +2092,37 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.santuario</groupId>
+                <artifactId>xmlsec</artifactId>
+                <version>${version.org.apache.santuario.xmlsec}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.ws.commons.schema</groupId>
                 <artifactId>XmlSchema</artifactId>
                 <version>${version.org.apache.ws.commons.xmlschema}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.ws.security</groupId>
+                <artifactId>wss4j</artifactId>
+                <version>${version.org.apache.ws.security}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

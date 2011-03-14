@@ -54,7 +54,7 @@ import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(WSDependenciesProcessor.class);
-    private static final ModuleIdentifier ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.integration");
+    public static final ModuleIdentifier ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.integration");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -63,17 +63,15 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
         }
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        ModuleDependency asilDependency = new ModuleDependency(moduleLoader, ASIL, false, true, true);
-        ModuleDependency hackyDependency = applyCXFExtensionImportFilters(asilDependency); // TODO: remove hack
-        moduleSpecification.addDependency(hackyDependency); // TODO: use asilDependency instead
+        moduleSpec.addDependency(applyCXFExtensionImportFilters(new ModuleDependency(moduleLoader, ASIL, false, true, true)));
     }
 
     private static ModuleDependency applyCXFExtensionImportFilters(final ModuleDependency dep) {
         // TODO: investigate how to do it via module.xml
         dep.addImportFilter(PathFilters.match("META-INF/cxf"), true);
-        dep.addImportFilter(PathFilters.match("META-INF/spring.*"), true);
+        dep.addImportFilter(PathFilters.match("META-INF"), true);
         return dep;
     }
 
