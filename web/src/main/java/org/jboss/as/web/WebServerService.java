@@ -63,10 +63,12 @@ class WebServerService implements WebServer, Service<WebServer> {
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
-        // Set the MBeanServer
-        final MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
-        if(mbeanServer != null) {
-            getRegistry().setMBeanServer(mbeanServer);
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            // Set the MBeanServer
+            final MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
+            if(mbeanServer != null) {
+                getRegistry().setMBeanServer(mbeanServer);
+            }
         }
 
         final Catalina catalina = new Catalina();
