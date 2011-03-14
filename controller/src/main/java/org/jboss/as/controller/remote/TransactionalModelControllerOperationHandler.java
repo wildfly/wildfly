@@ -39,6 +39,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.TransactionalModelController;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.StreamUtils;
@@ -90,7 +91,8 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
             case TRANSACTION_ROLLBACK_REQUEST:
                 return new RollbackTransactionOperation();
             default:
-                return super.operationFor(commandByte);
+                ManagementResponse rsp = super.operationFor(commandByte);
+                return rsp;
         }
     }
 
@@ -159,7 +161,8 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
             ControllerTransactionContext tx = getTransaction();
-            ModelNode result = transactionalModelController.execute(builder.build(), tx);
+            Operation operation = builder.build();
+            ModelNode result = transactionalModelController.execute(operation, tx);
             outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
             result.writeExternal(outputStream);
         }
@@ -182,7 +185,8 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
             final AtomicInteger status = new AtomicInteger(0);
 
             ControllerTransactionContext tx = getTransaction();
-            OperationResult result = transactionalModelController.execute(builder.build(), new ResultHandler() {
+            Operation operation = builder.build();
+            OperationResult result = transactionalModelController.execute(operation, new ResultHandler() {
                 @Override
                 public void handleResultFragment(String[] location, ModelNode fragment) {
                     try {
@@ -298,6 +302,10 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
 
         private ModelNode  txId;
 
+        CommitTransactionOperation() {
+            super(getInitiatingHandler());
+        }
+
         @Override
         protected final byte getResponseCode() {
             return TRANSACTION_COMMIT_RESPONSE;
@@ -322,6 +330,10 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
     private class RollbackTransactionOperation extends ManagementResponse {
 
         private ModelNode  txId;
+
+        RollbackTransactionOperation() {
+            super(getInitiatingHandler());
+        }
 
         @Override
         protected final byte getResponseCode() {
