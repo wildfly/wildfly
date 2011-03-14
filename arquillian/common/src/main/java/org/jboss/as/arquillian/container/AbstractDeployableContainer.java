@@ -16,19 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
-
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
@@ -49,6 +36,18 @@ import org.jboss.msc.service.management.ServiceContainerMXBean;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 /**
  * A JBossAS server connector
@@ -95,8 +94,7 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
             builder = builder.add(archive.getName(), input).andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction deployAction = builder.getLastAction();
-            String runtimeName = executeDeploymentPlan(plan, deployAction);
-            registry.put(archive, runtimeName);
+            executeDeploymentPlan(plan, deployAction,archive);
 
             return getContainerMethodExecutor(context);
         } catch (Exception e) {
@@ -175,8 +173,9 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     protected abstract ContainerMethodExecutor getContainerMethodExecutor();
 
 
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
+    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction, Archive<?> archive) throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
+        registry.put(archive, deployAction.getDeploymentUnitUniqueName());
         ServerDeploymentPlanResult planResult = future.get();
 
         ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(deployAction.getId());
