@@ -23,18 +23,18 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ControllerTransactionContext;
-import org.jboss.as.controller.TransactionalModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link TransactionalModelController} that manages a given host's {@link DomainController}'s
+ * {@link ModelController} that manages a given host's {@link DomainController}'s
  * copy of the domain-wide management model, it's own host-wide model and its
  * proxy connections to the host's servers.
  *
  * @author Emanuel Muckenhuber
  */
-public interface DomainModel extends TransactionalModelController {
+public interface DomainModel extends ModelController {
 
     /**
      * Execute the given operation against the local domain-wide and host-wide management

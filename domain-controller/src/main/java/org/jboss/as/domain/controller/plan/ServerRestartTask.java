@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.DomainControllerSlaveClient;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
@@ -40,16 +39,16 @@ import org.jboss.dmr.ModelNode;
  */
 class ServerRestartTask extends AbstractServerUpdateTask {
 
-    private final DomainControllerSlaveClient domainController;
+    private final ServerOperationExecutor serverOperationExecutor;
     private final long gracefulTimeout;
 
-    ServerRestartTask(final DomainControllerSlaveClient domainController,
+    ServerRestartTask(final ServerOperationExecutor serverOperationExecutor,
             final ServerIdentity serverId,
             final ServerUpdatePolicy updatePolicy,
             final ServerUpdateResultHandler resultHandler,
             final long gracefulTimeout) {
         super(serverId, updatePolicy, resultHandler);
-        this.domainController = domainController;
+        this.serverOperationExecutor = serverOperationExecutor;
         this.gracefulTimeout = gracefulTimeout;
     }
 
@@ -57,7 +56,7 @@ class ServerRestartTask extends AbstractServerUpdateTask {
     protected void processUpdates() {
 
         ModelNode restartOp = getRestartOp();
-        ModelNode rsp = domainController.execute(OperationBuilder.Factory.create(restartOp).build());
+        ModelNode rsp = serverOperationExecutor.executeServerOperation(serverId, OperationBuilder.Factory.create(restartOp).build());
         // FIXME what if it's a rollback case?
         updatePolicy.recordServerResult(serverId, rsp);
 

@@ -38,14 +38,13 @@ import java.util.concurrent.Executors;
 import javax.net.SocketFactory;
 
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
-import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
@@ -82,8 +81,11 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     private final RemoteFileRepository remoteFileRepository;
 
     private volatile Connection connection;
-    private volatile ProxyController client;
+    /** Used to invoke ModelController ops on the master */
+    private volatile ModelController masterProxy;
+    /** Handler for non-transactional operations */
     private volatile ModelControllerOperationHandler operationHandler;
+    /** Handler for transactional operations */
     private volatile TransactionalModelControllerOperationHandler txOperationHandler;
 
     RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
@@ -108,7 +110,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         try {
             connection = protocolClient.connect();
-            client = RemoteProxyController.create(connection, PathAddress.EMPTY_ADDRESS);
+            masterProxy = new ModelControllerClientToModelControllerAdapter(connection);
             operationHandler = ModelControllerOperationHandler.Factory.create(slave, initialMessageHandler);
             txOperationHandler = new TransactionalModelControllerOperationHandler(slave, initialMessageHandler);
         } catch (IOException e) {
@@ -143,12 +145,12 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
     @Override
     public OperationResult execute(Operation operation, ResultHandler handler) {
-        return client.execute(operation, handler);
+        return masterProxy.execute(operation, handler);
     }
 
     @Override
     public ModelNode execute(Operation operation) throws CancellationException {
-        return client.execute(operation);
+        return masterProxy.execute(operation);
     }
 
     /** {@inheritDoc} */

@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.domain.controller.DomainControllerSlaveClient;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -43,7 +42,7 @@ class RunningServerUpdateTask extends AbstractServerUpdateTask {
 
     private static final Logger logger = Logger.getLogger("org.jboss.as.domain.controller");
 
-    private final DomainControllerSlaveClient controllerClient;
+    private final ServerOperationExecutor serverOperationExecutor;
     private final ModelNode serverUpdate;
 
     /**
@@ -55,23 +54,23 @@ class RunningServerUpdateTask extends AbstractServerUpdateTask {
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
      * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
-    RunningServerUpdateTask(final DomainControllerSlaveClient domainController,
+    RunningServerUpdateTask(final ServerOperationExecutor serverOperationExecutor,
             final ServerIdentity serverId,
             final ModelNode serverUpdate,
             final ServerUpdatePolicy updatePolicy,
             final ServerUpdateResultHandler resultHandler) {
         super(serverId, updatePolicy, resultHandler);
-        this.controllerClient = domainController;
+        this.serverOperationExecutor = serverOperationExecutor;
         this.serverUpdate = serverUpdate;
     }
 
     @Override
     protected void processUpdates() {
 
-        logger.debugf("Applying operation to  %s", serverId);
+        logger.tracef("Applying operation to  %s", serverId);
         ModelNode op = getServerOp();
         ModelNode rsp =
-            controllerClient.execute(OperationBuilder.Factory.create(op).build());
+            serverOperationExecutor.executeServerOperation(serverId, OperationBuilder.Factory.create(op).build());
         updatePolicy.recordServerResult(serverId, rsp);
 
         resultHandler.handleServerUpdateResult(serverId, rsp);

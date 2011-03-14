@@ -83,6 +83,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
+import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -113,12 +114,17 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     }
 
     private final Map<String, DomainControllerSlaveClient> hosts = new ConcurrentHashMap<String, DomainControllerSlaveClient>();
-    private final Map<String, DomainControllerSlaveClient> immutableHosts = Collections.unmodifiableMap(hosts);
     private final String localHostName;
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
     private final FileRepository fileRepository;
     private final MasterDomainControllerClient masterDomainControllerClient;
+    private final ServerOperationExecutor serverOperationExecutor = new ServerOperationExecutor() {
+        @Override
+        public ModelNode executeServerOperation(ServerIdentity server, Operation operation) {
+            return executeOnHost(server.getHostName(), operation, (ControllerTransactionContext) null);
+        }
+    };
 
     public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository) {
         this.scheduledExecutorService = scheduledExecutorService;
@@ -212,8 +218,8 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         // See who handles this op
         OperationRouting routing = determineRouting(operation);
-        if (!routing.isLocalOnly() && masterDomainControllerClient != null) {
-            //System.out.println("------ route to master ");
+        if ((routing.isRouteToMaster() || !routing.isLocalOnly()) && masterDomainControllerClient != null) {
+//            System.out.println("------ route to master ");
             // Per discussion on 2011/03/07, routing requests from a slave to the
             // master may overly complicate the security infrastructure. Therefore,
             // the ability to do this is being disabled until it's clear that it's
@@ -229,8 +235,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             // either of which a single host client can handle directly
             String host = routing.getSingleHost();
 //            System.out.println("------ route to host " + host);
-            DomainControllerSlaveClient hostClient = hosts.get(host);
-            return hostClient.execute(operationContext, handler);
+            return executeOnHost(host, operationContext, handler);
         }
 
 //        System.out.println("---- Push to hosts");
@@ -243,11 +248,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
         Map<String, ModelNode> hostResults = pushToHosts(operationContext, routing, transaction);
-        System.out.println("---- Pushed to hosts");
+//        System.out.println("---- Pushed to hosts");
         ModelNode masterFailureResult = null;
         ModelNode hostFailureResults = null;
         ModelNode masterResult = hostResults.get(localHostName);
-        System.out.println("-----Checking host results");
+//        System.out.println("-----Checking host results");
         if (masterResult != null && masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
             transaction.setRollbackOnly();
             masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
@@ -303,15 +308,17 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                 transaction.commit();
             }
 
-            ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
+//            System.out.println(rolloutPlan);
 
+            ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
+//            System.out.println(compensatingOperation);
             if(opsByGroup.size() == 0) {
                 handler.handleResultComplete();
                 return new BasicOperationResult(compensatingOperation);
             }
 
             // Push to servers (via hosts)
-            RolloutPlanController controller = new RolloutPlanController(opsByGroup, rolloutPlan, handler, immutableHosts, scheduledExecutorService, false);
+            RolloutPlanController controller = new RolloutPlanController(opsByGroup, rolloutPlan, handler, serverOperationExecutor, scheduledExecutorService, false);
             RolloutPlanController.Result controllerResult = controller.execute();
 
             // Rollback if necessary
@@ -489,15 +496,14 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
     private void pushToHost(final Operation operation, final ControllerTransaction transaction, final String host,
             final Map<String, Future<ModelNode>> futures) {
-        final DomainControllerSlaveClient client = hosts.get(host);
-        if (client != null) {
+        if (hosts.containsKey(host)) {
             final Callable<ModelNode> callable = new Callable<ModelNode>() {
 
                 @Override
                 public ModelNode call() throws Exception {
                     try {
                         //System.out.println("------ pushing to host " + host);
-                        ModelNode node = client.execute(operation, transaction);
+                        ModelNode node = executeOnHost(host, operation, transaction);
                         //System.out.println("---- host result " + node);
                         return node;
                     } finally {
@@ -686,6 +692,40 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return COMPOSITE.equals(operation.require(OP).asString());
     }
 
+    private ModelNode executeOnHost(String hostName, Operation operation, ControllerTransactionContext tx) {
+        DomainControllerSlaveClient client = hosts.get(hostName);
+        if (client == null) {
+            // TODO deal with host disappearance
+            return null;
+        }
+        else if (hostName.equals(localHostName)) {
+            return tx == null ? client.execute(operation) : client.execute(operation, tx);
+        }
+        else {
+            // Prevent concurrent use of the client connection until we move to remoting
+            synchronized (client) {
+                return tx == null ? client.execute(operation) : client.execute(operation, tx);
+            }
+        }
+    }
+
+    private OperationResult executeOnHost(String hostName, Operation operation, ResultHandler handler) {
+        DomainControllerSlaveClient client = hosts.get(hostName);
+        if (client == null) {
+            // TODO deal with host disappearance
+            return null;
+        }
+        else if (hostName.equals(localHostName)) {
+            return client.execute(operation, handler);
+        }
+        else {
+            // Prevent concurrent use of the client connection until we move to remoting
+            synchronized (client) {
+                return client.execute(operation, handler);
+            }
+        }
+    }
+
     private class OperationRouting {
 
         private final Set<String> hosts = new HashSet<String>();
@@ -707,7 +747,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         private OperationRouting(String host, boolean twoStep) {
             this.hosts.add(host);
             this.twoStep = twoStep;
-            routeToMaster = true;
+            routeToMaster = false;
         }
 
         /**
@@ -718,7 +758,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         private OperationRouting(final Collection<String> hosts) {
             this.hosts.addAll(hosts);
             this.twoStep = true;
-            routeToMaster = true;
+            routeToMaster = false;
         }
 
         private Set<String> getHosts() {

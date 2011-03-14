@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.domain.controller.DomainControllerSlaveClient;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.AbstractServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
@@ -58,18 +57,18 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
     private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
-    private final Map<String, DomainControllerSlaveClient> hostControllerClients;
+    private final ServerOperationExecutor serverOperationExecutor;
     private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
     private final boolean forRollback;
 
     public RolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
             final ModelNode rolloutPlan, final ResultHandler resultHandler,
-            final Map<String, DomainControllerSlaveClient> hostControllerClients, final ExecutorService executor, boolean forRollback) {
+            final ServerOperationExecutor serverOperationExecutor, final ExecutorService executor, boolean forRollback) {
 
         this.executor = executor;
         this.rolloutPlan = rolloutPlan;
         this.resultHandler = resultHandler;
-        this.hostControllerClients = hostControllerClients;
+        this.serverOperationExecutor = serverOperationExecutor;
         this.forRollback = forRollback;
 
         this.rollbackAcrossGroups = !rolloutPlan.hasDefined(ROLLBACK_ACROSS_GROUPS) || rolloutPlan.get(ROLLBACK_ACROSS_GROUPS).asBoolean();
@@ -184,19 +183,11 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
 
     private Runnable createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
         Runnable result;
-        DomainControllerSlaveClient client = hostControllerClients.get(serverIdentity.getHostName());
-        if (client == null) {
-            // TODO host disappeared
-            result = new Runnable() {
-                @Override
-                public void run() {}
-            };
-        }
-        else if (shutdown) {
-            result = new ServerRestartTask(client, serverIdentity, policy, this, gracefulShutdownPeriod);
+        if (shutdown) {
+            result = new ServerRestartTask(serverOperationExecutor, serverIdentity, policy, this, gracefulShutdownPeriod);
         }
         else {
-            result = new RunningServerUpdateTask(client, serverIdentity, serverOp, policy, this);
+            result = new RunningServerUpdateTask(serverOperationExecutor, serverIdentity, serverOp, policy, this);
         }
         return result;
     }
@@ -247,7 +238,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
             }
         }
 
-        return new RolloutPlanController(rollbackOpsByGroup, rollbackRolloutPlan, this.resultHandler, this.hostControllerClients, this.executor, true);
+        return new RolloutPlanController(rollbackOpsByGroup, rollbackRolloutPlan, this.resultHandler, this.serverOperationExecutor, this.executor, true);
     }
 
     private boolean needsRollback(ModelNode serverResult) {
