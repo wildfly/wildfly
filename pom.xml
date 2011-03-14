@@ -175,7 +175,6 @@
         <module>demos</module>
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
-        <module>domain-client</module>
         <module>domain-controller</module>
         <module>domain-http-api</module>
         <module>ee</module>

@@ -388,10 +388,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-api"/>
         </module-def>
 
-        <module-def name="org.jboss.as.domain-client">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-client"/>
-        </module-def>
-
         <module-def name="org.jboss.as.domain-controller">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
         </module-def>

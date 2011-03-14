@@ -19,23 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.controller.plan;
 
-import java.util.Comparator;
+package org.jboss.as.controller.client.helpers.domain;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+/**
+ * Status of server.
+ *
+ * @author Brian Stansberry
+ */
+public enum ServerStatus {
 
-/** Used to order ServerIdentity instances based on host name */
-class ServerIdentityComparator implements Comparator<ServerIdentity> {
-
-    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
-
-    @Override
-    public int compare(ServerIdentity o1, ServerIdentity o2) {
-        int val = o1.getHostName().compareTo(o2.getHostName());
-        if (val == 0) {
-            val = o1.getServerName().compareTo(o2.getServerName());
-        }
-        return val;
-    }
+    /** The server is disabled; i.e. configured not to start automatically */
+    DISABLED,
+    /** The server is starting */
+    STARTING,
+    /** The server is started */
+    STARTED,
+    /** The server is stopping */
+    STOPPING,
+    /** The server is stopped */
+    STOPPED,
+    /** The server failed to start */
+    FAILED,
+    /**
+     * The status of the server is currently unknown. This is the status of
+     * any server whose host controller is currently unreachable.
+     */
+    UNKNOWN,
+    /** Status indicating the host controller does not recognize the server name */
+    DOES_NOT_EXIST
 }

@@ -19,23 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.controller.plan;
 
-import java.util.Comparator;
+package org.jboss.as.controller.client.helpers.domain.impl;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
+import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilder;
 
-/** Used to order ServerIdentity instances based on host name */
-class ServerIdentityComparator implements Comparator<ServerIdentity> {
 
-    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
+/**
+ * Factory for an {@link InitialDeploymentPlanBuilder}. Core purpose is to hide
+ * the builder implementation classes from client yet provide a hook for external
+ * {@link DomainDeploymentManager} implementations to create builders.
+ *
+ * @author Brian Stansberry
+ */
+public class InitialDeploymentPlanBuilderFactory {
 
-    @Override
-    public int compare(ServerIdentity o1, ServerIdentity o2) {
-        int val = o1.getHostName().compareTo(o2.getHostName());
-        if (val == 0) {
-            val = o1.getServerName().compareTo(o2.getServerName());
-        }
-        return val;
+    /** Prevent instantiation */
+    private InitialDeploymentPlanBuilderFactory() {}
+
+    public static InitialDeploymentPlanBuilder newInitialDeploymentPlanBuilder(DeploymentContentDistributor contentDistributor) {
+        return new InitialDeploymentPlanBuilderImpl(contentDistributor);
     }
 }

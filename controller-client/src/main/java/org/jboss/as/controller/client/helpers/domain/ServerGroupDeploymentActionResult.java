@@ -19,23 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.controller.plan;
 
-import java.util.Comparator;
+package org.jboss.as.controller.client.helpers.domain;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import java.util.Map;
 
-/** Used to order ServerIdentity instances based on host name */
-class ServerIdentityComparator implements Comparator<ServerIdentity> {
 
-    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
+/**
+ * Encapsulates the results of particular {@link DeploymentAction} across
+ * the servers in a particular server group.
+ *
+ * @author Brian Stansberry
+ */
+public interface ServerGroupDeploymentActionResult {
 
-    @Override
-    public int compare(ServerIdentity o1, ServerIdentity o2) {
-        int val = o1.getHostName().compareTo(o2.getHostName());
-        if (val == 0) {
-            val = o1.getServerName().compareTo(o2.getServerName());
-        }
-        return val;
-    }
+    /**
+     * Gets the name of the server group.
+     *
+     * @return the name. Will not be <code>null</code>
+     */
+    String getServerGroupName();
+
+    /**
+     * Gets the results of the action for each server within the server group.
+     *
+     * @return map of server results, keyed by server name. Will not be <code>null</code>
+     */
+    Map<String, ServerUpdateResult<Void>> getResultByServer();
 }
+

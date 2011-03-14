@@ -62,10 +62,10 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.domain.client.api.DomainClient;
-import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.domain.client.api.ServerStatus;
-import org.jboss.as.domain.client.api.deployment.DeploymentPlanResult;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;

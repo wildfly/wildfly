@@ -47,7 +47,7 @@ import javax.management.remote.JMXServiceURL;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.domain.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;

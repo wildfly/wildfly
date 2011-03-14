@@ -19,23 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.controller.plan;
 
-import java.util.Comparator;
+package org.jboss.as.controller.client.helpers.domain;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+/**
+ * Exception indicating a given {@link DeploymentPlan} is invalid since it
+ * could leave the domain in an invalid state.
+ *
+ * @author Brian Stansberry
+ */
+public class InvalidDeploymentPlanException extends Exception {
 
-/** Used to order ServerIdentity instances based on host name */
-class ServerIdentityComparator implements Comparator<ServerIdentity> {
+    private static final long serialVersionUID = 6442943555765667251L;
 
-    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
-
-    @Override
-    public int compare(ServerIdentity o1, ServerIdentity o2) {
-        int val = o1.getHostName().compareTo(o2.getHostName());
-        if (val == 0) {
-            val = o1.getServerName().compareTo(o2.getServerName());
-        }
-        return val;
+    /**
+     * Constructs a new InvalidDeploymentPlanException with the given message.
+     *
+     * @param message the message
+     */
+    public InvalidDeploymentPlanException(String message) {
+        super(message);
     }
+
+    /**
+     * Constructs a new InvalidDeploymentPlanException with the given message and cause.
+     *
+     * @param message the message
+     * @param cause the cause
+     */
+    public InvalidDeploymentPlanException(String message, Exception cause) {
+        super(message, cause);
+    }
+
 }

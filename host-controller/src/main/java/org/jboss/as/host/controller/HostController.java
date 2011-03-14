@@ -23,7 +23,7 @@
 package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.TransactionalModelController;
-import org.jboss.as.domain.client.api.ServerStatus;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.protocol.Connection;
 import org.jboss.msc.service.ServiceName;

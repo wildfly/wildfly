@@ -19,23 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.controller.plan;
 
-import java.util.Comparator;
+package org.jboss.as.controller.client.helpers.domain.impl;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import java.io.InputStream;
+import java.io.IOException;
 
-/** Used to order ServerIdentity instances based on host name */
-class ServerIdentityComparator implements Comparator<ServerIdentity> {
+import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 
-    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
 
-    @Override
-    public int compare(ServerIdentity o1, ServerIdentity o2) {
-        int val = o1.getHostName().compareTo(o2.getHostName());
-        if (val == 0) {
-            val = o1.getServerName().compareTo(o2.getServerName());
-        }
-        return val;
-    }
+/**
+ * Object capable of distributing distributing new deployment content from a
+ * client to a DomainController.
+ *
+ * @author Brian Stansberry
+ */
+public interface DeploymentContentDistributor {
+
+    byte[] distributeDeploymentContent(String uniqueName, String runtimeName, InputStream stream) throws IOException, DuplicateDeploymentNameException;
+
+    byte[] distributeReplacementDeploymentContent(String uniqueName, String runtimeName, InputStream stream) throws IOException;
 }

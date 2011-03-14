@@ -19,23 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.controller.plan;
 
-import java.util.Comparator;
+package org.jboss.as.controller.client.helpers.domain;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 
-/** Used to order ServerIdentity instances based on host name */
-class ServerIdentityComparator implements Comparator<ServerIdentity> {
+/**
+ * Variant of a {@link DeploymentPlanBuilder} that is meant
+ * to be used at the initial stages of the building process, when directives that
+ * pertain to the entire plan can be applied.
+ *
+ * @author Brian Stansberry
+ */
+public interface InitialDeploymentPlanBuilder extends InitialDeploymentSetBuilder {
 
-    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
+    /**
+     * Indicates all <code>deploy</code>, <code>undeploy</code>, <code>replace</code>
+     * or <code>remove</code> operations associated with the deployment plan
+     * should be rolled back in case of a failure in any of them.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    InitialDeploymentSetBuilder withGlobalRollback();
 
-    @Override
-    public int compare(ServerIdentity o1, ServerIdentity o2) {
-        int val = o1.getHostName().compareTo(o2.getHostName());
-        if (val == 0) {
-            val = o1.getServerName().compareTo(o2.getServerName());
-        }
-        return val;
-    }
 }

@@ -19,23 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.controller.plan;
 
-import java.util.Comparator;
+package org.jboss.as.controller.client.helpers.domain;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+/**
+ * Exception indicating an attempt to add deployment content to a domain or
+ * server that has the same name as existing content.
+ *
+ * @author Brian Stansberry
+ */
+public class DuplicateDeploymentNameException extends Exception {
 
-/** Used to order ServerIdentity instances based on host name */
-class ServerIdentityComparator implements Comparator<ServerIdentity> {
+    private static final long serialVersionUID = -7207529184499737454L;
 
-    static final ServerIdentityComparator INSTANCE = new ServerIdentityComparator();
-
-    @Override
-    public int compare(ServerIdentity o1, ServerIdentity o2) {
-        int val = o1.getHostName().compareTo(o2.getHostName());
-        if (val == 0) {
-            val = o1.getServerName().compareTo(o2.getServerName());
-        }
-        return val;
+    private final String name;
+    /**
+     * @param message
+     */
+    public DuplicateDeploymentNameException(String name, boolean fullDomain) {
+        super("Deployment with name " + name + " already present in the " + (fullDomain ? "domain" : "server"));
+        this.name = name;
     }
+
+    public String getDeploymentName() {
+        return name;
+    }
+
 }

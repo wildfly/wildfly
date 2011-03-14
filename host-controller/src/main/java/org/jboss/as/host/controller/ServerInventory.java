@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.domain.client.api.ServerStatus;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.Connection;

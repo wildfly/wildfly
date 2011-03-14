@@ -30,7 +30,6 @@
 
     <dependencies>
         <module name="org.jboss.as.connector" />
-        <module name="org.jboss.as.domain-client" />
         <module name="org.jboss.as.jmx" />
         <module name="org.jboss.as.logging" />
         <module name="org.jboss.as.managed-beans" />
