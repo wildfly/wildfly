@@ -22,8 +22,6 @@
 
 package org.jboss.as.managedbean;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -35,10 +33,12 @@ import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -67,19 +67,13 @@ public class ManagedBeansExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:managedbeans:1.0";
 
     private static final ManagedBeanSubsystemElementParser parser = new ManagedBeanSubsystemElementParser();
-    private static final DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
 
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
-        nodeRegistration.registerOperationHandler(ADD, ManagedBeansSubsystemAdd.INSTANCE, DESCRIPTION, false);
+        final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(ManagedBeansSubsystemProviders.SUBSYSTEM);
+        nodeRegistration.registerOperationHandler(ADD, ManagedBeansSubsystemAdd.INSTANCE, ManagedBeansSubsystemProviders.SUBSYSTEM_ADD, false);
         nodeRegistration.registerOperationHandler(DESCRIBE, ManagedBeansDescribeHandler.INSTANCE, ManagedBeansDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerXMLElementWriter(parser);
 

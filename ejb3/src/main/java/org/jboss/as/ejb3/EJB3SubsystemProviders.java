@@ -22,31 +22,58 @@
 
 package org.jboss.as.ejb3;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.naming.service.NamingExtension;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
 class EJB3SubsystemProviders {
+    static final String RESOURCE_NAME = EJB3SubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
+    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
-    public static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
 
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(DESCRIPTION).set(bundle.getString("ejb3"));
+            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
+            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
+            subsystem.get(NAMESPACE).set(NamingExtension.NAMESPACE);
+
+            return subsystem;
         }
     };
 
-    public static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
+    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(ADD);
+            op.get(DESCRIPTION).set(bundle.getString("ejb3.add"));
+
+            return op;
         }
     };
 
+    private static ResourceBundle getResourceBundle(Locale locale) {
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+    }
 }

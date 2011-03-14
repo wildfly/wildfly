@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.subsystem;
+package org.jboss.as.managedbean;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -38,9 +38,9 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class EeSubsystemProviders {
+class ManagedBeansSubsystemProviders {
 
-    static final String RESOURCE_NAME = EeSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    static final String RESOURCE_NAME = ManagedBeansSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
@@ -48,10 +48,10 @@ class EeSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode subsystem = new ModelNode();
-            subsystem.get(DESCRIPTION).set(bundle.getString("ee"));
+            subsystem.get(DESCRIPTION).set(bundle.getString("managedbeans"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(EeExtension.NAMESPACE);
+            subsystem.get(NAMESPACE).set(ManagedBeansExtension.NAMESPACE);
 
             return subsystem;
         }
@@ -64,7 +64,7 @@ class EeSubsystemProviders {
 
             final ModelNode op = new ModelNode();
             op.get(OPERATION_NAME).set(ADD);
-            op.get(DESCRIPTION).set(bundle.getString("ee.add"));
+            op.get(DESCRIPTION).set(bundle.getString("managedbeans.add"));
 
             return op;
         }
