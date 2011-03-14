@@ -31,6 +31,9 @@ import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * @author John Bailey
@@ -71,7 +74,7 @@ public class LookupService implements Service<Void> {
     public static synchronized  BeanWithSimpleInjected getBean() {
         if(bean == null) {
             try {
-                LookupService.class.wait();
+                LookupService.class.wait(SECONDS.toMillis(10));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
