@@ -21,7 +21,9 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -33,16 +35,19 @@ import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
+import org.jboss.as.weld.deployment.EjbDescriptorImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.as.weld.injection.WeldInjectionFactory;
 import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -88,9 +93,10 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         log.info("Processing CDI deployment: " + phaseContext.getDeploymentUnit().getName());
 
         final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
+        final Map<ResourceRoot,BeanDeploymentArchiveImpl> bdaMap = new HashMap<ResourceRoot,BeanDeploymentArchiveImpl>();
 
         final Module module = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE);
-        boolean rootArchiveFound = false;
+        BeanDeploymentArchiveImpl rootBda = null;
         if (cdiDeploymentMetadata != null) {
             // this can be null for ear deployments
             // however we still want to create a module level bean manager
@@ -98,20 +104,56 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 BeanDeploymentArchiveImpl bda = createBeanDeploymentArchive(indexes.get(beanArchiveMetadata.getResourceRoot()),
                         beanArchiveMetadata, module, beanArchiveIdPrefix);
                 beanDeploymentArchives.add(bda);
+                bdaMap.put(beanArchiveMetadata.getResourceRoot(),bda);
                 if (beanArchiveMetadata.isDeploymentRoot()) {
-                    rootArchiveFound = true;
+                    rootBda = bda;
                     deploymentUnit.putAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE, bda);
                 }
             }
         }
-        if (!rootArchiveFound) {
+        if (rootBda == null) {
             BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
                     BeansXml.EMPTY_BEANS_XML, module, beanArchiveIdPrefix);
             beanDeploymentArchives.add(bda);
             deploymentUnit.putAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE, bda);
+            rootBda = bda;
         }
+        processEjbComponents(deploymentUnit,bdaMap,rootBda,indexes);
 
         deploymentUnit.putAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE, new BeanDeploymentModule(beanDeploymentArchives));
+    }
+
+    private void processEjbComponents(DeploymentUnit deploymentUnit, Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, BeanDeploymentArchiveImpl rootBda, Map<ResourceRoot, Index> indexes) {
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
+            if(component instanceof SessionBeanComponentDescription) {
+                SessionBeanComponentDescription componentDescription = (SessionBeanComponentDescription) component;
+                //first we need to resolve the correct BDA for the bean
+                BeanDeploymentArchiveImpl bda = resolveSessionBeanBda(componentDescription.getEJBClassName(), bdaMap,rootBda,indexes);
+                bda.addEjbDescriptor(new EjbDescriptorImpl<Object>(componentDescription,bda));
+            }
+        }
+    }
+
+    /**
+     * Resolves the bean deployment archive for a session bean
+     * @param ejbClassName the session bean's class
+     * @param bdaMap The BDA's keyed by resource root
+     * @param rootBda The root bda, this is used as the BDA of last resort if the correct BDA cannot be found
+     * @param indexes The jandex indexes
+     * @return The correct BDA for the EJB
+     */
+    private BeanDeploymentArchiveImpl resolveSessionBeanBda(String ejbClassName, Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, BeanDeploymentArchiveImpl rootBda, Map<ResourceRoot, Index> indexes) {
+        final DotName className = DotName.createSimple(ejbClassName);
+        for(Map.Entry<ResourceRoot, BeanDeploymentArchiveImpl> entry : bdaMap.entrySet()) {
+            final Index index = indexes.get(entry.getKey());
+            if(index != null) {
+                if(index.getClassByName(className) != null) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return rootBda;
     }
 
     private BeanDeploymentArchiveImpl createBeanDeploymentArchive(final Index index, BeanArchiveMetadata beanArchiveMetadata,

@@ -247,23 +247,23 @@ public enum Phase {
 
     // POST_MODULE
     public static final int POST_MODULE_ANNOTATION_WAR                  = 0x0100;
-    public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x0110;
-    public static final int POST_MODULE_EJB_LOCAL_VIEW_ANNOTATION       = 0x0111;
-    public static final int POST_MODULE_EJB_NO_INTERFACE_VIEW_ANNOTATION    = 0x0112;
-    public static final int POST_MODULE_EJB_STARTUP_ANNOTATION          = 0x0113;
-    public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x0200;
-    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0300;
-    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0400;
-    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0500;
-    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0600;
-    public static final int POST_MODULE_WEB_COMPONENTS                  = 0x0700;
-    public static final int POST_MODULE_BEAN_INTERCEPTOR_ANNOTATION     = 0x0800;
-    public static final int POST_MODULE_LIEFCYCLE_ANNOTATION            = 0x0900;
-    public static final int POST_MODULE_AROUNDINVOKE_ANNOTATION         = 0x1000;
-    public static final int POST_MODULE_RESOURCE_INJECTION_ANNOTATION   = 0x1100;
-    public static final int POST_MODULE_EJB_INJECTION_ANNOTATION        = 0x12C0;
-    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x1300;
-    public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x2000;
+    public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x0200;
+    public static final int POST_MODULE_EJB_LOCAL_VIEW_ANNOTATION       = 0x0300;
+    public static final int POST_MODULE_EJB_NO_INTERFACE_VIEW_ANNOTATION    = 0x0400;
+    public static final int POST_MODULE_EJB_STARTUP_ANNOTATION          = 0x0500;
+    public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x0600;
+    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0700;
+    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0800;
+    public static final int POST_MODULE_WEB_COMPONENTS                  = 0x0900;
+    public static final int POST_MODULE_BEAN_INTERCEPTOR_ANNOTATION     = 0x0A00;
+    public static final int POST_MODULE_LIEFCYCLE_ANNOTATION            = 0x0B00;
+    public static final int POST_MODULE_AROUNDINVOKE_ANNOTATION         = 0x0C00;
+    public static final int POST_MODULE_RESOURCE_INJECTION_ANNOTATION   = 0x0D00;
+    public static final int POST_MODULE_EJB_INJECTION_ANNOTATION        = 0x0E00;
+    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0F00;
+    public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x1000;
+    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x1100;
+    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x1200;
 
     // INSTALL
     public static final int INSTALL_EAR_AGGREGATE_COMPONENT_INDEX       = 0x0000;
