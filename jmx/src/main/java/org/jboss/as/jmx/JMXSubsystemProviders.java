@@ -22,11 +22,28 @@
 
 package org.jboss.as.jmx;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.jmx.CommonAttributes.REGISTRY_BINDING;
+import static org.jboss.as.jmx.CommonAttributes.SERVER_BINDING;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
@@ -40,9 +57,25 @@ public class JMXSubsystemProviders {
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(DESCRIPTION).set(bundle.getString("jmx"));
+            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
+            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
+            subsystem.get(NAMESPACE).set(Namespace.JMX_1_0.getUriString());
+
+            subsystem.get(ATTRIBUTES, REGISTRY_BINDING, DESCRIPTION).set(bundle.getString("registry.binding"));
+            subsystem.get(ATTRIBUTES, REGISTRY_BINDING, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, REGISTRY_BINDING, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, REGISTRY_BINDING, MIN_OCCURS).set(1);
+            subsystem.get(ATTRIBUTES, REGISTRY_BINDING, MAX_OCCURS).set(1);
+
+            subsystem.get(ATTRIBUTES, SERVER_BINDING, DESCRIPTION).set(bundle.getString("server.binding"));
+            subsystem.get(ATTRIBUTES, SERVER_BINDING, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, SERVER_BINDING, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, SERVER_BINDING, MIN_OCCURS).set(1);
+            subsystem.get(ATTRIBUTES, SERVER_BINDING, MAX_OCCURS).set(1);
+
+            return subsystem;
         }
     };
 
@@ -51,22 +84,13 @@ public class JMXSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OPERATION_NAME).set(READ_RESOURCE_OPERATION);
+            subsystem.get(DESCRIPTION).set(bundle.getString("jmx.add"));
+
+            return subsystem;
         }
 
-    };
-
-    static final DescriptionProvider JMX_CONNECTOR = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
-        }
     };
 
     static final DescriptionProvider JMX_CONNECTOR_ADD = new DescriptionProvider() {
@@ -74,9 +98,25 @@ public class JMXSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(JMXConnectorAdd.OPERATION_NAME);
+            op.get(DESCRIPTION).set(bundle.getString("jmx.connector.add"));
+
+            op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, DESCRIPTION).set(bundle.getString("registry.binding"));
+            op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, REQUIRED).set(true);
+            op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, MIN_OCCURS).set(1);
+            op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, MAX_OCCURS).set(1);
+
+            op.get(REQUEST_PROPERTIES, SERVER_BINDING, DESCRIPTION).set(bundle.getString("server.binding"));
+            op.get(REQUEST_PROPERTIES, SERVER_BINDING, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, SERVER_BINDING, REQUIRED).set(true);
+            op.get(REQUEST_PROPERTIES, SERVER_BINDING, MIN_OCCURS).set(1);
+            op.get(REQUEST_PROPERTIES, SERVER_BINDING, MAX_OCCURS).set(1);
+
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return op;
         }
     };
 
@@ -85,9 +125,15 @@ public class JMXSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(JMXConnectorRemove.OPERATION_NAME);
+            op.get(DESCRIPTION).set(bundle.getString("jmx.connector.remove"));
+
+            op.get(REQUEST_PROPERTIES).setEmptyObject();
+
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return op;
         }
 
     };

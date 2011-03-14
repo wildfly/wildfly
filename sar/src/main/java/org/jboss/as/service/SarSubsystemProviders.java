@@ -22,6 +22,13 @@
 
 package org.jboss.as.service;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -41,6 +48,10 @@ public class SarSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode subsystem = new ModelNode();
+            subsystem.get(DESCRIPTION).set(bundle.getString("sar"));
+            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
+            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
+            subsystem.get(NAMESPACE).set(SarExtension.NAMESPACE);
 
             return subsystem;
         }
@@ -51,9 +62,11 @@ public class SarSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode subsystem = new ModelNode();
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(ADD);
+            op.get(DESCRIPTION).set(bundle.getString("sar.add"));
 
-            return subsystem;
+            return op;
         }
     };
 
