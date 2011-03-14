@@ -354,6 +354,7 @@
     <system-properties>
         <property name="foo" value="bar"/>
         <property name="key" value="value"/>
+        <property name="org.apache.tomcat.util.ENABLE_MODELER" value="true"/>
     </system-properties>
 </server>
 
