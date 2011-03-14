@@ -515,6 +515,9 @@
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-common"/>
             <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-int2"/>
 
+            <maven-resource group="org.jboss.ejb3.concurrency" artifact="jboss-ejb3-concurrency-spi"/>
+            <maven-resource group="org.jboss.ejb3.concurrency" artifact="jboss-ejb3-concurrency-impl"/>
+
             <maven-resource group="org.jboss.ejb3.tx2" artifact="jboss-ejb3-tx2-impl"/>
             <maven-resource group="org.jboss.ejb3.tx2" artifact="jboss-ejb3-tx2-spi"/>
         </module-def>

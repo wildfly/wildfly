@@ -85,7 +85,7 @@
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP9</version.org.jboss.arquillian>
         <version.org.jboss.classfilewriter>1.0.0.Alpha4</version.org.jboss.classfilewriter>
-        <version.org.jboss.ejb3>2.0.0-alpha-1</version.org.jboss.ejb3>
+        <version.org.jboss.ejb3>2.0.0-alpha-2-SNAPSHOT</version.org.jboss.ejb3>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
@@ -2289,6 +2289,18 @@
                 <version>${version.org.jboss.arquillian}</version>
 	         </dependency>
 
+            <dependency>
+                <groupId>org.jboss.ejb3.concurrency</groupId>
+                <artifactId>jboss-ejb3-concurrency-impl</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <dependency>
                 <groupId>org.jboss.ejb3.effigy</groupId>
                 <artifactId>jboss-ejb3-effigy-int2</artifactId>

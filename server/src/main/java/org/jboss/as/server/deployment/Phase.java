@@ -251,6 +251,9 @@ public enum Phase {
     public static final int POST_MODULE_EJB_LOCAL_VIEW_ANNOTATION       = 0x0300;
     public static final int POST_MODULE_EJB_NO_INTERFACE_VIEW_ANNOTATION    = 0x0400;
     public static final int POST_MODULE_EJB_STARTUP_ANNOTATION          = 0x0500;
+    public static final int POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION   = 0x0501;
+    // should be after ConcurrencyManagement annotation processor
+    public static final int POST_MODULE_EJB_LOCK_ANNOTATION             = 0x0502;
     public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x0600;
     public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0700;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0800;

@@ -25,26 +25,40 @@ package org.jboss.as.ejb3.component.singleton;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 
+import javax.ejb.AccessTimeout;
+import javax.ejb.LockType;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
  *
  * @author Jaikiran Pai
  */
-public class SingletonComponent extends EJBComponent {
+public class SingletonComponent extends EJBComponent implements LockableComponent {
 
     private static final Logger logger = Logger.getLogger(SingletonComponent.class);
 
     private SingletonComponentInstance singletonComponentInstance;
 
     private boolean initOnStartup;
+
+    private LockType beanLevelLockType;
+
+    private Map<EJBBusinessMethod, LockType> methodLockTypes;
 
     /**
      * Construct a new instance.
@@ -54,6 +68,9 @@ public class SingletonComponent extends EJBComponent {
     public SingletonComponent(final SingletonComponentConfiguration configuration) {
         super(configuration);
         this.initOnStartup = configuration.isInitOnStartup();
+
+        this.beanLevelLockType = configuration.getBeanLevelLockType();
+        this.methodLockTypes = configuration.getMethodApplicableLockTypes();
     }
 
     @Override
@@ -111,10 +128,65 @@ public class SingletonComponent extends EJBComponent {
         super.stop();
     }
 
+    @Override
+    public LockType getLockType(Method method) {
+        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), toString(method.getParameterTypes()));
+        LockType lockType = this.methodLockTypes.get(beanMethod);
+        if (lockType != null) {
+            return lockType;
+        }
+        // check bean level lock type
+        if (this.beanLevelLockType != null) {
+            return this.beanLevelLockType;
+        }
+        // default WRITE lock type
+        return LockType.WRITE;
+    }
+
+    @Override
+    public AccessTimeout getAccessTimeout(Method method) {
+        // TODO: Implement this
+        return null;
+    }
+
+    @Override
+    public AccessTimeout getDefaultAccessTimeout() {
+        // TODO: This has to be configurable.
+        // Currently defaults to 5 minutes
+        return new AccessTimeout() {
+            @Override
+            public long value() {
+                return 5;
+            }
+
+            @Override
+            public TimeUnit unit() {
+                return TimeUnit.MINUTES;
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessTimeout.class;
+            }
+        };
+    }
+
     private synchronized void destroySingletonInstance() {
         if (this.singletonComponentInstance != null) {
             this.destroyInstance(this.singletonComponentInstance);
             this.singletonComponentInstance = null;
         }
+    }
+
+
+    private static String[] toString(Class<?>[] a) {
+        if (a == null) {
+            return null;
+        }
+        final String[] result = new String[a.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = a[i].getName();
+        }
+        return result;
     }
 }

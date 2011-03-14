@@ -23,9 +23,14 @@
 package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
 import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.LockType;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Component description for a singleton bean
@@ -44,6 +49,15 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      */
     private ConcurrencyManagementType concurrencyManagementType;
 
+    /**
+     * The bean level {@link LockType} for this bean.
+     */
+    private LockType beanLevelLockType;
+
+    /**
+     * The {@link LockType} applicable for a specific bean method.
+     */
+    private Map<EJBBusinessMethod, LockType> methodLockTypes = new ConcurrentHashMap<EJBBusinessMethod, LockType>();
 
     /**
      * Construct a new instance.
@@ -117,5 +131,51 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         }
         this.concurrencyManagementType = ConcurrencyManagementType.CONTAINER;
 
+    }
+
+    /**
+     * Sets the {@link LockType} applicable for the bean.
+     *
+     * @param locktype The lock type applicable for the bean
+     * @throws IllegalArgumentException If the bean has already been marked for a different {@link LockType} than the one passed
+     */
+    public void setBeanLevelLockType(LockType locktype) {
+        if (this.beanLevelLockType != null && this.beanLevelLockType != locktype) {
+            throw new IllegalArgumentException(this.getEJBName() + " bean has already been marked for " + this.beanLevelLockType + " lock type. Cannot change it to " + locktype);
+        }
+        this.beanLevelLockType = locktype;
+    }
+
+    /**
+     * Returns the {@link LockType} applicable for the bean.
+     *
+     * @return
+     */
+    public LockType getBeanLevelLockType() {
+        return this.beanLevelLockType;
+    }
+
+    /**
+     * Sets the {@link LockType} for the specific bean method represented by the <code>methodName</code> and <code>methodParamTypes</code>
+     *
+     * @param lockType         The applicable lock type for the method
+     * @param methodName       The name of the method
+     * @param methodParamTypes The method param types
+     */
+    public void setLockType(LockType lockType, String methodName, String... methodParamTypes) {
+        EJBBusinessMethod ejbMethod = new EJBBusinessMethod(methodName, methodParamTypes);
+        this.methodLockTypes.put(ejbMethod, lockType);
+    }
+
+    /**
+     * Returns a (unmodifiable) map of lock types applicable for the bean methods. The returned map will contain the
+     * lock type for a method, <i>only</i> if the lock type has been explicitly specified for the bean method.
+     * <p/>
+     * Returns an empty map if there are no explicit method level lock types specified for the bean
+     *
+     * @return
+     */
+    public Map<EJBBusinessMethod, LockType> getMethodApplicableLockTypes() {
+        return Collections.unmodifiableMap(this.methodLockTypes);
     }
 }
