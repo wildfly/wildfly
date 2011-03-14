@@ -95,6 +95,8 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
     protected abstract DeploymentUnit createAndInitializeDeploymentUnit(final ServiceRegistry registry);
 
     public synchronized void stop(final StopContext context) {
+        final String deploymentName = context.getController().getName().getSimpleName();
+        log.infof("Stopping deployment \"%s\"", deploymentName);
         // Delete the first phase deployer
         final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final ServiceController<?> controller = context.getController().getServiceContainer().getService(serviceName);
