@@ -22,9 +22,14 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
+
+import javax.ejb.TransactionManagementType;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -35,6 +40,15 @@ public class StatefulSessionComponentConfiguration extends SessionBeanComponentC
         super(description);
 
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));
+
+        if(description.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
+            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
+                @Override
+                protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
+                    return new StatefulBMTInterceptor((StatefulSessionComponent) component);
+                }
+            });
+        }
     }
 
     @Override

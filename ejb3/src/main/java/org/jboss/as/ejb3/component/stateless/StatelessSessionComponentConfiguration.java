@@ -23,9 +23,14 @@
 package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
+
+import javax.ejb.TransactionManagementType;
 
 /**
  * @author Jaikiran Pai
@@ -42,6 +47,15 @@ public class StatelessSessionComponentConfiguration extends SessionBeanComponent
 
         // TODO: use a proper instance association interceptor
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new DummyComponentInterceptor()));
+
+        if(description.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
+            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
+                @Override
+                protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
+                    return new StatelessBMTInterceptor((StatelessSessionComponent) component);
+                }
+            });
+        }
     }
 
     @Override
