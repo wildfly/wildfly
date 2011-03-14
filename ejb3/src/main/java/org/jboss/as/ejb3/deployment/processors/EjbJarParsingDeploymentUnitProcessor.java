@@ -121,14 +121,28 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
         // get the XMLStreamReader and parse the ejb-jar.xml
         MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
-        XMLStreamReader reader = this.getXMLStreamReader(ejbJarXml, dtdInfo);
+        InputStream stream = null;
         try {
+            stream = ejbJarXml.openStream();
+
+            XMLStreamReader reader = this.getXMLStreamReader(stream,ejbJarXml, dtdInfo);
+
             EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo);
-            // attach the ejbjar metadata
+                // attach the ejbjar metadata
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
 
-        } catch (XMLStreamException xmlse) {
+        }catch (XMLStreamException xmlse) {
             throw new DeploymentUnitProcessingException("Exception while parsing ejb-jar.xml: " + ejbJarXml.getPathName(), xmlse);
+        }catch (IOException ioe) {
+            throw new DeploymentUnitProcessingException("Failed to create reader for ejb-jar.xml: " + ejbJarXml.getPathName(), ioe);
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException ioe) {
+                logger.debug("Ignoring exception while closing the InputStream ", ioe);
+            }
         }
 
     }
@@ -144,31 +158,20 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
     /**
      * Creates and returns a {@link XMLStreamReader} for the passed {@link VirtualFile ejb-jar.xml}
      *
+     * @param stream The input stream
      * @param ejbJarXml
      * @return
      * @throws DeploymentUnitProcessingException
      *
      */
-    private XMLStreamReader getXMLStreamReader(VirtualFile ejbJarXml, XMLResolver resolver) throws DeploymentUnitProcessingException {
-        InputStream is = null;
+    private XMLStreamReader getXMLStreamReader(InputStream stream,VirtualFile ejbJarXml, XMLResolver resolver) throws DeploymentUnitProcessingException {
         try {
-            is = ejbJarXml.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(resolver);
-            XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
+            XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(stream);
             return xmlReader;
         } catch (XMLStreamException xmlse) {
             throw new DeploymentUnitProcessingException("Failed to create reader for ejb-jar.xml: " + ejbJarXml.getPathName(), xmlse);
-        } catch (IOException ioe) {
-            throw new DeploymentUnitProcessingException("Failed to create reader for ejb-jar.xml: " + ejbJarXml.getPathName(), ioe);
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ioe) {
-                logger.debug("Ignoring exception while closing the InputStream ", ioe);
-            }
         }
     }
 }
