@@ -57,7 +57,6 @@ public abstract class AbstractComponentConfiguration {
     private final List<ComponentInjector> componentInjectors = new ArrayList<ComponentInjector>();
     private final Map<ServiceName, InjectedValue<Object>> dependencyInjections = new HashMap<ServiceName, InjectedValue<Object>>();
     private Class<?> componentClass;
-    private Interceptor componentInterceptor;
 
     /**
      * Construct a new instance.
@@ -145,14 +144,6 @@ public abstract class AbstractComponentConfiguration {
 
     Map<Method, InterceptorFactory> getInterceptorFactoryMap() {
         return interceptorFactoryMap;
-    }
-
-    Interceptor getComponentInterceptor() {
-        return componentInterceptor;
-    }
-
-    void setComponentInterceptor(final Interceptor componentInterceptor) {
-        this.componentInterceptor = componentInterceptor;
     }
 
     Map<Class<?>,ProxyFactory<?>> getProxyFactories() {

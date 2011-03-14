@@ -23,12 +23,18 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.util.ArrayList;
 
 /**
  * A service for creating a component.
@@ -39,7 +45,7 @@ public final class ComponentCreateService implements Service<Component> {
     private final InjectedValue<DeploymentUnit> deploymentUnit = new InjectedValue<DeploymentUnit>();
 
     private final AbstractComponentConfiguration componentConfiguration;
-    private Component component;
+    private AbstractComponent component;
 
     /**
      * Construct a new instance.
@@ -53,6 +59,18 @@ public final class ComponentCreateService implements Service<Component> {
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
         component = componentConfiguration.constructComponent();
+
+        // do 'injection' on the component
+
+        // First, system interceptors (one of which should associate)
+        final ArrayList<Interceptor> rootInterceptors = new ArrayList<Interceptor>();
+        final SimpleInterceptorFactoryContext interceptorFactoryContext = new SimpleInterceptorFactoryContext();
+        for (InterceptorFactory factory : componentConfiguration.getComponentSystemInterceptorFactories()) {
+            rootInterceptors.add(factory.create(interceptorFactoryContext));
+        }
+
+        rootInterceptors.add(DispatcherInterceptor.INSTANCE);
+        component.setComponentInterceptor(Interceptors.getChainedInterceptor(rootInterceptors));
     }
 
     /** {@inheritDoc} */

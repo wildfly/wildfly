@@ -30,6 +30,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.InterceptorInstanceFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,9 +39,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
@@ -75,7 +73,7 @@ public abstract class AbstractComponent implements Component {
     private final List<LifecycleInterceptorFactory> postConstructInterceptorsMethods;
     private final List<LifecycleInterceptorFactory> preDestroyInterceptorsMethods;
     private final List<ComponentInjector> componentInjectors;
-    private final Interceptor componentInterceptor;
+    private Interceptor componentInterceptor;
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
     private final InjectedValue<NamespaceContextSelector> namespaceContextSelectorInjector = new InjectedValue<NamespaceContextSelector>();
 
@@ -94,7 +92,6 @@ public abstract class AbstractComponent implements Component {
         preDestroyMethods = configuration.getPreDestroyLifecycles();
         postConstructInterceptorsMethods = configuration.getPostConstructInterceptorLifecycles();
         preDestroyInterceptorsMethods = configuration.getPreDestroyInterceptorLifecycles();
-        componentInterceptor = configuration.getComponentInterceptor();
         interceptorFactoryMap = configuration.getInterceptorFactoryMap();
         this.componentInjectors = configuration.getComponentInjectors();
     }
@@ -348,7 +345,12 @@ public abstract class AbstractComponent implements Component {
     }
 
     Interceptor getComponentInterceptor() {
+        assert componentInterceptor != null : "componentInterceptor is null";
         return componentInterceptor;
+    }
+
+    void setComponentInterceptor(Interceptor interceptor) {
+        this.componentInterceptor = interceptor;
     }
 
     /**

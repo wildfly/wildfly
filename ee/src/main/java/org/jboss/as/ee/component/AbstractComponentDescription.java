@@ -27,16 +27,17 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.MethodInterceptorFactory;
 import org.jboss.invocation.MethodInvokingInterceptorFactory;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorInstanceFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
@@ -50,9 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -389,15 +387,6 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
         final Module module= deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
-        // First, system interceptors (one of which should associate)
-        final ArrayList<Interceptor> rootInterceptors = new ArrayList<Interceptor>();
-        final SimpleInterceptorFactoryContext interceptorFactoryContext = new SimpleInterceptorFactoryContext();
-        for (InterceptorFactory factory : configuration.getComponentSystemInterceptorFactories()) {
-            rootInterceptors.add(factory.create(interceptorFactoryContext));
-        }
-
-        rootInterceptors.add(DispatcherInterceptor.INSTANCE);
-        configuration.setComponentInterceptor(Interceptors.getChainedInterceptor(rootInterceptors));
         // Create the table of component class methods
         final Map<MethodIdentifier, Method> componentMethods = new HashMap<MethodIdentifier, Method>();
         final Map<Method, InterceptorFactory> componentToInterceptorFactory = new IdentityHashMap<Method, InterceptorFactory>();
