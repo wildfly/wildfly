@@ -70,7 +70,6 @@ public class CommandLineMain {
 
         final jline.ConsoleReader console = new jline.ConsoleReader();
         console.setUseHistory(true);
-        console.addCompletor(new CommandCompleter(handlers.keySet()));
 
         final CommandContextImpl cmdCtx = new CommandContextImpl(console);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
@@ -80,7 +79,9 @@ public class CommandLineMain {
                 cmdCtx.log("closed");
             }
         }));
-        console.addCompletor(new OperationRequestCompleter(cmdCtx));
+        OperationRequestCompleter opCompleter = new OperationRequestCompleter(cmdCtx);
+        console.addCompletor(new CommandCompleter(handlers.keySet(), opCompleter));
+        console.addCompletor(opCompleter);
 
         cmdCtx.log("You are disconnected at the moment." +
                 " Type 'connect' to connect to the server or" +

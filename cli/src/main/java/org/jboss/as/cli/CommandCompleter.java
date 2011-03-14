@@ -25,6 +25,8 @@ package org.jboss.as.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.cli.operation.OperationRequestCompleter;
+
 import jline.Completor;
 
 /**
@@ -34,12 +36,14 @@ import jline.Completor;
  */
 public class CommandCompleter implements Completor {
 
-    private Set<String> commands;
+    private final OperationRequestCompleter opCompleter;
+    private final Set<String> commands;
 
-    public CommandCompleter(Set<String> commands) {
+    public CommandCompleter(Set<String> commands, OperationRequestCompleter opCompleter) {
         if(commands == null)
             throw new IllegalArgumentException("Set of commands can't be null.");
         this.commands = commands;
+        this.opCompleter = opCompleter;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -54,6 +58,17 @@ public class CommandCompleter implements Completor {
         char firstChar = buffer.charAt(0);
         if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
             return -1;
+        }
+
+        // TODO a hack to enable tab-completion for cd/cn
+        if(buffer.startsWith("cd ") || buffer.startsWith("cn ")) {
+            String opBuffer = buffer.substring(3);
+            int result = opCompleter.complete(opBuffer, cursor, candidates);
+            if(result >= 0) {
+                return result + 3;
+            } else {
+                return result;
+            }
         }
 
         for (String command : commands) {

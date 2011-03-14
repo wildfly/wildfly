@@ -75,10 +75,17 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
             addressLength = 0;
         }
 
-
         if(addressLength > 0) {
 
-            int nodeIndex = 0;
+            final int nodePathStart;
+            if(operationRequest.startsWith("./")) {
+                nodePathStart = 2;
+                handler.nodeSeparator(1);
+            } else{
+                nodePathStart = 0;
+            }
+
+            int nodeIndex = nodePathStart;
             while (nodeIndex < addressLength) {
                 final int nodeSepIndex = operationRequest.indexOf(NODE_SEPARATOR, nodeIndex);
                 final String node;
@@ -108,7 +115,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                         } else if (NODE_TYPE.equals(node)) {
                             handler.nodeType();
                         } else {
-                            if(nodeIndex == 0) {
+                            if(nodeIndex == nodePathStart) {
                                 if(nodeSepIndex < 0) {
                                     handler.nodeTypeOrName(node);
                                 } else if(aoSep > 0) {

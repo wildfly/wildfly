@@ -48,8 +48,8 @@ public class OperationRequestHandler implements CommandHandler {
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
             ctx.log("You are disconnected at the moment." +
-                    " Type /connect to connect to the server" +
-                    " or /help for the list of supported commands.");
+                    " Type 'connect' to connect to the server" +
+                    " or 'help' for the list of supported commands.");
             return;
         }
 
