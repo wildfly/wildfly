@@ -22,13 +22,12 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
-import org.jboss.as.ejb3.cache.spi.Identifiable;
+import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.util.id.GUID;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 /**

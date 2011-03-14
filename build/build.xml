@@ -543,6 +543,10 @@
 
         <module-def name="org.jboss.ejb3">
             <!-- all maven artifacts that live on the org.jboss.ejb3 release cycle -->
+            <maven-resource group="org.jboss.ejb3" artifact="jboss-ejb3-cache"/>
+
+            <maven-resource group="org.jboss.ejb3" artifact="jboss-ejb3-core-pool"/>
+
             <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-base"/>
             <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-spi"/>
 

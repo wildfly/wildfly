@@ -2344,6 +2344,28 @@
 	         </dependency>
 
             <dependency>
+                <groupId>org.jboss.ejb3</groupId>
+                <artifactId>jboss-ejb3-cache</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3</groupId>
+                <artifactId>jboss-ejb3-core-pool</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.ejb3.concurrency</groupId>
                 <artifactId>jboss-ejb3-concurrency-impl</artifactId>
                 <version>${version.org.jboss.ejb3}</version>

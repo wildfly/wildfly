@@ -22,17 +22,20 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
+import org.jboss.ejb3.pool.Pool;
+import org.jboss.ejb3.pool.StatelessObjectFactory;
+import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans
@@ -41,17 +44,9 @@ import java.util.List;
  * Author : Jaikiran Pai
  */
 public class StatelessSessionComponent extends EJBComponent {
-
-
-    /**
-     * The component level interceptors that will be applied during the invocation
-     * on the bean
-     */
-    private List<Interceptor> componentInterceptors;
-
     // some more injectable resources
     // @Resource
-    // private Pool pool;
+    private Pool<StatelessSessionComponentInstance> pool;
 
     /**
      * Constructs a StatelessEJBComponent for a stateless session bean
@@ -59,32 +54,36 @@ public class StatelessSessionComponent extends EJBComponent {
      * @param componentConfiguration
      */
     public StatelessSessionComponent(final EJBComponentConfiguration componentConfiguration) {
-        this(componentConfiguration, null);
-    }
-
-    /**
-     * Constructs a StatelessEJBComponent for a stateless session bean
-     *
-     * @param componentConfiguration
-     * @param componentInterceptors
-     */
-    public StatelessSessionComponent(final EJBComponentConfiguration componentConfiguration, List<Interceptor> componentInterceptors) {
         super(componentConfiguration);
-        this.componentInterceptors = componentInterceptors;
+
+        StatelessObjectFactory<StatelessSessionComponentInstance> factory = new StatelessObjectFactory<StatelessSessionComponentInstance>() {
+            @Override
+            public StatelessSessionComponentInstance create() {
+                return (StatelessSessionComponentInstance) createInstance();
+            }
+
+            @Override
+            public void destroy(StatelessSessionComponentInstance obj) {
+                destroyInstance(obj);
+            }
+        };
+        this.pool = new StrictMaxPool<StatelessSessionComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
     }
 
-    // TODO: I need to understand what exactly is this method meant for
     @Override
     public Interceptor createClientInterceptor(Class<?> viewClass) {
-        // TODO: Needs to be implemented
         return new Interceptor() {
-
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
                 // TODO: FIXME: Component shouldn't be attached in a interceptor context that
                 // runs on remote clients.
                 context.putPrivateData(Component.class, StatelessSessionComponent.this);
-                return context.proceed();
+                try {
+                    return context.proceed();
+                }
+                finally {
+                    context.putPrivateData(Component.class, null);
+                }
             }
         };
     }
@@ -101,5 +100,7 @@ public class StatelessSessionComponent extends EJBComponent {
         return new StatelessSessionComponentInstance(this, instance, preDestroyInterceptors, context);
     }
 
-
+    protected Pool<StatelessSessionComponentInstance> getPool() {
+        return pool;
+    }
 }

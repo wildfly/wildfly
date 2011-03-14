@@ -21,16 +21,13 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.cache.NoPassivationCache;
-import org.jboss.as.ejb3.cache.spi.Cache;
-import org.jboss.as.ejb3.cache.spi.StatefulObjectFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
-import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.ejb3.cache.Cache;
+import org.jboss.ejb3.cache.NoPassivationCache;
+import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -82,8 +79,8 @@ public class StatefulSessionComponent extends EJBComponent {
                     return context.proceed();
                 }
                 finally {
-                    // TODO: how do I remove it?
-                    //context.removePrivateData(Serializable.class);
+                    context.putPrivateData(Serializable.class, null);
+                    context.putPrivateData(Component.class, null);
                 }
             }
         };

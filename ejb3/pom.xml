@@ -88,6 +88,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-cache</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-core-pool</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.ejb3.concurrency</groupId>
             <artifactId>jboss-ejb3-concurrency-impl</artifactId>
         </dependency>

@@ -45,8 +45,7 @@ public class StatelessSessionComponentConfiguration extends SessionBeanComponent
     public StatelessSessionComponentConfiguration(final StatelessComponentDescription description) {
         super(description);
 
-        // TODO: use a proper instance association interceptor
-        addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new DummyComponentInterceptor()));
+        addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(PooledInstanceInterceptor.INSTANCE));
 
         if(description.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
             addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
