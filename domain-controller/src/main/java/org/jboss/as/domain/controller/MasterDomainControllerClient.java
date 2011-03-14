@@ -3,6 +3,8 @@
  */
 package org.jboss.as.domain.controller;
 
+import java.net.InetAddress;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.msc.service.ServiceName;
 
@@ -20,10 +22,12 @@ public interface MasterDomainControllerClient extends ModelController {
      * Register with the remote domain controller
      *
      * @param host the name of this host
+     * @param inetAddress the address on which this host is listening for management requests
+     * @param mgmtPort the port on which this host is listening for management requests
      * @param domainController the slave domain controller on this host
      * @throws IllegalStateException if there was a problem talking to the remote host
      */
-    void register(String hostName, DomainControllerSlave domainController);
+    void register(String hostName, InetAddress inetAddress, int mgmtPort, DomainControllerSlave domainController);
 
     /**
      * Unregister with the remote domain controller.

@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,6 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
@@ -91,22 +91,47 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
     }
 
     private class RegisterOperation extends RegistryOperation {
-        Connection connection;
+
+//        Connection connection;
+        InetAddress slaveAddress;
+        int slavePort;
+
         @Override
         protected final byte getResponseCode() {
             return DomainControllerProtocol.REGISTER_HOST_CONTROLLER_RESPONSE;
         }
 
+//        @Override
+//        public void handle(final Connection connection, final InputStream input) throws IOException {
+//            this.connection = connection;
+//            super.handle(connection, input);
+//        }
+
         @Override
-        public void handle(final Connection connection, final InputStream input) throws IOException {
-            this.connection = connection;
-            super.handle(connection, input);
+        protected void readRequest(InputStream inputStream) throws IOException {
+            ByteDataInput input = null;
+            try {
+                input = new SimpleByteDataInput(inputStream);
+                expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
+                hostId = input.readUTF();
+                expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_HOST);
+                final int addressSize = input.readInt();
+                byte[] addressBytes = new byte[addressSize];
+                input.readFully(addressBytes);
+                expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_PORT);
+                slavePort = input.readInt();
+                slaveAddress = InetAddress.getByAddress(addressBytes);
+                input.close();
+            } finally {
+                StreamUtils.safeClose(input);
+            }
         }
 
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-            getController().addClient(new RemoteDomainControllerSlaveClient(hostId, connection));
+//            getController().addClient(new RemoteDomainControllerSlaveClient(hostId, connection));
+            getController().addClient(new RemoteDomainControllerSlaveClient(hostId, slaveAddress, slavePort));
             ModelNode node = getController().getDomainModel();
             outputStream.write(DomainControllerProtocol.PARAM_MODEL);
             node.writeExternal(outputStream);

@@ -35,17 +35,20 @@ public interface DomainControllerProtocol extends ModelControllerClientProtocol{
     byte UNREGISTER_HOST_CONTROLLER_RESPONSE = 0x54;
     byte GET_FILE_REQUEST = 0x55;
     byte GET_FILE_RESPONSE = 0x56;
+    byte IS_ACTIVE_REQUEST = 0x57;
+    byte IS_ACTIVE_RESPONSE = 0x58;
 
-
-    byte PARAM_HOST_ID = 0x68;
-    byte PARAM_MODEL = 0x69;
-    byte PARAM_ROOT_ID = 0x71;
-    byte PARAM_FILE_PATH = 0x72;
-    byte PARAM_ROOT_ID_FILE = 0x73;
-    byte PARAM_ROOT_ID_CONFIGURATION = 0x74;
-    byte PARAM_ROOT_ID_DEPLOYMENT = 0x75;
-    byte PARAM_NUM_FILES = 0x76;
-    byte FILE_START = 0x77;
-    byte PARAM_FILE_SIZE = 0x78;
-    byte FILE_END = 0x79;
+    byte PARAM_HOST_ID = 0x20;
+    byte PARAM_HOST_CONTROLLER_HOST = 0x21;
+    byte PARAM_HOST_CONTROLLER_PORT = 0x22;
+    byte PARAM_MODEL = 0x23;
+    byte PARAM_ROOT_ID = 0x24;
+    byte PARAM_FILE_PATH = 0x25;
+    byte PARAM_ROOT_ID_FILE = 0x26;
+    byte PARAM_ROOT_ID_CONFIGURATION = 0x27;
+    byte PARAM_ROOT_ID_DEPLOYMENT = 0x28;
+    byte PARAM_NUM_FILES = 0x29;
+    byte FILE_START = 0x30;
+    byte PARAM_FILE_SIZE = 0x31;
+    byte FILE_END = 0x32;
 }

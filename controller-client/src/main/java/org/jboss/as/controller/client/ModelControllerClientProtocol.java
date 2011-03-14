@@ -37,7 +37,7 @@ public interface ModelControllerClientProtocol {
 
     int PARAM_OPERATION = 0x60;
     int PARAM_RESULT_HANDLER = 0x61;
-    int PARAM_LOCATION = 0x52;
+    int PARAM_LOCATION = 0x62;
     int PARAM_HANDLE_RESULT_FRAGMENT = 0x63;
     int PARAM_HANDLE_RESULT_COMPLETE = 0x64;
     int PARAM_HANDLE_CANCELLATION = 0x65;

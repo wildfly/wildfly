@@ -43,6 +43,7 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -64,15 +65,18 @@ public final class DomainControllerService implements Service<DomainController> 
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
     private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
     private final InjectedValue<LocalHostModel> hostController = new InjectedValue<LocalHostModel>();
+    private final InjectedValue<NetworkInterfaceBinding> mgmtInterface = new InjectedValue<NetworkInterfaceBinding>();
     private final String localHostName;
     private final boolean backupDomainFiles;
     private final boolean useCachedDc;
+    private final int mgmtPort;
     private DomainController controller;
 
-    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName,
+    public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName, final int mgmtPort,
             final DeploymentRepository deploymentRepository, final FileRepository localFileRepository, final boolean backupDomainFiles, final boolean useCachedDc) {
         this.configurationPersister = configurationPersister;
         this.localHostName = localHostName;
+        this.mgmtPort = mgmtPort;
         this.deploymentRepository = deploymentRepository;
         this.localFileRepository = localFileRepository;
         this.backupDomainFiles = backupDomainFiles;
@@ -117,6 +121,11 @@ public final class DomainControllerService implements Service<DomainController> 
         return masterDomainControllerClient;
     }
 
+    public Injector<NetworkInterfaceBinding> getInterfaceInjector() {
+        // TODO Auto-generated method stub
+        return mgmtInterface;
+    }
+
     private DomainController startMasterDomainController() throws StartException {
 
         log.info("Starting Domain Controller");
@@ -143,7 +152,7 @@ public final class DomainControllerService implements Service<DomainController> 
         final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue(), deploymentRepository, fileRepository);
         final DomainControllerImpl controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient);
         try {
-            masterClient.register(hostController.getValue().getName(), controller);
+            masterClient.register(hostController.getValue().getName(), mgmtInterface.getValue().getAddress(), mgmtPort, controller);
         } catch (IllegalStateException e) {
             return null;
         }

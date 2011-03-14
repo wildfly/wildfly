@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -27,7 +28,6 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.DomainControllerSlaveClient;
-import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
@@ -37,21 +37,33 @@ import org.jboss.logging.Logger;
 class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
+    private static final int CONNECTION_TIMEOUT = 5000;
 
     // We delegate non-transactional requests
     private final ModelController delegate;
-    private final Connection connection;
+//    private final Connection connection;
     private final String hostId;
-    private final ManagementRequestConnectionStrategy connectionStrategy;
+    private final InetAddress slaveAddress;
+    private final int slavePort;
+//    private final ManagementRequestConnectionStrategy connectionStrategy;
     private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
     private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-    public RemoteDomainControllerSlaveClient(String hostId, Connection connection) {
+    public RemoteDomainControllerSlaveClient(String hostId, InetAddress slaveAddress, int slavePort) {
         this.hostId = hostId;
-        this.connection = connection;
-        this.delegate = new ModelControllerClientToModelControllerAdapter(connection);
-        this.connectionStrategy = new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection);
+        this.slaveAddress = slaveAddress;
+        this.slavePort = slavePort;
+//        this.connection = connection;
+        this.delegate = new ModelControllerClientToModelControllerAdapter(slaveAddress, slavePort);
+//        this.connectionStrategy = new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection);
     }
+
+//    public RemoteDomainControllerSlaveClient(String hostId, Connection connection) {
+//        this.hostId = hostId;
+//        this.connection = connection;
+//        this.delegate = new ModelControllerClientToModelControllerAdapter(connection);
+//        this.connectionStrategy = new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection);
+//    }
 
     @Override
     public OperationResult execute(Operation operation, ResultHandler handler) {
@@ -69,7 +81,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             throw new IllegalArgumentException("Null operation");
         }
         try {
-            return new ExecuteSynchronousTransactionalRequest(operation, transaction).executeForResult(connectionStrategy);
+            return new ExecuteSynchronousTransactionalRequest(operation, transaction).executeForResult(getConnectionStrategy());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof CancellationException) {
                 throw new CancellationException(e.getCause().getMessage());
@@ -99,7 +111,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             @Override
             public void run() {
                 try {
-                    Future<ModelNode> f = new ExecuteAsyncTransactionalRequest(result, operation, handler, transaction).execute(connectionStrategy);
+                    Future<ModelNode> f = new ExecuteAsyncTransactionalRequest(result, operation, handler, transaction).execute(getConnectionStrategy());
 
                     while (true) {
                         try {
@@ -138,13 +150,23 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
 
     @Override
     public boolean isActive() {
-        return connection.getPeerAddress() != null;
+//        return connection.getPeerAddress() != null;
+        try {
+            return new IsActiveRequest().executeForResult(getConnectionStrategy());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private ModelNode readNode(InputStream in) throws IOException {
         ModelNode node = new ModelNode();
         node.readExternal(in);
         return node;
+    }
+
+    private ManagementRequestConnectionStrategy getConnectionStrategy() {
+        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(slaveAddress, slavePort,
+                CONNECTION_TIMEOUT, executorService, threadFactory);
     }
 
     private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
@@ -167,7 +189,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             try {
                 int i = asynchronousId.get().intValue();
                 if (i >= 0) {
-                    return new CancelAsynchronousOperationRequest(i).executeForResult(connectionStrategy);
+                    return new CancelAsynchronousOperationRequest(i).executeForResult(getConnectionStrategy());
                 }
                 else return false;
             } catch (Exception e) {
@@ -410,7 +432,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
         @Override
         public void commit() {
             try {
-                new CommitTransactionRequest(transactionId).executeForResult(connectionStrategy);
+                new CommitTransactionRequest(transactionId).executeForResult(getConnectionStrategy());
             } catch (Exception e) {
                 log.errorf(e, "Failed committing management transaction %s on host %s", transactionId, hostId);
                 // TODO flag the host as out of sync
@@ -420,7 +442,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
         @Override
         public void rollback() {
             try {
-                new RollbackTransactionRequest(transactionId).executeForResult(connectionStrategy);
+                new RollbackTransactionRequest(transactionId).executeForResult(getConnectionStrategy());
             } catch (Exception e) {
                 // Less serious as failing to roll back just means the tx is sitting around
                 log.warnf(e, "Failed rolling back management transaction %s on host %s", transactionId, hostId);
@@ -458,6 +480,23 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
         @Override
         protected Boolean receiveResponse(InputStream input) throws IOException {
             return StreamUtils.readBoolean(input);
+        }
+    }
+
+    private class IsActiveRequest extends ModelControllerRequest<Boolean> {
+        @Override
+        public final byte getRequestCode() {
+            return DomainControllerProtocol.IS_ACTIVE_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return DomainControllerProtocol.IS_ACTIVE_RESPONSE;
+        }
+
+        @Override
+        protected Boolean receiveResponse(final InputStream input) throws IOException {
+            return true;  // If we made it here, we correctly established a connection
         }
     }
 

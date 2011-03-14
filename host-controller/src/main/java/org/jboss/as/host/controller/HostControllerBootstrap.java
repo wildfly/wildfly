@@ -256,19 +256,24 @@ public class HostControllerBootstrap {
         installLocalDomainController(environment, host, serviceTarget, slave, fileRepository, backupDomainFiles, useCachedDc);
     }
 
-    static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host, final ServiceTarget serviceTarget, final boolean isSlave,
+    static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host,
+            final ServiceTarget serviceTarget, final boolean isSlave,
             final FileRepository fileRepository, final boolean backupDomainFiles, final boolean useCachedDc) {
         final String hostName = host.get(NAME).asString();
+        final String mgmtNetwork = host.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, INTERFACE).asString();
+        final int mgmtPort = host.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, PORT).asInt();
+
         final File configDir = environment.getDomainConfigurationDir();
         final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, isSlave);
         DeploymentRepository deploymentRepository = new DomainDeploymentRepository(environment.getDomainDeploymentDir());
-        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, deploymentRepository, fileRepository, backupDomainFiles, useCachedDc);
+        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, mgmtPort, deploymentRepository, fileRepository, backupDomainFiles, useCachedDc);
         ServiceBuilder<DomainController> builder = serviceTarget.addService(DomainController.SERVICE_NAME, dcService);
         if (isSlave) {
             builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());
         }
         builder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, dcService.getScheduledExecutorServiceInjector())
             .addDependency(HostController.SERVICE_NAME, LocalHostModel.class, dcService.getHostControllerServiceInjector())
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, dcService.getInterfaceInjector())
             .install();
 
         //Install the domain controller operation handler
@@ -299,6 +304,7 @@ public class HostControllerBootstrap {
         int port = dc.require(PORT).asInt();
         final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port, repository);
         serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
+            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, service.getManagementCommunicationServiceInjector())
             .setInitialMode(Mode.ACTIVE)
             .install();
     }

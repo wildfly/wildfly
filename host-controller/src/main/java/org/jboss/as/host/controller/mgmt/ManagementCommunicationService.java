@@ -144,13 +144,13 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
         return threadFactoryValue;
     }
 
-    void addHandler(ManagementOperationHandler handler) {
+    public void addHandler(ManagementOperationHandler handler) {
         if (handlers.putIfAbsent(handler.getIdentifier(), handler) != null) {
             // TODO: Handle
         }
     }
 
-    void removeHandler(ManagementOperationHandler handler) {
+    public void removeHandler(ManagementOperationHandler handler) {
         if (!handlers.remove(handler.getIdentifier(), handler)) {
             // TODO: Handle
         }

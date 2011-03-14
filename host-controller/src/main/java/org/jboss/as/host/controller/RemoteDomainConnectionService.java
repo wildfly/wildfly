@@ -32,6 +32,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
 
@@ -44,12 +48,12 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
-import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
+import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
@@ -61,12 +65,15 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
+import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Kabir Khan
@@ -84,9 +91,10 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     /** Used to invoke ModelController ops on the master */
     private volatile ModelController masterProxy;
     /** Handler for non-transactional operations */
-    private volatile ModelControllerOperationHandler operationHandler;
+//    private volatile ModelControllerOperationHandler operationHandler;
     /** Handler for transactional operations */
     private volatile TransactionalModelControllerOperationHandler txOperationHandler;
+    private final InjectedValue<ManagementCommunicationService> managementCommunicationService = new InjectedValue<ManagementCommunicationService>();
 
     RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
@@ -97,7 +105,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void register(final String hostName, final DomainControllerSlave slave) {
+    public synchronized void register(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
         final ProtocolClient.Configuration config = new ProtocolClient.Configuration();
         config.setMessageHandler(initialMessageHandler);
         config.setConnectTimeout(CONNECTION_TIMEOUT);
@@ -106,25 +114,87 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
         config.setServerAddress(new InetSocketAddress(host, port));
         config.setThreadFactory(Executors.defaultThreadFactory()); //TODO inject
 
+        final InetAddress callbackAddress = getCallbackAddress(ourAddress, host);
         final ProtocolClient protocolClient = new ProtocolClient(config);
 
         try {
             connection = protocolClient.connect();
             masterProxy = new ModelControllerClientToModelControllerAdapter(connection);
-            operationHandler = ModelControllerOperationHandler.Factory.create(slave, initialMessageHandler);
-            txOperationHandler = new TransactionalModelControllerOperationHandler(slave, initialMessageHandler);
+//            operationHandler = ModelControllerOperationHandler.Factory.create(slave, initialMessageHandler);
+            txOperationHandler = new SlaveDomainControllerOperationHandler(slave);
+            managementCommunicationService.getValue().addHandler(txOperationHandler);
         } catch (IOException e) {
             log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
             throw new IllegalStateException(e);
         }
 
         try {
-            ModelNode node = new RegisterModelControllerRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
+            ModelNode node = new RegisterModelControllerRequest(callbackAddress, ourPort).executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
             slave.setInitialDomainModel(node);
         } catch (Exception e) {
             log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
             throw new IllegalStateException(e);
         }
+    }
+
+    private InetAddress getCallbackAddress(InetAddress ourAddress, InetAddress master) {
+        InetAddress callbackAddress = ourAddress;
+        if (ourAddress.isAnyLocalAddress()) {
+
+            // Ugh; have to find a reasonable match
+            byte[] masterBytes = master.getAddress();
+            callbackAddress = null;
+            InetAddress first = null;
+            InetAddress firstPublic = null;
+            InetAddress mostBytes = null;
+            int byteMatch = 8;
+            try {
+                for (Enumeration<NetworkInterface> e =  NetworkInterface.getNetworkInterfaces(); e.hasMoreElements(); ) {
+                    NetworkInterface intf = e.nextElement();
+                    try {
+                        if (!intf.isUp() || !master.isReachable(intf, 0, 5000))
+                            continue;
+                    } catch (IOException e1) {
+                        continue;
+                    }
+                    for (Enumeration<InetAddress> ea = intf.getInetAddresses(); ea.hasMoreElements();) {
+                        InetAddress addr = ea.nextElement();
+                        if (first == null)
+                            first = addr;
+                        if (firstPublic == null && !addr.isLoopbackAddress()) {
+                            firstPublic = addr;
+                        }
+                        byte[] addrBytes = addr.getAddress();
+                        if (addrBytes.length == masterBytes.length) {
+                            int i = 0;
+                            for (; i < addrBytes.length; i++) {
+                                if (addrBytes[i] != masterBytes[i])
+                                    break;
+                            }
+                            if (i > byteMatch) {
+                                byteMatch = i;
+                                mostBytes = addr;
+                            }
+                        }
+                    }
+
+                }
+            } catch (SocketException e) {
+                // ignored
+            }
+
+            if (callbackAddress == null) {
+                callbackAddress = mostBytes != null ? mostBytes : (firstPublic != null ? firstPublic : first);
+            }
+            if (callbackAddress == null) {
+                try {
+                    callbackAddress = InetAddress.getLocalHost();
+                } catch (UnknownHostException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return callbackAddress;
     }
 
     /** {@inheritDoc} */
@@ -134,6 +204,9 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
             new UnregisterModelControllerRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+        finally {
+            managementCommunicationService.getValue().removeHandler(txOperationHandler);
         }
     }
 
@@ -170,6 +243,10 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
         return this;
     }
 
+    public Injector<ManagementCommunicationService> getManagementCommunicationServiceInjector() {
+        return managementCommunicationService ;
+    }
+
     private abstract class RegistryRequest<T> extends ManagementRequest<T> {
 
         @Override
@@ -179,6 +256,15 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     }
 
     private class RegisterModelControllerRequest extends RegistryRequest<ModelNode> {
+
+        private final InetAddress localManagementAddress;
+        private final int localManagementPort;
+
+        RegisterModelControllerRequest(final InetAddress localManagementAddress, final int localManagementPort) {
+            this.localManagementAddress = localManagementAddress;
+            this.localManagementPort = localManagementPort;
+        }
+
         @Override
         protected byte getRequestCode() {
             return DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST;
@@ -191,9 +277,22 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            output.write(DomainControllerProtocol.PARAM_HOST_ID);
-            StreamUtils.writeUTFZBytes(output, name);
+        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
+            ByteDataOutput output = null;
+            try {
+                output = new SimpleByteDataOutput(outputStream);
+                output.write(DomainControllerProtocol.PARAM_HOST_ID);
+                output.writeUTF(name);
+                output.writeByte(DomainControllerProtocol.PARAM_HOST_CONTROLLER_HOST);
+                final byte[] address = localManagementAddress.getAddress();
+                output.writeInt(address.length);
+                output.write(address);
+                output.writeByte(DomainControllerProtocol.PARAM_HOST_CONTROLLER_PORT);
+                output.writeInt(localManagementPort);
+                output.close();
+            } finally {
+                StreamUtils.safeClose(output);
+            }
         }
 
         /** {@inheritDoc} */
@@ -383,6 +482,31 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
         }
     }
 
+    private class SlaveDomainControllerOperationHandler extends TransactionalModelControllerOperationHandler {
+
+        SlaveDomainControllerOperationHandler(final DomainControllerSlave slave) {
+            super(slave, MessageHandler.NULL);
+        }
+
+        @Override
+        public ManagementResponse operationFor(byte commandByte) {
+
+            if (commandByte == DomainControllerProtocol.IS_ACTIVE_REQUEST) {
+                return new IsActiveOperation();
+            }
+            else {
+                return super.operationFor(commandByte);
+            }
+        }
+    }
+
+    private class IsActiveOperation extends ManagementResponse {
+        @Override
+        protected final byte getResponseCode() {
+            return DomainControllerProtocol.IS_ACTIVE_RESPONSE;
+        }
+    }
+
     private final MessageHandler initialMessageHandler = new ManagementHeaderMessageHandler() {
 
         @Override
@@ -392,9 +516,9 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         @Override
         protected MessageHandler getHandlerForId(byte handlerId) {
-            if (handlerId == ModelControllerClientProtocol.HANDLER_ID) {
-                return operationHandler;
-            }
+//            if (handlerId == ModelControllerClientProtocol.HANDLER_ID) {
+//                return operationHandler;
+//            }
             if (handlerId == TransactionalModelControllerOperationHandler.HANDLER_ID) {
                 return txOperationHandler;
             }
