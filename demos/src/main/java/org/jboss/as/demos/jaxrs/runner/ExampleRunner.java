@@ -42,7 +42,7 @@ public class ExampleRunner {
       DeploymentUtils utils = null;
       try {
          utils = new DeploymentUtils();
-         utils.addWarDeployment("jaxrs-example.war", HelloWorldResource.class.getPackage(), true);
+         utils.addWarDeployment("jaxrs-example.war", true, HelloWorldResource.class.getPackage());
          utils.deploy();
          performCall();
       } finally{

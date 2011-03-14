@@ -223,6 +223,7 @@ public enum Phase {
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x1800;
     public static final int PARSE_WEBSERVICES_XML                       = 0x1900;
     public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x1A00;
+    public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x1B00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;

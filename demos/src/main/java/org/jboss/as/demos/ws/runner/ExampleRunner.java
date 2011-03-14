@@ -43,7 +43,7 @@ public class ExampleRunner {
         DeploymentUtils utils = null;
         try {
             utils = new DeploymentUtils();
-            utils.addWarDeployment("ws-example.war", EndpointImpl.class.getPackage(), true);
+            utils.addWarDeployment("ws-example.war", true, EndpointImpl.class.getPackage());
             utils.deploy();
             testWSDL();
             testSOAPCall();

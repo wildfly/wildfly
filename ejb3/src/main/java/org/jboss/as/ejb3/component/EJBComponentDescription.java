@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.jboss.as.ee.component.ComponentNamingMode;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -83,6 +84,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
         super(componentName, componentClassName, moduleName, applicationName);
+        setNamingMode(ComponentNamingMode.CREATE);
     }
 
     private static <K, V> V get(Map<K, V> map, K key) {

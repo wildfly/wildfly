@@ -72,7 +72,7 @@ public class DeploymentUtils implements Closeable {
         manager = ServerDeploymentManager.Factory.create(client);
     }
 
-    public DeploymentUtils(String archiveName, Package pkg) throws UnknownHostException {
+    public DeploymentUtils(String archiveName, Package... pkg) throws UnknownHostException {
         this();
         addDeployment(archiveName, pkg);
     }
@@ -82,25 +82,25 @@ public class DeploymentUtils implements Closeable {
         deployments.add(new ArbitraryDeployment(archive,false));
     }
 
-    public DeploymentUtils(String archiveName, Package pkg, boolean show) throws UnknownHostException {
+    public DeploymentUtils(String archiveName, boolean show, Package... pkgs) throws UnknownHostException {
         this();
-        addDeployment(archiveName, pkg, show);
+        addDeployment(archiveName, show, pkgs);
     }
 
-    public synchronized void addDeployment(String archiveName, Package pkg) {
-        addDeployment(archiveName, pkg, false);
+    public synchronized void addDeployment(String archiveName, Package... pkgs) {
+        addDeployment(archiveName, false, pkgs);
     }
 
-    public synchronized void addDeployment(String archiveName, Package pkg, boolean show) {
-        deployments.add(new Deployment(archiveName, pkg, show));
+    public synchronized void addDeployment(String archiveName,  boolean show, Package... pkgs) {
+        deployments.add(new Deployment(archiveName, pkgs, show));
     }
 
-    public synchronized void addWarDeployment(String archiveName, Package pkg) {
-        addWarDeployment(archiveName, pkg, false);
+    public synchronized void addWarDeployment(String archiveName, Package... pkgs) {
+        addWarDeployment(archiveName, false, pkgs);
     }
 
-    public synchronized void addWarDeployment(String archiveName, Package pkg, boolean show) {
-        deployments.add(new WarDeployment(archiveName, pkg, show));
+    public synchronized void addWarDeployment(String archiveName, boolean show, Package... pkgs) {
+        deployments.add(new WarDeployment(archiveName, pkgs, show));
     }
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
@@ -232,12 +232,14 @@ public class DeploymentUtils implements Closeable {
     private class Deployment extends AbstractDeployment {
         final File realArchive;
 
-        public Deployment(String archiveName, Package pkg, boolean show) {
+        public Deployment(String archiveName, Package[] pkgs, boolean show) {
 
             ArchivePath metaInf = ArchivePaths.create("META-INF");
 
             JavaArchive archive = ShrinkWrap.create(JavaArchive.class, archiveName);
-            archive.addPackage(pkg);
+            for(Package pkg : pkgs) {
+                archive.addPackage(pkg);
+            }
 
             File sourceMetaInf = getSourceMetaInfDir(archiveName);
             addFiles(archive, sourceMetaInf, metaInf);
@@ -256,13 +258,15 @@ public class DeploymentUtils implements Closeable {
     private class WarDeployment extends AbstractDeployment {
         final File realArchive;
 
-        public WarDeployment(String archiveName, Package pkg, boolean show) {
+        public WarDeployment(String archiveName, Package[] pkgs, boolean show) {
 
             ArchivePath metaInf = ArchivePaths.create("META-INF");
 
 
             WebArchive archive = ShrinkWrap.create(WebArchive.class, archiveName);
-            archive.addPackage(pkg);
+            for(Package pkg : pkgs) {
+                archive.addPackage(pkg);
+            }
 
             File sourceMetaInf = getSourceMetaInfDir(archiveName);
             addFiles(archive, sourceMetaInf, metaInf);

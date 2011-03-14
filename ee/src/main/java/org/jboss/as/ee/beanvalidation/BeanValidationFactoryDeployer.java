@@ -86,7 +86,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
         for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if(component.getNamingMode() == ComponentNamingMode.CREATE) {
                 final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getAppName(),moduleDescription.getModuleName(),component.getComponentName());
-                bindServices(factory,deploymentUnit, serviceTarget,moduleDescription, moduleDescription.getModuleName(), compContextServiceName);
+                bindServices(factory,deploymentUnit, serviceTarget, moduleDescription, component.getComponentName(), compContextServiceName);
             }
         }
 

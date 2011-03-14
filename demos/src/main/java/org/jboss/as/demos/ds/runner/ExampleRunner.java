@@ -40,7 +40,7 @@ public class ExampleRunner {
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
         try {
-            utils = new DeploymentUtils("ds-mbean.sar", Test.class.getPackage(), true);
+            utils = new DeploymentUtils("ds-mbean.sar", true, Test.class.getPackage());
 
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=ds");

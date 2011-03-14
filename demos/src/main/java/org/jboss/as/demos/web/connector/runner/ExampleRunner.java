@@ -50,7 +50,7 @@ public class ExampleRunner {
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             utils = new DeploymentUtils();
-            utils.addWarDeployment("war-example.war", SimpleServlet.class.getPackage(), true);
+            utils.addWarDeployment("war-example.war", true, SimpleServlet.class.getPackage());
             utils.deploy();
 
             // Create the test connector

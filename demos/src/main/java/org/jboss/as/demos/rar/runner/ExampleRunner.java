@@ -39,8 +39,8 @@ public class ExampleRunner {
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
         try {
-            utils = new DeploymentUtils("rar-example.rar", HelloWorldConnection.class.getPackage(), true);
-            utils.addDeployment("rar-mbean.sar", Test.class.getPackage(), true);
+            utils = new DeploymentUtils("rar-example.rar", true, HelloWorldConnection.class.getPackage());
+            utils.addDeployment("rar-mbean.sar", true, Test.class.getPackage());
 
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=rar");

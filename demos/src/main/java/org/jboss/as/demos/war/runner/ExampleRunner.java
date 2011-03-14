@@ -42,7 +42,7 @@ public class ExampleRunner {
       DeploymentUtils utils = null;
       try {
          utils = new DeploymentUtils();
-         utils.addWarDeployment("war-example.war", SimpleServlet.class.getPackage(), true);
+         utils.addWarDeployment("war-example.war", true, SimpleServlet.class.getPackage());
          utils.deploy();
 
          performCall("simple");
