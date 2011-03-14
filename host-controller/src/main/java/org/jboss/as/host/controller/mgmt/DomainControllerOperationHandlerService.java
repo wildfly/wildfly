@@ -43,8 +43,10 @@ public class DomainControllerOperationHandlerService extends ModelControllerOper
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
 
     private InjectedValue<ManagementCommunicationService> managementCommunicationService = new InjectedValue<ManagementCommunicationService>();
+    private final boolean isSlave;
 
-    public DomainControllerOperationHandlerService() {
+    public DomainControllerOperationHandlerService(boolean isSlave) {
+        this.isSlave = isSlave;
     }
 
     @Override
@@ -68,8 +70,12 @@ public class DomainControllerOperationHandlerService extends ModelControllerOper
         return managementCommunicationService.getValue().getInitialMessageHandler();
     }
 
+    @Override
     protected ModelControllerOperationHandler createOperationHandler(ModelController modelController, MessageHandler initialMessageHandler) {
-        return new DomainControllerOperationHandlerImpl((DomainController)modelController, initialMessageHandler);
+        if (isSlave) {
+            return super.createOperationHandler(modelController, initialMessageHandler);
+        }
+        return new MasterDomainControllerOperationHandlerImpl((DomainController)modelController, initialMessageHandler);
     }
 
 }

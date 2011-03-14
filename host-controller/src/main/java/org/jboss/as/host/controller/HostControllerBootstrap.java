@@ -144,6 +144,7 @@ public class HostControllerBootstrap {
             }
         };
 
+        // We use a BasicModelController just to process the boot ops and build the model
         final class BootstrapModelController extends BasicModelController {
             BootstrapModelController() {
                 super(hostModelNode, configurationPersister, hostRegistry);
@@ -271,7 +272,7 @@ public class HostControllerBootstrap {
             .install();
 
         //Install the domain controller operation handler
-        final DomainControllerOperationHandlerService operationHandlerService = new DomainControllerOperationHandlerService();
+        DomainControllerOperationHandlerService operationHandlerService = new DomainControllerOperationHandlerService(isSlave);
         serviceTarget.addService(DomainControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
             .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
             .addDependency(DomainController.SERVICE_NAME, ModelController.class, operationHandlerService.getModelControllerValue())

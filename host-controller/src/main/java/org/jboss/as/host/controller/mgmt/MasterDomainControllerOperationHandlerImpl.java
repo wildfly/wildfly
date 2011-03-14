@@ -51,9 +51,9 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class DomainControllerOperationHandlerImpl extends ModelControllerOperationHandlerImpl {
+public class MasterDomainControllerOperationHandlerImpl extends ModelControllerOperationHandlerImpl {
 
-    public DomainControllerOperationHandlerImpl(DomainController modelController, MessageHandler initiatingHandler) {
+    public MasterDomainControllerOperationHandlerImpl(DomainController modelController, MessageHandler initiatingHandler) {
         super(modelController, initiatingHandler);
     }
 
