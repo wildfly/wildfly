@@ -21,8 +21,6 @@
  */
 package org.jboss.as.server.moduleservice;
 
-import java.io.IOException;
-
 import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -30,13 +28,14 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.vfs.VirtualFile;
+
+import java.io.File;
 
 /**
  * Service that manages external modules.
@@ -55,17 +54,13 @@ public class ExternalModuleService implements Service<ExternalModuleService> {
 
     private volatile ServiceContainer serviceContainer;
 
-    public ModuleIdentifier addExternalModule(VirtualFile externalModule) {
-        ModuleIdentifier identifier = ModuleIdentifier.create(EXTERNAL_MODULE_PREFIX + externalModule.getPathName());
+    public ModuleIdentifier addExternalModule(String externalModule) {
+        ModuleIdentifier identifier = ModuleIdentifier.create(EXTERNAL_MODULE_PREFIX + externalModule);
         ServiceName serviceName = ServiceModuleLoader.moduleSpecServiceName(identifier);
         ServiceController<?> controller = serviceContainer.getService(serviceName);
         if (controller == null) {
-            try {
-                ExternalModuleSpecService service = new ExternalModuleSpecService(identifier, externalModule.getPhysicalFile());
-                serviceContainer.addService(serviceName, service).setInitialMode(Mode.ON_DEMAND).install();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            ExternalModuleSpecService service = new ExternalModuleSpecService(identifier, new File(externalModule));
+            serviceContainer.addService(serviceName, service).setInitialMode(Mode.ON_DEMAND).install();
         }
         return identifier;
     }

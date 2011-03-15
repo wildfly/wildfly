@@ -78,8 +78,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
         final DeploymentUnit parent = deploymentUnit.getParent();
         final DeploymentUnit topLevelDeployment = parent == null ? deploymentUnit : parent;
-        final VirtualFile toplevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        final VirtualFile deploymentDirRoot = toplevelRoot.getParent();
+        final VirtualFile topLevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final ExternalModuleService externalModuleService = topLevelDeployment.getAttachment(Attachments.EXTERNAL_MODULE_SERVICE);
         final List<AdditionalModuleSpecification> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
         final List<ResourceRoot> topLevelResourceRoots = topLevelDeployment.getAttachment(Attachments.RESOURCE_ROOTS);
@@ -123,7 +122,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             final String[] items = getClassPathEntries(resourceRoot);
             for (String item : items) {
                 final VirtualFile classPathFile = resourceRoot.getRoot().getParent().getChild(item);
-                if (isInside(classPathFile, toplevelRoot)) {
+                if (isInside(classPathFile, topLevelRoot)) {
                     if (earLibJars.contains(classPathFile)) {
                         log.debugf("Class-Path entry %s in %s ignored, as target is in or referenced by /lib", classPathFile,
                                 resourceRoot.getRoot());
@@ -135,16 +134,13 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                         log.warn("Class Path entry " + item + " in "
                                 + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
                     }
-                } else if(!item.startsWith("/") && classPathFile.getParent().isRoot()) {
-                    //this is a dep on another deployment
-                    target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES,ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + classPathFile.getName()));
-                } else if(item.startsWith("/")) {
-                    ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(classPathFile);
+                }  else if(item.startsWith("/")) {
+                    ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(item);
                     target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
                     log.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
                 } else {
-                    log.warn("Class Path entry " + item + " in "
-                                + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
+                    //this is a dep on another deployment
+                    target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES,ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + classPathFile.getName()));
                 }
             }
         }

@@ -22,14 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -41,9 +33,18 @@ import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * A processor which adds class path entries for an ears lib directory. Any jars referenced by these class-path entries are
@@ -79,7 +80,7 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
         final Deque<ResourceRoot> libResourceRoots = new ArrayDeque<ResourceRoot>();
         // scan /lib entries for class-path items
         for (ResourceRoot resourceRoot : resourceRoots) {
-            if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
+            if (ModuleRootMarker.isModuleRoot(resourceRoot) && !SubDeploymentMarker.isSubDeployment(resourceRoot)) {
                 libResourceRoots.add(resourceRoot);
             }
         }
@@ -89,19 +90,17 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
             for (String item : items) {
                 final VirtualFile classPathFile = resourceRoot.getRoot().getParent().getChild(item);
                 if (!classPathFile.exists()) {
-                    throw new DeploymentUnitProcessingException("Class Path entry " + item + " in " + resourceRoot.getRoot()
-                            + "  not found. ");
+                    log.warnf("Class Path entry %s in %s not found. ", item, resourceRoot.getRoot());
                 }
-                if (isInside(classPathFile, toplevelRoot)) {
+                else if (isInside(classPathFile, toplevelRoot)) {
                     if (!files.containsKey(classPathFile)) {
-                        throw new DeploymentUnitProcessingException("Class Path entry " + item + " in "
-                                + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
+                        log.warnf("Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.",item,resourceRoot.getRoot());
                     } else {
                         final ResourceRoot target = files.get(classPathFile);
 
                         if (SubDeploymentMarker.isSubDeployment(target)) {
                             // for now we do not allow Class-Path references to subdeployments
-                            throw new DeploymentUnitProcessingException("Class Path entry " + item + " in "
+                            log.warnf("Class Path entry  in "
                                     + resourceRoot.getRoot() + "  may not point to a sub deployment.");
                         } else if (!ModuleRootMarker.isModuleRoot(target)) {
                             // otherwise just add it to the lib dir
@@ -112,11 +111,13 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
                         }
                         // otherwise it is already part of lib, so we leave it alone for now
                     }
-                } else {
-                    // add the external module reference to the ear
-                    ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(classPathFile);
+                } else if(item.startsWith("/")) {
+                    ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(item);
                     deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
                     log.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
+                } else {
+                    //this is a dep on another deployment
+                    deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES,ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX +  classPathFile.getName()));
                 }
             }
         }
