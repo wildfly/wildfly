@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author Emanuel Muckenhuber
  */
-public interface HostController extends TransactionalModelController {
+public interface HostController {
 
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
 

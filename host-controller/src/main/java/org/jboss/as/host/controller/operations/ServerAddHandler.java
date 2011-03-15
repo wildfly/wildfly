@@ -29,6 +29,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
 import java.util.Locale;
@@ -79,6 +81,12 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
             createCoreModel(model);
             model.get(NAME).set(name);
             model.get(GROUP).set(operation.require(GROUP));
+            if(operation.hasDefined(SOCKET_BINDING_GROUP)) {
+                model.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
+            }
+            if(operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+                model.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
+            }
             final ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
             resultHandler.handleResultComplete();
             return new BasicOperationResult(compensating);

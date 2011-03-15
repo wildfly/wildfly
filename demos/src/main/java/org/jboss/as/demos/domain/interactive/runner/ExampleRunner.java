@@ -21,6 +21,8 @@
  */
 package org.jboss.as.demos.domain.interactive.runner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -29,8 +31,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -389,63 +394,77 @@ public class ExampleRunner implements Runnable {
 
     private boolean addServer() throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        addCount++;
-//        stdout.println("Enter the name of the new server, or [C] to cancel:");
-//        String serverName = readStdIn();
-//        if ("C".equals(serverName.toUpperCase()))
-//            return continuePrompt();
+        addCount++;
+        stdout.println("Enter the name of the new server, or [C] to cancel:");
+        String serverName = readStdIn();
+        if ("C".equals(serverName.toUpperCase())) {
+            return continuePrompt();
+        }
+        String hostController = null;
+        List<String> hostControllers = client.getHostControllerNames();
+        if (hostControllers.size() == 1) {
+            hostController = hostControllers.get(0);
+        }
+        else {
+            do {
+                stdout.println("Choose a Host Controller for the new Server:");
+                Map<String, Object> choices = writeMenuBody(hostControllers);
+                stdout.println("[C]   Cancel");
+                String choice = readStdIn();
+                if ("C".equals(choice.toUpperCase())) {
+                    return continuePrompt();
+                }
+                Object obj = choices.get(choice);
+
+                if (obj == null) {
+                    stdout.println(choice + " is not a valid selection");
+                } else {
+                    hostController = obj.toString();
+                }
+            }
+            while (hostController == null);
+        }
+
+        String serverGroup = null;
+        List<String> serverGroups = getServerGroupNames();
+        do {
+            stdout.println("Choose a Server Group for the new Server:");
+            Map<String, Object> choices = writeMenuBody(serverGroups);
+            stdout.println("[C]   Cancel");
+            String choice = readStdIn();
+            if ("C".equals(choice.toUpperCase())) {
+                return continuePrompt();
+            }
+            Object obj = choices.get(choice);
+
+            if (obj == null) {
+                stdout.println(choice + " is not a valid selection");
+            }
+            else {
+                serverGroup = obj.toString();
+            }
+
+        }
+        while (serverGroup == null);
+
+        stdout.println("\nCreating new server: '" + serverName + "' on host controller '" + hostController + "' in server group: '" + serverGroup);
+
+        final ModelNode address = new ModelNode();
+        address.add(HOST, hostController);
+        address.add(SERVER_CONFIG, serverName);
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).set(address);
+        operation.get(GROUP).set(serverGroup);
+        operation.get(SOCKET_BINDING_GROUP).set("standard-sockets");
+        operation.get(SOCKET_BINDING_PORT_OFFSET).set(addCount * 500);
+
+        final ModelNode result = executeForResult(operation);
+
+        return continuePrompt();
 //
-//        String hostController = null;
-//        List<String> hostControllers = client.getHostControllerNames();
-//        if (hostControllers.size() == 1) {
-//            hostController = hostControllers.get(0);
-//        }
-//        else {
-//            do {
-//                stdout.println("Choose a Host Controller for the new Server:");
-//                Map<String, Object> choices = writeMenuBody(hostControllers);
-//                stdout.println("[C]   Cancel");
-//                String choice = readStdIn();
-//                if ("C".equals(choice.toUpperCase())) {
-//                    return continuePrompt();
-//                }
-//                Object obj = choices.get(choice);
 //
-//                if (obj == null) {
-//                    stdout.println(choice + " is not a valid selection");
-//                }
-//                else {
-//                    hostController = obj.toString();
-//                }
-//            }
-//            while (hostController == null);
-//        }
-//
-//        String serverGroup = null;
-//        List<String> serverGroups = getServerGroupNames();
-//        do {
-//            stdout.println("Choose a Server Group for the new Server:");
-//            Map<String, Object> choices = writeMenuBody(serverGroups);
-//            stdout.println("[C]   Cancel");
-//            String choice = readStdIn();
-//            if ("C".equals(choice.toUpperCase())) {
-//                return continuePrompt();
-//            }
-//            Object obj = choices.get(choice);
-//
-//            if (obj == null) {
-//                stdout.println(choice + " is not a valid selection");
-//            }
-//            else {
-//                serverGroup = obj.toString();
-//            }
-//
-//        }
-//        while (serverGroup == null);
-//
-//        stdout.println("\nCreating new server: " + serverName + " on host controller " + hostController + " in server group: " + serverGroup);
 //        List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(2);
 //        updates.add(new HostServerAdd(serverName, serverGroup));
 //        updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingGroupUpdate("standard-sockets")));
@@ -1260,7 +1279,7 @@ public class ExampleRunner implements Runnable {
                 throw new RuntimeException(result.get("host-failure-descriptions").toString());
             }
             else {
-                throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
+                throw new RuntimeException("Operation outcome is " + result.asString());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

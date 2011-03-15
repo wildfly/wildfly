@@ -91,7 +91,7 @@ public class ServerOperationResolver {
         INTERFACE("interface"),
         JVM("jvm"),
         SERVER("server"),
-        RUNNING_SERVER("running-server");
+        SERVER_CONFIG("server-config");
 
         private final String name;
 
@@ -539,10 +539,10 @@ public class ServerOperationResolver {
                     // TODO does server need to know about change?
                     return Collections.emptyMap();
                 }
-                case SERVER: {
+                case SERVER_CONFIG: {
                     return resolveServerConfigOperation(operation, address, host);
                 }
-                case RUNNING_SERVER:
+                case SERVER:
                 default:
                     throw new IllegalStateException(String.format("Unexpected initial path key %s", address.getElement(0).getKey()));
             }
