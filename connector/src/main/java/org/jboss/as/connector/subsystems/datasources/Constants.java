@@ -71,8 +71,6 @@ class Constants {
 
     static final String URLDELIMITER = "url-delimiter";
 
-    static final String POOL = "pool";
-
     static final String MIN_POOL_SIZE = "min-pool-size";
 
     static final String MAX_POOL_SIZE = "max-pool-size";
@@ -80,8 +78,6 @@ class Constants {
     static final String POOL_PREFILL = "pool-prefill";
 
     static final String POOL_USE_STRICT_MIN = "pool-use-strict-min";
-
-    static final String TIMEOUT = "time-out";
 
     static final String ALLOCATION_RETRY = "allocation-retry";
 
@@ -99,23 +95,17 @@ class Constants {
 
     static final String USETRYLOCK = "use-try-lock";
 
-    static final String SECURITY = "security";
-
     static final String USERNAME = "user-name";
 
     static final String PASSWORD = "password";
 
     static final String SECURITY_DOMAIN = "security-domain";
 
-    static final String STATEMENT = "statement";
-
     static final String SHAREPREPAREDSTATEMENTS = "share-prepared-statements";
 
     static final String PREPAREDSTATEMENTSCACHESIZE = "prepared-statements-cacheSize";
 
     static final String TRACKSTATEMENTS = "track-statements";
-
-    static final String VALIDATION = "validation";
 
     static final String VALIDCONNECTIONCHECKERCLASSNAME = "valid-connection-checker-class-name";
 

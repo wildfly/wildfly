@@ -40,7 +40,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.*;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOLNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
@@ -203,7 +203,7 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             }
             String className = getStringIfSetOrGetDefault(conDefNode, CLASS_NAME, null);
             String jndiName = getStringIfSetOrGetDefault(conDefNode, JNDI_NAME, null);
-            String poolName = getStringIfSetOrGetDefault(conDefNode, POOLNAME, null);
+            String poolName = getStringIfSetOrGetDefault(conDefNode, POOL_NAME, null);
             boolean enabled = getBooleanIfSetOrGetDefault(conDefNode, ENABLED, false);
             boolean useJavaContext = getBooleanIfSetOrGetDefault(conDefNode, USE_JAVA_CONTEXT, false);
 
@@ -251,7 +251,7 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             }
             String className = getStringIfSetOrGetDefault(adminObject, CLASS_NAME, null);
             String jndiName = getStringIfSetOrGetDefault(adminObject, JNDI_NAME, null);
-            String poolName = getStringIfSetOrGetDefault(adminObject, POOLNAME, null);
+            String poolName = getStringIfSetOrGetDefault(adminObject, POOL_NAME, null);
             boolean enabled = getBooleanIfSetOrGetDefault(adminObject, ENABLED, false);
             boolean useJavaContext = getBooleanIfSetOrGetDefault(adminObject, USE_JAVA_CONTEXT, false);
 
