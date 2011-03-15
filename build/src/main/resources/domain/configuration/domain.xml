@@ -23,25 +23,27 @@
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
-                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
+                            urn:jboss:domain:connector:1.0 jboss-connector.xsd
+                            urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:ejb3:1.0 jboss-ejb3.xsd
                             urn:jboss:domain:ee:1.0 jboss-ee.xsd
-                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
-                            urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
-                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
-                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
-                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
                             urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:jpa:1.0 jboss-jpa.xsd
-                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
                             urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
-                            urn:jboss:domain:connector:1.0 jboss-connector.xsd
-                            urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
+                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
+                            urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
                             urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd
+                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
                             urn:jboss:domain:web:1.0 jboss-web.xsd
-                            urn:jboss:domain:weld:1.0 jboss-weld.xsd
+                            urn:jboss:domain:security:1.0 jboss-security.xsd
                             urn:jboss:domain:webservices:1.0 jboss-webservices.xsd
-                            urn:jboss:domain:security:1.0 jboss-security.xsd">
+                            urn:jboss:domain:weld:1.0 jboss-weld.xsd">
 
     <extensions>
         <extension module="org.jboss.as.connector"/>
@@ -50,6 +52,7 @@
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.ee"/>
+        <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
@@ -112,6 +115,7 @@
                 </bounded-queue-thread-pool>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <jaas>
