@@ -22,17 +22,18 @@
 
 package org.jboss.as.server.deployment.annotation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Processor responsible for creating and attaching a {@link CompositeIndex} for a deployment.
@@ -55,13 +56,17 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
             if (resourceRoots != null) {
                 for (ResourceRoot resourceRoot : resourceRoots) {
                     // do not add child sub deployments to the composite index
-                    if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                    if (!SubDeploymentMarker.isSubDeployment(resourceRoot) && ModuleRootMarker.isModuleRoot(resourceRoot)) {
                         allResourceRoots.add(resourceRoot);
                     }
                 }
             }
         }
-        allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+
+        if(ModuleRootMarker.isModuleRoot(deploymentRoot)) {
+            allResourceRoots.add(deploymentRoot);
+        }
         List<Index> indexes = new ArrayList<Index>(allResourceRoots.size());
         for (ResourceRoot resourceRoot : allResourceRoots) {
             Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
