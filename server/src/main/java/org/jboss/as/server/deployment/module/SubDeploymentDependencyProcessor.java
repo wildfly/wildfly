@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Processor that set up module dependencies between sub deployments
@@ -53,7 +54,9 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
         final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (parentModule != null) {
             // access to ear classes
-            moduleSpec.addDependency(new ModuleDependency(moduleLoader, parentModule, false, false, true));
+            ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, parentModule, false, false, true);
+            moduleDependency.addImportFilter(PathFilters.acceptAll(),true);
+            moduleSpec.addDependency(moduleDependency);
         }
 
         for(DeploymentUnit subDeployment : subDeployments){
@@ -64,6 +67,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
                 continue;
             }
             ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER), false, false, true);
+            moduleDependency.addImportFilter(PathFilters.acceptAll(),true);
             moduleSpec.addDependency(moduleDependency);
         }
     }
