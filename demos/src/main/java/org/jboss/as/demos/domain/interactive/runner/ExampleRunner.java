@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
@@ -62,10 +63,18 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
@@ -250,11 +259,10 @@ public class ExampleRunner implements Runnable {
 
     private boolean dumpDomainConfig() throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        DomainModel dm = client.getDomainModel();
-//        stdout.println(writeModel("domain", dm));
-//        return continuePrompt();
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-config-as-xml");
+        stdout.println(executeForResult(OperationBuilder.Factory.create(op).build()).asString());
+        return continuePrompt();
     }
 
     private boolean listHostControllers() throws Exception {
@@ -297,10 +305,10 @@ public class ExampleRunner implements Runnable {
 
     private void writeHostController(String hc) throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        stdout.println("\nReading host configuration for host controller " + hc + "\n");
-//        stdout.println(writeModel("host", client.getHostModel(hc)));
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-config-as-xml");
+        op.get("address").add("host", hc);
+        stdout.println(executeForResult(OperationBuilder.Factory.create(op).build()).asString());
     }
 
     private boolean listServers() throws Exception {
@@ -318,20 +326,18 @@ public class ExampleRunner implements Runnable {
 
     private boolean dumpServer()  throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        ServerIdentity server = chooseServer(ServerStatus.STARTED);
-//        if (server != null) {
-//            stdout.println("\nReading runtime configuration for " + server.getServerName() + "\n");
-//            ServerModel hc = client.getServerModel(server.getHostName(), server.getServerName());
-//            if (hc == null) {
-//                stdout.println("ERROR: server model is null");
-//            }
-//            else {
-//                stdout.println(writeModel("server", hc));
-//            }
-//        }
-//        return continuePrompt();
+        ServerIdentity server = chooseServer(ServerStatus.STARTED);
+        if (server != null) {
+            stdout.println("\nReading runtime configuration for " + server.getServerName() + "\n");
+
+            ModelNode op = new ModelNode();
+            op.get("operation").set("read-config-as-xml");
+            ModelNode address = op.get("address");
+            address.add("host", server.getHostName());
+            address.add("server", server.getServerName());
+            stdout.println(executeForResult(OperationBuilder.Factory.create(op).build()).asString());
+        }
+        return continuePrompt();
     }
 
     private boolean stopServer() throws Exception {
@@ -442,27 +448,42 @@ public class ExampleRunner implements Runnable {
 
     private List<String> getServerGroupNames() {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        SortedSet<String> sorted = new TreeSet<String>(client.getDomainModel().getServerGroupNames());
-//        return new ArrayList<String>(sorted);
+        SortedSet<String> sorted = new TreeSet<String>();
+        ModelNode domainModel = getDomainModel();
+        if (domainModel.hasDefined("server-group")) {
+            sorted.addAll(domainModel.get("server-group").keys());
+        }
+        return new ArrayList<String>(sorted);
+    }
+
+    private ModelNode getDomainModel() {
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-resource");
+        op.get("recursive").set(true);
+        op.get("proxies").set(false);
+        return executeForResult(OperationBuilder.Factory.create(op).build());
     }
 
     private boolean removeServer() throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        ServerIdentity server = chooseServer(ServerStatus.STOPPED, ServerStatus.DISABLED);
-//        if (server != null) {
-//            stdout.println("Removing server " + server.getServerName());
-//            List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(1);
-//            updates.add(new HostServerRemove(server.getServerName()));
-//
-//            List<HostUpdateResult<?>>results = client.applyHostUpdates(server.getHostName(), updates);
-//            HostUpdateResult<?> result = results.get(0);
-//            stdout.println("Remove success: " + result.isSuccess());
-//        }
-//        return continuePrompt();
+        ServerIdentity server = chooseServer(ServerStatus.STOPPED, ServerStatus.DISABLED);
+        if (server != null) {
+            stdout.println("Removing server " + server.getServerName());
+            ModelNode op = new ModelNode();
+            op.get("operation").set("remove");
+            ModelNode address = op.get("address");
+            address.add("host", server.getHostName());
+            address.add("server-config", server.getServerGroupName());
+            boolean success = true;
+            try {
+                executeForResult(OperationBuilder.Factory.create(op).build());
+            }
+            catch (Exception e) {
+                success = false;
+            }
+            stdout.println("Remove success: " + success);
+        }
+        return continuePrompt();
     }
 
     private ServerIdentity chooseServer(ServerStatus valid, ServerStatus...alsoValid) throws IOException {
@@ -539,32 +560,35 @@ public class ExampleRunner implements Runnable {
 //        return continuePrompt();
     }
 
-//    private String chooseServerGroup(DomainModel model, Set<String> existingGroups) throws IOException {
-//        TreeSet<String> groups = new TreeSet<String>(model.getServerGroupNames());
-//        groups.removeAll(existingGroups);
-//        List<String> serverGroups = new ArrayList<String>(groups);
-//        String serverGroup = null;
-//        do {
-//            stdout.println("Choose a Server Group for the new Server:");
-//            Map<String, Object> choices = writeMenuBody(serverGroups);
-//            stdout.println("[C]   Cancel");
-//            String choice = readStdIn();
-//            if ("C".equals(choice.toUpperCase())) {
-//                break;
-//            }
-//            Object obj = choices.get(choice);
-//
-//            if (obj == null) {
-//                stdout.println(choice + " is not a valid selection");
-//            }
-//            else {
-//                serverGroup = obj.toString();
-//            }
-//
-//        }
-//        while (serverGroup == null);
-//        return serverGroup;
-//    }
+    private String chooseServerGroup(ModelNode model, Set<String> existingGroups) throws IOException {
+        TreeSet<String> groups = new TreeSet<String>();
+        if (model.hasDefined("server-group")) {
+            groups.addAll(model.get("server-group").keys());
+        }
+        groups.removeAll(existingGroups);
+        List<String> serverGroups = new ArrayList<String>(groups);
+        String serverGroup = null;
+        do {
+            stdout.println("Choose a Server Group for the new Server:");
+            Map<String, Object> choices = writeMenuBody(serverGroups);
+            stdout.println("[C]   Cancel");
+            String choice = readStdIn();
+            if ("C".equals(choice.toUpperCase())) {
+                break;
+            }
+            Object obj = choices.get(choice);
+
+            if (obj == null) {
+                stdout.println(choice + " is not a valid selection");
+            }
+            else {
+                serverGroup = obj.toString();
+            }
+
+        }
+        while (serverGroup == null);
+        return serverGroup;
+    }
 
 //    private DeploymentSetActionsCompleteBuilder deploymentSetBuilder(DeploymentPlanBuilder builder, DomainModel model) throws Exception {
 //
@@ -680,44 +704,47 @@ public class ExampleRunner implements Runnable {
 //        return builder;
 //    }
 
-//    private DeploymentPlanBuilder deployContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-//            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-//            DomainModel model) throws IOException {
-//
-//        String deployment = chooseUndeployedContent("Choose the content to deploy:", addedContent, deployedContent, undeployedContent, removedContent,
-//                model);
-//
-//        if (deployment != null) {
-//            deployedContent.add(deployment);
-//            undeployedContent.remove(deployment);
-//            return  builder.deploy(deployment);
-//        }
-//        return builder;
-//    }
+    private DeploymentPlanBuilder deployContent(DeploymentPlanBuilder builder, Set<String> addedContent,
+            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+            ModelNode domainModel) throws IOException {
 
-//    private String chooseUndeployedContent(String message, Set<String> addedContent, Set<String> deployedContent,
-//            Set<String> undeployedContent, Set<String> removedContent, DomainModel model) throws IOException {
-//
-//        // THIS DOES NOT CURRENTLY WORK
-//        throw new UnsupportedOperationException("Convert to detyped API");
-////        TreeSet<String> deployments = new TreeSet<String>(addedContent);
-////        // FIXME DomainModel needs to expose all deployments; here we are guessing
-////        for (String sgn : model.getServerGroupNames()) {
-////            ServerGroupElement sge = model.getServerGroup(sgn);
-////            for (ServerGroupDeploymentElement sgde : sge.getDeployments()) {
-////                if (!sgde.isStart()) {
-////                    deployments.add(sgde.getUniqueName());
-////                }
-////            }
-////        }
-////
-////        deployments.removeAll(deployedContent);
-////        deployments.addAll(undeployedContent);
-////        deployments.removeAll(removedContent);
-////
-////        String deployment = chooseDeployment(deployments, message);
-////        return deployment;
-//    }
+        String deployment = chooseUndeployedContent("Choose the content to deploy:", addedContent, deployedContent, undeployedContent, removedContent,
+                domainModel);
+
+        if (deployment != null) {
+            deployedContent.add(deployment);
+            undeployedContent.remove(deployment);
+            return  builder.deploy(deployment);
+        }
+        return builder;
+    }
+
+    private String chooseUndeployedContent(String message, Set<String> addedContent, Set<String> deployedContent,
+            Set<String> undeployedContent, Set<String> removedContent, ModelNode domainModel) throws IOException {
+
+        TreeSet<String> deployments = new TreeSet<String>(addedContent);
+        // FIXME DomainModel needs to expose all deployments; here we are guessing
+        if (domainModel.hasDefined("server-group")) {
+            for (Property serverGroupProp : domainModel.get("server-group").asPropertyList()) {
+                ModelNode serverGroup = serverGroupProp.getValue();
+                if (serverGroup.hasDefined("deployment")) {
+                    for (Property deploymentProp : serverGroup.get("deployment").asPropertyList()) {
+                        ModelNode deployment = deploymentProp.getValue();
+                        if (deployment.hasDefined("auto-start") && !deployment.get("auto-start").asBoolean()) {
+                            deployments.add(deploymentProp.getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        deployments.removeAll(deployedContent);
+        deployments.addAll(undeployedContent);
+        deployments.removeAll(removedContent);
+
+        String deployment = chooseDeployment(deployments, message);
+        return deployment;
+    }
 
     private String chooseDeployment(TreeSet<String> deployments, String message) throws IOException {
         String deployment = null;
@@ -744,77 +771,80 @@ public class ExampleRunner implements Runnable {
         return deployment;
     }
 
-//    private DeploymentPlanBuilder replaceContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-//            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent, DomainModel model) throws IOException {
-//
-//        String toDeploy = chooseUndeployedContent("Choose the replacement deployment:", removedContent, removedContent, removedContent, removedContent, model);
-//        if (toDeploy != null) {
-//            String toReplace = chooseDeployedContent("Choose the deployment to be replaced:", deployedContent, undeployedContent, model);
-//
-//            if (toReplace != null) {
-//                return  builder.replace(toDeploy, toReplace);
-//            }
-//        }
-//        return builder;
-//    }
+    private DeploymentPlanBuilder replaceContent(DeploymentPlanBuilder builder, Set<String> addedContent,
+            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent, ModelNode domainModel) throws IOException {
 
-//    private String chooseDeployedContent(String message, Set<String> deployedContent, Set<String> undeployedContent, DomainModel model)
-//            throws IOException {
-//
-//        // THIS DOES NOT CURRENTLY WORK
-//        throw new UnsupportedOperationException("Convert to detyped API");
-////        TreeSet<String> deployments = new TreeSet<String>(deployedContent);
-////        // FIXME DomainModel needs to expose all deployments; here we are guessing
-////        for (String sgn : model.getServerGroupNames()) {
-////            ServerGroupElement sge = model.getServerGroup(sgn);
-////            for (ServerGroupDeploymentElement sgde : sge.getDeployments()) {
-////                if (sgde.isStart()) {
-////                    deployments.add(sgde.getUniqueName());
-////                }
-////            }
-////        }
-////        deployments.removeAll(undeployedContent);
-////
-////        String deployment = chooseDeployment(deployments, message);
-////        return deployment;
-//    }
+        String toDeploy = chooseUndeployedContent("Choose the replacement deployment:", removedContent, removedContent, removedContent, removedContent, domainModel);
+        if (toDeploy != null) {
+            String toReplace = chooseDeployedContent("Choose the deployment to be replaced:", deployedContent, undeployedContent, domainModel);
 
-//    private DeploymentPlanBuilder undeployContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-//            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-//            DomainModel model, DeploymentActionsMenu cmd) throws IOException {
-//
-//        String toUndeploy = chooseDeployedContent("Choose the deployment to undeploy:", deployedContent, undeployedContent, model);
-//
-//        if (toUndeploy != null) {
-//            UndeployDeploymentPlanBuilder udpb = builder.undeploy(toUndeploy);
-//            builder = udpb;
-//            if (cmd == DeploymentActionsMenu.UNDEPLOY_AND_REMOVE) {
-//                builder = udpb.andRemoveUndeployed();
-//                removedContent.add(toUndeploy);
-//                addedContent.remove(toUndeploy);
-//            }
-//
-//            undeployedContent.add(toUndeploy);
-//            deployedContent.remove(toUndeploy);
-//        }
-//        return builder;
-//    }
+            if (toReplace != null) {
+                return  builder.replace(toDeploy, toReplace);
+            }
+        }
+        return builder;
+    }
 
-//    private DeploymentPlanBuilder removeContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-//            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-//            DomainModel model) throws IOException {
-//
-//
-//        String deployment = chooseUndeployedContent("Choose the content to remove:", addedContent, deployedContent, undeployedContent, removedContent,
-//                model);
-//
-//        if (deployment != null) {
-//            removedContent.add(deployment);
-//            addedContent.remove(deployment);
-//            return  builder.remove(deployment);
-//        }
-//        return builder;
-//    }
+    private String chooseDeployedContent(String message, Set<String> deployedContent, Set<String> undeployedContent, ModelNode domainModel)
+            throws IOException {
+
+        TreeSet<String> deployments = new TreeSet<String>(deployedContent);
+        // FIXME DomainModel needs to expose all deployments; here we are guessing
+        if (domainModel.hasDefined("server-group")) {
+            for (Property serverGroupProp : domainModel.get("server-group").asPropertyList()) {
+                ModelNode serverGroup = serverGroupProp.getValue();
+                if (serverGroup.hasDefined("deployment")) {
+                    for (Property deploymentProp : serverGroup.get("deployment").asPropertyList()) {
+                        ModelNode deployment = deploymentProp.getValue();
+                        if (!deployment.hasDefined("auto-start") || deployment.get("auto-start").asBoolean()) {
+                            deployments.add(deploymentProp.getName());
+                        }
+                    }
+                }
+            }
+        }
+        deployments.removeAll(undeployedContent);
+
+        String deployment = chooseDeployment(deployments, message);
+        return deployment;
+    }
+
+    private DeploymentPlanBuilder undeployContent(DeploymentPlanBuilder builder, Set<String> addedContent,
+            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+            ModelNode domainModel, DeploymentActionsMenu cmd) throws IOException {
+
+        String toUndeploy = chooseDeployedContent("Choose the deployment to undeploy:", deployedContent, undeployedContent, domainModel);
+
+        if (toUndeploy != null) {
+            UndeployDeploymentPlanBuilder udpb = builder.undeploy(toUndeploy);
+            builder = udpb;
+            if (cmd == DeploymentActionsMenu.UNDEPLOY_AND_REMOVE) {
+                builder = udpb.andRemoveUndeployed();
+                removedContent.add(toUndeploy);
+                addedContent.remove(toUndeploy);
+            }
+
+            undeployedContent.add(toUndeploy);
+            deployedContent.remove(toUndeploy);
+        }
+        return builder;
+    }
+
+    private DeploymentPlanBuilder removeContent(DeploymentPlanBuilder builder, Set<String> addedContent,
+            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+            ModelNode domainModel) throws IOException {
+
+
+        String deployment = chooseUndeployedContent("Choose the content to remove:", addedContent, deployedContent, undeployedContent, removedContent,
+                domainModel);
+
+        if (deployment != null) {
+            removedContent.add(deployment);
+            addedContent.remove(deployment);
+            return  builder.remove(deployment);
+        }
+        return builder;
+    }
 
     private boolean deploymentPlanCancelPrompt() throws IOException {
         stdout.println("\nHit Enter to continue or C to cancel this deployment plan:");
@@ -822,49 +852,49 @@ public class ExampleRunner implements Runnable {
         return "C".equals(choice.toUpperCase());
     }
 
-//    private DeploymentPlan completeDeploymentPlan(ServerGroupDeploymentPlanBuilder groupPlanBuilder, DomainModel model, Set<String> includedGroups) throws IOException {
-//
-//        do {
-//            writeMenu(DeploymentPlanMenu.ALL);
-//            String choice = readStdIn();
-//            DeploymentPlanMenu cmd = deploymentPlanMenuByCmd.get(choice.toUpperCase());
-//            if (cmd == null) {
-//                stdout.println(choice + " is not a valid selection.\n");
-//            }
-//            else {
-//                switch (cmd) {
-//                    case ROLLING_TO_SERVERS: {
-//                        groupPlanBuilder = groupPlanBuilder.rollingToServers();
-//                        break;
-//                    }
-//                    case TO_SERVER_GROUP: {
-//                        String serverGroup = chooseServerGroup(model, includedGroups);
-//                        if (serverGroup != null) {
-//                            groupPlanBuilder = groupPlanBuilder.toServerGroup(serverGroup);
-//                        }
-//                        break;
-//                    }
-//                    case ROLL_TO_SERVER_GROUP: {
-//                        String serverGroup = chooseServerGroup(model, includedGroups);
-//                        if (serverGroup != null) {
-//                            groupPlanBuilder = groupPlanBuilder.rollingToServerGroup(serverGroup);
-//                        }
-//                        break;
-//                    }
-//                    case EXECUTE: {
-//                        return groupPlanBuilder.build();
-//                    }
-//                    case CANCEL: {
-//                        return null;
-//                    }
-//                    default: {
-//                        stdout.println("Command " + cmd.getCommand() + " is not supported");
-//                    }
-//                }
-//            }
-//        }
-//        while (true);
-//    }
+    private DeploymentPlan completeDeploymentPlan(ServerGroupDeploymentPlanBuilder groupPlanBuilder, ModelNode model, Set<String> includedGroups) throws IOException {
+
+        do {
+            writeMenu(DeploymentPlanMenu.ALL);
+            String choice = readStdIn();
+            DeploymentPlanMenu cmd = deploymentPlanMenuByCmd.get(choice.toUpperCase());
+            if (cmd == null) {
+                stdout.println(choice + " is not a valid selection.\n");
+            }
+            else {
+                switch (cmd) {
+                    case ROLLING_TO_SERVERS: {
+                        groupPlanBuilder = groupPlanBuilder.rollingToServers();
+                        break;
+                    }
+                    case TO_SERVER_GROUP: {
+                        String serverGroup = chooseServerGroup(model, includedGroups);
+                        if (serverGroup != null) {
+                            groupPlanBuilder = groupPlanBuilder.toServerGroup(serverGroup);
+                        }
+                        break;
+                    }
+                    case ROLL_TO_SERVER_GROUP: {
+                        String serverGroup = chooseServerGroup(model, includedGroups);
+                        if (serverGroup != null) {
+                            groupPlanBuilder = groupPlanBuilder.rollingToServerGroup(serverGroup);
+                        }
+                        break;
+                    }
+                    case EXECUTE: {
+                        return groupPlanBuilder.build();
+                    }
+                    case CANCEL: {
+                        return null;
+                    }
+                    default: {
+                        stdout.println("Command " + cmd.getCommand() + " is not supported");
+                    }
+                }
+            }
+        }
+        while (true);
+    }
 
     private void writeDeploymentPlanResult(DeploymentPlanResult deploymentPlanResult) {
 
@@ -1233,6 +1263,29 @@ public class ExampleRunner implements Runnable {
 
         ExampleRunner runner = new ExampleRunner(InetAddress.getByName("localhost"), 9999);
         runner.run();
+    }
+
+    private ModelNode executeForResult(Operation op) {
+        try {
+            ModelNode result = client.execute(op);
+            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+                return result.get("result");
+            }
+            else if (result.hasDefined("failure-description")) {
+                throw new RuntimeException(result.get("failure-description").toString());
+            }
+            else if (result.hasDefined("domain-failure-description")) {
+                throw new RuntimeException(result.get("domain-failure-description").toString());
+            }
+            else if (result.hasDefined("host-failure-descriptions")) {
+                throw new RuntimeException(result.get("host-failure-descriptions").toString());
+            }
+            else {
+                throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String writeModel(final String element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {
