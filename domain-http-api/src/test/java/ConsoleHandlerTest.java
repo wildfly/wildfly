@@ -5,9 +5,9 @@ import org.jboss.as.domain.http.server.ConsoleHandler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.concurrent.Executors;
 
 /**
@@ -17,35 +17,45 @@ import java.util.concurrent.Executors;
 public class ConsoleHandlerTest extends TestCase {
 
     static final String[] failingNames= new String[] {
-        "console", "xyz"
+            "console", "xyz", "console/subdirectory", "console/subdirectory/"
     };
 
     static final String[] successfulNames = new String[] {
-        "console/index.html", "console/subdirectory/subresource.html"
+            "console/index.html", "console/subdirectory/subresource.html"
 
     };
 
-    public void testHandlerRegistration() throws Exception {
+    private HttpServer server;
 
+    @Override
+    protected void setUp() throws Exception {
         startServer();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        stopServer();
+    }
+
+    public void testResourceLoading() throws Exception {
 
         // 404
-        boolean hasFailed = false;
-        try {
-            for(String resource : failingNames) {
-                String response = GET(resource);
+        for(String resource : failingNames) {
+            boolean isNotFound = false;
+            try {
+                GET(resource);
+            } catch (Http404 notFound) {
+                isNotFound = true;
             }
-        } catch (Exception e) {
-            hasFailed = true;
-        }
-        assertTrue(hasFailed);
 
+            assertTrue("Should respond 404 on "+ resource, isNotFound);
+        }
 
         // 200
         try {
             for(String resource : successfulNames) {
-                String response = GET(resource);
-                System.out.println("> "+response);
+                String res = GET(resource);
+                System.out.println("> " +res);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,9 +64,16 @@ public class ConsoleHandlerTest extends TestCase {
 
     }
 
+    public void testContentTypes() throws Exception {
+        HttpURLConnection uc = (HttpURLConnection) new URL("http://localhost:8080/console/test.css").openConnection();
+        if(uc.getResponseCode()==404) fail("Not found!");
+
+        assertEquals("Wrong content type", "text/css", uc.getContentType());
+    }
+
     private void startServer() throws IOException {
         InetSocketAddress addr = new InetSocketAddress("localhost",8080);
-        HttpServer server = HttpServer.create(addr, 0);
+        server = HttpServer.create(addr, 0);
 
         server.createContext(ConsoleHandler.CONTEXT, new ConsoleHandler());
         server.setExecutor(Executors.newCachedThreadPool());
@@ -65,10 +82,16 @@ public class ConsoleHandlerTest extends TestCase {
         System.out.println("Server is listening on " +addr);
     }
 
+    private void stopServer() {
+        server.stop(0);
+        System.out.println("Server stopped");
+    }
 
-    private static String GET(String resource) throws Exception {
+    private static String GET(String resource) throws Exception, Http404 {
 
-        URLConnection uc = new URL("http://localhost:8080/"+resource).openConnection();
+        HttpURLConnection uc = (HttpURLConnection) new URL("http://localhost:8080/"+resource).openConnection();
+        if(uc.getResponseCode()==404) throw new Http404();
+
         BufferedReader in = new BufferedReader( new InputStreamReader(uc.getInputStream()));
         String inputLine;
 
@@ -78,5 +101,8 @@ public class ConsoleHandlerTest extends TestCase {
 
         in.close();
         return sb.toString();
+    }
+
+    static class Http404 extends Exception {
     }
 }

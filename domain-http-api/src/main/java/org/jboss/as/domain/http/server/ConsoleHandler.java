@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Heiko Braun
@@ -16,8 +18,21 @@ import java.net.URI;
 public class ConsoleHandler implements HttpHandler {
 
     public static final String CONTEXT = "/console";
+    private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
     private ClassLoader loader = null;
+
+    private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
+
+    static {
+        contentTypeMapping.put(".js",   "application/javascript");
+        contentTypeMapping.put(".html", "text/html");
+        contentTypeMapping.put(".htm",  "text/html");
+        contentTypeMapping.put(".css",  "text/css");
+        contentTypeMapping.put(".gif",  "image/gif");
+        contentTypeMapping.put(".png",  "image/png");
+        contentTypeMapping.put(".jpeg", "image/jpeg");
+    }
 
     public ConsoleHandler() {
     }
@@ -42,14 +57,15 @@ public class ConsoleHandler implements HttpHandler {
         String resource = path.substring(CONTEXT.length(), path.length());
         if(resource.startsWith("/")) resource = resource.substring(1);
 
-        if(resource.equals("")) respond404(http);
+        // respond 404 directory request
+        if(resource.equals("") || resource.indexOf(".")==-1) respond404(http);
 
         // load resource
         InputStream inputStream = getLoader().getResourceAsStream(resource);
         if(inputStream!=null)
         {
             Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.set("Content-Type", "text/plain");// TODO
+            responseHeaders.set("Content-Type", resolveContentType(path));
             http.sendResponseHeaders(200, 0);
 
             OutputStream outputStream = http.getResponseBody();
@@ -66,6 +82,25 @@ public class ConsoleHandler implements HttpHandler {
             respond404(http);
         }
 
+    }
+
+    private String resolveContentType(String resource)
+    {
+        assert resource.indexOf(".")!=-1 : "Invalid resource";
+
+        String contentType = null;
+        for(String suffix : contentTypeMapping.keySet())
+        {
+            if(resource.endsWith(suffix))
+            {
+                contentType = contentTypeMapping.get(suffix);
+                break;
+            }
+        }
+
+        if(null==contentType) contentType = APPLICATION_OCTET_STREAM;
+
+        return contentType;
     }
 
     private void respond404(HttpExchange http) throws IOException {
