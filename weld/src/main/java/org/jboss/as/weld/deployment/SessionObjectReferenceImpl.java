@@ -36,16 +36,15 @@ import java.io.Serializable;
  *
  * @author Stuart Douglas
  */
-public class SessionObjectReferenceImpl implements SessionObjectReference{
+public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     private final EjbDescriptorImpl<?> descriptor;
     private final ServiceRegistry serviceRegistry;
     private volatile Serializable sessionId;
     private volatile boolean removed = false;
     private volatile Component component;
-    private volatile ComponentView view;
 
-    public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor,  ServiceRegistry serviceRegistry) {
+    public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
         this.descriptor = descriptor;
         this.serviceRegistry = serviceRegistry;
     }
@@ -53,26 +52,26 @@ public class SessionObjectReferenceImpl implements SessionObjectReference{
 
     @Override
     public <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        if(component == null) {
+        if (component == null) {
             synchronized (this) {
-                if(component == null) {
+                if (component == null) {
                     final ServiceName createServiceName = descriptor.getCreateServiceName();
                     final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
                     component = (Component) controller.getValue();
-                    final ServiceName viewServiceName = component.getViewServices().get(businessInterfaceType);
-                    if(viewServiceName == null) {
-                        throw new RuntimeException("Could not find view for " + businessInterfaceType);
-                    }
-                    final ServiceController<?> viewController = serviceRegistry.getRequiredService(viewServiceName);
-                    view = (ComponentView) viewController.getValue();
                 }
             }
         }
-        if(descriptor.isStateful()) {
-            StatefulSessionComponent sfsb = (StatefulSessionComponent)component;
-            if(sessionId == null ) {
+        final ServiceName viewServiceName = component.getViewServices().get(businessInterfaceType);
+        if (viewServiceName == null) {
+            throw new RuntimeException("Could not find view for " + businessInterfaceType);
+        }
+        final ServiceController<?> viewController = serviceRegistry.getRequiredService(viewServiceName);
+        ComponentView view = (ComponentView) viewController.getValue();
+        if (descriptor.isStateful()) {
+            StatefulSessionComponent sfsb = (StatefulSessionComponent) component;
+            if (sessionId == null) {
                 synchronized (this) {
-                    if(sessionId == null) {
+                    if (sessionId == null) {
                         sessionId = sfsb.createSession();
                     }
                 }
@@ -84,7 +83,7 @@ public class SessionObjectReferenceImpl implements SessionObjectReference{
 
     @Override
     public void remove() {
-        if(descriptor.isStateful()) {
+        if (descriptor.isStateful()) {
             //TODO: destroy the EJB's
         }
         removed = true;
