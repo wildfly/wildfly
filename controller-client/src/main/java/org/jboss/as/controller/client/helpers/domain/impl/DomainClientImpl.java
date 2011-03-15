@@ -162,7 +162,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("operation").set("start");
         ModelNode address = op.get("address");
         address.add("host", hostControllerName);
-        address.add("server", serverName);
+        address.add("server-config", serverName);
         ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
         String status = result.asString();
         return Enum.valueOf(ServerStatus.class, status);
@@ -176,7 +176,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("operation").set("stop");
         ModelNode address = op.get("address");
         address.add("host", hostControllerName);
-        address.add("server", serverName);
+        address.add("server-config", serverName);
         // FIXME add graceful shutdown
         ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
         String status = result.asString();
@@ -191,7 +191,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("operation").set("restart");
         ModelNode address = op.get("address");
         address.add("host", hostControllerName);
-        address.add("server", serverName);
+        address.add("server-config", serverName);
         // FIXME add graceful shutdown
         ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
         String status = result.asString();
