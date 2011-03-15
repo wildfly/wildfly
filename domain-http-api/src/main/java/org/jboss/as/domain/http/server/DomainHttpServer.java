@@ -449,7 +449,7 @@ public class DomainHttpServer implements HttpHandler {
         HttpServer server = HttpServer.create(socket, backlog);
         DomainHttpServer me = new DomainHttpServer(server, modelController, serverTempDir);
         server.createContext(DOMAIN_API_CONTEXT, me);
-        server.createContext("/console", new ConsoleHandler());
+        server.createContext(ConsoleHandler.CONTEXT, new ConsoleHandler());
         server.setExecutor(executor);
 
         return new DomainHttpServer(server, modelController, serverTempDir);

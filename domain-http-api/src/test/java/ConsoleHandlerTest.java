@@ -21,7 +21,8 @@ public class ConsoleHandlerTest extends TestCase {
     };
 
     static final String[] successfulNames = new String[] {
-            "console/index.html", "console/subdirectory/subresource.html"
+            "console/app/app.nocache.js", // within console.jar
+            "console/index.html", "console/subdirectory/subresource.html" // within test/resources
 
     };
 

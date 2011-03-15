@@ -4,6 +4,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,37 +63,43 @@ public class ConsoleHandler implements HttpHandler {
 
         // load resource
         InputStream inputStream = getLoader().getResourceAsStream(resource);
-        if(inputStream!=null)
-        {
-            Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.set("Content-Type", resolveContentType(path));
+        if(inputStream!=null) {
+
+            final Headers responseHeaders = http.getResponseHeaders();
+            responseHeaders.add("Content-Type", resolveContentType(path));
+            responseHeaders.add("Access-Control-Allow-Origin", "*");
             http.sendResponseHeaders(200, 0);
 
             OutputStream outputStream = http.getResponseBody();
 
             int nextChar;
-            while ( ( nextChar = inputStream.read() ) != -1  )
-            {
+            while ( ( nextChar = inputStream.read() ) != -1  ) {
                 outputStream.write(nextChar);
             }
-            outputStream.close();
-        }
-        else
-        {
+
+            outputStream.flush();
+            safeClose(outputStream);
+            safeClose(inputStream);
+
+        } else {
             respond404(http);
         }
 
     }
 
-    private String resolveContentType(String resource)
-    {
+    private void safeClose(Closeable close) {
+        try {
+            close.close();
+        } catch (Throwable eat) {
+        }
+    }
+
+    private String resolveContentType(String resource) {
         assert resource.indexOf(".")!=-1 : "Invalid resource";
 
         String contentType = null;
-        for(String suffix : contentTypeMapping.keySet())
-        {
-            if(resource.endsWith(suffix))
-            {
+        for(String suffix : contentTypeMapping.keySet()) {
+            if(resource.endsWith(suffix)) {
                 contentType = contentTypeMapping.get(suffix);
                 break;
             }
@@ -104,11 +111,17 @@ public class ConsoleHandler implements HttpHandler {
     }
 
     private void respond404(HttpExchange http) throws IOException {
+
+        final Headers responseHeaders = http.getResponseHeaders();
+        responseHeaders.add("Content-Type", "text/html");
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
         http.sendResponseHeaders(404, 0);
+        OutputStream out = http.getResponseBody();
+        out.flush();
+        safeClose(out);
     }
 
-    private ClassLoader getLoader()
-    {
+    private ClassLoader getLoader() {
         if(loader!=null)
             return loader;
         else

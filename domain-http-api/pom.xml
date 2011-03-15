@@ -81,7 +81,7 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>standalone-console</artifactId>
-            <type>war</type>
+            <classifier>resources</classifier>
         </dependency>
 
         <dependency>

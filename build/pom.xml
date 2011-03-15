@@ -454,6 +454,12 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>standalone-console</artifactId>
+            <classifier>resources</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-connector</artifactId>
         </dependency>
 

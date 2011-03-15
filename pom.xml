@@ -3018,7 +3018,7 @@
                 <groupId>org.jboss.as</groupId>
                 <artifactId>standalone-console</artifactId>
                 <version>${version.org.jboss.management.console}</version>
-                <type>war</type>
+                <classifier>resources</classifier>
             </dependency>
 
             <dependency>
