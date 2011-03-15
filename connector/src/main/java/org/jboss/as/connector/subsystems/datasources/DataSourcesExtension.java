@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.util.Collections;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATION;
@@ -36,6 +37,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONS
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
@@ -71,12 +73,18 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DA
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DESCRIBE_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.List;
 import java.util.Locale;
@@ -98,11 +106,15 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
@@ -143,6 +155,11 @@ public class DataSourcesExtension implements Extension {
         subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE,
                 DataSourcesSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
+        final ModelNodeRegistration jdbcDrivers = subsystem.registerSubModel(PathElement.pathElement(JDBC_DRIVER), JDBC_DRIVER_DESC);
+        jdbcDrivers.registerOperationHandler(ADD, JdbcDriverAdd.INSTANCE, ADD_JDBC_DRIVER_DESC, false);
+        jdbcDrivers.registerOperationHandler(REMOVE, JdbcDriverRemove.INSTANCE, REMOVE_JDBC_DRIVER_DESC, false);
+        jdbcDrivers.registerOperationHandler(DESCRIBE, JdbcDriverDescribe.INSTANCE, DESCRIBE_JDBC_DRIVER_DESC, false, OperationEntry.EntryType.PRIVATE);
+
     }
 
     @Override
@@ -155,7 +172,9 @@ public class DataSourcesExtension implements Extension {
 
         static final NewDataSourceSubsystemParser INSTANCE = new NewDataSourceSubsystemParser();
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
@@ -206,7 +225,7 @@ public class DataSourcesExtension implements Extension {
                     if (isXADataSource) {
                         poolRequired = poolRequired
                                 || hasAnyOf(dataSourceNode, SAME_RM_OVERRIDE, INTERLIVING, NOTXSEPARATEPOOL, PAD_XID,
-                                        WRAP_XA_DATASOURCE);
+                                WRAP_XA_DATASOURCE);
                     }
                     if (poolRequired) {
                         writer.writeStartElement(isXADataSource ? XaDataSource.Tag.XA_POOL.getLocalName() : DataSource.Tag.POOL
@@ -287,11 +306,20 @@ public class DataSourcesExtension implements Extension {
             }
             writer.writeEndElement();
 
+            if(node.hasDefined(JDBC_DRIVER)) {
+                writer.writeStartElement(Element.DRIVERS.getLocalName());
+                for (Property driverProperty : node.get(JDBC_DRIVER).asPropertyList()) {
+                    writer.writeStartElement(Element.DRIVER.getLocalName());
+                    writer.writeAttribute(Attribute.MODULE.getLocalName(), driverProperty.getValue().require(MODULE).asString());
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
             writer.writeEndElement();
         }
 
         private void writeAttributeIfHas(final XMLExtendedStreamWriter writer, final ModelNode node,
-                final DataSource.Attribute attr, final String identifier) throws XMLStreamException {
+                                         final DataSource.Attribute attr, final String identifier) throws XMLStreamException {
             if (has(node, identifier)) {
                 writer.writeAttribute(attr.getLocalName(), node.get(identifier).asString());
             }
@@ -307,7 +335,7 @@ public class DataSourcesExtension implements Extension {
         }
 
         private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, XaDataSource.Tag element,
-                String identifier) throws XMLStreamException {
+                                       String identifier) throws XMLStreamException {
             writeElementIfHas(writer, node, element.getLocalName(), identifier);
         }
 
@@ -327,7 +355,7 @@ public class DataSourcesExtension implements Extension {
         }
 
         private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, CommonXaPool.Tag element,
-                String identifier) throws XMLStreamException {
+                                       String identifier) throws XMLStreamException {
             writeElementIfHas(writer, node, element.getLocalName(), identifier);
         }
 
@@ -347,24 +375,24 @@ public class DataSourcesExtension implements Extension {
         }
 
         private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, String localName,
-                String identifier) throws XMLStreamException {
+                                                   String identifier) throws XMLStreamException {
             if (node.has(identifier) && node.get(identifier).asBoolean()) {
                 writer.writeEmptyElement(localName);
             }
         }
 
         private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, Statement.Tag element,
-                String identifier) throws XMLStreamException {
+                                                   String identifier) throws XMLStreamException {
             writeEmptyElementIfHasAndTrue(writer, node, element.getLocalName(), identifier);
         }
 
         private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, CommonXaPool.Tag element,
-                String identifier) throws XMLStreamException {
+                                                   String identifier) throws XMLStreamException {
             writeEmptyElementIfHasAndTrue(writer, node, element.getLocalName(), identifier);
         }
 
         private void writeEmptyElementIfHasAndTrue(XMLExtendedStreamWriter writer, ModelNode node, TimeOut.Tag element,
-                String identifier) throws XMLStreamException {
+                                                   String identifier) throws XMLStreamException {
             writeEmptyElementIfHasAndTrue(writer, node, element.getLocalName(), identifier);
         }
 
@@ -384,7 +412,14 @@ public class DataSourcesExtension implements Extension {
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
-            final ModelNode subsystem = createEmptyAddSubsystemOperation();
+            final ModelNode address = new ModelNode();
+            address.add(ModelDescriptionConstants.SUBSYSTEM, DATASOURCES);
+            address.protect();
+
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(address);
+
             list.add(subsystem);
 
             DataSources dataSources = null;
@@ -393,16 +428,17 @@ public class DataSourcesExtension implements Extension {
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
                     case DATASOURCES_1_0: {
                         localName = reader.getLocalName();
-                        final Element element = Element.forName(reader.getLocalName());
+                        Element element = Element.forName(reader.getLocalName());
                         log.tracef("%s -> %s", localName, element);
                         switch (element) {
                             case SUBSYSTEM: {
+
                                 DsParser parser = new DsParser();
                                 dataSources = parser.parse(reader);
 
-                                // Ensure the final end tag of the subsystem has
-                                // been read.
-                                ParseUtils.requireNoContent(reader);
+                                // Parse what is left after the datasources element
+
+                                parseForDrivers(reader, address, list);
 
                                 break;
                             }
@@ -569,7 +605,7 @@ public class DataSourcesExtension implements Extension {
         }
 
         private void setIfNotNull(ModelNode dsModel, String extensionclassname, String extensionProperties,
-                JdbcAdapterExtension extension) {
+                                  JdbcAdapterExtension extension) {
             if (extension != null) {
                 setIfNotNull(dsModel, extensionclassname, extension.getClassName());
                 if (extension.getConfigPropertiesMap() != null) {
@@ -580,6 +616,84 @@ public class DataSourcesExtension implements Extension {
                 }
             }
 
+        }
+
+        private void parseForDrivers(XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case DATASOURCES_1_0: {
+                        final Element element = Element.forName(reader.getLocalName());
+                        switch (element) {
+                            case DRIVERS: {
+                                parseDrivers(reader, parentAddress, list);
+                                break;
+                            }
+                            default: {
+                                throw unexpectedElement(reader);
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        throw unexpectedElement(reader);
+                    }
+                }
+            }
+        }
+
+        private void parseDrivers(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case DATASOURCES_1_0: {
+                        final Element element = Element.forName(reader.getLocalName());
+                        switch (element) {
+                            case DRIVER: {
+
+                                final ModelNode op = new ModelNode();
+                                list.add(op);
+                                op.get(OP).set(ADD);
+
+                                String moduleName = null;
+
+                                for (int i = 0; i < reader.getAttributeCount(); i++) {
+                                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                    switch (attribute) {
+                                        case MODULE: {
+                                            moduleName = reader.getAttributeValue(i);
+                                            break;
+                                        }
+                                        default: {
+                                            throw unexpectedAttribute(reader, i);
+                                        }
+                                    }
+                                }
+
+                                if (moduleName == null) {
+                                    throw missingRequired(reader, Collections.singleton("module"));
+                                }
+
+                                op.get(MODULE).set(moduleName);
+
+                                final ModelNode address = parentAddress.clone();
+                                address.add(JDBC_DRIVER, moduleName);
+                                address.protect();
+                                op.get(OP_ADDR).set(address);
+
+                                requireNoContent(reader);
+
+                                break;
+                            }
+                            default: {
+                                throw unexpectedElement(reader);
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        throw unexpectedElement(reader);
+                    }
+                }
+            }
         }
 
         private void setIfNotNull(ModelNode node, String identifier, Boolean value) {
@@ -636,6 +750,10 @@ public class DataSourcesExtension implements Extension {
                 if (model.hasDefined(DATASOURCES)) {
                     ModelNode datasources = model.get(DATASOURCES);
                     add.get(DATASOURCES).set(datasources);
+                }
+                if(model.hasDefined(JDBC_DRIVER)) {
+                    ModelNode jdbcDrivers = model.get(JDBC_DRIVER);
+                    add.get(JDBC_DRIVER).set(jdbcDrivers);
                 }
             } else {
                 //TODO Fill in the details

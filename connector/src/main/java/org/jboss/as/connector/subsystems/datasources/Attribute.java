@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,33 +26,36 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A Element.
- * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * DataSource subsystem schema attributes.
+ *
+ * @author John Bailey
  */
-
-public enum Element {
+public enum Attribute {
     /** always the first **/
-    UNKNOWN(null), SUBSYSTEM("subsystem"), DATASOURCES("datasources"),  DRIVERS("drivers"), DRIVER("driver");
+    UNKNOWN(null),
+
+    MODULE("module");
 
     private final String name;
 
-    Element(final String name) {
+    Attribute(final String name) {
         this.name = name;
     }
 
     /**
      * Get the local name of this element.
+     *
      * @return the local name
      */
     public String getLocalName() {
         return name;
     }
 
-    private static final Map<String, Element> MAP;
+    private static final Map<String, Attribute> MAP;
 
     static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
+        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        for (Attribute element : values()) {
             final String name = element.getLocalName();
             if (name != null)
                 map.put(name, element);
@@ -60,8 +63,13 @@ public enum Element {
         MAP = map;
     }
 
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
+    public static Attribute forName(String localName) {
+        final Attribute element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
+    }
+
+    @Override
+    public String toString() {
+        return getLocalName();
     }
 }

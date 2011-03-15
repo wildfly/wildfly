@@ -39,6 +39,8 @@ class Constants {
 
     static final String CONNECTION_URL = "connection-url";
 
+    static final String JDBC_DRIVER = "jdbc-driver";
+
     static final String DRIVER_CLASS = "driver-class";
 
     static final String MODULE = "module";

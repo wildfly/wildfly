@@ -158,6 +158,7 @@ class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperation
                 ModelNode datasources = operation.get(DATASOURCES);
                 subModel.get(DATASOURCES).set(datasources);
             }
+            subModel.get(JDBC_DRIVER);
         } else {
 
             if (operation.has(DATASOURCES)) {
