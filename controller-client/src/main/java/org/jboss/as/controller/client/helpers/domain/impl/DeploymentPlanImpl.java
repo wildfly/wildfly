@@ -23,6 +23,7 @@
 package org.jboss.as.controller.client.helpers.domain.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -43,9 +44,11 @@ public class DeploymentPlanImpl implements DeploymentPlan, Serializable {
     private static final long serialVersionUID = -7652253540766375101L;
 
     private final DeploymentSetPlanImpl delegate;
+    private final boolean rollbackAcrossGroups;
 
-    DeploymentPlanImpl(DeploymentSetPlanImpl delegate) {
+    DeploymentPlanImpl(DeploymentSetPlanImpl delegate,final boolean rollbackAcrossGroups) {
         this.delegate = delegate;
+        this.rollbackAcrossGroups = rollbackAcrossGroups;
     }
 
     @Override
@@ -63,8 +66,13 @@ public class DeploymentPlanImpl implements DeploymentPlan, Serializable {
     }
 
     @Override
-    public boolean isRollback() {
+    public boolean isSingleServerRollback() {
         return delegate.isRollback();
+    }
+
+    @Override
+    public boolean isRollbackAcrossGroups() {
+        return rollbackAcrossGroups;
     }
 
     @Override
@@ -85,5 +93,14 @@ public class DeploymentPlanImpl implements DeploymentPlan, Serializable {
     @Override
     public List<Set<ServerGroupDeploymentPlan>> getServerGroupDeploymentPlans() {
         return delegate.getServerGroupDeploymentPlans();
+    }
+
+    List<DeploymentActionImpl> getDeploymentActionImpls() {
+        List<DeploymentAction> actions = delegate.getDeploymentActions();
+        List<DeploymentActionImpl> cast = new ArrayList<DeploymentActionImpl>(actions.size());
+        for (DeploymentAction action : actions) {
+            cast.add(DeploymentActionImpl.class.cast(action));
+        }
+        return cast;
     }
 }

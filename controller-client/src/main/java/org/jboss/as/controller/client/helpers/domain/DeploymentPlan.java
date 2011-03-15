@@ -49,14 +49,21 @@ public interface DeploymentPlan {
     List<DeploymentAction> getDeploymentActions();
 
     /**
-     * Gets whether all <code>deploy</code>, <code>undeploy</code>, <code>replace</code>
-     * or <code>remove</code> operations associated with the deployment set plan
+     * Indicates that on a given server all <code>deploy</code>, <code>undeploy</code> or
+     * <code>replace</code> operations associated with the deployment set
      * should be rolled back in case of a failure in any of them.
+     * <p>
+     * <strong>Note:</strong> This directive does not span across servers, i.e.
+     * a rollback on one server will not trigger rollback on others. Use
+     * {@link ServerGroupDeploymentPlanBuilder#withRollback()} to trigger
+     * rollback across servers.
      *
-     * @return <code>true</code> if all operations should be rolled back if
-     *         any of them fail
+     * @return a builder that can continue building the overall deployment plan
      */
-    boolean isRollback();
+    boolean isSingleServerRollback();
+
+
+    boolean isRollbackAcrossGroups();
 
     /**
      * Gets whether the deployment set plan is organized around a shutdown of the server.

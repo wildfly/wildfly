@@ -57,7 +57,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     }
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
-        super(existing);
+        super(existing, globalRollback);
         this.deploymentDistributor = existing.deploymentDistributor;
     }
 

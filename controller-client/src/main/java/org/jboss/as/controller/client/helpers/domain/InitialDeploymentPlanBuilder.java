@@ -35,6 +35,14 @@ import java.util.concurrent.TimeUnit;
 public interface InitialDeploymentPlanBuilder extends InitialDeploymentSetBuilder {
 
     /**
+     * Indicates that the actions in the plan need to be rolled back across any single
+     * given server group, then it should be rolled back across all server groups.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    InitialDeploymentSetBuilder withRollbackAcrossGroups();
+
+    /**
      * Indicates that on a given server all <code>deploy</code>, <code>undeploy</code> or
      * <code>replace</code> operations associated with the deployment set
      * should be rolled back in case of a failure in any of them.

@@ -34,18 +34,21 @@ import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 class AbstractDeploymentPlanBuilder  {
 
     private final DeploymentSetPlanImpl setPlan;
-
+    private final boolean rollbackAcrossGroups;
 
     AbstractDeploymentPlanBuilder() {
         this.setPlan = new DeploymentSetPlanImpl();
+        this.rollbackAcrossGroups = false;
     }
 
-    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing) {
+    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, final boolean rollbackAcrossGroups) {
         this.setPlan = existing.setPlan;
+        this.rollbackAcrossGroups = rollbackAcrossGroups;
     }
 
     AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, DeploymentSetPlanImpl setPlan) {
         this.setPlan = setPlan;
+        this.rollbackAcrossGroups = existing.rollbackAcrossGroups;
     }
 
     public DeploymentAction getLastAction() {
@@ -62,6 +65,6 @@ class AbstractDeploymentPlanBuilder  {
      * @return the deployment plan
      */
     public DeploymentPlan build() {
-        return new DeploymentPlanImpl(setPlan);
+        return new DeploymentPlanImpl(setPlan, rollbackAcrossGroups);
     }
 }

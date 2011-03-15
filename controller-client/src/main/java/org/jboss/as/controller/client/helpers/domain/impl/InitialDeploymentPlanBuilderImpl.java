@@ -46,7 +46,8 @@ class InitialDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderImpl i
         super(existing, globalRollback);
     }
 
-    public InitialDeploymentSetBuilder withGlobalRollback() {
+    @Override
+    public InitialDeploymentSetBuilder withRollbackAcrossGroups() {
         return new InitialDeploymentPlanBuilderImpl(this, true);
     }
 }

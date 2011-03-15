@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -40,8 +39,6 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationResult;
 import org.jboss.as.controller.client.ResultHandler;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
@@ -215,17 +212,12 @@ public class DomainClientImpl implements DomainClient {
         return !deploymentNames.contains(deploymentName);
     }
 
-    Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) {
-        // FIXME implement detyped deployment plans
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     @Override
     public void close() throws IOException {
         delegate.close();
     }
 
-    private ModelNode executeForResult(Operation op) {
+    ModelNode executeForResult(Operation op) {
         try {
             ModelNode result = delegate.execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
