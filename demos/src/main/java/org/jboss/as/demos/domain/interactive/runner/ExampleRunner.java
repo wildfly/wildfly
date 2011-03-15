@@ -513,7 +513,7 @@ public class ExampleRunner implements Runnable {
             op.get("operation").set("remove");
             ModelNode address = op.get("address");
             address.add("host", server.getHostName());
-            address.add("server-config", server.getServerGroupName());
+            address.add("server-config", server.getServerName());
             boolean success = true;
             try {
                 executeForResult(OperationBuilder.Factory.create(op).build());
