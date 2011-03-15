@@ -25,15 +25,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
+import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -126,6 +126,7 @@ public class CommandLineMain {
                 }
             }
         }
+        StreamUtils.safeClose(cmdCtx.client);
     }
 
     private static boolean isOperation(String line) {
