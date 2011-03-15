@@ -110,7 +110,7 @@ public interface DeploymentAction {
      *
      * @param listener the listener. Cannot be <code>null</code>
      */
-    void addDomainUpdateListener(DomainUpdateListener<Void> listener);
+    void addDomainUpdateListener(DomainUpdateListener listener);
 
     /**
      * Remove a previously {@link #addDomainUpdateListener(DomainUpdateListener) registered}
@@ -120,6 +120,6 @@ public interface DeploymentAction {
      *
      * @return <code>true</code> if <code>listener</code> was registered; <code>false</code> otherwise
      */
-    boolean removeDomainUpdateListener(DomainUpdateListener<Void> listener);
+    boolean removeDomainUpdateListener(DomainUpdateListener listener);
 
 }

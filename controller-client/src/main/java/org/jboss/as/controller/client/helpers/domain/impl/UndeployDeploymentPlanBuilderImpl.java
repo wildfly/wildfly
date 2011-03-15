@@ -39,8 +39,8 @@ class UndeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implem
 
     private final DeploymentAction undeployModification;
 
-    UndeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    UndeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
         DeploymentAction modification = setPlan.getLastAction();
         if (modification.getType() != DeploymentAction.Type.UNDEPLOY) {
             throw new IllegalStateException("Invalid action type " + modification.getType());
@@ -55,11 +55,12 @@ class UndeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implem
 
     @Override
     public RemoveDeploymentPlanBuilder andRemoveUndeployed() {
-        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(undeployModification.getDeploymentUnitUniqueName());
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new RemoveDeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(undeployModification.getDeploymentUnitUniqueName());
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new RemoveDeploymentPlanBuilderImpl(this, newSet);
     }
 }

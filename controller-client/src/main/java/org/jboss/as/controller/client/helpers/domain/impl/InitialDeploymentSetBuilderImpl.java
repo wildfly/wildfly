@@ -48,8 +48,8 @@ public class InitialDeploymentSetBuilderImpl extends DeploymentPlanBuilderImpl i
         super(existing, globalRollback);
     }
 
-    InitialDeploymentSetBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    InitialDeploymentSetBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class InitialDeploymentSetBuilderImpl extends DeploymentPlanBuilderImpl i
             throw new IllegalStateException("Graceful shutdown already configured with a timeout of " + currentSet.getGracefulShutdownTimeout() + " ms");
         }
         DeploymentSetPlanImpl newSet = currentSet.setGracefulTimeout(period);
-        return new InitialDeploymentSetBuilderImpl(this, newSet, true);
+        return new InitialDeploymentSetBuilderImpl(this, newSet);
     }
 
     @Override
@@ -69,13 +69,13 @@ public class InitialDeploymentSetBuilderImpl extends DeploymentPlanBuilderImpl i
 
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         DeploymentSetPlanImpl newSet = currentSet.setShutdown();
-        return new InitialDeploymentSetBuilderImpl(this, newSet, true);
+        return new InitialDeploymentSetBuilderImpl(this, newSet);
     }
 
     @Override
     public InitialDeploymentSetBuilder withSingleServerRollback() {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         DeploymentSetPlanImpl newSet = currentSet.setRollback();
-        return new InitialDeploymentSetBuilderImpl(this, newSet, true);
+        return new InitialDeploymentSetBuilderImpl(this, newSet);
     }
 }

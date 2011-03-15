@@ -35,8 +35,8 @@ import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBu
  */
 class DeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements DeployDeploymentPlanBuilder {
 
-    DeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    DeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
     }
 
     @Override

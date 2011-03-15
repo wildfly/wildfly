@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Variant of a {@link DeploymentPlanBuilder} that is meant
@@ -33,12 +35,50 @@ package org.jboss.as.controller.client.helpers.domain;
 public interface InitialDeploymentPlanBuilder extends InitialDeploymentSetBuilder {
 
     /**
-     * Indicates all <code>deploy</code>, <code>undeploy</code>, <code>replace</code>
-     * or <code>remove</code> operations associated with the deployment plan
+     * Indicates that on a given server all <code>deploy</code>, <code>undeploy</code> or
+     * <code>replace</code> operations associated with the deployment set
      * should be rolled back in case of a failure in any of them.
+     * <p>
+     * <strong>Note:</strong> This directive does not span across servers, i.e.
+     * a rollback on one server will not trigger rollback on others. Use
+     * {@link ServerGroupDeploymentPlanBuilder#withRollback()} to trigger
+     * rollback across servers.
      *
      * @return a builder that can continue building the overall deployment plan
      */
-    InitialDeploymentSetBuilder withGlobalRollback();
+    @Override
+    InitialDeploymentSetBuilder withSingleServerRollback();
+
+    /**
+     * Indicates actions specified subsequent to this call should be organized
+     * around a full graceful server shutdown and restart. The server will attempt to shut itself
+     * down gracefully, waiting for in-process work to complete before shutting
+     * down. See the full JBoss AS documentation for details on what "waiting for
+     * in-process work to complete" means.
+     *
+     * <p>For any <code>deploy</code> or <code>replace</code>
+     * actions, the new content will not be deployed until the server is restarted.
+     * For any <code>undeploy</code> or <code>replace</code> actions, the old content
+     * will be undeployed as part of normal server shutdown processing.</p>
+     *
+     * @param timeout maximum amount of time the graceful shutdown should wait for
+     *                existing work to complete before completing the shutdown
+     * @param timeUnit {@link TimeUnit} in which <code>timeout</code> is expressed
+     * @return a builder that can continue building the overall deployment plan
+     */
+    @Override
+    InitialDeploymentSetBuilder withGracefulShutdown(long timeout, TimeUnit timeUnit);
+
+    /**
+     * Indicates actions specified subsequent to this call should be organized
+     * around a full server restart. For any <code>deploy</code> or <code>replace</code>
+     * actions, the new content will not be deployed until the server is restarted.
+     * For any <code>undeploy</code> or <code>replace</code> actions, the old content
+     * will be undeployed as part of normal server shutdown processing.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    @Override
+    InitialDeploymentSetBuilder withShutdown();
 
 }

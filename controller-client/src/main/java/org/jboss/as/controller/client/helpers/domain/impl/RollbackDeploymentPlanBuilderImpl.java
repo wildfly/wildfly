@@ -34,8 +34,8 @@ import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBu
  */
 class RollbackDeploymentPlanBuilderImpl extends ServerGroupDeploymentPlanBuilderImpl implements RollbackDeploymentPlanBuilder {
 
-    RollbackDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    RollbackDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
     }
 
     @Override
@@ -47,7 +47,7 @@ class RollbackDeploymentPlanBuilderImpl extends ServerGroupDeploymentPlanBuilder
         }
         groupPlan = groupPlan.createAllowFailures(serverFailures);
         setPlan = setPlan.storeServerGroup(groupPlan);
-        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan);
     }
 
     @Override
@@ -59,7 +59,7 @@ class RollbackDeploymentPlanBuilderImpl extends ServerGroupDeploymentPlanBuilder
         }
         groupPlan = groupPlan.createAllowFailurePercentage(serverFailurePercentage);
         setPlan = setPlan.storeServerGroup(groupPlan);
-        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan);
     }
 
 }

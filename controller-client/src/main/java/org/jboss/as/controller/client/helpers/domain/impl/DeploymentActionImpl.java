@@ -79,7 +79,7 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private final String oldDeploymentUnitName;
     private final String newContentFileName;
     private final byte[] newContentHash;
-    private transient Set<DomainUpdateListener<?>> listeners;
+    private transient Set<DomainUpdateListener> listeners;
 
     private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName) {
         assert type != null : "type is null";
@@ -122,20 +122,23 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     }
 
     @Override
-    public synchronized void addDomainUpdateListener(DomainUpdateListener<Void> listener) {
+    public synchronized void addDomainUpdateListener(DomainUpdateListener listener) {
         if (listeners == null) {
-            listeners = new HashSet<DomainUpdateListener<?>>();
+            listeners = new HashSet<DomainUpdateListener>();
         }
         listeners.add(listener);
+
+        // FIXME remove when we can actually provide notifications
+        throw new UnsupportedOperationException("Use of DomainUpdateListener is not currently supported");
     }
 
     @Override
-    public synchronized boolean removeDomainUpdateListener(DomainUpdateListener<Void> listener) {
+    public synchronized boolean removeDomainUpdateListener(DomainUpdateListener listener) {
         return listeners != null && listeners.remove(listener);
     }
 
-    synchronized Set<DomainUpdateListener<?>> getListeners() {
-        return listeners == null ? Collections.<DomainUpdateListener<?>>emptySet()
+    synchronized Set<DomainUpdateListener> getListeners() {
+        return listeners == null ? Collections.<DomainUpdateListener>emptySet()
                                  : Collections.unmodifiableSet(listeners);
     }
 

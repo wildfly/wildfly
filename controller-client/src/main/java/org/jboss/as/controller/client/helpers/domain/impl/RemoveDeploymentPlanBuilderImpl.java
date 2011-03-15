@@ -34,8 +34,8 @@ import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBu
  */
 class RemoveDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements RemoveDeploymentPlanBuilder {
 
-    RemoveDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    RemoveDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
     }
 
     @Override

@@ -29,6 +29,6 @@ package org.jboss.as.controller.client.helpers.domain;
  *
  * @author Brian Stansberry
  */
-public interface DeployDeploymentPlanBuilder extends DeploymentSetActionsCompleteBuilder {
+public interface DeployDeploymentPlanBuilder extends DeploymentActionsCompleteBuilder {
 
 }

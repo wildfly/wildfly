@@ -38,19 +38,20 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
 
     private final String newContentKey;
 
-    AddDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    AddDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
         this.newContentKey = setPlan.getLastAction().getDeploymentUnitUniqueName();
     }
 
     @Override
     public DeployDeploymentPlanBuilder andDeploy() {
-        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(newContentKey);
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new DeployDeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(newContentKey);
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new DeployDeploymentPlanBuilderImpl(this, newSet);
     }
 
     @Override

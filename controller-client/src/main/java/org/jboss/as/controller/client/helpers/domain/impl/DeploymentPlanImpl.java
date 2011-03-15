@@ -23,48 +23,67 @@
 package org.jboss.as.controller.client.helpers.domain.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan;
+import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
 
 
 /**
  * Describes a set of actions to take to change the deployment content available
- * to and/or deployed in a standalone server.
+ * to deployed in a server group or set of server groups.
  *
  * @author Brian Stansberry
  */
 public class DeploymentPlanImpl implements DeploymentPlan, Serializable {
 
-    private static final long serialVersionUID = 4447681905208965268L;
+    private static final long serialVersionUID = -7652253540766375101L;
 
-    private final UUID uuid = UUID.randomUUID();
-    private final List<DeploymentSetPlan> deploymentSets = new ArrayList<DeploymentSetPlan>();
-    private final boolean globalRollback;
+    private final DeploymentSetPlanImpl delegate;
 
-    DeploymentPlanImpl(List<DeploymentSetPlanImpl> deploymentSets, boolean globalRollback) {
-        if (deploymentSets == null)
-            throw new IllegalArgumentException("deploymentSets is null");
-        this.deploymentSets.addAll(deploymentSets);
-        this.globalRollback = globalRollback;
+    DeploymentPlanImpl(DeploymentSetPlanImpl delegate) {
+        this.delegate = delegate;
     }
-
 
     @Override
     public UUID getId() {
-        return uuid;
+        return delegate.getId();
+    }
+
+    public DeploymentAction getLastAction() {
+        return delegate.getLastAction();
     }
 
     @Override
-    public boolean isGlobalRollback() {
-        return globalRollback;
+    public List<DeploymentAction> getDeploymentActions() {
+        return delegate.getDeploymentActions();
     }
 
     @Override
-    public List<DeploymentSetPlan> getDeploymentSetPlans() {
-        return new ArrayList<DeploymentSetPlan>(deploymentSets);
+    public boolean isRollback() {
+        return delegate.isRollback();
+    }
+
+    @Override
+    public long getGracefulShutdownTimeout() {
+        return delegate.getGracefulShutdownTimeout();
+    }
+
+    @Override
+    public boolean isGracefulShutdown() {
+        return delegate.isGracefulShutdown();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return delegate.isShutdown();
+    }
+
+    @Override
+    public List<Set<ServerGroupDeploymentPlan>> getServerGroupDeploymentPlans() {
+        return delegate.getServerGroupDeploymentPlans();
     }
 }

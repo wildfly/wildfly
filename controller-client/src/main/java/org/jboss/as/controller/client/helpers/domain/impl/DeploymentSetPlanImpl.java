@@ -36,8 +36,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
 
 
 /**
- * Describes a set of actions to take to change the deployment content available
- * to deployed in a server group or set of server groups.
+ * TODO get rid of this class and put all logic in DeploymentPlanImpl
  *
  * @author Brian Stansberry
  */

@@ -37,8 +37,8 @@ import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBu
  */
 class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderImpl implements ServerGroupDeploymentPlanBuilder {
 
-    ServerGroupDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    ServerGroupDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
     }
 
     @Override
@@ -50,7 +50,7 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         }
         groupPlan = groupPlan.createRollback();
         setPlan = setPlan.storeServerGroup(groupPlan);
-        return new RollbackDeploymentPlanBuilderImpl(this, setPlan, true);
+        return new RollbackDeploymentPlanBuilderImpl(this, setPlan);
     }
 
     @Override
@@ -62,7 +62,7 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         }
         groupPlan = groupPlan.createRollingToServers();
         setPlan = setPlan.storeServerGroup(groupPlan);
-        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan);
     }
 
     @Override
@@ -70,7 +70,7 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = new ServerGroupDeploymentPlan(serverGroupName);
         setPlan = setPlan.storeRollToServerGroup(groupPlan);
-        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan);
     }
 
     @Override
@@ -78,6 +78,6 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = new ServerGroupDeploymentPlan(serverGroupName);
         setPlan = setPlan.storeServerGroup(groupPlan);
-        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan);
     }
 }

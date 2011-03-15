@@ -22,9 +22,6 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 
@@ -36,33 +33,19 @@ import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
  */
 class AbstractDeploymentPlanBuilder  {
 
-    final boolean globalRollback;
-
-    private final List<DeploymentSetPlanImpl> setPlans = new ArrayList<DeploymentSetPlanImpl>();
+    private final DeploymentSetPlanImpl setPlan;
 
 
     AbstractDeploymentPlanBuilder() {
-        this.setPlans.add(new DeploymentSetPlanImpl());
-        this.globalRollback = false;
-    }
-    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, boolean globalRollback) {
-        this.setPlans.addAll(existing.setPlans);
-        this.globalRollback = globalRollback;
+        this.setPlan = new DeploymentSetPlanImpl();
     }
 
     AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing) {
-        this.setPlans.addAll(existing.setPlans);
-        this.globalRollback = existing.globalRollback;
+        this.setPlan = existing.setPlan;
     }
 
-    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        this(existing);
-        if (replace) {
-            this.setPlans.set(this.setPlans.size() - 1, setPlan);
-        }
-        else {
-            this.setPlans.add(setPlan);
-        }
+    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, DeploymentSetPlanImpl setPlan) {
+        this.setPlan = setPlan;
     }
 
     public DeploymentAction getLastAction() {
@@ -70,7 +53,7 @@ class AbstractDeploymentPlanBuilder  {
     }
 
     DeploymentSetPlanImpl getCurrentDeploymentSetPlan() {
-        return setPlans.get(setPlans.size() - 1);
+        return setPlan;
     }
 
     /**
@@ -79,6 +62,6 @@ class AbstractDeploymentPlanBuilder  {
      * @return the deployment plan
      */
     public DeploymentPlan build() {
-        return new DeploymentPlanImpl(setPlans, globalRollback);
+        return new DeploymentPlanImpl(setPlan);
     }
 }

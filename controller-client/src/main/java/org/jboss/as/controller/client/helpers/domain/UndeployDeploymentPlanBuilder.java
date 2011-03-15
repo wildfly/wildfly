@@ -29,7 +29,7 @@ package org.jboss.as.controller.client.helpers.domain;
  *
  * @author Brian Stansberry
  */
-public interface UndeployDeploymentPlanBuilder extends DeploymentSetActionsCompleteBuilder {
+public interface UndeployDeploymentPlanBuilder extends DeploymentActionsCompleteBuilder {
 
     /**
      * Indicates that deployment content that was undeployed via the preceding

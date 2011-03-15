@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -55,22 +56,25 @@ public interface DeploymentPlanResult {
     boolean isValid();
 
     /**
+     * Gets the exception describing the problem with a deployment plan that
+     * is not {@link #isValid() valid}.
      *
-     * @return
+     * @return the exception or {@code null} if the plan is valid
      */
     InvalidDeploymentPlanException getInvalidDeploymentPlanException();
 
     /**
-     * Gets the result of a {@link DeploymentSetPlan}.
+     * Gets the results for each server group.
      *
-     * @param deploymentSet the id of the deployment set plan
-     *
-     * @return the result. Will not be {@code null}
-     *
-     * @throws InvalidDeploymentPlanException if {@link #isValid()} would return <code>false</code>
-     * @throws IllegalArgumentException if {@code deploymentSet} is not the
-     * {@link DeploymentSetPlan#getId() id of a deployment set plan} associated
-     * with the overall deployment plan.
+     * @return map of server group results, keyed by server group name
      */
-    DeploymentSetPlanResult getDeploymentSetResult(UUID deploymentSet) throws InvalidDeploymentPlanException;
+    Map<String, ServerGroupDeploymentPlanResult> getServerGroupResults();
+
+    /**
+     * Gets the results of the {@link DeploymentAction}s associated with
+     * the deployment set plan.
+     *
+     * @return map of deployment action results, keyed by {@link DeploymentAction#getId() deployment action id}
+     */
+    Map<UUID, DeploymentActionResult> getDeploymentActionResults();
 }

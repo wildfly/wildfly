@@ -22,8 +22,9 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
-import java.util.Collection;
 import java.util.Map;
+
+import org.jboss.dmr.ModelNode;
 
 /**
  * Callback interface for listeners that wish to receive notifications related
@@ -34,7 +35,7 @@ import java.util.Map;
  *
  * @author Brian Stansberry
  */
-public interface DomainUpdateListener<R> {
+public interface DomainUpdateListener {
 
     /**
      * Handle successful application of the update.
@@ -42,7 +43,7 @@ public interface DomainUpdateListener<R> {
      * @param result the update result, if any
      * @param the server that generated the event
      */
-    void handleSuccess(R result, ServerIdentity server);
+    void handleSuccess(ModelNode result, ServerIdentity server);
 
     /**
      * Handle a failure to apply the update.
@@ -108,15 +109,6 @@ public interface DomainUpdateListener<R> {
      * @param hostFailureReasons a map of host name to failure cause
      */
     void handleHostFailed(Map<String, UpdateFailedException> hostFailureReasons);
-
-    /**
-     * Handle the event of the update successfully applying to the domain and to applicable host
-     * controllers.
-     *
-     * @param affectedServers the servers to which the update will be applied (resulting in
-     *  subsequent invocations on the methods in the {@link UpdateResultHandler super-interface}
-     */
-    void handleServersIdentified(Collection<ServerIdentity> affectedServers);
 
     /**
      * Handle the event of the execution of the update being cancelled.

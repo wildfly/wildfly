@@ -38,8 +38,8 @@ class ReplaceDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl impleme
 
     private final DeploymentAction replacementModification;
 
-    ReplaceDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    ReplaceDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
         this.replacementModification = setPlan.getLastAction();
     }
 
@@ -48,12 +48,14 @@ class ReplaceDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl impleme
         return super.toServerGroup(serverGroupName);
     }
 
+    @Override
     public DeploymentPlanBuilder andRemoveUndeployed() {
-        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(replacementModification.getReplacedDeploymentUnitUniqueName());
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new DeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(replacementModification.getReplacedDeploymentUnitUniqueName());
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new DeploymentPlanBuilderImpl(this, newSet);
     }
 }

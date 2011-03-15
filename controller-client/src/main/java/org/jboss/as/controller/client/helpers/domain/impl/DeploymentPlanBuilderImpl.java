@@ -57,12 +57,12 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     }
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
-        super(existing, globalRollback);
+        super(existing);
         this.deploymentDistributor = existing.deploymentDistributor;
     }
 
-    DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
-        super(existing, setPlan, replace);
+    DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan) {
+        super(existing, setPlan);
         this.deploymentDistributor = existing.deploymentDistributor;
     }
 
@@ -97,43 +97,48 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     @Override
     public AddDeploymentPlanBuilder add(String name, String commonName,
             InputStream stream) throws IOException, DuplicateDeploymentNameException {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
         byte[] hash = deploymentDistributor.distributeDeploymentContent(name, commonName, stream);
         DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, commonName, hash);
-        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new AddDeploymentPlanBuilderImpl(this, newSet, !add);
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new AddDeploymentPlanBuilderImpl(this, newSet);
     }
 
     @Override
     public AddDeploymentPlanBuilder add(String name) throws IOException {
-        DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, null, null);
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new AddDeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, null, null);
+
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new AddDeploymentPlanBuilderImpl(this, newSet);
     }
 
     @Override
     public DeployDeploymentPlanBuilder deploy(String key) {
-        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key);
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new DeployDeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key);
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new DeployDeploymentPlanBuilderImpl(this, newSet);
     }
 
     @Override
     public UndeployDeploymentPlanBuilder undeploy(String key) {
-        DeploymentActionImpl mod = DeploymentActionImpl.getUndeployAction(key);
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new UndeployDeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getUndeployAction(key);
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new UndeployDeploymentPlanBuilderImpl(this, newSet);
     }
 
     @Override
@@ -144,12 +149,13 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
 
     @Override
     public ReplaceDeploymentPlanBuilder replace(String replacement, String toReplace) {
-        DeploymentActionImpl mod = DeploymentActionImpl.getReplaceAction(replacement, toReplace);
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new ReplaceDeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getReplaceAction(replacement, toReplace);
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new ReplaceDeploymentPlanBuilderImpl(this, newSet);
     }
 
     @Override
@@ -181,29 +187,31 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
 
     @Override
     public RemoveDeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
         byte[] hash = deploymentDistributor.distributeReplacementDeploymentContent(name, commonName, stream);
         DeploymentActionImpl mod = DeploymentActionImpl.getFullReplaceAction(name, commonName, hash);
-        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new RemoveDeploymentPlanBuilderImpl(this, newSet, !add);
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new RemoveDeploymentPlanBuilderImpl(this, newSet);
     }
 
     @Override
     public RemoveDeploymentPlanBuilder remove(String key) {
-        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(key);
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new RemoveDeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(key);
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new RemoveDeploymentPlanBuilderImpl(this, newSet);
     }
 
     ServerGroupDeploymentPlanBuilder toServerGroup(final String serverGroupName) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         DeploymentSetPlanImpl newSet = currentSet.storeServerGroup(new ServerGroupDeploymentPlan(serverGroupName));
-        return new ServerGroupDeploymentPlanBuilderImpl(this, newSet, true);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, newSet);
     }
 
     private AddDeploymentPlanBuilder add(String name, String commonName, URL url) throws IOException, DuplicateDeploymentNameException {
@@ -232,10 +240,11 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
 
     DeploymentPlanBuilderImpl getNewBuilder(DeploymentActionImpl mod) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new DeploymentPlanBuilderImpl(this, newSet, !add);
+        if (currentSet.hasServerGroupPlans()) {
+            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+        }
+        DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
+        return new DeploymentPlanBuilderImpl(this, newSet);
     }
 
     private static String getName(URL url) {
