@@ -48,6 +48,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
+    private static volatile boolean youHaveBeenWarnedEJBTHREE2120 = false;
 
     /**
      * Construct a new instance.
@@ -94,7 +95,10 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Deprecated
     public TransactionAttributeType getTransactionAttributeType(Method method) {
-        log.warn("EJBTHREE-2120: deprecated getTransactionAttributeType method called (dev problem)");
+        if(!youHaveBeenWarnedEJBTHREE2120) {
+            log.warn("EJBTHREE-2120: deprecated getTransactionAttributeType method called (dev problem)");
+            youHaveBeenWarnedEJBTHREE2120 = true;
+        }
         return getTransactionAttributeType(MethodIntf.BEAN, method);
     }
 
