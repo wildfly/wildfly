@@ -54,12 +54,12 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
                 if (!unique) {
                     throw new DuplicateDeploymentNameException(name, false);
                 }
-                return DomainDeploymentManagerImpl.this.client.addDeploymentContent(name, runtimeName, stream);
+                return DomainDeploymentManagerImpl.this.client.addDeploymentContent(stream);
             }
             @Override
             public byte[] distributeReplacementDeploymentContent(String name, String runtimeName, InputStream stream)
                     throws IOException {
-                return DomainDeploymentManagerImpl.this.client.addDeploymentContent(name, runtimeName, stream);
+                return DomainDeploymentManagerImpl.this.client.addDeploymentContent(stream);
             }
         };
     }

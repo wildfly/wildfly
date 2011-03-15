@@ -37,7 +37,6 @@ import org.jboss.as.controller.client.helpers.domain.impl.DomainClientImpl;
  *
  * @author John Bailey
  */
-@Deprecated
 public interface DomainClient extends ModelControllerClient {
 
     /**
@@ -57,7 +56,7 @@ public interface DomainClient extends ModelControllerClient {
      * @param stream The data stream for the deployment
      * @return The unique hash for the deployment
      */
-    byte[] addDeploymentContent(String name, String runtimeName, InputStream stream);
+    byte[] addDeploymentContent(InputStream stream);
 
     /**
      * Gets a {@link DomainDeploymentManager} that provides a convenience API

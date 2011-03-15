@@ -22,26 +22,17 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-import static org.jboss.as.protocol.StreamUtils.safeFinish;
-import static org.jboss.marshalling.Marshalling.createByteInput;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -55,44 +46,19 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.ProtocolUtils;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementException;
-import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.SimpleClassResolver;
-import org.jboss.marshalling.Unmarshaller;
 
 /**
- * Domain client implementation that uses socket based communication.
+ * Domain client implementation.
  *
  * @author John Bailey
  */
 public class DomainClientImpl implements DomainClient {
-    private static final MarshallingConfiguration CONFIG;
-    static {
-        CONFIG = new MarshallingConfiguration();
-        CONFIG.setClassResolver(new SimpleClassResolver(DomainClientImpl.class.getClassLoader()));
-    }
 
     private volatile DomainDeploymentManager deploymentManager;
-    private static final long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(5L);
-
-    private final InetAddress address;
-    private final int port;
-    private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
-    private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
     private final ModelControllerClient delegate;
 
     public DomainClientImpl(InetAddress address, int port) {
-        this.address = address;
-        this.port = port;
         this.delegate = ModelControllerClient.Factory.create(address, port);
     }
 
@@ -117,12 +83,13 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) {
-        try {
-            return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to add deployment content.", e);
-        }
+    public byte[] addDeploymentContent(InputStream stream) {
+        ModelNode op = new ModelNode();
+        op.get("operation").set("upload-deployment-stream");
+        op.get("input-stream-index").set(0);
+        Operation operation = OperationBuilder.Factory.create(op).addInputStream(stream).build();
+        ModelNode result = executeForResult(operation);
+        return result.asBytes();
     }
 
     @Override
@@ -139,410 +106,145 @@ public class DomainClientImpl implements DomainClient {
 
     @Override
     public List<String> getHostControllerNames() {
-        try {
-            return new GethostControllerNamesOperation().executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to get host controller names", e);
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-children-names");
+        op.get("child-type").set("host");
+        ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
+        List<String> hosts = new ArrayList<String>();
+        for (ModelNode host : result.asList()) {
+            hosts.add(host.asString());
         }
+        return hosts;
     }
 
     @Override
     public Map<ServerIdentity, ServerStatus> getServerStatuses() {
-        try {
-            return new GetServerStatusesOperation().executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to get server statuses", e);
+        Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
+        List<String> hosts = getHostControllerNames();
+        for (String host : hosts) {
+            Set<String> servers = getServerNames(host);
+            for (String server : servers) {
+                ModelNode address = new ModelNode();
+                address.add("host", host);
+                address.add("server-config", server);
+                String group = readAttribute("group", address).asString();
+                ServerStatus status = Enum.valueOf(ServerStatus.class, readAttribute("status", address).asString());
+                ServerIdentity id = new ServerIdentity(host, group, server);
+                result.put(id, status);
+            }
+
         }
+        return result;
+    }
+
+    private Set<String> getServerNames(String host) {
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-children-names");
+        op.get("child-type").set("server-config");
+        op.get("address").set("host", host);
+        ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
+        Set<String> servers = new HashSet<String>();
+        for (ModelNode server : result.asList()) {
+            servers.add(server.asString());
+        }
+        return servers;
+    }
+
+    private ModelNode readAttribute(String name, ModelNode address) {
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-attribute");
+        op.get("address").set(address);
+        op.get("name").set(name);
+        return executeForResult(OperationBuilder.Factory.create(op).build());
     }
 
     @Override
     public ServerStatus startServer(String hostControllerName, String serverName) {
-        try {
-            return new StartServerOperation(hostControllerName, serverName).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to start server " + serverName, e);
-        }
+
+        final ModelNode op = new ModelNode();
+        op.get("operation").set("start");
+        ModelNode address = op.get("address");
+        address.add("host", hostControllerName);
+        address.add("server", serverName);
+        ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
+        String status = result.asString();
+        return Enum.valueOf(ServerStatus.class, status);
     }
 
     @Override
     public ServerStatus stopServer(String hostControllerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeUnit) {
-        long ms = gracefulShutdownTimeout < 0 ? - 1 : timeUnit.toMillis(gracefulShutdownTimeout);
-        try {
-            return new StopServerOperation(hostControllerName, serverName, ms).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to stop server " + serverName, e);
-        }
+//        long ms = gracefulShutdownTimeout < 0 ? - 1 : timeUnit.toMillis(gracefulShutdownTimeout);
+
+        final ModelNode op = new ModelNode();
+        op.get("operation").set("stop");
+        ModelNode address = op.get("address");
+        address.add("host", hostControllerName);
+        address.add("server", serverName);
+        // FIXME add graceful shutdown
+        ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
+        String status = result.asString();
+        return Enum.valueOf(ServerStatus.class, status);
     }
 
     @Override
     public ServerStatus restartServer(String hostControllerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeUnit) {
-        long ms = gracefulShutdownTimeout < 0 ? - 1 : timeUnit.toMillis(gracefulShutdownTimeout);
-        try {
-            return new RestartServerOperation(hostControllerName, serverName, ms).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new ManagementException("Failed to restart server " + serverName, e);
-        }
+//        long ms = gracefulShutdownTimeout < 0 ? - 1 : timeUnit.toMillis(gracefulShutdownTimeout);
+
+        final ModelNode op = new ModelNode();
+        op.get("operation").set("restart");
+        ModelNode address = op.get("address");
+        address.add("host", hostControllerName);
+        address.add("server", serverName);
+        // FIXME add graceful shutdown
+        ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
+        String status = result.asString();
+        return Enum.valueOf(ServerStatus.class, status);
     }
 
     boolean isDeploymentNameUnique(final String deploymentName) {
-        try {
-            return new CheckUnitDeploymentNameOperation(deploymentName).executeForResult(getConnectionStrategy());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to determine if deployment name is unique", e);
+        final ModelNode op = new ModelNode();
+        op.get("operation").set("read-children-names");
+        op.get("child-type").set("deployment");
+        final ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
+        final Set<String> deploymentNames = new HashSet<String>();
+        if (result.isDefined()) {
+            for (ModelNode node : result.asList()) {
+                deploymentNames.add(node.asString());
+            }
         }
+        return !deploymentNames.contains(deploymentName);
     }
 
     Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) {
-        try {
-            return new ExecuteDeploymentPlanOperation(deploymentPlan).execute(getConnectionStrategy());
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Failed to get deployment result future", e);
-        }
+        // FIXME implement detyped deployment plans
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public void close() throws IOException {
-        executorService.shutdown();
+        delegate.close();
     }
 
-    private abstract class DomainClientRequest<T> extends ManagementRequest<T> {
-        @Override
-        protected byte getHandlerId() {
-            return DomainClientProtocol.DOMAIN_CONTROLLER_CLIENT_REQUEST;
-        }
-    }
-
-    private class GethostControllerNamesOperation extends DomainClientRequest<List<String>> {
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.GET_HOST_CONTROLLER_NAMES_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.GET_HOST_CONTROLLER_NAMES_RESPONSE;
-        }
-
-        @Override
-        protected final List<String> receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_CONTROLLER_COUNT);
-                final int count = unmarshaller.readInt();
-                final List<String> results = new ArrayList<String>(count);
-                for (int i = 0; i < count; i++) {
-                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_NAME);
-                    results.add(unmarshaller.readUTF());
-                }
-                unmarshaller.finish();
-                return results;
-            } finally {
-                safeFinish(unmarshaller);
+    private ModelNode executeForResult(Operation op) {
+        try {
+            ModelNode result = delegate.execute(op);
+            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+                return result.get("result");
             }
-        }
-    }
-
-    private class GetServerStatusesOperation extends DomainClientRequest<Map<ServerIdentity, ServerStatus>> {
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.GET_SERVER_STATUSES_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.GET_SERVER_STATUSES_RESPONSE;
-        }
-
-        @Override
-        protected final Map<ServerIdentity, ServerStatus> receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS_COUNT);
-                final int count = unmarshaller.readInt();
-                final Map<ServerIdentity, ServerStatus> results = new HashMap<ServerIdentity, ServerStatus>(count);
-                for (int i = 0; i < count; i++) {
-                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_NAME);
-                    final String hostName = unmarshaller.readUTF();
-                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_GROUP_NAME);
-                    final String groupName = unmarshaller.readUTF();
-                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_NAME);
-                    final String serverName = unmarshaller.readUTF();
-                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS);
-                    final ServerStatus serverStatus = unmarshal(unmarshaller, ServerStatus.class);
-                    results.put(new ServerIdentity(hostName, groupName, serverName), serverStatus);
-                }
-                unmarshaller.finish();
-                return results;
-            } finally {
-                safeFinish(unmarshaller);
+            else if (result.hasDefined("failure-description")) {
+                throw new RuntimeException(result.get("failure-description").toString());
             }
-        }
-    }
-
-    private class StartServerOperation extends ServerStatusChangeOperation {
-
-        private StartServerOperation(final String hostControllerName, final String serverName) {
-            super(hostControllerName, serverName, null);
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.START_SERVER_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.START_SERVER_RESPONSE;
-        }
-    }
-
-    private class StopServerOperation extends ServerStatusChangeOperation {
-
-        private StopServerOperation(final String hostControllerName, final String serverName, final long gracefulTimeout) {
-            super(hostControllerName, serverName, gracefulTimeout);
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.STOP_SERVER_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.STOP_SERVER_RESPONSE;
-        }
-    }
-
-    private class RestartServerOperation extends ServerStatusChangeOperation {
-
-        private RestartServerOperation(final String hostControllerName, final String serverName, final long gracefulTimeout) {
-            super(hostControllerName, serverName, gracefulTimeout);
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.RESTART_SERVER_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.RESTART_SERVER_RESPONSE;
-        }
-    }
-
-    private abstract class ServerStatusChangeOperation extends DomainClientRequest<ServerStatus> {
-
-        private final String hostControllerName;
-        private final String serverName;
-        private final Long gracefulTimeout;
-
-        private ServerStatusChangeOperation(final String hostControllerName, final String serverName, final Long gracefulTimeout) {
-            this.hostControllerName = hostControllerName;
-            this.serverName = serverName;
-            this.gracefulTimeout = gracefulTimeout;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                marshaller.writeUTF(hostControllerName);
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-                marshaller.writeUTF(serverName);
-                if (gracefulTimeout != null) {
-                    marshaller.writeByte(DomainClientProtocol.PARAM_GRACEFUL_TIMEOUT);
-                    marshaller.writeLong(gracefulTimeout);
-                }
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
+            else if (result.hasDefined("domain-failure-description")) {
+                throw new RuntimeException(result.get("domain-failure-description").toString());
             }
-        }
-
-        @Override
-        protected final ServerStatus receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS);
-                final ServerStatus serverStatus = unmarshal(unmarshaller, ServerStatus.class);
-                unmarshaller.finish();
-                return serverStatus;
-            } finally {
-                safeFinish(unmarshaller);
+            else if (result.hasDefined("host-failure-descriptions")) {
+                throw new RuntimeException(result.get("host-failure-descriptions").toString());
             }
-        }
-    }
-
-    private class ExecuteDeploymentPlanOperation extends DomainClientRequest<DeploymentPlanResult> {
-        private final DeploymentPlan deploymentPlan;
-
-        private ExecuteDeploymentPlanOperation(DeploymentPlan deploymentPlan) {
-            this.deploymentPlan = deploymentPlan;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.EXECUTE_DEPLOYMENT_PLAN_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            try {
-                marshaller.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_PLAN);
-                marshaller.writeObject(deploymentPlan);
-                marshaller.finish();
-            } finally {
-                safeFinish(marshaller);
+            else {
+                throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
-        @Override
-        protected final DeploymentPlanResult receiveResponse(final InputStream input) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(input));
-            try {
-                DeploymentPlanResultReader reader = new DeploymentPlanResultReader(deploymentPlan, unmarshaller);
-                final DeploymentPlanResult result = reader.readResult();
-                unmarshaller.finish();
-                return result;
-            } finally {
-                safeFinish(unmarshaller);
-            }
-        }
-    }
-
-    private class AddDeploymentContentOperation extends DomainClientRequest<byte[]> {
-        private final String name;
-        private final String runtimeName;
-        private final InputStream inputStream;
-
-        private AddDeploymentContentOperation(final String name, final String runtimeName, final InputStream inputStream) {
-            this.name = name;
-            this.runtimeName = runtimeName;
-            this.inputStream = inputStream;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.ADD_DEPLOYMENT_CONTENT_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
-            ByteDataOutput output = null;
-            try {
-                output = new SimpleByteDataOutput(outputStream);
-                output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_NAME);
-                output.writeUTF(name);
-                output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
-                output.writeUTF(runtimeName);
-                output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_CONTENT);
-                try {
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    while ((read = inputStream.read(buffer)) != -1) {
-                        output.write(buffer, 0, read);
-                    }
-                } finally {
-                    safeClose(inputStream);
-                }
-                output.close();
-            } finally {
-                safeClose(output);
-            }
-        }
-
-        @Override
-        protected final byte[] receiveResponse(final InputStream inputStream) throws IOException {
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(inputStream);
-                expectHeader(input, DomainClientProtocol.RETURN_DEPLOYMENT_HASH_LENGTH);
-                int length = input.readInt();
-                byte[] hash = new byte[length];
-                expectHeader(input, DomainClientProtocol.RETURN_DEPLOYMENT_HASH);
-                input.readFully(hash);
-                input.close();
-                return hash;
-            } finally {
-                 safeClose(input);
-            }
-        }
-    }
-
-    private class CheckUnitDeploymentNameOperation extends DomainClientRequest<Boolean> {
-        private final String deploymentName;
-
-
-        private CheckUnitDeploymentNameOperation(final String name) {
-            this.deploymentName = name;
-        }
-
-        @Override
-        public final byte getRequestCode() {
-            return DomainClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST;
-        }
-
-        @Override
-        protected final byte getResponseCode() {
-            return DomainClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_RESPONSE;
-        }
-
-        @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
-            ByteDataOutput output = null;
-            try {
-                output = new SimpleByteDataOutput(outputStream);
-                output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_NAME);
-                output.writeUTF(deploymentName);
-                output.close();
-            } finally {
-                safeClose(output);
-            }
-        }
-
-        @Override
-        protected final Boolean receiveResponse(final InputStream inputStream) throws IOException {
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(inputStream);
-                expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
-                Boolean b = Boolean.valueOf(input.readBoolean());
-                input.close();
-                return b;
-            } finally {
-                safeClose(input);
-            }
-        }
-    }
-
-    private static Marshaller getMarshaller() throws IOException {
-        return ProtocolUtils.getMarshaller(CONFIG);
-    }
-
-    private static Unmarshaller getUnmarshaller() throws IOException {
-        return ProtocolUtils.getUnmarshaller(CONFIG);
-    }
-
-    private ManagementRequestConnectionStrategy getConnectionStrategy() {
-        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
     }
 }
