@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -58,6 +59,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
@@ -84,10 +86,12 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentActionsCompleteBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
@@ -568,32 +572,30 @@ public class ExampleRunner implements Runnable {
 
     private boolean runDeploymentPlan() throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        DomainDeploymentManager deploymentManager = client.getDeploymentManager();
-//        DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-//        DomainModel model = client.getDomainModel();
-//        DeploymentSetActionsCompleteBuilder completionBuilder = null;
-//        String serverGroup = null;
-//        Set<String> includedGroups = new HashSet<String>();
-//        do {
-//            completionBuilder = deploymentSetBuilder(builder, model);
-//            if (completionBuilder != null) {
-//                serverGroup = chooseServerGroup(model, includedGroups);
-//            }
-//        }
-//        while (serverGroup == null && completionBuilder != null);
-//
-//        if (completionBuilder != null) {
-//            includedGroups.add(serverGroup);
-//            ServerGroupDeploymentPlanBuilder groupPlanBuilder = completionBuilder.toServerGroup(serverGroup);
-//            DeploymentPlan plan = completeDeploymentPlan(groupPlanBuilder, model, includedGroups);
-//            if (plan != null) {
-//                Future<DeploymentPlanResult> future = deploymentManager.execute(plan);
-//                writeDeploymentPlanResult(future.get());
-//            }
-//        }
-//        return continuePrompt();
+        DomainDeploymentManager deploymentManager = client.getDeploymentManager();
+        DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+        ModelNode model = getDomainModel();
+        DeploymentActionsCompleteBuilder completionBuilder = null;
+        String serverGroup = null;
+        Set<String> includedGroups = new HashSet<String>();
+        do {
+            completionBuilder = deploymentSetBuilder(builder, model);
+            if (completionBuilder != null) {
+                serverGroup = chooseServerGroup(model, includedGroups);
+            }
+        }
+        while (serverGroup == null && completionBuilder != null);
+
+        if (completionBuilder != null) {
+            includedGroups.add(serverGroup);
+            ServerGroupDeploymentPlanBuilder groupPlanBuilder = completionBuilder.toServerGroup(serverGroup);
+            DeploymentPlan plan = completeDeploymentPlan(groupPlanBuilder, model, includedGroups);
+            if (plan != null) {
+                Future<DeploymentPlanResult> future = deploymentManager.execute(plan);
+                writeDeploymentPlanResult(future.get());
+            }
+        }
+        return continuePrompt();
     }
 
     private String chooseServerGroup(ModelNode model, Set<String> existingGroups) throws IOException {
@@ -626,119 +628,115 @@ public class ExampleRunner implements Runnable {
         return serverGroup;
     }
 
-//    private DeploymentSetActionsCompleteBuilder deploymentSetBuilder(DeploymentPlanBuilder builder, DomainModel model) throws Exception {
-//
-//        // Vars to track differences between the model and what our actions will have done
-//        Set<String> addedContent = new HashSet<String>();
-//        Set<String> deployedContent = new HashSet<String>();
-//        Set<String> undeployedContent = new HashSet<String>();
-//        Set<String> removedContent = new HashSet<String>();
-//        do {
-//            boolean hasActions = (builder instanceof DeploymentSetActionsCompleteBuilder);
-//            writeMenu(hasActions ? DeploymentActionsMenu.ALL : DeploymentActionsMenu.INITIAL);
-//            String choice = readStdIn();
-//            DeploymentActionsMenu cmd = deploymentActionMenuByCmd.get(choice.toUpperCase());
-//            if (cmd == null) {
-//                stdout.println(choice + " is not a valid selection.\n");
-//            }
-//            else {
-//                switch (cmd) {
-//                    case ADD:
-//                    case ADD_AND_DEPLOY:
-//                    case ADD_AND_REPLACE: {
-//                        builder = addContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model, cmd);
-//                        break;
-//                    }
-//                    case DEPLOY: {
-//                        builder = deployContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model);
-//                        break;
-//                    }
-//                    case REPLACE: {
-//                        builder = replaceContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model);
-//                        break;
-//                    }
-//                    case UNDEPLOY:
-//                    case UNDEPLOY_AND_REMOVE:{
-//                        builder = undeployContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model, cmd);
-//                        break;
-//                    }
-//                    case REMOVE: {
-//                        builder = removeContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model);
-//                        break;
-//                    }
-//                    case APPLY: {
-//                        if (hasActions) {
-//                            return (DeploymentSetActionsCompleteBuilder) builder;
-//                        }
-//                        else {
-//                            stdout.println(choice + " is not a valid selection.\n");
-//                        }
-//                        break;
-//                    }
-//                    case CANCEL: {
-//                        return null;
-//                    }
-//                    default: {
-//                        stdout.println("Command " + cmd.getCommand() + " is not supported");
-//                    }
-//                }
-//            }
-//        }
-//        while (true);
-//    }
+    private DeploymentActionsCompleteBuilder deploymentSetBuilder(DeploymentPlanBuilder builder, ModelNode model) throws Exception {
 
-//    private DeploymentPlanBuilder addContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-//            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-//            DomainModel model, DeploymentActionsMenu cmd) throws Exception {
-//        File content = chooseFile();
-//        if (content == null) {
-//            // User cancelled
-//            return builder;
-//        }
-//        String contentName = content.getName();
-//        if (cmd != DeploymentActionsMenu.ADD_AND_REPLACE) {
-//
-//            // THIS DOES NOT CURRENTLY WORK
-//            throw new UnsupportedOperationException("Convert to detyped API");
-////            if (addedContent.contains(contentName) || model.getDeployment(contentName) != null) {
-////                stdout.println("ERROR: A deployment with name " + contentName + " already exists in the domain.");
-////                stdout.println("To replace it with content of the same name, choose:");
-////                stdout.println(DeploymentActionsMenu.ADD_AND_REPLACE.getPrompt());
-////                return deploymentPlanCancelPrompt() ? null : builder;
-////            }
-//        }
-//        switch (cmd) {
-//            case ADD: {
-//                builder = builder.add(contentName, content);
-//                break;
-//            }
-//            case ADD_AND_DEPLOY: {
-//                builder = builder.add(contentName, content).andDeploy();
-//                deployedContent.add(contentName);
-//                break;
-//            }
-//            case ADD_AND_REPLACE: {
-//
-//                // THIS DOES NOT CURRENTLY WORK
-//                throw new UnsupportedOperationException("Convert to detyped API");
-////                builder = builder.replace(contentName, content);
-////                DeploymentUnitElement existing = model.getDeployment(contentName);
-////                if (deployedContent.contains(contentName) || (existing != null && existing.isStart() && !undeployedContent.contains(contentName))) {
-////                    deployedContent.add(contentName);
-////                }
-////                break;
-//            }
-//            default: {
-//                throw new IllegalArgumentException("Invalid command " + cmd);
-//            }
-//        }
-//
-//        addedContent.add(contentName);
-//        undeployedContent.remove(contentName);
-//        removedContent.remove(contentName);
-//
-//        return builder;
-//    }
+        // Vars to track differences between the model and what our actions will have done
+        Set<String> addedContent = new HashSet<String>();
+        Set<String> deployedContent = new HashSet<String>();
+        Set<String> undeployedContent = new HashSet<String>();
+        Set<String> removedContent = new HashSet<String>();
+        do {
+            boolean hasActions = (builder instanceof DeploymentActionsCompleteBuilder);
+            writeMenu(hasActions ? DeploymentActionsMenu.ALL : DeploymentActionsMenu.INITIAL);
+            String choice = readStdIn();
+            DeploymentActionsMenu cmd = deploymentActionMenuByCmd.get(choice.toUpperCase());
+            if (cmd == null) {
+                stdout.println(choice + " is not a valid selection.\n");
+            }
+            else {
+                switch (cmd) {
+                    case ADD:
+                    case ADD_AND_DEPLOY:
+                    case ADD_AND_REPLACE: {
+                        builder = addContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model, cmd);
+                        break;
+                    }
+                    case DEPLOY: {
+                        builder = deployContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model);
+                        break;
+                    }
+                    case REPLACE: {
+                        builder = replaceContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model);
+                        break;
+                    }
+                    case UNDEPLOY:
+                    case UNDEPLOY_AND_REMOVE:{
+                        builder = undeployContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model, cmd);
+                        break;
+                    }
+                    case REMOVE: {
+                        builder = removeContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model);
+                        break;
+                    }
+                    case APPLY: {
+                        if (hasActions) {
+                            return (DeploymentActionsCompleteBuilder) builder;
+                        }
+                        else {
+                            stdout.println(choice + " is not a valid selection.\n");
+                        }
+                        break;
+                    }
+                    case CANCEL: {
+                        return null;
+                    }
+                    default: {
+                        stdout.println("Command " + cmd.getCommand() + " is not supported");
+                    }
+                }
+            }
+        }
+        while (true);
+    }
+
+    private DeploymentPlanBuilder addContent(DeploymentPlanBuilder builder, Set<String> addedContent,
+            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+            ModelNode model, DeploymentActionsMenu cmd) throws Exception {
+        File content = chooseFile();
+        if (content == null) {
+            // User cancelled
+            return builder;
+        }
+        String contentName = content.getName();
+        if (cmd != DeploymentActionsMenu.ADD_AND_REPLACE) {
+
+            if (addedContent.contains(contentName) || model.get("deployment").hasDefined(contentName)) {
+                stdout.println("ERROR: A deployment with name " + contentName + " already exists in the domain.");
+                stdout.println("To replace it with content of the same name, choose:");
+                stdout.println(DeploymentActionsMenu.ADD_AND_REPLACE.getPrompt());
+                return deploymentPlanCancelPrompt() ? null : builder;
+            }
+        }
+        switch (cmd) {
+            case ADD: {
+                builder = builder.add(contentName, content);
+                break;
+            }
+            case ADD_AND_DEPLOY: {
+                builder = builder.add(contentName, content).andDeploy();
+                deployedContent.add(contentName);
+                break;
+            }
+            case ADD_AND_REPLACE: {
+
+                builder = builder.replace(contentName, content);
+                ModelNode existing = model.get("deployment", contentName);
+                if (deployedContent.contains(contentName) || (existing.isDefined() && existing.get("auto-start").asBoolean(true) && !undeployedContent.contains(contentName))) {
+                    deployedContent.add(contentName);
+                }
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException("Invalid command " + cmd);
+            }
+        }
+
+        addedContent.add(contentName);
+        undeployedContent.remove(contentName);
+        removedContent.remove(contentName);
+
+        return builder;
+    }
 
     private DeploymentPlanBuilder deployContent(DeploymentPlanBuilder builder, Set<String> addedContent,
             Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
@@ -1164,7 +1162,6 @@ public class ExampleRunner implements Runnable {
         ADD_SERVER("9", "Add a Server"),
         REMOVE_SERVER("10", "Remove a Server"),
         DEPLOYMENTS("11", "Create and Execute a Deployment Plan"),
-        // NOT CURRENTLY WORKING
         ADD_JMS_QUEUE("12", "Add a JMS Queue"),
         QUIT("Q", "Quit");
 
