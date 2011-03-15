@@ -138,7 +138,7 @@ public class DomainClientImpl implements DomainClient {
         ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("server-config");
-        op.get("address").set("host", host);
+        op.get("address").add("host", host);
         ModelNode result = executeForResult(OperationBuilder.Factory.create(op).build());
         Set<String> servers = new HashSet<String>();
         for (ModelNode server : result.asList()) {
