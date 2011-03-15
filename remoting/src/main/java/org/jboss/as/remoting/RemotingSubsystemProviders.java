@@ -114,7 +114,7 @@ class RemotingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set("add-connector");
+            operation.get(OPERATION_NAME).set("add");
 
             operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("remoting.connector.name"));
@@ -141,7 +141,7 @@ class RemotingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set("remove-connector");
+            operation.get(OPERATION_NAME).set("remove");
 
             operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("remoting.connector.name"));

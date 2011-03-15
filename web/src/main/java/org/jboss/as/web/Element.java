@@ -31,18 +31,18 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
-    ACCESS_LOG(CommonAttributes.ACCESS_LOG),
-    ALIAS(CommonAttributes.ALIAS),
-    CONNECTOR(CommonAttributes.CONNECTOR),
-    CONTAINER_CONFIG(CommonAttributes.CONTAINER_CONFIG),
-    DIRECTORY(CommonAttributes.DIRECTORY),
-    JSP_CONFIGURATION(CommonAttributes.JSP_CONFIGURATION),
-    MIME_MAPPING(CommonAttributes.MIME_MAPPING),
-    REWRITE(CommonAttributes.REWRITE),
-    STATIC_RESOURCES(CommonAttributes.STATIC_RESOURCES),
-    SUBSYSTEM(CommonAttributes.SUBSYSTEM),
-    VIRTUAL_SERVER(CommonAttributes.VIRTUAL_SERVER),
-    WELCOME_FILE(CommonAttributes.WELCOME_FILE),
+    ACCESS_LOG(Constants.ACCESS_LOG),
+    ALIAS(Constants.ALIAS),
+    CONNECTOR(Constants.CONNECTOR),
+    CONTAINER_CONFIG(Constants.CONTAINER_CONFIG),
+    DIRECTORY(Constants.DIRECTORY),
+    JSP_CONFIGURATION(Constants.JSP_CONFIGURATION),
+    MIME_MAPPING(Constants.MIME_MAPPING),
+    REWRITE(Constants.REWRITE),
+    STATIC_RESOURCES(Constants.STATIC_RESOURCES),
+    SUBSYSTEM(Constants.SUBSYSTEM),
+    VIRTUAL_SERVER(Constants.VIRTUAL_SERVER),
+    WELCOME_FILE(Constants.WELCOME_FILE),
     ;
 
     private final String name;

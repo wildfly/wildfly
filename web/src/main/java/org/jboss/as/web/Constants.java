@@ -25,7 +25,7 @@ package org.jboss.as.web;
 /**
  * @author Emanuel Muckenhuber
  */
-interface CommonAttributes {
+interface Constants {
 
     String ACCESS_LOG = "access-log";
     String ALIAS = "alias";

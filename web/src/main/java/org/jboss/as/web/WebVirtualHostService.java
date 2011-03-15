@@ -120,10 +120,10 @@ class WebVirtualHostService implements Service<Host> {
     static Valve createAccessLogValve(final String logDirectory, final ModelNode element) {
         final AccessLogValve log = new AccessLogValve();
         log.setDirectory(logDirectory);
-        log.setResolveHosts(element.get(CommonAttributes.RESOLVE_HOSTS).asBoolean());
-        log.setRotatable(element.get(CommonAttributes.ROTATE).asBoolean());
-        log.setPattern(element.get(CommonAttributes.PATTERN).asString());
-        log.setPrefix(element.get(CommonAttributes.PREFIX).asString());
+        log.setResolveHosts(element.get(Constants.RESOLVE_HOSTS).asBoolean());
+        log.setRotatable(element.get(Constants.ROTATE).asBoolean());
+        log.setPattern(element.get(Constants.PATTERN).asString());
+        log.setPrefix(element.get(Constants.PREFIX).asString());
         // TODO extended?
         return log;
     }

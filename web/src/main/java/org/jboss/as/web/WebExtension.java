@@ -45,8 +45,8 @@ public class WebExtension implements Extension {
     private static final Logger log = Logger.getLogger("org.jboss.as.web");
 
     public static final String SUBSYSTEM_NAME = "web";
-    private static final PathElement connectorPath =  PathElement.pathElement(CommonAttributes.CONNECTOR);
-    private static final PathElement hostPath = PathElement.pathElement(CommonAttributes.VIRTUAL_SERVER);
+    private static final PathElement connectorPath =  PathElement.pathElement(Constants.CONNECTOR);
+    private static final PathElement hostPath = PathElement.pathElement(Constants.VIRTUAL_SERVER);
 
     /** {@inheritDoc} */
     @Override
@@ -54,21 +54,21 @@ public class WebExtension implements Extension {
         log.debugf("Activating Web Extension");
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(WebSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(WebSubsystemDescriptionProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemAdd.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
         // connector
-        final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, WebSubsystemProviders.CONNECTOR);
-        connectors.registerOperationHandler(ADD, WebConnectorAdd.INSTANCE, WebSubsystemProviders.CONNECTOR_ADD, false);
-        connectors.registerOperationHandler(REMOVE, WebConnectorRemove.INSTANCE, WebSubsystemProviders.CONNECTOR_REMOVE, false);
+        final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, WebSubsystemDescriptionProviders.CONNECTOR);
+        connectors.registerOperationHandler(ADD, WebConnectorAdd.INSTANCE, WebConnectorAdd.INSTANCE, false);
+        connectors.registerOperationHandler(REMOVE, WebConnectorRemove.INSTANCE, WebConnectorRemove.INSTANCE, false);
         for(final String attributeName : WebConnectorMetrics.ATTRIBUTES) {
             connectors.registerMetric(attributeName, WebConnectorMetrics.INSTANCE);
         }
         //hosts
-        final ModelNodeRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemProviders.HOST);
-        hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebSubsystemProviders.HOST_ADD, false);
-        hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebSubsystemProviders.HOST_REMOVE, false);
+        final ModelNodeRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemDescriptionProviders.VIRTUAL_SERVER);
+        hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebVirtualHostAdd.INSTANCE, false);
+        hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebVirtualHostRemove.INSTANCE, false);
     }
 
     /** {@inheritDoc} */

@@ -22,7 +22,7 @@
 package org.jboss.as.web;
 
 import org.jboss.metadata.web.spec.ListenerMetaData;
-import static org.jboss.as.web.CommonAttributes.*;
+import static org.jboss.as.web.Constants.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,13 +63,13 @@ class SharedWebMetaDataBuilder {
     }
 
     private void init() {
-        if(containerConfig.has(CommonAttributes.MIME_MAPPING)) {
-            for(final Property mapping : containerConfig.get(CommonAttributes.MIME_MAPPING).asPropertyList()) {
+        if(containerConfig.has(Constants.MIME_MAPPING)) {
+            for(final Property mapping : containerConfig.get(Constants.MIME_MAPPING).asPropertyList()) {
                 mimeMappings.add(createMimeMapping(mapping.getName(), mapping.getValue().asString()));
             }
         }
-        if(containerConfig.has(CommonAttributes.WELCOME_FILE)) {
-            for(final ModelNode file : containerConfig.get(CommonAttributes.WELCOME_FILE).asList()) {
+        if(containerConfig.has(Constants.WELCOME_FILE)) {
+            for(final ModelNode file : containerConfig.get(Constants.WELCOME_FILE).asList()) {
                 welcomeFiles.add(file.asString());
             }
         }

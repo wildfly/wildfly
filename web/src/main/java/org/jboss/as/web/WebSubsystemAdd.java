@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
@@ -53,6 +54,8 @@ import org.jboss.msc.service.ServiceName;
 
 import javax.management.MBeanServer;
 
+import java.util.Locale;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
@@ -60,7 +63,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  *
  * @author Emanuel Muckenhuber
  */
-class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler, DescriptionProvider {
 
     static final WebSubsystemAdd INSTANCE = new WebSubsystemAdd();
     private static final String DEFAULT_HOST = "localhost";
@@ -73,19 +76,19 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
     /** {@inheritDoc} */
     @Override
     public OperationResult execute(final OperationContext updateContext, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        final ModelNode config = operation.get(CommonAttributes.CONTAINER_CONFIG);
+        final ModelNode config = operation.get(Constants.CONTAINER_CONFIG);
 
         final ModelNode subModel = updateContext.getSubModel();
-        subModel.get(CommonAttributes.CONTAINER_CONFIG).set(config);
-        subModel.get(CommonAttributes.CONNECTOR).setEmptyObject();
-        subModel.get(CommonAttributes.VIRTUAL_SERVER).setEmptyObject();
+        subModel.get(Constants.CONTAINER_CONFIG).set(config);
+        subModel.get(Constants.CONNECTOR).setEmptyObject();
+        subModel.get(Constants.VIRTUAL_SERVER).setEmptyObject();
 
         if (updateContext instanceof BootOperationContext) {
             final BootOperationContext ctx = (BootOperationContext) updateContext;
             updateContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final String defaultHost = operation.has(CommonAttributes.DEFAULT_HOST) ?
-                            operation.get(CommonAttributes.DEFAULT_HOST).asString() : DEFAULT_HOST;
+                    final String defaultHost = operation.has(Constants.DEFAULT_HOST) ?
+                            operation.get(Constants.DEFAULT_HOST).asString() : DEFAULT_HOST;
 
                     try {
                         final WebServerService service = new WebServerService(defaultHost);
@@ -126,4 +129,8 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
         return new BasicOperationResult(compensatingOperation);
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return WebSubsystemDescriptions.getSubsystemAddDescription(locale);
+    }
 }

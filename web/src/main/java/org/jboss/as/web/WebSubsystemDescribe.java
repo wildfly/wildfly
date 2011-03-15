@@ -32,14 +32,17 @@ import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
+import java.util.Locale;
+
 /**
  * @author Emanuel Muckenhuber
  */
-class WebSubsystemDescribe implements ModelQueryOperationHandler {
+class WebSubsystemDescribe implements ModelQueryOperationHandler, DescriptionProvider {
 
     static final WebSubsystemDescribe INSTANCE = new WebSubsystemDescribe();
 
@@ -53,21 +56,21 @@ class WebSubsystemDescribe implements ModelQueryOperationHandler {
         final ModelNode subsystemAdd = new ModelNode();
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
-        if(subModel.hasDefined(CommonAttributes.CONTAINER_CONFIG)) {
-            subsystemAdd.get(CommonAttributes.CONTAINER_CONFIG).set(subModel.get(CommonAttributes.CONTAINER_CONFIG));
+        if(subModel.hasDefined(Constants.CONTAINER_CONFIG)) {
+            subsystemAdd.get(Constants.CONTAINER_CONFIG).set(subModel.get(Constants.CONTAINER_CONFIG));
         }
         result.add(subsystemAdd);
-        if(subModel.hasDefined(CommonAttributes.CONNECTOR)) {
-            for(final Property connector : subModel.get(CommonAttributes.CONNECTOR).asPropertyList()) {
+        if(subModel.hasDefined(Constants.CONNECTOR)) {
+            for(final Property connector : subModel.get(Constants.CONNECTOR).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.CONNECTOR, connector.getName());
+                address.add(Constants.CONNECTOR, connector.getName());
                 result.add(WebConnectorAdd.getRecreateOperation(address, connector.getValue()));
             }
         }
-        if(subModel.hasDefined(CommonAttributes.VIRTUAL_SERVER)) {
-            for(final Property host : subModel.get(CommonAttributes.VIRTUAL_SERVER).asPropertyList()) {
+        if(subModel.hasDefined(Constants.VIRTUAL_SERVER)) {
+            for(final Property host : subModel.get(Constants.VIRTUAL_SERVER).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.VIRTUAL_SERVER, host.getName());
+                address.add(Constants.VIRTUAL_SERVER, host.getName());
                 result.add(WebVirtualHostAdd.getAddOperation(address, host.getValue()));
             }
         }
@@ -77,4 +80,8 @@ class WebSubsystemDescribe implements ModelQueryOperationHandler {
         return new BasicOperationResult();
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return new ModelNode();
+    }
 }

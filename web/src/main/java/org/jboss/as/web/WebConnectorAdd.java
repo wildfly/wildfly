@@ -30,35 +30,38 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.web.CommonAttributes.ENABLED;
-import static org.jboss.as.web.CommonAttributes.ENABLE_LOOKUPS;
-import static org.jboss.as.web.CommonAttributes.EXECUTOR;
-import static org.jboss.as.web.CommonAttributes.MAX_POST_SIZE;
-import static org.jboss.as.web.CommonAttributes.MAX_SAVE_POST_SIZE;
-import static org.jboss.as.web.CommonAttributes.PROTOCOL;
-import static org.jboss.as.web.CommonAttributes.PROXY_NAME;
-import static org.jboss.as.web.CommonAttributes.PROXY_PORT;
-import static org.jboss.as.web.CommonAttributes.REDIRECT_PORT;
-import static org.jboss.as.web.CommonAttributes.SCHEME;
-import static org.jboss.as.web.CommonAttributes.SECURE;
-import static org.jboss.as.web.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.web.Constants.ENABLED;
+import static org.jboss.as.web.Constants.ENABLE_LOOKUPS;
+import static org.jboss.as.web.Constants.EXECUTOR;
+import static org.jboss.as.web.Constants.MAX_POST_SIZE;
+import static org.jboss.as.web.Constants.MAX_SAVE_POST_SIZE;
+import static org.jboss.as.web.Constants.PROTOCOL;
+import static org.jboss.as.web.Constants.PROXY_NAME;
+import static org.jboss.as.web.Constants.PROXY_PORT;
+import static org.jboss.as.web.Constants.REDIRECT_PORT;
+import static org.jboss.as.web.Constants.SCHEME;
+import static org.jboss.as.web.Constants.SECURE;
+import static org.jboss.as.web.Constants.SOCKET_BINDING;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 
+import java.util.Locale;
+
 /**
  * {@code OperationHandler} responsible for adding a web connector.
  *
  * @author Emanuel Muckenhuber
  */
-class WebConnectorAdd implements ModelAddOperationHandler {
+class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
 
     static final String OPERATION_NAME = ADD;
 
@@ -146,4 +149,8 @@ class WebConnectorAdd implements ModelAddOperationHandler {
         return new BasicOperationResult(compensatingOperation);
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return WebSubsystemDescriptions.getConnectorAdd(locale);
+    }
 }

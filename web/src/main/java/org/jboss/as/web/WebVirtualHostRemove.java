@@ -33,13 +33,16 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+
+import java.util.Locale;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class WebVirtualHostRemove implements ModelRemoveOperationHandler {
+class WebVirtualHostRemove implements ModelRemoveOperationHandler, DescriptionProvider {
 
     static final WebVirtualHostRemove INSTANCE = new WebVirtualHostRemove();
 
@@ -75,4 +78,8 @@ class WebVirtualHostRemove implements ModelRemoveOperationHandler {
         return new BasicOperationResult(compensatingOperation);
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return WebSubsystemDescriptions.getVirtualServerRemove(locale);
+    }
 }

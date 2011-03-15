@@ -33,15 +33,18 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+
+import java.util.Locale;
 
 /**
  * Update removing a web connector
  *
  * @author Emanuel Muckenhuber
  */
-public class WebConnectorRemove implements ModelRemoveOperationHandler {
+public class WebConnectorRemove implements ModelRemoveOperationHandler, DescriptionProvider {
 
     static final WebConnectorRemove INSTANCE = new WebConnectorRemove();
 
@@ -78,4 +81,8 @@ public class WebConnectorRemove implements ModelRemoveOperationHandler {
         return new BasicOperationResult(compensatingOperation);
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return WebSubsystemDescriptions.getConnectorRemove(locale);
+    }
 }
