@@ -32,6 +32,7 @@ import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import javax.ejb.AccessTimeout;
@@ -70,10 +71,9 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
             this.methodAccessTimeouts = description.getMethodApplicableAccessTimeouts();
 
             // container managed concurrency interceptor
-            // TODO: Ideally, this should be a per bean instance (a.k.a ComponentInstance) interceptor.
-            // Once, we have support for per ComponentInstance interceptors, setup this interceptor per ComponentInstance.
             if (description.getConcurrencyManagementType() != ConcurrencyManagementType.BEAN) {
-                this.addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
+                // Add ComponentInstance level interceptor
+                this.addComponentInstanceSystemInterceptorFactory(new ComponentInterceptorFactory() {
                     @Override
                     protected Interceptor create(Component component, InterceptorFactoryContext context) {
                         if (component instanceof LockableComponent) {
