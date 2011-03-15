@@ -360,6 +360,8 @@
                                             <!-- [JBAS-8874] Woodstox dependency causes smoke test failures -->
                                             <exclude>org.codehaus.woodstox:woodstox-core-asl</exclude>
                                             <exclude>org.codehaus.woodstox:wstx-lgpl</exclude>
+
+                                            <exclude>trove:trove</exclude>
                                         </excludes>
                                     </bannedDependencies>
                                 </rules>

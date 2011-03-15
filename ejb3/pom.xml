@@ -90,6 +90,12 @@
         <dependency>
             <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-cache</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>trove</groupId>
+                    <artifactId>trove</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
