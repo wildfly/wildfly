@@ -223,10 +223,10 @@ public class ExampleRunner implements Runnable {
                         quit = removeServer();
                         break;
                     }
-                    case DEPLOYMENTS: {
-                        quit = runDeploymentPlan();
-                        break;
-                    }
+//                    case DEPLOYMENTS: {
+//                        quit = runDeploymentPlan();
+//                        break;
+//                    }
                     // Disabled for now
                     case ADD_JMS_QUEUE: {
                         quit = addJmsQueue();
@@ -1161,8 +1161,8 @@ public class ExampleRunner implements Runnable {
         SERVER_RESTART("8", "Restart a Server"),
         ADD_SERVER("9", "Add a Server"),
         REMOVE_SERVER("10", "Remove a Server"),
-        DEPLOYMENTS("11", "Create and Execute a Deployment Plan"),
-        ADD_JMS_QUEUE("12", "Add a JMS Queue"),
+        ADD_JMS_QUEUE("11", "Add a JMS Queue"),
+//      DEPLOYMENTS("12", "Create and Execute a Deployment Plan"),
         QUIT("Q", "Quit");
 
         private static final EnumSet<MainMenu> ALL = EnumSet.allOf(MainMenu.class);
