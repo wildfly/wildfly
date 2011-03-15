@@ -23,10 +23,12 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
+
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
+
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -89,6 +91,11 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     @Override
     public Interceptor createClientInterceptor(Class<?> view) {
         final Serializable sessionId = createSession();
+        return createClientInterceptor(view,sessionId);
+    }
+
+    @Override
+    public Interceptor createClientInterceptor(Class<?> view, final Serializable sessionId) {
         return new Interceptor() {
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
@@ -107,7 +114,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         };
     }
 
-    private Serializable createSession() {
+    public Serializable createSession() {
         return getCache().create().getId();
     }
 

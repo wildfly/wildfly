@@ -28,6 +28,8 @@ import org.jboss.msc.service.ServiceName;
 
 import java.util.Map;
 
+import java.io.Serializable;
+
 /**
  * Common contract for an EE component.  Implementations of this will be available as a service and can be used as the
  * backing for a JNDI ObjectFactory reference.
@@ -94,6 +96,17 @@ public interface Component {
      * @return the client entry point
      */
     Interceptor createClientInterceptor(Class<?> view);
+
+    /**
+     * Create a new client interceptor for this component.  The returned interceptor will contain the necessary logic to
+     * locate the appropriate instance. The interceptor will be assoiated with the given sessionId
+     * <p>
+     * The given view type must be one of the registered view types for this component.
+     *
+     * @param view the view type
+     * @return the client entry point
+     */
+    Interceptor createClientInterceptor(Class<?> view,Serializable sessionId);
 
     /**
      * Create a remote client proxy for this component.

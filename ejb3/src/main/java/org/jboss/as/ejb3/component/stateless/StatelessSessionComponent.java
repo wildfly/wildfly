@@ -33,6 +33,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -85,6 +86,11 @@ public class StatelessSessionComponent extends SessionBeanComponent {
                 }
             }
         };
+    }
+
+    @Override
+    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+        return createClientInterceptor(view);
     }
 
     //TODO: This should be getInstance()

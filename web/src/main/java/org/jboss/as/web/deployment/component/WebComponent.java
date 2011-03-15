@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -56,5 +57,10 @@ public class WebComponent extends AbstractComponent {
     @Override
     public Interceptor createClientInterceptor(final Class<?> viewClass) {
         return null; //not applicable
+    }
+
+    @Override
+    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+        return null;  //not applicable
     }
 }

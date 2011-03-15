@@ -29,6 +29,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -68,5 +69,10 @@ public class ManagedBeanComponent extends AbstractComponent {
                 destroyInstance(instance);
             }
         };
+    }
+
+    @Override
+    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+        return null;  //not applicable
     }
 }

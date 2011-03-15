@@ -35,6 +35,7 @@ import org.jboss.logging.Logger;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.LockType;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -106,6 +107,11 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
                 return context.proceed();
             }
         };
+    }
+
+    @Override
+    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+        return createClientInterceptor(view);
     }
 
     synchronized ComponentInstance getComponentInstance() {
