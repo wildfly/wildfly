@@ -93,6 +93,9 @@ public class GlobalOperationHandlers {
      * "include-runtime" to "true".
      */
     public static class ReadResourceHandler implements ModelQueryOperationHandler {
+
+        static final String PROXIES = "proxies";
+
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
@@ -101,8 +104,9 @@ public class GlobalOperationHandlers {
                 if (operation.get(RECURSIVE).asBoolean(false)) {
                     // FIXME security checks JBAS-8842
                     result = context.getSubModel().clone();
-                    addProxyNodes(context, address, operation, result, context.getRegistry());
-
+                    if(operation.get(PROXIES).asBoolean(true)) {
+                        addProxyNodes(context, address, operation, result, context.getRegistry());
+                    }
                 } else {
                     result = new ModelNode();
 

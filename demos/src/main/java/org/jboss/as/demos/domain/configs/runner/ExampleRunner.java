@@ -53,6 +53,7 @@ public class ExampleRunner {
             domainOp.get(OP).set(READ_RESOURCE_OPERATION);
             domainOp.get(OP_ADDR).setEmptyList();
             domainOp.get(RECURSIVE).set(true);
+            domainOp.get("proxies").set(false);
 
             ModelNode result = client.execute(domainOp);
             if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
@@ -61,14 +62,14 @@ public class ExampleRunner {
 
             System.out.println("-- domain configuration");
             final ModelNode domainResult = result.get(RESULT).clone();
-            domainResult.remove(HOST); // TODO rework recursive=true, for now just purge the host output
             System.out.println(domainResult);
             System.out.println("--");
 
             final ModelNode hostOp = new ModelNode();
-            hostOp.get(OP).get(READ_RESOURCE_OPERATION);
+            hostOp.get(OP).set(READ_RESOURCE_OPERATION);
             hostOp.get(OP_ADDR).setEmptyList().add(HOST, "local");
             hostOp.get(RECURSIVE).set(true);
+            hostOp.get("proxies").set(false);
 
             result = client.execute(hostOp);
             if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
@@ -77,7 +78,6 @@ public class ExampleRunner {
 
             System.out.println("-- host configuration");
             final ModelNode hostResult = result.get(RESULT).clone();
-            hostResult.remove(SERVER); // TODO rework recursive=true, for now just purge the server output
             System.out.println();
             System.out.println("--");
 

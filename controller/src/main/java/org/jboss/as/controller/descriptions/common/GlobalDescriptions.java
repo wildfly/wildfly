@@ -55,8 +55,6 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Brian Stansberry
- *
- * @version $Revision: 1.1 $
  */
 public class GlobalDescriptions {
     private static final String RESOURCE_NAME = PathDescription.class.getPackage().getName() + ".LocalDescriptions";
@@ -70,6 +68,9 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-resource.recursive"));
         node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, "proxies", TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, "proxies", DESCRIPTION).set(bundle.getString("global.read-resource.proxies"));
+        node.get(REQUEST_PROPERTIES, "proxies", NILLABLE).set(true);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         //TODO value type
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource.reply"));
