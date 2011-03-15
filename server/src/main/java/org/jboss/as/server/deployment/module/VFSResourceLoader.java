@@ -95,8 +95,7 @@ public class VFSResourceLoader implements ResourceLoader {
                 // done
                 is.close();
                 spec.setBytes(bytes);
-                // TODO - support signed deployments
-                spec.setCodeSource(new CodeSource(rootUrl, (CodeSigner[])null));
+                spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
                 return spec;
             } else {
                 throw new IOException("Resource is too large to be a valid class file");
