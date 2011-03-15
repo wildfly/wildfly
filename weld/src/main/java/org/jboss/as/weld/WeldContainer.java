@@ -22,6 +22,7 @@
 package org.jboss.as.weld;
 
 import org.jboss.as.weld.deployment.WeldDeployment;
+import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.api.Service;
@@ -71,6 +72,7 @@ public class WeldContainer {
         if (started) {
             throw new IllegalStateException("WeldContainer is already running");
         }
+        ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(),deployment.getSubDeploymentClassLoaders());
         started = true;
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
@@ -95,6 +97,7 @@ public class WeldContainer {
         if (!started) {
             throw new IllegalStateException("WeldContainer is not started");
         }
+        ModuleGroupSingletonProvider.removeClassLoader(deployment.getModule().getClassLoader());
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());

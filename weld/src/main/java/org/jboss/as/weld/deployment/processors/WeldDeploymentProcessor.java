@@ -109,7 +109,14 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
 
+        final Set<ClassLoader> subDeploymentLoaders = new HashSet<ClassLoader>();
+
         for (DeploymentUnit subDeployment : subDeployments) {
+            final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
+            if(module != null) {
+                subDeploymentLoaders.add(subDeploymentModule.getClassLoader());
+            }
+
             final BeanDeploymentModule bdm = subDeployment.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
             if(bdm == null) {
                 continue;
@@ -135,7 +142,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final List<Metadata<Extension>> extensions = deploymentUnit.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
 
-        final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module);
+        final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module, subDeploymentLoaders);
 
         final WeldContainer weldContainer = new WeldContainer(deployment, Environments.EE_INJECT);
         //hook up validation service

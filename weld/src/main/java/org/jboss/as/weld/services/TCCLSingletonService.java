@@ -42,7 +42,7 @@ public class TCCLSingletonService implements Service<TCCLSingletonService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        SingletonProvider.initialize(new TCCLSingletonProvider());
+        SingletonProvider.initialize(new ModuleGroupSingletonProvider());
     }
 
     @Override

@@ -22,16 +22,6 @@
 
 package org.jboss.as.weld.deployment;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.enterprise.inject.spi.Extension;
-
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
 import org.jboss.modules.Module;
@@ -44,6 +34,14 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.serialization.spi.ProxyServices;
 
+import javax.enterprise.inject.spi.Extension;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Abstract implementation of {@link Deployment}.
  * <p>
@@ -53,8 +51,6 @@ import org.jboss.weld.serialization.spi.ProxyServices;
  *
  */
 public class WeldDeployment implements Deployment {
-
-    public static final AttachmentKey<WeldDeployment> ATTACHMENT_KEY = AttachmentKey.create(WeldDeployment.class);
 
     public static final String ADDITIONAL_CLASSES_BDA_SUFFIX = ".additionalClasses";
 
@@ -69,7 +65,15 @@ public class WeldDeployment implements Deployment {
 
     private final ServiceRegistry serviceRegistry;
 
+    /**
+     * The top level module
+     */
     private final Module module;
+
+    /**
+     * All ModuleClassLoaders in the deployment
+     */
+    private final Set<ClassLoader> subDeploymentClassLoaders;
 
     /**
      * Maps class names to bean archives.
@@ -79,7 +83,8 @@ public class WeldDeployment implements Deployment {
     private final Map<String, BeanDeploymentArchiveImpl> beanDeploymentsByClassName;
 
     public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
-            Module module) {
+                          Module module, Set<ClassLoader> subDeploymentClassLoaders) {
+        this.subDeploymentClassLoaders = new HashSet<ClassLoader>(subDeploymentClassLoaders);
         this.additionalBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
                 BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ADDITIONAL_CLASSES_BDA_SUFFIX);
 
@@ -138,4 +143,7 @@ public class WeldDeployment implements Deployment {
         return module;
     }
 
+    public Set<ClassLoader> getSubDeploymentClassLoaders() {
+        return Collections.unmodifiableSet(subDeploymentClassLoaders);
+    }
 }
