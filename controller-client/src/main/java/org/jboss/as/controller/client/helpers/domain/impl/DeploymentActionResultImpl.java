@@ -42,12 +42,12 @@ import org.jboss.as.controller.client.helpers.domain.UpdateFailedException;
 class DeploymentActionResultImpl implements DeploymentActionResult {
 
     private final DeploymentAction deploymentAction;
-    private final DomainUpdateApplierResponse applierResponse;
+    private final BasicDomainUpdateResult applierResponse;
     private final Map<String, ServerGroupDeploymentActionResult> serverResults = new HashMap<String, ServerGroupDeploymentActionResult>();
-    private DomainUpdateApplierResponse rollbackResponse;
+    private BasicDomainUpdateResult rollbackResponse;
 
     DeploymentActionResultImpl(final DeploymentAction deploymentAction,
-                               final DomainUpdateApplierResponse applierResponse) {
+                               final BasicDomainUpdateResult applierResponse) {
         assert deploymentAction != null : "deploymentAction is null";
         assert applierResponse != null : "applierResponse is null";
         this.deploymentAction = deploymentAction;
@@ -99,11 +99,11 @@ class DeploymentActionResultImpl implements DeploymentActionResult {
         return rollbackResponse == null ? Collections.<String, UpdateFailedException>emptyMap(): rollbackResponse.getHostFailures();
     }
 
-    void markRolledBack(DomainUpdateApplierResponse rollbackResponse) {
+    void markRolledBack(BasicDomainUpdateResult rollbackResponse) {
         this.rollbackResponse = rollbackResponse;
     }
 
-    void storeServerUpdateResult(ServerIdentity server, ServerUpdateResult<Void> result) {
+    void storeServerUpdateResult(ServerIdentity server, ServerUpdateResult result) {
         ServerGroupDeploymentActionResultImpl sgdar = (ServerGroupDeploymentActionResultImpl) serverResults.get(server.getServerGroupName());
         if (sgdar == null) {
             sgdar = new ServerGroupDeploymentActionResultImpl(server.getServerGroupName());

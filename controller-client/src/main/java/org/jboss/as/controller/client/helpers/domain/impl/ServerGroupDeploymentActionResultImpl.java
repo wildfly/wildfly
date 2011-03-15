@@ -37,7 +37,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
 class ServerGroupDeploymentActionResultImpl implements ServerGroupDeploymentActionResult {
 
     private final String serverGroupName;
-    private final Map<String, ServerUpdateResult<Void>> serverResults = new HashMap<String, ServerUpdateResult<Void>>();
+    private final Map<String, ServerUpdateResult> serverResults = new HashMap<String, ServerUpdateResult>();
 
     ServerGroupDeploymentActionResultImpl(final String serverGroupName) {
         assert serverGroupName != null : "serverGroupName is null";
@@ -45,7 +45,7 @@ class ServerGroupDeploymentActionResultImpl implements ServerGroupDeploymentActi
     }
 
     @Override
-    public Map<String, ServerUpdateResult<Void>> getResultByServer() {
+    public Map<String, ServerUpdateResult> getResultByServer() {
         return Collections.unmodifiableMap(serverResults);
     }
 
@@ -54,7 +54,7 @@ class ServerGroupDeploymentActionResultImpl implements ServerGroupDeploymentActi
         return serverGroupName;
     }
 
-    void storeServerResult(final String serverName, ServerUpdateResult<Void> result) {
+    void storeServerResult(final String serverName, ServerUpdateResult result) {
         serverResults.put(serverName, result);
     }
 

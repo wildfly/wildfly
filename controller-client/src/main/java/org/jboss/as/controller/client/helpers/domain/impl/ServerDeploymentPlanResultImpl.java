@@ -38,7 +38,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
 class ServerDeploymentPlanResultImpl implements ServerDeploymentPlanResult {
 
     private final String serverName;
-    private final Map<UUID, ServerUpdateResult<Void>> serverResults = new HashMap<UUID, ServerUpdateResult<Void>>();
+    private final Map<UUID, ServerUpdateResult> serverResults = new HashMap<UUID, ServerUpdateResult>();
 
     ServerDeploymentPlanResultImpl(final String serverName) {
         assert serverName != null : "serverName is null";
@@ -46,7 +46,7 @@ class ServerDeploymentPlanResultImpl implements ServerDeploymentPlanResult {
     }
 
     @Override
-    public Map<UUID, ServerUpdateResult<Void>> getDeploymentActionResults() {
+    public Map<UUID, ServerUpdateResult> getDeploymentActionResults() {
         return Collections.unmodifiableMap(serverResults);
     }
 
@@ -55,13 +55,13 @@ class ServerDeploymentPlanResultImpl implements ServerDeploymentPlanResult {
         return serverName;
     }
 
-    ServerUpdateResult<Void> getServerUpdateResult(UUID actionId) {
+    ServerUpdateResult getServerUpdateResult(UUID actionId) {
         synchronized (serverResults) {
             return serverResults.get(actionId);
         }
     }
 
-    void storeServerUpdateResult(UUID actionId, ServerUpdateResult<Void> result) {
+    void storeServerUpdateResult(UUID actionId, ServerUpdateResult result) {
         synchronized (serverResults) {
             serverResults.put(actionId, result);
         }

@@ -2,6 +2,8 @@ package org.jboss.as.controller.client.helpers.domain;
 
 import java.util.UUID;
 
+import org.jboss.dmr.ModelNode;
+
 /**
  * Encapsulates the results of performing a configuration modification on an individual
  * server.
@@ -11,7 +13,7 @@ import java.util.UUID;
  *
  * @author Brian Stansberry
  */
-public interface ServerUpdateResult<R> {
+public interface ServerUpdateResult {
 
     /**
      * Gets the unique ID of the deployment action.
@@ -33,7 +35,7 @@ public interface ServerUpdateResult<R> {
      *
      * @return the result. May be <code>null</code>
      */
-    R getSuccessResult();
+    ModelNode getSuccessResult();
 
     /**
      * Gets the exception, if any, that occurred while executing this update.

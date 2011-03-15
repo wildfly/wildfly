@@ -42,9 +42,12 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.TO_REPLACE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -104,11 +107,12 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
             throw new IllegalArgumentException("Cannot use a DeploymentPlan not created by this manager");
         }
         DeploymentPlanImpl planImpl = DeploymentPlanImpl.class.cast(plan);
-        Operation operation = getDeploymentPlanOperation(planImpl);
+        Map<UUID, String> actionsById = new HashMap<UUID, String>();
+        Operation operation = getDeploymentPlanOperation(planImpl, actionsById);
         Handler handler = new Handler(operation);
         OperationResult c = client.execute(operation, handler.resultHandler);
         handler.setCancellable(c.getCancellable());
-        return new DomainDeploymentPlanResultFuture(planImpl, handler);
+        return new DomainDeploymentPlanResultFuture(planImpl, handler, actionsById);
     }
 
     @Override
@@ -116,13 +120,13 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         return InitialDeploymentPlanBuilderFactory.newInitialDeploymentPlanBuilder(this.contentDistributor);
     }
 
-    private Operation getDeploymentPlanOperation(DeploymentPlanImpl plan) {
-        Operation op = getCompositeOperation(plan);
+    private Operation getDeploymentPlanOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
+        Operation op = getCompositeOperation(plan, actionsById);
         addRollbackPlan(plan, op);
         return op;
     }
 
-    private Operation getCompositeOperation(DeploymentPlanImpl plan) {
+    private Operation getCompositeOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
 
         Set<String> deployments = getCurrentDomainDeployments();
         Set<String> serverGroups = getServerGroupNames(plan);
@@ -136,8 +140,12 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         // FIXME deal with shutdown params
 
         OperationBuilder builder = OperationBuilder.Factory.create(op);
-
+        int stepNum = 1;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {
+
+            actionsById.put(action.getId(), "step-" + stepNum);
+            stepNum++;
+
             List<ModelNode> actionSteps = new ArrayList<ModelNode>();
             String uniqueName = action.getDeploymentUnitUniqueName();
             switch (action.getType()) {

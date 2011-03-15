@@ -45,6 +45,6 @@ public interface ServerGroupDeploymentActionResult {
      *
      * @return map of server results, keyed by server name. Will not be <code>null</code>
      */
-    Map<String, ServerUpdateResult<Void>> getResultByServer();
+    Map<String, ServerUpdateResult> getResultByServer();
 }
 

@@ -118,9 +118,9 @@ public class DeploymentPlanResultImpl implements DeploymentPlanResult {
                     serverGroupResults.put(serverGroupName, sgdpr);
                 }
 
-                for (Map.Entry<String, ServerUpdateResult<Void>> serverEntry : serverGroupActionResult.getResultByServer().entrySet()) {
+                for (Map.Entry<String, ServerUpdateResult> serverEntry : serverGroupActionResult.getResultByServer().entrySet()) {
                     String serverName = serverEntry.getKey();
-                    ServerUpdateResult<Void> sud = serverEntry.getValue();
+                    ServerUpdateResult sud = serverEntry.getValue();
                     ServerDeploymentPlanResultImpl sdpr = (ServerDeploymentPlanResultImpl) sgdpr.getServerResult(serverName);
                     if (sdpr == null) {
                         sdpr = new ServerDeploymentPlanResultImpl(serverName);

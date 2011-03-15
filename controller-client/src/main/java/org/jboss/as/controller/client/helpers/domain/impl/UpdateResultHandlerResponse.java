@@ -24,17 +24,20 @@ package org.jboss.as.controller.client.helpers.domain.impl;
 
 import java.io.Serializable;
 
+import org.jboss.as.controller.client.helpers.domain.UpdateFailedException;
+import org.jboss.dmr.ModelNode;
+
 /**
  * Encapsulates the possible values that can be passed to an
  * {@link UpdateResultHandler}'s callback methods.
  *
  * @author Brian Stansberry
  */
-public class UpdateResultHandlerResponse<R> implements Serializable {
+public class UpdateResultHandlerResponse implements Serializable {
 
     private static final long serialVersionUID = -5250735019112151634L;
 
-    private final R successResult;
+    private final ModelNode successResult;
     private final Throwable failureResult;
     private final boolean cancelled;
     private final boolean timedOut;
@@ -44,47 +47,69 @@ public class UpdateResultHandlerResponse<R> implements Serializable {
     private final boolean rollbackTimedOut;
     private final Throwable rollbackFailure;
 
-    public static <R> UpdateResultHandlerResponse<R> createSuccessResponse(R result) {
-        return new UpdateResultHandlerResponse<R>(result, null, false, false, false, false, false, false, null);
+    public static UpdateResultHandlerResponse fromModelNode(ModelNode modelNode) {
+        String outcome = modelNode.hasDefined("outcome") ? modelNode.get("outcome").asString() : "failed";
+        UpdateResultHandlerResponse result;
+        if ("success".equals(outcome)) {
+            result = createSuccessResponse(modelNode.get("result"));
+        }
+        else if ("cancelled".equals(outcome)) {
+            return createCancellationResponse();
+        }
+        else {
+            String message = modelNode.hasDefined("failure-description") ? modelNode.get("failure-description").asString() : "No failure details provided";
+            result = createFailureResponse(new UpdateFailedException(message));
+        }
+        if (modelNode.get("rolled-back").asBoolean(false)) {
+            result = createRollbackResponse(result);
+        }
+        else if (modelNode.hasDefined("rollback-failure-description")) {
+            String message = modelNode.get("rollback-failure-description").asString();
+            result = createRollbackFailedResponse(result, new UpdateFailedException(message));
+        }
+        return result;
+    }
+    public static  UpdateResultHandlerResponse createSuccessResponse(ModelNode result) {
+        return new UpdateResultHandlerResponse(result, null, false, false, false, false, false, false, null);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createFailureResponse(Throwable cause) {
-        return new UpdateResultHandlerResponse<R>(null, cause, false, false, false, false, false, false, null);
+    public static  UpdateResultHandlerResponse createFailureResponse(Throwable cause) {
+        return new UpdateResultHandlerResponse(null, cause, false, false, false, false, false, false, null);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createCancellationResponse() {
-        return new UpdateResultHandlerResponse<R>(null, null, true, false, false, false, false, false, null);
+    public static  UpdateResultHandlerResponse createCancellationResponse() {
+        return new UpdateResultHandlerResponse(null, null, true, false, false, false, false, false, null);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createTimeoutResponse() {
-        return new UpdateResultHandlerResponse<R>(null, null, false, true, false, false, false, false, null);
+    public static  UpdateResultHandlerResponse createTimeoutResponse() {
+        return new UpdateResultHandlerResponse(null, null, false, true, false, false, false, false, null);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createRollbackResponse(UpdateResultHandlerResponse<R> rolledBack) {
-        return new UpdateResultHandlerResponse<R>(rolledBack.successResult, rolledBack.failureResult,
+    public static  UpdateResultHandlerResponse createRollbackResponse(UpdateResultHandlerResponse rolledBack) {
+        return new UpdateResultHandlerResponse(rolledBack.successResult, rolledBack.failureResult,
                 rolledBack.cancelled, rolledBack.timedOut, rolledBack.restarted, true, false, false, null);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createRollbackCancelledResponse(UpdateResultHandlerResponse<R> rolledBack) {
-        return new UpdateResultHandlerResponse<R>(rolledBack.successResult, rolledBack.failureResult,
+    public static  UpdateResultHandlerResponse createRollbackCancelledResponse(UpdateResultHandlerResponse rolledBack) {
+        return new UpdateResultHandlerResponse(rolledBack.successResult, rolledBack.failureResult,
                 rolledBack.cancelled, rolledBack.timedOut, rolledBack.restarted, false, true, false, null);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createRollbackTimedOutResponse(UpdateResultHandlerResponse<R> rolledBack) {
-        return new UpdateResultHandlerResponse<R>(rolledBack.successResult, rolledBack.failureResult,
+    public static  UpdateResultHandlerResponse createRollbackTimedOutResponse(UpdateResultHandlerResponse rolledBack) {
+        return new UpdateResultHandlerResponse(rolledBack.successResult, rolledBack.failureResult,
                 rolledBack.cancelled, rolledBack.timedOut, rolledBack.restarted, false, false, true, null);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createRollbackFailedResponse(UpdateResultHandlerResponse<R> rolledBack, Throwable cause) {
-        return new UpdateResultHandlerResponse<R>(rolledBack.successResult, rolledBack.failureResult,
+    public static  UpdateResultHandlerResponse createRollbackFailedResponse(UpdateResultHandlerResponse rolledBack, Throwable cause) {
+        return new UpdateResultHandlerResponse(rolledBack.successResult, rolledBack.failureResult,
                 rolledBack.cancelled, rolledBack.timedOut, rolledBack.restarted, false, false, false, cause);
     }
 
-    public static <R> UpdateResultHandlerResponse<R> createRestartResponse() {
-        return new UpdateResultHandlerResponse<R>(null, null, false, false, true, false, false, false, null);
+    public static  UpdateResultHandlerResponse createRestartResponse() {
+        return new UpdateResultHandlerResponse(null, null, false, false, true, false, false, false, null);
     }
 
-    private UpdateResultHandlerResponse(final R successResult, final Throwable failureResult,
+    private UpdateResultHandlerResponse(final ModelNode successResult, final Throwable failureResult,
             final boolean cancelled, final boolean timedOut,
             final boolean restarted, final boolean rolledBack,
             final boolean rollbackCancelled, final boolean rollbackTimedOut,
@@ -113,7 +138,7 @@ public class UpdateResultHandlerResponse<R> implements Serializable {
         return rollbackFailure;
     }
 
-    public R getSuccessResult() {
+    public ModelNode getSuccessResult() {
         return successResult;
     }
 

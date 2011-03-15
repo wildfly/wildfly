@@ -23,13 +23,10 @@
 package org.jboss.as.controller.client.helpers.domain.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.UpdateFailedException;
 
 /**
@@ -40,29 +37,28 @@ import org.jboss.as.controller.client.helpers.domain.UpdateFailedException;
  *
  * @author Brian Stansberry
  */
-public class DomainUpdateApplierResponse implements Serializable {
+public class BasicDomainUpdateResult implements Serializable {
 
     private static final long serialVersionUID = -3525117172870002485L;
 
     private final UpdateFailedException domainFailure;
     private final Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();
-    private final List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
     private final boolean cancelled;
     private final boolean rolledBack;
 
-    public DomainUpdateApplierResponse(boolean cancelled) {
+    public BasicDomainUpdateResult(boolean cancelled) {
         this.cancelled = cancelled;
         this.rolledBack = !cancelled;
         this.domainFailure = null;
     }
 
-    public DomainUpdateApplierResponse(final UpdateFailedException domainFailure) {
+    public BasicDomainUpdateResult(final UpdateFailedException domainFailure) {
         this.domainFailure = domainFailure;
         this.cancelled = false;
         this.rolledBack = false;
     }
 
-    public DomainUpdateApplierResponse(final Map<String, UpdateFailedException> hostFailures) {
+    public BasicDomainUpdateResult(final Map<String, UpdateFailedException> hostFailures) {
         this.domainFailure = null;
         if (hostFailures != null) {
             this.hostFailures.putAll(hostFailures);
@@ -71,11 +67,8 @@ public class DomainUpdateApplierResponse implements Serializable {
         this.rolledBack = false;
     }
 
-    public DomainUpdateApplierResponse(final List<ServerIdentity> servers) {
+    public BasicDomainUpdateResult() {
         this.domainFailure = null;
-        if (servers != null) {
-            this.servers.addAll(servers);
-        }
         this.cancelled = false;
         this.rolledBack = false;
     }
@@ -94,10 +87,6 @@ public class DomainUpdateApplierResponse implements Serializable {
 
     public Map<String, UpdateFailedException> getHostFailures() {
         return Collections.unmodifiableMap(hostFailures);
-    }
-
-    public List<ServerIdentity> getServers() {
-        return Collections.unmodifiableList(servers);
     }
 
 

@@ -50,5 +50,5 @@ public interface ServerDeploymentPlanResult {
      *
      * @return the result
      */
-    Map<UUID, ServerUpdateResult<Void>> getDeploymentActionResults();
+    Map<UUID, ServerUpdateResult> getDeploymentActionResults();
 }

@@ -28,22 +28,23 @@ import java.util.UUID;
 import org.jboss.as.controller.client.helpers.domain.RollbackCancelledException;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Default implementation of {@link ServerUpdateResult}.
  *
  * @author Brian Stansberry
  */
-class ServerUpdateResultImpl<R> implements ServerUpdateResult<R>, Serializable {
+class ServerUpdateResultImpl implements ServerUpdateResult, Serializable {
 
     private static final long serialVersionUID = 5879115765933810032L;
 
     private final UUID actionId;
     private final ServerIdentity serverId;
-    private final UpdateResultHandlerResponse<R> urhr;
-    private UpdateResultHandlerResponse<?> rollbackResult;
+    private final UpdateResultHandlerResponse urhr;
+    private UpdateResultHandlerResponse rollbackResult;
 
-    ServerUpdateResultImpl(final UUID actionId, final ServerIdentity serverId, final UpdateResultHandlerResponse<R> urhr) {
+    ServerUpdateResultImpl(final UUID actionId, final ServerIdentity serverId, final UpdateResultHandlerResponse urhr) {
         assert actionId != null : "actionId is null";
         assert serverId != null : "serverId is null";
         assert urhr != null : "urhr is null";
@@ -63,7 +64,7 @@ class ServerUpdateResultImpl<R> implements ServerUpdateResult<R>, Serializable {
     }
 
     @Override
-    public R getSuccessResult() {
+    public ModelNode getSuccessResult() {
         return urhr.getSuccessResult();
     }
 
@@ -87,7 +88,7 @@ class ServerUpdateResultImpl<R> implements ServerUpdateResult<R>, Serializable {
         return urhr.isTimedOut();
     }
 
-    void markRolledBack(UpdateResultHandlerResponse<?> rollbackResult) {
+    void markRolledBack(UpdateResultHandlerResponse rollbackResult) {
         this.rollbackResult = rollbackResult;
     }
 
