@@ -21,13 +21,11 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.invocation.Interceptor;
+import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 
-import javax.ejb.EJBException;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 
@@ -36,16 +34,8 @@ import java.rmi.RemoteException;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class ComponentInstanceInterceptor implements Interceptor {
+public class ComponentInstanceInterceptor extends AbstractEJBInterceptor {
     private static final Logger log = Logger.getLogger(ComponentInstanceInterceptor.class);
-
-    protected static <C extends Component> C getComponent(InterceptorContext context, Class<C> componentType) {
-        Component component = context.getPrivateData(Component.class);
-        if (component == null) {
-            throw new IllegalStateException("Component not set in InterceptorContext: " + context);
-        }
-        return componentType.cast(component);
-    }
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {

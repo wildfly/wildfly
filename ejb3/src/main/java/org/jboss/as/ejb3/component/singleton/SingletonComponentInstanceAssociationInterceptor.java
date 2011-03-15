@@ -22,9 +22,8 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.invocation.Interceptor;
+import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
@@ -32,7 +31,7 @@ import org.jboss.invocation.InterceptorContext;
  *
  * @author Jaikiran Pai
  */
-public class SingletonComponentInstanceAssociationInterceptor implements Interceptor {
+public class SingletonComponentInstanceAssociationInterceptor extends AbstractEJBInterceptor {
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
@@ -45,16 +44,4 @@ public class SingletonComponentInstanceAssociationInterceptor implements Interce
         interceptorContext.putPrivateData(ComponentInstance.class, singletonComponentInstance);
         return interceptorContext.proceed();
     }
-
-    private <C extends Component> C getComponent(InterceptorContext context, Class<C> componentType) {
-        Component component = context.getPrivateData(Component.class);
-        if (component == null) {
-            throw new IllegalStateException("Component not set in InterceptorContext: " + context);
-        }
-        if (!componentType.isInstance(component)) {
-            throw new RuntimeException("Component " + component + " is not of expected type: " + componentType);
-        }
-        return componentType.cast(component);
-    }
-
 }

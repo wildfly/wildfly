@@ -19,32 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateless;
+package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
+import org.jboss.as.ee.component.Component;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
-    static final PooledInstanceInterceptor INSTANCE = new PooledInstanceInterceptor();
-
-    private PooledInstanceInterceptor() {
-
-    }
-
-    @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
-        StatelessSessionComponent component = getComponent(context, StatelessSessionComponent.class);
-        ComponentInstance instance = component.getPool().get();
-        context.putPrivateData(ComponentInstance.class, instance);
-        try {
-            return context.proceed();
+public abstract class AbstractEJBInterceptor implements Interceptor {
+    protected static <C extends Component> C getComponent(InterceptorContext context, Class<C> componentType) {
+        Component component = context.getPrivateData(Component.class);
+        if (component == null) {
+            throw new IllegalStateException("Component not set in InterceptorContext: " + context);
         }
-        finally {
-            context.putPrivateData(ComponentInstance.class, null);
-        }
+        return componentType.cast(component);
     }
 }
