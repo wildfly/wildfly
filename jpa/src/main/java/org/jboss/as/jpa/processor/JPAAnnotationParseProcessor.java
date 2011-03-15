@@ -49,11 +49,12 @@ import org.jboss.msc.service.ServiceName;
 
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
-import java.util.Collection;
 import java.util.List;
 
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
+ *
+ * TODO: This should iterate over components looking for annotations, not the other way around
  *
  * @author Scott Marlow (based on ResourceInjectionAnnotationParsingProcessor)
  */
@@ -103,18 +104,9 @@ public class JPAAnnotationParseProcessor
 
                 // give hopefully enough information if component isn't found
                 if (null == componentDescription) {
-                    final Collection<AbstractComponentDescription> descriptions = moduleDescription.getComponentDescriptions();
-                    String componentDetails = "{";
-                    String separator = "";
-                    if (descriptions != null) {
-                        for (AbstractComponentDescription description : descriptions) {
-                            componentDetails = componentDetails + separator + description.getComponentName();
-                            separator = ",";
-                        }
-                    }
-                    componentDetails = componentDetails + "}";
-                    throw new DeploymentUnitProcessingException("Application " + applicationName + ": is missing component " + componentName +
-                        " (components=" + componentDetails + ") for annotation " + instance.target().toString());
+                    //if the component is not found it is probably a CDI component
+                    //so just return
+                    continue;
                 }
 
                 componentDescription.getBindings().add(binding);
