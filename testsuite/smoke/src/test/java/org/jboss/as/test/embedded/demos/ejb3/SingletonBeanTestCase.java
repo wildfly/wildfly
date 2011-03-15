@@ -33,6 +33,7 @@ import org.jboss.as.demos.ejb3.archive.StartupSingleton;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +62,8 @@ public class SingletonBeanTestCase {
         jar.addPackage(SimpleSingletonBean.class.getPackage());
         jar.addPackage(StartupSingleton.class.getPackage());
         jar.addClass(ReadOnlySingletonBean.class);
+        jar.addClass(LongWritesSingletonBean.class);
+        jar.addClass(SingletonBeanTestCase.class);
         return jar;
     }
 
@@ -105,6 +108,22 @@ public class SingletonBeanTestCase {
         }
     }
 
+    @Test
+    @Ignore ("Disabled till we figure out why javax.ejb.* isn't available in the testcase module")
+    public void testLongWritesSingleton() throws Exception {
+        Context ctx = new InitialContext();
+        LongWritesSingletonBean singletonBean = (LongWritesSingletonBean) ctx.lookup("java:global/ejb3-singleton-bean-example/" + LongWritesSingletonBean.class.getSimpleName() + "!" + LongWritesSingletonBean.class.getName());
+        final int NUM_THREADS = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+        Future<?>[] results = new Future[NUM_THREADS];
+        for (int i = 0; i < NUM_THREADS; i++) {
+            results[i] = executor.submit(new LongWritesSingletonBeanInvoker(singletonBean));
+        }
+        for (int i = 0; i < NUM_THREADS; i++) {
+            results[i].get(10, TimeUnit.SECONDS);
+        }
+    }
+
     private class ReadOnlySingletonBeanInvoker implements Callable<String> {
 
         private ReadOnlySingletonBean bean;
@@ -119,6 +138,21 @@ public class SingletonBeanTestCase {
         @Override
         public String call() throws Exception {
             return bean.twoSecondEcho(String.valueOf(this.num));
+        }
+    }
+
+    private class LongWritesSingletonBeanInvoker implements Callable<Object> {
+
+        private LongWritesSingletonBean bean;
+
+        LongWritesSingletonBeanInvoker(LongWritesSingletonBean bean) {
+            this.bean = bean;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            bean.threeSecondWriteOperation();
+            return null;
         }
     }
 }

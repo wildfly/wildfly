@@ -31,6 +31,7 @@ import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -50,8 +51,14 @@ public class TestHelper {
     }
 
     public static DeploymentUnit mockDeploymentUnit() {
+        return mockDeploymentUnit("Mock Deployment Unit");
+    }
+
+    public static DeploymentUnit mockDeploymentUnit(String duName) {
         final Attachable attachable = new SimpleAttachable();
         final DeploymentUnit deploymentUnit = mock(DeploymentUnit.class);
+        when(deploymentUnit.getName()).thenReturn(duName);
+        
         when(deploymentUnit.getAttachment((AttachmentKey<Object>) any())).thenAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {

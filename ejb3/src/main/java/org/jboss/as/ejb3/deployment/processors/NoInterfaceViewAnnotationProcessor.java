@@ -77,8 +77,9 @@ public class NoInterfaceViewAnnotationProcessor extends AbstractComponentConfigP
         sessionBeanComponentDescription.addNoInterfaceView();
 
         // create the jndi bindings for the no-interface view
-        // TODO: For EJB3 application name applies only for .ear deployments.
-        String applicationName = null; //sessionBeanComponentDescription.getApplicationName();
+
+        // In case of EJB bindings, appname == .ear file name (if it's an .ear deployment)
+        String applicationName = this.getEarName(deploymentUnit);
         String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBeanComponentDescription.getModuleName() + "/" + sessionBeanComponentDescription.getEJBName();
         String appJNDIBaseName = "java:app/" + sessionBeanComponentDescription.getModuleName() + "/" + sessionBeanComponentDescription.getEJBName();
         String moduleJNDIBaseName = "java:module/" + sessionBeanComponentDescription.getEJBName();
@@ -135,5 +136,32 @@ public class NoInterfaceViewAnnotationProcessor extends AbstractComponentConfigP
         }
         List<AnnotationInstance> localBeanAnnotations = annotationsOnBeanClass.get(DotName.createSimple(LocalBean.class.getName()));
         return localBeanAnnotations != null && !localBeanAnnotations.isEmpty();
+    }
+
+    /**
+     * Returns the name (stripped off the .ear suffix) of the top level .ear deployment for the passed <code>deploymentUnit</code>.
+     * Returns null if the passed <code>deploymentUnit</code> doesn't belong to a .ear deployment.
+     *
+     * @param deploymentUnit
+     * @return TODO: Move this method to some common place
+     */
+    private String getEarName(DeploymentUnit deploymentUnit) {
+        DeploymentUnit parentDU = deploymentUnit.getParent();
+        if (parentDU == null) {
+            String duName = deploymentUnit.getName();
+            if (duName.endsWith(".ear")) {
+                return duName.substring(0, duName.length() - ".ear".length());
+            }
+            return null;
+        }
+        // traverse to top level DU
+        while (parentDU.getParent() != null) {
+            parentDU = parentDU.getParent();
+        }
+        String duName = parentDU.getName();
+        if (duName.endsWith(".ear")) {
+            return duName.substring(0, duName.length() - ".ear".length());
+        }
+        return null;
     }
 }
