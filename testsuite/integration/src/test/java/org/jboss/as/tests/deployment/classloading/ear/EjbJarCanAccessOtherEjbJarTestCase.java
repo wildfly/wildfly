@@ -42,12 +42,12 @@ public class EjbJarCanAccessOtherEjbJarTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "otherjar.jar");
         jar.addClass(WebInfLibClass.class);
         // TODO: non empty file
-        jar.addResource(new StringAsset(""), "META-INF/ejb-jar.xml");
+        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
 
         ear.addModule(jar);
         jar = ShrinkWrap.create(JavaArchive.class, "testjar.jar");
         jar.addClass(EjbJarCanAccessOtherEjbJarTestCase.class);
-        jar.addResource(new StringAsset(""), "META-INF/ejb-jar.xml");
+        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
         ear.addModule(jar);
 
         return ear;
@@ -65,5 +65,16 @@ public class EjbJarCanAccessOtherEjbJarTestCase {
             return Class.forName(name, false, cl);
         } else
             return Class.forName(name);
+    }
+
+    private static StringAsset emptyEjbJar() {
+        return new StringAsset(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
+                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
+                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
+                "         version=\"3.0\">\n" +
+                "   \n" +
+                "</ejb-jar>");
     }
 }

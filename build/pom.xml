@@ -435,6 +435,7 @@
         <dependency>
            <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
+           <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -702,6 +703,7 @@
         <dependency>
             <groupId>org.jboss.jsfunit</groupId>
             <artifactId>jsfunit-arquillian</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

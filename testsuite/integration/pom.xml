@@ -72,10 +72,6 @@
                     <includes>
                         <include>**/*TestCase.java</include>
                     </includes>
-                    <excludes>
-	                    <!-- Disable the broken classloading tests until they get sorted -->
-                        <exclude>org/jboss/as/tests/deployment/classloading/**/*TestCase.java</exclude>
-                    </excludes>
                     <forkMode>once</forkMode>
                 </configuration>
             </plugin>
