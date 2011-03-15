@@ -38,38 +38,59 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class ExampleRunner {
-   private static <T> T createProxy(MBeanServerConnection mbeanServer, String lookupName, Class<T> intf) {
-       final InvocationHandler handler = new TestMBeanInvocationHandler(mbeanServer, lookupName);
-       final Class<?>[] interfaces = { intf };
-       return intf.cast(Proxy.newProxyInstance(intf.getClassLoader(), interfaces, handler));
-   }
+    private static <T> T createProxy(MBeanServerConnection mbeanServer, String lookupName, Class<T> intf) {
+        final InvocationHandler handler = new TestMBeanInvocationHandler(mbeanServer, lookupName);
+        final Class<?>[] interfaces = {intf};
+        return intf.cast(Proxy.newProxyInstance(intf.getClassLoader(), interfaces, handler));
+    }
 
-   private static void doStatefulMagic(MBeanServerConnection server) throws Exception {
-       String msg = (String) server.invoke(new ObjectName("jboss:name=jpa-test,type=service"), "exec", new Object[] { ExerciseStateful.class }, new String[] { Class.class.getName() });
-       System.out.println(msg);
-   }
+    private static void doStatefulMagic(MBeanServerConnection server) throws Exception {
+        String msg = (String) server.invoke(new ObjectName("jboss:name=jpa-test,type=service"), "exec", new Object[]{ExerciseStateful.class}, new String[]{Class.class.getName()});
+        System.out.println(msg);
+    }
 
-   public static void main(String[] args) throws Exception {
-      DeploymentUtils utils = new DeploymentUtils("jpa-example.jar", SimpleStatelessSessionBean.class.getPackage());
-      try {
-         utils.addDeployment("jpa-mbean.sar", Test.class.getPackage());
-         utils.deploy();
+    public static void main(String[] args) throws Exception {
+        showInfo();
+        DeploymentUtils utils = new DeploymentUtils("jpa-example.jar", SimpleStatelessSessionBean.class.getPackage());
+        try {
+            utils.addDeployment("jpa-mbean.sar", Test.class.getPackage());
+            utils.deploy();
 
-         /*
-         InitialContext ctx = new InitialContext();
-         SimpleStatelessSessionLocal bean = (SimpleStatelessSessionLocal) ctx.lookup("java:global/jpa-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName());
-         String msg = bean.echo("Hello world");
-         */
-         MBeanServerConnection mbeanServer = utils.getConnection();
+            /*
+            InitialContext ctx = new InitialContext();
+            SimpleStatelessSessionLocal bean = (SimpleStatelessSessionLocal) ctx.lookup("java:global/jpa-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName());
+            String msg = bean.echo("Hello world");
+            */
+            MBeanServerConnection mbeanServer = utils.getConnection();
 
-         SimpleStatelessSessionLocal bean = createProxy(mbeanServer, "java:global/jpa-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName(), SimpleStatelessSessionLocal.class);
-         String msg = bean.echo("Hello world");
-         System.out.println(msg);
+            SimpleStatelessSessionLocal bean = createProxy(mbeanServer, "java:global/jpa-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName(), SimpleStatelessSessionLocal.class);
+            String msg = bean.echo("Hello world");
+            System.out.println(msg);
 
-         doStatefulMagic(mbeanServer);
-      } finally {
-         utils.undeploy();
-         safeClose(utils);
-      }
-   }
+            doStatefulMagic(mbeanServer);
+        } finally {
+            utils.undeploy();
+            safeClose(utils);
+        }
+    }
+
+    private static void showInfo() {
+        System.out.println("Thanks for running the JPA demo and helping to test the bits out on your system.  Here are a few brief preparation steps for" +
+            " running the demo, in case you need them.  By the way, its normal to see a 'RejectedExecutionException' at the end of the demo but other errors" +
+            " probably mean a problem occurred.");
+
+        System.out.println(
+            "1.  Enable the \"java:/H2DS\" datasource in standalone.xml (find \"java:/H2DS\" and change enabled=\"true\") \n" +
+                "2.  Disable osgi in standalone.xml (so that JDBC datasources works).  " +
+                    "Find \"<subsystem xmlns=\"urn:jboss:domain:osgi\" and delete up to the matching \"</subsystem>\" \n" +
+                "3.  cp as7/build/target/jboss-7.0.0.Alpha2/modules/com/h2database/h2/main/h2-1.2.144.jar as7/build/target/jboss-7.0.0.Alpha2/standalone/deployments/ \n" +
+                "4.  touch  as7/build/target/jboss-7.0.0.Alpha2/standalone/deployments/h2-1.2.144.jar.dodeploy \n" +
+                "5.  cd as7/build/target/jboss-7.0.0.Alpha2/ \n" +
+                "6.  ./startup.sh \n" +
+                "7.  cd as7/demos \n" +
+                "8.  mvn package -Dexample=jpa" +
+                "\n\n"
+        );
+
+    }
 }
