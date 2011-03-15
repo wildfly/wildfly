@@ -998,7 +998,7 @@ public class ExampleRunner implements Runnable {
         final ModelNode queueAddOperation = new ModelNode();
         queueAddOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         queueAddOperation.get(ModelDescriptionConstants.OP_ADDR).set(address);
-        queueAddOperation.add("entries", queueName);
+        queueAddOperation.get("entries").add(queueName);
 
         DomainDeploymentUtils utils = null;
         boolean deployed = false;

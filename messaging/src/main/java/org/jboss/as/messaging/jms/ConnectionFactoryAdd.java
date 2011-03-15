@@ -66,6 +66,7 @@ import static org.jboss.as.messaging.jms.CommonAttributes.TRANSACTION_BATCH_SIZE
 import static org.jboss.as.messaging.jms.CommonAttributes.USE_GLOBAL_POOLS;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,7 +115,11 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
+
+                    System.out.println(Arrays.asList(jndiBindings(operation)));
+
                     final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
                     final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
                     final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);

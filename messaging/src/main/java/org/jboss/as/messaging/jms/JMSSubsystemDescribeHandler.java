@@ -60,7 +60,7 @@ class JMSSubsystemDescribeHandler implements ModelQueryOperationHandler {
             for(final Property property : subModel.get(CommonAttributes.CONNECTION_FACTORY).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
                 address.add(CommonAttributes.CONNECTION_FACTORY, property.getName());
-                result.add(ConnectionFactoryAdd.getAddOperation(address, subModel));
+                result.add(ConnectionFactoryAdd.getAddOperation(address, property.getValue()));
             }
         }
         if(subModel.hasDefined(CommonAttributes.QUEUE)) {
