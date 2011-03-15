@@ -30,6 +30,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
 /**
@@ -41,6 +42,7 @@ public class EJBUtilities implements Service<EJBUtilities> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
     private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
+    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
 
     public TransactionManager getTransactionManager() {
@@ -49,6 +51,14 @@ public class EJBUtilities implements Service<EJBUtilities> {
 
     public Injector<TransactionManager> getTransactionManagerInjector() {
         return transactionManagerValue;
+    }
+
+    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
+        return transactionSynchronizationRegistryValue;
+    }
+
+    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return transactionSynchronizationRegistryValue.getOptionalValue();
     }
 
     public UserTransaction getUserTransaction() {

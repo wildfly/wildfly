@@ -66,10 +66,12 @@ public class ComponentInstanceInterceptor extends AbstractEJBInterceptor {
             component.getCache().discard(sessionId);
             throw new RuntimeException(t);
         } finally {
-            // nobody attached the bean to the tx and nobody discarded it
-            //if (!target.isTxSynchronized() && !target.isDiscarded()) container.getCache().release(target);
-            component.getCache().release(instance);
-            // TODO: remove instance from context
+            // the StatefulSessionSynchronizationInterceptor will take care of releasing
+            context.putPrivateData(ComponentInstance.class, null);
         }
+    }
+
+    static StatefulSessionComponentInstance getComponentInstance(InterceptorContext context) {
+        return (StatefulSessionComponentInstance) context.getPrivateData(ComponentInstance.class);
     }
 }

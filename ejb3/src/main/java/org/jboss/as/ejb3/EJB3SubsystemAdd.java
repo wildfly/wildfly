@@ -54,6 +54,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -87,6 +88,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     final EJBUtilities utilities = new EJBUtilities();
                     serviceTarget.addService(EJBUtilities.SERVICE_NAME, utilities)
                         .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
+                        .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, utilities.getTransactionSynchronizationRegistryInjector())
                         .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, utilities.getUserTransactionInjector())
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();

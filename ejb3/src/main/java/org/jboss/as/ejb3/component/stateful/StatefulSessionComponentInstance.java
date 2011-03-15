@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.invocation.Interceptor;
@@ -39,6 +40,11 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
         super(component, instance, preDestroyInterceptors, context);
         this.id = new GUID();
+    }
+
+    @Override
+    public StatefulSessionComponent getComponent() {
+        return (StatefulSessionComponent) super.getComponent();
     }
 
     public Serializable getId() {

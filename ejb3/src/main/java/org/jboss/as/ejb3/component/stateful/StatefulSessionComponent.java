@@ -31,8 +31,11 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import javax.ejb.AccessTimeout;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stateful Session Bean
@@ -40,6 +43,7 @@ import java.util.List;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionComponent extends SessionBeanComponent {
+    private final AccessTimeout accessTimeout;
     private Cache<StatefulSessionComponentInstance> cache;
 
     /**
@@ -49,6 +53,24 @@ public class StatefulSessionComponent extends SessionBeanComponent {
      */
     protected StatefulSessionComponent(final StatefulSessionComponentConfiguration configuration) {
         super(configuration);
+
+        // TODO: must come from configuration
+        accessTimeout = new AccessTimeout() {
+            @Override
+            public long value() {
+                return 5;
+            }
+
+            @Override
+            public TimeUnit unit() {
+                return TimeUnit.MINUTES;
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessTimeout.class;
+            }
+        };
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();
         cache.setStatefulObjectFactory(new StatefulObjectFactory<StatefulSessionComponentInstance>() {
@@ -96,5 +118,9 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     @Override
     protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
         return new StatefulSessionComponentInstance(this, instance, preDestroyInterceptors, context);
+    }
+
+    protected AccessTimeout getAccessTimeout() {
+        return accessTimeout;
     }
 }

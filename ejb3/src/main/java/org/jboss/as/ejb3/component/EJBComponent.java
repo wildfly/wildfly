@@ -32,6 +32,7 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -65,7 +66,8 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Override
     public ApplicationException getApplicationException(Class<?> exceptionClass) {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getApplicationException");
+        // TODO: implement
+        return null;
     }
 
     @Override
@@ -112,6 +114,10 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
     @Override
     public TransactionManager getTransactionManager() {
         return utilities.getTransactionManager();
+    }
+
+    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return utilities.getTransactionSynchronizationRegistry();
     }
 
     @Override
