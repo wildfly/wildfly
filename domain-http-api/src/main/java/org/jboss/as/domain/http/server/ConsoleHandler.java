@@ -125,6 +125,6 @@ public class ConsoleHandler implements HttpHandler {
         if(loader!=null)
             return loader;
         else
-            return Thread.currentThread().getContextClassLoader();
+            return ConsoleHandler.class.getClassLoader();
     }
 }
