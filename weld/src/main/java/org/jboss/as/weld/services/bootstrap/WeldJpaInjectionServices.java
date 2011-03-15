@@ -21,47 +21,76 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import org.jboss.as.jpa.container.PersistenceUnitSearch;
+import org.jboss.as.jpa.container.TransactionScopedEntityManager;
+import org.jboss.as.jpa.service.PersistenceUnitService;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.weld.injection.spi.JpaInjectionServices;
+
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
+import java.util.HashMap;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.weld.injection.spi.JpaInjectionServices;
+public class WeldJpaInjectionServices implements JpaInjectionServices {
 
-public class WeldJpaInjectionServices implements Service<WeldJpaInjectionServices>, JpaInjectionServices {
+    private final DeploymentUnit deploymentUnit;
+    private final ServiceRegistry serviceRegistry;
 
-    public static final ServiceName SERVICE_NAME = ServiceName.of("WeldJpaInjectionServices");
-
-    @Override
-    public void start(StartContext context) throws StartException {
-
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    @Override
-    public WeldJpaInjectionServices getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public WeldJpaInjectionServices(DeploymentUnit deploymentUnit, ServiceRegistry serviceRegistry) {
+        this.deploymentUnit = deploymentUnit;
+        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
     public EntityManager resolvePersistenceContext(InjectionPoint injectionPoint) {
-        throw new RuntimeException("not implemented");
+        //TODO: cache this stuff
+        final PersistenceContext context = injectionPoint.getAnnotated().getAnnotation(PersistenceContext.class);
+        if(context == null) {
+            throw new RuntimeException("Could not find @PersistenceContext annotation on " + injectionPoint.getMember());
+        }
+        final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
+        final ServiceName persistenceUnitServiceName = PersistenceUnitService.getPUServiceName(scopedPuName);
+
+        final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
+        //now we have the service controller, as this method is only called at runtime the service should
+        //always be up
+        PersistenceUnitService persistenceUnitService = (PersistenceUnitService)serviceController.getValue();
+        return new TransactionScopedEntityManager(scopedPuName,new HashMap<Object,Object>(), persistenceUnitService.getEntityManagerFactory());
     }
 
     @Override
     public EntityManagerFactory resolvePersistenceUnit(InjectionPoint injectionPoint) {
-        throw new RuntimeException("not implemented");
+        //TODO: cache this stuff
+        final PersistenceUnit context = injectionPoint.getAnnotated().getAnnotation(PersistenceUnit.class);
+        if(context == null) {
+            throw new RuntimeException("Could not find @PersistenceUnit annotation on " + injectionPoint.getMember());
+        }
+        final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
+        final ServiceName persistenceUnitServiceName = PersistenceUnitService.getPUServiceName(scopedPuName);
+
+        final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
+        //now we have the service controller, as this method is only called at runtime the service should
+        //always be up
+        PersistenceUnitService persistenceUnitService = (PersistenceUnitService)serviceController.getValue();
+        return persistenceUnitService.getEntityManagerFactory();
     }
 
     @Override
     public void cleanup() {
     }
 
+    private String getScopedPUName(final DeploymentUnit deploymentUnit, String persistenceUnitName) {
+        String scopedPuName;
+        scopedPuName = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
+        if (null == scopedPuName) {
+            throw new RuntimeException("Can't find a deployment unit named " +persistenceUnitName+ " at " + deploymentUnit);
+        }
+        return scopedPuName;
+    }
 }

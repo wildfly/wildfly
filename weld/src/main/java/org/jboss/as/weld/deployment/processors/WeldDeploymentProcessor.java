@@ -56,6 +56,7 @@ import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
+import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
 
 import javax.enterprise.inject.spi.Extension;
@@ -155,6 +156,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldContainer.addWeldService(EjbServices.class,new WeldEjbServices(deploymentUnit.getServiceRegistry()));
 
+
+        final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit,deploymentUnit.getServiceRegistry());
+        weldContainer.addWeldService(JpaInjectionServices.class,rootJpaInjectionServices);
+
         final WeldService weldService = new WeldService(weldContainer);
         final ServiceName weldServiceName = deploymentUnit.getServiceName().append(WeldService.SERVICE_NAME);
         // add the weld service
@@ -162,7 +167,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
 
-        installJpaInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installResourceInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installSecurityService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installTransactionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
@@ -171,18 +175,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private ServiceName installJpaInjectionService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-            WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
-        final WeldJpaInjectionServices service = new WeldJpaInjectionServices();
-
-        final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldJpaInjectionServices.SERVICE_NAME);
-
-        serviceTarget.addService(serviceName, service).install();
-
-        weldServiceBuilder.addDependency(serviceName, WeldJpaInjectionServices.class, weldService.getJpaInjectionServices());
-
-        return serviceName;
-    }
 
     private ServiceName installSecurityService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
             WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {

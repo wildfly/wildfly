@@ -37,6 +37,7 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.faces.api"/>
         <module name="javax.interceptor.api"/>
+        <module name="javax.persistence.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
         <module name="javax.transaction.api"/>
@@ -46,6 +47,7 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.ejb3"/>
+        <module name="org.jboss.as.jpa"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.transactions"/>
