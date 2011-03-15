@@ -32,6 +32,7 @@
         <echo>2) Run mvn package -Dexample=&lt;example.name&gt; where "exammple.name is the name of the example</echo>
     	<echo/>
         <echo>Valid example names to run against a standalone JBoss AS instance are</echo>
+        <echo>  ejb3             - deploys simple EJB3 examples and invokes on the beans</echo>
         <echo>  sar              - deploys mbeans packaged in a sar</echo>
         <echo>  managedbean      - deploys a managed bean</echo>
         <echo>  serviceloader    - deploys a serviceloader style service</echo>
