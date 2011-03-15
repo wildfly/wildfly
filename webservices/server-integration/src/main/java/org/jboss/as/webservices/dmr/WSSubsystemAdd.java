@@ -43,7 +43,9 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.config.ServerConfigImpl;
+import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.WSServices;
@@ -102,6 +104,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                     resultHandler.handleResultComplete();
                 }
             });
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
         } else {
             resultHandler.handleResultComplete();
         }

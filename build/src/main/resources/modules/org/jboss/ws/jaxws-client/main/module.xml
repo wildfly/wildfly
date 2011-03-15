@@ -50,5 +50,6 @@
         </module>
         <module name="org.apache.neethi" />
         <module name="org.jboss.logging" />
+        <module name="org.apache.cxf" />
     </dependencies>
 </module>

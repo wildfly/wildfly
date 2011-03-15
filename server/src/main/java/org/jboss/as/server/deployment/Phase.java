@@ -266,6 +266,7 @@ public enum Phase {
     public static final int POST_MODULE_AROUNDINVOKE_ANNOTATION         = 0x0C00;
     public static final int POST_MODULE_RESOURCE_INJECTION_ANNOTATION   = 0x0D00;
     public static final int POST_MODULE_EJB_INJECTION_ANNOTATION        = 0x0E00;
+    public static final int POST_MODULE_WEB_SERVICE_INJECTION_ANNOTATION = 0x0E10;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0F00;
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x1000;
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x1100;
