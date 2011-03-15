@@ -21,6 +21,17 @@
  */
 package org.jboss.as.demos.domain.interactive.runner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,6 +42,7 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +67,8 @@ import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -73,6 +87,9 @@ import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBu
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.demos.DomainDeploymentUtils;
+import org.jboss.as.demos.fakejndi.FakeJndi;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLContentWriter;
@@ -967,77 +984,51 @@ public class ExampleRunner implements Runnable {
 
     private boolean addJmsQueue() throws Exception {
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        stdout.println("Enter the name for the new queue or [C] to cancel:");
-//        String queueName = readStdIn();
-//        if ("C".equals(queueName.toUpperCase()))
-//            return continuePrompt();
-//
-//        DomainDeploymentUtils utils = null;
-//        boolean actionsApplied = false;
-//        boolean deployed = false;
-//        try {
-//            utils = new DomainDeploymentUtils(client);
-//            utils.addDeployment("fakejndi.sar", FakeJndi.class.getPackage());
-//            utils.deploy();
-//
-//            deployed = true;
-//
-//            final JMSQueueAdd queueAdd = new JMSQueueAdd(queueName);
-//            queueAdd.setBindings(Collections.singleton(queueName));
-//
-//            DomainSubsystemUpdate<JMSSubsystemElement, Void> domainUpdate = DomainSubsystemUpdate.create("messaging", queueAdd);
-//            List<AbstractDomainModelUpdate<?>> list = Collections.<AbstractDomainModelUpdate<?>>singletonList(domainUpdate);
-//            List<DomainUpdateResult<?>> results = client.applyUpdates(list);
-//            DomainUpdateResult<?> result = results.get(0);
-//            stdout.println(result + (result != null ? String.valueOf(result.isSuccess()) + String.valueOf(result.getServerResults().size()) : ""));
-//            if (result.getDomainFailure() == null && result.getHostFailures().size() == 0) {
-//                actionsApplied = true;
-//            }
-//            if (result.isSuccess()) {
-//                for (ServerIdentity server : result.getServerResults().keySet()) {
-//                    exerciseQueueOnServer(queueName, server);
-//                }
-//            }
-//            else if (result.getDomainFailure() != null) {
-//                stdout.println("Queue addition failed on the domain controller");
-//                result.getDomainFailure().printStackTrace(stdout);
-//            }
-//            else if (result.getHostFailures().size() > 0) {
-//                for (Map.Entry<String, UpdateFailedException> entry : result.getHostFailures().entrySet()) {
-//                    stdout.println("\nQueue addition failed on Host Controller " + entry.getKey());
-//                    entry.getValue().printStackTrace(stdout);
-//                }
-//            }
-//            else if (result.getServerFailures().size() > 0) {
-//
-//                for (Map.Entry<ServerIdentity, Throwable> entry : result.getServerFailures().entrySet()) {
-//                    stdout.println("\nQueue addition failed on Server " + entry.getKey().getServerName());
-//                    entry.getValue().printStackTrace(stdout);
-//                }
-//            }
-//            else if (result.getServerCancellations().size() > 0) {
-//                for (ServerIdentity server : result.getServerCancellations()) {
-//                    stdout.println("\nQueue addition was cancelled on Server " + server.getServerName());
-//                }
-//            }
-//
-//            return continuePrompt();
-//        }
-//        finally {
-//            if (deployed) {
-//                utils.undeploy();
-//            }
-//            if (utils != null)
-//                utils.close();
-//            if(actionsApplied) {
-//                // Remove the queue using the management API
-//                final JMSQueueRemove queueRemove = new JMSQueueRemove(queueName);
-//                DomainSubsystemUpdate<JMSSubsystemElement, Void> domainUpdate = DomainSubsystemUpdate.create("messaging", queueRemove);
-//                client.applyUpdates(Collections.<AbstractDomainModelUpdate<?>>singletonList(domainUpdate));
-//            }
-//        }
+        stdout.println("Enter the name for the new queue or [C] to cancel:");
+        String queueName = readStdIn();
+        if ("C".equals(queueName.toUpperCase())) {
+            return continuePrompt();
+        }
+
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.PROFILE, "default");
+        address.add(ModelDescriptionConstants.SUBSYSTEM, "jms");
+        address.add("queue", queueName);
+
+        final ModelNode queueAddOperation = new ModelNode();
+        queueAddOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        queueAddOperation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        queueAddOperation.add("entries", queueName);
+
+        DomainDeploymentUtils utils = null;
+        boolean deployed = false;
+        try {
+            utils = new DomainDeploymentUtils(client);
+            utils.addDeployment("fakejndi.sar", FakeJndi.class.getPackage());
+            utils.deploy();
+
+            deployed = true;
+
+            try {
+                final ModelNode result = executeForResult(queueAddOperation);
+                Collection<ServerIdentity> servers = resultToServerIdentitySet(result);
+                for(ServerIdentity server : servers) {
+                    System.out.println(server);
+                    exerciseQueueOnServer(queueName, server);
+                }
+
+            } catch (Exception e) {
+                System.out.println("failed to execute operation " + queueAddOperation);
+                e.printStackTrace();
+            }
+
+            return continuePrompt();
+        } finally {
+            if(deployed && utils != null) {
+                utils.undeploy();
+            }
+
+        }
     }
 
     private void exerciseQueueOnServer(final String queueName, final ServerIdentity server) throws Exception {
@@ -1114,43 +1105,27 @@ public class ExampleRunner implements Runnable {
     }
 
     private MBeanServerConnection getMBeanServerConnection(ServerIdentity server) throws Exception {
+        // Poke the running server directly for its binding config
+        final ModelNode address = new ModelNode();
+        address.add("host", server.getHostName());
+        address.add("server", server.getServerName());
+        address.add("socket-binding-group", "*");
 
-        // THIS DOES NOT CURRENTLY WORK
-        throw new UnsupportedOperationException("Convert to detyped API");
-//        // FIXME we need an API to get the actual address and port used by a server given
-//        // the socket binding name. So then we'd get the socket binding name
-//        // from the subsystem config and then find the InetSocketAddress from the server using that API
-//        DomainModel domainModel = client.getDomainModel();
-//        ServerElement se = client.getHostModel(server.getHostName()).getServer(server.getServerName());
-//        String socketBindingGroupName = se.getSocketBindingGroupName();
-//        int offset = se.getSocketBindingPortOffset();
-//        if (socketBindingGroupName == null) {
-//            ServerGroupElement sge = domainModel.getServerGroup(se.getServerGroup());
-//            socketBindingGroupName = sge.getSocketBindingGroupName();
-//        }
-//        SocketBindingGroupElement sbge = domainModel.getSocketBindingGroup(socketBindingGroupName);
-//        String address = null;
-//        int port = -1;
-//        for (SocketBindingElement sbe : sbge.getSocketBindings()) {
-//            // TODO deal with fact this socket could be in an included group
-//            if ("jmx-connector-registry".equals(sbe.getName())) {
-//                address = sbe.getInterfaceName();
-//                port = sbe.getPort() + offset;
-//                break;
-//            }
-//        }
-//        InetAddress addr = null;
-//
-//        try {
-//            addr = InetAddress.getByName(address);
-//            address = addr.getHostAddress();
-//        } catch (UnknownHostException e) {
-//            address = "localhost";
-//        }
-//
-//        String url = String.format("service:jmx:rmi:///jndi/rmi://%s:%d/jmxrmi", address, port);
-//        return JMXConnectorFactory.connect(new JMXServiceURL(url),
-//                new HashMap<String, Object>()).getMBeanServerConnection();
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+        operation.get(RECURSIVE).set(true);
+
+        final ModelNode result = executeForResult(operation);
+
+        final int portOffset = result.get("step-1", RESULT, PORT_OFFSET).asInt(0);
+        final int port = result.get("step-1", RESULT, SOCKET_BINDING, "jmx-connector-registry", PORT).asInt() + portOffset;
+
+        final String addr = "localhost"; // TODO determine the interface binding
+
+        String url = String.format("service:jmx:rmi:///jndi/rmi://%s:%d/jmxrmi", addr, port);
+        return JMXConnectorFactory.connect(new JMXServiceURL(url),
+                new HashMap<String, Object>()).getMBeanServerConnection();
     }
 
     private static interface MenuItem {
@@ -1265,6 +1240,10 @@ public class ExampleRunner implements Runnable {
         runner.run();
     }
 
+    private ModelNode executeForResult(ModelNode op) throws Exception {
+        return executeForResult(OperationBuilder.Factory.create(op).build());
+    }
+
     private ModelNode executeForResult(Operation op) {
         try {
             ModelNode result = client.execute(op);
@@ -1286,6 +1265,23 @@ public class ExampleRunner implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Get a domain operation result as a list of affected server identities.
+     *
+     * @param result the operation result
+     * @return a collection of affected
+     */
+    private Collection<ServerIdentity> resultToServerIdentitySet(final ModelNode result) {
+        final Collection<ServerIdentity> servers = new ArrayList<ServerIdentity>();
+        for(final Property serverGroup : result.get(SERVER_GROUPS).asPropertyList()) {
+            for(Property server : serverGroup.getValue().asPropertyList()) {
+                final String host = server.getValue().get(HOST).asString();
+                servers.add(new ServerIdentity(host, serverGroup.getName(), server.getName()));
+            }
+        }
+        return servers;
     }
 
     private static String writeModel(final String element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {
