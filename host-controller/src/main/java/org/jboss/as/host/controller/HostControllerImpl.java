@@ -83,7 +83,7 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
             throw new IllegalStateException(String.format("Domain Controller is not available; cannot start server %s", serverName));
         }
         final ServerInventory servers = this.serverInventory;
-        return servers.startServer(serverName, getModel().clone(), domainController);
+        return servers.startServer(serverName, getHostModel().clone(), domainController);
     }
 
     /** {@inheritDoc} */
@@ -99,7 +99,7 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
             throw new IllegalStateException(String.format("Domain Controller is not available; cannot restart server %s", serverName));
         }
         final ServerInventory servers = this.serverInventory;
-        return servers.restartServer(serverName, gracefulTimeout, getModel().clone(), domainController);
+        return servers.restartServer(serverName, gracefulTimeout, getHostModel().clone(), domainController);
     }
 
     /** {@inheritDoc} */
@@ -133,9 +133,8 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
     @Override
     public void startServers(DomainController domainController) {
         this.domainController = domainController;
-
         // start servers
-        final ModelNode rawModel = getModel();
+        final ModelNode rawModel = getHostModel();
         if(rawModel.hasDefined(SERVER_CONFIG)) {
             final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
@@ -152,9 +151,9 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
 
     @Override
     public void stopServers() {
+        final ModelNode rawModel = getHostModel();
         this.domainController = null;
         // stop servers
-        final ModelNode rawModel = getModel();
         if(rawModel.hasDefined(SERVER_CONFIG) ) {
             final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
             for(final String serverName : servers.keys()) {
@@ -167,6 +166,13 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
                 }
             }
         }
+    }
+
+    ModelNode getHostModel() {
+        if(domainController == null) {
+            throw new IllegalStateException();
+        }
+        return domainController.getDomainAndHostModel().get(HOST, name);
     }
 
     @Override

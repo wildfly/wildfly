@@ -77,4 +77,6 @@ public interface DomainController extends TransactionalModelController {
      */
     FileRepository getFileRepository();
 
+
+    ModelNode getDomainAndHostModel();
 }

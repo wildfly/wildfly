@@ -451,6 +451,10 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return ro;
     }
 
+    public ModelNode getDomainAndHostModel() {
+        return ((DomainModelImpl) localDomainModel).getDomainAndHostModel();
+    }
+
     @Override
     public ModelNode getDomainModel() {
         return localDomainModel.getDomainModel();
