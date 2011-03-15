@@ -37,6 +37,7 @@ import org.jboss.as.ejb3.deployment.processors.ConcurrencyManagementAnnotationPr
 import org.jboss.as.ejb3.deployment.processors.EjbAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbContextJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
+import org.jboss.as.ejb3.deployment.processors.EjbDependsOnAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbJarParsingDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.LocalEjbViewAnnotationProcessor;
@@ -94,6 +95,8 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             // add the metadata parser deployment processor
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
+            // Process @DependsOn after the @Singletons have been registered.
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbDependsOnAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementAnnotationProcessor());
