@@ -111,15 +111,15 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-         <xs:element name="application-policy" type="applicationPolicyType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="security-domain" type="securityDomainType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
    </xs:complexType>
    
-   <xs:complexType name="applicationPolicyType">
+   <xs:complexType name="securityDomainType">
       <xs:annotation>
          <xs:documentation>
                <![CDATA[
-                    An application policy configures a security domain.
+                    Definition of a security domain.
                 ]]>
          </xs:documentation>
       </xs:annotation>
