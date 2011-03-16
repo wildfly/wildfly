@@ -22,19 +22,9 @@
 
 package org.jboss.as.server.deployment;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.LifecycleContext;
-import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -45,6 +35,13 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Abstract service responsible for managing the life-cycle of a {@link DeploymentUnit}.
@@ -115,6 +112,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         private final AtomicInteger count = new AtomicInteger();
         private final Map<ServiceName, StartException> startExceptions = Collections.synchronizedMap(new HashMap<ServiceName, StartException>());
         private final Set<ServiceName> failedDependencies = Collections.synchronizedSet(new HashSet<ServiceName>());
+        private final Set<ServiceName> missingDependencies = Collections.synchronizedSet(new HashSet<ServiceName>());
         private final DeploymentCompletionCallback callback;
 
 
@@ -136,35 +134,48 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
         public void serviceStarted(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
-            tick();
+            tick(controller);
         }
 
         public void serviceFailed(final ServiceController<? extends Object> controller, final StartException reason) {
             controller.removeListener(this);
             startExceptions.put(controller.getName(), reason);
-            tick();
+            tick(controller);
         }
 
         public void serviceRemoved(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
-            tick();
+            tick(controller);
         }
 
         public void dependencyFailed(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
             failedDependencies.add(controller.getName());
-            tick();
+            tick(controller);
         }
 
         public void dependencyUninstalled(final ServiceController<? extends Object> controller) {
-            controller.removeListener(this);
-            tick();
+            //we don't remove the listener as it can still come back online
+            tick(controller);
+            missingDependencies.add(controller.getName());
         }
 
-        private void tick() {
+        public void dependencyInstalled(final ServiceController<? extends Object> controller) {
+            count.incrementAndGet();
+            missingDependencies.remove(controller.getName());
+        }
+
+        private void tick(ServiceController<?> controller) {
+            //this can happen if a service with missing deps is removed
+            //we do not decrement the count, as this has already happened
+            //in the dependencyUninstalled method
+            if(missingDependencies.contains(controller.getName())) {
+                missingDependencies.remove(controller.getName());
+                return;
+            }
             if (count.decrementAndGet() == 0) {
                 target.removeListener(this);
-                if(startExceptions.isEmpty() && failedDependencies.isEmpty()) {
+                if(startExceptions.isEmpty() && failedDependencies.isEmpty() && missingDependencies.isEmpty()) {
                     log.infof("Completed deployment of \"%s\" in %d ms", deploymentName, Long.valueOf((System.nanoTime() - startTime) / 1000000L));
                     callback.handleComplete();
                 } else {
@@ -174,6 +185,9 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
                     }
                     if(!failedDependencies.isEmpty()) {
                         builder.append("Failed Dependencies: ").append(failedDependencies);
+                    }
+                    if(!missingDependencies.isEmpty()) {
+                        builder.append("Services Missing Dependencies: ").append(missingDependencies);
                     }
                     log.infof(builder.toString(), deploymentName, Long.valueOf((System.nanoTime() - startTime) / 1000000L));
                     callback.handleFailure(startExceptions, failedDependencies);
