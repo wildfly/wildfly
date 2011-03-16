@@ -45,7 +45,7 @@
     <properties>
          <!-- Release Info -->
         <jboss.as.release.version>7.0.0.Beta1</jboss.as.release.version>
-        <jboss.as.release.codename>(TBD)</jboss.as.release.codename>
+        <jboss.as.release.codename>Ides of March</jboss.as.release.codename>
 
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
