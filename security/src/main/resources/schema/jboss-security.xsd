@@ -43,7 +43,7 @@
       <xs:all>
          <xs:element name="security-management" type="securityManagementType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="subject-factory" type="subjectFactoryType" minOccurs="0" maxOccurs="1"/>
-         <xs:element name="jaas" type="jaasType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="security-domains" type="securityDomainsType" minOccurs="0" maxOccurs="1"/>
       </xs:all>
    </xs:complexType>
    
@@ -101,8 +101,8 @@
       <xs:attribute name="subject-factory-class-name" type="xs:string" use="optional"/>
    </xs:complexType>
    
-   <!-- Configuration for JAAS -->
-   <xs:complexType name="jaasType">
+   <!-- Configuration for security domains -->
+   <xs:complexType name="securityDomainsType">
       <xs:annotation>
          <xs:documentation>
                <![CDATA[

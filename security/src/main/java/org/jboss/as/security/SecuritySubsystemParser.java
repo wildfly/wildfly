@@ -82,7 +82,7 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
 
         requireNoAttributes(reader);
 
-        List<ModelNode> jaasUpdates = null;
+        List<ModelNode> securityDomainsUpdates = null;
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -100,8 +100,8 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
                             parseSubjectFactory(reader, subsystem);
                             break;
                         }
-                        case JAAS: {
-                            jaasUpdates = parseJaas(reader, address);
+                        case SECURITY_DOMAINS: {
+                            securityDomainsUpdates = parseSecurityDomains(reader, address);
                             break;
                         }
                         default: {
@@ -118,8 +118,8 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
 
         list.add(subsystem);
 
-        if (jaasUpdates != null) {
-            list.addAll(jaasUpdates);
+        if (securityDomainsUpdates != null) {
+            list.addAll(securityDomainsUpdates);
         }
     }
 
@@ -165,7 +165,7 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
         }
 
         if (node.hasDefined(SECURITY_DOMAIN) && node.get(SECURITY_DOMAIN).asInt() > 0) {
-            writer.writeStartElement(Element.JAAS.getLocalName());
+            writer.writeStartElement(Element.SECURITY_DOMAINS.getLocalName());
             for (Property policy : node.get(SECURITY_DOMAIN).asPropertyList()) {
                 writer.writeStartElement(Element.SECURITY_DOMAIN.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), policy.getName());
@@ -454,7 +454,7 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
         }
     }
 
-    private List<ModelNode> parseJaas(final XMLExtendedStreamReader reader, final ModelNode parentAddress)
+    private List<ModelNode> parseSecurityDomains(final XMLExtendedStreamReader reader, final ModelNode parentAddress)
             throws XMLStreamException {
         requireNoAttributes(reader);
 

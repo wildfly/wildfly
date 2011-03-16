@@ -140,13 +140,13 @@
         <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:security:1.0">
-            <jaas>
+            <security-domains>
                 <security-domain name="other">
                     <authentication>
                         <login-module code="UsersRoles" flag="required"/>
                     </authentication>
                 </security-domain>
-            </jaas>
+            </security-domains>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">

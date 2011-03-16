@@ -42,7 +42,6 @@ enum Element {
     AUTHENTICATION_JASPI("authentication-jaspi"),
     AUTHORIZATION("authorization"),
     IDENTITY_TRUST("identity-trust"),
-    JAAS("jaas"),
     LOGIN_MODULE("login-module"),
     LOGIN_MODULE_STACK("login-module-stack"),
     MAPPING("mapping"),
@@ -51,6 +50,7 @@ enum Element {
     POLICY_MODULE("policy-module"),
     PROVIDER_MODULE("provider-module"),
     SECURITY_DOMAIN("security-domain"),
+    SECURITY_DOMAINS("security-domains"),
     SECURITY_MANAGEMENT("security-management"),
     SUBJECT_FACTORY("subject-factory"),
     TRUST_MODULE("trust-module");
