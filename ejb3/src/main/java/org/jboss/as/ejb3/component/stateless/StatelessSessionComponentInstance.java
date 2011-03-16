@@ -22,11 +22,11 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -42,5 +42,10 @@ public class StatelessSessionComponentInstance extends SessionBeanComponentInsta
      */
     protected StatelessSessionComponentInstance(final StatelessSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
         super(component, instance, preDestroyInterceptors, context);
+    }
+
+    @Override
+    protected Serializable getId() {
+        return null;
     }
 }

@@ -26,6 +26,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -41,5 +42,10 @@ public class SingletonComponentInstance extends SessionBeanComponentInstance {
      */
     public SingletonComponentInstance(final SingletonComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
         super(component, instance, preDestroyInterceptors, factoryContext);
+    }
+
+    @Override
+    protected Serializable getId() {
+        return null;
     }
 }

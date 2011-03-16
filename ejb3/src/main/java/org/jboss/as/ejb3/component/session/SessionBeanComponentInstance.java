@@ -27,13 +27,28 @@ import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class SessionBeanComponentInstance extends AbstractComponentInstance {
-    private BaseSessionContext sessionContext;
+    private SessionBeanComponentInstanceContext sessionContext;
+
+    protected class SessionBeanComponentInstanceContext extends BaseSessionContext {
+        protected SessionBeanComponentInstanceContext() {
+            super((SessionBeanComponent) SessionBeanComponentInstance.this.getComponent(), SessionBeanComponentInstance.this.getInstance());
+        }
+
+        protected SessionBeanComponentInstance getComponentInstance() {
+            return SessionBeanComponentInstance.this;
+        }
+
+        protected Serializable getId() {
+            return SessionBeanComponentInstance.this.getId();
+        }
+    }
 
     /**
      * Construct a new instance.
@@ -44,8 +59,10 @@ public abstract class SessionBeanComponentInstance extends AbstractComponentInst
     protected SessionBeanComponentInstance(final SessionBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
         super(component, instance, preDestroyInterceptors, factoryContext);
 
-        this.sessionContext = new BaseSessionContext(component, instance);
+        this.sessionContext = new SessionBeanComponentInstanceContext();
     }
+
+    protected abstract Serializable getId();
 
     protected SessionContext getSessionContext() {
         return sessionContext;

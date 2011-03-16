@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionContext;
@@ -30,6 +31,7 @@ import org.jboss.invocation.Interceptor;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -67,7 +69,13 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     @Override
     public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.session.SessionBeanComponent.getBusinessObject");
+        final ComponentView view = getComponentView(businessInterface);
+        if(view == null)
+            throw new IllegalStateException("Stateful bean " + getComponentName() + " does not have a view " + businessInterface);
+        // see SessionBeanComponentInstance
+        Serializable sessionId = ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
+        Object proxy = view.getViewForInstance(sessionId);
+        return businessInterface.cast(proxy);
     }
 
     @Override
