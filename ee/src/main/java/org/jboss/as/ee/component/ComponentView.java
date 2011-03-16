@@ -75,6 +75,10 @@ public class ComponentView implements ManagedReferenceFactory {
         };
     }
 
+    Class<?> getViewClass() {
+        return viewClass;
+    }
+
     public Object getViewForInstance(Serializable sessionId) {
         try {
             return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass,sessionId), component.getComponentInterceptor()))));

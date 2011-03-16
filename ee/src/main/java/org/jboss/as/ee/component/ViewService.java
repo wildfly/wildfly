@@ -57,10 +57,12 @@ public final class ViewService implements Service<ComponentView> {
     public void start(final StartContext context) throws StartException {
         final AbstractComponent component = componentInjector.getValue();
         instance = new ComponentView(component, viewClass, proxyFactory);
+        component.addComponentView(instance);
     }
 
     /** {@inheritDoc} */
     public void stop(final StopContext context) {
+        componentInjector.getValue().removeComponentView(instance);
         instance = null;
     }
 

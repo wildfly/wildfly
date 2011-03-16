@@ -80,6 +80,7 @@ public abstract class AbstractComponent implements Component {
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
     private final InjectedValue<NamespaceContextSelector> namespaceContextSelectorInjector = new InjectedValue<NamespaceContextSelector>();
     private final Map<Class<?>, ServiceName> viewServices;
+    private final Map<Class<?>, ComponentView> views = new HashMap<Class<?>, ComponentView>();
 
     private volatile boolean gate;
 
@@ -392,7 +393,19 @@ public abstract class AbstractComponent implements Component {
         }
     }
 
+    void addComponentView(ComponentView view) {
+        views.put(view.getViewClass(), view);
+    }
+
+    public ComponentView getComponentView(Class<?> viewClass) {
+        return views.get(viewClass);
+    }
+
     public Map<Class<?>, ServiceName> getViewServices() {
         return Collections.unmodifiableMap(viewServices);
+    }
+
+    void removeComponentView(ComponentView view) {
+        views.remove(view.getViewClass());
     }
 }
