@@ -223,11 +223,10 @@ public class ExampleRunner implements Runnable {
                         quit = removeServer();
                         break;
                     }
-//                    case DEPLOYMENTS: {
-//                        quit = runDeploymentPlan();
-//                        break;
-//                    }
-                    // Disabled for now
+                    case DEPLOYMENTS: {
+                        quit = runDeploymentPlan();
+                        break;
+                    }
                     case ADD_JMS_QUEUE: {
                         quit = addJmsQueue();
                         break;
@@ -599,16 +598,13 @@ public class ExampleRunner implements Runnable {
     }
 
     private String chooseServerGroup(ModelNode model, Set<String> existingGroups) throws IOException {
-        TreeSet<String> groups = new TreeSet<String>();
-        if (model.hasDefined("server-group")) {
-            groups.addAll(model.get("server-group").keys());
-        }
+        List<String> groups = getServerGroupNames();
         groups.removeAll(existingGroups);
-        List<String> serverGroups = new ArrayList<String>(groups);
+        System.out.println(groups + " // " + existingGroups);
         String serverGroup = null;
         do {
-            stdout.println("Choose a Server Group for the new Server:");
-            Map<String, Object> choices = writeMenuBody(serverGroups);
+            stdout.println("Choose a Server Group:");
+            Map<String, Object> choices = writeMenuBody(groups);
             stdout.println("[C]   Cancel");
             String choice = readStdIn();
             if ("C".equals(choice.toUpperCase())) {
@@ -1162,7 +1158,7 @@ public class ExampleRunner implements Runnable {
         ADD_SERVER("9", "Add a Server"),
         REMOVE_SERVER("10", "Remove a Server"),
         ADD_JMS_QUEUE("11", "Add a JMS Queue"),
-//      DEPLOYMENTS("12", "Create and Execute a Deployment Plan"),
+        DEPLOYMENTS("12", "Create and Execute a Deployment Plan"),
         QUIT("Q", "Quit");
 
         private static final EnumSet<MainMenu> ALL = EnumSet.allOf(MainMenu.class);

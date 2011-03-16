@@ -51,8 +51,6 @@ public interface DomainClient extends ModelControllerClient {
      * {@link #getDeploymentManager() the DomainDeploymentManager offers a
      * more convenient API for manipulating domain deployments.
      *
-     * @param name The deployment name
-     * @param runtimeName The runtime name
      * @param stream The data stream for the deployment
      * @return The unique hash for the deployment
      */

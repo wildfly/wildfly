@@ -18,9 +18,6 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,8 +27,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -43,17 +38,13 @@ import org.jboss.logging.Logger;
  */
 public abstract class AbstractDeploymentUploadHandler implements OperationHandler {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.server");
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     private static final String[] EMPTY = new String[0];
     private final DeploymentRepository deploymentRepository;
 
-    private final ParametersValidator validator = new ParametersValidator();
-
     protected AbstractDeploymentUploadHandler(final DeploymentRepository deploymentRepository) {
         this.deploymentRepository = deploymentRepository;
-        this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
-        this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
     }
 
     /**
@@ -64,8 +55,6 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
 
         if (deploymentRepository != null) {
             try {
-                validator.validate(operation);
-
                 InputStream is = getContentInputStream(context, operation);
                 try {
                     byte[] hash = deploymentRepository.addDeploymentContent(is);
