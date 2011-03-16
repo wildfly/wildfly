@@ -21,7 +21,11 @@
  */
 package org.jboss.as.demos.ejb3.archive;
 
+import javax.annotation.Resource;
+import javax.ejb.Local;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
+import javax.interceptor.ExcludeClassInterceptors;
 import javax.interceptor.Interceptors;
 
 /**
@@ -29,12 +33,22 @@ import javax.interceptor.Interceptors;
  */
 @Stateful
 @Interceptors(SimpleInterceptor.class)
+@Local({SimpleStatefulSessionLocal.class, EchoService.class})
 public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
+    @Resource
+    private SessionContext context;
+
     private String state;
 
     public String echo(String msg) {
         System.out.println("Called echo on " + this);
         return "Echo " + msg + ":" + state;
+    }
+
+    @ExcludeClassInterceptors
+    @Override
+    public EchoService getEchoService() {
+        return context.getBusinessObject(EchoService.class);
     }
 
     public void setState(String s) {

@@ -26,6 +26,7 @@ import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
 import org.jboss.as.demos.ejb3.mbean.ExerciseBMT;
+import org.jboss.as.demos.ejb3.mbean.ExerciseEchoService;
 import org.jboss.as.demos.ejb3.mbean.ExerciseStateful;
 import org.jboss.as.demos.ejb3.mbean.Test;
 
@@ -79,6 +80,8 @@ public class ExampleRunner {
             workOnSingletoBean(mbeanServer, singletonBeanJndiName, 100, 10);
 
             exec(mbeanServer, ExerciseBMT.class);
+
+            exec(mbeanServer, ExerciseEchoService.class);
         } finally {
             utils.undeploy();
             safeClose(utils);

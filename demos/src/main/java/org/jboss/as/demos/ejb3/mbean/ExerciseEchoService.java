@@ -19,13 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.archive;
+package org.jboss.as.demos.ejb3.mbean;
+
+import org.jboss.as.demos.ejb3.archive.EchoService;
+import org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal;
+
+import javax.naming.InitialContext;
+import java.util.concurrent.Callable;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface SimpleStatefulSessionLocal extends EchoService {
-    EchoService getEchoService();
-    void setState(String s);
-    String getState();
+public class ExerciseEchoService implements Callable<String> {
+    @Override
+    public String call() throws Exception {
+        InitialContext ctx = new InitialContext();
+        String name = "java:global/ejb3-example/SimpleStatefulSessionBean!" + SimpleStatefulSessionLocal.class.getName();
+        SimpleStatefulSessionLocal bean = (SimpleStatefulSessionLocal) ctx.lookup(name);
+        bean.setState("via another view");
+        EchoService view = bean.getEchoService();
+        return view.echo("echo service");
+    }
 }

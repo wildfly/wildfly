@@ -24,8 +24,6 @@ package org.jboss.as.demos.ejb3.archive;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface SimpleStatefulSessionLocal extends EchoService {
-    EchoService getEchoService();
-    void setState(String s);
-    String getState();
+public interface EchoService {
+    String echo(String msg);
 }
