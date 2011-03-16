@@ -24,6 +24,8 @@
 
 <module xmlns="urn:jboss:module:1.0" name="javax.persistence.api">
     <dependencies>
+        <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
+        <module name="javax.api" export="true"/>
     </dependencies>
 
     <resources>

@@ -40,6 +40,7 @@
         <module name="javax.jms.api" export="true"/>
         <module name="javax.jws.api" export="true"/>
         <module name="javax.mail.api" export="true"/>
+        <module name="javax.persistence.api" export="true"/>
         <module name="javax.resource.api" export="true"/>
         <module name="javax.security.auth.message.api" export="true"/>
         <module name="javax.security.jacc.api" export="true"/>
