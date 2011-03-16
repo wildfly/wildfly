@@ -21,10 +21,6 @@
  */
 package org.jboss.as.ee.structure;
 
-import java.util.List;
-
-import javax.annotation.ManagedBean;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,6 +32,9 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.vfs.VirtualFile;
+
+import javax.annotation.ManagedBean;
+import java.util.List;
 
 /**
  * Processor that only runs for ear deployments where no application.xml is provided. It examines jars in the ear to determine
@@ -61,7 +60,7 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
         // TODO: deal with application clients, we need the manifest information
-        List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : potentialSubDeployments) {
             if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
                 // module roots cannot be ejb jars
