@@ -23,7 +23,6 @@ package org.jboss.as.testsuite.integration.webejb;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.jsfunit.cdi.BasicAuthentication;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -41,8 +40,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 public class ServletInjectionTestCase {
-    private static final Class<?> workAroundBug = BasicAuthentication.class;
-    
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
