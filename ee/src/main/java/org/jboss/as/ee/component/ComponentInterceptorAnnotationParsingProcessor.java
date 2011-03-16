@@ -97,7 +97,7 @@ public class ComponentInterceptorAnnotationParsingProcessor extends AbstractComp
         //process the ExcludeClassInterceptors annotation
         final List<AnnotationInstance> excludeClassAnnotations = classAnnotations.get(EXCLUDE_CLASS_ANNOTATION_NAME);
         if(excludeClassAnnotations != null ) {
-            for(AnnotationInstance annotation : excludeDefaultAnnotations) {
+            for(AnnotationInstance annotation : excludeClassAnnotations) {
                 final AnnotationTarget target = annotation.target();
                 if (target instanceof MethodInfo) {
                     final MethodInfo methodInfo = MethodInfo.class.cast(target);
