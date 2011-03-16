@@ -63,25 +63,35 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
             return; // We can't continue without the annotation index info.
         }
 
-        description.getBindings().addAll(getEjbInjectionConfigurations(classInfo, deploymentUnit));
+        description.getBindings().addAll(getEjbInjectionConfigurations(index, classInfo, deploymentUnit));
         final Collection<InterceptorDescription> interceptorConfigurations = description.getAllInterceptors().values();
         for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
             if (interceptorClassInfo == null) {
                 continue;
             }
-            interceptorConfiguration.getBindings().addAll(getEjbInjectionConfigurations(interceptorClassInfo, deploymentUnit));
+            interceptorConfiguration.getBindings().addAll(getEjbInjectionConfigurations(index, interceptorClassInfo, deploymentUnit));
         }
     }
 
-    private List<BindingDescription> getEjbInjectionConfigurations(final ClassInfo classInfo, final DeploymentUnit deploymentUnit) {
+    private List<BindingDescription> getEjbInjectionConfigurations(final CompositeIndex index, final ClassInfo classInfo, final DeploymentUnit deploymentUnit) {
         final List<BindingDescription> configurations = new ArrayList<BindingDescription>();
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
         if (classAnnotations != null) {
             final List<AnnotationInstance> ejbAnnotations = classAnnotations.get(EJB_ANNOTATION_NAME);
-            if (ejbAnnotations != null) for (AnnotationInstance annotation : ejbAnnotations) {
-                configurations.add(getEjbInjectionConfiguration(annotation, deploymentUnit));
+            if (ejbAnnotations != null) {
+                for (AnnotationInstance annotation : ejbAnnotations) {
+                    configurations.add(getEjbInjectionConfiguration(annotation, deploymentUnit));
+                }
+            }
+        }
+        // Process the super class for @EJB annotations
+        DotName superName = classInfo.superName();
+        if (superName != null && !superName.toString().equals(Object.class.getName())) {
+            ClassInfo superClass = index.getClassByName(superName);
+            if (superClass != null) {
+                configurations.addAll(this.getEjbInjectionConfigurations(index, superClass, deploymentUnit));
             }
         }
         return configurations;
