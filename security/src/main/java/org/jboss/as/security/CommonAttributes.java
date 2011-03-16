@@ -27,7 +27,7 @@ package org.jboss.as.security;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface CommonAttributes {
+public interface CommonAttributes {
 
     String AUDIT_MANAGER_CLASS_NAME = "audit-manager-class-name";
     String AUTHENTICATION_MANAGER_CLASS_NAME = "authentication-manager-class-name";

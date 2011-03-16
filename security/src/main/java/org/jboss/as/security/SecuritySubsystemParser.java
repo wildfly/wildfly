@@ -49,8 +49,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -70,8 +70,18 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry
  */
-class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext>, ModulesMap {
+
+    private static final SecuritySubsystemParser INSTANCE = new SecuritySubsystemParser();
+
+    public static SecuritySubsystemParser getInstance() {
+        return INSTANCE;
+    }
+
+    private SecuritySubsystemParser() {
+        //
+    }
 
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
@@ -142,8 +152,8 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
                 writeAttribute(writer, Attribute.DEEP_COPY_SUBJECT_MODE, node.get(DEEP_COPY_SUBJECT_MODE));
             }
             if (isNonStandard(node, DEFAULT_CALLBACK_HANDLER_CLASS_NAME)) {
-                writeAttribute(writer, Attribute.DEFAULT_CALLBACK_HANDLER_CLASS_NAME, node
-                        .get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME));
+                writeAttribute(writer, Attribute.DEFAULT_CALLBACK_HANDLER_CLASS_NAME,
+                        node.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME));
             }
             if (isNonStandard(node, AUTHORIZATION_MANAGER_CLASS_NAME)) {
                 writeAttribute(writer, Attribute.AUTHORIZATION_MANAGER_CLASS_NAME, node.get(AUTHORIZATION_MANAGER_CLASS_NAME));
@@ -334,8 +344,8 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
         if (module.hasDefined(Attribute.TYPE.getLocalName()))
             writer.writeAttribute(Attribute.TYPE.getLocalName(), module.get(Attribute.TYPE.getLocalName()).asString());
         if (module.hasDefined(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()))
-            writer.writeAttribute(Attribute.LOGIN_MODULE_STACK_REF.getLocalName(), module.get(
-                    Attribute.LOGIN_MODULE_STACK_REF.getLocalName()).asString());
+            writer.writeAttribute(Attribute.LOGIN_MODULE_STACK_REF.getLocalName(),
+                    module.get(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()).asString());
         if (module.hasDefined(MODULE_OPTIONS) && module.get(MODULE_OPTIONS).asInt() > 0) {
             writeModuleOptions(writer, module.get(MODULE_OPTIONS));
         }
@@ -750,7 +760,7 @@ class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<Li
                             code = AUTHENTICATION_MAP.get(value);
                             break;
                         }
-                        default: //TODO
+                        default: // TODO
                     }
                     if (code == null)
                         code = value;

@@ -69,7 +69,7 @@ public class SecurityExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "security";
 
-    private static final SecuritySubsystemParser PARSER = new SecuritySubsystemParser();
+    private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
 
     @Override
     public void initialize(ExtensionContext context) {
