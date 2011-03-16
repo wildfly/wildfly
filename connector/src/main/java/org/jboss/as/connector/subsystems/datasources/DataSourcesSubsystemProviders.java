@@ -256,7 +256,7 @@ class DataSourcesSubsystemProviders {
                 datasourcesNode.get(ATTRIBUTES, attribute.getName(), REQUIRED).set(attribute.isRequired());
 
             }
-            operation.get(DATASOURCES).asList().add(datasourcesNode);
+            operation.get(REQUEST_PROPERTIES, DATASOURCES).set(datasourcesNode);
 
             final ModelNode xaDatasourcesNode = new ModelNode();
             xaDatasourcesNode.get(HEAD_COMMENT_ALLOWED).set(true);
@@ -267,7 +267,7 @@ class DataSourcesSubsystemProviders {
                 xaDatasourcesNode.get(ATTRIBUTES, attribute.getName(), REQUIRED).set(attribute.isRequired());
 
             }
-            operation.get(XA_DATASOURCES).asList().add(xaDatasourcesNode);
+            operation.get(REQUEST_PROPERTIES, XA_DATASOURCES).set(xaDatasourcesNode);
 
             return operation;
 
