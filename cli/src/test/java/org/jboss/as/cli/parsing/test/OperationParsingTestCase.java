@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing.test;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
@@ -45,7 +46,7 @@ public class OperationParsingTestCase extends TestCase {
     public void testOperationNameOnly() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse("subsystem=logging:read-resource", handler);
+        parse("/subsystem=logging:read-resource", handler);
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -76,7 +77,7 @@ public class OperationParsingTestCase extends TestCase {
         prefix.toNodeType("subsystem");
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
 
-        parser.parse("logging:read-resource", handler);
+        parse("./logging:read-resource", handler);
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -104,7 +105,7 @@ public class OperationParsingTestCase extends TestCase {
     public void testNoOperation() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse("subsystem=logging:", handler);
+        parse("./subsystem=logging:", handler);
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
@@ -130,7 +131,7 @@ public class OperationParsingTestCase extends TestCase {
     public void testOperationWithArguments() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse("subsystem=logging:read-resource(recursive=true)", handler);
+        parse("/subsystem=logging:read-resource(recursive=true)", handler);
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -168,7 +169,7 @@ public class OperationParsingTestCase extends TestCase {
 
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(':' + op + '(' + propName + '=' + propValue + ')', handler);
+        parse(':' + op + '(' + propName + '=' + propValue + ')', handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -187,5 +188,11 @@ public class OperationParsingTestCase extends TestCase {
         assertEquals(1, args.size());
         assertTrue(args.contains(propName));
         assertEquals(propValue, handler.getPropertyValue(propName));
+    }
+
+    protected void parse(String opReq, DefaultOperationCallbackHandler handler)
+            throws OperationFormatException {
+        parser.parse(opReq, handler);
+        //ParsingUtil.parseOpRequest(opReq, handler);
     }
 }

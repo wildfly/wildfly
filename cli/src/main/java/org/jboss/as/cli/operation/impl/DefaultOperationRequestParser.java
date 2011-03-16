@@ -23,7 +23,16 @@ package org.jboss.as.cli.operation.impl;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.parsing.ParsingUtil;
+import org.jboss.as.cli.operation.parsing.NodeState;
+import org.jboss.as.cli.operation.parsing.OperationNameState;
+import org.jboss.as.cli.operation.parsing.OperationRequestState;
+import org.jboss.as.cli.operation.parsing.OperationState;
+import org.jboss.as.cli.operation.parsing.ParsingContext;
+import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
+import org.jboss.as.cli.operation.parsing.PropertyListState;
+import org.jboss.as.cli.operation.parsing.PropertyState;
+import org.jboss.as.cli.operation.parsing.PropertyValueState;
+import org.jboss.as.cli.operation.parsing.StateParser;
 
 /**
  * Default implementation of CommandParser which expects the following command format:
@@ -58,169 +67,129 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
     public static final String NODE_TYPE = ".type";
 
     @Override
-    public void parse(String operationRequest, CallbackHandler handler) throws OperationFormatException {
+    public void parse(String operationRequest, final CallbackHandler handler) throws OperationFormatException {
 
         if(operationRequest == null || operationRequest.isEmpty()) {
             return;
         }
 
-        int aoSep = operationRequest.indexOf(ADDRESS_OPERATION_NAME_SEPARATOR);
+        ParsingStateCallbackHandler stateCallbackHandler = new ParsingStateCallbackHandler() {
 
-        final int addressLength;
-        if(aoSep < 0) {
-            addressLength =  operationRequest.length();
-        } else if(aoSep > 0){
-            addressLength = aoSep;
-        } else {
-            addressLength = 0;
-        }
+            StringBuilder buffer = new StringBuilder();
 
-        if(addressLength > 0) {
+            int propNameValueSep = -1;
+            StringBuilder propName;
+            boolean propValueContent;
 
-            final int nodePathStart;
-            if(operationRequest.startsWith("./")) {
-                nodePathStart = 2;
-                handler.nodeSeparator(1);
-            } else{
-                nodePathStart = 0;
-            }
+            @Override
+            public void enteredState(ParsingContext ctx) throws OperationFormatException {
 
-            int nodeIndex = nodePathStart;
-            while (nodeIndex < addressLength) {
-                final int nodeSepIndex = operationRequest.indexOf(NODE_SEPARATOR, nodeIndex);
-                final String node;
-                if (nodeSepIndex < 0) {
-                    node = operationRequest.substring(nodeIndex, addressLength).trim();
-                } else {
-                    node = operationRequest.substring(nodeIndex, nodeSepIndex).trim();
+                String stateId = ctx.getState().getId();
+                //System.out.println("entered " + stateId + " '" + ctx.getCharacter() + "'");
+
+                if(stateId.equals(OperationState.ID)) {
+                    handler.addressOperationSeparator(ctx.getLocation());
+                } else if (stateId.equals(PropertyListState.ID)) {
+                    handler.propertyListStart(ctx.getLocation());
+                } else if(stateId.equals(PropertyState.ID)) {
+                    propName = new StringBuilder();
+                } else if(stateId.equals(PropertyValueState.ID)) {
+                    propNameValueSep = ctx.getLocation();
+                    propValueContent = true;
+                    buffer.setLength(0);
                 }
 
-                if (node.isEmpty()) {
-                    if(nodeSepIndex > 0) {
-                        throw new OperationFormatException(
-                                "Node type/name is missing or the format is wrong for the prefix '"
-                                        + operationRequest.substring(0, addressLength) + "'");
-                    } else if(nodeSepIndex == 0) {
-                        handler.rootNode();
-                    }
-                } else {
+                if(!propValueContent) {
+                   buffer.setLength(0);
+                }
+            }
 
-                    int typeNameSep = node.indexOf(NODE_TYPE_NAME_SEPARATOR);
-                    if (typeNameSep < 0) {
-                        /* root node is allowed only at the beginning of the address
-                        if (ROOT_NODE.equals(node)) {
+            @Override
+            public void leavingState(ParsingContext ctx) throws OperationFormatException {
+
+                String stateId = ctx.getState().getId();
+                //System.out.println("leaving " + stateId + " '" + ctx.getCharacter() + "'");
+
+                if (stateId.equals(PropertyListState.ID)) {
+                    if(ctx.getCharacter() == ')') {
+                        handler.propertyListEnd(ctx.getLocation());
+                    }
+                } else if(stateId.equals(PropertyState.ID)) {
+                    if(buffer.length() > 0) {
+                        handler.property(propName.toString().trim(), buffer.toString().trim(), propNameValueSep);
+                    } else {
+                        handler.propertyName(propName.toString().trim());
+                        if(propNameValueSep != -1) {
+                            handler.propertyNameValueSeparator(propNameValueSep);
+                        }
+                    }
+
+                    if(ctx.getCharacter() == ',') {
+                        handler.propertySeparator(ctx.getLocation());
+                    }
+
+                    propName = null;
+                    propNameValueSep = -1;
+                    propValueContent = false;
+                } else if(stateId.equals(OperationNameState.ID)) {
+                    handler.operationName(buffer.toString());
+                } else if(stateId.equals(NodeState.ID)) {
+                    char ch = ctx.getCharacter();
+                    if(buffer.length() == 0) {
+                        if(ch == '/') {
                             handler.rootNode();
-                        } else*/ if (PARENT_NODE.equals(node)) {
-                            handler.parentNode();
-                        } else if (NODE_TYPE.equals(node)) {
-                            handler.nodeType();
-                        } else {
-                            if(nodeIndex == nodePathStart) {
-                                if(nodeSepIndex < 0) {
-                                    handler.nodeTypeOrName(node);
-                                } else if(aoSep > 0) {
-                                    // operation can't be invoked on a type
-                                    handler.nodeName(node);
-                                } else {
-                                    handler.nodeTypeOrName(node);
-                                }
-                            } else if (nodeSepIndex < 0) {
-                                handler.nodeTypeOrName(node);
-                            }
+                            handler.nodeSeparator(ctx.getLocation());
                         }
                     } else {
-                        String nodeType = node.substring(0, typeNameSep).trim();
-                        handler.nodeType(nodeType);
-                        handler.nodeTypeNameSeparator(nodeIndex + typeNameSep);
-                        String nodeName = node.substring(typeNameSep + 1).trim();
-                        // this is to allow parsing of 'node-type='
-                        if (!nodeName.isEmpty()) {
-                            handler.nodeName(nodeName);
+                        if (ch == '=') {
+                            handler.nodeType(buffer.toString());
+                            handler.nodeTypeNameSeparator(ctx.getLocation());
+                        } else if (ch == ':') {
+                            handler.nodeName(buffer.toString());
+                        } else {
+                            final String value = buffer.toString();
+                            if (".".equals(value)) {
+                                // stay at the current address
+                            } else if ("..".equals(value)) {
+                                handler.parentNode();
+                            } else if (".type".equals(value)) {
+                                handler.nodeType();
+                            } else {
+                                if(ch == '/') {
+                                    if ("".equals(value)) {
+                                        handler.rootNode();
+                                    } else {
+                                        handler.nodeName(value);
+                                    }
+                                } else {
+                                    handler.nodeTypeOrName(buffer.toString());
+                                }
+                            }
+
+                            if(ch == '/') {
+                                handler.nodeSeparator(ctx.getLocation());
+                            }
                         }
                     }
                 }
+            }
 
-                if (nodeSepIndex < 0) {
-                    nodeIndex = addressLength;
+            @Override
+            public void character(ParsingContext ctx)
+                    throws OperationFormatException {
+
+                //System.out.println(ctx.getState().getId() + " '" + ctx.getCharacter() + "'");
+
+                String stateId = ctx.getState().getId();
+                if (stateId.equals(PropertyState.ID)) {
+                    propName.append(ctx.getCharacter());
                 } else {
-                    handler.nodeSeparator(nodeSepIndex);
-                    nodeIndex = nodeSepIndex + 1;
+                    buffer.append(ctx.getCharacter());
                 }
             }
-        }
+        };
 
-        if(aoSep < 0) {
-            return;
-        }
-
-        handler.addressOperationSeparator(aoSep);
-
-        String operationName;
-        int argListStartIndex = operationRequest.indexOf(ARGUMENTS_LIST_START, aoSep + 1);
-        if(argListStartIndex < 0) {
-            if(aoSep + 1 < operationRequest.length()) {
-                operationName = operationRequest.substring(aoSep + 1);
-                handler.operationName(operationName);
-            }
-            return;
-        }
-        else {
-            operationName = operationRequest.substring(aoSep + 1, argListStartIndex).trim();
-            handler.operationName(operationName);
-//            handler.propertyListStart(argListStartIndex);
-        }
-
-        ParsingUtil.parseParameters(operationRequest, argListStartIndex, handler);
-
-/*        final boolean argListEndPresent = operationRequest.charAt(operationRequest.length() - 1) == ARGUMENTS_LIST_END;
-        final int argsLength;
-        if(argListEndPresent) {
-           argsLength = operationRequest.length() - 1;
-        } else {
-            argsLength = operationRequest.length();
-        }
-
-        int argIndex = argListStartIndex + 1;
-        while (argIndex < argsLength) {
-            final int argSepIndex = operationRequest.indexOf(ARGUMENT_SEPARATOR, argIndex);
-            final String arg;
-            if (argSepIndex == -1) {
-                arg = operationRequest.substring(argIndex, argsLength).trim();
-            } else {
-                arg = operationRequest.substring(argIndex, argSepIndex).trim();
-            }
-
-            if (arg.isEmpty()) {
-                throw new OperationFormatException(
-                        "An argument is missing or the command is in the wrong format: '"
-                                + operationRequest + "'");
-            }
-
-            int argNameValueSepIndex = arg.indexOf(ARGUMENT_NAME_VALUE_SEPARATOR);
-            if (argNameValueSepIndex < 0) {
-                handler.propertyName(arg);
-            } else {
-                String argValue = arg.substring(argNameValueSepIndex + 1).trim();
-                if(argValue.isEmpty()) {
-                    handler.propertyName(arg.substring(0, argNameValueSepIndex).trim());
-                    handler.propertyNameValueSeparator(argNameValueSepIndex);
-                } else {
-                   handler.property(arg.substring(0, argNameValueSepIndex).trim(), argValue, argNameValueSepIndex);
-                }
-            }
-
-            if(argSepIndex < 0) {
-                argIndex = argsLength;
-            } else {
-                argIndex = argSepIndex + 1;
-                handler.propertySeparator(argSepIndex);
-            }
-        }
-
-        if(argListEndPresent) {
-            handler.propertyListEnd(operationRequest.length() - 1);
-        }
-*/
+        StateParser.parse(operationRequest, stateCallbackHandler, OperationRequestState.INSTANCE);
     }
 
 }

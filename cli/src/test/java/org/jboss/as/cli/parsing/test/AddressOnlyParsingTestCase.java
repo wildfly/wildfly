@@ -132,6 +132,71 @@ public class AddressOnlyParsingTestCase extends TestCase {
     }
 
     @Test
+    public void testChildNodeTypeOnlyWithPrefixNode() throws Exception {
+        OperationRequestAddress prefix = new DefaultOperationRequestAddress();
+        prefix.toNode("a", "b");
+        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+
+        parser.parse("./subsystem", handler);
+
+        assertTrue(handler.hasAddress());
+        assertFalse(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnArgumentListStart());
+        assertFalse(handler.endsOnArgumentSeparator());
+        assertFalse(handler.endsOnArgumentValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.isRequestComplete());
+
+        OperationRequestAddress address = handler.getAddress();
+        assertTrue(address.endsOnType());
+        Iterator<Node> i = address.iterator();
+        assertTrue(i.hasNext());
+        Node node = i.next();
+        assertNotNull(node);
+        assertEquals("a", node.getType());
+        assertEquals("b", node.getName());
+        assertTrue(i.hasNext());
+        node = i.next();
+        assertNotNull(node);
+        assertEquals("subsystem", node.getType());
+        assertNull(node.getName());
+        assertFalse(i.hasNext());
+    }
+
+    @Test
+    public void testRootNodeTypeOnlyWithPrefixNode() throws Exception {
+        OperationRequestAddress prefix = new DefaultOperationRequestAddress();
+        prefix.toNode("a", "b");
+        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+
+        parser.parse("/subsystem", handler);
+
+        assertTrue(handler.hasAddress());
+        assertFalse(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnArgumentListStart());
+        assertFalse(handler.endsOnArgumentSeparator());
+        assertFalse(handler.endsOnArgumentValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.isRequestComplete());
+
+        OperationRequestAddress address = handler.getAddress();
+        assertTrue(address.endsOnType());
+        Iterator<Node> i = address.iterator();
+        assertTrue(i.hasNext());
+        Node node = i.next();
+        assertNotNull(node);
+        assertEquals("subsystem", node.getType());
+        assertNull(node.getName());
+        assertFalse(i.hasNext());
+    }
+
+    @Test
     public void testNodeNameOnly() throws Exception {
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNodeType("a");

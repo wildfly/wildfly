@@ -131,6 +131,9 @@ public class OperationRequestCompleter implements Completor {
 
         if(handler.hasOperationName() || handler.endsOnAddressOperationNameSeparator()) {
 
+            if(handler.getAddress().endsOnType()) {
+                return -1;
+            }
             OperationCandidatesProvider provider = ctx.getOperationCandidatesProvider();
             final List<String> names = provider.getOperationNames(handler.getAddress());
             if(names.isEmpty()) {

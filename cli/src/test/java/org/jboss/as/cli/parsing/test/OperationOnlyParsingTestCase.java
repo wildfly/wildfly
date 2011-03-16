@@ -21,19 +21,23 @@
  */
 package org.jboss.as.cli.parsing.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
 
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.junit.Test;
 
-import junit.framework.TestCase;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class OperationOnlyParsingTestCase extends TestCase {
+public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     private DefaultOperationRequestParser parser = new DefaultOperationRequestParser();
 
@@ -41,7 +45,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testOperationNameOnly() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource", handler);
+        parseOperation(":read-resource", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -61,7 +65,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testArgListStart() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(", handler);
+        parseOperation(":read-resource(", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -82,7 +86,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testEmptyArgList() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource()", handler);
+        parseOperation(":read-resource()", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -102,7 +106,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testArgNameOnly() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(recursive", handler);
+        parseOperation(":read-resource(recursive", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -126,7 +130,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testNameAndValueSeparator() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(recursive=", handler);
+        parseOperation(":read-resource(recursive=", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -150,7 +154,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testNameValue() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(recursive=true", handler);
+        parseOperation(":read-resource(recursive=true", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -175,7 +179,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testNameValueAndSeparator() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(recursive=true,", handler);
+        parseOperation(":read-resource(recursive=true,", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -200,7 +204,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testNameValueSeparatorAndName() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(recursive=true,other", handler);
+        parseOperation(":read-resource(recursive=true,other", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -226,7 +230,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testNameValueSeparatorNameAndValueSeparator() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(recursive=true,other=", handler);
+        parseOperation(":read-resource(recursive=true,other=", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -252,7 +256,7 @@ public class OperationOnlyParsingTestCase extends TestCase {
     public void testComplete() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parser.parse(":read-resource(recursive=true,other=done)", handler);
+        parseOperation(":read-resource(recursive=true,other=done)", handler);
 
         assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -275,4 +279,9 @@ public class OperationOnlyParsingTestCase extends TestCase {
         assertEquals("done", handler.getPropertyValue("other"));
     }
 
+    protected void parseOperation(String operation, DefaultOperationCallbackHandler handler)
+            throws OperationFormatException {
+        parser.parse(operation, handler);
+        //ParsingUtil.parseOperation(operation, 0, handler);
+    }
 }

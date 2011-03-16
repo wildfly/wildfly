@@ -116,5 +116,14 @@ public class StateParser {
         public int getLocation() {
             return location;
         }
+
+        @Override
+        public void reenterState() throws OperationFormatException {
+            callbackHandler.leavingState(this);
+            ParsingState state = stack.peek();
+            state.getLeaveHandler().handle(this);
+            callbackHandler.enteredState(this);
+            state.getEnterHandler().handle(this);
+        }
     }
 }

@@ -23,23 +23,27 @@ package org.jboss.as.cli.operation.parsing;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 
+
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface ParsingContext {
+public class OperationState extends DefaultParsingState {
 
-    ParsingState getState();
+    public static final OperationState INSTANCE = new OperationState();
+    public static final String ID = "OP";
 
-    void enterState(ParsingState state) throws OperationFormatException;
+    public OperationState() {
+        this(OperationNameState.INSTANCE);
+    }
 
-    ParsingState leaveState() throws OperationFormatException;
-
-    void reenterState() throws OperationFormatException;
-
-    ParsingStateCallbackHandler getCallbackHandler();
-
-    char getCharacter();
-
-    int getLocation();
+    public OperationState(final OperationNameState opNameState) {
+        super(ID);
+        setDefaultHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx)
+                    throws OperationFormatException {
+                ctx.enterState(opNameState);
+            }});
+    }
 }
