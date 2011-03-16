@@ -61,7 +61,13 @@
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
 
-        <!-- All modules.  Keep alphabetical -->
+        <!--
+          ~ Complete list of modules to assemble.
+          ~
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          ~ +++++++   KEEP THIS LIST ALPHABETICAL BY MODULE NAME!   +++++++
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          -->
 
         <module-def name="ch.qos.cal10n">
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
@@ -287,11 +293,6 @@
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
-        </module-def>
-
-
-        <module-def name="javax.persistence.api">
-            <maven-resource group="org.hibernate.javax.persistence" artifact="hibernate-jpa-2.0-api" />
         </module-def>
 
         <module-def name="commons-collections.commons-collections">
