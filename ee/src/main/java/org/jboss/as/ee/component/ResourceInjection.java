@@ -56,9 +56,9 @@ public interface ResourceInjection {
          * Create the correct injection instance.
          *
          * @param resourceConfiguration The resource injection configuration
-         * @param beanClass The bean class to injection should run against.
-         * @param reflectionIndex The class reflection index
-         * @param value The value for injection
+         * @param beanClass             The bean class to injection should run against.
+         * @param reflectionIndex       The class reflection index
+         * @param value                 The value for injection
          * @return The injection instance
          */
         public static ResourceInjection create(final InjectionTargetDescription resourceConfiguration, final Class<?> beanClass, final ClassReflectionIndex<?> reflectionIndex, final Value<ManagedReferenceFactory> value) {
@@ -69,18 +69,24 @@ public interface ResourceInjection {
                 throw new IllegalArgumentException("Invalid resource injection configuration.", e);
             }
             final String memberName = resourceConfiguration.getName();
-            switch(resourceConfiguration.getType()) {
+            switch (resourceConfiguration.getType()) {
                 case FIELD: {
                     final Field field = reflectionIndex.getField(memberName);
-                    if (field == null || ! field.getType().isAssignableFrom(argClass)) {
-                        throw new IllegalArgumentException("Invalid injection into field '" + memberName + "' of " + beanClass);
+                    if (field == null) {
+                        throw new IllegalArgumentException("Field not found - Invalid injection into field '" + memberName + "' of " + beanClass);
+                    }
+                    if (!field.getType().isAssignableFrom(argClass)) {
+                        throw new IllegalArgumentException("Field type " + field.getType() + " is not assignable from " + argClass + " , injection into class " + beanClass + " failed");
                     }
                     return new FieldResourceInjection(field, value);
                 }
                 case METHOD: {
                     final Method method = reflectionIndex.getMethod(void.class, memberName, argClass);
-                    if (method == null || ! method.getParameterTypes()[0].isAssignableFrom(argClass)) {
-                        throw new IllegalArgumentException("Invalid injection into method '" + memberName + "' of " + beanClass);
+                    if (method == null) {
+                        throw new IllegalArgumentException("Invalid injection - Method void " + memberName + "(" + argClass.getName() + ")" + " not found on " + beanClass);
+                    }
+                    if (!method.getParameterTypes()[0].isAssignableFrom(argClass)) {
+                        throw new IllegalArgumentException("Field type " + method.getParameterTypes()[0] + " is not assignable from " + argClass + " , injection into class " + beanClass + " failed");
                     }
                     return new MethodResourceInjection(method, value);
                 }
