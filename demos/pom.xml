@@ -45,11 +45,6 @@
 
     <dependency>
       <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-domain-client</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.as</groupId>
       <artifactId>jboss-as-server</artifactId>
     </dependency>
 
