@@ -1,134 +1,162 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-   <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-   <parent>
-      <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-parent</artifactId>
-      <version>7.0.0.Beta2-SNAPSHOT</version>
-   </parent>
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-parent</artifactId>
+        <version>7.0.0.Beta2-SNAPSHOT</version>
+    </parent>
 
-   <groupId>org.jboss.as</groupId>
-   <artifactId>jboss-as-jpa</artifactId>
-   <version>7.0.0.Beta2-SNAPSHOT</version>
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-jpa</artifactId>
+    <version>7.0.0.Beta2-SNAPSHOT</version>
 
-   <name>JBoss Application Server: JPA Subsystem</name>
+    <name>JBoss Application Server: JPA Subsystem</name>
 
-   <dependencies>
-        <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-        </dependency>
+    <dependencies>
+        <!-- Internal -->
+
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
+            <artifactId>jboss-as-connector</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-ee</artifactId>
         </dependency>
-       <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-ejb3</artifactId>
-       </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-ejb3</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-naming</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
+
+        <!-- External -->
+
+        <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-commons-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
             <artifactId>jboss-annotations-api_1.1_spec</artifactId>
         </dependency>
+
         <dependency>
-         <groupId>org.hibernate.java-persistence</groupId>
-         <artifactId>jpa-api</artifactId>
-         <version>2.0-cr-1</version>
-      </dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+        </dependency>
 
-       <dependency>
-          <groupId>org.hibernate.javax.persistence</groupId>
-          <artifactId>hibernate-jpa-2.0-api</artifactId>
-      </dependency>
-
-       <dependency>
-         <groupId>org.hibernate</groupId>
-         <artifactId>hibernate-validator</artifactId>
-       </dependency>
-
-       <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-connector</artifactId>
-       </dependency>
-
-       <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-ee</artifactId>
-       </dependency>
-
-       <dependency>
-           <groupId>org.jboss</groupId>
-           <artifactId>jboss-common-core</artifactId>
-       </dependency>
-
-      <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-entitymanager</artifactId>
-      </dependency>
-
-       <dependency>
-           <groupId>org.hibernate</groupId>
-           <artifactId>hibernate-core</artifactId>
-       </dependency>
-
-      <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-commons-annotations</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.ant</groupId>
-          <artifactId>ant</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>antlr</groupId>
-          <artifactId>antlr</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>commons-collections</groupId>
-          <artifactId>commons-collections</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>asm</groupId>
-          <artifactId>asm</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>cglib</groupId>
-          <artifactId>cglib</artifactId>
-      </dependency>
-       <dependency>
-          <groupId>javassist</groupId>
-          <artifactId>javassist</artifactId>
-       </dependency>
-      <dependency>
-         <groupId>org.jboss.metadata</groupId>
-         <artifactId>jboss-metadata-common</artifactId>
-      </dependency>
-       <dependency>
-          <groupId>org.jboss.spec.javax.transaction</groupId>
-          <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-naming</artifactId>
-       </dependency>
-   </dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

@@ -85,11 +85,9 @@
         <version.org.apache.neethi>2.0.4</version.org.apache.neethi>
         <version.org.apache.xalan>2.7.1-1.jbossorg</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
-        <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
-        <version.org.hibernate.jpa-api>2.0-cr-1</version.org.hibernate.jpa-api>
+        <version.org.apache.ws.commons.xmlschema>1.4.5</version.org.apache.ws.commons.xmlschema>
         <version.org.hibernate>3.6.1.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>3.2.0.Final</version.org.hibernate.commons.annotations>
-        <version.org.apache.ws.commons.xmlschema>1.4.5</version.org.apache.ws.commons.xmlschema>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
@@ -353,6 +351,8 @@
                                             <exclude>org.jboss.javaee:jsp-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-transaction-api</exclude>
                                             <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
+                                            <exclude>org.hibernate.java-persistence:jpa-api</exclude>
+                                            <exclude>org.hibernate:ejb3-persistence</exclude>
                                             <exclude>jboss.web:el-api</exclude>
                                             <exclude>jboss.web:jsp-api</exclude>
                                             <exclude>jboss.web:servlet-api</exclude>
@@ -3677,12 +3677,6 @@
                 <groupId>org.jboss.ws.projects</groupId>
                 <artifactId>jaxws-httpserver-httpspi</artifactId>
                 <version>${version.org.jboss.ws.jaxws-httpserver-httpspi}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.java-persistence</groupId>
-                <artifactId>jpa-api</artifactId>
-                <version>${version.org.hibernate.jpa-api}</version>
             </dependency>
 
             <dependency>

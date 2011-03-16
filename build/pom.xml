@@ -957,12 +957,6 @@
             <artifactId>hibernate-commons-annotations</artifactId>
         </dependency>
 
-<!--  see if we can eliminate one of the jpa-api dependencies-->
-        <dependency>
-            <groupId>org.hibernate.java-persistence</groupId>
-            <artifactId>jpa-api</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
