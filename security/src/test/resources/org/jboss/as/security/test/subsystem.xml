@@ -1,0 +1,9 @@
+<subsystem xmlns="urn:jboss:domain:security:1.0">
+	<jaas>
+		<security-domain name="other">
+			<authentication>
+				<login-module code="UsersRoles" flag="required" />
+			</authentication>
+		</security-domain>
+	</jaas>
+</subsystem>
