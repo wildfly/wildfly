@@ -80,7 +80,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>standalone-console</artifactId>
+            <artifactId>jboss-as-console</artifactId>
             <classifier>resources</classifier>
         </dependency>
 
