@@ -42,7 +42,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_P
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOLNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
@@ -215,7 +215,7 @@ public class ResourceAdaptersExtension implements Extension {
             writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.JNDINAME, JNDI_NAME);
             writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.ENABLED, ENABLED);
             writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
-            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.POOL_NAME, POOLNAME);
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.POOL_NAME, POOL_NAME);
 
             writeConfigProperties(streamWriter, adminObject);
             streamWriter.writeEndElement();
@@ -228,7 +228,7 @@ public class ResourceAdaptersExtension implements Extension {
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.JNDINAME, JNDI_NAME);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.ENABLED, ENABLED);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
-            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.POOL_NAME, POOLNAME);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.POOL_NAME, POOL_NAME);
 
             writeConfigProperties(streamWriter, conDef);
 
@@ -417,7 +417,7 @@ public class ResourceAdaptersExtension implements Extension {
             }
             adminObjectModel.get(CLASS_NAME).set(adminObject.getClassName());
             adminObjectModel.get(JNDI_NAME).set(adminObject.getJndiName());
-            adminObjectModel.get(POOLNAME).set(adminObject.getPoolName());
+            adminObjectModel.get(POOL_NAME).set(adminObject.getPoolName());
             adminObjectModel.get(ENABLED).set(adminObject.isEnabled());
             adminObjectModel.get(USE_JAVA_CONTEXT).set(adminObject.isUseJavaContext());
 
@@ -431,7 +431,7 @@ public class ResourceAdaptersExtension implements Extension {
             }
             condefModel.get(CLASS_NAME).set(conDef.getClassName());
             condefModel.get(JNDI_NAME).set(conDef.getJndiName());
-            condefModel.get(POOLNAME).set(conDef.getPoolName());
+            condefModel.get(POOL_NAME).set(conDef.getPoolName());
             condefModel.get(ENABLED).set(conDef.isEnabled());
             condefModel.get(USE_JAVA_CONTEXT).set(conDef.isUseJavaContext());
 
