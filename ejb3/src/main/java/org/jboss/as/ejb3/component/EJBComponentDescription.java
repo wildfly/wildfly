@@ -99,7 +99,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
         assert methodName != null : "methodName is null";
         assert methodParams != null : "methodParams is null";
 
-        ArrayKey methodParamsKey = new ArrayKey(methodParams);
+        ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         TransactionAttributeType txAttr = get(get(get(txPerViewStyle3, methodIntf), methodName), methodParamsKey);
         if (txAttr != null)
             return txAttr;
@@ -160,7 +160,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      * @param methodParams
      */
     public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, String methodName, String... methodParams) {
-        ArrayKey methodParamsKey = new ArrayKey(methodParams);
+        ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         if (methodIntf != null)
             txStyle3.pick(methodName).put(methodParamsKey, transactionAttribute);
         else
@@ -216,7 +216,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
             perMethod = new ConcurrentHashMap<ArrayKey, TransactionAttributeType>();
             perMethodIntf.put(methodName, perMethod);
         }
-        perMethod.put(new ArrayKey(method.getParameterTypes()), txAttr);
+        perMethod.put(new ArrayKey((Object[]) method.getParameterTypes()), txAttr);
     }
 
     private static String[] toString(Class<?>[] a) {

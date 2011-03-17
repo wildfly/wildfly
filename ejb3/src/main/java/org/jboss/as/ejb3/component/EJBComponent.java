@@ -109,7 +109,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
         ConcurrentMap<ArrayKey, TransactionAttributeType> perMethod = perMethodIntf.get(method.getName());
         if (perMethod == null)
             throw new IllegalStateException("Can't find tx attrs for method name " + method.getName() + " via " + methodIntf);
-        TransactionAttributeType txAttr = perMethod.get(new ArrayKey(method.getParameterTypes()));
+        TransactionAttributeType txAttr = perMethod.get(new ArrayKey((Object[]) method.getParameterTypes()));
         if (txAttr == null)
             throw new IllegalStateException("Can't find tx attr for method " + method + " via " + methodIntf);
         return txAttr;
