@@ -23,6 +23,7 @@ package org.jboss.as.webservices.invocation;
 
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.Map;
 
 //import javax.ejb.embeddable.EJBContainer; // TODO: needed?
 import javax.naming.Context;
@@ -32,7 +33,12 @@ import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.MessageContext;
 
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.ViewService;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.common.injection.ThreadLocalAwareWebServiceContext;
 import org.jboss.wsf.common.invocation.AbstractInvocationHandler;
 import org.jboss.wsf.spi.SPIProvider;
@@ -63,7 +69,7 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    private String containerName;
 
    /** EJB3 container. */
-   private ServiceEndpointContainer serviceEndpointContainer;
+   private StatelessSessionComponent serviceEndpointContainer;
 
    /**
     * Constructor.
@@ -92,17 +98,22 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     *
     * @return EJB3 container
     */
-   private synchronized ServiceEndpointContainer getEjb3Container() {
+   private synchronized StatelessSessionComponent getEjb3Container() {
       final boolean ejb3ContainerNotInitialized = this.serviceEndpointContainer == null;
 
       if (ejb3ContainerNotInitialized) {
-         this.serviceEndpointContainer = this.iocContainer.getBean(this.containerName, ServiceEndpointContainer.class);
+         this.serviceEndpointContainer = this.iocContainer.getBean(this.containerName, StatelessSessionComponent.class);
          if (this.serviceEndpointContainer == null) {
             throw new WebServiceException("Cannot find service endpoint target: " + this.containerName);
          }
       }
 
       return this.serviceEndpointContainer;
+   }
+
+   private Object getEjb3Instance(final StatelessSessionComponent ssc, final Invocation wsInvocation) {
+       Class<?> ifaceClazz = ssc.getComponentClass().getInterfaces()[0];
+       return ssc.getComponentView(ifaceClazz).getReference().getInstance();
    }
 
    /**
@@ -116,6 +127,17 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
       try {
          // prepare for invocation
          this.onBeforeInvocation(wsInvocation);
+
+         final StatelessSessionComponent ejbContainer = this.getEjb3Container();
+         final Object instance = getEjb3Instance(ejbContainer, wsInvocation);
+
+         final Class<?> implClass = instance.getClass();
+         final Method seiMethod = wsInvocation.getJavaMethod();
+         final Method implMethod = this.getImplMethod(implClass, seiMethod);
+         final Object[] args = wsInvocation.getArgs();
+         // invoke method
+         final Object retObj = implMethod.invoke(instance, args); // TODO: there used to be ServiceEndpointContainer, how to do it in AS7?
+         wsInvocation.setReturnValue(retObj);
          /*
          final ServiceEndpointContainer ejbContainer = this.getEjb3Container();
          final InvocationContextCallback invocationCallback = new EJB3InvocationContextCallback(wsInvocation);

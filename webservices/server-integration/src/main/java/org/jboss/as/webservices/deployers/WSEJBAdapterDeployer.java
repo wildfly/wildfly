@@ -46,6 +46,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 
@@ -81,8 +82,11 @@ public final class WSEJBAdapterDeployer {
                final ClassInfo webServiceClassInfo = (ClassInfo) target;
                final String beanClassName = webServiceClassInfo.name().toString();
                AbstractComponentDescription absCD = moduleDescription.getComponentByClassName(beanClassName);
+
+               final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1);
+               final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: hacky, hacky, hacky :(
                if (absCD instanceof StatelessComponentDescription || absCD instanceof SingletonComponentDescription) {
-                   endpoints.add(new WebServiceDeclarationAdapter((SessionBeanComponentDescription)absCD, webServiceClassInfo));
+                   endpoints.add(new WebServiceDeclarationAdapter((SessionBeanComponentDescription)absCD, webServiceClassInfo, baseName.getCanonicalName()));
                }
            }
        }
@@ -101,6 +105,7 @@ public final class WSEJBAdapterDeployer {
       /** EJB meta data. */
       private final SessionBeanComponentDescription ejbMD;
       private final ClassInfo webServiceClassInfo; // TODO: propagate just annotations?
+      private final String containerName;
 
       /**
        * Constructor.
@@ -109,9 +114,10 @@ public final class WSEJBAdapterDeployer {
        * @param ejbContainer EJB container
        * @param loader class loader
        */
-      private WebServiceDeclarationAdapter(final SessionBeanComponentDescription ejbMD, final ClassInfo webServiceClassInfo/*, final ClassLoader loader*/) {
+      private WebServiceDeclarationAdapter(final SessionBeanComponentDescription ejbMD, final ClassInfo webServiceClassInfo, final String containerName) {
          this.ejbMD = ejbMD;
          this.webServiceClassInfo = webServiceClassInfo;
+         this.containerName = containerName;
       }
 
       /**
@@ -120,7 +126,8 @@ public final class WSEJBAdapterDeployer {
        * @return container name
        */
       public String getContainerName() {
-         return "TODO: implement me " + this.getClass().getName(); // TODO: implement
+         return containerName;
+         //return "jboss.deployment.unit.\"jaxws-jbws1283.jar\".component.JBWS1283EndpointImpl.START"; // TODO: P1
       }
 
       /**
