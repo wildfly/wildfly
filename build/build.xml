@@ -174,7 +174,7 @@
             <maven-resource group="org.jboss.spec.javax.servlet.jsp" artifact="jboss-jsp-api_2.2_spec"/>
         </module-def>
 
-        <module-def name="javax.servlet.jstl">
+        <module-def name="javax.servlet.jstl.api">
             <maven-resource group="javax.servlet" artifact="jstl"/>
         </module-def>
 
