@@ -102,6 +102,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
                 bindBeanManager(deploymentUnit, serviceTarget,beanManagerServiceName, compContextServiceName);
             }
         }
+        deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 
     private void bindBeanManager(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName) {
@@ -114,7 +115,6 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
                 .addDependency(contextServiceName, NamingStore.class, beanManagerBindingService.getNamingStoreInjector())
                 .addDependency(beanManagerServiceName, BeanManager.class, injectedBeanManager)
                 .install();
-        deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 
     @Override
