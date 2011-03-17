@@ -209,6 +209,7 @@ public enum Phase {
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x0B00;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_ANNOTATION                        = 0x0C00;
+    public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x0C08;
     public static final int PARSE_WEB_DEPLOYMENT                        = 0x0D00;
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0E00;
     public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0F00;

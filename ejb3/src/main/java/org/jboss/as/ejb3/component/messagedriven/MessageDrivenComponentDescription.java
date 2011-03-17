@@ -19,32 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateless;
+package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
-import org.jboss.invocation.InterceptorContext;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
-    static final PooledInstanceInterceptor INSTANCE = new PooledInstanceInterceptor();
-
-    private PooledInstanceInterceptor() {
-
+public class MessageDrivenComponentDescription extends EJBComponentDescription {
+    /**
+     * Construct a new instance.
+     *
+     * @param componentName      the component name
+     * @param componentClassName the component instance class name
+     * @param moduleName         the module name
+     * @param applicationName    the application name
+     */
+    public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
+        super(componentName, componentClassName, moduleName, applicationName);
     }
 
     @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
-        StatelessSessionComponent component = getComponent(context, StatelessSessionComponent.class);
-        ComponentInstance instance = component.getPool().get();
-        context.putPrivateData(ComponentInstance.class, instance);
-        try {
-            return context.proceed();
-        }
-        finally {
-            context.putPrivateData(ComponentInstance.class, null);
-        }
+    public MethodIntf getMethodIntf(String viewClassName) {
+        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription.getMethodIntf");
+    }
+
+    @Override
+    protected MessageDrivenComponentConfiguration constructComponentConfiguration() {
+        return new MessageDrivenComponentConfiguration(this);
     }
 }

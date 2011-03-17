@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  * <p/>
  * Author : Jaikiran Pai
  */
-public class StatelessSessionComponent extends SessionBeanComponent {
+public class StatelessSessionComponent extends SessionBeanComponent implements PooledComponent<StatelessSessionComponentInstance> {
     // some more injectable resources
     // @Resource
     private Pool<StatelessSessionComponentInstance> pool;
@@ -105,7 +106,8 @@ public class StatelessSessionComponent extends SessionBeanComponent {
         return new StatelessSessionComponentInstance(this, instance, preDestroyInterceptors, context);
     }
 
-    protected Pool<StatelessSessionComponentInstance> getPool() {
+    @Override
+    public Pool<StatelessSessionComponentInstance> getPool() {
         return pool;
     }
 }
