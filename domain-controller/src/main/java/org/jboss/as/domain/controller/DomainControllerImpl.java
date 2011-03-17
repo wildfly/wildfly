@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
@@ -66,6 +67,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -85,6 +87,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
@@ -226,12 +229,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
         ModelNode operation = operationContext.getOperation();
 
-//        System.out.println("------ operation " + operation);
+        // System.out.println("------ operation " + operation);
 
         // See who handles this op
         OperationRouting routing = determineRouting(operation);
         if ((routing.isRouteToMaster() || !routing.isLocalOnly()) && masterDomainControllerClient != null) {
-//            System.out.println("------ route to master ");
+            // System.out.println("------ route to master ");
             // Per discussion on 2011/03/07, routing requests from a slave to the
             // master may overly complicate the security infrastructure. Therefore,
             // the ability to do this is being disabled until it's clear that it's
@@ -246,11 +249,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             // It's either for a read of a domain-level resource or it's for a single host-level resource,
             // either of which a single host client can handle directly
             String host = routing.getSingleHost();
-//            System.out.println("------ route to host " + host);
+            // System.out.println("------ route to host " + host);
             return executeOnHost(host, operationContext, handler);
         }
 
-//        System.out.println("---- Push to hosts");
+        // System.out.println("---- Push to hosts");
         // Else we are responsible for coordinating a two-step op
         // -- apply to DomainController models across domain and then push to servers
 
@@ -271,11 +274,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             return new BasicOperationResult();
         }
 
-//        System.out.println("---- Pushed to hosts");
+        // System.out.println("---- Pushed to hosts");
         ModelNode masterFailureResult = null;
         ModelNode hostFailureResults = null;
         ModelNode masterResult = hostResults.get(localHostName);
-//        System.out.println("-----Checking host results");
+        // System.out.println("-----Checking host results");
         if (masterResult != null && masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
             transaction.setRollbackOnly();
             masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
@@ -294,12 +297,12 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             }
         }
 
-//        for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
-//            System.out.println("======================================================");
-//            System.out.println(entry.getKey());
-//            System.out.println("======================================================");
-//            System.out.println(entry.getValue());
-//        }
+        // for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+        //    System.out.println("======================================================");
+        //    System.out.println(entry.getKey());
+        //    System.out.println("======================================================");
+        //    System.out.println(entry.getValue());
+        // }
 
         if (transaction.isRollbackOnly()) {
             transaction.commit();
@@ -331,13 +334,21 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                 transaction.commit();
             }
 
-//            System.out.println(rolloutPlan);
-
+            // System.out.println(rolloutPlan);
             ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
-
-//            System.out.println(compensatingOperation);
+            // System.out.println(compensatingOperation);
 
             if(opsByGroup.size() == 0) {
+                // FIXME Reformat a single domain-result
+                final ModelNode result = hostResults.get(localHostName).get(RESULT);
+                if(result.hasDefined(DOMAIN_RESULTS) && ! result.hasDefined(SERVER_OPERATIONS)) {
+                    final List<Property> steps = result.get(DOMAIN_RESULTS).asPropertyList();
+                    if(steps.size() == 1) {
+                        final ModelNode fragment = result.get(DOMAIN_RESULTS).get("step-1");
+                        handler.handleResultFragment(Util.NO_LOCATION, fragment);
+                    }
+                }
+
                 handler.handleResultComplete();
                 return new BasicOperationResult(compensatingOperation);
             }
@@ -407,8 +418,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         else if (isReadOnly(operation, address)) {
             // Direct read of domain model
             routing = new OperationRouting(localHostName, false);
-        }
-        else if (COMPOSITE.equals(operation.require(OP).asString())){
+        } else if (COMPOSITE.equals(operation.require(OP).asString())){
             // Recurse into the steps to see what's required
             if (operation.hasDefined(STEPS)) {
                 Set<String> allHosts = new HashSet<String>();
@@ -631,7 +641,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             if (rolloutPlan.hasDefined(IN_SERIES)) {
                 for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
                     if (series.hasDefined(CONCURRENT_GROUPS)) {
-                        for(Property prop : series.get(SERVER_GROUP).asPropertyList()) {
+                        for(Property prop : series.get(CONCURRENT_GROUPS).asPropertyList()) {
                             validateServerGroupPlan(found, prop);
                         }
                     }
