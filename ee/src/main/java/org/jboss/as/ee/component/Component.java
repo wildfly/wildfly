@@ -100,7 +100,7 @@ public interface Component {
 
     /**
      * Create a new client interceptor for this component.  The returned interceptor will contain the necessary logic to
-     * locate the appropriate instance. The interceptor will be assoiated with the given sessionId
+     * locate the appropriate instance. The interceptor will be associated with the given sessionId
      * <p>
      * The given view type must be one of the registered view types for this component.
      *
