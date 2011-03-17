@@ -41,7 +41,7 @@
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
-        <module name="org.hibernate.hibernate"/>
+        <module name="org.hibernate"/>
         <module name="org.hibernate.validator"/>
         <module name="org.javassist"/>
         <module name="org.jboss.as.connector" />

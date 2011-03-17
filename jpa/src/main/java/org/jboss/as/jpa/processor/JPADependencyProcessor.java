@@ -43,7 +43,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
     private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
     private static ModuleIdentifier JBOSS_AS_JPA_ID = ModuleIdentifier.create("org.jboss.as.jpa");
-    private static ModuleIdentifier JBOSS_HIBERNATE_ID = ModuleIdentifier.create("org.hibernate.hibernate");
+    private static ModuleIdentifier JBOSS_HIBERNATE_ID = ModuleIdentifier.create("org.hibernate");
     private static ModuleIdentifier JAVASSIST_ID =  ModuleIdentifier.create("org.javassist");
     private static ModuleIdentifier NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
 

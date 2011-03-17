@@ -289,7 +289,7 @@
 
         <module-def name="org.apache.commons.logging"/>
 
-        <module-def name="org.hibernate.hibernate">
+        <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
