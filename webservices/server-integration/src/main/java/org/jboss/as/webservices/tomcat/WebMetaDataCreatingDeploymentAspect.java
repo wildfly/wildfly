@@ -22,12 +22,15 @@
 package org.jboss.as.webservices.tomcat;
 
 import org.jboss.wsf.common.integration.AbstractDeploymentAspect;
+import org.jboss.wsf.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class WebMetaDataCreatingDeploymentAspect extends AbstractDeploymentAspect {
+
+    private WebMetaDataCreator webMetaDataCreator = new WebMetaDataCreator();
 
     /**
      * Constructor.
@@ -38,7 +41,12 @@ public final class WebMetaDataCreatingDeploymentAspect extends AbstractDeploymen
 
     @Override
     public void start(final Deployment dep) {
-        // TODO: implement
+        final boolean isEjbDeployment = WSHelper.isEjbDeployment(dep);
+
+        if (isEjbDeployment) {
+           log.debug("Creating web meta data for EJB webservice deployment: " + dep.getSimpleName());
+           webMetaDataCreator.create(dep);
+        }
     }
 
 }

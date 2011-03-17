@@ -21,12 +21,15 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
+import org.jboss.jandex.Index;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 
 /**
@@ -113,10 +116,13 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
      * @return true if JAXWS JSE, false otherwise
      */
     private boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
-        final boolean hasJBossWebMD = ASHelper.getJBossWebMetaData(unit) != null;
-
-        if (hasJBossWebMD) {
-            return ASHelper.getJaxwsServlets(unit).size() > 0;
+        // TODO: rewrite, see above
+        if (DeploymentTypeMarker.isType(org.jboss.as.ee.structure.DeploymentType.WAR, unit)) {
+            final Index index = ASHelper.getRootAnnotationIndex(unit);
+            final WarMetaData warMetaData = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
+            if (warMetaData != null && warMetaData.getWebMetaData() != null) {
+                return (ASHelper.selectWebServiceServlets(index, warMetaData.getWebMetaData().getServlets(), true).size() > 0);
+            }
         }
 
         return false;

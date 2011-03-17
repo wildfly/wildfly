@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -208,5 +209,27 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      */
     private ArchiveDeployment newDeployment(final String name, final ClassLoader loader) {
         return (ArchiveDeployment) this.deploymentModelFactory.newDeployment(name, loader);
+    }
+
+    /**
+     * Gets specified attachment from deployment unit..
+     * Checks it's not null and then propagates it to <b>dep</b>
+     * attachments. Finally it returns attachment value.
+     *
+     * @param <A> class type
+     * @param attachment attachment
+     * @param unit deployment unit
+     * @param dep deployment
+     * @return attachment value if found in unit
+     */
+    protected final <A> A getAndPropagateAttachment(final AttachmentKey<A> attachment, final Class<?> attachmentClass, final DeploymentUnit unit, final Deployment dep) {
+       final A attachmentValue = ASHelper.getOptionalAttachment(unit, attachment);
+
+       if (attachmentValue != null) {
+          dep.addAttachment(attachmentClass, attachmentValue); // TODO: eliminate attachmentClass parameter - investigate how ...
+          return attachmentValue;
+       }
+
+       throw new IllegalStateException("Deployment unit does not contain " + attachment);
     }
 }

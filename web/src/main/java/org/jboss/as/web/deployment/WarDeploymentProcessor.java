@@ -82,7 +82,10 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         if (metaData == null) {
             return;
         }
-        Collection<String> hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
+        Collection<String> hostNames = null;
+        if (metaData.getMergedJBossWebMetaData() != null) {
+            hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
+        }
         if (hostNames == null || hostNames.isEmpty()) {
             hostNames = Collections.singleton(defaultHost);
         }

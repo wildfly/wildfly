@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.deployers;
 
+//import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_TYPE_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -33,10 +36,12 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.Index;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 
 /**
  * A DUP that sets the dependencies required for using WS classes in WS deployments
@@ -47,6 +52,7 @@ import org.jboss.modules.filter.PathFilters;
  */
 public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
+    private static final Logger LOGGER = Logger.getLogger(WSDependenciesProcessor.class);
     private static final ModuleIdentifier ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.integration");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -79,16 +85,43 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
      * @param unit
      * @return
      */
-    private boolean isWSDeployment(DeploymentUnit unit) {
-        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
-            return false;
+    private boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
+        final boolean isWarDeployment = DeploymentTypeMarker.isType(DeploymentType.WAR, unit);
+        if (isWarDeployment) {
+            final Index index = ASHelper.getRootAnnotationIndex(unit);
+            final WarMetaData warMetaData = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
+            if (warMetaData != null && warMetaData.getWebMetaData() != null) {
+                return (ASHelper.selectWebServiceServlets(index, warMetaData.getWebMetaData().getServlets(), true).size() > 0);
+            }
         }
-        final Index index = ASHelper.getRootAnnotationIndex(unit);
-        final WarMetaData warMetaData = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
-        if (warMetaData == null || warMetaData.getWebMetaData() == null) {
-            return false;
+
+        return false;
+    }
+
+    private boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
+        final boolean isEjbDeployment = DeploymentTypeMarker.isType(DeploymentType.EJB_JAR, unit);
+        if (isEjbDeployment) {
+            WSEJBAdapterDeployer.internalDeploy(unit); // TODO: refactor this ugly hack
+            WebServiceDeployment wsDeployment = ASHelper.getRequiredAttachment(unit, WEBSERVICE_DEPLOYMENT_KEY);
+            return wsDeployment.getServiceEndpoints().size() > 0;
         }
-        return (ASHelper.selectWebServiceServlets(index, warMetaData.getWebMetaData().getServlets(), true).size() > 0);
+
+        return false;
+    }
+
+    private boolean isWSDeployment(final DeploymentUnit unit) {
+        if (isJaxwsJseDeployment(unit)) {
+            LOGGER.trace("Detected JAXWS JSE deployment");
+            //unit.putAttachment(DEPLOYMENT_TYPE_KEY, org.jboss.wsf.spi.deployment.Deployment.DeploymentType.JAXWS_JSE); // TODO: moved to WSTypeDeploymentProcessor
+            return true;
+        }
+        else if (isJaxwsEjbDeployment(unit)) {
+            LOGGER.trace("Detected JAXWS EJB3 deployment");
+            //unit.putAttachment(DEPLOYMENT_TYPE_KEY, org.jboss.wsf.spi.deployment.Deployment.DeploymentType.JAXWS_EJB3); // TODO: moved to WSTypeDeploymentProcessor
+            return true;
+        }
+
+        return false;
     }
 
     public void undeploy(final DeploymentUnit context) {

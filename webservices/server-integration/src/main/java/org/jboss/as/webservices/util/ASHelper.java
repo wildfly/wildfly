@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.util;
 
+import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
@@ -28,6 +30,8 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -41,10 +45,12 @@ import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 
+import javax.ejb.Stateless;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -211,30 +217,8 @@ public final class ASHelper {
      */
     public static List<WebServiceDeclaration> getJaxwsEjbs(final DeploymentUnit unit) {
         final WebServiceDeployment wsDeployment = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
-        final List<WebServiceDeclaration> endpoints = new ArrayList<WebServiceDeclaration>();
 
-        final Iterator<WebServiceDeclaration> ejbIterator = wsDeployment.getServiceEndpoints().iterator();
-        while (ejbIterator.hasNext()) {
-            final WebServiceDeclaration ejbContainer = ejbIterator.next();
-            if (ASHelper.isWebServiceBean(ejbContainer)) {
-                endpoints.add(ejbContainer);
-            }
-        }
-
-        return endpoints;
-    }
-
-    /**
-     * Returns true if EJB container is webservice endpoint.
-     *
-     * @param ejbContainerAdapter EJB container adapter
-     * @return true if EJB container is webservice endpoint, false otherwise
-     */
-    public static boolean isWebServiceBean(final WebServiceDeclaration ejbContainerAdapter) {
-        final boolean isWebService = ejbContainerAdapter.getAnnotation(WebService.class) != null;
-        final boolean isWebServiceProvider = ejbContainerAdapter.getAnnotation(WebServiceProvider.class) != null;
-
-        return isWebService || isWebServiceProvider;
+        return Collections.unmodifiableList(wsDeployment.getServiceEndpoints());
     }
 
     /**

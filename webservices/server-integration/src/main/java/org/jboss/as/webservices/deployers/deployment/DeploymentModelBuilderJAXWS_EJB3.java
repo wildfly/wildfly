@@ -23,6 +23,7 @@ package org.jboss.as.webservices.deployers.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 //import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -50,18 +51,18 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-//        this.getAndPropagateAttachment(WebServiceDeployment.class, unit, dep);
-//        this.getAndPropagateAttachment(JBossMetaData.class, unit, dep);
-//
-//        this.log.debug("Creating JAXWS EJB3 endpoints meta data model");
-//        for (final WebServiceDeclaration container : ASHelper.getJaxwsEjbs(unit)) {
-//            final String ejbName = container.getComponentName();
-//            this.log.debug("EJB3 name: " + ejbName);
-//            final String ejbClass = container.getComponentClassName();
-//            this.log.debug("EJB3 class: " + ejbClass);
-//
-//            final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep);
-//            ep.setProperty(ASHelper.CONTAINER_NAME, container.getContainerName());
-//        }
+        this.getAndPropagateAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY, WebServiceDeployment.class, unit, dep);
+        //this.getAndPropagateAttachment(JBossMetaData.class, unit, dep); // TODO: propagate?
+
+        this.log.debug("Creating JAXWS EJB3 endpoints meta data model");
+        for (final WebServiceDeclaration container : ASHelper.getJaxwsEjbs(unit)) {
+            final String ejbName = container.getComponentName();
+            this.log.debug("EJB3 name: " + ejbName);
+            final String ejbClass = container.getComponentClassName();
+            this.log.debug("EJB3 class: " + ejbClass);
+
+            final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep);
+            ep.setProperty(ASHelper.CONTAINER_NAME, container.getContainerName());
+        }
     }
 }

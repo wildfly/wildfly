@@ -64,9 +64,9 @@ public final class InvocationHandlerFactoryImpl extends InvocationHandlerFactory
             case JAXWS_JSE:
                 handler = new InvocationHandlerJAXWS();
                 break;
-//            case JAXWS_EJB3:
-//                handler = new InvocationHandlerEJB3();
-//                break;
+            case JAXWS_EJB3:
+                handler = new InvocationHandlerEJB3();
+                break;
 //            case JAXWS_MDB3:
 //                handler = new InvocationHandlerMDB3();
 //                break;
