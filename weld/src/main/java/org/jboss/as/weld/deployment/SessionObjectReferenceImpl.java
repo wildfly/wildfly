@@ -40,27 +40,28 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     private final EjbDescriptorImpl<?> descriptor;
     private final ServiceRegistry serviceRegistry;
-    private volatile Serializable sessionId;
+    private final Serializable sessionId;
     private volatile boolean removed = false;
     private volatile Component component;
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
         this.descriptor = descriptor;
         this.serviceRegistry = serviceRegistry;
+        final ServiceName createServiceName = descriptor.getCreateServiceName();
+        final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
+        component = (Component) controller.getValue();
+
+        if (descriptor.isStateful()) {
+            StatefulSessionComponent sfsb = (StatefulSessionComponent) component;
+            sessionId = sfsb.createSession();
+        } else {
+            sessionId = null;
+        }
     }
 
 
     @Override
     public <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        if (component == null) {
-            synchronized (this) {
-                if (component == null) {
-                    final ServiceName createServiceName = descriptor.getCreateServiceName();
-                    final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
-                    component = (Component) controller.getValue();
-                }
-            }
-        }
         final ServiceName viewServiceName = component.getViewServices().get(businessInterfaceType);
         if (viewServiceName == null) {
             throw new RuntimeException("Could not find view for " + businessInterfaceType);
@@ -68,14 +69,6 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         final ServiceController<?> viewController = serviceRegistry.getRequiredService(viewServiceName);
         ComponentView view = (ComponentView) viewController.getValue();
         if (descriptor.isStateful()) {
-            StatefulSessionComponent sfsb = (StatefulSessionComponent) component;
-            if (sessionId == null) {
-                synchronized (this) {
-                    if (sessionId == null) {
-                        sessionId = sfsb.createSession();
-                    }
-                }
-            }
             return (S) view.getViewForInstance(sessionId);
         }
         return (S) view.getReference().getInstance();

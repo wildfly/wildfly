@@ -93,19 +93,19 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
 
         // bind the bean manager to JNDI
         final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(),moduleDescription.getModuleName());
-        bindBeanManager(deploymentUnit, serviceTarget, beanManagerServiceName, moduleContextServiceName);
+        bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName);
 
         //bind the bm into java:comp for all components that require it
         for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if(component.getNamingMode() == ComponentNamingMode.CREATE) {
                 final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getAppName(),moduleDescription.getModuleName(),component.getComponentName());
-                bindBeanManager(deploymentUnit, serviceTarget,beanManagerServiceName, compContextServiceName);
+                bindBeanManager(serviceTarget,beanManagerServiceName, compContextServiceName);
             }
         }
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 
-    private void bindBeanManager(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName) {
+    private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName) {
         final ServiceName beanManagerBindingServiceName = contextServiceName.append("BeanManager");
 
         InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
