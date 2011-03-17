@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
@@ -74,7 +73,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             } catch (ClassNotFoundException e) {
                 throw new DeploymentUnitProcessingException("Component class not found", e);
             }
-            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(componentClass);
             final String applicationName = description.getApplicationName();
             final String moduleName = description.getModuleName();
             final String componentName = description.getComponentName();
@@ -85,12 +83,12 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
             //create additional injectors
             final List<ServiceName> additionalDependencies = new ArrayList<ServiceName>();
-            for(InjectionFactory injectionFactory : moduleDescription.getInjectionFactories()) {
+            for (InjectionFactory injectionFactory : moduleDescription.getInjectionFactories()) {
                 final ComponentInjector injector = injectionFactory.createInjector(configuration);
-                if(injector != null) {
+                if (injector != null) {
                     configuration.addComponentInjector(injector);
                     ServiceName injectorServiceName = injector.getServiceName();
-                    if(injector.getServiceName() != null){
+                    if (injector.getServiceName() != null) {
                         additionalDependencies.add(injectorServiceName);
                     }
                 }
@@ -119,8 +117,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     // And, create the context...
                     RootContextService contextService = new RootContextService();
                     serviceTarget.addService(componentContextServiceName, contextService)
-                        .addDependency(createServiceName)
-                        .install();
+                            .addDependency(createServiceName)
+                            .install();
                     break;
                 }
                 case USE_MODULE: {
@@ -157,14 +155,14 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 serviceTarget.addService(serviceName, viewService)
                         .addDependency(createServiceName, AbstractComponent.class, viewService.getComponentInjector())
                         .install();
-                configuration.getViewServices().put(viewClass,serviceName);
+                configuration.getViewServices().put(viewClass, serviceName);
             }
 
             // Iterate through each binding/injection, creating the JNDI binding and wiring dependencies for each
             final List<BindingDescription> bindingDescriptions = description.getBindings();
             final List<ResourceInjection> instanceResourceInjections = configuration.getResourceInjections();
             for (BindingDescription bindingDescription : bindingDescriptions) {
-                addJndiDependency(classLoader, serviceTarget, description, componentClass, index, applicationName, moduleName, componentName, createServiceName, startBuilder, instanceResourceInjections, bindingDescription, phaseContext);
+                addJndiDependency(classLoader, serviceTarget, description, componentClass, deploymentReflectionIndex, applicationName, moduleName, componentName, createServiceName, startBuilder, instanceResourceInjections, bindingDescription, phaseContext);
             }
 
             // Now iterate the interceptors and their bindings
@@ -181,7 +179,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 }
 
                 for (BindingDescription bindingDescription : interceptorDescription.getBindings()) {
-                    addJndiDependency(classLoader, serviceTarget, description, interceptorClass, index, applicationName, moduleName, componentName, createServiceName, startBuilder, interceptorResourceInjections, bindingDescription, phaseContext);
+                    addJndiDependency(classLoader, serviceTarget, description, interceptorClass, deploymentReflectionIndex, applicationName, moduleName, componentName, createServiceName, startBuilder, interceptorResourceInjections, bindingDescription, phaseContext);
                 }
             }
             createBuilder.install();
@@ -189,7 +187,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
     }
 
-    private static void addJndiDependency(final ModuleClassLoader classLoader, final ServiceTarget serviceTarget, final AbstractComponentDescription description, final Class<?> injecteeClass, final ClassReflectionIndex<?> index, final String applicationName, final String moduleName, final String componentName, final ServiceName createServiceName, final ServiceBuilder<Component> startBuilder, final List<ResourceInjection> instanceResourceInjections, final BindingDescription bindingDescription, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private static void addJndiDependency(final ModuleClassLoader classLoader, final ServiceTarget serviceTarget, final AbstractComponentDescription description, final Class<?> injecteeClass, final DeploymentReflectionIndex deploymentReflectionIndex, final String applicationName, final String moduleName, final String componentName, final ServiceName createServiceName, final ServiceBuilder<Component> startBuilder, final List<ResourceInjection> instanceResourceInjections, final BindingDescription bindingDescription, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         // Gather information about the dependency
         final String bindingName = bindingDescription.getBindingName();
         final String bindingType = bindingDescription.getBindingType();
@@ -255,7 +253,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
         // Create injectors for the binding
         for (InjectionTargetDescription targetDescription : bindingDescription.getInjectionTargetDescriptions()) {
-            instanceResourceInjections.add(ResourceInjection.Factory.create(targetDescription, injecteeClass, index, resourceValue));
+            instanceResourceInjections.add(ResourceInjection.Factory.create(targetDescription, injecteeClass, deploymentReflectionIndex, resourceValue));
         }
     }
 

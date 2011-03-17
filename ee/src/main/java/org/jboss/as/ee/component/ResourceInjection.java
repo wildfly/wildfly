@@ -22,12 +22,13 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.value.Value;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * An instance of an injection.  This can be called at any time against an object instance to actually perform the
@@ -55,23 +56,24 @@ public interface ResourceInjection {
         /**
          * Create the correct injection instance.
          *
-         * @param resourceConfiguration The resource injection configuration
-         * @param beanClass             The bean class to injection should run against.
-         * @param reflectionIndex       The class reflection index
-         * @param value                 The value for injection
+         * @param resourceConfiguration     The resource injection configuration
+         * @param beanClass                 The bean class to injection should run against.
+         * @param deploymentReflectionIndex The deployment reflection index
+         * @param value                     The value for injection
          * @return The injection instance
          */
-        public static ResourceInjection create(final InjectionTargetDescription resourceConfiguration, final Class<?> beanClass, final ClassReflectionIndex<?> reflectionIndex, final Value<ManagedReferenceFactory> value) {
+        public static ResourceInjection create(final InjectionTargetDescription resourceConfiguration, final Class<?> beanClass, final DeploymentReflectionIndex deploymentReflectionIndex, final Value<ManagedReferenceFactory> value) {
             final Class<?> argClass;
             try {
                 argClass = beanClass.getClassLoader().loadClass(resourceConfiguration.getValueClassName());
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("Invalid resource injection configuration.", e);
             }
+            final ClassReflectionIndex<?> classReflectionIndex = deploymentReflectionIndex.getClassIndex(beanClass);
             final String memberName = resourceConfiguration.getName();
             switch (resourceConfiguration.getType()) {
                 case FIELD: {
-                    final Field field = reflectionIndex.getField(memberName);
+                    final Field field = findField(deploymentReflectionIndex, classReflectionIndex, memberName);
                     if (field == null) {
                         throw new IllegalArgumentException("Field not found - Invalid injection into field '" + memberName + "' of " + beanClass);
                     }
@@ -81,7 +83,7 @@ public interface ResourceInjection {
                     return new FieldResourceInjection(field, value);
                 }
                 case METHOD: {
-                    final Method method = reflectionIndex.getMethod(void.class, memberName, argClass);
+                    final Method method = findMethod(deploymentReflectionIndex, classReflectionIndex, void.class, memberName, argClass);
                     if (method == null) {
                         throw new IllegalArgumentException("Invalid injection - Method void " + memberName + "(" + argClass.getName() + ")" + " not found on " + beanClass);
                     }
@@ -91,9 +93,67 @@ public interface ResourceInjection {
                     return new MethodResourceInjection(method, value);
                 }
                 default: {
-                    throw new IllegalStateException();
+                    throw new IllegalArgumentException("Resource injection is allowed only on field and method types. Can't handle " + resourceConfiguration.getType());
                 }
             }
+        }
+
+        /**
+         * Finds and returns a field named <code>fieldName</code> from the passed <code>classReflectionIndex</code> or any super class(es)
+         * of the {@link Class} corresponding to the passed <code>classReflectionIndex</code>.
+         * <p/>
+         * Returns null if no such field is found.
+         *
+         * @param deploymentReflectionIndex The deployment reflection index
+         * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the field
+         * @param fieldName                 The name of the field
+         * @return
+         */
+        private static Field findField(DeploymentReflectionIndex deploymentReflectionIndex, ClassReflectionIndex<?> classReflectionIndex, String fieldName) {
+
+            final Field field = classReflectionIndex.getField(fieldName);
+            if (field != null) {
+                return field;
+            }
+            // find in super class
+            Class<?> superClass = classReflectionIndex.getIndexedClass().getSuperclass();
+            if (superClass != null) {
+                ClassReflectionIndex<?> superClassIndex = deploymentReflectionIndex.getClassIndex(superClass);
+                if (superClassIndex != null) {
+                    return findField(deploymentReflectionIndex, superClassIndex, fieldName);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Finds and returns a method named <code>methodName</code> which accepts the passed <code>paramTypes</code> and whose
+         * return type is the passed <code>returnType</code>. The passed <code>classReflectionIndex</code> will be used to traverse
+         * the class hierarchy while finding the method.
+         * <p/>
+         * Returns null if no such method is found.
+         *
+         * @param deploymentReflectionIndex The deployment reflection index
+         * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+         * @param returnType                The return type of the method being searched
+         * @param methodName                The name of the method
+         * @param paramTypes                The param types of the method being searched
+         * @return
+         */
+        private static Method findMethod(DeploymentReflectionIndex deploymentReflectionIndex, ClassReflectionIndex<?> classReflectionIndex, Class<?> returnType, String methodName, Class<?>... paramTypes) {
+            Method method = classReflectionIndex.getMethod(returnType, methodName, paramTypes);
+            if (method != null) {
+                return method;
+            }
+            // find in super class
+            Class<?> superClass = classReflectionIndex.getIndexedClass().getSuperclass();
+            if (superClass != null) {
+                ClassReflectionIndex<?> superClassIndex = deploymentReflectionIndex.getClassIndex(superClass);
+                if (superClassIndex != null) {
+                    return findMethod(deploymentReflectionIndex, superClassIndex, returnType, methodName, paramTypes);
+                }
+            }
+            return null;
         }
     }
 }
