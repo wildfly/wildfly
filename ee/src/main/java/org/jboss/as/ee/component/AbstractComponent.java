@@ -23,6 +23,9 @@
 package org.jboss.as.ee.component;
 
 
+import java.util.Collection;
+import java.util.Set;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -319,9 +322,47 @@ public abstract class AbstractComponent implements Component {
     /**
      * {@inheritDoc}
      */
-    public ComponentInvocationHandler createClient(final Class<?> viewClass) {
-        // todo for remote inv.
-        return null;
+    public ComponentEntry createClient(final Class<?> viewClass) {
+        final ComponentView view = views.get(viewClass);
+        if (view == null) {
+            throw new IllegalArgumentException("Non-existent view " + viewClass + " requested");
+        }
+        final ManagedReference managedReference = view.getReference();
+        final Method[] methods = view.getProxyFactory().getCachedMethods();
+        final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<Method, Interceptor>();
+        final SimpleInterceptorFactoryContext interceptorFactoryContext = new SimpleInterceptorFactoryContext();
+        for (Method method : methods) {
+            final InterceptorFactory interceptorFactory = interceptorFactoryMap.get(method);
+            if (interceptorFactory != null) {
+                interceptorMap.put(method, interceptorFactory.create(interceptorFactoryContext));
+            }
+        }
+        final Set<Method> allowedMethods = Collections.unmodifiableSet(interceptorFactoryMap.keySet());
+        return new ComponentEntry() {
+            public Component getComponent() {
+                return AbstractComponent.this;
+            }
+
+            public Class<?> getViewClass() {
+                return viewClass;
+            }
+
+            public Collection<Method> allowedMethods() {
+                return allowedMethods;
+            }
+
+            public Interceptor getEntryPoint(final Method method) throws IllegalArgumentException {
+                Interceptor interceptor = interceptorMap.get(method);
+                if (interceptor == null) {
+                    throw new IllegalArgumentException("No entry point found for " + method);
+                }
+                return interceptor;
+            }
+
+            public void destroy() {
+                managedReference.release();
+            }
+        };
     }
 
     public NamespaceContextSelector getNamespaceContextSelector() {

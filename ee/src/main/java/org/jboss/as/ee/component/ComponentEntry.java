@@ -22,26 +22,26 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import org.jboss.invocation.Interceptor;
 
 /**
- * An invocation handler for a component.  Used to send method invocations to a component.
+ * A client entry point for a component.  Used to send method invocations to a component.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ComponentInvocationHandler extends InvocationHandler {
+public interface ComponentEntry {
 
     /**
-     * Get the component associated with this invocation handler.
+     * Get the component associated with this entry point.
      *
      * @return the component
      */
     Component getComponent();
 
     /**
-     * Get the view class for this invocation handler.
+     * Get the view class for this entry point.
      *
      * @return the view class
      */
@@ -54,6 +54,16 @@ public interface ComponentInvocationHandler extends InvocationHandler {
      * @return the list of methods
      */
     Collection<Method> allowedMethods();
+
+    /**
+     * Get the entry point interceptor for the method.  The method must be one of the exact {@code Method} instances
+     * returned by {@link #allowedMethods()}.
+     *
+     * @param method the method to invoke
+     * @return the interceptor to invoke
+     * @throws IllegalArgumentException if the method is not known to the component
+     */
+    Interceptor getEntryPoint(Method method) throws IllegalArgumentException;
 
     /**
      * Destroy this handler.  This method should be called when the client proxy is no longer

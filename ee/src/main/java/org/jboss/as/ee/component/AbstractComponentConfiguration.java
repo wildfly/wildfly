@@ -51,7 +51,6 @@ public abstract class AbstractComponentConfiguration {
     private final List<ResourceInjection> resourceInjections = new ArrayList<ResourceInjection>();
     private final Map<Class<?>,List<ResourceInjection>> interceptorResourceInjections = new IdentityHashMap<Class<?>,List<ResourceInjection>>();
     private final List<InterceptorFactory> componentSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
-    private final Map<Class<?>, ComponentInvocationHandler> views = new IdentityHashMap<Class<?>, ComponentInvocationHandler>();
     private final Map<Method, InterceptorFactory> interceptorFactoryMap = new IdentityHashMap<Method, InterceptorFactory>();
     private final Map<Class<?>, ProxyFactory<?>> proxyFactories = new IdentityHashMap<Class<?>, ProxyFactory<?>>();
     private final List<ComponentInjector> componentInjectors = new ArrayList<ComponentInjector>();
@@ -139,10 +138,6 @@ public abstract class AbstractComponentConfiguration {
 
     protected List<InterceptorFactory> getComponentSystemInterceptorFactories() {
         return componentSystemInterceptorFactories;
-    }
-
-    Map<Class<?>, ComponentInvocationHandler> getViews() {
-        return views;
     }
 
     Map<Method, InterceptorFactory> getInterceptorFactoryMap() {

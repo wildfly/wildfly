@@ -88,4 +88,8 @@ public class ComponentView implements ManagedReferenceFactory {
             throw new IllegalAccessError(e.getMessage());
         }
     }
+
+    ProxyFactory<?> getProxyFactory() {
+        return proxyFactory;
+    }
 }

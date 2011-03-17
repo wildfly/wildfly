@@ -83,8 +83,9 @@ public interface Component {
      *
      * @param view the view type
      * @return the client entry point
+     * @throws IllegalArgumentException if the view class is not know
      */
-    ComponentInvocationHandler createClient(Class<?> view);
+    ComponentEntry createClient(Class<?> view) throws IllegalArgumentException;
 
     /**
      * Create a new client interceptor for this component.  The returned interceptor will contain the necessary logic to
