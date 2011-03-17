@@ -22,6 +22,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.Collections;
+import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATION;
@@ -31,10 +32,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALID
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
@@ -57,7 +58,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERY
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
@@ -68,27 +68,41 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_FAST_F
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.fillFrom;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DESCRIBE_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map.Entry;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -120,7 +134,6 @@ import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.JdbcAdapterExtension;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
@@ -135,6 +148,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author John Bailey
  */
 public class DataSourcesExtension implements Extension {
 
@@ -158,8 +172,18 @@ public class DataSourcesExtension implements Extension {
         final ModelNodeRegistration jdbcDrivers = subsystem.registerSubModel(PathElement.pathElement(JDBC_DRIVER), JDBC_DRIVER_DESC);
         jdbcDrivers.registerOperationHandler(ADD, JdbcDriverAdd.INSTANCE, ADD_JDBC_DRIVER_DESC, false);
         jdbcDrivers.registerOperationHandler(REMOVE, JdbcDriverRemove.INSTANCE, REMOVE_JDBC_DRIVER_DESC, false);
-        jdbcDrivers.registerOperationHandler(DESCRIBE, JdbcDriverDescribe.INSTANCE, DESCRIBE_JDBC_DRIVER_DESC, false, OperationEntry.EntryType.PRIVATE);
 
+        final ModelNodeRegistration dataSources = subsystem.registerSubModel(PathElement.pathElement(DATA_SOURCE), DATA_SOURCE_DESC);
+        dataSources.registerOperationHandler(ADD, DataSourceAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
+
+        final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE), XA_DATA_SOURCE_DESC);
+        xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);
+        xaDataSources.registerOperationHandler(REMOVE, XaDataSourceRemove.INSTANCE, REMOVE_XA_DATA_SOURCE_DESC, false);
+        xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
+        xaDataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_XA_DATA_SOURCE_DESC, false);
     }
 
     @Override
@@ -181,8 +205,9 @@ public class DataSourcesExtension implements Extension {
             ModelNode node = context.getModelNode();
 
             writer.writeStartElement(DATASOURCES);
-            if (node.has(DATASOURCES)) {
-                for (ModelNode dataSourceNode : node.get(DATASOURCES).asList()) {
+            if (node.hasDefined(DATA_SOURCE)) {
+                for (Property property : node.get(DATA_SOURCE).asPropertyList()) {
+                    final ModelNode dataSourceNode = property.getValue();
                     boolean isXADataSource = hasAnyOf(dataSourceNode, XA_RESOURCE_TIMEOUT, XADATASOURCECLASS,
                             XADATASOURCEPROPERTIES);
                     writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
@@ -306,7 +331,7 @@ public class DataSourcesExtension implements Extension {
             }
             writer.writeEndElement();
 
-            if(node.hasDefined(JDBC_DRIVER)) {
+            if (node.hasDefined(JDBC_DRIVER)) {
                 writer.writeStartElement(Element.DRIVERS.getLocalName());
                 for (Property driverProperty : node.get(JDBC_DRIVER).asPropertyList()) {
                     writer.writeStartElement(Element.DRIVER.getLocalName());
@@ -433,13 +458,11 @@ public class DataSourcesExtension implements Extension {
                         switch (element) {
                             case SUBSYSTEM: {
 
-                                DsParser parser = new DsParser();
+                                final DsParser parser = new DsParser();
                                 dataSources = parser.parse(reader);
 
                                 // Parse what is left after the datasources element
-
                                 parseForDrivers(reader, address, list);
-
                                 break;
                             }
                         }
@@ -450,172 +473,32 @@ public class DataSourcesExtension implements Extension {
             }
 
             if (dataSources != null) {
-                ModelNode datasourcesNode = subsystem.get(DATASOURCES);
-                for (DataSource ds : dataSources.getDataSource()) {
-                    ModelNode dsModel = new ModelNode();
-                    for (Entry<String, String> entry : ds.getConnectionProperties().entrySet()) {
-                        dsModel.get(CONNECTION_PROPERTIES, entry.getKey()).set(entry.getValue());
-                    }
-                    setIfNotNull(dsModel, CONNECTION_URL, ds.getConnectionUrl());
-                    setIfNotNull(dsModel, DRIVER_CLASS, ds.getDriverClass());
-                    setIfNotNull(dsModel, JNDINAME, ds.getJndiName());
-                    setIfNotNull(dsModel, MODULE, ds.getModule());
-                    setIfNotNull(dsModel, NEW_CONNECTION_SQL, ds.getNewConnectionSql());
-                    setIfNotNull(dsModel, POOLNAME, ds.getPoolName());
-                    setIfNotNull(dsModel, URL_DELIMITER, ds.getUrlDelimiter());
-                    setIfNotNull(dsModel, URL_SELECTOR_STRATEGY_CLASS_NAME, ds.getUrlSelectorStrategyClassName());
-                    setIfNotNull(dsModel, USE_JAVA_CONTEXT, ds.isUseJavaContext());
-                    setIfNotNull(dsModel, ENABLED, ds.isEnabled());
+                for (DataSource dataSource : dataSources.getDataSource()) {
+                    final ModelNode dsAddress = address.clone();
+                    dsAddress.add(DATA_SOURCE, dataSource.getJndiName());
+                    dsAddress.protect();
 
-                    CommonPool pool = ds.getPool();
-                    if (pool != null) {
-                        setIfNotNull(dsModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
-                        setIfNotNull(dsModel, MIN_POOL_SIZE, pool.getMinPoolSize());
-                        setIfNotNull(dsModel, POOL_PREFILL, pool.isPrefill());
-                        setIfNotNull(dsModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
-                    }
-                    DsSecurity security = ds.getSecurity();
-                    if (security != null) {
-                        setIfNotNull(dsModel, USERNAME, security.getUserName());
-                        setIfNotNull(dsModel, PASSWORD, security.getPassword());
-                        setIfNotNull(dsModel, SECURITY_DOMAIN, security.getSecurityDomain());
-                    }
-                    Statement statement = ds.getStatement();
-                    if (statement != null) {
-                        setIfNotNull(dsModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
-                        setIfNotNull(dsModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
-                        if (statement.getTrackStatements() != null) {
-                            setIfNotNull(dsModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
-                        }
-                    }
-                    TimeOut timeout = ds.getTimeOut();
-                    if (timeout != null) {
-                        setIfNotNull(dsModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
-                        setIfNotNull(dsModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
-                        setIfNotNull(dsModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
-                        setIfNotNull(dsModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
-                        setIfNotNull(dsModel, QUERYTIMEOUT, timeout.getQueryTimeout());
-                        setIfNotNull(dsModel, USETRYLOCK, timeout.getUseTryLock());
-                        setIfNotNull(dsModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
-                    }
-                    if (ds.getTransactionIsolation() != null) {
-                        setIfNotNull(dsModel, TRANSACTION_ISOLOATION, ds.getTransactionIsolation().name());
-                    }
+                    final ModelNode operation = new ModelNode();
+                    operation.get(OP_ADDR).set(dsAddress);
+                    operation.get(OP).set(ADD);
 
-                    if (ds.isSpy()) {
-                        setIfNotNull(dsModel, SPY, ds.isSpy());
-                    }
-
-                    Validation validation = ds.getValidation();
-                    if (validation != null) {
-                        setIfNotNull(dsModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-                        setIfNotNull(dsModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
-                                validation.getExceptionSorter());
-                        setIfNotNull(dsModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
-                                validation.getStaleConnectionChecker());
-                        setIfNotNull(dsModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
-                                validation.getValidConnectionChecker());
-                        setIfNotNull(dsModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
-                        setIfNotNull(dsModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
-                        setIfNotNull(dsModel, USE_FAST_FAIL, validation.isUseFastFail());
-                        setIfNotNull(dsModel, VALIDATEONMATCH, validation.isValidateOnMatch());
-                    }
-
-                    datasourcesNode.add(dsModel);
+                    fillFrom(operation, dataSource);
+                    list.add(operation);
                 }
 
-                ModelNode XAdatasourcesNode = subsystem.get(DATASOURCES);
-                for (XaDataSource xads : dataSources.getXaDataSource()) {
-                    ModelNode xadsModel = new ModelNode();
-                    for (Entry<String, String> entry : xads.getXaDataSourceProperty().entrySet()) {
-                        xadsModel.get(XADATASOURCEPROPERTIES, entry.getKey()).set(entry.getValue());
-                    }
-                    setIfNotNull(xadsModel, XADATASOURCECLASS, xads.getXaDataSourceClass());
-                    setIfNotNull(xadsModel, JNDINAME, xads.getJndiName());
-                    setIfNotNull(xadsModel, MODULE, xads.getModule());
-                    setIfNotNull(xadsModel, NEW_CONNECTION_SQL, xads.getNewConnectionSql());
-                    setIfNotNull(xadsModel, POOLNAME, xads.getPoolName());
-                    setIfNotNull(xadsModel, URL_DELIMITER, xads.getUrlDelimiter());
-                    setIfNotNull(xadsModel, URL_SELECTOR_STRATEGY_CLASS_NAME, xads.getUrlSelectorStrategyClassName());
-                    setIfNotNull(xadsModel, USE_JAVA_CONTEXT, xads.isUseJavaContext());
-                    setIfNotNull(xadsModel, ENABLED, xads.isEnabled());
-                    CommonXaPool pool = xads.getXaPool();
-                    if (pool != null) {
-                        setIfNotNull(xadsModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
-                        setIfNotNull(xadsModel, MIN_POOL_SIZE, pool.getMinPoolSize());
-                        setIfNotNull(xadsModel, POOL_PREFILL, pool.isPrefill());
-                        setIfNotNull(xadsModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
-                        setIfNotNull(xadsModel, INTERLIVING, pool.isInterleaving());
-                        setIfNotNull(xadsModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
-                        setIfNotNull(xadsModel, PAD_XID, pool.isPadXid());
-                        setIfNotNull(xadsModel, SAME_RM_OVERRIDE, pool.isSameRmOverride());
-                        setIfNotNull(xadsModel, WRAP_XA_DATASOURCE, pool.isWrapXaDataSource());
-                    }
-                    DsSecurity security = xads.getSecurity();
-                    if (security != null) {
-                        setIfNotNull(xadsModel, USERNAME, security.getUserName());
-                        setIfNotNull(xadsModel, PASSWORD, security.getPassword());
-                        setIfNotNull(xadsModel, SECURITY_DOMAIN, security.getSecurityDomain());
-                    }
-                    Statement statement = xads.getStatement();
-                    if (statement != null) {
-                        setIfNotNull(xadsModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
-                        setIfNotNull(xadsModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
-                        if (statement.getTrackStatements() != null) {
-                            setIfNotNull(xadsModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
-                        }
-                    }
-                    TimeOut timeout = xads.getTimeOut();
-                    if (timeout != null) {
-                        setIfNotNull(xadsModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
-                        setIfNotNull(xadsModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
-                        setIfNotNull(xadsModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
-                        setIfNotNull(xadsModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
-                        setIfNotNull(xadsModel, QUERYTIMEOUT, timeout.getQueryTimeout());
-                        setIfNotNull(xadsModel, USETRYLOCK, timeout.getUseTryLock());
-                        setIfNotNull(xadsModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
-                        setIfNotNull(xadsModel, XA_RESOURCE_TIMEOUT, timeout.getXaResourceTimeout());
-                    }
-                    if (xads.getTransactionIsolation() != null) {
-                        setIfNotNull(xadsModel, TRANSACTION_ISOLOATION, xads.getTransactionIsolation().name());
-                    }
+                for (XaDataSource xaDataSource : dataSources.getXaDataSource()) {
+                    final ModelNode dsAddress = address.clone();
+                    dsAddress.add(XA_DATA_SOURCE, xaDataSource.getJndiName());
+                    dsAddress.protect();
 
-                    if (xads.isSpy()) {
-                        setIfNotNull(xadsModel, SPY, xads.isSpy());
-                    }
+                    final ModelNode operation = new ModelNode();
+                    operation.get(OP_ADDR).set(dsAddress);
+                    operation.get(OP).set(ADD);
 
-                    Validation validation = xads.getValidation();
-                    if (xads.getValidation() != null) {
-                        setIfNotNull(xadsModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-                        setIfNotNull(xadsModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
-                                validation.getExceptionSorter());
-                        setIfNotNull(xadsModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
-                                validation.getStaleConnectionChecker());
-                        setIfNotNull(xadsModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
-                                validation.getValidConnectionChecker());
-                        setIfNotNull(xadsModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
-                        setIfNotNull(xadsModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
-                        setIfNotNull(xadsModel, USE_FAST_FAIL, validation.isUseFastFail());
-                        setIfNotNull(xadsModel, VALIDATEONMATCH, validation.isValidateOnMatch());
-                    }
-
-                    XAdatasourcesNode.add(xadsModel);
+                    fillFrom(operation, xaDataSource);
+                    list.add(operation);
                 }
             }
-        }
-
-        private void setIfNotNull(ModelNode dsModel, String extensionclassname, String extensionProperties,
-                                  JdbcAdapterExtension extension) {
-            if (extension != null) {
-                setIfNotNull(dsModel, extensionclassname, extension.getClassName());
-                if (extension.getConfigPropertiesMap() != null) {
-                    for (Entry<String, String> entry : extension.getConfigPropertiesMap().entrySet()) {
-
-                        dsModel.get(extensionProperties, entry.getKey()).set(entry.getValue());
-                    }
-                }
-            }
-
         }
 
         private void parseForDrivers(XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
@@ -649,10 +532,6 @@ public class DataSourcesExtension implements Extension {
                         switch (element) {
                             case DRIVER: {
 
-                                final ModelNode op = new ModelNode();
-                                list.add(op);
-                                op.get(OP).set(ADD);
-
                                 String moduleName = null;
 
                                 for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -672,15 +551,14 @@ public class DataSourcesExtension implements Extension {
                                     throw missingRequired(reader, Collections.singleton("module"));
                                 }
 
-                                op.get(MODULE).set(moduleName);
-
                                 final ModelNode address = parentAddress.clone();
                                 address.add(JDBC_DRIVER, moduleName);
                                 address.protect();
-                                op.get(OP_ADDR).set(address);
+                                final ModelNode op = Util.getEmptyOperation(ADD, address);
+                                op.get(MODULE).set(moduleName);
+                                list.add(op);
 
                                 requireNoContent(reader);
-
                                 break;
                             }
                             default: {
@@ -695,42 +573,6 @@ public class DataSourcesExtension implements Extension {
                 }
             }
         }
-
-        private void setIfNotNull(ModelNode node, String identifier, Boolean value) {
-            if (value != null) {
-                node.get(identifier).set(value);
-            }
-        }
-
-        private void setIfNotNull(ModelNode node, String identifier, Integer value) {
-            if (value != null) {
-                node.get(identifier).set(value);
-            }
-        }
-
-        private void setIfNotNull(ModelNode node, String identifier, Long value) {
-            if (value != null) {
-                node.get(identifier).set(value);
-            }
-        }
-
-        private void setIfNotNull(ModelNode node, String identifier, String value) {
-            if (value != null) {
-                node.get(identifier).set(value);
-            }
-        }
-
-    }
-
-    private static ModelNode createEmptyAddSubsystemOperation() {
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, DATASOURCES);
-        address.protect();
-
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
-        return subsystem;
     }
 
     private static class DataSourcesSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
@@ -738,29 +580,54 @@ public class DataSourcesExtension implements Extension {
 
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+            final ModelNode result = new ModelNode();
 
-            ModelNode add = createEmptyAddSubsystemOperation();
+            final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
+            final ModelNode subModel = context.getSubModel();
 
-            ModelNode model = context.getSubModel();
+            final ModelNode subsystemAdd = new ModelNode();
+            subsystemAdd.get(OP).set(ADD);
+            subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
 
-            // FIXME remove when equivalent workaround in DataSourcesSubsystemAdd is gone
-            boolean workaround = true;
+            result.add(subsystemAdd);
 
-            if (workaround) {
-                if (model.hasDefined(DATASOURCES)) {
-                    ModelNode datasources = model.get(DATASOURCES);
-                    add.get(DATASOURCES).set(datasources);
+            if (subModel.hasDefined(JDBC_DRIVER)) {
+                for (final Property jdbcDriver : subModel.get(Constants.JDBC_DRIVER).asPropertyList()) {
+                    final ModelNode address = rootAddress.toModelNode();
+                    address.add(Constants.JDBC_DRIVER, jdbcDriver.getName());
+                    final ModelNode addOperation = Util.getEmptyOperation(ADD, address);
+                    addOperation.get(MODULE).set(jdbcDriver.getValue().get(MODULE));
+                    result.add(addOperation);
                 }
-                if(model.hasDefined(JDBC_DRIVER)) {
-                    ModelNode jdbcDrivers = model.get(JDBC_DRIVER);
-                    add.get(JDBC_DRIVER).set(jdbcDrivers);
-                }
-            } else {
-                //TODO Fill in the details
             }
 
-            ModelNode result = new ModelNode();
-            result.add(add);
+            if (subModel.hasDefined(DATA_SOURCE)) {
+                for (final Property dataSourceProp : subModel.get(Constants.DATA_SOURCE).asPropertyList()) {
+                    final ModelNode address = rootAddress.toModelNode();
+                    address.add(Constants.DATA_SOURCE, dataSourceProp.getName());
+                    final ModelNode addOperation = Util.getEmptyOperation(ADD, address);
+                    final ModelNode dataSource = dataSourceProp.getValue();
+
+                    populateAddModel(dataSource, addOperation, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);
+
+                    addOperation.get(MODULE).set(dataSourceProp.getValue().get(MODULE));
+                    result.add(addOperation);
+                }
+            }
+
+            if (subModel.hasDefined(XA_DATA_SOURCE)) {
+                for (final Property dataSourceProp : subModel.get(Constants.XA_DATA_SOURCE).asPropertyList()) {
+                    final ModelNode address = rootAddress.toModelNode();
+                    address.add(Constants.XA_DATA_SOURCE, dataSourceProp.getName());
+                    final ModelNode addOperation = Util.getEmptyOperation(ADD, address);
+                    final ModelNode dataSource = dataSourceProp.getValue();
+
+                    populateAddModel(dataSource, addOperation, XADATASOURCEPROPERTIES, XA_DATASOURCE_ATTRIBUTE);
+
+                    addOperation.get(MODULE).set(dataSourceProp.getValue().get(MODULE));
+                    result.add(addOperation);
+                }
+            }
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
             resultHandler.handleResultComplete();

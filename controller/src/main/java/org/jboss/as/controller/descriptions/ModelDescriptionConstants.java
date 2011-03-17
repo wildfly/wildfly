@@ -57,9 +57,11 @@ public class ModelDescriptionConstants {
     public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
+    public static final String DISABLE = "disable";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_RESULTS = "domain-results";
+    public static final String ENABLE = "enable";
     public static final String ENABLED = "enabled";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";

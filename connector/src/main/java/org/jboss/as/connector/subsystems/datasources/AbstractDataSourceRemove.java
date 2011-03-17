@@ -22,11 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.sql.Driver;
-import java.util.ServiceLoader;
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,62 +35,72 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * Operation handler responsible for removing a jdbc driver.
+ * Abstract operation handler responsible for removing a DataSource.
  *
  * @author John Bailey
  */
-public class JdbcDriverRemove implements ModelRemoveOperationHandler {
-    static final JdbcDriverRemove INSTANCE = new JdbcDriverRemove();
+public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHandler {
+
+    public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
         final ModelNode opAddr = operation.require(OP_ADDR);
+        final String jndiName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
         // Compensating is add
         final ModelNode model = context.getSubModel();
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
-        final String moduleName = model.get(MODULE).asString();
-        compensating.get(MODULE).set(model.get(MODULE));
+
+        if (model.has(CONNECTION_PROPERTIES)) {
+            for (ModelNode property : model.get(CONNECTION_PROPERTIES).asList()) {
+                compensating.get(CONNECTION_PROPERTIES, property.asProperty().getName()).set(property.asString());
+            }
+        }
+        for (final AttributeDefinition attribute : getModelProperties()) {
+            if (model.get(attribute.getName()).isDefined()) {
+                compensating.get(attribute.getName()).set(model.get(attribute.getName()));
+            }
+        }
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(final RuntimeTaskContext context) throws OperationFailedException {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceRegistry registry = context.getServiceRegistry();
 
-                    // Use the module for now.  Would be nice to keep the driver info in the model.
-                    final Module module;
-                    try {
-                        module = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(moduleName));
-                    } catch (ModuleLoadException e) {
-                        throw new OperationFailedException(e, new ModelNode().set("Failed to load module for driver [" + moduleName + "]"));
+                    final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
+                    final ServiceController<?> binderController = registry.getService(binderServiceName);
+                    if (binderController != null) {
+                        binderController.setMode(ServiceController.Mode.REMOVE);
                     }
 
-                    final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
-                    if (serviceLoader != null) for (Driver driver : serviceLoader) {
-                        final int majorVersion = driver.getMajorVersion();
-                        final int minorVersion = driver.getMinorVersion();
-
-                        final ServiceName serviceName = ServiceName.JBOSS.append("jdbc-driver", driver.getClass().getName(), Integer.toString(majorVersion), Integer.toString(minorVersion));
-                        final ServiceController<?> controller = registry.getService(serviceName);
-                        if (controller != null) {
-                            controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                        }
+                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
+                    if (dataSourceController != null) {
+                        dataSourceController.addListener(new ResultHandler.ServiceRemoveListener(resultHandler) {
+                            public void serviceStopped(ServiceController<?> serviceController) {
+                                log.infof("Unbound JDBC Data-source [%s]", jndiName);
+                                super.serviceStopped(serviceController);
+                            }
+                        });
+                    } else {
+                        resultHandler.handleResultComplete();
                     }
-                    resultHandler.handleResultComplete();
                 }
             });
         } else {
             resultHandler.handleResultComplete();
         }
+
         return new BasicOperationResult(compensating);
     }
+
+    protected abstract AttributeDefinition[] getModelProperties();
 }

@@ -149,4 +149,7 @@ class Constants {
 
     static final String VALIDCONNECTIONCHECKER_PROPERTIES = "validconnectionchecker-properties";
 
+    static final String DATA_SOURCE = "data-source";
+
+    static final String XA_DATA_SOURCE = "xa-data-source";
 }

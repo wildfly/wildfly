@@ -49,6 +49,8 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 
 /**
+ * Operation handler responsible for adding a jdbc driver.
+ *
  * @author John Bailey
  */
 public class JdbcDriverAdd implements ModelAddOperationHandler {

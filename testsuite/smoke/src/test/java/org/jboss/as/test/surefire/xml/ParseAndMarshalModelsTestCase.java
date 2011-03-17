@@ -127,9 +127,8 @@ public class ParseAndMarshalModelsTestCase {
     // <timeout></timeout> element. So reparse doesn't add the element.
     // Solution is to remove the empty element.
     private void fixupDs(ModelNode node) {
-
-        for (ModelNode ds : node.get("subsystem", "datasources", "datasources").asList()) {
-            ds.remove("set-tx-query-timeout");
+        if(node.get("subsystem", "datasources", "data-source", "java:/H2DS").isDefined()) {
+            node.get("subsystem", "datasources", "data-source", "java:/H2DS").remove("set-tx-query-timeout");
         }
     }
 
@@ -176,7 +175,7 @@ public class ParseAndMarshalModelsTestCase {
 
             for (String key : keys1) {
                 final ModelNode child1 = node1.get(key);
-                Assert.assertTrue(node1 + "\n" + node2, node2.has(key));
+                Assert.assertTrue("Missing: " + key + "\n" +node1 + "\n" + node2, node2.has(key));
                 final ModelNode child2 = node2.get(key);
                 if (child1.isDefined()) {
                     Assert.assertTrue(child1.toString(), child2.isDefined());
