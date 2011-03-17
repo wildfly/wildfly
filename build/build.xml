@@ -218,7 +218,7 @@
             <maven-resource group="jline" artifact="jline"/>
         </module-def>
 
-        <module-def name="junit.junit">
+        <module-def name="org.junit">
             <maven-resource group="junit" artifact="junit"/>
         </module-def>
 

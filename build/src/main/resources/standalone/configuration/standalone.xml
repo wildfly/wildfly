@@ -201,7 +201,7 @@
                 org.jboss.as.osgi,
                 org.jboss.shrinkwrap.api,
                 javax.inject.api,
-                junit.junit
+                org.junit
                 </property>
                 <property name="org.osgi.framework.system.packages.extra">
                 javax.transaction;version=1.1,

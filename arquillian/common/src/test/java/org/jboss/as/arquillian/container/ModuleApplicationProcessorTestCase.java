@@ -94,7 +94,7 @@ public class ModuleApplicationProcessorTestCase {
         Assert.assertTrue(deps.contains("org.jboss.msc"));
         Assert.assertTrue(deps.contains("org.jboss.shrinkwrap.api"));
         Assert.assertTrue(deps.contains("org.jboss.shrinkwrap.impl"));
-        Assert.assertTrue(deps.contains("junit.junit"));
+        Assert.assertTrue(deps.contains("org.junit"));
 
     }
 }

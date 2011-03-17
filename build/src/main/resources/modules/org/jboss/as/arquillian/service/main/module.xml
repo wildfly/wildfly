@@ -31,7 +31,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="junit.junit"/>
+        <module name="org.junit"/>
         <module name="org.jboss.arquillian.api"/>
         <module name="org.jboss.arquillian.junit"/>
         <module name="org.jboss.arquillian.spi"/>

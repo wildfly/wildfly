@@ -35,6 +35,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.shrinkwrap.api"/>
         <module name="org.jboss.shrinkwrap.impl"/>
-        <module name="junit.junit"/>
+        <module name="org.junit"/>
     </dependencies>
 </module>

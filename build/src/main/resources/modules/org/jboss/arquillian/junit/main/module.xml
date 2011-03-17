@@ -30,6 +30,6 @@
     <dependencies>
         <module name="org.jboss.arquillian.impl"/>
         <module name="org.jboss.arquillian.spi"/>
-        <module name="junit.junit"/>
+        <module name="org.junit"/>
     </dependencies>
 </module>

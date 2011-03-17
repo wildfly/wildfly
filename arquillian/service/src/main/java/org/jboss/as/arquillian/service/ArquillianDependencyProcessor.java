@@ -36,7 +36,7 @@ public class ArquillianDependencyProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier ARQUILLIAN_JUNIT_ID = ModuleIdentifier.create("org.jboss.arquillian.junit");
     private static ModuleIdentifier SHRINKWRAP_ID = ModuleIdentifier.create("org.jboss.shrinkwrap.api");
-    private static ModuleIdentifier JUNIT_ID = ModuleIdentifier.create("junit.junit");
+    private static ModuleIdentifier JUNIT_ID = ModuleIdentifier.create("org.junit");
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

@@ -52,7 +52,7 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
         defaultDependencies.add("org.jboss.msc");
         defaultDependencies.add("org.jboss.shrinkwrap.api");
         defaultDependencies.add("org.jboss.shrinkwrap.impl");
-        defaultDependencies.add("junit.junit");
+        defaultDependencies.add("org.junit");
     }
     static final List<String> jsfDependencies = new ArrayList<String>();
     static {
