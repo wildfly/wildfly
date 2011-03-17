@@ -598,7 +598,7 @@ public class JBossContextConfig extends ContextConfig {
 
         String relativeLocation = location;
         String jarPath = null;
-        if (relativeLocation.startsWith("/WEB-INF/lib/")) {
+        if (relativeLocation != null && relativeLocation.startsWith("/WEB-INF/lib/")) {
             int pos = relativeLocation.indexOf('/', "/WEB-INF/lib/".length());
             if (pos > 0) {
                 jarPath = relativeLocation.substring(pos);
