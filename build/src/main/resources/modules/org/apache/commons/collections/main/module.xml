@@ -22,11 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="commons-collections.commons-collections">
-  <resources>
-    <!-- Insert resources here -->
-  </resources>
-  
-  <dependencies>
-  </dependencies>
+<module xmlns="urn:jboss:module:1.0" name="org.apache.commons.collections">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+    </dependencies>
 </module>

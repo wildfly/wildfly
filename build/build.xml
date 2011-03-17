@@ -283,20 +283,20 @@
             <maven-resource group="org.apache.felix" artifact="org.apache.felix.configadmin"/>
         </module-def>
 
-    	<module-def name="org.apache.log4j">
+        <module-def name="org.apache.log4j">
             <maven-resource group="log4j" artifact="log4j"/>
         </module-def>
 
         <module-def name="org.apache.commons.logging"/>
 
+        <module-def name="org.apache.commons.collections">
+            <maven-resource group="commons-collections" artifact="commons-collections" />
+        </module-def>
+
         <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
-        </module-def>
-
-        <module-def name="commons-collections.commons-collections">
-            <maven-resource group="commons-collections" artifact="commons-collections" />
         </module-def>
 
         <module-def name="antlr.antlr">
