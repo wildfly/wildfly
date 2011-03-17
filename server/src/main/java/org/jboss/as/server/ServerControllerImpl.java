@@ -350,7 +350,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         @Override
         public void handleFailed(final ModelNode failureDescription) {
 
-            if (rollbackOperation == null) {
+            if (rollbackOperation == null || !rollbackOperation.isDefined()) {
                 delegate.handleFailed(failureDescription);
                 return;
             }
