@@ -48,11 +48,23 @@ public class StateParser {
             return;
         }
 
+        int i = 0;
+        while(i < str.length()) {
+            if(!Character.isWhitespace(str.charAt(i))) {
+                break;
+            }
+            ++i;
+        }
+
+        if(i == str.length()) {
+            return;
+        }
+
         ParsingContextImpl ctx = new ParsingContextImpl();
         ctx.initialState = initialState;
         ctx.callbackHandler = callbackHandler;
 
-        for (int i = 0; i < str.length(); ++i) {
+        while (i < str.length()) {
             char ch = str.charAt(i);
 
             ctx.ch = ch;
@@ -60,6 +72,7 @@ public class StateParser {
 
             CharacterHandler handler = ctx.getState().getHandler(ch);
             handler.handle(ctx);
+            ++i;
         }
 
         ParsingState state = ctx.getState();

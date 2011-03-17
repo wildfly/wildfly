@@ -39,5 +39,6 @@ public class OperationRequestState extends DefaultParsingState {
         super(ID);
         setDefaultHandler(new EnterStateCharacterHandler(nodeState));
         enterState(':', opState);
+        setIgnoreWhitespaces(true);
     }
 }

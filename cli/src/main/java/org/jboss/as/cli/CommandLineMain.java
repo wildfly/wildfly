@@ -88,7 +88,7 @@ public class CommandLineMain {
                 " 'help' for the list of supported commands.");
 
         while (!cmdCtx.terminate) {
-            String line = console.readLine("[" + cmdCtx.getPrefixFormatter().format(cmdCtx.getPrefix()) + "] ");
+            String line = console.readLine("[" + cmdCtx.getPrefixFormatter().format(cmdCtx.getPrefix()) + "] ").trim();
 
             if (line.isEmpty()) {
                 // cmdCtx.log("Type /help for the list of supported commands.");
@@ -96,14 +96,7 @@ public class CommandLineMain {
             }
 
             if(isOperation(line)) {
-                final String opReq;
-                if(line.startsWith("./")) {
-                    // TODO this has to be added to the operation request parser
-                    opReq = line.substring(2);
-                } else {
-                    opReq = line;
-                }
-                cmdCtx.cmdArgs = opReq;
+                cmdCtx.cmdArgs = line;
                 operationHandler.handle(cmdCtx);
 
             } else {

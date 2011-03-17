@@ -30,6 +30,7 @@ public class DefaultParsingState extends BaseParsingState {
 
     protected final CharacterHandlerMap enterStateHandlers;
     private final CharacterHandlerMap handlers;
+    private boolean ignoreWhitespaces;
 
     private CharacterHandler defaultHandler = GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER;
 
@@ -51,6 +52,14 @@ public class DefaultParsingState extends BaseParsingState {
 
         this.handlers = new DefaultCharacterHandlerMap();
         this.enterStateHandlers = enterStateHandlers;
+    }
+
+    public void setIgnoreWhitespaces(boolean ignoreWhitespaces) {
+        this.ignoreWhitespaces = ignoreWhitespaces;
+    }
+
+    public boolean isIgnoreWhitespaces() {
+        return this.ignoreWhitespaces;
     }
 
     public void setDefaultHandler(CharacterHandler handler) {
@@ -77,6 +86,10 @@ public class DefaultParsingState extends BaseParsingState {
      */
     @Override
     public CharacterHandler getHandler(char ch) {
+
+        if(ignoreWhitespaces && Character.isWhitespace(ch)) {
+            return GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER;
+        }
 
         CharacterHandler handler = enterStateHandlers.getHandler(ch);
         if(handler != null) {

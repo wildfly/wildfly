@@ -190,6 +190,41 @@ public class OperationParsingTestCase extends TestCase {
         assertEquals(propValue, handler.getPropertyValue(propName));
     }
 
+    @Test
+    public void testOperationWithArgumentsAndWhitespaces() throws Exception {
+        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+
+        parse("   / subsystem  =  logging  :  read-resource  ( recursive = true , another = \"   \" )   ", handler);
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertTrue(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnArgumentListStart());
+        assertFalse(handler.endsOnArgumentSeparator());
+        assertFalse(handler.endsOnArgumentValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.isRequestComplete());
+
+        assertEquals("read-resource", handler.getOperationName());
+
+        OperationRequestAddress address = handler.getAddress();
+        Iterator<Node> i = address.iterator();
+        assertTrue(i.hasNext());
+        Node node = i.next();
+        assertEquals("subsystem", node.getType());
+        assertEquals("logging", node.getName());
+        assertFalse(i.hasNext());
+
+        Set<String> args = handler.getPropertyNames();
+        assertEquals(2, args.size());
+        assertTrue(args.contains("recursive"));
+        assertEquals("true", handler.getPropertyValue("recursive"));
+        assertTrue(args.contains("another"));
+        assertEquals("\"   \"", handler.getPropertyValue("another"));
+    }
+
     protected void parse(String opReq, DefaultOperationCallbackHandler handler)
             throws OperationFormatException {
         parser.parse(opReq, handler);

@@ -50,5 +50,6 @@ public class PropertyListState extends DefaultParsingState {
                 }
             }});
         //this.setEndContentHandler(new ErrorCharacterHandler("')' is missing"));
+        setIgnoreWhitespaces(true);
     }
 }

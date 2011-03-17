@@ -50,21 +50,29 @@ public class OperationRequestCompleter implements Completor {
     @Override
     public int complete(String buffer, int cursor, List candidates) {
 
-        if(buffer.isEmpty()) {
+        int firstCharIndex = 0;
+        while(firstCharIndex < buffer.length()) {
+            if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
+                break;
+            }
+            ++firstCharIndex;
+        }
+
+        if(firstCharIndex == buffer.length()) {
             return -1;
         }
 
-        // if it ends on .. there the completion shouldn't happen
+        if(!(buffer.startsWith("./", firstCharIndex) ||
+                buffer.charAt(firstCharIndex) == ':' ||
+                buffer.charAt(firstCharIndex) == '/' ||
+                buffer.startsWith("..", firstCharIndex))) {
+            return -1;
+        }
+
+        // if it ends on .. then the completion shouldn't happen
         // since the node is selected and it doesn't end on a separator
         if(buffer.endsWith("..")) {
             return 0;
-        }
-
-        if(!(buffer.startsWith("./") ||
-                buffer.charAt(0) == ':' ||
-                buffer.charAt(0) == '/' ||
-                buffer.startsWith(".."))) {
-            return -1;
         }
 
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(new DefaultOperationRequestAddress(ctx.getPrefix()));

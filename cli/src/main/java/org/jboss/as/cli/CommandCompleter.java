@@ -50,29 +50,38 @@ public class CommandCompleter implements Completor {
     @Override
     public int complete(String buffer, int cursor, List candidates) {
 
-        if(buffer.isEmpty()) {
+        int firstCharIndex = 0;
+        while(firstCharIndex < buffer.length()) {
+            if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
+                break;
+            }
+            ++firstCharIndex;
+        }
+
+        if(firstCharIndex == buffer.length()) {
             candidates.addAll(commands);
             return 0;
         }
 
-        char firstChar = buffer.charAt(0);
+        char firstChar = buffer.charAt(firstCharIndex);
         if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
             return -1;
         }
 
         // TODO a hack to enable tab-completion for cd/cn
-        if(buffer.startsWith("cd ") || buffer.startsWith("cn ")) {
-            String opBuffer = buffer.substring(3);
+        if(buffer.startsWith("cd ", firstCharIndex) || buffer.startsWith("cn ", firstCharIndex)) {
+            String opBuffer = buffer.substring(firstCharIndex + 3);
             int result = opCompleter.complete(opBuffer, cursor, candidates);
             if(result >= 0) {
-                return result + 3;
+                return firstCharIndex + 3 + result;
             } else {
                 return result;
             }
         }
 
+        String cmdChunk = buffer.substring(firstCharIndex);
         for (String command : commands) {
-            if (command.startsWith(buffer))
+            if (command.startsWith(cmdChunk))
                 candidates.add(command);
         }
 

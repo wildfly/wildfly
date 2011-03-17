@@ -45,5 +45,6 @@ public class OperationState extends DefaultParsingState {
                     throws OperationFormatException {
                 ctx.enterState(opNameState);
             }});
+        setIgnoreWhitespaces(true);
     }
 }

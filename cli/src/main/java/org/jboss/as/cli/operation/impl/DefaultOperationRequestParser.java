@@ -132,7 +132,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                     propNameValueSep = -1;
                     propValueContent = false;
                 } else if(stateId.equals(OperationNameState.ID)) {
-                    handler.operationName(buffer.toString());
+                    handler.operationName(buffer.toString().trim());
                 } else if(stateId.equals(NodeState.ID)) {
                     char ch = ctx.getCharacter();
                     if(buffer.length() == 0) {
@@ -142,10 +142,10 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                         }
                     } else {
                         if (ch == '=') {
-                            handler.nodeType(buffer.toString());
+                            handler.nodeType(buffer.toString().trim());
                             handler.nodeTypeNameSeparator(ctx.getLocation());
                         } else if (ch == ':') {
-                            handler.nodeName(buffer.toString());
+                            handler.nodeName(buffer.toString().trim());
                         } else {
                             final String value = buffer.toString();
                             if (".".equals(value)) {
