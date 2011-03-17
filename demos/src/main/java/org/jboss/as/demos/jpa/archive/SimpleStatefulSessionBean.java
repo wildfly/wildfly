@@ -22,10 +22,13 @@
 package org.jboss.as.demos.jpa.archive;
 
 import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceProperty;
+import javax.persistence.TransactionRequiredException;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -35,8 +38,8 @@ import javax.persistence.PersistenceProperty;
 public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
     private String state;
 
-    @PersistenceContext(type= PersistenceContextType.TRANSACTION,unitName = "H2DS",
-        properties=@PersistenceProperty(name="hibernate.hbm2ddl.auto", value="create-drop"))
+    @PersistenceContext(type = PersistenceContextType.TRANSACTION, unitName = "H2DS",
+        properties = @PersistenceProperty(name = "hibernate.hbm2ddl.auto", value = "create-drop"))
     private EntityManager entityManager;
 
     public String echo(String msg) {
@@ -51,8 +54,33 @@ public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
         entity = entityManager.find(SimpleEntity.class, new Integer(1));
         System.out.println("read back Entity for " + entity.getName());
 
-        return "Echo " + msg + ":" + state + " entitymanager find should return null, it returned = " +entity;
+        return "Echo " + msg + ":" + state + " entitymanager find should return 'Douglas Adams', it returned = " + entity;
     }
+
+    @TransactionAttribute(TransactionAttributeType.NEVER)
+    public String echoNoTx(String msg) {
+        System.out.println("Called echo on " + this);
+        System.out.println("call the entity manager");
+
+        SimpleEntity entity = new SimpleEntity();
+        entity.setId(2);
+        entity.setName("Douglas Adams");
+        Throwable throwable = null;
+        try {
+            entityManager.persist(entity);      // should throw TransactionRequiredException
+        } catch (Exception expected) {
+            throwable = expected;
+        }
+
+        while (throwable != null && !(throwable instanceof TransactionRequiredException))
+            throwable = throwable.getCause();
+        if (throwable != null)
+            return "echoNoTx succeeded, got expected TransactionRequiredException exception while trying to persist" +
+                " without a transaction active";
+        else
+            return "echoNoTx failed, attempting to persist an entity should of thrown a TransactionRequiredException but didn't";
+    }
+
 
     public void setState(String s) {
         System.out.println("Called setState on " + this);

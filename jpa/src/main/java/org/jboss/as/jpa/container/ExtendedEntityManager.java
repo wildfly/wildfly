@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.container;
 
+import org.jboss.as.jpa.transaction.TransactionUtil;
+
 import javax.persistence.EntityManager;
 import java.io.Serializable;
 import java.util.Map;
@@ -66,6 +68,16 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     @Override
     protected EntityManager getEntityManager() {
         return underlyingEntityManager;
+    }
+
+    @Override
+    protected boolean isExtendedPersistenceContext() {
+        return true;
+    }
+
+    @Override
+    protected boolean isInTx() {
+        return TransactionUtil.getInstance().isInTx();
     }
 
     /**

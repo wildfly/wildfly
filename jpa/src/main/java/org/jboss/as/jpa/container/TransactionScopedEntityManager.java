@@ -26,6 +26,8 @@ import org.jboss.as.jpa.transaction.TransactionUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.LockModeType;
+import javax.persistence.TransactionRequiredException;
 import java.util.Map;
 
 /**
@@ -41,7 +43,9 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
 
     private String puScopedName;          // Scoped name of the persistent unit
     private Map properties;
-    EntityManagerFactory emf;
+    private EntityManagerFactory emf;
+    private boolean isExtendedPersistenceContext;
+    private boolean isInTx;
 
     public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
         this.puScopedName = puScopedName;
@@ -56,8 +60,12 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
 
         // try to get EM from XPC and return it if puScopedName is found
         // TODO:  look in XPC for specified puScopedName
+        // set isExtendedPersistenceContext if XPC is used
 
-        if (TransactionUtil.getInstance().isInTx()) {
+        isExtendedPersistenceContext = false;  // not using a XPC
+
+        isInTx = TransactionUtil.getInstance().isInTx();
+        if (isInTx) {
             result = TransactionUtil.getInstance().getTransactionScopedEntityManager(emf, puScopedName, properties);
         }
         else {
@@ -65,6 +73,16 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
         }
         setMetadata(puScopedName,false);    // save metadata if not already set
         return result;
+    }
+
+    @Override
+    protected boolean isExtendedPersistenceContext() {
+        return isExtendedPersistenceContext;
+    }
+
+    @Override
+    protected boolean isInTx() {
+        return isInTx;
     }
 
     /**
@@ -78,16 +96,4 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
 
     }
 
-
-    protected void transactionEnded() {
-        close_internal();
-    }
-
-    protected void invocationEnded() {
-        close_internal();
-    }
-
-    // TODO:  delete this method
-    private void close_internal() {
-    }
 }

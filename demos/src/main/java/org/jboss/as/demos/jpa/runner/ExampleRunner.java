@@ -47,6 +47,10 @@ public class ExampleRunner {
     private static void doStatefulMagic(MBeanServerConnection server) throws Exception {
         String msg = (String) server.invoke(new ObjectName("jboss:name=jpa-test,type=service"), "exec", new Object[]{ExerciseStateful.class}, new String[]{Class.class.getName()});
         System.out.println(msg);
+
+        msg = (String) server.invoke(new ObjectName("jboss:name=jpa-test,type=service"), "exec", new Object[]{ExerciseStateful.class}, new String[]{Class.class.getName()});
+        System.out.println(msg);
+
     }
 
     public static void main(String[] args) throws Exception {
@@ -75,22 +79,8 @@ public class ExampleRunner {
     }
 
     private static void showInfo() {
-        System.out.println("Thanks for running the JPA demo and helping to test the bits out on your system.  Here are a few brief preparation steps for" +
-            " running the demo, in case you need them.  By the way, its normal to see a 'RejectedExecutionException' at the end of the demo but other errors" +
+        System.out.println("Thanks for running the JPA demo and helping to test the bits out on your system.  By the way, "+
+            "its normal to see a 'RejectedExecutionException' at the end of the demo but other errors" +
             " probably mean a problem occurred.");
-
-        System.out.println(
-            "1.  Enable the \"java:/H2DS\" datasource in standalone.xml (find \"java:/H2DS\" and change enabled=\"true\") \n" +
-                "2.  Disable osgi in standalone.xml (so that JDBC datasources works).  " +
-                    "Find \"<subsystem xmlns=\"urn:jboss:domain:osgi\" and delete up to the matching \"</subsystem>\" \n" +
-                "3.  cp as7/build/target/jboss-7.0.0.Alpha2/modules/com/h2database/h2/main/h2-1.2.144.jar as7/build/target/jboss-7.0.0.Alpha2/standalone/deployments/ \n" +
-                "4.  touch  as7/build/target/jboss-7.0.0.Alpha2/standalone/deployments/h2-1.2.144.jar.dodeploy \n" +
-                "5.  cd as7/build/target/jboss-7.0.0.Alpha2/ \n" +
-                "6.  ./startup.sh \n" +
-                "7.  cd as7/demos \n" +
-                "8.  mvn package -Dexample=jpa" +
-                "\n\n"
-        );
-
     }
 }

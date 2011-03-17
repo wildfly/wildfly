@@ -36,6 +36,13 @@ public class ExerciseStateful implements Callable<String> {
         String name = "java:global/jpa-example/SimpleStatefulSessionBean!" + SimpleStatefulSessionLocal.class.getName();
         SimpleStatefulSessionLocal bean = (SimpleStatefulSessionLocal) ctx.lookup(name);
         bean.setState("42");
-        return bean.echo("the answer");
+
+        return "Invoke echo under transaction "+
+            bean.echo("answer is")
+            //+
+            //".  Invoke echoNoTx without a transaction " +
+            //bean.echoNoTx("demo")
+            ;
+        // TODO:  uncomment call to echoNoTx when exception doesn't cause system failure (at least that is how it looks now).
     }
 }

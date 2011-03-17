@@ -28,6 +28,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
+import javax.persistence.TransactionRequiredException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -49,6 +50,19 @@ public abstract class AbstractEntityManager implements EntityManager {
     protected abstract EntityManager getEntityManager();
 
     /**
+     * @return true if an extended persistence context is in use
+     *
+     * Precondition: getEntityManager() must be called previous to calling isExtendedPersistenceContext
+     */
+    protected abstract boolean isExtendedPersistenceContext();
+
+    /**
+     * @return true if a JTA transaction is active
+     *
+     * Precondition: getEntityManager() must be called previous to calling isInTx
+     */
+    protected abstract boolean isInTx();
+    /**
      * save metadata if not already set.
      * @param puScopedName
      * @param isExtendedPersistenceContext
@@ -63,6 +77,7 @@ public abstract class AbstractEntityManager implements EntityManager {
             addExtension(EntityManagerMetadata.class, metadata);
         }
     }
+
 
     /**
      * Add an extension for unwrap
@@ -131,18 +146,6 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
         getEntityManager().lock(entity, lockMode, properties);
-    }
-
-    public void refresh(Object entity, Map<String, Object> properties) {
-        getEntityManager().refresh(entity, properties);
-    }
-
-    public void refresh(Object entity, LockModeType lockMode) {
-        getEntityManager().refresh(entity, lockMode);
-    }
-
-    public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-        getEntityManager().refresh(entity, lockMode, properties);
     }
 
     public void setProperty(String propertyName, Object value) {
@@ -219,22 +222,58 @@ public abstract class AbstractEntityManager implements EntityManager {
     }
 
     public <T> T merge(T entity) {
-        return getEntityManager().merge(entity);
+        EntityManager em = getEntityManager();
+        transactionIsRequired();
+        return em.merge(entity);
     }
 
     public void persist(Object entity) {
-        getEntityManager().persist(entity);
+        EntityManager em = getEntityManager();
+        transactionIsRequired();
+        em.persist(entity);
     }
 
     public void refresh(Object entity) {
-        getEntityManager().refresh(entity);
+        EntityManager em = getEntityManager();
+        transactionIsRequired();
+        em.refresh(entity);
+    }
+
+    public void refresh(Object entity, Map<String, Object> properties) {
+        EntityManager em = getEntityManager();
+        transactionIsRequired();
+        em.refresh(entity, properties);
+    }
+
+    public void refresh(Object entity, LockModeType lockMode) {
+        EntityManager em = getEntityManager();
+        transactionIsRequired();
+        em.refresh(entity, lockMode);
+    }
+
+    public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
+        EntityManager em = getEntityManager();
+        transactionIsRequired();
+        em.refresh(entity, lockMode, properties);
     }
 
     public void remove(Object entity) {
-        getEntityManager().remove(entity);
+        EntityManager em = getEntityManager();
+        transactionIsRequired();
+        em.remove(entity);
     }
 
     public void setFlushMode(FlushModeType flushMode) {
         getEntityManager().setFlushMode(flushMode);
     }
+
+    // JPA 7.9.1 f invoked without a JTA transaction and a transaction scoped persistence context is used,
+    // will throw TransactionRequiredException for any calls to entity manager remove/merge/persist/refresh.
+    private void transactionIsRequired() {
+        if ( ! this.isExtendedPersistenceContext() && ! this.isInTx()) {
+            throw new TransactionRequiredException(
+                "Transaction is required to perform this operation (either use a transaction or extended persistence context)");
+        }
+    }
+
 }

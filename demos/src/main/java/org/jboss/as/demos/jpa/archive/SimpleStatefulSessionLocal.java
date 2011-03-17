@@ -26,6 +26,7 @@ package org.jboss.as.demos.jpa.archive;
  */
 public interface SimpleStatefulSessionLocal {
     String echo(String msg);
+    String echoNoTx(String msg);
     void setState(String s);
     String getState();
 }
