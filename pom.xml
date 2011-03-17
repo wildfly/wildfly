@@ -197,12 +197,12 @@
         <module>mc</module>
         <module>messaging</module>
         <module>naming</module>
-        <module>security</module>
         <module>osgi</module>
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
         <module>sar</module>
+        <module>security</module>
         <module>server</module>
         <module>testsuite</module>
         <module>threads</module>
