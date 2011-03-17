@@ -219,7 +219,7 @@ public abstract class AbstractComponent implements Component {
         for (ComponentInjector injector : componentInjectors) {
             injectionHandles.add(injector.inject(instance));
         }
-        return Collections.<Interceptor>singletonList(new DisinjectionInterceptor(injectionHandles));
+        return Collections.<Interceptor>singletonList(new UninjectionInterceptor(injectionHandles));
     }
 
     /**
@@ -417,11 +417,11 @@ public abstract class AbstractComponent implements Component {
     /**
      * Interceptor that cleans up injected resources
      */
-    private static class DisinjectionInterceptor implements Interceptor {
+    private static class UninjectionInterceptor implements Interceptor {
 
         private final List<ComponentInjector.InjectionHandle> injections;
 
-        public DisinjectionInterceptor(List<ComponentInjector.InjectionHandle> injections) {
+        public UninjectionInterceptor(List<ComponentInjector.InjectionHandle> injections) {
             this.injections = injections;
         }
 
