@@ -21,12 +21,9 @@
  */
 package org.jboss.as.cli.handlers;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
  * Connect handler.
@@ -69,15 +66,7 @@ public class ConnectHandler implements CommandHandler {
         }
 
         if(port >= 0) {
-            try {
-                ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName(host), port);
-                ctx.setModelControllerClient(client);
-                ctx.log("Connected to " + host + ":" + port);
-            } catch (UnknownHostException e) {
-                ctx.log("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
-            }
+            ctx.connectController(host, port);
         }
-
     }
-
 }

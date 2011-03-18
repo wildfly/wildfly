@@ -22,6 +22,7 @@
 package org.jboss.as.cli;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,8 +76,7 @@ public class CommandLineMain {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                StreamUtils.safeClose(cmdCtx.client);
-                cmdCtx.log("closed");
+                cmdCtx.disconnectController();
             }
         }));
         OperationRequestCompleter opCompleter = new OperationRequestCompleter(cmdCtx);
@@ -136,6 +136,10 @@ public class CommandLineMain {
         private String cmdArgs;
         /** the controller client */
         private ModelControllerClient client;
+        /** the host of the controller */
+        private String controllerHost;
+        /** the port of the controller */
+        private int controllerPort = -1;
         /** various key/value pairs */
         private Map<String, Object> map = new HashMap<String, Object>();
         /** operation request parser */
@@ -188,11 +192,6 @@ public class CommandLineMain {
         }
 
         @Override
-        public void setModelControllerClient(ModelControllerClient client) {
-            this.client = client;
-        }
-
-        @Override
         public OperationRequestParser getOperationRequestParser() {
             return parser;
         }
@@ -211,6 +210,53 @@ public class CommandLineMain {
         @Override
         public OperationCandidatesProvider getOperationCandidatesProvider() {
             return operationCandidatesProvider;
+        }
+
+        @Override
+        public void connectController(String host, int port) {
+            if(host == null) {
+                log("Can't connect to the controller: the host hasn't been specified.");
+                return;
+            }
+
+            if(port < 0) {
+                log("Can't connect to the controller: invalid port value '" + port + '\'');
+                return;
+            }
+
+            try {
+                ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port);
+                if(this.client != null) {
+                    disconnectController();
+                }
+                log("Connected to " + host + ":" + port);
+                client = newClient;
+                this.controllerHost = host;
+                this.controllerPort = port;
+            } catch (UnknownHostException e) {
+                log("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+            }
+        }
+
+        @Override
+        public void disconnectController() {
+            if(this.client != null) {
+                StreamUtils.safeClose(client);
+                log("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
+                client = null;
+                this.controllerHost = null;
+                this.controllerPort = -1;
+            }
+        }
+
+        @Override
+        public String getControllerHost() {
+            return controllerHost;
+        }
+
+        @Override
+        public int getControllerPort() {
+            return controllerPort;
         }
 
     }

@@ -74,10 +74,34 @@ public interface CommandContext {
     ModelControllerClient getModelControllerClient();
 
     /**
-     * Sets the model controller client to use for operation requests.
-     * @param client the model controller client to use for operation requests.
+     * Connects with the controller client using the host and the port.
+     *
+     * @param host the host to connect with
+     * @param port the port to connect on
      */
-    void setModelControllerClient(ModelControllerClient client);
+    void connectController(String host, int port);
+
+    /**
+     * Closes the previously established connection with the controller client.
+     * If the connection hasn't been established, the method silently returns.
+     */
+    void disconnectController();
+
+    /**
+     * Returns the host the controller client is connected to or
+     * null if the connection hasn't been established yet.
+     *
+     * @return  the host the controller client is connected to or
+     * null if the connection hasn't been established yet.
+     */
+    String getControllerHost();
+
+    /**
+     * Returns the port the controller client is connected to.
+     *
+     * @return  the port the controller client is connected to.
+     */
+    int getControllerPort();
 
     /**
      * Returns the current operation request parser.
