@@ -117,30 +117,6 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
     }
 
     private ApplicationPolicy createApplicationPolicy(String securityDomain, ModelNode operation) {
-
-        // BES 2011/03/07. This "unexpected keys" check should be avoided, particularly since
-        // the method doesn't do anything with unknown keys. There are two problems with the check:
-        // 1) The operation may include children useful to the controller but not this hander;
-        // for example ROLLBACNK_ON_RUNTIME_FAILURE
-        // 2) It limits forward compatibility; e.g. a new, optional, param could be added in a later minor
-        // release and get pushed around a domain. Servers in the domain running an earlier version will see
-        // the param. They can just ignore it.
-//        Set<String> keys = new HashSet<String>(operation.keys());
-//        keys.remove(OP);
-//        keys.remove(OP_ADDR);
-//        keys.remove(NAME);
-//        keys.remove(Element.ACL.getLocalName());
-//        keys.remove(Element.AUDIT.getLocalName());
-//        keys.remove(Element.AUTHENTICATION.getLocalName());
-//        keys.remove(Element.AUTHENTICATION_JASPI.getLocalName());
-//        keys.remove(Element.AUTHORIZATION.getLocalName());
-//        keys.remove(Element.IDENTITY_TRUST.getLocalName());
-//        keys.remove(Element.MAPPING.getLocalName());
-//
-//        if (!keys.isEmpty()) {
-//            throw new UnsupportedOperationException("Unsupported elements for a security domain");
-//        }
-
         ApplicationPolicy applicationPolicy = new ApplicationPolicy(securityDomain);
         ModelNode node = null;
         List<ModelNode> modules;
@@ -328,8 +304,7 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
     }
 
     private synchronized ApplicationPolicyRegistration getConfiguration(ServiceRegistry serviceRegistry) {
-        ServiceController<?> controller = serviceRegistry.getRequiredService(
-                JaasConfigurationService.SERVICE_NAME);
+        ServiceController<?> controller = serviceRegistry.getRequiredService(JaasConfigurationService.SERVICE_NAME);
         return (ApplicationPolicyRegistration) controller.getValue();
     }
 
