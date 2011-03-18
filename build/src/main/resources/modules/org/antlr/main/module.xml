@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="antlr.antlr">
+<module xmlns="urn:jboss:module:1.0" name="org.antlr">
   <resources>
     <!-- Insert resources here -->
   </resources>

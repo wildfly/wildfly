@@ -30,7 +30,6 @@
 
     <dependencies>
         <!--  TODO:  we have some dependencies inline here that are also standalone -->
-        <module name="antlr.antlr"/>
         <module name="asm.asm"/>
         <module name="cglib.cglib"/>
         <module name="dom4j.dom4j"/>
@@ -40,6 +39,7 @@
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
+        <module name="org.antlr"/>
         <module name="org.apache.commons.collections"/>
         <module name="org.hibernate"/>
         <module name="org.hibernate.validator"/>

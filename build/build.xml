@@ -69,7 +69,7 @@
           ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           -->
 
-        <module-def name="antlr.antlr">
+        <module-def name="org.antlr">
             <maven-resource group="antlr" artifact="antlr" />
         </module-def>
 
