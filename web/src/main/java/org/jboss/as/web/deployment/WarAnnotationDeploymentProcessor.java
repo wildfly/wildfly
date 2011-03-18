@@ -40,7 +40,6 @@ import org.jboss.annotation.javaee.DisplayNames;
 import org.jboss.annotation.javaee.Icons;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -81,7 +80,6 @@ import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
-import org.jboss.modules.Module;
 
 /**
  * Web annotation deployment processor.
@@ -115,18 +113,12 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             annotationsMetaData = new HashMap<String, WebMetaData>();
             warMetaData.setAnnotationsMetaData(annotationsMetaData);
         }
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for " + deploymentUnit);
-        }
-        final ClassLoader classLoader = module.getClassLoader();
-
         Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
 
         // Process lib/*.jar
         for (final Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
             final Index jarIndex = entry.getValue();
-            annotationsMetaData.put(entry.getKey().getRootName(), processAnnotations(jarIndex, classLoader));
+            annotationsMetaData.put(entry.getKey().getRootName(), processAnnotations(jarIndex));
         }
     }
 
@@ -140,7 +132,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
      * @param classLoader the module classloader
      * @throws DeploymentUnitProcessingException
      */
-    protected WebMetaData processAnnotations(Index index, ClassLoader classLoader)
+    protected WebMetaData processAnnotations(Index index)
     throws DeploymentUnitProcessingException {
         Web30MetaData metaData = new Web30MetaData();
         // @WebServlet
