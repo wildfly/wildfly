@@ -30,7 +30,7 @@ public class ResourceAdapterService implements Service<ResourceAdapter> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.errorf("started ResourceAdapterService %s", context.getController().getName());
+        log.infof("started ResourceAdapterService %s", context.getController().getName());
 
     }
 
