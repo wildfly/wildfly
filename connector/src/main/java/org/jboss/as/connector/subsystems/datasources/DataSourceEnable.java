@@ -38,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -73,24 +74,7 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
                     if (dataSourceController != null) {
                         if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.ACTIVE);
-                        } else {
-                            resultHandler.handleResultComplete();
-                        }
-                    } else {
-                        throw new OperationFailedException(new ModelNode().set("Data-source service for [" + jndiName + "] is not available"));
-                    }
-
-                    final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
-                    final ServiceController<?> binderController = registry.getService(binderServiceName);
-                    if (binderController != null) {
-                        if (!ServiceController.State.UP.equals(binderController.getState())) {
-                            binderController.setMode(ServiceController.Mode.ACTIVE);
-                            binderController.addListener(new ResultHandler.ServiceStartListener(resultHandler) {
-                                public void serviceStarted(ServiceController<?> controller) {
-                                    log.infof("Bound JDBC Data-source [%s]", jndiName);
-                                    super.serviceStarted(controller);
-                                }
-                            });
+                            dataSourceController.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                         } else {
                             resultHandler.handleResultComplete();
                         }

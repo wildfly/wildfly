@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import java.sql.Driver;
+import javax.sql.DataSource;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
@@ -49,6 +50,7 @@ import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -101,32 +103,43 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                     if (driverServiceName != null) {
                         dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class, dataSourceService.getDriverInjector());
                     }
-                    if (enabled) {
-                        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                    } else {
-                        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
-                    }
-                    dataSourceServiceBuilder.install();
+
+                    final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();
+                    final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
+                    serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
+                            .addDependency(dataSourceServiceName, DataSource.class, referenceFactoryService.getDataSourceInjector())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
 
                     final BinderService binderService = new BinderService(jndiName.substring(6));
                     final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
-                    final ServiceBuilder<?> binderServiceBuilder = serviceTarget.addService(binderServiceName, binderService)
-                            .addDependency(dataSourceServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
-                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector());
+                    serviceTarget.addService(binderServiceName, binderService)
+                            .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
+                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
+                            .addListener(new AbstractServiceListener<Object>() {
+                                public void serviceStarted(ServiceController<?> controller) {
+                                    log.infof("Bound JDBC Data-source [%s]", jndiName);
+                                }
+
+                                public void serviceStopped(ServiceController<?> serviceController) {
+                                    log.infof("Unbound JDBC Data-source [%s]", jndiName);
+                                }
+
+                                public void serviceRemoved(ServiceController<?> serviceController) {
+                                    log.infof("Removed JDBC Data-source [%s]", jndiName);
+                                    serviceController.removeListener(this);
+                                }
+                            })
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
 
                     if (enabled) {
-                        binderServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        binderServiceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler) {
-                            public void serviceStarted(ServiceController<?> controller) {
-                                log.infof("Bound JDBC Data-source [%s]", jndiName);
-                                super.serviceStarted(controller);
-                            }
-                        });
+                        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
+                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                                .install();
                     } else {
-                        binderServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
-                    }
-                    binderServiceBuilder.install();
-                    if (!enabled) {
+                        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER)
+                                .install();
                         resultHandler.handleResultComplete();
                     }
                 }

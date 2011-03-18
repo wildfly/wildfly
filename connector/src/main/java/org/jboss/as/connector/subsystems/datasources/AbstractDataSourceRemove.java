@@ -81,15 +81,16 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
                         binderController.setMode(ServiceController.Mode.REMOVE);
                     }
 
+                    final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceController<?> referenceFactoryController = registry.getService(referenceFactoryServiceName);
+                    if (referenceFactoryController != null) {
+                        referenceFactoryController.setMode(ServiceController.Mode.REMOVE);
+                    }
+
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                     if (dataSourceController != null) {
-                        dataSourceController.addListener(new ResultHandler.ServiceRemoveListener(resultHandler) {
-                            public void serviceStopped(ServiceController<?> serviceController) {
-                                log.infof("Unbound JDBC Data-source [%s]", jndiName);
-                                super.serviceStopped(serviceController);
-                            }
-                        });
+                        dataSourceController.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
                     } else {
                         resultHandler.handleResultComplete();
                     }

@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.server.ServerController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -70,31 +71,15 @@ public class DataSourceDisable implements ModelUpdateOperationHandler {
                 public void execute(final RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceRegistry registry = context.getServiceRegistry();
 
-                    final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
-                    final ServiceController<?> binderController = registry.getService(binderServiceName);
-                    if (binderController != null) {
-                        if (ServiceController.State.UP.equals(binderController.getState())) {
-                            binderController.setMode(ServiceController.Mode.NEVER);
-                            binderController.addListener(new AbstractServiceListener<Object>() {
-                                public void serviceStopped(ServiceController<?> serviceController) {
-                                    log.infof("Unbound JDBC Data-source [%s]", jndiName);
-                                }
-                            });
-                        } else {
-                            resultHandler.handleResultComplete();
-                        }
-                    } else {
-                        throw new OperationFailedException(new ModelNode().set("Data-source binder service for [" + jndiName + "] is not available"));
-                    }
-
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                     if (dataSourceController != null) {
                         if (ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.NEVER);
-                            binderController.addListener(new AbstractServiceListener<Object>() {
+                            dataSourceController.addListener(new AbstractServiceListener<Object>() {
                                 public void serviceStopped(ServiceController<?> serviceController) {
                                     resultHandler.handleResultComplete();
+                                    serviceController.removeListener(this);
                                 }
                             });
                         } else {

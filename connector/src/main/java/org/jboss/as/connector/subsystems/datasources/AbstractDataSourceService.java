@@ -29,6 +29,7 @@ import java.sql.Driver;
 import java.util.Map;
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionFactory;
+import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import org.jboss.as.connector.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -55,7 +56,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John Bailey
  */
-public abstract class AbstractDataSourceService implements Service<AbstractDataSourceService>, ManagedReferenceFactory {
+public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
@@ -71,10 +72,6 @@ public abstract class AbstractDataSourceService implements Service<AbstractDataS
         this.jndiName = jndiName;
     }
 
-    public synchronized ManagedReference getReference() {
-        return new ValueManagedReference(new ImmediateValue<Object>(sqlDataSource));
-    }
-
     public synchronized void start(StartContext startContext) throws StartException {
         try {
             final ManagedConnectionFactory mcf = createManagedConnectionFactory(jndiName, driverValue.getValue());
@@ -87,11 +84,12 @@ public abstract class AbstractDataSourceService implements Service<AbstractDataS
     }
 
     public synchronized void stop(StopContext stopContext) {
+
         sqlDataSource = null;
     }
 
-    public synchronized AbstractDataSourceService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public synchronized DataSource getValue() throws IllegalStateException, IllegalArgumentException {
+        return sqlDataSource;
     }
 
     public Injector<TransactionManagerService> getTransactionManagerInjector() {
