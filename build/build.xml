@@ -110,7 +110,7 @@
             <maven-resource group="com.sun.xml.messaging.saaj" artifact="saaj-impl"/>
         </module-def>
 
-        <module-def name="dom4j.dom4j">
+        <module-def name="org.dom4j">
             <maven-resource group="dom4j" artifact="dom4j" />
         </module-def>
 
