@@ -55,32 +55,32 @@ All examples assume variable $AS points to the root of the JBoss AS distribution
 
 A) Add new zipped content and deploy it:
 
-1. cp target/example.war/ $AS/standalone/deployment
-2. touch $AS/standalone/deployment/example.war.dodeploy
+1. cp target/example.war/ $AS/standalone/deployments
+2. touch $AS/standalone/deployments/example.war.dodeploy
 
 B) Add new unzipped content and deploy it:
 
-1. cp -r target/example.war/ $AS/standalone/deployment
-2. touch $AS/standalone/deployment/example.war.dodeploy
+1. cp -r target/example.war/ $AS/standalone/deployments
+2. touch $AS/standalone/deployments/example.war.dodeploy
 
 C) Undeploy currently deployed content:
 
-1. rm $AS/standalone/deployment/example.war.isdeployed
+1. rm $AS/standalone/deployments/example.war.isdeployed
 
 D) Replace currently deployed zipped content with a new version and deploy it:
 
-1. cp target/example.war/ $AS/standalone/deployment
-2. touch $AS/standalone/deployment/example.war.dodeploy
+1. cp target/example.war/ $AS/standalone/deployments
+2. touch $AS/standalone/deployments/example.war.dodeploy
 
 E) Replace currently deployed unzipped content with a new version and deploy 
    it:
 
-1. rm $AS/standalone/deployment/example.war.isdeployed
-2. wait for $AS/standalone/deployment/example.war.undeployed file to appear
-3. cp -r target/example.war/ $AS/standalone/deployment
-4. touch $AS/standalone/deployment/example.war.dodeploy
+1. rm $AS/standalone/deployments/example.war.isdeployed
+2. wait for $AS/standalone/deployments/example.war.undeployed file to appear
+3. cp -r target/example.war/ $AS/standalone/deployments
+4. touch $AS/standalone/deployments/example.war.dodeploy
 
 F) Redeploy currently deployed content (i.e. bounce it with no content 
    change):
 
-1. touch $AS/standalone/deployment/example.war.dodeploy
+1. touch $AS/standalone/deployments/example.war.dodeploy
