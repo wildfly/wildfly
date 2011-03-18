@@ -98,14 +98,6 @@ public class MockCommandContext implements CommandContext {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandContext#setModelControllerClient(org.jboss.as.controller.client.ModelControllerClient)
-     */
-    @Override
-    public void setModelControllerClient(ModelControllerClient client) {
-        this.mcc = client;
-    }
-
-    /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandContext#getOperationRequestParser()
      */
     @Override
@@ -151,5 +143,25 @@ public class MockCommandContext implements CommandContext {
 
     public void setOperationCandidatesProvider(OperationCandidatesProvider provider) {
         this.operationCandidatesProvider = provider;
+    }
+
+    @Override
+    public void connectController(String host, int port) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void disconnectController() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getControllerHost() {
+        return null;
+    }
+
+    @Override
+    public int getControllerPort() {
+        return -1;
     }
 }

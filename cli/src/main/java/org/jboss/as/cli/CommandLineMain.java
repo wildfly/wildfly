@@ -88,7 +88,7 @@ public class CommandLineMain {
                 " 'help' for the list of supported commands.");
 
         while (!cmdCtx.terminate) {
-            String line = console.readLine("[" + cmdCtx.getPrefixFormatter().format(cmdCtx.getPrefix()) + "] ").trim();
+            String line = console.readLine(cmdCtx.getPrompt()).trim();
 
             if (line.isEmpty()) {
                 // cmdCtx.log("Type /help for the list of supported commands.");
@@ -259,5 +259,19 @@ public class CommandLineMain {
             return controllerPort;
         }
 
+        String getPrompt() {
+            StringBuilder buffer = new StringBuilder();
+            buffer.append('[');
+            if(controllerHost != null) {
+                buffer.append(controllerHost)
+                .append(':')
+                .append(controllerPort)
+                .append(' ');
+            } else {
+                buffer.append("disconnected ");
+            }
+            buffer.append(prefixFormatter.format(prefix)).append("] ");
+            return buffer.toString();
+        }
     }
 }

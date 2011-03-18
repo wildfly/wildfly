@@ -38,7 +38,7 @@ public class PrefixLevel1NameBufferLevel1TypeCompletionTestCase extends Abstract
         assertAllCandidates(Arrays.asList("last3", "link3", "other3"));
         assertSelectedCandidates(Arrays.asList("last3", "link3"));
         assertBufferPrefix("./");
-        assertContextPrefix("link1=link2");
+        assertContextPrefix("/link1=link2");
     }
 
     @Override

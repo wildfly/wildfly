@@ -45,14 +45,19 @@ public class DefaultPrefixFormatter implements PrefixFormatter {
         }
 
         StringBuilder builder = new StringBuilder();
+        builder.append('/');
+        Node next = iterator.next();
+        builder.append(next.getType());
+        if(next.getName() != null) {
+            builder.append('=').append(next.getName());
+        }
         while(iterator.hasNext()) {
-            Node next = iterator.next();
+            builder.append('/');
+            next = iterator.next();
             builder.append(next.getType());
             if(next.getName() != null) {
                 builder.append('=').append(next.getName());
             }
-            if(iterator.hasNext())
-                builder.append('/');
         }
         return builder.toString();
     }
