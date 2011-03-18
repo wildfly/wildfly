@@ -44,6 +44,7 @@ import org.jboss.as.ejb3.deployment.processors.LocalEjbViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.LockAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.NoInterfaceViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StartupAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.TransactionAttributeAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationProcessor;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
@@ -111,6 +112,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION, new ConcurrencyManagementAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_LOCK_ANNOTATION, new LockAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ACCESS_TIMEOUT_ANNOTATION, new AccessTimeoutAnnotationProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TRANSACTION_ATTR_ANNOTATION, new TransactionAttributeAnnotationProcessor());
 
             // add the real deployment processor
             // TODO: add the proper deployment processors

@@ -261,6 +261,8 @@ public enum Phase {
     public static final int POST_MODULE_EJB_LOCK_ANNOTATION             = 0x0502;
     // should be after ConcurrencyManagement annotation processor
     public static final int POST_MODULE_EJB_ACCESS_TIMEOUT_ANNOTATION   = 0x0503;
+    // should be after all views are known
+    public static final int POST_MODULE_EJB_TRANSACTION_ATTR_ANNOTATION = 0x0504;
     public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x0600;
     public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0700;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0800;
