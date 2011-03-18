@@ -57,7 +57,8 @@ public class RaDeploymentActivator {
         serviceTarget.addService(ConnectorServices.RA_REPOSISTORY_SERVICE, raRepositoryService).install();
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
-        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService).install();
+        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR).install();
 
         JndiStrategyService jndiStrategyService = new JndiStrategyService();
         serviceTarget.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService).install();
