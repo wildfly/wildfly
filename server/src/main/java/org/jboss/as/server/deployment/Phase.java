@@ -281,6 +281,9 @@ public enum Phase {
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x1000;
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x1100;
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x1200;
+    public static final int POST_PERSISTENCE_ANNOTATION                 = 0x1F00; // TODO: move back to PARSE when
+                                                                                  // Stuart moves the other POST entries.
+    public static final int POST_INITIALIZE_IN_ORDER                    = 0x2000;
 
 
     // INSTALL

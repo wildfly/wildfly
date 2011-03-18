@@ -40,15 +40,18 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final List<ResourceRoot> childRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-
         if (childRoots != null) {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+            ServiceName previous = null;
             for (final ResourceRoot childRoot : childRoots) {
                 if (!SubDeploymentMarker.isSubDeployment(childRoot)) {
                     continue;
                 }
                 final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit);
-                final ServiceName serviceName = deploymentUnit.getServiceName().append(childRoot.getRootName());
+
+                final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+                final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());
+                final ServiceName serviceName = deploymentUnit.getServiceName().append(relativePath);
 
                 serviceTarget.addService(serviceName, service)
                         .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
@@ -57,6 +60,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                 phaseContext.addDeploymentDependency(serviceName, Attachments.SUB_DEPLOYMENTS);
                 //we also need a dep on the first phase of the sub deployments
                 phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS,serviceName.append(ServiceName.of(Phase.STRUCTURE.name())));
+                previous = serviceName;
             }
 
         }
