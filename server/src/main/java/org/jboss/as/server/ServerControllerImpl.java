@@ -54,8 +54,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeOperationContext;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -433,16 +433,21 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             }
             else {
                 final ModelNode compensatingOp = getOverallCompensatingOperation();
-                final ResultHandler rollbackResultHandler = new RollbackResultHandler();
-                // Execute the rollback in another thread as this method may be called by an MSC thread
-                // and we don't want to risk blocking it
-                Runnable r = new Runnable() {
-                    @Override
-                    public void run() {
-                        ServerControllerImpl.this.execute(OperationBuilder.Factory.create(compensatingOp).build(), rollbackResultHandler);
-                    }
-                };
-                ServerControllerImpl.this.executorService.execute(r);
+                if (compensatingOp.isDefined()) {
+                    final ResultHandler rollbackResultHandler = new RollbackResultHandler();
+                    // Execute the rollback in another thread as this method may be called by an MSC thread
+                    // and we don't want to risk blocking it
+                    Runnable r = new Runnable() {
+                        @Override
+                        public void run() {
+                            ServerControllerImpl.this.execute(OperationBuilder.Factory.create(compensatingOp).build(), rollbackResultHandler);
+                        }
+                    };
+                    ServerControllerImpl.this.executorService.execute(r);
+                }
+                else {
+                    super.handleFailures();
+                }
             }
         }
 

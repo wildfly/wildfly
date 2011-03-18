@@ -36,7 +36,6 @@ import org.jboss.dmr.ModelNode;
 * Handler for the upload-deployment-stream operation.
 *
 * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
-* @version $Revision: 1.1 $
 */
 public class DeploymentUploadStreamAttachmentHandler
 extends AbstractDeploymentUploadHandler
@@ -64,13 +63,14 @@ implements DescriptionProvider {
         streamValidator.validate(operation);
 
         int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-        if (streamIndex > operationContext.getInputStreams().size() - 1) {
-            throw new IllegalArgumentException("Invalid '" + INPUT_STREAM_INDEX + "' value:" + streamIndex + ", the maximum index is " + streamIndex);
+        int maxIndex = operationContext.getInputStreams().size() - 1;
+        if (streamIndex > maxIndex) {
+            throw new OperationFailedException(new ModelNode().set(String.format("Invalid '" + INPUT_STREAM_INDEX + "' value: %d, the maximum index is %d", streamIndex, maxIndex)));
         }
 
         InputStream in = operationContext.getInputStreams().get(streamIndex);
         if (in == null) {
-            throw new IllegalStateException("Null stream at index " + streamIndex);
+            throw new OperationFailedException(new ModelNode().set(String.format("Null stream at index %s", streamIndex)));
         }
 
         return in;

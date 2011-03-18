@@ -556,6 +556,7 @@ public class BasicModelController extends AbstractModelController implements Mod
             resultHandler.handleFailed(failureMsg);
         }
 
+        /** Returns the compensating operation, or an undefined node if no meaningful compensating operation is possible */
         protected final ModelNode getOverallCompensatingOperation() {
 
             final ModelNode compensatingOp = new ModelNode();
@@ -563,23 +564,29 @@ public class BasicModelController extends AbstractModelController implements Mod
             compensatingOp.get(OP_ADDR).setEmptyList();
             final ModelNode compSteps = compensatingOp.get(STEPS);
             compSteps.setEmptyList();
-            synchronized (rollbackOps) {
-                int rollbackIndex = 0;
-                for (int i = steps.size() - 1; i >= 0 ; i--) {
-                    Integer id = Integer.valueOf(i);
-                    final ModelNode compStep = rollbackOps.get(id);
-                    if (compStep != null && compStep.isDefined()) {
-                        compSteps.add(compStep);
-                        // Record the key under which we expect to find the result for this rollback step
-                        rollbackStepNames.put(id, getStepKey(rollbackIndex));
-                        rollbackIndex++;
-                    }
+
+            int rollbackIndex = 0;
+            for (int i = steps.size() - 1; i >= 0 ; i--) {
+                Integer id = Integer.valueOf(i);
+                final ModelNode compStep = rollbackOps.get(id);
+                if (compStep != null && compStep.isDefined()) {
+                    compSteps.add(compStep);
+                    // Record the key under which we expect to find the result for this rollback step
+                    rollbackStepNames.put(id, getStepKey(rollbackIndex));
+                    rollbackIndex++;
                 }
             }
-            // Don't let the compensating op rollback; if it fails it needs a manual fix
-            compensatingOp.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-            return compensatingOp;
+            if (rollbackIndex > 0) {
+                // Don't let the compensating op rollback; if it fails it needs a manual fix
+                compensatingOp.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+                return compensatingOp;
+            }
+            else {
+                // No steps were added, so no meaningful compensating op exists
+                return new ModelNode();
+            }
         }
 
         protected void recordModelComplete() {

@@ -163,7 +163,8 @@ public class ExampleRunner {
 
     void checkSuccess(final ModelNode result) {
         if(!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw new IllegalStateException();
+            String msg = result.hasDefined("failure-description") ? result.get("failure-description").toString() : "Operation failed with no failure description provided";
+            throw new IllegalStateException(msg);
         }
     }
 

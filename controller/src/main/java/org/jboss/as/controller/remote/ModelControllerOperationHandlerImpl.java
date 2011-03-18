@@ -170,6 +170,9 @@ public class ModelControllerOperationHandlerImpl extends AbstractMessageHandler 
 
                 cmd = inputStream.read();
             }
+            if (cmd != ModelControllerClientProtocol.PARAM_REQUEST_END) {
+                throw new IllegalArgumentException("Expected " + ModelControllerClientProtocol.PARAM_REQUEST_END + " received " + cmd);
+            }
         }
     }
 
