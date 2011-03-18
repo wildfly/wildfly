@@ -87,9 +87,9 @@ public class OperationRequestCompleter implements Completor {
             return -1;
         }
 
-        if(handler.hasProperties() || handler.endsOnArgumentListStart()) {
+        if(handler.hasProperties() || handler.endsOnPropertyListStart()) {
 
-            if(handler.endsOnArgumentValueSeparator()) {
+            if(handler.endsOnPropertyValueSeparator()) {
                 // no value completion
                 return -1;
             }
@@ -98,12 +98,20 @@ public class OperationRequestCompleter implements Completor {
 
             List<String> propertyNames = provider.getPropertyNames(handler.getOperationName(), handler.getAddress());
             if(propertyNames.isEmpty()) {
+                if(handler.endsOnPropertyListStart()) {
+                    candidates.add(")");
+                    return handler.getLastSeparatorIndex() + 1;
+                }
                 return -1;
             }
 
-            if(handler.endsOnArgumentListStart()) {
-                candidates.addAll(propertyNames);
-                Collections.sort(candidates);
+            if(handler.endsOnPropertyListStart()) {
+                if(propertyNames.size() == 1) {
+                    candidates.add(propertyNames.get(0) + '=');
+                } else {
+                    candidates.addAll(propertyNames);
+                    Collections.sort(candidates);
+                }
                 return handler.getLastSeparatorIndex() + 1;
             }
 
@@ -120,9 +128,16 @@ public class OperationRequestCompleter implements Completor {
             }
 
             if(chunk == null) {
-                if(handler.endsOnArgumentSeparator()) {
-                    candidates.addAll(propertyNames);
-                    Collections.sort(candidates);
+                if(handler.endsOnPropertySeparator()) {
+                    if(propertyNames.size() == 1) {
+                        candidates.add(propertyNames.get(0) + '=');
+                    } else {
+                        candidates.addAll(propertyNames);
+                        Collections.sort(candidates);
+                    }
+                } else if(propertyNames.isEmpty()) {
+                    candidates.add(")");
+                    return buffer.length();
                 }
                 return handler.getLastSeparatorIndex() + 1;
             }
@@ -133,7 +148,11 @@ public class OperationRequestCompleter implements Completor {
                 }
             }
 
-            Collections.sort(candidates);
+            if(candidates.size() == 1) {
+                candidates.set(0, (String)candidates.get(0) + '=');
+            } else {
+                Collections.sort(candidates);
+            }
             return handler.getLastSeparatorIndex() + 1;
         }
 

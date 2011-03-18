@@ -65,17 +65,17 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public boolean endsOnArgumentSeparator() {
+    public boolean endsOnPropertySeparator() {
         return separator == SEPARATOR_ARG;
     }
 
     @Override
-    public boolean endsOnArgumentValueSeparator() {
+    public boolean endsOnPropertyValueSeparator() {
         return separator == SEPARATOR_ARG_NAME_VALUE;
     }
 
     @Override
-    public boolean endsOnArgumentListStart() {
+    public boolean endsOnPropertyListStart() {
         return separator == SEPARATOR_OPERATION_ARGUMENTS;
     }
 

@@ -32,11 +32,11 @@ public interface ParsedOperationRequest {
 
     boolean isRequestComplete();
 
-    boolean endsOnArgumentSeparator();
+    boolean endsOnPropertySeparator();
 
-    boolean endsOnArgumentValueSeparator();
+    boolean endsOnPropertyValueSeparator();
 
-    boolean endsOnArgumentListStart();
+    boolean endsOnPropertyListStart();
 
     boolean endsOnAddressOperationNameSeparator();
 
