@@ -32,13 +32,11 @@ import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -63,9 +61,9 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
     public SessionBeanComponentConfiguration(final SessionBeanComponentDescription description) {
         super(description);
 
+        this.beanLevelAccessTimeout = description.getBeanLevelAccessTimeout();
         if (description.allowsConcurrentAccess()) {
             this.beanLevelLockType = description.getBeanLevelLockType();
-            this.beanLevelAccessTimeout = description.getBeanLevelAccessTimeout();
 
             this.methodLevelLockTypes = description.getMethodApplicableLockTypes();
             this.methodAccessTimeouts = description.getMethodApplicableAccessTimeouts();

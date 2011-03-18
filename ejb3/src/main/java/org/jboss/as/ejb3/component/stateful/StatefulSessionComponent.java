@@ -23,12 +23,10 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
-
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
-
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -38,6 +36,8 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * Stateful Session Bean
@@ -56,23 +56,28 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     protected StatefulSessionComponent(final StatefulSessionComponentConfiguration configuration) {
         super(configuration);
 
-        // TODO: must come from configuration
-        accessTimeout = new AccessTimeout() {
-            @Override
-            public long value() {
-                return 5;
-            }
+        // TODO: per method
+        AccessTimeout accessTimeout = configuration.getBeanLevelAccessTimeout();
+        // TODO: the configuration should always have an access timeout
+        if (accessTimeout == null) {
+            accessTimeout = new AccessTimeout() {
+                @Override
+                public long value() {
+                    return 5;
+                }
 
-            @Override
-            public TimeUnit unit() {
-                return TimeUnit.MINUTES;
-            }
+                @Override
+                public TimeUnit unit() {
+                    return MINUTES;
+                }
 
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return AccessTimeout.class;
-            }
-        };
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return AccessTimeout.class;
+                }
+            };
+        }
+        this.accessTimeout = accessTimeout;
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();
         cache.setStatefulObjectFactory(new StatefulObjectFactory<StatefulSessionComponentInstance>() {
