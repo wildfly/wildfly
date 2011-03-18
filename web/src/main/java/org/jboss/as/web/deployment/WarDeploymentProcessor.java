@@ -25,11 +25,13 @@ package org.jboss.as.web.deployment;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import javax.servlet.ServletContext;
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.core.StandardContext;
@@ -191,6 +193,15 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             throw new RuntimeException(e1);
         } finally {
             SecurityActions.setContextClassLoader(tcl);
+        }
+
+        // Setup an deployer configured ServletContext attributes
+        final List<ServletContextAttribute> attributes = deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY);
+        if(attributes != null) {
+            final ServletContext context = webContext.getServletContext();
+            for(ServletContextAttribute attribute : attributes) {
+                context.setAttribute(attribute.getName(), attribute.getValue());
+            }
         }
 
         try {

@@ -73,7 +73,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, LOG, false, false, false));
 
     }
