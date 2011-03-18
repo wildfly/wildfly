@@ -136,6 +136,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             pathName = metaData.getContextRoot();
             if ("/".equals(pathName)) {
                 pathName = "";
+            } else if (pathName.length() > 0 && pathName.charAt(0) != '/') {
+                pathName = "/" + pathName;
             }
         }
         webContext.setPath(pathName);
