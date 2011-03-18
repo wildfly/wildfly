@@ -47,7 +47,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class JndiView implements JndiViewMBean, Service<JndiView> {
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
-    private static final String OBJECT_NAME = "jboss:type=JNDIView";
+    private static final String OBJECT_NAME = "jboss.naming:type=JNDIView";
 
     private final InjectedValue<MBeanServer> mbeanServerValue = new InjectedValue<MBeanServer>();
 

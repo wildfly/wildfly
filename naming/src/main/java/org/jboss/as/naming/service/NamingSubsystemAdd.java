@@ -96,6 +96,8 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
 
                     // Create the java:global namespace
                     addGlobalContextFactory(target, "global");
+                    // Create the java:jboss vendor namespace
+                    addGlobalContextFactory(target, "jboss");
 
                     // Create the EE namespace
                     addContextFactory(target, "app");
