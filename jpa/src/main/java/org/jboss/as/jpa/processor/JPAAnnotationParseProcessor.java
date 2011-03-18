@@ -54,7 +54,7 @@ import java.util.List;
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
  *
- * TODO: This should iterate over components looking for annotations, not the other way around
+ * TODO: This should iterate over components looking for annotations, not the other way around (by extending AbstractComponentConfigProcessor)
  *
  * @author Scott Marlow (based on ResourceInjectionAnnotationParsingProcessor)
  */

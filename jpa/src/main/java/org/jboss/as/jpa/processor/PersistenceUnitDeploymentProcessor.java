@@ -30,7 +30,7 @@ import org.jboss.as.jpa.classloader.TempClassLoader;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.service.PersistenceUnitService;
-import org.jboss.as.jpa.transaction.TransactionLocal;
+import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,6 +38,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.TransactionManagerService;
+import org.jboss.as.txn.TransactionSynchronizationRegistryService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -50,6 +51,7 @@ import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -183,10 +185,10 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     try {
                         PersistenceUnitService service = new PersistenceUnitService(pu, resourceRoot);
                         // TODO:  move this to a standalone service
-                        final Injector<TransactionManager> injector =
+                        final Injector<TransactionManager> transactionManagerInjector =
                             new Injector<TransactionManager>() {
                                 public void inject(final TransactionManager value) throws InjectionException {
-                                    TransactionLocal.setTransactionManager(value);
+                                    TransactionUtil.setTransactionManager(value);
                                 }
 
                                 public void uninject() {
@@ -194,13 +196,26 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                                 }
                             };
 
+                        final Injector<TransactionSynchronizationRegistry> transactionRegistryInjector =
+                            new Injector<TransactionSynchronizationRegistry>() {
+                                public void inject(final TransactionSynchronizationRegistry value) throws InjectionException {
+                                    TransactionUtil.setTransactionSynchronizationRegistry(value);
+                                }
+
+                                public void uninject() {
+                                    // injector.uninject();
+                                }
+                            };
+
+
                         final HashMap properties = new HashMap();
                         properties.put("javax.persistence.validation.factory", ValidatorFactoryProvider.getInstance().getValidatorFactory());
                         addHibernateProps(properties);
                         final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
                         serviceTarget.addService(serviceName, service)
                             .addDependencies(serviceDependencies)
-                            .addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(injector, TransactionManager.class))
+                            .addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
+                            .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))
                             .setInitialMode(ServiceController.Mode.ACTIVE)
                             .addInjection(service.getPropertiesInjector(), properties)
                             .install();

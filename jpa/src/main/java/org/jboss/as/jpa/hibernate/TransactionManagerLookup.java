@@ -24,7 +24,7 @@ package org.jboss.as.jpa.hibernate;
 
 import org.hibernate.HibernateException;
 import org.hibernate.transaction.JNDITransactionManagerLookup;
-import org.jboss.as.jpa.transaction.TransactionLocal;
+import org.jboss.as.jpa.transaction.TransactionUtil;
 
 import javax.transaction.TransactionManager;
 import java.util.Properties;
@@ -46,7 +46,7 @@ public class TransactionManagerLookup extends JNDITransactionManagerLookup {
     }
 
     public TransactionManager getTransactionManager(Properties props) throws HibernateException {
-        return TransactionLocal.getTransactionManager();
+        return TransactionUtil.getTransactionManager();
     }
 
 }

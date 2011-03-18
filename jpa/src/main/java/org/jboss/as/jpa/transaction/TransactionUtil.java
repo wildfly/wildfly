@@ -36,10 +36,10 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -69,14 +69,44 @@ public class TransactionUtil {
     private static final TransactionUtil INSTANCE = new TransactionUtil();
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
+    private static volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private static volatile TransactionManager transactionManager;
+
     public static TransactionUtil getInstance() {
         return INSTANCE;
     }
 
-    protected TransactionLocal session = new TransactionLocal();
+    public static void setTransactionManager(TransactionManager tm) {
+        if (transactionManager == null) {
+            transactionManager = tm;
+        }
+    }
+
+    public static TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    public static void setTransactionSynchronizationRegistry(TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        if (TransactionUtil.transactionSynchronizationRegistry == null) {
+            TransactionUtil.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+        }
+    }
+
+    public Transaction getTransaction() {
+        try {
+            return transactionManager.getTransaction();
+        } catch (SystemException e) {
+            throw new IllegalStateException("An error occured while getting the " +
+                "transaction associated with the current thread: " + e);
+        }
+    }
+
+    public static TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return transactionSynchronizationRegistry;
+    }
 
     public boolean isInTx() {
-        Transaction tx = session.getTransaction();
+        Transaction tx = getTransaction();
         if (tx == null || !TxUtils.isActive(tx))
             return false;
         return true;
@@ -101,7 +131,6 @@ public class TransactionUtil {
                 if (log.isDebugEnabled())
                     log.debug(getEntityManagerDetails(manager) + ": closing entity managersession ");
                 manager.close();
-                getInstance().clearPC(manager, scopedPuName);
             }
         }
     }
@@ -122,44 +151,28 @@ public class TransactionUtil {
         return result;
     }
 
-    public TransactionLocal getTransactionSession() {
-        return session;
-    }
-
     public void registerExtendedWithTransaction(String scopedPuName, EntityManager pc) {
         pc.joinTransaction();
         setPC(scopedPuName, pc);
     }
 
-    private void clearPC(EntityManager entityManager, String scopedPuName) {
-        Map<String, EntityManager> map = (Map<String, EntityManager>) session.get();
-        Object result = map.remove(scopedPuName);
-        if (result == null) {
-            throw new RuntimeException("clearPC could not remove " + scopedPuName +
-                " from local transaction session (either it was already removed or was never added)");
-        }
-    }
-
     private EntityManager getPC(String scopedPuName) {
-        EntityManager result = null;
-        Map<String, EntityManager> map = (Map<String, EntityManager>) session.get();
-        if (map != null) {
-            result = map.get(scopedPuName);
-        }
-        return result;
+        return (EntityManager) getTransactionSynchronizationRegistry().getResource(scopedPuName);
     }
 
+    /**
+     * Save the specified EntityManager in the local threads active transaction.  The TransactionSynchronizationRegistry
+     * will clear the reference to the EntityManager when the transaction completes.
+     *
+     * @param scopedPuName
+     * @param entityManager
+     */
     private void setPC(String scopedPuName, EntityManager entityManager) {
-        Map<String, EntityManager> map = (Map<String, EntityManager>) session.get();
-        if (map == null) {
-            map = new HashMap<String, EntityManager>();
-            session.set(map);
-        }
-        map.put(scopedPuName, entityManager);
+        getTransactionSynchronizationRegistry().putResource(scopedPuName, entityManager);
     }
 
     public void verifyInTx() {
-        Transaction tx = session.getTransaction();
+        Transaction tx = getTransaction();
         if (tx == null || !TxUtils.isActive(tx))
             throw new TransactionRequiredException("EntityManager must be access within a transaction");
         if (!TxUtils.isActive(tx))
@@ -168,7 +181,7 @@ public class TransactionUtil {
 
     public EntityManager getTransactionScopedEntityManager(EntityManagerFactory emf, String puScopedName, Map properties) {
 
-        Transaction tx = session.getTransaction();
+        Transaction tx = getTransaction();
         EntityManager rtnSession = getPC(puScopedName);
         if (rtnSession == null) {
             rtnSession = EntityManagerUtil.createEntityManager(emf, properties);
@@ -214,7 +227,7 @@ public class TransactionUtil {
     }
 
     public static boolean isActive() {
-        return isActive(TransactionLocal.getTransactionManager());
+        return isActive(getTransactionManager());
     }
 
     public static boolean isActive(UserTransaction ut) {
@@ -251,7 +264,7 @@ public class TransactionUtil {
     }
 
     public static boolean isUncommitted() {
-        return isUncommitted(TransactionLocal.getTransactionManager());
+        return isUncommitted(getTransactionManager());
     }
 
     public static boolean isUncommitted(UserTransaction ut) {
@@ -290,7 +303,7 @@ public class TransactionUtil {
     }
 
     public static boolean isCompleted() {
-        return isCompleted(TransactionLocal.getTransactionManager());
+        return isCompleted(getTransactionManager());
     }
 
     public static boolean isCompleted(UserTransaction ut) {
