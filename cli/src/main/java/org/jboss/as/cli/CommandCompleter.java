@@ -60,7 +60,7 @@ public class CommandCompleter implements Completor {
 
         if(firstCharIndex == buffer.length()) {
             candidates.addAll(commands);
-            return 0;
+            return firstCharIndex;
         }
 
         char firstChar = buffer.charAt(firstCharIndex);
@@ -85,7 +85,7 @@ public class CommandCompleter implements Completor {
                 candidates.add(command);
         }
 
-        return 0;
+        return buffer.length() - cmdChunk.length();
     }
 
 }
