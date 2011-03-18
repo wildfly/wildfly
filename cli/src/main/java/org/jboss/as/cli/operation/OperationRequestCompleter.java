@@ -100,7 +100,7 @@ public class OperationRequestCompleter implements Completor {
             if(propertyNames.isEmpty()) {
                 if(handler.endsOnPropertyListStart()) {
                     candidates.add(")");
-                    return handler.getLastSeparatorIndex() + 1;
+                    return buffer.length();
                 }
                 return -1;
             }
@@ -112,7 +112,8 @@ public class OperationRequestCompleter implements Completor {
                     candidates.addAll(propertyNames);
                     Collections.sort(candidates);
                 }
-                return handler.getLastSeparatorIndex() + 1;
+                //return handler.getLastSeparatorIndex() + 1;
+                return buffer.length();
             }
 
             Set<String> specifiedNames = handler.getPropertyNames();
@@ -137,9 +138,9 @@ public class OperationRequestCompleter implements Completor {
                     }
                 } else if(propertyNames.isEmpty()) {
                     candidates.add(")");
-                    return buffer.length();
                 }
-                return handler.getLastSeparatorIndex() + 1;
+                return buffer.length();
+                //return handler.getLastSeparatorIndex() + 1;
             }
 
             for(String candidate : propertyNames) {

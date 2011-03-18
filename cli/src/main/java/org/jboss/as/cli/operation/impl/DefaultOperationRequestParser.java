@@ -147,7 +147,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                         } else if (ch == ':') {
                             handler.nodeName(buffer.toString().trim());
                         } else {
-                            final String value = buffer.toString();
+                            final String value = buffer.toString().trim();
                             if (".".equals(value)) {
                                 // stay at the current address
                             } else if ("..".equals(value)) {
@@ -162,7 +162,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                                         handler.nodeName(value);
                                     }
                                 } else {
-                                    handler.nodeTypeOrName(buffer.toString());
+                                    handler.nodeTypeOrName(value);
                                 }
                             }
 
