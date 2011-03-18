@@ -34,24 +34,27 @@ import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SECURITY_KEY;
 import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SOCKET;
 import static org.jboss.as.modcluster.CommonAttributes.AUTO_ENABLE_CONTEXTS;
 import static org.jboss.as.modcluster.CommonAttributes.CAPACITY;
-import static org.jboss.as.modcluster.CommonAttributes.DECAY_FACTOR;
+import static org.jboss.as.modcluster.CommonAttributes.CLASS;
+import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
+import static org.jboss.as.modcluster.CommonAttributes.DECAY;
+import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
 import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
 import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
 import static org.jboss.as.modcluster.CommonAttributes.HTTPD_CONF;
 import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC_OTHER;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC_SIMPLE;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC_WEB_CONTAINER_SIDE;
+import static org.jboss.as.modcluster.CommonAttributes.LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
-import static org.jboss.as.modcluster.CommonAttributes.NAME;
 import static org.jboss.as.modcluster.CommonAttributes.NODES_CONF;
 import static org.jboss.as.modcluster.CommonAttributes.PROXY_CONF;
 import static org.jboss.as.modcluster.CommonAttributes.PROXY_LIST;
 import static org.jboss.as.modcluster.CommonAttributes.PROXY_URL;
+import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.SOCKET_TIMEOUT;
 import static org.jboss.as.modcluster.CommonAttributes.SSL;
 import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
+import static org.jboss.as.modcluster.CommonAttributes.TYPE;
+import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
 
 import java.util.List;
 import java.util.Locale;
@@ -166,9 +169,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case LOAD_METRIC:
-                    final ModelNode load = parseLoadMetric(reader);
-                    config.get(LOAD_METRIC).set(load);
+                case LOAD_PROVIDER:
+                    final ModelNode load = parseLoadProvider(reader);
+                    config.get(LOAD_PROVIDER).set(load);
                     break;
                 case PROXY_CONF:
                     final ModelNode conf = parseProxyConf(reader);
@@ -286,37 +289,28 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         return conf;
     }
 
-    static ModelNode parseLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static ModelNode parseLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-            case LOAD_METRIC_SIMPLE:
-                final ModelNode simple = parseLoadMetricSimple(reader);
-                load.get(LOAD_METRIC_SIMPLE).set(simple);
+        // TODO that is elements... not attributes.
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            // read the load-metric and the custom-load-metric
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+            case SIMPLE_LOAD_PROVIDER:
+                final ModelNode simple = parseSimpleLoadProvider(reader);
+                load.get(SIMPLE_LOAD_PROVIDER).set(simple);
                 break;
-            case LOAD_METRIC_SERVER_SIDE:
-                final ModelNode server = parseLoadMetricServerSide(reader);
-                load.get(LOAD_METRIC_SIMPLE).set(server);
-                break;
-            case LOAD_METRIC_WEB_CONTAINER_SIDE:
-                final ModelNode cont = parseLoadMetricWebContainerSide(reader);
-                load.get(LOAD_METRIC_WEB_CONTAINER_SIDE).set(cont);
-                break;
-            case LOAD_METRIC_OTHER:
-                final ModelNode other = parseLoadMetricOther(reader);
-                load.get(LOAD_METRIC_OTHER).set(other);
+            case DYNAMIC_LOAD_PROVIDER:
+                final ModelNode server = parseDynamicLoadProvider(reader);
+                load.get(DYNAMIC_LOAD_PROVIDER).set(server);
                 break;
             default:
-                unexpectedAttribute(reader, i);
+                unexpectedElement(reader);
             }
         }
         return load;
     }
-    static ModelNode parseLoadMetricSimple(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static ModelNode parseSimpleLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -334,7 +328,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         return load;
     }
-    static ModelNode parseLoadMetricServerSide(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static ModelNode parseDynamicLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -345,16 +339,33 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                 case HISTORY:
                     load.get(HISTORY).set(value);
                     break;
-                case DECAY_FACTOR:
-                    load.get(DECAY_FACTOR).set(value);
+                case DECAY:
+                    load.get(DECAY).set(value);
                     break;
                 default:
                     unexpectedAttribute(reader, i);
             }
         }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            // read the load-metric and the custom-load-metric
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case LOAD_METRIC:
+                    final ModelNode loadmetric = parseLoadMetric(reader);
+                    load.get(LOAD_METRIC).add(loadmetric);
+                    break;
+                case CUSTOM_LOAD_METRIC:
+                    final ModelNode customloadmetric = parseCustomLoadMetric(reader);
+                    load.get(CUSTOM_LOAD_METRIC).add(customloadmetric);
+                    break;
+                default:
+                    unexpectedElement(reader);
+            }
+        }
+
         return load;
     }
-    static ModelNode parseLoadMetricWebContainerSide(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static ModelNode parseLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -362,19 +373,23 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case NAME:
-                    load.get(NAME).set(value);
+                case TYPE:
+                    load.get(TYPE).set(value);
                     break;
                 case CAPACITY:
                     load.get(CAPACITY).set(value);
                     break;
+                case WEIGHT:
+                    load.get(WEIGHT).set(value);
+                    break;
+
                 default:
                     unexpectedAttribute(reader, i);
             }
         }
         return load;
     }
-    static ModelNode parseLoadMetricOther(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static ModelNode parseCustomLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -382,9 +397,17 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case NAME:
-                    load.get(NAME).set(value);
+                case TYPE:
+                    load.get(TYPE).set(value);
                     break;
+                case CAPACITY:
+                    load.get(CAPACITY).set(value);
+                    break;
+                case WEIGHT:
+                    load.get(WEIGHT).set(value);
+                    break;
+                case CLASS:
+                    load.get(CLASS).set(value);
                 default:
                     unexpectedAttribute(reader, i);
             }

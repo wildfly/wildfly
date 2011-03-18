@@ -28,7 +28,6 @@ package org.jboss.as.modcluster;
 interface CommonAttributes {
 
     String MOD_CLUSTER_CONFIG = "mod-cluster-config";
-    String LOAD_METRIC = "load-metric";
     String PROXY_CONF = "proxy-conf";
     String HTTPD_CONF = "httpd-conf";
     String NODES_CONF = "nodes-conf";
@@ -42,13 +41,17 @@ interface CommonAttributes {
     String AUTO_ENABLE_CONTEXTS = "auto-enable-contexts";
     String STOP_CONTEXT_TIMEOUT = "stop-context-timeout";
     String SOCKET_TIMEOUT = "socket-timeout";
-    String LOAD_METRIC_SIMPLE = "load-metric-simple";
-    String LOAD_METRIC_SERVER_SIDE = "load-metric-server-side";
-    String LOAD_METRIC_WEB_CONTAINER_SIDE = "load-metric-web-container-side";
-    String LOAD_METRIC_OTHER = "load-metric-other";
+    String LOAD_METRIC = "load-metric";
     String FACTOR = "factor";
     String HISTORY = "history";
-    String DECAY_FACTOR = "decay-factor";
+    String DECAY = "decay";
     String NAME = "name";
     String CAPACITY = "capacity";
+    String TYPE = "type";
+    String LOAD_PROVIDER = "load-provider";
+    String SIMPLE_LOAD_PROVIDER = "simple-load-provider";
+    String DYNAMIC_LOAD_PROVIDER = "dynamic-load-provider";
+    String CUSTOM_LOAD_METRIC = "custom-load-metric";
+    String WEIGHT = "weight";
+    String CLASS = "class";
 }

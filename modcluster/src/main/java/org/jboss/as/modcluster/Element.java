@@ -31,12 +31,17 @@ enum Element {
     // must be first
     UNKNOWN(null),
     MOD_CLUSTER_CONFIG(CommonAttributes.MOD_CLUSTER_CONFIG),
-    LOAD_METRIC(CommonAttributes.LOAD_METRIC),
+    LOAD_PROVIDER(CommonAttributes.LOAD_PROVIDER),
     PROXY_CONF(CommonAttributes.PROXY_CONF),
     HTTPD_CONF(CommonAttributes.HTTPD_CONF),
     NODES_CONF(CommonAttributes.NODES_CONF),
     ADVERTISE_SOCKET(CommonAttributes.ADVERTISE_SOCKET),
     SSL(CommonAttributes.SSL),
+    DYNAMIC_LOAD_PROVIDER(CommonAttributes.DYNAMIC_LOAD_PROVIDER),
+    SIMPLE_LOAD_PROVIDER(CommonAttributes.SIMPLE_LOAD_PROVIDER),
+    LOAD_METRIC(CommonAttributes.LOAD_METRIC),
+    CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
+
     ;
 
     private final String name;

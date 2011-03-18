@@ -21,6 +21,9 @@
  */
 package org.jboss.as.modcluster;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -69,12 +72,6 @@ class ModClusterService implements Service<Void> {
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;
     private ModClusterConfig config;
-    // TODO HA brings too many dependencies :-(
-    // private HAModClusterService haservice;
-    // private HAModClusterConfig haconfig;
-
-    private Class<? extends LoadMetric> loadMetricClass = BusyConnectorsLoadMetric.class;
-
     public ModClusterService(ModelNode modelconf) {
         this.modelconf = modelconf;
     }
@@ -89,84 +86,70 @@ class ModClusterService implements Service<Void> {
         final ModelNode proxyconf = modelconf.get(CommonAttributes.PROXY_CONF);
         final ModelNode httpdconf = proxyconf.get(CommonAttributes.HTTPD_CONF);
         final ModelNode nodeconf = proxyconf.get(CommonAttributes.NODES_CONF);
-        if (httpdconf.has(CommonAttributes.ADVERTISE_SOCKET)) {
+        if (httpdconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
             // TODO: That should be a socket-binding....
             config.setAdvertisePort(23364);
             config.setAdvertiseGroupAddress("224.0.1.105");
         }
-        if (httpdconf.has(CommonAttributes.SSL)) {
+        if (httpdconf.hasDefined(CommonAttributes.SSL)) {
             // TODO: Add SSL logic.
         }
-        if (httpdconf.has(CommonAttributes.ADVERTISE))
+        if (httpdconf.hasDefined(CommonAttributes.ADVERTISE))
             config.setAdvertise(httpdconf.get(CommonAttributes.ADVERTISE).asBoolean());
-        if (httpdconf.has(CommonAttributes.PROXY_LIST)) {
+        if (httpdconf.hasDefined(CommonAttributes.PROXY_LIST)) {
             config.setProxyList(httpdconf.get(CommonAttributes.PROXY_LIST).asString());
         }
-        if (httpdconf.has(CommonAttributes.PROXY_URL))
+        if (httpdconf.hasDefined(CommonAttributes.PROXY_URL))
             config.setProxyList(httpdconf.get(CommonAttributes.PROXY_URL).asString());
         if (httpdconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY))
             config.setProxyList(httpdconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
 
-        if (nodeconf.has(CommonAttributes.EXCLUDED_CONTEXTS))
+        if (nodeconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS))
             config.setExcludedContexts(nodeconf.get(CommonAttributes.EXCLUDED_CONTEXTS).asString());
-        if (nodeconf.has(CommonAttributes.AUTO_ENABLE_CONTEXTS))
+        if (nodeconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS))
             config.setAutoEnableContexts(nodeconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
-        if (nodeconf.has(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
+        if (nodeconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
             config.setStopContextTimeout(nodeconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
             config.setStopContextTimeoutUnit(TimeUnit.SECONDS);
         }
-        if (nodeconf.has(CommonAttributes.SOCKET_TIMEOUT))
+        if (nodeconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT))
             config.setSocketTimeout(nodeconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
 
         // Read the metrics configuration.
         final ModelNode loadmetric = modelconf.get(CommonAttributes.LOAD_METRIC);
 
-        if (loadmetric.has(CommonAttributes.LOAD_METRIC_SIMPLE)) {
+        if (loadmetric.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER)) {
             // TODO it seems we don't support that stuff.
             // LoadBalanceFactorProvider implementation, org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider.
-            final ModelNode node = loadmetric.get(CommonAttributes.LOAD_METRIC_SIMPLE);
+            final ModelNode node = loadmetric.get(CommonAttributes.SIMPLE_LOAD_PROVIDER);
             SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
             myload.setLoadBalanceFactor(node.get(CommonAttributes.FACTOR).asInt(1));
             load = myload;
         }
 
-        if (loadmetric.has(CommonAttributes.LOAD_METRIC_SERVER_SIDE)) {
-            // TODO it seems we don't support that stuff.
-            final ModelNode node = loadmetric.get(CommonAttributes.LOAD_METRIC_SERVER_SIDE);
-        }
+        Set<LoadMetric<LoadContext>> metrics = new HashSet<LoadMetric<LoadContext>>();
+        if (loadmetric.hasDefined(CommonAttributes.DYNAMIC_LOAD_PROVIDER)) {
+            final ModelNode node = loadmetric.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+            int decayFactor = node.get(CommonAttributes.DECAY).asInt(512);
+            int history = node.get(CommonAttributes.HISTORY).asInt(512);
+            // We should have bunch of load-metric and/or custom-load-metric here.
+            // TODO read the child nodes or what ....String nodes = node.
+            if (node.hasDefined(CommonAttributes.LOAD_METRIC)) {
+                final ModelNode nodemetric = node.get(CommonAttributes.LOAD_METRIC);
+                final List<ModelNode> array = nodemetric.asList();
+                addLoadMetrics(metrics, array);
+             }
+            if (node.hasDefined(CommonAttributes.CUSTOM_LOAD_METRIC)) {
+                final ModelNode nodemetric = node.get(CommonAttributes.CUSTOM_LOAD_METRIC);
+                final List<ModelNode> array = nodemetric.asList();
+                addCustomLoadMetrics(metrics, array);
 
-        if (loadmetric.has(CommonAttributes.LOAD_METRIC_WEB_CONTAINER_SIDE)) {
-            final ModelNode node = loadmetric.get(CommonAttributes.LOAD_METRIC_WEB_CONTAINER_SIDE);
-            String name = node.get(CommonAttributes.NAME).asString();
-            int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
-            Set<LoadMetric<LoadContext>> metrics = null;
-            LoadMetric<LoadContext> metric = null;
-            Class<? extends LoadMetric> loadMetricClass = null;
-            if (name.equals("ActiveSessionsLoadMetric"))
-                loadMetricClass = ActiveSessionsLoadMetric.class;
-            if (name.equals("BusyConnectorsLoadMetric"))
-                loadMetricClass = BusyConnectorsLoadMetric.class;
-            if (name.equals("ReceiveTrafficLoadMetric"))
-                loadMetricClass = ReceiveTrafficLoadMetric.class;
-            if (name.equals("SendTrafficLoadMetric"))
-                loadMetricClass = SendTrafficLoadMetric.class;
-            if (name.equals("RequestCountLoadMetric"))
-                loadMetricClass = RequestCountLoadMetric.class;
-            if (loadMetricClass != null) {
-                try {
-                    metric = loadMetricClass.newInstance();
-                    metric.setCapacity(capacity);
-                    metrics.add(metric);
-                } catch (InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
             }
-            if (metrics!= null) {
-                load = new DynamicLoadBalanceFactorProvider(metrics);
+            if (!metrics.isEmpty()) {
+                DynamicLoadBalanceFactorProvider loader = new DynamicLoadBalanceFactorProvider(metrics);
+                loader.setDecayFactor(decayFactor);
+                loader.setHistory(history);
+                load = loader;
             }
         }
 
@@ -208,4 +191,47 @@ class ModClusterService implements Service<Void> {
     MBeanServer getMBeanServer() {
         return Registry.getRegistry(null, null).getMBeanServer();
     }
+
+    private void addLoadMetrics(Set<LoadMetric<LoadContext>> metrics, List<ModelNode> array) {
+        Iterator<ModelNode> it= array.iterator();
+
+        while(it.hasNext()) {
+            final ModelNode node= (ModelNode)it.next();
+            int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
+            int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
+            String type = node.get(CommonAttributes.TYPE).asString();
+            Class<? extends LoadMetric> loadMetricClass = null;
+            LoadMetric<LoadContext> metric = null;
+            if (type.equals("ActiveSessionsLoadMetric"))
+                loadMetricClass = ActiveSessionsLoadMetric.class;
+            if (type.equals("BusyConnectorsLoadMetric"))
+                loadMetricClass = BusyConnectorsLoadMetric.class;
+            if (type.equals("ReceiveTrafficLoadMetric"))
+                loadMetricClass = ReceiveTrafficLoadMetric.class;
+            if (type.equals("SendTrafficLoadMetric"))
+                loadMetricClass = SendTrafficLoadMetric.class;
+            if (type.equals("RequestCountLoadMetric"))
+                loadMetricClass = RequestCountLoadMetric.class;
+            if (loadMetricClass != null) {
+                try {
+                    metric = loadMetricClass.newInstance();
+                    metric.setCapacity(capacity);
+                    metric.setWeight(weight);
+                    metrics.add(metric);
+                } catch (InstantiationException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    private void addCustomLoadMetrics(Set<LoadMetric<LoadContext>> metrics, List<ModelNode> array) {
+        // TODO Auto-generated method stub something like addLoadMetrics...
+    }
+
 }

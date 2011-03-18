@@ -33,7 +33,7 @@
 
   <xs:complexType name="mod-cluster-configType">
     <xs:sequence>
-      <xs:element ref="load-metric" minOccurs="0" maxOccurs="1"/>
+      <xs:element ref="load-provider" minOccurs="0" maxOccurs="1"/>
       <xs:element ref="proxy-conf" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
@@ -69,39 +69,72 @@
   </xs:complexType>
   
   <!-- Set of possible loadmetrics -->
-  <xs:element name="load-metric">
+  <xs:element name="load-provider">
     <xs:complexType>
       <xs:choice>
-        <xs:element name="load-metric-simple" type="load-metric-simpleType"/>
-        <xs:element name="load-metric-server-side" type="load-metric-server-sideType"/>
-        <xs:element name="load-metric-web-container-side" type="load-metric-web-container-sideType"/>
-        <xs:element name="load-metric-other" type="load-metric-otherType"/>
+        <xs:element name="simple-load-provider" type="simple-load-providerType"/>
+        <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
       </xs:choice>
     </xs:complexType>
   </xs:element> 
 
-  <!-- <load-metric-simple factor="1" /> -->
-  <xs:complexType name="load-metric-simpleType">
+  <!-- <simple-load-provider load="1"/> -->
+  <xs:complexType name="simple-load-providerType">
     <xs:attribute name="factor" default="1" />
   </xs:complexType>
 
-  <!-- <load-metric-server-side history="9" decayFactor="2" /> -->
-  <xs:complexType name="load-metric-server-sideType">
+  <!-- Something like.
+       <dynamic-load-provider history="10" decay="2">
+           <load-metric type="cpu" weight="2" capacity="1"/>
+           <load-metric type="sessions" weight="1" capacity="512"/>
+            ...
+       </dynamic-load-provider>
+    -->
+  <xs:complexType name="dynamic-load-providerType">
     <xs:attribute name="history" default="9" />
-    <xs:attribute name="decay-factor" default="2"/>
+    <xs:attribute name="decay" default="2"/>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="load-metric" type="load-metricType"/>
+      <xs:element name="custom-load-metric" type="custom-load-metricType"/>
+    </xs:choice>
   </xs:complexType>
 
-  <!-- <load-metric-web-container-side method="name" capacity="512" /> -->
-  <!-- name be one of ActiveSessionsLoadMetric, BusyConnectorsLoadMetric, ReceiveTrafficLoadMetric, SendTrafficLoadMetric or RequestCountLoadMetric -->
-  <xs:complexType name="load-metric-web-container-sideType">
-    <xs:attribute name="name" default="ActiveSessionsLoadMetric" />
-    <xs:attribute name="capacity" default="512"/>
+  <xs:complexType name="common-load-metricType" abstract="true">
+    <xs:sequence>
+      <xs:element name="property" type="tns:propertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="weight" type="xs:int"/>
+    <xs:attribute name="capacity" type="xs:double"/>
   </xs:complexType>
 
-  <!-- <load-metric-other method="name"/> -->
-  <!-- name be one of AverageSystemLoadMetric, SystemMemoryUsageLoadMetric, HeapMemoryUsageLoadMetric or ConnectionPoolUsageLoadMetric -->
-  <xs:complexType name="load-metric-otherType">
-    <xs:attribute name="name" default="ConnectionPoolUsageLoadMetric" />
+  <xs:complexType name="load-metricType">
+    <xs:complexContent>
+      <xs:extension base="tns:common-load-metricType">
+        <xs:sequence/>
+        <xs:attribute name="type" type="xs:loadMetricEnum" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
+
+  <xs:complexType name="custom-load-metricType">
+    <xs:complexContent>
+      <xs:extension base="tns:common-load-metricType">
+        <xs:sequence/>
+        <xs:attribute name="class" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="loadMetricEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="cpu"/>
+      <xs:enumeration value="sessions"/>
+      <xs:enumeration value="requests"/>
+      <xs:enumeration value="send-traffic"/>
+      <xs:enumeration value="receive-traffic"/>
+      <xs:enumeration value="busyness"/>
+      <!-- TODO add missing ones. -->
+    </xs:restriction>
+  </xs:simpleType>
 
 </xs:schema>

@@ -40,20 +40,22 @@ enum Attribute {
     PROXY_URL(CommonAttributes.PROXY_URL),
     ADVERTISE(CommonAttributes.ADVERTISE),
     ADVERTISE_SECURITY_KEY(CommonAttributes.ADVERTISE_SECURITY_KEY),
-    LOAD_METRIC_SIMPLE(CommonAttributes.LOAD_METRIC_SIMPLE),
-    LOAD_METRIC_SERVER_SIDE(CommonAttributes.LOAD_METRIC_SERVER_SIDE),
-    LOAD_METRIC_WEB_CONTAINER_SIDE(CommonAttributes.LOAD_METRIC_WEB_CONTAINER_SIDE),
-    LOAD_METRIC_OTHER(CommonAttributes.LOAD_METRIC_OTHER),
+    LOAD_PROVIDER(CommonAttributes.LOAD_PROVIDER),
+    SIMPLE_LOAD_PROVIDER(CommonAttributes.SIMPLE_LOAD_PROVIDER),
+    DYNAMIC_LOAD_PROVIDER(CommonAttributes.DYNAMIC_LOAD_PROVIDER),
+    CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
     EXCLUDED_CONTEXTS(CommonAttributes.EXCLUDED_CONTEXTS),
     AUTO_ENABLE_CONTEXTS(CommonAttributes.AUTO_ENABLE_CONTEXTS),
     STOP_CONTEXT_TIMEOUT(CommonAttributes.STOP_CONTEXT_TIMEOUT),
     SOCKET_TIMEOUT(CommonAttributes.SOCKET_TIMEOUT),
     FACTOR(CommonAttributes.FACTOR),
     HISTORY(CommonAttributes.HISTORY),
-    DECAY_FACTOR(CommonAttributes.DECAY_FACTOR),
+    DECAY(CommonAttributes.DECAY),
     NAME(CommonAttributes.NAME),
     CAPACITY(CommonAttributes.CAPACITY),
-
+    WEIGHT(CommonAttributes.WEIGHT),
+    TYPE(CommonAttributes.TYPE),
+    CLASS(CommonAttributes.CLASS),
     ;
 
     private final String name;
