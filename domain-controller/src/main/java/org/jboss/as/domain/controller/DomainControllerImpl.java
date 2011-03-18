@@ -89,9 +89,12 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
 import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
+import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -109,6 +112,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
 
     // FIXME this is an overly primitive way to check for read-only ops
     private static final Set<String> READ_ONLY_OPERATIONS;
+    private static final Set<String> DEPLOYMENT_OPS;
     static {
         Set<String> roops = new HashSet<String>();
         roops.add(READ_ATTRIBUTE_OPERATION);
@@ -120,6 +124,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         roops.add(READ_CHILDREN_TYPES_OPERATION);
         roops.add(READ_CONFIG_AS_XML_OPERATION);
         READ_ONLY_OPERATIONS = Collections.unmodifiableSet(roops);
+        Set<String> deploymentOps = new HashSet<String>();
+        deploymentOps.add(DeploymentUploadBytesHandler.OPERATION_NAME);
+        deploymentOps.add(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME);
+        deploymentOps.add(DeploymentUploadURLHandler.OPERATION_NAME);
+        DEPLOYMENT_OPS = Collections.unmodifiableSet(deploymentOps);
     }
 
     private final Map<String, DomainControllerSlaveClient> hosts;
@@ -382,7 +391,8 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         OperationRouting routing;
 
         String targetHost = null;
-        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String operationName = operation.get(OP).asString();
         if (address.size() > 0) {
             PathElement first = address.getElement(0);
             if (HOST.equals(first.getKey())) {
@@ -403,7 +413,6 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                 }
             }
             if (routing == null) {
-                final String operationName = operation.get(OP).asString();
                 if("start".equals(operationName) || "stop".equals(operationName) || "restart".equals(operationName)) {
                     routing = new OperationRouting(targetHost, false);
                 } else {
@@ -418,7 +427,10 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         else if (isReadOnly(operation, address)) {
             // Direct read of domain model
             routing = new OperationRouting(localHostName, false);
-        } else if (COMPOSITE.equals(operation.require(OP).asString())){
+        } else if (DEPLOYMENT_OPS.contains(operationName)) {
+            // Deployment ops should be executed on the master DC only
+            routing = new OperationRouting(localHostName, false);
+        } else if (COMPOSITE.equals(operationName)){
             // Recurse into the steps to see what's required
             if (operation.hasDefined(STEPS)) {
                 Set<String> allHosts = new HashSet<String>();
