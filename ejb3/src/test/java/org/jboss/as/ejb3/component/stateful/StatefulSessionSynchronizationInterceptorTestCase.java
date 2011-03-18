@@ -1,0 +1,171 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.as.ejb3.component.stateful;
+
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.ejb3.cache.Cache;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import javax.ejb.AccessTimeout;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+/**
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ */
+public class StatefulSessionSynchronizationInterceptorTestCase {
+    private static AccessTimeout defaultAccessTimeout() {
+        return new AccessTimeout() {
+            @Override
+            public long value() {
+                return 5;
+            }
+
+            @Override
+            public TimeUnit unit() {
+                return MINUTES;
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessTimeout.class;
+            }
+        };
+    }
+
+    private static Interceptor noop() {
+        return new Interceptor() {
+            @Override
+            public Object processInvocation(InterceptorContext context) throws Exception {
+                return null;
+            }
+        };
+    }
+
+    /**
+     * After the bean is accessed within a tx and the tx has committed, the
+     * association should be gone (and thus it is ready for another tx).
+     */
+    @Test
+    public void testConcurrentTx() throws Exception {
+        final Interceptor interceptor = new StatefulSessionSynchronizationInterceptor();
+        final InterceptorContext context = new InterceptorContext();
+        context.setInterceptorIterator(Arrays.asList(noop()).listIterator());
+        final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
+        context.putPrivateData(Component.class, component);
+        when(component.getAccessTimeout()).thenReturn(defaultAccessTimeout());
+        Cache<StatefulSessionComponentInstance> cache = mock(Cache.class);
+        when(component.getCache()).thenReturn(cache);
+        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = mock(TransactionSynchronizationRegistry.class);
+        when(component.getTransactionSynchronizationRegistry()).thenReturn(transactionSynchronizationRegistry);
+        when(transactionSynchronizationRegistry.getTransactionKey()).thenReturn("TX1");
+        final List<Synchronization> synchronizations = new LinkedList<Synchronization>();
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Synchronization synchronization = (Synchronization) invocation.getArguments()[0];
+                synchronizations.add(synchronization);
+                return null;
+            }
+        }).when(transactionSynchronizationRegistry).registerInterposedSynchronization((Synchronization) any());
+        final StatefulSessionComponentInstance instance = mock(StatefulSessionComponentInstance.class);
+        when(instance.getComponent()).thenReturn(component);
+        context.putPrivateData(ComponentInstance.class, instance);
+
+        interceptor.processInvocation(context);
+
+        when(transactionSynchronizationRegistry.getTransactionKey()).thenReturn("TX2");
+
+        try {
+            interceptor.processInvocation(context);
+            fail("Expected an Exception when invoking SFSB from 2 transactions concurrently");
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage().contains("is already associated with tx TX1 (current tx TX2)"));
+        }
+    }
+
+    /**
+     * After the bean is accessed within a tx and the tx has committed, the
+     * association should be gone (and thus it is ready for another tx).
+     */
+    @Test
+    public void testDifferentTx() throws Exception {
+        final Interceptor interceptor = new StatefulSessionSynchronizationInterceptor();
+        final InterceptorContext context = new InterceptorContext();
+        context.setInterceptorIterator(Arrays.asList(noop()).listIterator());
+        final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
+        context.putPrivateData(Component.class, component);
+        when(component.getAccessTimeout()).thenReturn(defaultAccessTimeout());
+        Cache<StatefulSessionComponentInstance> cache = mock(Cache.class);
+        when(component.getCache()).thenReturn(cache);
+        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = mock(TransactionSynchronizationRegistry.class);
+        when(component.getTransactionSynchronizationRegistry()).thenReturn(transactionSynchronizationRegistry);
+        when(transactionSynchronizationRegistry.getTransactionKey()).thenReturn("TX1");
+        final List<Synchronization> synchronizations = new LinkedList<Synchronization>();
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Synchronization synchronization = (Synchronization) invocation.getArguments()[0];
+                synchronizations.add(synchronization);
+                return null;
+            }
+        }).when(transactionSynchronizationRegistry).registerInterposedSynchronization((Synchronization) any());
+        final StatefulSessionComponentInstance instance = mock(StatefulSessionComponentInstance.class);
+        when(instance.getComponent()).thenReturn(component);
+        context.putPrivateData(ComponentInstance.class, instance);
+
+        interceptor.processInvocation(context);
+
+        // commit
+        for (Synchronization synchronization : synchronizations) {
+            synchronization.beforeCompletion();
+        }
+        for (Synchronization synchronization : synchronizations) {
+            synchronization.afterCompletion(Status.STATUS_COMMITTED);
+        }
+        synchronizations.clear();
+
+        when(transactionSynchronizationRegistry.getTransactionKey()).thenReturn("TX2");
+
+        interceptor.processInvocation(context);
+    }
+}

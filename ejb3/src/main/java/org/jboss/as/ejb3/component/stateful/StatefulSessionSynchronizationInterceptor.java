@@ -86,8 +86,9 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
     }
 
     private void release(final StatefulSessionComponentInstance instance) {
-        lock.unlock();
         // TODO: remove
         instance.getComponent().getCache().release(instance);
+        transactionKey = null;
+        lock.unlock();
     }
 }
