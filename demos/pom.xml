@@ -87,10 +87,6 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-managed-beans</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-messaging</artifactId>
         </dependency>
         <dependency>

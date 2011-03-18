@@ -460,10 +460,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-messaging"/>
         </module-def>
 
-        <module-def name="org.jboss.as.managed-beans">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-managed-beans"/>
-        </module-def>
-
         <module-def name="org.jboss.as.naming">
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
         </module-def>

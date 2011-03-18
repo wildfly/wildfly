@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean;
+package org.jboss.as.ee.managedbean.component;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.AbstractComponentDescription;
 
 /**
- * @author John E. Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class PassthroughService<T> implements Service<T> {
-    private final T value;
+public final class ManagedBeanComponentDescription extends AbstractComponentDescription {
 
-    public PassthroughService(T value) {
-        this.value = value;
+    public ManagedBeanComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
+        super(componentName, componentClassName, moduleName, applicationName);
     }
 
-    @Override
-    public void start(StartContext context) throws StartException {
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    @Override
-    public T getValue() throws IllegalStateException {
-        return value;
+    protected AbstractComponentConfiguration constructComponentConfiguration() {
+        return new ManagedBeanComponentConfiguration(this);
     }
 }

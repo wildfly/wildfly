@@ -20,26 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean;
+package org.jboss.as.ee.managedbean.component;
 
-import javax.annotation.Resource;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import org.jboss.as.ee.component.AbstractComponentConfiguration;
 
 /**
- * @author John E. Bailey
+ * The component configuration for a managed bean.
+ *
+ * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@Interceptor
-public class TestInterceptor {
-    @Resource(name="baz")
-    private TestManagedBean other;
-    
-    static boolean invoked;
+public class ManagedBeanComponentConfiguration extends AbstractComponentConfiguration {
 
-    @AroundInvoke
-    public Object intercept(InvocationContext context) throws Exception {
-        invoked = true;
-        return context.proceed();
+    /**
+     * Construct a new instance.
+     *
+     * @param description the original description
+     */
+    public ManagedBeanComponentConfiguration(final ManagedBeanComponentDescription description) {
+        super(description);
+    }
+
+    /** {@inheritDoc} */
+    public ManagedBeanComponent constructComponent() {
+        return new ManagedBeanComponent(this);
     }
 }

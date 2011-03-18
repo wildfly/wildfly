@@ -193,7 +193,6 @@
         <module>jmx</module>
         <module>jpa</module>
         <module>logging</module>
-        <module>managedbeans</module>
         <module>mc</module>
         <module>messaging</module>
         <module>naming</module>
@@ -395,7 +394,7 @@
                 <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
@@ -2372,7 +2371,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.ejb3.effigy</groupId>
                 <artifactId>jboss-ejb3-effigy-int2</artifactId>

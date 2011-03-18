@@ -31,7 +31,6 @@
                             urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:jpa:1.0 jboss-jpa.xsd
-                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
                             urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
@@ -50,7 +49,6 @@
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
-        <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jaxrs"/>
@@ -135,7 +133,6 @@
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>            
             <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
             <subsystem xmlns="urn:jboss:domain:connector:1.0">
                 <archive-validation enabled="true"/>
@@ -149,18 +146,18 @@
                         <driver-class>org.h2.Driver</driver-class>
                         <module>org.h2.Driver#1.2</module>
                         <pool></pool>
-                        <security> 
+                        <security>
                             <user-name>sa</user-name>
                             <password>sa</password>
                         </security>
                     </datasource>
                 </datasources>
-            </subsystem>      
-            <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />     
+            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
             <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
                <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                    <property name="manager.root">jboss-osgi</property>
-               </configuration>        
+               </configuration>
                <properties>
                    <property name="org.jboss.osgi.system.modules">
                    org.apache.log4j,
@@ -185,12 +182,12 @@
                    org.jboss.osgi.spi.util;version=1.0,
                    org.jboss.osgi.testing;version=1.0,
                    org.jboss.osgi.vfs;version=1.0,
-   
+
                    org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.osgi,
                    org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
                    org.jboss.shrinkwrap.impl.base,
                    org.junit, org.junit.runner, javax.inject
-                   </property> 
+                   </property>
                </properties>
                <modules>
                    <module identifier="org.osgi.compendium"/>
@@ -200,7 +197,7 @@
                    <module identifier="org.jboss.osgi.common" start="true"/>
                    <module identifier="org.apache.aries.jmx" start="true"/>
                    <module identifier="org.jboss.osgi.jmx" start="true"/>
-               </modules> 
+               </modules>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
@@ -333,7 +330,7 @@
         </server-group>
 
         <server-group name="other-server-group" profile="default">
-            <socket-binding-group ref="standard-sockets"/> 
+            <socket-binding-group ref="standard-sockets"/>
             <jvm name="default">
                <heap size="64m" max-size="512m"/>
             </jvm>

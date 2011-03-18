@@ -21,19 +21,18 @@
  */
 package org.jboss.as.test.flat.xml;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.net.URL;
-
-import javax.xml.XMLConstants;
-import javax.xml.validation.SchemaFactory;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import javax.xml.XMLConstants;
+import javax.xml.validation.SchemaFactory;
+import java.net.URL;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * A XSDValidationUnitTestCase.
@@ -75,11 +74,6 @@ public class XSDValidationUnitTestCase {
     @Test
     public void testJBossLogging() throws Exception {
         validateXsd("jboss-logging.xsd");
-    }
-
-    @Test
-    public void testJBossManagedBean() throws Exception {
-        validateXsd("jboss-managedbean.xsd");
     }
 
     @Test

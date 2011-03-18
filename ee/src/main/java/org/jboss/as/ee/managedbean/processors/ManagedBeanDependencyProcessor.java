@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.processors;
+package org.jboss.as.ee.managedbean.processors;
 
 import java.util.List;
 

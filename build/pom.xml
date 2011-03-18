@@ -39,7 +39,7 @@
 
     <name>JBoss Application Server: Build</name>
     <packaging>pom</packaging>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -75,12 +75,12 @@
     </build>
 
     <dependencies>
-                
+
         <dependency>
             <groupId>ch.qos.cal10n</groupId>
             <artifactId>cal10n-api</artifactId>
         </dependency>
-    
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -241,17 +241,17 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-xml</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-core</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-aegis</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-jaxb</artifactId>
@@ -261,7 +261,7 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-simple</artifactId>
@@ -271,12 +271,12 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-management</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-local</artifactId>
@@ -286,12 +286,12 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-jms</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-addr</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-policy</artifactId>
@@ -316,27 +316,27 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-tools-java2ws</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-tools-validator</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-tools-wsdlto-core</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-boolean</artifactId>
@@ -366,7 +366,7 @@
             <groupId>org.apache.neethi</groupId>
             <artifactId>neethi</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.ws.commons.schema</groupId>
             <artifactId>XmlSchema</artifactId>
@@ -411,17 +411,17 @@
           <groupId>org.jboss.arquillian.protocol</groupId>
           <artifactId>arquillian-protocol-jmx</artifactId>
         </dependency>
-        
+
         <dependency>
           <groupId>org.jboss.arquillian.protocol</groupId>
           <artifactId>arquillian-protocol-osgi</artifactId>
         </dependency>
-        
+
         <dependency>
            <groupId>org.jboss.arquillian.testenricher</groupId>
            <artifactId>arquillian-testenricher-resource</artifactId>
         </dependency>
-        
+
         <dependency>
            <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
@@ -510,11 +510,6 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-managed-beans</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-messaging</artifactId>
         </dependency>
 
@@ -577,7 +572,7 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-web</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-weld</artifactId>
@@ -612,12 +607,12 @@
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.interceptor</groupId>
             <artifactId>jboss-interceptor-core</artifactId>
         </dependency>
-            
+
         <dependency>
             <groupId>org.jboss.interceptor</groupId>
             <artifactId>jboss-interceptor-spi</artifactId>
@@ -750,17 +745,17 @@
             <groupId>org.jboss.osgi.common</groupId>
             <artifactId>jboss-osgi-common</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.osgi.framework</groupId>
             <artifactId>jbosgi-framework-core</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.osgi.jmx</groupId>
             <artifactId>jboss-osgi-jmx</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.osgi.resolver</groupId>
             <artifactId>jbosgi-resolver-felix</artifactId>
@@ -770,12 +765,12 @@
             <groupId>org.jboss.osgi.resolver</groupId>
             <artifactId>jbosgi-resolver-spi</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.osgi.vfs</groupId>
             <artifactId>jbosgi-vfs30</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>
@@ -890,17 +885,17 @@
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core</artifactId>
         </dependency>
-                
+
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-spi</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
@@ -1020,19 +1015,19 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-ext</artifactId>
-        </dependency>        
-        
+        </dependency>
+
         <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
-        </dependency> 
-        
+        </dependency>
+
     </dependencies>
-    
+
     <profiles>
         <profile>
             <id>release</id>

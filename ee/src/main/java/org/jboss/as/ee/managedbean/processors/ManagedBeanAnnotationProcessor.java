@@ -20,12 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.processors;
+package org.jboss.as.ee.managedbean.processors;
 
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ServiceBindingSourceDescription;
-import org.jboss.as.managedbean.component.ManagedBeanComponentDescription;
+import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;

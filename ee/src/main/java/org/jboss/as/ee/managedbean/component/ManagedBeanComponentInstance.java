@@ -20,21 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.managedbean.component;
+package org.jboss.as.ee.managedbean.component;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
+
+import java.util.List;
 
 /**
+ * A managed bean component instance.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ManagedBeanComponentDescription extends AbstractComponentDescription {
+public final class ManagedBeanComponentInstance extends AbstractComponentInstance {
 
-    public ManagedBeanComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
-        super(componentName, componentClassName, moduleName, applicationName);
-    }
+    private static final long serialVersionUID = -6175038319331057073L;
 
-    protected AbstractComponentConfiguration constructComponentConfiguration() {
-        return new ManagedBeanComponentConfiguration(this);
+    /**
+     * Construct a new instance.
+     *
+     * @param component the component
+     * @param instance the object instance
+     */
+    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext interceptorFactoryContext) {
+        //we don't support pre destroy for manage beans, as the lifecycle is not defined
+        super(component, instance, preDestroyInterceptors,interceptorFactoryContext);
     }
 }

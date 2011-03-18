@@ -35,7 +35,6 @@
     <extensions>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.sar"/>
-        <extension module="org.jboss.as.managed-beans"/>
     </extensions>
 
     <profiles>
@@ -54,7 +53,6 @@
             <remoting:subsystem thread-pool="remoting"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
         </profile>
 
         <profile name="something2">

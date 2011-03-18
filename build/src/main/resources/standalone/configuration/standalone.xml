@@ -32,7 +32,6 @@
                             urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:jpa:1.0 jboss-jpa.xsd
-                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
                             urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
@@ -57,7 +56,6 @@
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
-        <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
@@ -70,7 +68,7 @@
         <extension module="org.jboss.as.webservices" />
         <extension module="org.jboss.as.weld" />
     </extensions>
-    
+
     <paths>
        <path name="absolute" path="tmp"/>
        <path name="relative" path="relative" relative-to="absolute"/>
@@ -135,7 +133,7 @@
                 <keepalive-time time="10" unit="seconds"/>
             </bounded-queue-thread-pool>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />        
+        <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
         <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
@@ -155,7 +153,6 @@
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jpa:1.0"/>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment socket-binding="txn-socket-process-id"/>
@@ -164,7 +161,7 @@
             <archive-validation enabled="false" />
             <bean-validation enabled="false" />
             <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
-        </subsystem>               
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
                 <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
@@ -172,7 +169,7 @@
                     <driver-class>org.h2.Driver</driver-class>
                     <module>org.h2.Driver#1.2</module>
                     <pool></pool>
-                    <security> 
+                    <security>
                         <user-name>sa</user-name>
                         <password>sa</password>
                     </security>
@@ -184,12 +181,12 @@
             <drivers>
                 <driver module="com.h2database.h2"/>
             </drivers>
-        </subsystem>                
-        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" /> 
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
         <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>
-            </configuration>        
+            </configuration>
             <properties>
                 <property name="org.jboss.osgi.system.modules">
                 org.apache.log4j,
@@ -220,7 +217,7 @@
                 org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
                 org.jboss.shrinkwrap.impl.base,
                 org.junit, org.junit.runner, javax.inject
-                </property> 
+                </property>
             </properties>
             <modules>
                 <module identifier="org.osgi.compendium"/>
@@ -230,11 +227,11 @@
                 <module identifier="org.jboss.osgi.common" start="true"/>
                 <module identifier="org.apache.aries.jmx" start="true"/>
                 <module identifier="org.jboss.osgi.jmx" start="true"/>
-            </modules> 
-        </subsystem>               
+            </modules>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-            <journal-file-size>102400</journal-file-size> 
+            <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
             <journal-type>NIO</journal-type>
             <!-- disable messaging persistence -->
@@ -257,12 +254,12 @@
                </netty-acceptor>
             </acceptors>
 
-            <security-settings>   
-               <security-setting match="#">   
-                   <permission type="createNonDurableQueue" roles="guest"/>   
+            <security-settings>
+               <security-setting match="#">
+                   <permission type="createNonDurableQueue" roles="guest"/>
                    <permission type="deleteNonDurableQueue" roles="guest"/>
-                    <permission type="consume" roles="guest"/>   
-                    <permission type="send" roles="guest"/>   
+                    <permission type="consume" roles="guest"/>
+                    <permission type="send" roles="guest"/>
                </security-setting>
             </security-settings>
 
@@ -356,7 +353,7 @@
            <socket-binding name="messaging" port="5445" />
            <socket-binding name="messaging-throughput" port="5455"/>
         </socket-binding-group>
-    
+
     <system-properties>
         <property name="foo" value="bar"/>
         <property name="key" value="value"/>
