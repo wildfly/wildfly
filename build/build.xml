@@ -77,7 +77,7 @@
             <maven-resource group="asm" artifact="asm" />
         </module-def>
 
-        <module-def name="cglib.cglib">
+        <module-def name="net.sf.cglib">
             <maven-resource group="cglib" artifact="cglib" />
         </module-def>
 
