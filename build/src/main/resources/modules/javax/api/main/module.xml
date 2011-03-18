@@ -148,8 +148,10 @@
                     <path name="org/omg/stub/java/rmi"/>
                     <path name="org/w3c/dom"/>
                     <path name="org/w3c/dom/bootstrap"/>
+                    <path name="org/w3c/dom/css"/>
                     <path name="org/w3c/dom/events"/>
                     <path name="org/w3c/dom/ranges"/>
+                    <path name="org/w3c/dom/stylesheets"/>
                     <path name="org/w3c/dom/traversal"/>
                     <path name="org/w3c/dom/ls"/>
                     <path name="org/xml/sax"/>

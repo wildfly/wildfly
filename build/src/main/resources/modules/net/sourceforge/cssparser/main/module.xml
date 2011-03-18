@@ -28,6 +28,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api" />
         <module name="org.w3c.css.sac"/>
     </dependencies>
 </module>

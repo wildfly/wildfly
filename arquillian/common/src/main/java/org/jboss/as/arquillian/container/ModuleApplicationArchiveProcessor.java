@@ -16,6 +16,14 @@
  */
 package org.jboss.as.arquillian.container;
 
+import org.jboss.arquillian.spi.ApplicationArchiveProcessor;
+import org.jboss.arquillian.spi.TestClass;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.container.ManifestContainer;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,14 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-
-import org.jboss.arquillian.spi.ApplicationArchiveProcessor;
-import org.jboss.arquillian.spi.TestClass;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.container.ManifestContainer;
 
 /**
  * An {@link ApplicationArchiveProcessor} for module test deployments.
@@ -58,6 +58,20 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
     static {
         jsfDependencies.add("org.jboss.jsfunit.arquillian");
         jsfDependencies.add("org.jboss.jsfunit.core");
+        jsfDependencies.add("org.jboss.jsfunit.arquillian");
+        jsfDependencies.add("net.sourceforge.htmlunit");
+        jsfDependencies.add("org.apache.james.mime4j");
+        jsfDependencies.add("org.apache.commons.codec");
+        jsfDependencies.add("org.apache.commons.collections");
+        jsfDependencies.add("org.apache.commons.io");
+        jsfDependencies.add("org.apache.commons.lang");
+        jsfDependencies.add("org.apache.commons.logging");
+        jsfDependencies.add("org.apache.httpcomponents");
+        jsfDependencies.add("org.apache.xalan");
+        jsfDependencies.add("org.apache.xerces");
+        jsfDependencies.add("org.w3c.css.sac");
+        jsfDependencies.add("net.sourceforge.cssparser");
+        jsfDependencies.add("net.sourceforge.nekohtml");
     }
 
     @Override
