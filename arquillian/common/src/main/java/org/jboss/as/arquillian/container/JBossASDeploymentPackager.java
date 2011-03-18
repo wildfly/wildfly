@@ -56,7 +56,9 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
             // auxArchives.clear();
             merge(appArchive, auxArchives);
         } else {
-            if (appArchive instanceof WebArchive) {
+            // JBAS-9059 Inconvertible types error due to OpenJDK compiler bug
+            //if (appArchive instanceof WebArchive) {
+            if (WebArchive.class.isAssignableFrom(appArchive.getClass())) {
                 final ArchivePath webInfLib = ArchivePaths.create("WEB-INF", "lib");
                 for (Archive<?> aux : auxArchives) {
                     // we don't want to include the arquillian-core.jar and arquillian-junit.jar
