@@ -36,11 +36,11 @@
         <module name="javax.servlet.api" />
         <module name="javax.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
+        <module name="javax.wsdl4j.api" />
         <module name="javax.xml.soap.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />
         <module name="org.apache.neethi" />
         <module name="org.apache.ws.commons.xmlschema" />
-        <module name="wsdl4j.wsdl4j" />
     </dependencies>
 </module>

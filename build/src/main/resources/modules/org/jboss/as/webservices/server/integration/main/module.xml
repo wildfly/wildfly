@@ -29,6 +29,7 @@
 
     <dependencies>
         <module name="com.sun.xml.bind" services="export" export="true"/>
+        <module name="javax.wsdl4j.api" export="true"/>
         <module name="org.jboss.ws.spi" export="true"/>
         <module name="org.jboss.ws.common" export="true"/>
         <module name="org.jboss.ws.jaxws-client" services="export" export="true">
@@ -63,6 +64,5 @@
         <module name="org.apache.xerces" services="export" export="true"/>
         <module name="org.jboss.as.webservices" services="export" export="true"/>
         <module name="com.sun.xml.messaging.saaj" services="export" export="true"/>
-        <module name="wsdl4j.wsdl4j" export="true"/>
     </dependencies>
 </module>

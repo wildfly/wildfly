@@ -863,7 +863,7 @@
             <maven-resource group="org.w3c.css" artifact="sac"/>
         </module-def>
 
-        <module-def name="wsdl4j.wsdl4j">
+        <module-def name="javax.wsdl4j.api">
             <maven-resource group="wsdl4j" artifact="wsdl4j"/>
         </module-def>
     </target>

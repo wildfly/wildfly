@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="wsdl4j.wsdl4j">
+<module xmlns="urn:jboss:module:1.0" name="javax.wsdl4j.api">
     <resources>
         <!-- Insert resources here -->
     </resources>
